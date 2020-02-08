@@ -10,7 +10,7 @@ import {
   GetPatientPastSearchesVariables,
 } from 'graphql/types/GetPatientPastSearches';
 import _uniqueId from 'lodash/uniqueId';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -25,18 +25,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 14,
       },
-      '& >div': {
-        [theme.breakpoints.down('xs')]: {
-          marginLeft: -8,
-          marginRight: -8,
-          width: 'calc(100% + 16px)',
-        },
-        '& >div': {
-          [theme.breakpoints.down('xs')]: {
-            padding: '8px !important',
-          },
-        },
-      },
     },
     contentBox: {
       backgroundColor: theme.palette.common.white,
@@ -49,15 +37,18 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       textAlign: 'center',
       cursor: 'pointer',
+      minHeight: 88,
       [theme.breakpoints.down('xs')]: {
         fontSize: 13,
         color: '#fc9916',
-        fontWeight: 'bold',
+        fontWeight: 600,
         marginTop: 0,
         height: '100%',
         padding: '14px 12px',
         textTransform: 'uppercase',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        minHeight: 'auto',
+        textAlign: 'left',
       },
     },
     bigAvatar: {
@@ -92,17 +83,17 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       display: 'flex',
       alignItems: 'center',
-      [theme.breakpoints.down('xs')]: {
-        borderBottom: 'none',
-        paddingBottom: 16,
-        marginBottom: 0,
-      },
     },
     count: {
       marginLeft: 'auto',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 5,
       },
+    },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
     },
   });
 });
@@ -128,7 +119,11 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
   });
 
   if (loading) {
-    return <LinearProgress variant="query" />;
+    return (
+      <div className={classes.circlularProgress}>
+        <CircularProgress />
+      </div>
+    );
   }
   if (error) {
     return <></>;

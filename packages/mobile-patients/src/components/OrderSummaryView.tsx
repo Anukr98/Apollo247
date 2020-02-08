@@ -115,7 +115,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
   ) => {
     const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
     const statusDate = g(medicineOrdersStatus[0], 'statusDate');
-    return moment(statusDate).format('D MMM YYYY | hh:mm a');
+    return moment(statusDate).format('D MMM YYYY | hh:mm A');
   };
 
   return (
@@ -200,7 +200,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
           <Text style={styles.deliveryText}>2 Hour Delivery Promise!</Text>
         </View>
       )} */}
-      <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 20 }]} />
+      {/* <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 20 }]} /> */}
       <Text
         style={[
           styles.deliveryText,
@@ -209,8 +209,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
       >
         Disclaimer:{' '}
         <Text style={{ fontStyle: 'italic' }}>
-          The prescription has been issued based on your inputs during chat/call with the doctor. In
-          case of emergency please visit a nearby hospital.
+          Price may vary when the actual bill is generated.
         </Text>
       </Text>
     </View>

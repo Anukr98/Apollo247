@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultGroup: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f8f5',
       padding: 10,
       marginTop: 10,
       display: 'inline-block',
@@ -365,7 +365,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
         <div className={classes.customScrollBar}>
           <Grid container spacing={2}>
-            <Grid item sm={6}>
+            <Grid item sm={6} xs={12}>
               <div className={classes.consultGroup}>
                 <AphCalendar
                   getDate={(dateSelected: string) => setDateSelected(dateSelected)}
@@ -373,7 +373,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 />
               </div>
             </Grid>
-            <Grid item sm={6}>
+            <Grid item sm={6} xs={12}>
               <div className={`${classes.consultGroup} ${classes.timeSlots}`}>
                 <AphSelect
                   value={clinicSelected === '' ? defaultClinicId : clinicSelected}

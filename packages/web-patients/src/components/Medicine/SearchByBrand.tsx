@@ -13,20 +13,8 @@ import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    headerSticky: {
-      position: 'fixed',
+    root: {
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -215,12 +203,8 @@ export const SearchByBrand: React.FC = (props) => {
     }
   }, [priceFilter]);
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+    <div className={classes.root}>
+      <Header />
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>

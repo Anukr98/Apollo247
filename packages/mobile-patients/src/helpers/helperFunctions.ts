@@ -1,15 +1,33 @@
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import {
+  getPackageData,
+  getPlaceInfoByLatLng,
+  GooglePlacesType,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  MEDICINE_ORDER_STATUS,
+  Relation,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { GraphQLError } from 'graphql';
+import Geolocation from '@react-native-community/geolocation';
+import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import { Alert, AsyncStorage, Dimensions, Platform } from 'react-native';
+import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
-import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
-import NetInfo from '@react-native-community/netinfo';
+import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
+import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
+import { apiRoutes } from './apiRoutes';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import ApolloClient from 'apollo-client';
+import {
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -21,6 +39,14 @@ interface AphConsole {
   trace(message?: any, ...optionalParams: any[]): void;
   debug(message?: any, ...optionalParams: any[]): void;
   table(...data: any[]): void;
+}
+
+export interface TestSlot {
+  employeeCode: string;
+  employeeName: string;
+  diagnosticBranchCode: string;
+  date: Date;
+  slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
 }
 
 const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
@@ -91,7 +117,7 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       statusString = 'Order Verified';
       break;
     case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-      statusString = 'Out For Delivery';
+      statusString = 'Order Shipped';
       break;
     case MEDICINE_ORDER_STATUS.PICKEDUP:
       statusString = 'Order Picked Up';
@@ -116,6 +142,15 @@ export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
       break;
     case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
       statusString = 'Order Initiated';
+      break;
+    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+      statusString = 'Payment Failed';
+      break;
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      statusString = 'Ready At Store';
+      break;
+    case 'TO_BE_DELIVERED' as any:
+      statusString = 'Expected Order Delivery';
       break;
   }
   return statusString;
@@ -223,7 +258,7 @@ export const handleGraphQlError = (
 };
 
 export const timeTo12HrFormat = (time: string) => {
-  return moment(time).format('h:mm a');
+  return moment(time).format('h:mm A');
 };
 
 export const timeDiffFromNow = (toDate: string) => {
@@ -305,10 +340,14 @@ export function g(obj: any, ...props: string[]) {
 }
 
 export const getNetStatus = async () => {
-  const status = await NetInfo.fetch().then((connectionInfo) => {
-    //console.log(connectionInfo, 'connectionInfo');
-    return connectionInfo.type !== 'none';
-  });
+  const status = await NetInfo.fetch()
+    .then((connectionInfo) => {
+      //console.log(connectionInfo, 'connectionInfo');
+      return connectionInfo.type !== 'none';
+    })
+    .catch((e) => {
+      CommonBugFender('helperFunctions_getNetStatus', e);
+    });
   return status;
 };
 
@@ -349,7 +388,7 @@ const getlocationData = (
   resolve: (value?: LocationData | PromiseLike<LocationData> | undefined) => void,
   reject: (reason?: any) => void
 ) => {
-  navigator.geolocation.getCurrentPosition(
+  Geolocation.getCurrentPosition(
     (position) => {
       const { latitude, longitude } = position.coords;
       getPlaceInfoByLatLng(latitude, longitude)
@@ -384,9 +423,8 @@ const getlocationData = (
             });
           }
         })
-        .catch((_) => {
-          console.log('erryug', _);
-
+        .catch((e) => {
+          CommonBugFender('helperFunctions_getlocationData', e);
           reject('Unable to get location.');
         });
     },
@@ -412,7 +450,8 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
               .then(() => {
                 getlocationData(resolve, reject);
               })
-              .catch(() => {
+              .catch((e: Error) => {
+                CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
                 reject('Unable to get location.');
               });
           } else {
@@ -422,7 +461,8 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
           reject('Unable to get location.');
         }
       })
-      .catch((_) => {
+      .catch((e) => {
+        CommonBugFender('helperFunctions_doRequestAndAccessLocation', e);
         reject('Unable to get location.');
       });
   });
@@ -444,7 +484,7 @@ export const getUserCurrentPosition = async () => {
       Permissions.request('location')
         .then((response) => {
           if (response === 'authorized') {
-            navigator.geolocation.getCurrentPosition(
+            Geolocation.getCurrentPosition(
               async (position) => {
                 console.log(position, 'position');
 
@@ -472,6 +512,7 @@ export const getUserCurrentPosition = async () => {
           }
         })
         .catch((error) => {
+          CommonBugFender('helperFunctions_getUserCurrentPosition', error);
           console.log(error, 'error permission');
         });
     });
@@ -490,4 +531,164 @@ export const isValidText = (value: string) =>
   /^([a-zA-Z0-9]+[ ]{0,1}[a-zA-Z0-9\-.\\/?,&]*)*$/.test(value);
 
 export const isValidName = (value: string) =>
-  value === '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value);
+  value == ' '
+    ? false
+    : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+    ? true
+    : false;
+
+export const addTestsToCart = async (
+  testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
+  apolloClient: ApolloClient<object>,
+  city: string
+) => {
+  const searchQuery = (name: string, city: string) =>
+    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
+      query: SEARCH_DIAGNOSTICS,
+      variables: {
+        searchText: name,
+        city: city,
+        patientId: '',
+      },
+      fetchPolicy: 'no-cache',
+    });
+  const detailQuery = (itemId: string) => getPackageData(itemId);
+
+  try {
+    const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
+
+    console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
+
+    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
+    const searchQueriesData = (await searchQueries)
+      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
+      .filter((item, index) => g(item, 'itemName')! == items[index])
+      .filter((item) => !!item);
+    const detailQueries = Promise.all(
+      searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
+    );
+    const detailQueriesData = (await detailQueries).map(
+      (item) => g(item, 'data', 'data', 'length') || 1 // updating testsIncluded
+    );
+
+    const finalArray: DiagnosticsCartItem[] = Array.from({
+      length: searchQueriesData.length,
+    }).map((_, index) => {
+      const s = searchQueriesData[index];
+      const testIncludedCount = detailQueriesData[index];
+      return {
+        id: `${s.itemId}`,
+        name: s.itemName,
+        price: s.rate,
+        specialPrice: undefined,
+        mou: testIncludedCount,
+        thumbnail: '',
+        collectionMethod: s.collectionType,
+      } as DiagnosticsCartItem;
+    });
+
+    console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
+    return finalArray;
+  } catch (error) {
+    CommonBugFender('helperFunctions_addTestsToCart', error);
+    throw 'error';
+  }
+};
+
+export const getBuildEnvironment = () => {
+  switch (apiRoutes.graphql()) {
+    case 'https://aph.dev.api.popcornapps.com//graphql':
+      return 'DEV';
+    case 'https://aph.staging.api.popcornapps.com//graphql':
+      return 'QA';
+    case 'https://aph.uat.api.popcornapps.com//graphql':
+      return 'UAT';
+    case 'https://aph.vapt.api.popcornapps.com//graphql':
+      return 'VAPT';
+    case 'https://api.apollo247.com//graphql':
+      return 'PROD';
+    case 'https://asapi.apollo247.com//graphql':
+      return 'PRF';
+    default:
+      return '';
+  }
+};
+
+export const getRelations = (self?: string) => {
+  type RelationArray = {
+    key: Relation;
+    title: string;
+  };
+  let a: RelationArray[] = [];
+  a.push({ key: Relation.ME, title: self || 'Self' });
+  for (let k in Relation) {
+    if (k !== Relation.ME && k !== Relation.OTHER) {
+      a.push({
+        key: k as Relation,
+        title: k[0] + k.substr(1).toLowerCase(),
+      });
+    }
+  }
+  a.push({
+    key: Relation.OTHER,
+    title: Relation.OTHER[0] + Relation.OTHER.substr(1).toLowerCase(),
+  });
+
+  return a;
+};
+
+export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
+
+export const isValidTestSlot = (
+  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
+  date: Date
+) => {
+  return (
+    slot.status != 'booked' &&
+    (moment(date)
+      .format('DMY')
+      .toString() ===
+    moment()
+      .format('DMY')
+      .toString()
+      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
+          moment(new Date()).add(
+            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+            'minutes'
+          )
+        )
+      : true) &&
+    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
+      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+    )
+  );
+};
+
+export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
+  return slots.find(
+    (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
+  )!;
+};
+
+export const getUniqueTestSlots = (slots: TestSlot[]) => {
+  return slots
+    .filter(
+      (item, idx, array) =>
+        array.findIndex(
+          (_item) =>
+            _item.slotInfo.startTime == item.slotInfo.startTime &&
+            _item.slotInfo.endTime == item.slotInfo.endTime
+        ) == idx
+    )
+    .map((val) => ({
+      startTime: val.slotInfo.startTime!,
+      endTime: val.slotInfo.endTime!,
+    }))
+    .sort((a, b) => {
+      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+        return 1;
+      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+        return -1;
+      return 0;
+    });
+};

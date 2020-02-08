@@ -1,5 +1,6 @@
 import moment from 'moment';
-import { NetInfo } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
+import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 export const timeTo12HrFormat = (time: string) => {
   return moment(time).format('h:mm a');
@@ -77,9 +78,157 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
 };
 
 export const getNetStatus = async () => {
-  const status = await NetInfo.getConnectionInfo().then((connectionInfo) => {
+  const status = await NetInfo.fetch().then((connectionInfo) => {
     //console.log(connectionInfo, 'connectionInfo');
     return connectionInfo.type !== 'none';
   });
   return status;
 };
+
+export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
+
+export const nameFormater = (name: string) => {
+  const val = name.replace(/_/g, ' ');
+  return val[0].toUpperCase() + val.slice(1).toLowerCase();
+};
+
+export const medUsageType = (med: MEDICINE_UNIT) => {
+  switch (med) {
+    case MEDICINE_UNIT.POWDER:
+    case MEDICINE_UNIT.CREAM:
+    case MEDICINE_UNIT.SOAP:
+    case MEDICINE_UNIT.GEL:
+    case MEDICINE_UNIT.LOTION:
+    case MEDICINE_UNIT.SPRAY:
+    case MEDICINE_UNIT.SOLUTION:
+    case MEDICINE_UNIT.OINTMENT:
+      return 'Apply';
+    case MEDICINE_UNIT.SYRUP:
+    case MEDICINE_UNIT.DROPS:
+    case MEDICINE_UNIT.CAPSULE:
+    case MEDICINE_UNIT.INJECTION:
+    case MEDICINE_UNIT.TABLET:
+    case MEDICINE_UNIT.BOTTLE:
+    case MEDICINE_UNIT.SUSPENSION:
+    case MEDICINE_UNIT.ROTACAPS:
+    case MEDICINE_UNIT.SACHET:
+    case MEDICINE_UNIT.ML:
+      return 'Take';
+    default:
+      return 'Apply';
+  }
+};
+
+export const formatInt = (value: string) => {
+  let number = value.indexOf('-') === value.length - 1 ? value : parseInt(value);
+  return number || 0;
+};
+
+export const formatFloating = (value: string) => {
+  let number =
+    value.indexOf('.') === value.length - 1 ||
+    value.indexOf('0', value.length - 1) === value.length - 1 ||
+    value.indexOf('-') === value.length - 1
+      ? value
+      : parseFloat(value);
+  return number || 0;
+};
+export const getDateArray = (start: Date, end: Date) => {
+  const arr = [];
+  const dt = new Date(start);
+  arr.push(new Date(dt));
+  while (dt <= end) {
+    dt.setDate(dt.getDate() + 1);
+    arr.push(new Date(dt));
+  }
+  return arr;
+};
+
+export const ConvertTimeToLocal = (time: string /* HH:mm:ss */) => {
+  return moment
+    .utc(time, 'HH:mm:ss')
+    .local()
+    .format('HH:mm:ss');
+};
+
+export const ConvertDateToWeekDay = (date: Date, format: string = 'dddd') => {
+  return moment(date)
+    .format(format)
+    .toUpperCase();
+};
+
+export const ConvertDateTimeToUtc = (date: string /* YYYY-MM-DD */, time: string /* HH:mm:s */) => {
+  return moment(date + ConvertTimeToLocal(time), 'YYYY-MM-DDHH:mm:ss').toISOString();
+};
+
+export const FormatDateToString = (date: Date, format: string = 'YYYY-MM-DD') => {
+  return moment(date).format(format);
+};
+
+export function g<T, P1 extends keyof NonNullable<T>>(
+  obj: T,
+  prop1: P1
+): NonNullable<T>[P1] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>
+>(obj: T, prop1: P1, prop2: P2): NonNullable<NonNullable<T>[P1]>[P2] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>,
+  P3 extends keyof NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>
+>(
+  obj: T,
+  prop1: P1,
+  prop2: P2,
+  prop3: P3
+): NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>,
+  P3 extends keyof NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>,
+  P4 extends keyof NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>
+>(
+  obj: T,
+  prop1: P1,
+  prop2: P2,
+  prop3: P3,
+  prop4: P4
+): NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4] | undefined;
+
+export function g<
+  T,
+  P1 extends keyof NonNullable<T>,
+  P2 extends keyof NonNullable<NonNullable<T>[P1]>,
+  P3 extends keyof NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>,
+  P4 extends keyof NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>,
+  P5 extends keyof NonNullable<
+    NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4]
+  >
+>(
+  obj: T,
+  prop1: P1,
+  prop2: P2,
+  prop3: P3,
+  prop4: P4,
+  prop5: P5
+):
+  | NonNullable<NonNullable<NonNullable<NonNullable<NonNullable<T>[P1]>[P2]>[P3]>[P4]>[P5]
+  | undefined;
+
+// ...and so on...
+
+/**
+ *
+ * @param obj
+ * @param props
+ */
+export function g(obj: any, ...props: string[]) {
+  return obj && props.reduce((result, prop) => (result == null ? undefined : result[prop]), obj);
+}

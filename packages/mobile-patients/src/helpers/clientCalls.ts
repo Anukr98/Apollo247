@@ -35,6 +35,7 @@ import { getPatinetAppointments } from '../graphql/types/getPatinetAppointments'
 import moment from 'moment';
 import { LoginVariables, Login } from '../graphql/types/Login';
 import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -64,7 +65,8 @@ export const getNextAvailableSlots = (
           }
         }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('clientCalls_getNextAvailableSlots', e);
         console.log('Error occured while searching Doctor', e);
         rej({ error: e });
       });
@@ -84,7 +86,8 @@ export const addToConsultQueue = (client: ApolloClient<object>, appointmentId: s
       .then((data: any) => {
         res({ data });
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueue', e);
         rej({ error: e });
       });
   });
@@ -106,7 +109,8 @@ export const addToConsultQueueWithAutomatedQuestions = (
       .then((data: any) => {
         res({ data });
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('clientCalls_addToConsultQueueWithAutomatedQuestions', e);
         rej({ error: e });
       });
   });
@@ -131,6 +135,7 @@ export const checkIfRescheduleAppointment = (
         res({ data });
       })
       .catch((e: any) => {
+        CommonBugFender('clientCalls_checkIfRescheduleAppointment', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
@@ -160,6 +165,7 @@ export const endCallSessionAppointment = (
         res({ data });
       })
       .catch((e: any) => {
+        CommonBugFender('clientCalls_endCallSessionAppointment', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
@@ -180,6 +186,7 @@ export const getAppointmentDataDetails = (client: ApolloClient<object>, appointm
         res({ data });
       })
       .catch((e: any) => {
+        CommonBugFender('clientCalls_getAppointmentDataDetails', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
@@ -207,6 +214,7 @@ export const getPrismUrls = (
         res({ urls: data.downloadDocuments.downloadPaths });
       })
       .catch((e: any) => {
+        CommonBugFender('clientCalls_getPrismUrls', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
@@ -234,6 +242,7 @@ export const getAppointments = (
         res(data.data.getPatinetAppointments);
       })
       .catch((e) => {
+        CommonBugFender('clientCalls_getAppointments', e);
         rej(e);
       });
   });

@@ -19,6 +19,8 @@ import {
   ActivityIndicator,
   BackHandler,
   Keyboard,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -37,8 +39,7 @@ import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 
 const { width, height } = Dimensions.get('window');
@@ -73,7 +74,6 @@ const styles = StyleSheet.create({
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
     paddingVertical: 8,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
   textViewStyle: {
     borderBottomWidth: 1,
@@ -128,7 +128,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [backPressCount, setbackPressCount] = useState<number>(0);
-  const { showAphAlert, hideAphAlert } = useUIElements();
   const [referredBy, setReferredBy] = useState<string>();
   const [referral, setReferral] = useState<string>('');
 
@@ -150,27 +149,30 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       if (!allCurrentPatients[0].relation) allCurrentPatients[0].relation = Relation.ME;
     }
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
+    if (allCurrentPatients && allCurrentPatients.length > 0) {
+      setShowText(true);
+    }
     AsyncStorage.setItem('multiSignUp', 'true');
   }, [allCurrentPatients]);
 
-  useEffect(() => {
-    setProfiles(allCurrentPatients ? allCurrentPatients : []);
-    const length =
-      profiles &&
-      (profiles.length == 1 ? profiles.length + ' account' : profiles.length + ' accounts');
-    const baseString =
-      'We have found ' +
-      length +
-      ' registered with this mobile number. Please tell us who is who ? :)';
-    setDiscriptionText(baseString);
+  // useEffect(() => {
+  //   setProfiles(allCurrentPatients ? allCurrentPatients : []);
+  //   const length =
+  //     profiles &&
+  //     (profiles.length == 1 ? profiles.length + ' account' : profiles.length + ' accounts');
+  //   const baseString =
+  //     'We have found ' +
+  //     length +
+  //     ' registered with this mobile number. Please tell us who is who ? :)';
+  //   setDiscriptionText(baseString);
 
-    if (length !== 'undefined accounts') {
-      setShowText(true);
-      console.log('length', length);
-    }
-    console.log('discriptionText', discriptionText);
-    console.log('allCurrentPatients', allCurrentPatients);
-  }, [currentPatient, allCurrentPatients, analytics, profiles, discriptionText, showText]);
+  //   if (length !== 'undefined accounts') {
+  //     setShowText(true);
+  //     // console.log('length', length);
+  //   }
+  //   // console.log('discriptionText', discriptionText);
+  //   // console.log('allCurrentPatients', allCurrentPatients);
+  // }, [currentPatient, allCurrentPatients, analytics, profiles, discriptionText, showText]);
 
   const renderUserForm = (
     allCurrentPatients: GetCurrentPatients_getCurrentPatients_patients | null,
@@ -259,46 +261,46 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     return true;
   };
 
-  type options = {
-    name: string;
-    value: Relation;
+  type RelationArray = {
+    key: Relation;
+    title: string;
   };
 
-  const Options: options[] = [
+  const Options2: RelationArray[] = [
     {
-      name: 'Me',
-      value: Relation.ME,
+      title: 'Me',
+      key: Relation.ME,
     },
     {
-      name: 'Mother',
-      value: Relation.MOTHER,
+      title: 'Mother',
+      key: Relation.MOTHER,
     },
     {
-      name: 'Father',
-      value: Relation.FATHER,
+      title: 'Father',
+      key: Relation.FATHER,
     },
     {
-      name: 'Sister',
-      value: Relation.SISTER,
+      title: 'Sister',
+      key: Relation.SISTER,
     },
     {
-      name: 'Brother',
-      value: Relation.BROTHER,
+      title: 'Brother',
+      key: Relation.BROTHER,
     },
     {
-      name: 'Cousin',
-      value: Relation.COUSIN,
+      title: 'Cousin',
+      key: Relation.COUSIN,
     },
     {
-      name: 'Wife',
-      value: Relation.WIFE,
+      title: 'Wife',
+      key: Relation.WIFE,
     },
     {
-      name: 'Husband',
-      value: Relation.HUSBAND,
+      title: 'Husband',
+      key: Relation.HUSBAND,
     },
   ];
-
+  const Options = getRelations('Me') || Options2;
   const Popup = () => (
     <TouchableOpacity
       activeOpacity={1}
@@ -328,42 +330,44 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           shadowOpacity: 0.8,
           shadowRadius: 10,
           elevation: 5,
-          paddingTop: 8,
-          paddingBottom: 16,
+          marginTop: Platform.OS === 'ios' ? 10 : 8,
+          marginBottom: Platform.OS === 'ios' ? 16 : 30,
         }}
       >
-        {Options.map(({ name, value }) => (
-          <View style={styles.textViewStyle}>
-            <Text
-              style={styles.textStyle}
-              onPress={() => {
-                if (profiles) {
-                  profiles[relationIndex].relation = Relation[value];
-                  const result = profiles.filter((obj) => {
-                    return obj.relation == Relation['ME'];
-                  });
+        <ScrollView showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
+          {Options.map(({ title, key }) => (
+            <View style={styles.textViewStyle}>
+              <Text
+                style={styles.textStyle}
+                onPress={() => {
+                  if (profiles) {
+                    profiles[relationIndex].relation = Relation[key];
+                    const result = profiles.filter((obj) => {
+                      return obj.relation == Relation['ME'];
+                    });
 
-                  if (result.length > 1) {
-                    profiles[relationIndex].relation = null;
-                    Alert.alert('Apollo', 'Me is already choosen for another profile.');
-                    CommonLogEvent(
-                      AppRoutes.MultiSignup,
-                      'Me is already choosen for another profile.'
-                    );
+                    if (result.length > 1) {
+                      profiles[relationIndex].relation = null;
+                      Alert.alert('Apollo', 'Me is already choosen for another profile.');
+                      CommonLogEvent(
+                        AppRoutes.MultiSignup,
+                        'Me is already choosen for another profile.'
+                      );
+                    }
+                    console.log('result', result);
+                    console.log('result length', result.length);
+
+                    setProfiles(profiles);
+                    setShowPopup(false);
+                    CommonLogEvent(AppRoutes.MultiSignup, 'Select the relations for the profile');
                   }
-                  console.log('result', result);
-                  console.log('result length', result.length);
-
-                  setProfiles(profiles);
-                  setShowPopup(false);
-                  CommonLogEvent(AppRoutes.MultiSignup, 'Select the relations for the profile');
-                }
-              }}
-            >
-              {name}
-            </Text>
-          </View>
-        ))}
+                }}
+              >
+                {title}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
       </View>
     </TouchableOpacity>
   );
@@ -418,26 +422,17 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('gotIt', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
                   setTimeout(() => {
-                    showAphAlert!({
-                      title: `Hi ${g(currentPatient, 'firstName') || ''},`,
-                      description:
-                        'Welcome to Apollo24X7. We’re glad you’re here!\nConsult online with our top Apollo doctors now!',
-                      unDismissable: true,
-                      onPressOk: () => {
-                        hideAphAlert!();
-                        props.navigation.dispatch(
-                          StackActions.reset({
-                            index: 0,
-                            key: null,
-                            actions: [
-                              NavigationActions.navigate({
-                                routeName: AppRoutes.ConsultRoom,
-                              }),
-                            ],
-                          })
-                        );
-                      },
-                    });
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [
+                          NavigationActions.navigate({
+                            routeName: AppRoutes.ConsultRoom,
+                          }),
+                        ],
+                      })
+                    );
                   }, 500))
                 : null}
               {error
@@ -524,7 +519,15 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               }}
               headingTextStyle={{ paddingBottom: 20 }}
               heading={string.login.welcome_text}
-              description={showText ? discriptionText : string.login.multi_signup_desc}
+              description={
+                showText
+                  ? 'We have found ' +
+                    ((profiles || []).length == 1
+                      ? (profiles || []).length + ' account'
+                      : (profiles || []).length + ' accounts') +
+                    ' registered with this mobile number. Please tell us who is who ? :)'
+                  : string.login.multi_signup_desc
+              }
               descriptionTextStyle={{ paddingBottom: 50 }}
             >
               <View style={styles.mascotStyle}>

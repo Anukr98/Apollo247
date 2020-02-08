@@ -2,7 +2,6 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import Scrollbars from 'react-custom-scrollbars';
 import _forEach from 'lodash/forEach';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
@@ -32,12 +31,15 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorImage: {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
+      textAlign: 'center',
       '& img': {
         maxWidth: '100%',
+        maxHeight: 138,
+        verticalAlign: 'middle',
       },
     },
     doctorInfo: {
-      padding: '20px 5px 0 20px',
+      padding: 20,
     },
     doctorName: {
       fontSize: 20,
@@ -45,18 +47,15 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       paddingBottom: 5,
       marginBottom: 5,
-      marginRight: 15,
       borderBottom: '0.5px solid rgba(2,71,91,0.2)',
     },
     specialits: {
       fontSize: 12,
       fontWeight: 600,
-      marginBottom: 15,
       color: '#0087ba',
       textTransform: 'uppercase',
       position: 'relative',
       paddingRight: 40,
-      marginRight: 15,
       borderBottom: '0.5px solid rgba(2,71,91,0.2)',
       paddingBottom: 10,
     },
@@ -72,7 +71,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorInfoGroup: {
       paddingBottom: 10,
-      marginRight: 15,
       borderBottom: '0.5px solid rgba(2,71,91,0.2)',
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
@@ -90,6 +88,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       [theme.breakpoints.down('xs')]: {
         display: 'none',
+      },
+      '& img': {
+        verticalAlign: 'middle',
       },
     },
     details: {
@@ -159,9 +160,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     consultDoctorInfoGroup: {
-      [theme.breakpoints.down('xs')]: {
-        paddingBottom: 0,
-      },
+      paddingBottom: 0,
+      borderBottom: 'none',
     },
     opacityMobile: {
       [theme.breakpoints.down('xs')]: {
@@ -314,77 +314,72 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                 <img src={require('images/ic-share-green.svg')} alt="" />
               </div>
             </div>
-            <Scrollbars autoHeight autoHeightMax={'calc(100vh - 496px'}>
-              <div className={classes.doctorInfoGroup}>
-                <div className={classes.infoRow}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-edu.svg')} alt="" />
-                  </div>
+            <div className={classes.doctorInfoGroup}>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-edu.svg')} alt="" />
+                </div>
+                <div className={classes.details}>
                   {education && education.includes(';') ? (
-                    education.split(';').map((edu, idx) => (
-                      <div key={idx} className={classes.details}>
-                        {edu}
-                      </div>
-                    ))
+                    education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
                   ) : (
-                    <div className={classes.details}>{education}</div>
+                    <div>{education}</div>
                   )}
                 </div>
+              </div>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-awards.svg')} alt="" />
+                </div>
+                <div className={classes.details}>
+                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                </div>
+              </div>
+            </div>
+            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-location.svg')} alt="" />
+                </div>
+                <div className={classes.details}>{hospitalLocation}</div>
+              </div>
+              <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-language.svg')} alt="" />
+                </div>
+                <div className={classes.details}>{languages}</div>
+              </div>
+            </div>
+            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+              <div className={classes.consultGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require('images/ic-awards.svg')} alt="" />
+                    <img src={require('images/ic-rupee.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                    Online Consultation
+                    <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
+                    {availabilityMarkup(availableIn)}
                   </div>
+                  <div className={classes.doctorPrice}>Rs.{onlineConsultationFees}</div>
                 </div>
               </div>
-              <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
-                <div className={classes.infoRow}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-location.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>{hospitalLocation}</div>
-                </div>
-                <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-language.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>{languages}</div>
-                </div>
-              </div>
-
-              <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+              {isStarDoctor && (
                 <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
-                    <div className={classes.iconType}>
+                    <div className={`${classes.iconType} ${classes.noIcon}`}>
                       <img src={require('images/ic-rupee.svg')} alt="" />
                     </div>
                     <div className={classes.details}>
-                      Online Consultation
-                      <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
-                      {availabilityMarkup(availableIn)}
+                      Clinic Visit
+                      <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
+                      {availabilityMarkup(physicalAvailableIn)}
                     </div>
-                    <div className={classes.doctorPrice}>Rs.{onlineConsultationFees}</div>
+                    <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                   </div>
                 </div>
-                {isStarDoctor && (
-                  <div className={classes.consultGroup}>
-                    <div className={classes.infoRow}>
-                      <div className={`${classes.iconType} ${classes.noIcon}`}>
-                        <img src={require('images/ic-rupee.svg')} alt="" />
-                      </div>
-                      <div className={classes.details}>
-                        Clinic Visit
-                        <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
-                        {availabilityMarkup(physicalAvailableIn)}
-                      </div>
-                      <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Scrollbars>
+              )}
+            </div>
           </div>
         </div>
       </div>

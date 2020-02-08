@@ -10,7 +10,10 @@ import { CartIcon, SearchSendIcon, TestsIcon } from '@aph/mobile-patients/src/co
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_SEARCH, SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import { DIAGNOSTICS_TYPE, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -148,6 +151,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('TestsByCategory_fetchPackageInclusion', e);
         console.log({ e });
         errorAlert();
       })
@@ -562,6 +566,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           setsearchSate('success');
         })
         .catch((e) => {
+          CommonBugFender('TestsByCategory_onSearchMedicine', e);
           // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');

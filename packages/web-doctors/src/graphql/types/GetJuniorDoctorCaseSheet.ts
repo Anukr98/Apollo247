@@ -92,6 +92,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorC
   __typename: "CaseSheet";
   createdDate: any | null;
   createdDoctorProfile: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile | null;
+  updatedDate: any | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_familyHistory {

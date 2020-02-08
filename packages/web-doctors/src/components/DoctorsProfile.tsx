@@ -237,17 +237,11 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
             <div>
               <div className={classes.tabHeading}>
                 <Typography variant="h1">
-                  {selectedTabIndex === 0 && (
-                    <span>{`hi  ${userDetails.displayName.toLowerCase()} !`}</span>
-                  )}
-                  {selectedTabIndex === 1 && (
-                    <span>{` ok  ${userDetails.displayName.toLowerCase()}`}!</span>
-                  )}
-                  {selectedTabIndex === 2 && (
-                    <span>{`ok  ${userDetails.displayName.toLowerCase()}`}!</span>
-                  )}
+                  {selectedTabIndex === 0 && <span>{`hi  ${userDetails.displayName} !`}</span>}
+                  {selectedTabIndex === 1 && <span>{` ok  ${userDetails.displayName}`}!</span>}
+                  {selectedTabIndex === 2 && <span>{`ok  ${userDetails.displayName}`}!</span>}
                   {selectedTabIndex === 3 && (
-                    <span>{`thank you, ${userDetails.displayName.toLowerCase()} :)`}</span>
+                    <span>{`thank you, ${userDetails.displayName} :)`}</span>
                   )}
                 </Typography>
                 {selectedTabIndex === 0 && (

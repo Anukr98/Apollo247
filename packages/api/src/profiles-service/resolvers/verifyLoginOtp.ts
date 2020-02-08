@@ -2,8 +2,10 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LOGIN_TYPE, LoginOtp, OTP_STATUS } from 'profiles-service/entities';
+import { archiveOtpRecord } from 'profiles-service/resolvers/login';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
 import * as firebaseAdmin from 'firebase-admin';
+import { debugLog } from 'customWinstonLogger';
 
 const firebase = firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.applicationDefault(),
@@ -13,8 +15,10 @@ const firebase = firebaseAdmin.initializeApp({
 export const verifyLoginOtpTypeDefs = gql`
   type OtpVerificationResult {
     status: Boolean!
+    reason: OTP_STATUS
     authToken: String
     isBlocked: Boolean
+    incorrectAttempts: Int
   }
 
   input OtpVerificationInput {
@@ -37,8 +41,10 @@ type OtpVerificationInputArgs = { otpVerificationInput: OtpVerificationInput };
 
 type OtpVerificationResult = {
   status: Boolean;
+  reason: string;
   authToken: string | null;
   isBlocked: Boolean;
+  incorrectAttempts: number;
 };
 
 const verifyLoginOtp: Resolver<
@@ -47,16 +53,52 @@ const verifyLoginOtp: Resolver<
   ProfilesServiceContext,
   OtpVerificationResult
 > = async (parent, { otpVerificationInput }, { profilesDb }) => {
+  const apiCallId = Math.floor(Math.random() * 1000000);
+  const callStartTime = new Date();
+  //create first order curried method with first 3 static parameters being passed.
+  const verifyLogger = debugLog(
+    'otpVerificationAPILogger',
+    'verifyLoginOtp',
+    apiCallId,
+    callStartTime
+  );
+
+  //create second order curried method with loginId as identifier till mobileNumber is received
+  const verifyByIdLogger = verifyLogger(otpVerificationInput.id);
+
+  verifyByIdLogger('API_CALL___START');
+
   //otp verification logic here
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
 
+  verifyByIdLogger('QUERY_START');
   const matchedOtpRow: LoginOtp[] = await otpRepo.verifyOtp(otpVerificationInput);
+  verifyByIdLogger('QUERY_END');
+
   if (matchedOtpRow.length === 0) {
-    return { status: false, authToken: null, isBlocked: false };
+    verifyByIdLogger('VALIDATION_FAILED_API_CALL___END');
+    return {
+      status: false,
+      reason: OTP_STATUS.NOT_VERIFIED,
+      authToken: null,
+      isBlocked: false,
+      incorrectAttempts: 0,
+    };
   }
 
+  //create second order curried method with mobileNumber as identifier
+  const verifyByMobileNumLogger = verifyLogger(matchedOtpRow[0].mobileNumber);
+
+  verifyByMobileNumLogger('VALIDATION_START');
   if (matchedOtpRow[0].status === OTP_STATUS.BLOCKED) {
-    return { status: false, authToken: null, isBlocked: true };
+    verifyByMobileNumLogger('VALIDATION_FAILED_API_CALL___END');
+    return {
+      status: false,
+      reason: matchedOtpRow[0].status,
+      authToken: null,
+      isBlocked: true,
+      incorrectAttempts: matchedOtpRow[0].incorrectAttempts,
+    };
   }
 
   if (matchedOtpRow[0].otp != otpVerificationInput.otp) {
@@ -67,20 +109,40 @@ const verifyLoginOtp: Resolver<
     };
     if (incorrectAttempts > 2) updateAttrs.status = OTP_STATUS.BLOCKED;
     await otpRepo.updateOtpStatus(matchedOtpRow[0].id, updateAttrs);
+    verifyByMobileNumLogger('VALIDATION_FAILED_API_CALL___END');
     return {
       status: false,
+      reason: matchedOtpRow[0].status,
       authToken: null,
       isBlocked: updateAttrs.status === OTP_STATUS.BLOCKED ? true : false,
+      incorrectAttempts: matchedOtpRow[0].incorrectAttempts + 1,
     };
   }
+  verifyByMobileNumLogger('VALIDATION_END');
 
+  verifyByMobileNumLogger('UPDATION_START');
   //update status of otp
-  await otpRepo.updateOtpStatus(matchedOtpRow[0].id, { status: OTP_STATUS.VERIFIED });
+  await otpRepo.updateOtpStatus(matchedOtpRow[0].id, {
+    status: OTP_STATUS.VERIFIED,
+  });
 
-  //generate customeToken
+  //archive the old otp record and then delete it
+  archiveOtpRecord(matchedOtpRow[0].id, profilesDb);
+  verifyByMobileNumLogger('UPDATION_END');
+
+  //generate customToken
+  verifyByMobileNumLogger('CREATE_TOKEN_START');
   const customToken = await firebase.auth().createCustomToken(matchedOtpRow[0].mobileNumber);
+  verifyByMobileNumLogger('CREATE_TOKEN_END');
 
-  return { status: true, authToken: customToken, isBlocked: false };
+  verifyByMobileNumLogger('API_CALL___END');
+  return {
+    status: true,
+    reason: matchedOtpRow[0].status,
+    authToken: customToken,
+    isBlocked: false,
+    incorrectAttempts: matchedOtpRow[0].incorrectAttempts,
+  };
 };
 
 export const verifyLoginOtpResolvers = {

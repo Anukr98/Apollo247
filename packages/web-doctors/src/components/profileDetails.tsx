@@ -4,17 +4,21 @@ import React, { useEffect, useContext } from 'react';
 import { Theme, CircularProgress } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { useQuery, useApolloClient, useMutation } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { MyProfile } from 'components/MyProfile';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import Scrollbars from 'react-custom-scrollbars';
-import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/profiles';
+import { GET_DOCTOR_DETAILS_BY_ID, UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/profiles';
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
+import {
+  UpdateDoctorOnlineStatus,
+  UpdateDoctorOnlineStatusVariables,
+} from 'graphql/types/UpdateDoctorOnlineStatus';
 import { MyAccountFeeTab } from 'components/MyAccountFeeTab';
 import { MyAccountAvailabilityTab } from 'components/MyAccountAvailabilityTab';
 import { MyAccountSettings } from 'components/MyAccountSettings';
@@ -27,8 +31,9 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
 import { useAuth } from 'hooks/authHooks';
-import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { LoggedInUserType, DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
+import { ApolloError } from 'apollo-client';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -232,7 +237,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MyAccount: React.FC = (props) => {
   const classes = useStyles();
-  const { signOut } = useAuth();
+  const { currentPatient, signOut } = useAuth();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserId, currentUserType } = useAuthContext();
   const client = useApolloClient();
@@ -281,6 +286,15 @@ export const MyAccount: React.FC = (props) => {
   }, []);
 
   const doctorProfile = userDetails;
+  const mutationUpdateDoctorOnlineStatus = useMutation<
+    UpdateDoctorOnlineStatus,
+    UpdateDoctorOnlineStatusVariables
+  >(UPDATE_DOCTOR_ONLINE_STATUS, {
+    variables: {
+      doctorId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,
+    },
+  });
 
   const onNext = () => {};
   const onBack = () => {};
@@ -320,19 +334,7 @@ export const MyAccount: React.FC = (props) => {
                         )}
                       </div>
                       <div className={classes.doctorSectionLeft}>
-                        <Typography variant="h4">
-                          {doctorProfile!.salutation &&
-                            doctorProfile!.salutation!.charAt(0).toUpperCase()}
-                          {doctorProfile!.salutation!.slice(1).toLowerCase() + '.'}{' '}
-                          {`${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName!}`
-                            .length < 18
-                            ? `${doctorProfile!.firstName!.split(' ')[0]} ${
-                                doctorProfile!.lastName
-                              }`
-                            : `${
-                                doctorProfile!.firstName!.split(' ')[0]
-                              } ${doctorProfile!.lastName!.charAt(0)}.`}
-                        </Typography>
+                        <Typography variant="h4">{doctorProfile.displayName}</Typography>
                         <Typography variant="h6">
                           <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
                         </Typography>
@@ -551,9 +553,21 @@ export const MyAccount: React.FC = (props) => {
                     <Button
                       color="primary"
                       onClick={() => {
-                        signOut();
-                        localStorage.removeItem('loggedInMobileNumber');
-                        sessionStorage.removeItem('mobileNumberSession');
+                        if (currentPatient) {
+                          mutationUpdateDoctorOnlineStatus()
+                            .then((response) => {
+                              localStorage.removeItem('loggedInMobileNumber');
+                              sessionStorage.removeItem('mobileNumberSession');
+                              signOut();
+                            })
+                            .catch((e: ApolloError) => {
+                              console.log('An error occurred updating doctor status.');
+                            });
+                        } else {
+                          localStorage.removeItem('loggedInMobileNumber');
+                          sessionStorage.removeItem('mobileNumberSession');
+                          signOut();
+                        }
                       }}
                     >
                       Sign out

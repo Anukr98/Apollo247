@@ -33,27 +33,12 @@ import {
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 // import { ChatMessage } from "components/ChatRoom/ChatMessage";
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -275,6 +260,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       lineHeight: 1.85,
       backgroundColor: '#fff',
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
+    },
+    disabledButton: {
+      opacity: 0.7,
+      color: '#fc9916 !important',
     },
   };
 });
@@ -291,6 +283,7 @@ export const ChatRoom: React.FC = (props) => {
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
+  const [jrDoctorJoined, setJrDoctorJoined] = useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
@@ -304,23 +297,21 @@ export const ChatRoom: React.FC = (props) => {
   >(GET_DOCTOR_DETAILS_BY_ID, {
     variables: { id: doctorId },
   });
-
+  const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
   const rescheduleAPI = (bookRescheduleInput: BookRescheduleAppointmentInput) => {
-    client
-      .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
-        mutation: BOOK_APPOINTMENT_RESCHEDULE,
-        variables: {
-          bookRescheduleAppointmentInput: bookRescheduleInput,
-        },
-        fetchPolicy: 'no-cache',
-      })
+    bookAppointment({
+      variables: {
+        bookRescheduleAppointmentInput: bookRescheduleInput,
+      },
+      fetchPolicy: 'no-cache',
+    })
       .then((data: any) => {
         setIsPopoverOpen(false);
         setIsRescheduleSuccess(true);
         setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
       })
-      .catch((e: string) => {
-        alert(e);
+      .catch((e) => {
+        console.log(e);
       });
   };
 
@@ -373,11 +364,7 @@ export const ChatRoom: React.FC = (props) => {
     <LinearProgress />
   ) : (
     <div className={classes.root}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+      <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
@@ -396,6 +383,7 @@ export const ChatRoom: React.FC = (props) => {
                   doctorDetails={data}
                   appointmentId={appointmentId}
                   hasDoctorJoined={hasDoctorJoined}
+                  jrDoctorJoined={jrDoctorJoined}
                 />
               )}
             </div>
@@ -404,7 +392,11 @@ export const ChatRoom: React.FC = (props) => {
                 <span className={classes.caseNumber}>Case #362079 </span>
                 <div className={classes.headerActions}>
                   <AphButton
-                    className={classes.viewButton}
+                    disabled={jrDoctorJoined}
+                    classes={{
+                      root: classes.viewButton,
+                      disabled: classes.disabledButton,
+                    }}
                     onClick={() => {
                       nextAvailableSlot(params.doctorId, new Date());
                       setIsPopoverOpen(true);
@@ -422,6 +414,8 @@ export const ChatRoom: React.FC = (props) => {
                   hasDoctorJoined={(hasDoctorJoined: boolean) =>
                     setHasDoctorJoined(hasDoctorJoined)
                   }
+                  jrDoctorJoined={jrDoctorJoined}
+                  setJrDoctorJoined={setJrDoctorJoined}
                   isModalOpen={isModalOpen}
                   setIsModalOpen={setIsModalOpen}
                   nextSlotAvailable={nextSlotAvailable}

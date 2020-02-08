@@ -42,8 +42,7 @@ import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height } = Dimensions.get('window');
 
@@ -105,9 +104,9 @@ const GenderOptions: genderOptions[] = [
   {
     name: 'Female',
   },
-  {
-    name: 'Other',
-  },
+  // {
+  //   name: 'Other',
+  // },
 ];
 
 export interface SignUpProps extends NavigationScreenProps {}
@@ -122,10 +121,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [backPressCount, setbackPressCount] = useState<number>(0);
-  const [referral, setReferral] = useState<string>('');
+  // const [referral, setReferral] = useState<string>('');
   const { signOut, getPatientApiCall } = useAuth();
-  const { showAphAlert, hideAphAlert } = useUIElements();
-  const [referredBy, setReferredBy] = useState<string>();
+  // const [referredBy, setReferredBy] = useState<string>();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
@@ -182,6 +180,41 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       backHandler.remove();
     };
   }, [backPressCount]);
+
+  // const renderReferral = () => {
+  //   return (
+  //     <View
+  //       style={{
+  //         backgroundColor: theme.colors.SKY_BLUE,
+  //         marginHorizontal: -20,
+  //         paddingVertical: 20,
+  //         marginTop: 20,
+  //       }}
+  //     >
+  //       <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
+  //         <Gift style={{ marginRight: 20 }} />
+  //         <TextInputComponent
+  //           label={
+  //             referredBy
+  //               ? `${referredBy} Has Sent You A Referral Code!`
+  //               : 'Do You Have A Referral Code? (Optional)'
+  //           }
+  //           labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
+  //           placeholder={'Enter referral code'}
+  //           placeholderTextColor={'rgba(255,255,255,0.6)'}
+  //           inputStyle={{
+  //             borderColor: theme.colors.WHITE,
+  //             color: theme.colors.WHITE,
+  //           }}
+  //           conatinerstyles={{ width: '78%' }}
+  //           value={referral}
+  //           onChangeText={(text) => setReferral(text)}
+  //           icon={referredBy ? <Check /> : null}
+  //         />
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   const renderCard = () => {
     return (
@@ -281,7 +314,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             ))}
           </View>
           <TextInputComponent
-            label={'Email Address (Optional)'}
+            label={'Email Address'}
             placeholder={'name@email.com'}
             onChangeText={(text: string) => _setEmail(text)}
             value={email}
@@ -290,36 +323,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
-          <View
-            style={{
-              backgroundColor: theme.colors.SKY_BLUE,
-              marginHorizontal: -20,
-              paddingVertical: 20,
-              marginTop: 20,
-            }}
-          >
-            <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'center' }}>
-              <Gift style={{ marginRight: 20 }} />
-              <TextInputComponent
-                label={
-                  referredBy
-                    ? `${referredBy} Has Sent You A Referral Code!`
-                    : 'Do You Have A Referral Code? (Optional)'
-                }
-                labelStyle={{ ...theme.viewStyles.text('M', 14, '#ffffff') }}
-                placeholder={'Enter referral code'}
-                placeholderTextColor={'rgba(255,255,255,0.6)'}
-                inputStyle={{
-                  borderColor: theme.colors.WHITE,
-                  color: theme.colors.WHITE,
-                }}
-                conatinerstyles={{ width: '78%' }}
-                value={referral}
-                onChangeText={(text) => setReferral(text)}
-                icon={referredBy ? <Check /> : null}
-              />
-            </View>
-          </View>
+          {/* {renderReferral()} */}
         </Card>
       </View>
     );
@@ -330,7 +334,11 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+          {...keyboardVerticalOffset}
+        >
           <ScrollView
             style={styles.container} //extraScrollHeight={50}
             // scrollEnabled={true}
@@ -409,26 +417,17 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('gotIt', 'false'),
                       CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       setTimeout(() => {
-                        showAphAlert!({
-                          title: `Hi ${g(currentPatient, 'firstName') || ''},`,
-                          description:
-                            'Welcome to Apollo24X7. We’re glad you’re here!\nConsult online with our top Apollo doctors now!',
-                          unDismissable: true,
-                          onPressOk: () => {
-                            hideAphAlert!();
-                            props.navigation.dispatch(
-                              StackActions.reset({
-                                index: 0,
-                                key: null,
-                                actions: [
-                                  NavigationActions.navigate({
-                                    routeName: AppRoutes.ConsultRoom,
-                                  }),
-                                ],
-                              })
-                            );
-                          },
-                        });
+                        props.navigation.dispatch(
+                          StackActions.reset({
+                            index: 0,
+                            key: null,
+                            actions: [
+                              NavigationActions.navigate({
+                                routeName: AppRoutes.ConsultRoom,
+                              }),
+                            ],
+                          })
+                        );
                       }, 500))
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}

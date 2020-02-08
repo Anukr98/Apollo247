@@ -20,21 +20,21 @@ import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAc
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoom />,
   PATIENTS: <MyHealth />,
-  INBOX: <InboxIcon />,
+  // INBOX: <InboxIcon />,
   'MY ACCOUNT': <Person />,
 };
 
 const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoomFocused />,
   PATIENTS: <MyHealthFocused />,
-  INBOX: <InboxIcon />,
+  // INBOX: <InboxIcon />,
   'MY ACCOUNT': <PersonFocused />,
 };
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: Appointments,
   PATIENTS: Patients,
-  INBOX: Inbox,
+  // INBOX: Inbox,
   'MY ACCOUNT': BasicAccount,
 };
 

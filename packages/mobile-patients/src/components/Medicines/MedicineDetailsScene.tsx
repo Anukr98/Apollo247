@@ -17,7 +17,10 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getDeliveryTime,
   getMedicineDetailsApi,
@@ -52,6 +55,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import Geolocation from '@react-native-community/geolocation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -210,7 +214,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   useEffect(() => {
     if (!(locationDetails && locationDetails.pincode)) {
-      navigator.geolocation.getCurrentPosition(
+      Geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           getPlaceInfoByLatLng(latitude, longitude)
@@ -228,9 +232,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   ).long_name;
                   setpincode(_pincode || '');
                 }
-              } catch {}
+              } catch (e) {
+                CommonBugFender('MedicineDetailsScene_getPlaceInfoByLatLng_try', e);
+              }
             })
             .catch((error) => {
+              CommonBugFender('MedicineDetailsScene_getPlaceInfoByLatLng', error);
               console.log(error, 'geocode error');
             });
         },
@@ -362,6 +369,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         setLoading(false);
       })
       .catch((err) => {
+        CommonBugFender('MedicineDetailsScene_getMedicineDetailsApi', err);
         aphConsole.log('MedicineDetailsScene err\n', err);
         setApiError(!!err);
         setLoading(false);
@@ -407,6 +415,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       prescriptionRequired: is_prescription_required == '1',
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
+      isInStock: true,
     });
   };
 
@@ -447,11 +456,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             }
           }
         } catch (error) {
+          CommonBugFender('MedicineDetailsScene_fetchDeliveryTime_try', error);
           console.log(error);
         }
         setshowDeliverySpinner(false);
       })
       .catch((err) => {
+        CommonBugFender('MedicineDetailsScene_fetchDeliveryTime', err);
         aphConsole.log('fetchDeliveryTime err\n', { err });
         handleGraphQlError(err);
         setshowDeliverySpinner(false);
@@ -476,10 +487,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             }
           }
         } catch (error) {
+          CommonBugFender('MedicineDetailsScene_fetchSubstitutes_try', error);
           console.log(error);
         }
       })
-      .catch((err) => console.log({ err }));
+      .catch((err) => {
+        CommonBugFender('MedicineDetailsScene_fetchSubstitutes', err);
+        console.log({ err });
+      });
   };
 
   const renderBottomButtons = () => {

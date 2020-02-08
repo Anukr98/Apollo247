@@ -300,6 +300,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         isConsultStarted
         isJdQuestionsComplete
         isSeniorConsultStarted
+        symptoms
         doctorInfo {
           id
           salutation
@@ -327,6 +328,146 @@ export const GET_PATIENT_APPOINTMENTS = gql`
               streetLine3
               city
             }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PATIENT_ALL_APPOINTMENTS = gql`
+  query getPatientAllAppointments($patientId: String!) {
+    getPatientAllAppointments(patientId: $patientId) {
+      appointments {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        bookingDate
+        rescheduleCount
+        isFollowUp
+        appointmentState
+        displayId
+        isConsultStarted
+        isSeniorConsultStarted
+        isJdQuestionsComplete
+        symptoms
+        doctorInfo {
+          awards
+          city
+          country
+          dateOfBirth
+          displayName
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firebaseToken
+          firstName
+          fullName
+          gender
+          isActive
+          id
+          languages
+          lastName
+          mobileNumber
+          onlineConsultationFees
+          onlineStatus
+          photoUrl
+          physicalConsultationFees
+          qualification
+          registrationNumber
+          salutation
+          signature
+          specialization
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          thumbnailUrl
+          zip
+          bankAccount {
+            accountHolderName
+            accountNumber
+            accountType
+            bankName
+            city
+            id
+            IFSCcode
+            state
+            streetLine1
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
+          doctorSecretary {
+            secretary {
+              id
+              name
+              mobileNumber
+              isActive
+            }
+          }
+          packages {
+            fees
+            id
+            name
+          }
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          starTeam {
+            isActive
           }
         }
       }
@@ -1151,6 +1292,8 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         devliveryCharges
         estimatedAmount
         prescriptionImageUrl
+        orderTat
+        patientAddressId
         medicineOrdersStatus {
           id
           orderStatus
@@ -1373,11 +1516,18 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         labTestReferredBy
         additionalNotes
         testResultPrismFileIds
+        observation
         labTestResultParameters {
           parameterName
           unit
           result
           range
+          setOutOfRange
+          setResultDate
+          setUnit
+          setParameterName
+          setRange
+          setResult
         }
         departmentName
         signingDocName
@@ -1732,6 +1882,29 @@ export const SEARCH_DIAGNOSTICS = gql`
   }
 `;
 
+export const SEARCH_DIAGNOSTICS_BY_ID = gql`
+  query searchDiagnosticsById($itemIds: String) {
+    searchDiagnosticsById(itemIds: $itemIds) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
 export const GET_DIAGNOSTICS_CITES = gql`
   query getDiagnosticsCites($patientId: String, $cityName: String) {
     getDiagnosticsCites(patientId: $patientId, cityName: $cityName) {
@@ -1832,6 +2005,18 @@ export const VERIFY_LOGIN_OTP = gql`
       status
       authToken
       isBlocked
+      reason
+      incorrectAttempts
+    }
+  }
+`;
+
+export const RESEND_OTP = gql`
+  query resendOtp($mobileNumber: String!, $loginType: LOGIN_TYPE!, $id: String!) {
+    resendOtp(mobileNumber: $mobileNumber, loginType: $loginType, id: $id) {
+      status
+      message
+      loginId
     }
   }
 `;

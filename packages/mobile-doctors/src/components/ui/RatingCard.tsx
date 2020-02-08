@@ -1,4 +1,4 @@
-import { theme } from '@aph/mobile-doctors//src/theme/theme';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import {
   Great,
   GreatSelected,

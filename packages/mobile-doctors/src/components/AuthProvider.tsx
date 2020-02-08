@@ -3,14 +3,22 @@ import {
   GetDoctorDetails_getDoctorDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
-import { ApolloLink } from 'apollo-link';
+import { setContext } from 'apollo-link-context';
+import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import firebase, { RNFirebase } from 'react-native-firebase';
+import fetch from 'node-fetch';
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
+
+function wait<R, E>(promise: Promise<R>): [R, E] {
+  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+}
 
 export interface AuthContextProps {
   analytics: RNFirebase.Analytics | null;
@@ -19,9 +27,11 @@ export interface AuthContextProps {
   verifyOtp: ((otp: string) => Promise<GetDoctorDetails | unknown>) | null;
   clearFirebaseUser: (() => Promise<unknown>) | null;
   doctorDetails: GetDoctorDetails_getDoctorDetails | null;
-  setIsDelegateLogin: ((status: boolean) => void) | null;
-  isDelegateLogin: boolean;
   setDoctorDetails: ((doctorDetails: GetDoctorDetails_getDoctorDetails | null) => void) | null;
+  getDoctorDetailsApi: (() => Promise<boolean>) | null;
+  // signOut: (() => void) | null;
+  getDoctorDetailsError: boolean;
+  setDoctorDetailsError: (() => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -31,9 +41,11 @@ export const AuthContext = React.createContext<AuthContextProps>({
   verifyOtp: null,
   clearFirebaseUser: null,
   doctorDetails: null,
-  isDelegateLogin: false,
-  setIsDelegateLogin: null,
   setDoctorDetails: null,
+  getDoctorDetailsApi: null,
+  getDoctorDetailsError: false,
+  // signOut: null,
+  setDoctorDetailsError: null,
 });
 
 export const AuthProvider: React.FC = (props) => {
@@ -45,58 +57,58 @@ export const AuthProvider: React.FC = (props) => {
   const [doctorDetails, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>(
     null
   );
-  const [isDelegateLogin, setIsDelegateLogin] = useState<boolean>(false);
+  const [getDoctorDetailsError, setDoctorDetailsError] = useState<boolean>(false);
 
   const analytics = firebase.analytics();
+  const auth = firebase.auth();
 
-  const buildApolloClient = (authToken: string) => {
-    console.log('authToken in buildApolloClient', authToken);
-    const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
-    const authLink = new ApolloLink((operation, forward) => {
-      // Get the authentication token from context if it exists
-      // Use the setContext method to set the HTTP headers.
-      operation.setContext({
-        headers: {
-          Authorization: authToken,
-        },
-      });
-      // Call the next link in the middleware chain.
-      return forward!(operation);
+  let apolloClient: ApolloClient<NormalizedCacheObject>;
+
+  const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+    const errorLink = onError((error) => {
+      console.log('-------error-------', error);
+      const { graphQLErrors, operation, forward } = error;
+      if (graphQLErrors) {
+        const unauthenticatedError = graphQLErrors.some(
+          (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+        );
+        if (unauthenticatedError) {
+          handleUnauthenticated();
+          console.log('-------unauthenticatedError-------', unauthenticatedError);
+        }
+      }
+      return forward(operation);
     });
-    return new ApolloClient({
-      link: authLink.concat(httpLink),
-      cache: new InMemoryCache(),
-      defaultOptions: {
-        query: {
-          fetchPolicy: 'no-cache',
-        },
-        mutate: {
-          fetchPolicy: 'no-cache',
-        },
-        watchQuery: {
-          fetchPolicy: 'no-cache',
-        },
+    const authLink = setContext(async (_, { headers }) => ({
+      headers: {
+        ...headers,
+        Authorization: authToken,
       },
+    }));
+    const httpLink = createHttpLink({
+      uri: apiRoutes.graphql(),
+    });
+
+    const link = errorLink.concat(authLink).concat(httpLink);
+    const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
+    return new ApolloClient({
+      link,
+      cache,
     });
   };
 
-  const apolloClient = buildApolloClient(authToken);
+  apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
 
-  const sendOtp = (mobileNumber: string) => {
-    console.log('sendOtp triggered');
+  const sendOtp = (customToken: string) => {
     return new Promise(async (resolve, reject) => {
-      firebase
-        .auth()
-        .signInWithPhoneNumber(`+91${mobileNumber}`)
-        .then((confirmResult) => {
-          console.log('sendOtp then', confirmResult);
-          setOtpConfirmResult(confirmResult);
-          resolve(confirmResult);
-        })
-        .catch((e) => {
-          console.log('sendOtp catch', e);
-          reject(e);
-        });
+      const [phoneAuthResult, phoneAuthError] = await wait(auth.signInWithCustomToken(customToken));
+      if (phoneAuthError) {
+        reject(phoneAuthError);
+        return;
+      }
+      console.log(phoneAuthResult, 'phoneAuthResult');
+
+      resolve(phoneAuthResult);
     });
   };
 
@@ -133,7 +145,6 @@ export const AuthProvider: React.FC = (props) => {
         .then((_) => {
           setFirebaseUser(null);
           setDoctorDetails(null);
-          setIsDelegateLogin(false);
           setAuthToken('');
           resolve();
         })
@@ -142,6 +153,17 @@ export const AuthProvider: React.FC = (props) => {
         });
     });
   };
+
+  // const signOut = useCallback(() => {
+  //   try {
+  //     auth.signOut();
+  //     setAuthToken('');
+  //     setDoctorDetails(null);
+  //     console.log('authprovider signOut');
+  //   } catch (error) {
+  //     console.log('signOut error', error);
+  //   }
+  // }, [auth]);
 
   // listen to firebase auth
   useEffect(() => {
@@ -163,6 +185,65 @@ export const AuthProvider: React.FC = (props) => {
     });
   }, []);
 
+  useEffect(() => {
+    getFirebaseToken();
+  }, [auth]);
+
+  const getFirebaseToken = () => {
+    let authStateRegistered = false;
+    console.log('authprovider');
+
+    auth.onAuthStateChanged(async (user) => {
+      console.log('authprovider', authStateRegistered, user);
+
+      if (user && !authStateRegistered) {
+        console.log('authprovider login');
+        authStateRegistered = true;
+
+        const jwt = await user.getIdToken(true).catch((error) => {
+          setAuthToken('');
+          authStateRegistered = false;
+          console.log('authprovider error', error);
+          throw error;
+        });
+
+        console.log('authprovider jwt', jwt);
+        setAuthToken(jwt);
+
+        apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
+        authStateRegistered = false;
+        setAuthToken(jwt);
+        getNetStatus().then((item) => {
+          item && getDoctorDetailsApi();
+        });
+      }
+    });
+  };
+
+  const getDoctorDetailsApi = async () => {
+    return new Promise((resolve, reject) => {
+      apolloClient
+        .query<GetDoctorDetails>({
+          query: GET_DOCTOR_DETAILS,
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          console.log('GetDoctorDetails', data);
+          if (data) {
+            setDoctorDetails(data.getDoctorDetails);
+            setDoctorDetailsError(false);
+            resolve(true);
+          }
+        })
+        .catch(async (error) => {
+          console.log('GetDoctorDetails error', error);
+          setDoctorDetailsError(true);
+          clearFirebaseUser();
+          reject(false);
+        });
+    });
+  };
+
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>
@@ -175,8 +256,10 @@ export const AuthProvider: React.FC = (props) => {
             clearFirebaseUser,
             setDoctorDetails,
             doctorDetails,
-            setIsDelegateLogin,
-            isDelegateLogin,
+            getDoctorDetailsApi,
+            // signOut,
+            getDoctorDetailsError,
+            setDoctorDetailsError,
           }}
         >
           {props.children}

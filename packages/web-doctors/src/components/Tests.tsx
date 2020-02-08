@@ -64,33 +64,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: any | null,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion!.itemName, query);
-  const parts = parse(suggestion!.itemName, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span
-          key={part.text}
-          style={{
-            fontWeight: part.highlight ? 500 : 400,
-            whiteSpace: 'pre',
-          }}
-          title={suggestion!.itemName}
-        >
-          {part.text.length > 46
-            ? part.text.substring(0, 45).toLowerCase() + '...'
-            : part.text.toLowerCase()}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </div>
-  );
-}
 const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
@@ -309,6 +282,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       paddingLeft: 8,
+      paddingTop: 11,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -318,7 +292,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     addedList: {
       '& li': {
-        padding: '10px 50px 10px 0 !important',
+        padding: '10px 60px 10px 0 !important',
         wordWrap: 'break-word',
       },
       '& li:last-child': {
@@ -425,7 +399,7 @@ const useStyles = makeStyles((theme: Theme) =>
     searchFrom: {
       padding: 0,
       position: 'relative',
-      minHeight: 300,
+      minHeight: 400,
     },
   })
 );
@@ -591,6 +565,37 @@ export const Tests: React.FC = () => {
       [itemname]: newValue,
     });
   };
+
+  function renderSuggestion(
+    suggestion: any | null,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(suggestion!.itemName, query);
+    const parts = parse(suggestion!.itemName, matches);
+
+    return (
+      otherDiagnostic.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+              title={suggestion!.itemName}
+            >
+              {part.text.length > 46
+                ? part.text.substring(0, 45).toLowerCase() + '...'
+                : part.text.toLowerCase()}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
+
   const [testLoader, setTestLoader] = useState<boolean>(false);
   const [isSmartTestsDialogOpen, setIsSmartTestsDialogOpen] = React.useState<boolean>(false);
   const getTest = () => {

@@ -17,13 +17,15 @@ import { Overlay } from 'react-native-elements';
 import { ScrollView } from 'react-navigation';
 
 export interface AphOverlayProps {
-  heading: string;
+  heading?: string;
   isVisible: boolean;
   onClose: () => void;
   loading?: boolean;
   headingViewStyle?: StyleProp<ViewStyle>;
   headingTextStyle?: StyleProp<TextStyle>;
   overlayStyle?: StyleProp<ViewStyle>;
+  leftIcon?: React.ReactNode;
+  customHeader?: ReactNode;
 }
 
 export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
@@ -32,10 +34,11 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
       <View
         style={{
           alignSelf: 'flex-end',
-          backgroundColor: 'white',
+          backgroundColor: '#ffffff',
           marginBottom: 16,
           marginRight: 2,
           borderRadius: 14,
+          overflow: 'hidden',
         }}
       >
         <TouchableOpacity activeOpacity={1} onPress={() => props.onClose()}>
@@ -46,6 +49,10 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
   };
 
   const renderHeader = () => {
+    const { leftIcon, customHeader } = props;
+    if (customHeader) {
+      return customHeader;
+    }
     return (
       <View
         style={[
@@ -54,32 +61,41 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
             zIndex: 1,
             borderTopRightRadius: 10,
             borderTopLeftRadius: 10,
+            overflow: 'hidden',
             backgroundColor: theme.colors.WHITE,
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             paddingVertical: 18,
             width: '100%',
+            flexDirection: 'row',
+            paddingHorizontal: 20,
           },
           props.headingViewStyle,
         ]}
       >
+        <View>
+          <TouchableOpacity onPress={() => props.onClose()}>
+            {leftIcon ? leftIcon : props.leftIcon}
+          </TouchableOpacity>
+        </View>
         <Text
           style={[
             {
               ...theme.fonts.IBMPlexSansMedium(16),
               color: theme.colors.LIGHT_BLUE,
+              textAlign: 'center',
+              marginHorizontal: 20,
             },
             props.headingTextStyle,
           ]}
+          numberOfLines={1}
         >
           {props.heading}
         </Text>
+        <View></View>
       </View>
     );
   };
-
-  // const keyboardAvoidingViewProps =
-  //   Platform.OS == 'ios' ? { behavior: 'padding', keyboardVerticalOffset: 35 } : {};
 
   return (
     <Overlay
@@ -120,7 +136,6 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
           }}
         >
           {renderCloseIcon()}
-          {renderHeader()}
           <KeyboardAvoidingView style={{ flex: 1 }}>
             <ScrollView
               bounces={false}
@@ -129,8 +144,14 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
                 backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
                 borderBottomLeftRadius: 10,
                 borderBottomRightRadius: 10,
+                overflow: 'hidden',
+                borderTopRightRadius: 10,
+                borderTopLeftRadius: 10,
               }}
+              stickyHeaderIndices={props.heading ? [0] : undefined}
             >
+              {(props.heading || props.customHeader) && renderHeader()}
+
               {props.children}
             </ScrollView>
           </KeyboardAvoidingView>

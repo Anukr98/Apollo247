@@ -14,20 +14,8 @@ import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    headerSticky: {
-      position: 'fixed',
+    root: {
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -400,15 +388,11 @@ export const MedicineDetails: React.FC = (props) => {
       .replace(/&amp;nbsp;/g, ' ')
       .replace(/&amp;/g, '&');
   return (
-    <div className={classes.welcome}>
+    <div className={classes.root}>
       <MedicinesCartContext.Consumer>
         {() => (
           <>
-            <div className={classes.headerSticky}>
-              <div className={classes.container}>
-                <Header />
-              </div>
-            </div>
+            <Header />
             <div className={classes.container}>
               <div className={classes.medicineDetailsPage}>
                 <div className={classes.breadcrumbs}>

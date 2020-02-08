@@ -36,9 +36,14 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useAppCommonData } from '../AppCommonDataProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -81,6 +86,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
   const { showAphAlert } = useUIElements();
+  const { VirtualConsultationFee } = useAppCommonData();
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -102,9 +108,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           if (!nextSlot && data[0]!.physicalAvailableSlot) {
             tabs.length > 1 && setselectedTab(tabs[1].title);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('ConsultOverlay_getNextAvailableSlots_try', e);
+        }
       })
       .catch((e: any) => {
+        CommonBugFender('ConsultOverlay_getNextAvailableSlots', e);
         console.log('error', e);
       });
   }, []);
@@ -140,6 +149,14 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
     };
+
+    const price =
+      VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
+      Number(VirtualConsultationFee) > 0
+        ? VirtualConsultationFee
+        : props.doctor!.onlineConsultationFees;
+
+    console.log('price', price);
     client
       .mutate<bookAppointment>({
         mutation: BOOK_APPOINTMENT,
@@ -155,16 +172,19 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
           price:
             tabs[0].title === selectedTab
-              ? 1 //props.doctor!.onlineConsultationFees
+              ? price //1 //props.doctor!.onlineConsultationFees
               : props.doctor!.physicalConsultationFees,
         });
       })
       .catch((error) => {
+        CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
         setshowSpinner(false);
         let message = '';
         try {
           message = error.message.split(':')[1].trim();
-        } catch (error) {}
+        } catch (error) {
+          CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
+        }
         if (
           message == 'APPOINTMENT_EXIST_ERROR' ||
           message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
@@ -193,46 +213,51 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           : props.doctor!.physicalConsultationFees
       }`
     );
-    getNetStatus().then((status) => {
-      // setdisablePay(true);
-      if (status) {
-        if (props.FollowUp == false) {
-          const timeSlot =
-            tabs[0].title === selectedTab &&
-            isConsultOnline &&
-            availableInMin! <= 60 &&
-            0 < availableInMin!
-              ? nextAvailableSlot
-              : selectedTimeSlot;
-          const input = {
-            patientId: props.patientId,
-            doctorId: props.doctorId,
-            appointmentDateTime: timeSlot,
-            appointmentType: APPOINTMENT_TYPE.ONLINE,
-            hospitalId: '',
-            followUpParentId: props.appointmentId,
-          };
-          client
-            .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
-              mutation: BOOK_FOLLOWUP_APPOINTMENT,
-              variables: {
-                followUpAppointmentInput: input,
-              },
-              fetchPolicy: 'no-cache',
-            })
-            .then((_data: any) => {
-              props.navigation.navigate(AppRoutes.Consult);
-            })
-            .catch((e: any) => {
-              handleGraphQlError(e);
-            });
+    getNetStatus()
+      .then((status) => {
+        // setdisablePay(true);
+        if (status) {
+          if (props.FollowUp == false) {
+            const timeSlot =
+              tabs[0].title === selectedTab &&
+              isConsultOnline &&
+              availableInMin! <= 60 &&
+              0 < availableInMin!
+                ? nextAvailableSlot
+                : selectedTimeSlot;
+            const input = {
+              patientId: props.patientId,
+              doctorId: props.doctorId,
+              appointmentDateTime: timeSlot,
+              appointmentType: APPOINTMENT_TYPE.ONLINE,
+              hospitalId: '',
+              followUpParentId: props.appointmentId,
+            };
+            client
+              .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
+                mutation: BOOK_FOLLOWUP_APPOINTMENT,
+                variables: {
+                  followUpAppointmentInput: input,
+                },
+                fetchPolicy: 'no-cache',
+              })
+              .then((_data: any) => {
+                props.navigation.navigate(AppRoutes.Consult);
+              })
+              .catch((e: any) => {
+                CommonBugFender('ConsultOverlay_onPressPay', e);
+                handleGraphQlError(e);
+              });
+          } else {
+            onSubmitBookAppointment();
+          }
         } else {
-          onSubmitBookAppointment();
+          setshowOfflinePopup(true);
         }
-      } else {
-        setshowOfflinePopup(true);
-      }
-    });
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultOverlay_getNetStatus_onPressPay', e);
+      });
   };
 
   const renderBottomButton = () => {
@@ -250,11 +275,38 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             tabs[0].title === selectedTab ? (
               <Text>
                 PAY{' '}
-                <Text style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}>
-                  (Rs. 999)
-                </Text>{' '}
-                Rs. 1
-              </Text> //props.doctor!.onlineConsultationFees
+                {Number(VirtualConsultationFee) <= 0 ||
+                VirtualConsultationFee === props.doctor!.onlineConsultationFees ? (
+                  <Text>{`Rs. ${props.doctor!.onlineConsultationFees}`}</Text>
+                ) : (
+                  <>
+                    <Text
+                      style={{
+                        textDecorationLine: 'line-through',
+                        textDecorationStyle: 'solid',
+                      }}
+                    >
+                      {`(Rs. ${props.doctor!.onlineConsultationFees})`}
+                    </Text>
+                    <Text> Rs. {VirtualConsultationFee}</Text>
+                  </>
+                )}
+                {/* {VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
+                  Number(VirtualConsultationFee) > 0 && (
+                    <>
+                      <Text
+                        style={{
+                          textDecorationLine: 'line-through',
+                          textDecorationStyle: 'solid',
+                        }}
+                      >
+                        {`(Rs. ${props.doctor!.onlineConsultationFees})`}
+                      </Text>
+                      <Text> </Text>
+                    </>
+                  )}
+                Rs. {VirtualConsultationFee} */}
+              </Text>
             ) : (
               `PAY Rs. ${props.doctor!.physicalConsultationFees}`
             )
@@ -276,7 +328,27 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       </StickyBottomComponent>
     );
   };
-
+  const renderDisclamer = () => {
+    return (
+      <View
+        style={{
+          margin: 20,
+          padding: 12,
+          borderRadius: 10,
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+        }}
+      >
+        <Text
+          style={[
+            theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 16, 0),
+            { textAlign: 'justify' },
+          ]}
+        >
+          {string.common.DisclaimerText}
+        </Text>
+      </View>
+    );
+  };
   return (
     <View
       style={{
@@ -321,7 +393,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         >
           <View
             style={{
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              backgroundColor: '#f7f8f5',
               marginTop: 16,
               width: width - 40,
               height: 'auto',
@@ -348,24 +420,27 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             />
             <ScrollView bounces={false} ref={scrollViewRef}>
               {selectedTab === tabs[0].title ? (
-                <ConsultOnline
-                  doctor={props.doctor}
-                  date={date}
-                  setDate={(date) => {
-                    setDate(date);
-                  }}
-                  nextAvailableSlot={nextAvailableSlot}
-                  setNextAvailableSlot={setNextAvailableSlot}
-                  isConsultOnline={isConsultOnline}
-                  setisConsultOnline={setisConsultOnline}
-                  setavailableInMin={setavailableInMin}
-                  availableInMin={availableInMin}
-                  setselectedTimeSlot={setselectedTimeSlot}
-                  selectedTimeSlot={selectedTimeSlot}
-                  setshowSpinner={setshowSpinner}
-                  scrollToSlots={scrollToSlots}
-                  setshowOfflinePopup={setshowOfflinePopup}
-                />
+                <>
+                  <ConsultOnline
+                    doctor={props.doctor}
+                    date={date}
+                    setDate={(date) => {
+                      setDate(date);
+                    }}
+                    nextAvailableSlot={nextAvailableSlot}
+                    setNextAvailableSlot={setNextAvailableSlot}
+                    isConsultOnline={isConsultOnline}
+                    setisConsultOnline={setisConsultOnline}
+                    setavailableInMin={setavailableInMin}
+                    availableInMin={availableInMin}
+                    setselectedTimeSlot={setselectedTimeSlot}
+                    selectedTimeSlot={selectedTimeSlot}
+                    setshowSpinner={setshowSpinner}
+                    scrollToSlots={scrollToSlots}
+                    setshowOfflinePopup={setshowOfflinePopup}
+                  />
+                  {renderDisclamer()}
+                </>
               ) : (
                 <ConsultPhysical
                   doctor={props.doctor}
@@ -386,7 +461,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
-              <View style={{ height: 96 }} />
+              <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
           </View>

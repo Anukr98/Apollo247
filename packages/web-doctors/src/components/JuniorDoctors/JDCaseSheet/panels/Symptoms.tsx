@@ -6,6 +6,7 @@ import { AphTextField, AphButton, AphDialogTitle, AphDialog } from '@aph/web-ui-
 import { isEmpty, trim } from 'lodash';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -135,6 +136,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginRight: 20,
     minWidth: 'auto',
     borderRadius: 10,
+    padding: '8px 13px 8px 13px',
     '&:hover': {
       backgroundColor: 'transparent',
       color: '#fc9916',
@@ -144,9 +146,14 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderRadius: 10,
     minWidth: 200,
     fontSize: 14,
+    fontWeight: 600,
+    padding: '8px 13px 8px 13px',
   },
   dialogContent: {
-    padding: 20,
+    padding: '20px 5px 0 20px',
+  },
+  customScroll: {
+    paddingRight: 20,
   },
   formSection: {
     '& label': {
@@ -421,110 +428,114 @@ export const Symptoms: React.FC = (props) => {
             <img src={require('images/ic_cross.svg')} alt="" />
           </AphButton>
         </AphDialogTitle>
-        <div className={classes.dialogContent}>
-          <div className={classes.formSection}>
-            <div className={classes.formGroup}>
-              <label>Complaint</label>
-              <AphTextField
-                autoFocus
-                placeholder=""
-                value={symptom}
-                className={classes.formHeader}
-                onChange={(event) => {
-                  setSymptom(event.target.value);
-                  clearError();
-                }}
-                error={errorState.symptomError}
-              />
-              {errorState.symptomError && (
-                <FormHelperText
-                  className={classes.helpText}
-                  component="div"
-                  error={errorState.symptomError}
-                >
-                  Please Enter Complaint(two complaint names can't be same)
-                </FormHelperText>
-              )}
-            </div>
-            <div className={classes.formSubGroup}>
-              <div className={classes.formGroup}>
-                <label>Since?</label>
-                <AphTextField
-                  placeholder=""
-                  value={since}
-                  onChange={(event) => {
-                    setSince(event.target.value);
-                    clearError();
-                  }}
-                  error={errorState.sinceError}
-                />
-                {errorState.sinceError && (
-                  <FormHelperText
-                    className={classes.helpText}
-                    component="div"
-                    error={errorState.sinceError}
-                  >
-                    Please Enter Since
-                  </FormHelperText>
-                )}
-              </div>
-              <div className={classes.formGroup}>
-                <label>How often?</label>
-                <AphTextField
-                  placeholder=""
-                  value={howOften}
-                  onChange={(event) => {
-                    setHowOften(event.target.value);
-                    clearError();
-                  }}
-                  error={errorState.howOfftenError}
-                />
-                {errorState.howOfftenError && (
-                  <FormHelperText
-                    className={classes.helpText}
-                    component="div"
-                    error={errorState.howOfftenError}
-                  >
-                    Please Enter How Often
-                  </FormHelperText>
-                )}
-              </div>
-              <div className={classes.formGroup}>
-                <label>Severity</label>
-                <AphTextField
-                  placeholder=""
-                  value={severity}
-                  onChange={(event) => {
-                    setSeverity(event.target.value);
-                    clearError();
-                  }}
-                  error={errorState.severityError}
-                />
-                {errorState.severityError && (
-                  <FormHelperText
-                    className={classes.helpText}
-                    component="div"
-                    error={errorState.severityError}
-                  >
-                    Please Enter Severity
-                  </FormHelperText>
-                )}
-              </div>
-              <div className={classes.formGroup}>
-                <label>Details</label>
-                <AphTextField
-                  placeholder="Enter the details here"
-                  value={details}
-                  onChange={(event) => {
-                    setDetails(event.target.value);
-                    clearError();
-                  }}
-                  multiline
-                />
+        <Scrollbars autoHide={true} style={{ height: 'calc(63vh' }}>
+          <div className={classes.customScroll}>
+            <div className={classes.dialogContent}>
+              <div className={classes.formSection}>
+                <div className={classes.formGroup}>
+                  <label>Complaint</label>
+                  <AphTextField
+                    autoFocus
+                    placeholder=""
+                    value={symptom}
+                    className={classes.formHeader}
+                    onChange={(event) => {
+                      setSymptom(event.target.value);
+                      clearError();
+                    }}
+                    error={errorState.symptomError}
+                  />
+                  {errorState.symptomError && (
+                    <FormHelperText
+                      className={classes.helpText}
+                      component="div"
+                      error={errorState.symptomError}
+                    >
+                      Please Enter Complaint(two complaint names can't be same)
+                    </FormHelperText>
+                  )}
+                </div>
+                <div className={classes.formSubGroup}>
+                  <div className={classes.formGroup}>
+                    <label>Since?</label>
+                    <AphTextField
+                      placeholder=""
+                      value={since}
+                      onChange={(event) => {
+                        setSince(event.target.value);
+                        clearError();
+                      }}
+                      error={errorState.sinceError}
+                    />
+                    {errorState.sinceError && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.sinceError}
+                      >
+                        Please Enter Since
+                      </FormHelperText>
+                    )}
+                  </div>
+                  <div className={classes.formGroup}>
+                    <label>How often?</label>
+                    <AphTextField
+                      placeholder=""
+                      value={howOften}
+                      onChange={(event) => {
+                        setHowOften(event.target.value);
+                        clearError();
+                      }}
+                      error={errorState.howOfftenError}
+                    />
+                    {errorState.howOfftenError && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.howOfftenError}
+                      >
+                        Please Enter How Often
+                      </FormHelperText>
+                    )}
+                  </div>
+                  <div className={classes.formGroup}>
+                    <label>Severity</label>
+                    <AphTextField
+                      placeholder=""
+                      value={severity}
+                      onChange={(event) => {
+                        setSeverity(event.target.value);
+                        clearError();
+                      }}
+                      error={errorState.severityError}
+                    />
+                    {errorState.severityError && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.severityError}
+                      >
+                        Please Enter Severity
+                      </FormHelperText>
+                    )}
+                  </div>
+                  <div className={classes.formGroup}>
+                    <label>Details</label>
+                    <AphTextField
+                      placeholder="Enter the details here"
+                      value={details}
+                      onChange={(event) => {
+                        setDetails(event.target.value);
+                        clearError();
+                      }}
+                      multiline
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Scrollbars>
         <div className={classes.dialogActions}>
           <AphButton
             className={classes.cancelBtn}

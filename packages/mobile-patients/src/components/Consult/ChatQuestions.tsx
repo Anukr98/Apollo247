@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ChatSend,
   DropdownGreen,
+  SearchSendIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -18,6 +19,8 @@ import {
   TextStyle,
   View,
   TextInputProps,
+  TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
@@ -26,6 +29,8 @@ import { Button } from '../ui/Button';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { useUIElements } from '../UIElementsProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -109,6 +114,35 @@ const styles = StyleSheet.create({
   placeholderTextStyle: {
     ...theme.viewStyles.text('M', 18, '#01475b'),
   },
+  paginationStyle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    width: width - 60,
+    paddingLeft: 20,
+  },
+  pastDotStyle: {
+    height: 6,
+    width: 6,
+    backgroundColor: theme.colors.APP_GREEN,
+    borderRadius: 3,
+    marginHorizontal: 2,
+  },
+  nextDotStyle: {
+    backgroundColor: theme.colors.SKY_BLUE,
+    opacity: 0.4,
+  },
+  activeDotStyle: {
+    height: 8,
+    width: 8,
+    backgroundColor: theme.colors.SKY_BLUE,
+    borderRadius: 4,
+    marginHorizontal: 1,
+  },
 });
 
 type Slide = {
@@ -120,15 +154,16 @@ type Slide = {
   icon?: React.ReactNode;
   buttonText?: string[];
   inputPlacerholder?: string;
+  basedonDropValue?: { inputHolder: string; dropValue: string }[];
   dropDown?: { key: string; value: string }[];
   inputData: string[];
   isDependent?: boolean;
   dependentValue?: string;
   keyboardType?: TextInputProps['keyboardType'];
   validation?: RegExp;
+  onSubmitValidation?: RegExp[];
+  validationMessage?: string;
 };
-
-const style = { height: 56, width: 56 };
 
 const slides: Slide[] = [
   {
@@ -140,8 +175,18 @@ const slides: Slide[] = [
       { key: '1', value: 'cm' },
       { key: '2', value: 'ft' },
     ],
+    basedonDropValue: [
+      { inputHolder: 'Enter height…', dropValue: 'cm' },
+      { inputHolder: 'eg. 5’ 8”', dropValue: 'ft' },
+    ],
     inputData: ['value', 'drop'],
-    keyboardType: 'number-pad',
+    keyboardType: 'numbers-and-punctuation',
+    validation: /^[0-9'"’”.]*$/,
+    onSubmitValidation: [
+      /^[0-9]+\.{0,1}[0-9]{0,3}$/,
+      /^[0-9]{1,2}('|’)(?:\s*(?:1[01]|[0-9])(''|"|’’|”))?$/,
+    ],
+    validationMessage: 'Enter height in valid format (eg. 5’8” ft or 172.5 cm)',
   },
   {
     key: 'weight',
@@ -150,6 +195,7 @@ const slides: Slide[] = [
     inputPlacerholder: 'Enter weight in kilogram…',
     inputData: ['value'],
     keyboardType: 'number-pad',
+    validation: /^[0-9]+\.{0,1}[0-9]{0,3}$/,
   },
   {
     key: 'drug',
@@ -195,7 +241,7 @@ const slides: Slide[] = [
   {
     key: 'lifeStyleSmoke',
     index: 7,
-    title: 'Do many do you smoke per day?',
+    title: 'How many do you smoke per day?',
     isDependent: true,
     buttonText: ['< 10', '10-20', '> 20'],
     dependentValue: 'Yes',
@@ -204,7 +250,7 @@ const slides: Slide[] = [
   {
     key: 'drink',
     index: 8,
-    title: 'Do you drink?',
+    title: 'Do you drink alcohol?',
     buttonText: ['Yes', 'No'],
     inputData: ['value'],
   },
@@ -232,14 +278,17 @@ const slides: Slide[] = [
     buttonText: ['No Idea'],
     inputData: ['value', 'value'],
     keyboardType: 'numbers-and-punctuation',
+    validation: /^\d{0,3}(\/|\\){0,1}\d{0,3}$/,
+    onSubmitValidation: [/^\d{1,3}(\/|\\)\d{1,3}$/],
+    validationMessage: 'Enter blood pressure in valid format (eg. 120/80)',
   },
-  {
-    key: 'familyHistory',
-    index: 12,
-    title: 'Does anyone in your family suffer from — COPD,Cancer, Hypertension or Diabetes?',
-    buttonText: ['Yes', 'No'],
-    inputData: ['value'],
-  },
+  // {
+  //   key: 'familyHistory',
+  //   index: 12,
+  //   title: 'Does anyone in your family suffer from — COPD,Cancer, Hypertension or Diabetes?',
+  //   buttonText: ['Yes', 'No'],
+  //   inputData: ['value'],
+  // },
 ];
 
 export interface ChatQuestionsProps {
@@ -254,6 +303,8 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   const [refresh, setRefresh] = useState<boolean>(false);
   const [isSend, setisSend] = useState<boolean[]>(slides.map((item) => false));
   const { currentPatient } = useAllCurrentPatients();
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     const v = slides.map((item) => {
@@ -269,9 +320,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
           currentPatient.patientMedicalHistory.bp !== 'No Idea'
             ? currentPatient.patientMedicalHistory.bp
             : '',
-          currentPatient.patientMedicalHistory.bp === 'No Idea'
-            ? currentPatient.patientMedicalHistory.bp
-            : '',
+          '',
         ]);
       currentPatient.patientMedicalHistory.height &&
         (v.find((i) => i.k === 'height')!.v =
@@ -312,14 +361,273 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
   const _renderNextButton = () => {
     return (
       <View>
-        <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+        <SearchSendIcon style={{ width: 28, height: 28, marginTop: 7.5, marginLeft: 14 }} />
       </View>
     );
   };
+
   const _renderPrevButton = () => {
     return (
       <View>
         <ArrowLeft />
+      </View>
+    );
+  };
+
+  const onSlideChangeContinue = (index: number) => {
+    if (
+      slides[index].isDependent &&
+      values &&
+      values[index - 1].v[0] !== slides[index].dependentValue
+    ) {
+      setcurrentIndex(index + 1);
+      appIntroSliderRef.current.goToSlide(index + 1);
+    }
+    if (slides[index].key === 'lifeStyleDrink') {
+      let v = values!;
+      v[index].v[0] = v[index - 1].v[0];
+      setValues(v);
+      setRefresh(!refresh);
+    }
+    if (slides[index].key === 'lifeStyleSmoke') {
+      let v = values!;
+      v[index].v[0] = v[index - 1].v[0];
+      setValues(v);
+      setRefresh(!refresh);
+    }
+    if (index < currentIndex) {
+      // appIntroSliderRef.current.goToSlide(currentIndex);
+    } else {
+      !isSend[index - 1] && props.onItemDone!(values![index - 1]);
+      let send = isSend;
+      send[index - 1] = true;
+      setisSend(send);
+      setcurrentIndex(index);
+    }
+  };
+
+  const onSlideChange = (index: number) => {
+    try {
+      Keyboard.dismiss();
+      const validations = index > 0 && slides[index - 1].onSubmitValidation;
+      if (validations) {
+        const inputDataType = slides[index - 1].inputData.filter((i) => i === 'value');
+        let v: any = values && values.find((i) => i.k === slides[index - 1].key);
+        v = v && v.v;
+        if (inputDataType.length === 1) {
+          v = validations.find((i) => i.test(v[0])) || v[0] === '';
+        } else {
+          v = v[0] ? validations.find((i) => i.test(v[0])) || v[0] === '' : v[1] || v[1] === '';
+        }
+        console.log(v, 'text');
+        if (v) {
+          onSlideChangeContinue(index);
+        } else {
+          showAphAlert &&
+            showAphAlert({
+              title: 'Alert!',
+              description: slides[index - 1].validationMessage || 'Enter in valid format',
+              onPressOk: () => {
+                hideAphAlert && hideAphAlert();
+                setActiveIndex(index - 1);
+              },
+            });
+          appIntroSliderRef.current.goToSlide(index - 1);
+        }
+
+        console.log(v, 'final');
+      } else {
+        onSlideChangeContinue(index);
+      }
+      setRefresh(!refresh);
+    } catch (error) {
+      CommonBugFender('ChatQuestions_onSlideChange_try', error);
+    }
+  };
+
+  const returnPlaceHolder = (item: Slide) => {
+    let v = values && values.find((i) => i.k === item.key);
+    return (
+      (item.basedonDropValue &&
+        (item.basedonDropValue.find((i) => i.dropValue === ((v && v.v[1]) || '')) || {})
+          .inputHolder) ||
+      item.inputPlacerholder
+    );
+  };
+
+  const renderItem = (item: Slide) => (
+    <View style={styles.itemContainer}>
+      <View>
+        <Text style={styles.titleStyle}>{item.title}</Text>
+      </View>
+      <View
+        style={{
+          width: '100%',
+          opacity: currentIndex > item.index ? 0.5 : 1,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            margin: 20,
+          }}
+        >
+          {item.inputPlacerholder && (
+            <TextInputComponent
+              value={`${values && values[item.index].v[0]}`}
+              onChangeText={(text) => {
+                if (currentIndex <= item.index) {
+                  let v = values!;
+                  if (item.validation) {
+                    if (item.validation.test(text) || text === '') {
+                      v[item.index].v[0] = text;
+                      setValues(v);
+                    }
+                  } else {
+                    v[item.index].v[0] = text;
+                    setValues(v);
+                  }
+                  setRefresh(!refresh);
+                }
+              }}
+              conatinerstyles={{
+                width: 'auto',
+                maxWidth: item.buttonText || item.dropDown ? '40%' : '100%',
+                minWidth: item.buttonText || item.dropDown ? width / 2 - 20 : '100%',
+              }}
+              placeholder={item.basedonDropValue ? returnPlaceHolder(item) : item.inputPlacerholder}
+              keyboardType={item.keyboardType}
+            />
+          )}
+          {item.dropDown && (
+            <MaterialMenu
+              options={item.dropDown}
+              selectedText={values && values[item.index].v[item.inputPlacerholder ? 1 : 0]}
+              menuContainerStyle={{ alignItems: 'flex-end', marginRight: width / 2 }}
+              itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
+              itemTextStyle={{
+                ...theme.viewStyles.text('M', 16, '#01475b'),
+                paddingHorizontal: 0,
+              }}
+              selectedTextStyle={{
+                ...theme.viewStyles.text('M', 16, '#00b38e'),
+                alignSelf: 'flex-start',
+              }}
+              bottomPadding={{ paddingBottom: 20 }}
+              onPress={(selectedDrop) => {
+                if (currentIndex <= item.index) {
+                  let v = values!;
+                  v[item.index].v[item.inputPlacerholder ? 1 : 0] = selectedDrop.value.toString();
+                  setValues(v);
+                  setRefresh(!refresh);
+                }
+              }}
+            >
+              <View style={{ flexDirection: 'row', paddingTop: 3, marginRight: 40 }}>
+                <View
+                  style={[
+                    styles.placeholderViewStyle,
+                    {
+                      maxWidth: item.buttonText || item.dropDown ? '40%' : '100%',
+                      minWidth:
+                        item.buttonText || item.inputPlacerholder ? (width - 40) / 2 - 10 : '100%',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      values && values[item.index] !== undefined ? null : styles.placeholderStyle,
+                    ]}
+                  >
+                    {values && values[item.index] !== undefined
+                      ? values[item.index].v[item.inputPlacerholder ? 1 : 0]
+                      : 'select'}
+                  </Text>
+                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </View>
+            </MaterialMenu>
+          )}
+          {item.buttonText &&
+            item.buttonText.map((text) => (
+              <Button
+                disabled={currentIndex > item.index}
+                style={{
+                  width: 'auto',
+                  maxWidth: '45%',
+                  minWidth:
+                    (width - 40) /
+                      (item.inputPlacerholder || item.dropDown
+                        ? item.buttonText!.length + 1
+                        : item.buttonText!.length) -
+                    10,
+                  backgroundColor:
+                    values &&
+                    values[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] === text
+                      ? theme.colors.APP_GREEN
+                      : theme.colors.WHITE,
+                  marginBottom: 16,
+                }}
+                disabledStyle={{
+                  backgroundColor:
+                    values &&
+                    values[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] === text
+                      ? theme.colors.APP_GREEN
+                      : theme.colors.WHITE,
+                  borderColor: '#DCDCDC',
+                  borderWidth: 0.8,
+                  elevation: 0,
+                }}
+                titleTextStyle={{
+                  color:
+                    values &&
+                    values[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] === text
+                      ? theme.colors.WHITE
+                      : theme.colors.APP_GREEN,
+                }}
+                key={text}
+                title={text}
+                onPress={() => {
+                  let v = values!;
+                  v[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] = text;
+                  setValues(v);
+                  setRefresh(!refresh);
+                }}
+              />
+            ))}
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderDots = (count: number, type: 'p' | 'c' | 'n') => {
+    let a = [];
+    if (type === 'p') {
+      for (let index = 0; index < count; index++) {
+        a.push(<View style={styles.pastDotStyle} />);
+      }
+      return a;
+    } else if (type === 'n') {
+      for (let index = 0; index < count; index++) {
+        a.push(<View style={[styles.pastDotStyle, styles.nextDotStyle]} />);
+      }
+      return a;
+    } else {
+      return [<View style={[styles.activeDotStyle]} />];
+    }
+  };
+
+  const renderPagination = (current: number, total: number) => {
+    return (
+      <View style={styles.paginationStyle}>
+        {renderDots(current, 'p').map((i) => i)}
+        {renderDots(1, 'c').map((i) => i)}
+        {renderDots(total - current, 'n').map((i) => i)}
       </View>
     );
   };
@@ -332,7 +640,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
           extraData={refresh}
           paginationStyle={{ bottom: 10 }}
           // hidePagination
-          //scrollEnabled={false}
+          scrollEnabled={false}
           slides={slides}
           showPrevButton={false}
           showNextButton={true}
@@ -340,190 +648,28 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
           renderNextButton={_renderNextButton}
           renderPrevButton={_renderPrevButton}
           renderDoneButton={_renderNextButton}
-          dotStyle={{ backgroundColor: theme.colors.SKY_BLUE }}
-          activeDotStyle={{ backgroundColor: theme.colors.SHERPA_BLUE }}
+          dotStyle={[
+            styles.pastDotStyle,
+            {
+              backgroundColor: theme.colors.CLEAR,
+            },
+          ]}
+          activeDotStyle={[
+            styles.activeDotStyle,
+            {
+              backgroundColor: theme.colors.CLEAR,
+            },
+          ]}
           onDone={() => {
             values && props.onDonePress(values);
           }}
           onSlideChange={(index: number) => {
-            if (
-              slides[index].isDependent &&
-              values &&
-              values[index - 1].v[0] !== slides[index].dependentValue
-            ) {
-              setcurrentIndex(index + 1);
-              appIntroSliderRef.current.goToSlide(index + 1);
-            }
-            if (slides[index].key === 'lifeStyleDrink') {
-              let v = values!;
-              v[index].v[0] = v[index - 1].v[0];
-              setValues(v);
-              setRefresh(!refresh);
-            }
-            if (slides[index].key === 'lifeStyleSmoke') {
-              let v = values!;
-              v[index].v[0] = v[index - 1].v[0];
-              setValues(v);
-              setRefresh(!refresh);
-            }
-            if (index < currentIndex) {
-              // appIntroSliderRef.current.goToSlide(currentIndex);
-            } else {
-              !isSend[index - 1] && props.onItemDone!(values![index - 1]);
-              let send = isSend;
-              send[index - 1] = true;
-              setisSend(send);
-              setcurrentIndex(index);
-            }
-            setRefresh(!refresh);
+            onSlideChange(index);
+            setActiveIndex(index);
           }}
-          renderItem={({ item }: any) => (
-            <View style={styles.itemContainer}>
-              <View>
-                <Text style={styles.titleStyle}>{item.title}</Text>
-              </View>
-              <View style={{ width: '100%', opacity: currentIndex > item.index ? 0.5 : 1 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    justifyContent: 'space-between',
-                    margin: 20,
-                  }}
-                >
-                  {item.inputPlacerholder && (
-                    <TextInputComponent
-                      value={`${values && values[item.index].v[0]}`}
-                      onChangeText={(text) => {
-                        if (currentIndex <= item.index) {
-                          let v = values!;
-                          v[item.index].v[0] = text;
-                          setValues(v);
-                          setRefresh(!refresh);
-                        }
-                      }}
-                      conatinerstyles={{
-                        width: 'auto',
-                        maxWidth: item.buttonText || item.dropDown ? '40%' : '100%',
-                        minWidth: item.buttonText || item.dropDown ? width / 2 - 20 : '100%',
-                      }}
-                      placeholder={item.inputPlacerholder}
-                      keyboardType={item.keyboardType}
-                    />
-                  )}
-                  {item.dropDown && (
-                    <MaterialMenu
-                      options={item.dropDown}
-                      selectedText={values && values[item.index].v[item.inputPlacerholder ? 1 : 0]}
-                      menuContainerStyle={{ alignItems: 'flex-end', marginRight: width / 2 }}
-                      itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-                      itemTextStyle={{
-                        ...theme.viewStyles.text('M', 16, '#01475b'),
-                        paddingHorizontal: 0,
-                      }}
-                      selectedTextStyle={{
-                        ...theme.viewStyles.text('M', 16, '#00b38e'),
-                        alignSelf: 'flex-start',
-                      }}
-                      bottomPadding={{ paddingBottom: 20 }}
-                      onPress={(selectedDrop) => {
-                        if (currentIndex <= item.index) {
-                          let v = values!;
-                          v[item.index].v[
-                            item.inputPlacerholder ? 1 : 0
-                          ] = selectedDrop.value.toString();
-                          setValues(v);
-                          setRefresh(!refresh);
-                        }
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', paddingTop: 1, marginRight: 40 }}>
-                        <View
-                          style={[
-                            styles.placeholderViewStyle,
-                            {
-                              maxWidth: item.buttonText || item.dropDown ? '40%' : '100%',
-                              minWidth:
-                                item.buttonText || item.inputPlacerholder
-                                  ? (width - 40) / 2 - 10
-                                  : '100%',
-                            },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.placeholderTextStyle,
-                              values && values[item.index] !== undefined
-                                ? null
-                                : styles.placeholderStyle,
-                            ]}
-                          >
-                            {values && values[item.index] !== undefined
-                              ? values[item.index].v[item.inputPlacerholder ? 1 : 0]
-                              : 'select'}
-                          </Text>
-                          <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                            <DropdownGreen />
-                          </View>
-                        </View>
-                      </View>
-                    </MaterialMenu>
-                  )}
-                  {item.buttonText &&
-                    item.buttonText.map((text) => (
-                      <Button
-                        disabled={currentIndex > item.index}
-                        style={{
-                          width: 'auto',
-                          maxWidth: '45%',
-                          minWidth:
-                            (width - 40) /
-                              (item.inputPlacerholder || item.dropDown
-                                ? item.buttonText!.length + 1
-                                : item.buttonText!.length) -
-                            10,
-                          backgroundColor:
-                            values &&
-                            values[item.index].v[
-                              item.inputPlacerholder || item.dropDown ? 1 : 0
-                            ] === text
-                              ? theme.colors.APP_GREEN
-                              : theme.colors.WHITE,
-                          marginBottom: 16,
-                        }}
-                        disabledStyle={{
-                          backgroundColor:
-                            values &&
-                            values[item.index].v[
-                              item.inputPlacerholder || item.dropDown ? 1 : 0
-                            ] === text
-                              ? theme.colors.APP_GREEN
-                              : theme.colors.WHITE,
-                        }}
-                        titleTextStyle={{
-                          color:
-                            values &&
-                            values[item.index].v[
-                              item.inputPlacerholder || item.dropDown ? 1 : 0
-                            ] === text
-                              ? theme.colors.WHITE
-                              : theme.colors.APP_GREEN,
-                        }}
-                        key={text}
-                        title={text}
-                        onPress={() => {
-                          let v = values!;
-                          v[item.index].v[item.inputPlacerholder || item.dropDown ? 1 : 0] = text;
-                          setValues(v);
-                          setRefresh(!refresh);
-                        }}
-                      />
-                    ))}
-                </View>
-              </View>
-            </View>
-          )}
+          renderItem={({ item }: any) => renderItem(item as Slide)}
         />
+        {renderPagination(activeIndex, slides.length - 1)}
       </View>
     </View>
   );

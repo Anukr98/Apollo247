@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, Image } from 'react-native';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 // import RNFS from 'react-native-fs';
 // import resizebase64 from 'resize-base64';
 // import ImagePicker from 'react-native-image-picker';
@@ -67,7 +68,10 @@ export const AzureUpload: React.FC<AzureUploadProps> = (props) => {
       .then((jsonData) => {
         console.log('jsonData', jsonData);
       })
-      .catch((error) => console.log('Error fetching: ' + error));
+      .catch((error) => {
+        CommonBugFender('AzureUpload_uploadDocument', error);
+        console.log('Error fetching: ' + error);
+      });
 
     // createBold()
     //   .then(() => {

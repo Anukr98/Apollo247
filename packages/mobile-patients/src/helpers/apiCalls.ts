@@ -676,7 +676,7 @@ export const GenerateTokenforCM = (
   emailId: string,
   phoneNumber: string
 ): Promise<AxiosResponse<any>> => {
-  const url = `https://aph.dev.pmt.popcornapps.com/getCmToken?appUserId=${uhid}&userName=${userName}&gender=${gender}&emailId=${emailId}&phoneNumber=${phoneNumber}`;
+  const url = `${config.CONDITIONAL_MANAGENET_BASE_URL}/getCmToken?appUserId=${uhid}&userName=${userName}&gender=${gender}&emailId=${emailId}&phoneNumber=${phoneNumber}`;
   console.log('GenerateTokenforCMurl', url);
   return Axios.get(url);
 };

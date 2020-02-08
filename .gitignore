@@ -4,3 +4,5 @@ node_modules
 packages/api/src/assets/doctorsData.xlsx
 assets/logs
 packages/api/kaleyra-logs/SMS-RESPONSE.LOG
+packages/api/debug-logs/doctors-search.log
+*.log

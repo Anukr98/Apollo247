@@ -7,6 +7,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {
@@ -108,6 +109,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
         .filter(Boolean)
         .join(', ');
     } catch (e) {
+      CommonBugFender('Get_Formatted_Location_Profile', e);
       console.log(e);
     }
     return location;
@@ -145,14 +147,14 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
-                profileData!.specialty.name,
+                profileData!.specialty!.name,
                 profileData!.experience || ''
               )}
             </Text>
             <View style={styles.understatusline} />
           </View>
           {profileRow('Education', profileData!.qualification!)}
-          {profileRow('Speciality', profileData!.specialty.name!)}
+          {profileRow('Speciality', profileData!.specialty!.name!)}
           {profileRow('Services', profileData!.specialization || '')}
           {profileRow(
             'Awards',

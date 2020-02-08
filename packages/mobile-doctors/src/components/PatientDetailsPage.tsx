@@ -1,3 +1,4 @@
+import { PastConsultCard } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/PastConsultCard';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
   BackArrow,
@@ -5,16 +6,31 @@ import {
   PatientPlaceHolderImage,
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { PastConsultCard } from '@aph/mobile-doctors/src/components/ui/PastConsultCard';
 import { GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
-import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet_patientDetails,
+  GetCaseSheet_getCaseSheet_pastAppointments,
+} from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { Image } from 'react-native-elements';
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -23,12 +39,12 @@ const styles = StyleSheet.create({
       width: 0,
     },
     shadowColor: '#000000',
-    shadowRadius: 2,
+    // shadowRadius: 2,
     shadowOpacity: 0.2,
     elevation: 10,
     backgroundColor: 'white',
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    // borderBottomLeftRadius: 10,
+    // borderBottomRightRadius: 10,
   },
   symptomsText: {
     marginTop: 12,
@@ -84,41 +100,60 @@ const styles = StyleSheet.create({
 });
 export interface PatientsProps
   extends NavigationScreenProps<{
-    Appointments: string;
+    patientId: string;
     ConsultsCount: string;
     PatientInfo: any;
   }> {}
 
 export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const client = useApolloClient();
-  console.log('Appointments', props.navigation.getParam('Appointments'));
+  console.log('Appointments', props.navigation.getParam('patientId'));
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
 
   const [familyValues, setFamilyValues] = useState<any>([]);
   const [lifeStyleData, setLifeStyleData] = useState<any>([]);
+  const [patientDetails, setPatientDetails] = useState<GetCaseSheet_getCaseSheet_patientDetails>();
   const [allergiesData, setAllergiesData] = useState<string>('');
-  const [pastList, setPastList] = useState<any>([]);
 
-  const dateOfBirth = moment(props.navigation.getParam('PatientInfo').dateOfBirth).format('YYYY');
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [pastList, setPastList] = useState<
+    (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
+  >([]);
+
+  const PatientInfo = props.navigation.getParam('PatientInfo');
+  const dateOfBirth = moment(PatientInfo.dateOfBirth).format('YYYY');
   const todayYear = moment(new Date()).format('YYYY');
 
   useEffect(() => {
+    console.log(PatientInfo, 'PatientInfoData');
     client
       .query<GetCaseSheet>({
         query: GET_CASESHEET,
         fetchPolicy: 'no-cache',
-        variables: { appointmentId: props.navigation.getParam('Appointments') },
+        variables: { appointmentId: props.navigation.getParam('patientId') },
       })
-      .then((_data) => {
-        const result = _data.data.getCaseSheet;
+      .then(({ data }) => {
+        try {
+          const result = data.getCaseSheet;
+          console.log(result, 'result');
 
-        setFamilyValues(_data.data.getCaseSheet!.patientDetails!.familyHistory!);
-        setAllergiesData(_data.data.getCaseSheet!.patientDetails!.allergies!);
-        setLifeStyleData(_data.data.getCaseSheet!.patientDetails!.lifeStyle);
-        setPastList(_data.data.getCaseSheet!.pastAppointments!);
+          if (result) {
+            if (result.patientDetails) {
+              setPatientDetails(result.patientDetails);
+              setFamilyValues(result.patientDetails.familyHistory!);
+              setAllergiesData(result.patientDetails.allergies!);
+              setLifeStyleData(result.patientDetails.lifeStyle);
+            }
+            setPastList(result.pastAppointments!);
+          }
+          setshowSpinner(false);
+        } catch (e) {
+          console.log('e', e);
+        }
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
+        CommonBugFender('Patient Details Case sheet', error);
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
       });
   }, []);
@@ -178,21 +213,21 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
       </View>
     );
   };
-  const renderPatientHistoryLifestyle = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="Patient History & Lifestyle"
-          collapse={patientHistoryshow}
-          onPress={() => setpatientHistoryshow(!patientHistoryshow)}
-        >
-          {renderFamilyDetails()}
-          {renderAllergiesView()}
-          {renderLifeStylesHabits()}
-        </CollapseCard>
-      </View>
-    );
-  };
+  // const renderPatientHistoryLifestyle = () => {
+  //   return (
+  //     <View>
+  //       <CollapseCard
+  //         heading="Patient History & Lifestyle"
+  //         collapse={patientHistoryshow}
+  //         onPress={() => setpatientHistoryshow(!patientHistoryshow)}
+  //       >
+  //         {renderFamilyDetails()}
+  //         {renderAllergiesView()}
+  //         {renderLifeStylesHabits()}
+  //       </CollapseCard>
+  //     </View>
+  //   );
+  // };
   const renderLeftTimeLineView = (
     status: Appointments['timeslottype'],
     showTop: boolean,
@@ -246,126 +281,160 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
     ) : (
       <UpComingIcon />
     );
-  const renderPastAppData = (apmnt: any) => {
+  // const renderPastAppData = (apmnt: any) => {
+  //   return (
+  //     <View>
+  //       {apmnt == [] ? (
+  //         <Text style={styles.symptomsText}>No Data</Text>
+  //       ) : (
+  //         apmnt.caseSheet.map((_caseSheet: any, i: any) => {
+  //           return (
+  //             <View style={{ marginLeft: 16 }}>
+  //               {_caseSheet.symptoms == null || [] ? (
+  //                 <Text style={styles.symptomsText}>No Data</Text>
+  //               ) : (
+  //                 _caseSheet.symptoms.map((symptoms: any, i: any, array: any) => {
+  //                   return (
+  //                     <View
+  //                       style={{
+  //                         flex: 1,
+  //                         flexDirection: 'row',
+  //                         justifyContent: 'center',
+  //                         alignItems: 'center',
+  //                       }}
+  //                     >
+  //                       {renderLeftTimeLineView(
+  //                         symptoms.symptom,
+  //                         i == 0 ? true : true,
+  //                         i == array.length - 1 ? false : true
+  //                       )}
+
+  //                       <PastConsultCard
+  //                         doctorname={
+  //                           symptoms.symptom +
+  //                           symptoms.howOften +
+  //                           symptoms.since +
+  //                           symptoms.severity
+  //                         }
+  //                         timing={moment
+  //                           .unix(apmnt.appointmentDateTime / 1000)
+  //                           .format('DD MMM  hh:mm a')}
+  //                       />
+  //                     </View>
+
+  //                     // <View
+  //                     //   style={{
+  //                     //     backgroundColor: '#ffffff',
+  //                     //     borderRadius: 5,
+  //                     //     borderStyle: 'solid',
+  //                     //     borderWidth: 1,
+  //                     //     borderColor: 'rgba(2, 71, 91, 0.15)',
+  //                     //     marginBottom: 16,
+  //                     //   }}
+  //                     // >
+  //                     //   <View style={{ backgroundColor: 'white', flexDirection: 'row' }}>
+  //                     //     <Text
+  //                     //       style={{
+  //                     //         color: '#0087ba',
+  //                     //         ...theme.fonts.IBMPlexSansMedium(14),
+  //                     //         marginLeft: 14,
+  //                     //         marginBottom: 8,
+  //                     //         marginTop: 12,
+  //                     //         marginRight: 14,
+  //                     //       }}
+  //                     //     >
+  //                     //       {symptoms.symptom}
+  //                     //       {symptoms.howOften} {symptoms.since} {symptoms.severity}
+  //                     //     </Text>
+  //                     //   </View>
+  //                     //   <View>
+  //                     //     <Text
+  //                     //       style={{
+  //                     //         fontFamily: 'IBMPlexSans',
+  //                     //         fontSize: 10,
+  //                     //         fontWeight: '500',
+  //                     //         fontStyle: 'normal',
+  //                     //         lineHeight: 12,
+  //                     //         letterSpacing: 0,
+  //                     //         color: 'rgba(2, 71, 91, 0.6)',
+  //                     //         marginLeft: 14,
+  //                     //         marginBottom: 8,
+  //                     //       }}
+  //                     //     >
+  //                     //       {moment
+  //                     //         .unix(apmnt.appointmentDateTime / 1000)
+  //                     //         .format('DD MMM  hh:mm a')}
+  //                     //     </Text>
+  //                     //   </View>
+  //                     // </View>
+  //                   );
+  //                 })
+  //               )}
+  //             </View>
+  //           );
+  //         })
+  //       )}
+  //     </View>
+  //   );
+  // };
+
+  const renderPatientImage = () => {
     return (
-      <View>
-        {apmnt == [] ? (
-          <Text style={styles.symptomsText}>No Data</Text>
-        ) : (
-          apmnt.caseSheet.map((_caseSheet: any, i: any) => {
-            return (
-              <View style={{ marginLeft: 16 }}>
-                {_caseSheet.symptoms == null || [] ? (
-                  <Text style={styles.symptomsText}>No Data</Text>
-                ) : (
-                  _caseSheet.symptoms.map((symptoms: any, i: any, array: any) => {
-                    return (
-                      <View
-                        style={{
-                          flex: 1,
-                          flexDirection: 'row',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {renderLeftTimeLineView(
-                          symptoms.symptom,
-                          i == 0 ? true : true,
-                          i == array.length - 1 ? false : true
-                        )}
-
-                        <PastConsultCard
-                          doctorname={
-                            symptoms.symptom +
-                            symptoms.howOften +
-                            symptoms.since +
-                            symptoms.severity
-                          }
-                          timing={moment
-                            .unix(apmnt.appointmentDateTime / 1000)
-                            .format('DD MMM  hh:mm a')}
-                        />
-                      </View>
-
-                      // <View
-                      //   style={{
-                      //     backgroundColor: '#ffffff',
-                      //     borderRadius: 5,
-                      //     borderStyle: 'solid',
-                      //     borderWidth: 1,
-                      //     borderColor: 'rgba(2, 71, 91, 0.15)',
-                      //     marginBottom: 16,
-                      //   }}
-                      // >
-                      //   <View style={{ backgroundColor: 'white', flexDirection: 'row' }}>
-                      //     <Text
-                      //       style={{
-                      //         color: '#0087ba',
-                      //         ...theme.fonts.IBMPlexSansMedium(14),
-                      //         marginLeft: 14,
-                      //         marginBottom: 8,
-                      //         marginTop: 12,
-                      //         marginRight: 14,
-                      //       }}
-                      //     >
-                      //       {symptoms.symptom}
-                      //       {symptoms.howOften} {symptoms.since} {symptoms.severity}
-                      //     </Text>
-                      //   </View>
-                      //   <View>
-                      //     <Text
-                      //       style={{
-                      //         fontFamily: 'IBMPlexSans',
-                      //         fontSize: 10,
-                      //         fontWeight: '500',
-                      //         fontStyle: 'normal',
-                      //         lineHeight: 12,
-                      //         letterSpacing: 0,
-                      //         color: 'rgba(2, 71, 91, 0.6)',
-                      //         marginLeft: 14,
-                      //         marginBottom: 8,
-                      //       }}
-                      //     >
-                      //       {moment
-                      //         .unix(apmnt.appointmentDateTime / 1000)
-                      //         .format('DD MMM  hh:mm a')}
-                      //     </Text>
-                      //   </View>
-                      // </View>
-                    );
-                  })
-                )}
-              </View>
-            );
-          })
-        )}
-      </View>
-    );
-  };
-  return (
-    <SafeAreaView style={[theme.viewStyles.container]}>
-      <ScrollView bounces={false}>
-        <PatientPlaceHolderImage />
-
-        <View style={{ top: -150, marginLeft: 20 }}>
+      <View style={{ marginBottom: 20 }}>
+        <View style={{ top: 10, marginLeft: 20, position: 'absolute', zIndex: 2 }}>
           <TouchableOpacity onPress={() => props.navigation.pop()}>
             <BackArrow />
           </TouchableOpacity>
         </View>
-        <View style={[styles.shadowview, { marginTop: -20 }]}>
-          <View style={{ flexDirection: 'row', marginTop: 16 }}>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansSemiBold(18),
-                color: '#02475b',
-                marginLeft: 20,
-                marginBottom: 8,
-                marginRight: 15,
-              }}
-            >
-              {props.navigation.getParam('PatientInfo').firstName}
-            </Text>
-            <View
+        <Image
+          source={{
+            uri: (patientDetails && patientDetails.photoUrl) || '',
+          }}
+          style={{ height: width, width: width }}
+          resizeMode={'contain'}
+          placeholderStyle={{
+            height: width,
+            width: width,
+            alignItems: 'center',
+            backgroundColor: 'transparent',
+          }}
+          PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+        />
+      </View>
+    );
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={[theme.viewStyles.container]}>
+        <ScrollView bounces={false}>
+          {renderPatientImage()}
+          <View style={[styles.shadowview, { marginTop: -20 }]}>
+            <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 20 }}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansSemiBold(18),
+                    color: theme.colors.SHARP_BLUE,
+                    marginBottom: 2,
+                    marginRight: 15,
+                  }}
+                >
+                  {PatientInfo.firstName}
+                </Text>
+              </View>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                  color: 'rgba(2, 71, 91, 0.8)',
+                  marginLeft: 14,
+                  marginBottom: 8,
+                }}
+              >
+                UHID: {PatientInfo.uhid}
+              </Text>
+
+              {/* <View
               style={{
                 height: 16,
                 borderWidth: 0.5,
@@ -381,10 +450,25 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 marginBottom: 8,
               }}
             >
-              {todayYear - dateOfBirth}, {props.navigation.getParam('PatientInfo').gender}
+              {todayYear - dateOfBirth}, {PatientInfo.gender}
+            </Text> */}
+            </View>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(12),
+                color: theme.colors.LIGHT_BLUE,
+                marginBottom: 12,
+                marginLeft: 20,
+              }}
+            >
+              {todayYear - dateOfBirth}
+              {PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
+              {PatientInfo.addressList && PatientInfo.addressList.length > 0
+                ? `, ${PatientInfo.addressList[0].city}`
+                : ''}
             </Text>
-          </View>
-          <View
+
+            {/* <View
             style={{
               borderRadius: 5,
               backgroundColor: '#f0f4f5',
@@ -477,27 +561,32 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 PRESCRIPTIONS
               </Text>
             </View>
+          </View> */}
           </View>
-        </View>
-        <View style={{ backgroundColor: '#ffffff', margin: 20, borderRadius: 10 }}>
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(17),
-              lineHeight: 24,
-              color: '#01475b',
-              margin: 16,
-            }}
-          >
-            Past Consultations
-          </Text>
-          <ScrollView bounces={false}>
+          <View>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(17),
+                lineHeight: 24,
+                color: '#01475b',
+                margin: 16,
+              }}
+            >
+              Past Consultations
+            </Text>
+            <PastConsultCard
+              data={pastList}
+              navigation={props.navigation}
+              patientDetails={patientDetails}
+            />
+            {/* <ScrollView bounces={false}>
             {pastList.map((apmnt: any, i: any) => {
               return (
                 <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
                   {renderPastAppData(apmnt)}
                 </View>
               );
-            })}
+            })} */}
             {/* {_data!.map((_doctor, i, array) => {
               return (
                 <View
@@ -518,10 +607,11 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 </View>
               );
             })} */}
-          </ScrollView>
-        </View>
-        {renderPatientHistoryLifestyle()}
-      </ScrollView>
-    </SafeAreaView>
+            {/* </ScrollView> */}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      {showSpinner && <Spinner />}
+    </View>
   );
 };

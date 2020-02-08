@@ -46,6 +46,7 @@ import {
   initiateRescheduleAppointmentVariables,
 } from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
 import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -98,6 +99,7 @@ export interface ReSchedulePopUpProps {
   appointmentId: string;
   date: string;
   loading: (val: boolean) => void;
+  onDone: (reschduleObject: any) => void;
 }
 
 export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
@@ -189,15 +191,33 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           variables: {
             RescheduleAppointmentInput: {
               appointmentId: props.appointmentId,
-              rescheduleReason: reasons.find((i) => i.key === selectedReason)?.value || 'Other',
+              rescheduleReason: reasons.find((i) => i.key === selectedReason)
+                ? reasons.find((i) => i.key === selectedReason)!.value
+                : 'Other',
               rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
               rescheduleInitiatedId: props.doctorId,
               rescheduledDateTime: selectedTimeSlot,
             },
           },
         })
-        .then(() => {})
+        .then(({ data }) => {
+          if (data) {
+            const reschduleObject: any = {
+              appointmentId: props.appointmentId,
+              transferDateTime: data.initiateRescheduleAppointment.rescheduleAppointment
+                ? data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime
+                : '',
+              doctorId: props.doctorId,
+              reschduleCount: data.initiateRescheduleAppointment.rescheduleCount || '',
+              reschduleId: data.initiateRescheduleAppointment.rescheduleAppointment
+                ? data.initiateRescheduleAppointment.rescheduleAppointment.id
+                : '',
+            };
+            props.onDone(reschduleObject);
+          }
+        })
         .catch((e) => {
+          CommonBugFender('Initiate_Reschdule_Appointment_ReschdulePopup', e);
           console.log('Error occured while searching for Initiate reschdule apppointment', e);
         })
         .finally(() => {
@@ -246,6 +266,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
       })
       .catch((e: string) => {
         props.loading && props.loading(false);
+        CommonBugFender('Get_Available_Slots_ReschdulePopup', e);
         console.log('Error occured', e);
       });
   };
@@ -275,6 +296,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
       })
       .catch((e: any) => {
         props.loading && props.loading(false);
+        CommonBugFender('Check_Avaialablity_ReschdulePopup', e);
         console.log('error', e);
       });
   };

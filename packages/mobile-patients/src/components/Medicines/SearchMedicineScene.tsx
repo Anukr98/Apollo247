@@ -7,7 +7,10 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_PAST_MEDICINE_SEARCHES,
   SAVE_SEARCH,
@@ -212,6 +215,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         setPastSearches(getPatientPastMedicineSearches || []);
       })
       .catch((error) => {
+        CommonBugFender('SearchMedicineScene_GET_PATIENT_PAST_MEDICINE_SEARCHES', error);
         aphConsole.log('Error occured', { error });
       });
   }, [currentPatient]);
@@ -241,6 +245,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           setIsLoading(false);
         })
         .catch((e) => {
+          CommonBugFender('SearchMedicineScene_onSearchMedicine', e);
           if (!axios.isCancel(e)) {
             setIsLoading(false);
             showGenericALert(e);
@@ -287,6 +292,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       prescriptionRequired: is_prescription_required == '1',
       quantity: 1,
       thumbnail,
+      isInStock: true,
     });
   };
 

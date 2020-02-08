@@ -19,6 +19,7 @@ export const saveMedicineOrderTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
     PAYMENT_SUCCESS
+    PAYMENT_FAILED
     ORDER_INITIATED
     ORDER_PLACED
     ORDER_VERIFIED
@@ -34,6 +35,7 @@ export const saveMedicineOrderTypeDefs = gql`
     PRESCRIPTION_CART_READY
     ORDER_CONFIRMED
     CANCEL_REQUEST
+    READY_AT_STORE
   }
 
   enum MEDICINE_DELIVERY_TYPE {

@@ -10,14 +10,8 @@ import { Brand } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-    },
-    headerSticky: {
-      position: 'fixed',
+    root: {
       width: '100%',
-      zIndex: 99,
-      top: 0,
     },
     container: {
       maxWidth: 1064,
@@ -241,12 +235,8 @@ export const ViewAllBrands: React.FC = (props) => {
   };
   const grouped = groupBy(showData, (brand: filter) => brand.key);
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+    <div className={classes.root}>
+      <Header />
       <div className={classes.container}>
         <div className={classes.viewAllBrands}>
           <div className={classes.breadcrumbs}>

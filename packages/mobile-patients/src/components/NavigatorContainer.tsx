@@ -62,6 +62,7 @@ import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/Clini
 import {
   CommonScreenLog,
   CommonLogEvent,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
@@ -369,6 +370,7 @@ const stackConfig: StackNavigatorConfig = {
       logTabEvents(sceneProps.scene.route);
       // console.log('sceneProps success', sceneProps.scene.route);
     } catch (error) {
+      CommonBugFender('NavigatorContainer_stackConfig_try', error);
       console.log('sceneProps error', error);
     }
     return {

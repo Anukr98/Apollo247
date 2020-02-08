@@ -43,6 +43,12 @@ export class AdminDoctorMap extends Repository<AdminDoctorMapper> {
     });
   }
 
+  getAdminIds(doctor: string) {
+    return this.find({
+      where: { doctor },
+    });
+  }
+
   saveadmindoctor(adminDoctor: Partial<AdminDoctorMapper>[]) {
     return this.save(adminDoctor).catch((saveAdminDoctorsError) => {
       throw new AphError(AphErrorMessages.SAVE_ADMIN_DOCTORS_ERROR, undefined, {

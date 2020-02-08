@@ -332,7 +332,7 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
     setFollowUpDate(followUpDate);
   }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
-
+  const isFollowUpDisable = true;
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -342,6 +342,7 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
           </Typography>
           <AphToggleSwitch
             checked={shouldFollowUp}
+            disabled={isFollowUpDisable}
             onChange={(e) => {
               setShouldFollowUp(e.target.checked);
               followUp[0] = e.target.checked;

@@ -31,6 +31,8 @@ export const useAuth = () => {
   const isSigningIn = useAuthContext().isSigningIn;
   const signOut = useAuthContext().signOut!;
 
+  const sessionClient = useAuthContext().sessionClient;
+
   return {
     currentPatient,
     setCurrentPatient,
@@ -51,6 +53,8 @@ export const useAuth = () => {
 
     currentUserType,
     setCurrentUserType,
+
+    sessionClient,
   };
 };
 

@@ -1,8 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Connection } from 'typeorm';
 import {
-  Appointment,
   STATUS,
   APPOINTMENT_TYPE,
   APPOINTMENT_STATE,
@@ -262,59 +260,29 @@ const bookAppointment: Resolver<
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
 
-  if (patientDetails.mobileNumber == '+919052959527') {
-    //Book appointment in MedMantra
-    const medMantraResponse = await bookMedMantraAppointment(
-      appointment,
-      consultsDb,
-      doctorsDb,
-      patientsDb
-    );
-    console.log('MedMantraAPIResponse:', medMantraResponse);
-
-    //if not available in medmantra, throw error
-    if (medMantraResponse.retcode && medMantraResponse.retcode === -2) {
-      //block these hours in appointment table as unavailable in medmantra
-      const updateAttrs = {
-        id: appointment.id,
-        status: STATUS.UNAVAILABLE_MEDMANTRA,
-        patientId: '',
-        patientName: '',
-      };
-      await appts.updateMedmantraStatus(updateAttrs);
-      throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
-    } else {
-      const updateAttrs = {
-        id: appointment.id,
-        apolloAppointmentId: medMantraResponse.AppointmentID,
-      };
-      await appts.updateMedmantraStatus(updateAttrs);
-    }
-  }
-
   return { appointment };
 };
 
-const bookMedMantraAppointment = async (
-  apptDetails: Appointment,
-  consultsDb: Connection,
-  doctorsDb: Connection,
-  patientsDb: Connection
-) => {
-  //get appointment doctor details
-  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorDetails = await doctorRepo.findById(apptDetails.doctorId);
-  if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+// const bookMedMantraAppointment = async (
+//   apptDetails: Appointment,
+//   consultsDb: Connection,
+//   doctorsDb: Connection,
+//   patientsDb: Connection
+// ) => {
+//   //get appointment doctor details
+//   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+//   const doctorDetails = await doctorRepo.findById(apptDetails.doctorId);
+//   if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
 
-  const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const bookingResponse = await apptsRepo.bookMedMantraAppointment(
-    apptDetails,
-    doctorDetails,
-    patientsDb,
-    doctorsDb
-  );
-  return bookingResponse;
-};
+//   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
+//   const bookingResponse = await apptsRepo.bookMedMantraAppointment(
+//     apptDetails,
+//     doctorDetails,
+//     patientsDb,
+//     doctorsDb
+//   );
+//   return bookingResponse;
+// };
 
 export const bookAppointmentResolvers = {
   Mutation: {

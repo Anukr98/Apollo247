@@ -105,6 +105,9 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 41,
       position: 'relative',
     },
+    medicineListElement: {
+      paddingRight: '60px !important',
+    },
     iconRight: {
       position: 'absolute',
       right: 5,
@@ -115,6 +118,9 @@ const useStyles = makeStyles((theme: Theme) =>
       '&:disabled': {
         backgroundColor: '#fdd49c !important',
       },
+    },
+    favAdviceList: {
+      paddingTop: 10,
     },
     addmedicine_btn: {
       color: '#fc9916',
@@ -377,7 +383,7 @@ export const FavouriteAdvice: React.FC = () => {
               (item, idx) =>
                 item &&
                 item.instruction!.trim() !== '' && (
-                  <li key={idx}>
+                  <li key={idx} className={classes.medicineListElement}>
                     {item!.instruction}
                     <span className={classes.iconRight}>
                       <img
@@ -403,7 +409,7 @@ export const FavouriteAdvice: React.FC = () => {
             )
           )}
 
-          <li>
+          <li className={classes.favAdviceList}>
             <Button
               className={classes.addmedicine_btn}
               onClick={() => {

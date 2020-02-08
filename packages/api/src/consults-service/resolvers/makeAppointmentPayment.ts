@@ -28,7 +28,6 @@ export const makeAppointmentPaymentTypeDefs = gql`
   }
 
   input AppointmentPaymentInput {
-    appointmentId: ID!
     amountPaid: Float!
     paymentRefId: String
     paymentStatus: String!
@@ -77,7 +76,6 @@ type AppointmentPayment = {
 };
 
 type AppointmentPaymentInput = {
-  appointmentId: string;
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
@@ -97,8 +95,8 @@ const makeAppointmentPayment: Resolver<
   AppointmentPaymentResult
 > = async (parent, { paymentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const processingAppointment = await apptsRepo.findByIdAndStatus(
-    paymentInput.appointmentId,
+  const processingAppointment = await apptsRepo.findByOrderIdAndStatus(
+    paymentInput.orderId,
     STATUS.PAYMENT_PENDING
   );
   if (!processingAppointment) {
@@ -113,16 +111,22 @@ const makeAppointmentPayment: Resolver<
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
+    //check if any appointment already exists in this slot before confirming payment
+    const apptCount = await apptsRepo.checkIfAppointmentExist(
+      processingAppointment.doctorId,
+      processingAppointment.appointmentDateTime
+    );
+
+    if (apptCount > 0) {
+      throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+    }
+
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
     sendPatientAcknowledgements(processingAppointment, consultsDb, doctorsDb, patientsDb);
 
     //update appointment status
-    apptsRepo.updateAppointmentStatus(paymentInput.appointmentId, STATUS.PENDING, false);
-  } else {
-    //cancel medmantra booking
-    if (processingAppointment.apolloAppointmentId) {
-      apptsRepo.cancelMedMantraAppointment(processingAppointment, 'PAYMENT_FAILED');
-    }
+    //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
+    apptsRepo.updateAppointmentStatus(processingAppointment.id, STATUS.PENDING, false);
   }
 
   return { appointment: paymentInfo };
@@ -199,7 +203,7 @@ const sendPatientAcknowledgements = async (
     patientDetails.firstName +
     '<br>Mobile Number :-' +
     patientDetails.mobileNumber +
-    '<br>Patient Location (city) :-\nDoctor Name :-' +
+    '<br>Doctor Name :-' +
     docDetails.firstName +
     ' ' +
     docDetails.lastName +
@@ -208,9 +212,9 @@ const sendPatientAcknowledgements = async (
     '<br>Appointment Date :-' +
     format(istDateTime, 'dd/MM/yyyy') +
     '<br>Appointment Slot :-' +
-    format(istDateTime, 'hh:mm') +
+    format(istDateTime, 'hh:mm aa') +
     ' - ' +
-    format(addMinutes(istDateTime, 15), 'hh:mm') +
+    format(addMinutes(istDateTime, 15), 'hh:mm aa') +
     '<br>Mode of Consult :-' +
     appointmentData.appointmentType;
 

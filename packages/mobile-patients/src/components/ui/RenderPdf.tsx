@@ -5,7 +5,10 @@ import React from 'react';
 import { Header } from './Header';
 import { theme } from '../../theme/theme';
 import { colors } from '../../theme/colors';
-import { DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { CrossPopup, Download } from './Icons';
 import RNFetchBlob from 'rn-fetch-blob';
 import { useUIElements } from '../UIElementsProvider';
@@ -66,6 +69,7 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
         });
       })
       .catch((err) => {
+        CommonBugFender('RenderPdf_downloadPDF', err);
         console.log('error ', err);
         setLoading!(false);
       });

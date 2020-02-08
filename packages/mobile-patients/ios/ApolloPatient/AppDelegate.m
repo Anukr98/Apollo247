@@ -102,6 +102,16 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
+  
+  @try {
+    NSString * strHost = [NSString stringWithFormat:@"%@", url.scheme ? url.scheme : @"" ];
+     if ([strHost isEqualToString:@"vita-app-chron"]) {
+       [[NSNotificationCenter defaultCenter] postNotificationName:@"fitbitLoginNotification" object:nil];
+     }
+  } @catch (NSException *exception) {
+    NSLog(@"%@",exception );
+  }
+  
   [RCTLinkingManager application:application
                          openURL:url
                sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]

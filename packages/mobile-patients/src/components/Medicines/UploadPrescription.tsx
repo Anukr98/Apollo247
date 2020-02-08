@@ -13,7 +13,10 @@ import { CrossYellow, FileBig } from '@aph/mobile-patients/src/components/ui/Ico
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SAVE_PRESCRIPTION_MEDICINE_ORDER,
   UPLOAD_DOCUMENT,
@@ -154,6 +157,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         renderSuccessPopup();
       })
       .catch((e) => {
+        CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
         console.log({ e });
         renderErrorAlert(`Something went wrong, please try later.`);
       })
@@ -172,7 +176,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     try {
       // Physical Prescription Upload
       const uploadedPhyPrescriptionsData = await uploadMultipleFiles(PhysicalPrescriptions);
-      console.log('API call success');
+      console.log('upload of prescriptions done');
 
       const uploadedPhyPrescriptions = uploadedPhyPrescriptionsData.length
         ? uploadedPhyPrescriptionsData.map((item) => g(item, 'data', 'uploadDocument'))
@@ -199,13 +203,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+          isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
         },
       };
-      aphConsole.log(JSON.stringify(prescriptionMedicineInput));
+      console.log({ prescriptionMedicineInput });
+      console.log(JSON.stringify(prescriptionMedicineInput));
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
       console.log({ error });
       setLoading!(false);
+      CommonBugFender('UploadPrescription_onPressSubmit_try', error);
       renderErrorAlert('Error occurred while uploading physical prescription(s).');
     }
   };
@@ -360,6 +367,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        navigation={props.navigation}
         // showConsultPrescriptionsOnly={true} // not showing e-prescriptions for non-cart flow
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);

@@ -3,7 +3,11 @@ export enum ApiConstants {
 
   //appointment reschedule initiated
   RESCHEDULE_INITIATION_TITLE = 'Appointment Reschedule Initiation',
-  RESCHEDULE_INITIATION_BODY = 'Hi {0}, we’re really sorry to keep you waiting. {1} will not be able to make it for this appointment. We request you to reschedule.',
+  //RESCHEDULE_INITIATION_BODY = 'Hi {0}, we’re really sorry to keep you waiting. {1} will not be able to make it for this appointment. We request you to reschedule.',
+  RESCHEDULE_INITIATION_BODY = 'Hi {0}! Dr. {1} has requested you to reschedule due to an emergency. Please choose the next most suitable slot.',
+
+  PATIENT_NO_SHOW_RESCHEDULE_TITLE = 'Appointment Reschedule Initiation',
+  PATIENT_NO_SHOW_RESCHEDULE_BODY = 'Hi {0}, as you were unable to attend your consultation appointment on time with Dr. {1}, Please reschedule it. We request you to be on time for your rescheduled consultation.',
 
   //appointment transfer initiated
   TRANSFER_INITIATION_TITLE = 'Appointment Transfer Initiation',
@@ -11,19 +15,23 @@ export enum ApiConstants {
 
   //appointment call started by doctor
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
-  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the Consult Room',
+  CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  JUNIOR_CALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting to start your consultation. Please proceed to the consult room",
+  JUNIOR_AVCALL_APPOINTMENT_BODY = "Hi {0}! :) Dr. {1}'s team doctor is waiting for your call response. Please proceed to the consult room",
+  AVCALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting for your call response. Please proceed to the consult room.',
 
   //appointment reminder 15
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
-  APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 15 mins. :)',
-  PHYSICAL_APPOINTMENT_REMINDER_15_BODY = ' Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
+  APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in {1} mins. :)',
+  APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're online and ready for your appointment.",
+  PHYSICAL_APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
   PHYSICAL_APPOINTMENT_REMINDER_60_BODY = 'Hi {0}! Dr. {1} will see you in an hour. Please come down to {2}.',
   PHYSICAL_APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're ready for your appointment.",
 
   //appointment casesheet reminder 15
   APPOINTMENT_CASESHEET_REMINDER_15_TITLE = 'Appointment reminder',
-  APPOINTMENT_CASESHEET_REMINDER_15_BODY = 'Hi {0}! We noticed you have not filled in your medical details yet. This is necessary for your consultation to begin. Click here to fill your details now',
-  PHYSICAL_APPOINTMENT_CASESHEET_REMINDER_15_BODY = 'Hi {0}! We noticed you have not filled in your medical details yet. This is necessary for your consultation to begin. Click here to fill your details now',
+  APPOINTMENT_CASESHEET_REMINDER_15_BODY = 'Hi {0}! We noticed you have not filled in your medical details yet. This is necessary for your consultation to begin.',
+  PHYSICAL_APPOINTMENT_CASESHEET_REMINDER_15_BODY = 'Hi {0}! We noticed you have not filled in your medical details yet. This is necessary for your consultation to begin.',
 
   //appointment casesheet reminder 15
   PATIENT_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
@@ -31,7 +39,7 @@ export enum ApiConstants {
 
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
-  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) {1} from Dr. {2}'s team is waiting to start your consultation prep. Please proceed to the Consult Room",
+  JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
 
   //initiate senior doctor session
   SENIOR_APPT_SESSION_TITLE = 'Doctor has joined the consult room',
@@ -43,7 +51,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your order {1} is placed with us successfully.View Order Details',
+  ORDER_PLACED_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your order {1} is placed with us successfully.',
 
   //medicine order out for delivery
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
@@ -62,7 +70,7 @@ export enum ApiConstants {
   CANCEL_APPT_BODY = 'Hi {0}, we are really sorry. {1} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor',
 
   PATIENT_CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
-  PATIENT_CANCEL_APPT_BODY = 'Hi {0}! As per your request, your appointment {1} with Dr. {2} scheduled for {3} has been cancelled. Click here to book a new appointment with our top Apollo doctors.',
+  PATIENT_CANCEL_APPT_BODY = 'Hi {0}! As per your request, your appointment {1} with Dr. {2} scheduled for {3} has been cancelled.',
 
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
@@ -79,11 +87,12 @@ export enum ApiConstants {
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE = 'Diagnostic test payment failed',
-  DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days. Click here to book again",
+  DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   /*** push-notification messages end here ***/
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
   PATIENT_INITIATE_REASON = 'initiated by patient',
+  PATIENT_NOSHOW_REASON = 'Patient did not initiate the appointment, no casesheet',
 
   //pepipost configurations
   PEPIPOST_API_KEY = '0e396e4e9b5247d267c9a536cd154869',
@@ -109,6 +118,7 @@ export enum ApiConstants {
   PRISM_STATIC_MOBILE_NUMBER = '8019677178',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
+  MAX_DOCTOR_AVAILABILITY_CHECK_DAYS = 2,
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 
@@ -122,6 +132,9 @@ export enum ApiConstants {
   NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
+  DOCTORS_SEARCH_API_LOG_FILE = '/debug-logs/doctors-search.log',
+  OTP_VERIFICATION_API_LOG_FILE = '/debug-logs/otp-verification.log',
+  GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -149,6 +162,9 @@ export enum ApiConstants {
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
+  INVALID_RESEND_MESSAGE = 'Invalid resend details',
+
+  NOTIFICATION_DEFAULT_SOUND = 'default',
 
   //Medmantra Static data
   MEDMANTRA_GENDER = '72',
@@ -163,4 +179,35 @@ export enum ApiConstants {
   MEDMANTRA_FLAG = 1,
   MEDMANTRA_APPOINTMENT_MODE = 'Apollo247',
   MEDMANTRA_PAYTYPE = 'NETBANKING',
+
+  OPENTOK_URL = 'https://apolloaudiovideosprod.blob.core.windows.net/audiovideos/46422952/{1}/archive.mp4?sv=2018-03-28&ss=bfqt&srt=sco&sp=rl&st=2019-12-24T10%3A52%3A03Z&se=2020-01-28T10%3A52%3A00Z&sig=QrKoK7bAHTMzz3lLyxDRVcQXauhM9ySvgQDJHeLhmFc%3D',
+
+  CONVERT_VIDEO_MSG = '^^convert`video^^',
+  CONVERT_AUDIO_MSG = '^^convert`audio^^',
+  VIDEO_CALL_MSG = '^^callme`video^^',
+  AUDIO_CALL_MSG = '^^callme`audio^^',
+  STOP_CALL_MSG = '^^callme`stop^^',
+  ACCEPT_CALL_MSG = '^^callme`accept^^',
+  START_CONSULT = '^^#startconsult',
+  START_CONSULT_JR = '^^#startconsultJr',
+  STOP_CONSULT = '^^#stopconsult',
+  TRANSFER_CONSULT = '^^#transferconsult',
+  RESCHEDULE_CONSULT = '^^#rescheduleconsult',
+  FOLLOW_UP_CONSULT = '^^#followupconsult',
+  ASSETS_DIR = '/apollo-hospitals/packages/api/src/assets',
+  LOCAL = 'local',
+  CHAT_TRANSCRIPTS_PATH = '/chat_transcripts',
+  JUNIOR_DOC_TXT = 'Junior doctor: ',
+  SENIOR_DOC_TXT = 'Senior doctor: ',
+  PATIENT_TXT = 'Patient: ',
+
+  SAMPLE_DATE = '2020-01-20T',
+  SAMPLE_DATE_MORNING_START = '2020-01-20T08:00:00',
+  SAMPLE_DATE_MORNING_END = '2020-01-20T12:00:00',
+  SAMPLE_DATE_AFTERNOON_START = '2020-01-20T12:00:01',
+  SAMPLE_DATE_AFTERNOON_END = '2020-01-20T15:00:00',
+  SAMPLE_DATE_EVENING_START = '2020-01-20T15:00:01',
+  SAMPLE_DATE_EVENING_END = '2020-01-20T18:00:00',
+  SAMPLE_DATE_NIGHT_START = '2020-01-20T18:00:01',
+  SAMPLE_DATE_NIGHT_END = '2020-01-20T22:00:00',
 }

@@ -13,6 +13,9 @@ import {
   RescheduleAppointmentDetails,
   SdDashboardSummary,
   TransferAppointmentDetails,
+  PhrDocumentsSummary,
+  JdDashboardSummary,
+  AuditHistory,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -33,6 +36,8 @@ import {
   Packages,
   Secretary,
   StarTeam,
+  Auditor,
+  AdminAuditorMapper,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -83,6 +88,9 @@ export const connect = async () => {
         SdDashboardSummary,
         TransferAppointmentDetails,
         FeedbackDashboardSummary,
+        PhrDocumentsSummary,
+        JdDashboardSummary,
+        AuditHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -113,6 +121,8 @@ export const connect = async () => {
         Packages,
         Secretary,
         StarTeam,
+        Auditor,
+        AdminAuditorMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

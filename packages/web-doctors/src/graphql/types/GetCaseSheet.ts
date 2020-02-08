@@ -118,6 +118,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   salutation: Salutation | null;
   registrationNumber: string | null;
   signature: string | null;
+  photoUrl: string | null;
   specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty;
   doctorHospital: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_doctorHospital[];
 }
@@ -257,6 +258,7 @@ export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet {
   __typename: "CaseSheet";
   createdDate: any | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile | null;
+  updatedDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet {

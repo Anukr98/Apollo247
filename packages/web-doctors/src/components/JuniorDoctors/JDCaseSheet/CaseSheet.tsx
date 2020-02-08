@@ -351,7 +351,12 @@ export const CaseSheet: React.FC = () => {
       state: healthVault,
       component: <HealthVault />,
     },
-    { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
+    {
+      key: 'diagnosis',
+      value: 'Provisional Diagnosis',
+      state: diagnosis,
+      component: <Diagnosis />,
+    },
     {
       key: 'medicinePrescription',
       value: 'Medication Prescribed',

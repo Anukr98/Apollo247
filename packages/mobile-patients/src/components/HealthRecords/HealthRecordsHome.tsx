@@ -14,13 +14,18 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
   DELETE_PATIENT_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
   GET_MEDICAL_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
+  UPLOAD_DOCUMENT,
+  SAVE_PRESCRIPTION_MEDICINE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import {
@@ -40,6 +45,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -60,6 +66,15 @@ import {
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { TabHeader } from '../ui/TabHeader';
 import { useUIElements } from '../UIElementsProvider';
+import { UploadPrescription } from '../Medicines/UploadPrescription';
+import {
+  PRISM_DOCUMENT_CATEGORY,
+  UPLOAD_FILE_TYPES,
+  MEDICINE_DELIVERY_TYPE,
+} from '../../graphql/types/globalTypes';
+import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -155,6 +170,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+  const { showAphAlert } = useUIElements();
+  const { deliveryAddressId, storeId } = useShoppingCart();
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
@@ -235,6 +252,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
       })
       .catch((e) => {
+        CommonBugFender('HealthRecordsHome_fetchPastData', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
         //Alert.alert('Error', error);
@@ -258,6 +276,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setmedicalRecords(records);
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchData', error);
         console.log('Error occured', { error });
         //Alert.alert('Error', error.message);
       })
@@ -284,8 +303,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         sethospitalizations(hospitalizationsData);
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_fetchTestData', error);
         console.log('Error occured', { error });
-        handleGraphQlError(error);
+        currentPatient && handleGraphQlError(error);
       })
       .finally(() => setPrismdataLoader(false));
   }, [currentPatient]);
@@ -324,7 +344,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .catch((e) => {
         console.log('Error occured while render Delete MedicalOrder', { e });
-        handleGraphQlError(e);
+        currentPatient && handleGraphQlError(e);
       });
   };
 
@@ -418,7 +438,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           activeOpacity={1}
           onPress={() => {
             CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
-            props.navigation.navigate(AppRoutes.AddRecord);
+            setdisplayOrderPopup(true);
+            // props.navigation.navigate(AppRoutes.AddRecord);
           }}
         >
           <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 20)}>
@@ -454,22 +475,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setdisplayOrderPopup(true);
         }}
         onClickCard={() => {
-          props.navigation.navigate(AppRoutes.ConsultDetails, {
-            CaseSheet: item.id,
-            DoctorInfo: item.doctorInfo,
-            FollowUp: item.isFollowUp,
-            appointmentType: item.appointmentType,
-            DisplayId: item.displayId,
-            BlobName: g(doctorType(item), 'blobName'),
-          });
+          if (item.doctorInfo) {
+            props.navigation.navigate(AppRoutes.ConsultDetails, {
+              CaseSheet: item.id,
+              DoctorInfo: item.doctorInfo,
+              FollowUp: item.isFollowUp,
+              appointmentType: item.appointmentType,
+              DisplayId: item.displayId,
+              BlobName: g(doctorType(item), 'blobName'),
+            });
+          }
         }}
         PastData={item}
         navigation={props.navigation}
-        onFollowUpClick={() => onFollowUpClick(item)}
+        onFollowUpClick={() => {
+          if (item.doctorInfo) {
+            onFollowUpClick(item);
+          }
+        }}
       />
     );
   };
-
   const renderEmptyConsult = () => {
     if (!loading) {
       return (
@@ -546,8 +572,110 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         });
       })
       .catch((error) => {
+        CommonBugFender('HealthRecordsHome_onFollowUpClick', error);
         console.log('Error occured', { error });
       });
+  };
+  const renderErrorAlert = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: desc,
+      unDismissable: true,
+    });
+
+  const renderSuccessPopup = () => {
+    fetchPastData();
+    showAphAlert!({
+      title: 'Hi:)',
+      description: 'Your prescriptions have been submitted successfully.',
+      unDismissable: true,
+    });
+  };
+
+  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+    setLoading!(true);
+    client
+      .mutate({
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+        variables,
+      })
+      .then(({ data }) => {
+        console.log({ data });
+        setLoading!(false);
+        setdisplayOrderPopup(false);
+        const { errorCode } = g(data, 'SavePrescriptionMedicineOrder')! || {};
+
+        if (errorCode) {
+          renderErrorAlert(`Something went wrong, unable to place order.`);
+          return;
+        }
+        props.navigation.goBack();
+        renderSuccessPopup();
+      })
+      .catch((e) => {
+        console.log({ e });
+        renderErrorAlert(`Something went wrong, please try later.`);
+      })
+      .finally(() => {
+        setLoading!(false);
+      });
+  };
+
+  const UploadPrescriptionData = (uploadata: any) => {
+    console.log(uploadata, 'jbhj');
+    uploadata.map((item: any) => {
+      const variables = {
+        UploadDocumentInput: {
+          base64FileInput: item.base64,
+          category: PRISM_DOCUMENT_CATEGORY.HealthChecks,
+          fileType:
+            item.fileType == 'jpg'
+              ? UPLOAD_FILE_TYPES.JPEG
+              : item.fileType == 'png'
+              ? UPLOAD_FILE_TYPES.PNG
+              : item.fileType == 'pdf'
+              ? UPLOAD_FILE_TYPES.PDF
+              : UPLOAD_FILE_TYPES.JPEG,
+          patientId: g(currentPatient, 'id')!,
+        },
+      };
+      console.log(JSON.stringify(variables));
+      setLoading!(true);
+      client
+        .mutate<uploadDocument, uploadDocumentVariables>({
+          mutation: UPLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables,
+        })
+        .then((data) => {
+          console.log(data, 'uploadata');
+          setLoading!(false);
+          setdisplayOrderPopup(false);
+          const fieldId = data && data.data!.uploadDocument.fileId;
+          if (fieldId) {
+            const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
+              prescriptionMedicineInput: {
+                patientId: (currentPatient && currentPatient.id) || '',
+                medicineDeliveryType: deliveryAddressId
+                  ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                  : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+                shopId: storeId || '0',
+                appointmentId: '',
+                patinetAddressId: deliveryAddressId || '',
+                prescriptionImageUrl: data.data!.uploadDocument.filePath || '',
+                prismPrescriptionFileId: data.data!.uploadDocument.fileId || '',
+                isEprescription: 0, // if atleat one prescription is E-Prescription then pass it as one.
+              },
+            };
+            console.log({ prescriptionMedicineInput });
+            console.log(JSON.stringify(prescriptionMedicineInput));
+            submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+          }
+        })
+        .catch((error) => {
+          console.log(error, 'error');
+        });
+    });
   };
 
   return (
@@ -563,20 +691,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           {renderProfileChangeView()}
           {renderTabSwitch()}
-          {!loading ? (
-            selectedTab === tabs[0].title ? (
-              renderConsults()
-            ) : (
-              <MedicalRecords
-                navigation={props.navigation}
-                MedicalRecordData={medicalRecords}
-                renderDeleteMedicalOrder={renderDeleteMedicalOrder}
-                labTestsData={labTests}
-                healthChecksData={healthChecks}
-                hospitalizationsData={hospitalizations}
-              />
-            )
-          ) : null}
+          {selectedTab === tabs[0].title ? (
+            renderConsults()
+          ) : (
+            <MedicalRecords
+              navigation={props.navigation}
+              MedicalRecordData={medicalRecords}
+              renderDeleteMedicalOrder={renderDeleteMedicalOrder}
+              labTestsData={labTests}
+              healthChecksData={healthChecks}
+              hospitalizationsData={hospitalizations}
+            />
+          )}
         </ScrollView>
       </SafeAreaView>
       {displayFilter && (
@@ -598,12 +724,41 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         />
       )}
       {displayOrderPopup && (
-        <AddFilePopup
-          onClickClose={() => {
-            setdisplayOrderPopup(false);
+        <UploadPrescriprionPopup
+          isVisible={displayOrderPopup}
+          disabledOption="NONE"
+          type="nonCartFlow"
+          heading={'Upload Prescription(s)'}
+          instructionHeading={'Instructions For Uploading Prescriptions'}
+          instructions={[
+            'Take clear picture of your entire prescription.',
+            'Doctor details & date of the prescription should be clearly visible.',
+            'Medicines will be dispensed as per prescription.',
+          ]}
+          optionTexts={{
+            camera: 'TAKE A PHOTO',
+            gallery: 'CHOOSE\nFROM GALLERY',
           }}
-          getData={(data: (PickerImage | PickerImage[])[]) => {}}
+          onClickClose={() => setdisplayOrderPopup(false)}
+          onResponse={(selectedType, response) => {
+            setdisplayOrderPopup(false);
+            if (selectedType == 'CAMERA_AND_GALLERY') {
+              if (response.length == 0) return;
+              UploadPrescriptionData(response);
+              // props.navigation.navigate(AppRoutes.UploadPrescription, {
+              //   phyPrescriptionsProp: response,
+              // });
+            }
+          }}
         />
+        // <AddFilePopup
+        //   onClickClose={() => {
+        //     setdisplayOrderPopup(false);
+        //   }}
+        //   getData={(data: (PickerImage | PickerImage[])[]) => {
+        //     UploadPrescriptionData(data);
+        //   }}
+        // />
       )}
     </View>
   );

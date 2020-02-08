@@ -10,7 +10,10 @@ import {
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
@@ -92,10 +95,7 @@ export interface UploadPrescriprionPopupProps {
   instructions?: string[];
   hideTAndCs?: boolean;
   onClickClose: () => void;
-  onResponse: (
-    selectedType: EPrescriptionDisableOption,
-    response: (PhysicalPrescription)[]
-  ) => void;
+  onResponse: (selectedType: EPrescriptionDisableOption, response: PhysicalPrescription[]) => void;
   isProfileImage?: boolean;
 }
 
@@ -143,11 +143,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       // height: 400,
       cropping: props.isProfileImage ? true : false,
       hideBottomControls: true,
-      width: props.isProfileImage ? 800 : undefined,
-      height: props.isProfileImage ? 800 : undefined,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
       includeBase64: true,
       multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.1,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
     })
       .then((response) => {
         setshowSpinner(false);
@@ -156,7 +159,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           formatResponse([response] as ImageCropPickerResponse[])
         );
       })
-      .catch((e) => {
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickTakePhoto', e);
         // aphConsole.log({ e });
         setshowSpinner(false);
       });
@@ -199,11 +203,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
-      width: props.isProfileImage ? 800 : undefined,
-      height: props.isProfileImage ? 800 : undefined,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
       includeBase64: true,
       multiple: props.isProfileImage ? false : true,
-      compressImageQuality: 0.1,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
     })
       .then((response) => {
         //console.log('res', response);
@@ -214,7 +221,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           formatResponse(response as ImageCropPickerResponse[])
         );
       })
-      .catch((e) => {
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
         //aphConsole.log({ e });
         setshowSpinner(false);
       });

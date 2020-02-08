@@ -10,7 +10,7 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -26,10 +26,10 @@ import {
   Text,
   TextInput,
   View,
-  WebView,
   Dimensions,
 } from 'react-native';
-import firebase, { RNFirebase } from 'react-native-firebase';
+//import { WebView } from 'react-native-webview';
+import firebase from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
 import { db } from '../strings/FirebaseConfig';
@@ -38,7 +38,7 @@ import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { loginAPI } from '../helpers/loginCalls';
-import { useApolloClient } from 'react-apollo-hooks';
+import { WebView } from 'react-native-webview';
 
 const { height, width } = Dimensions.get('window');
 
@@ -117,21 +117,23 @@ let dbChildKey: string = '';
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const { sendOtp, isSendingOtp, signOut } = useAuth();
+  const { signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
-  const client = useApolloClient();
 
   useEffect(() => {
     try {
       fireBaseFCM();
       signOut();
       setLoading && setLoading(false);
-    } catch (error) {}
+      firebase.auth().appVerificationDisabledForTesting = true;
+    } catch (error) {
+      CommonBugFender('Login_useEffect_try', error);
+    }
   }, [signOut]);
 
   const fireBaseFCM = async () => {
@@ -149,6 +151,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         // User has authorised
       } catch (error) {
         // User has rejected permissions
+        CommonBugFender('Login_fireBaseFCM_try', error);
         console.log('not enabled error', error);
       }
     }
@@ -178,6 +181,30 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     console.log('didmout');
+    db.ref('ApolloPatients/')
+      .push({
+        mobileNumber: '',
+        mobileNumberEntered: '',
+        mobileNumberSuccess: '',
+        OTPEntered: '',
+        ResendOTP: '',
+        wrongOTP: '',
+        OTPEnteredSuccess: '',
+        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
+        mobileNumberFailed: '',
+        OTPFailedReason: '',
+        FirebaseTokenSuccess: '',
+        patientApiCallSuccess: '',
+      })
+      .then((data: any) => {
+        //success callback
+        // console.log('data ', data);
+        dbChildKey = data.path.pieces_[1];
+      })
+      .catch((error: Error) => {
+        //error callback
+        console.log('error ', error);
+      });
     // Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
 
@@ -231,6 +258,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         });
       }
     } catch (error) {
+      CommonBugFender('Login_getTimerData_try', error);
       console.log(error.message);
     }
     return isNoBlocked;
@@ -240,26 +268,10 @@ export const Login: React.FC<LoginProps> = (props) => {
     CommonLogEvent(AppRoutes.Login, 'Login clicked');
 
     db.ref('ApolloPatients/')
-      .push({
+      .child(dbChildKey)
+      .update({
         mobileNumber: phoneNumber,
-        mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
-        mobileNumberSuccess: '',
-        OTPEntered: '',
-        ResendOTP: '',
-        wrongOTP: '',
-        OTPEnteredSuccess: '',
-        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
-        mobileNumberFailed: '',
-        OTPFailedReason: '',
-      })
-      .then((data: any) => {
-        //success callback
-        // console.log('data ', data);
-        dbChildKey = data.path.pieces_[1];
-      })
-      .catch((error: Error) => {
-        //error callback
-        console.log('error ', error);
+        mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
       });
 
     Keyboard.dismiss();
@@ -279,7 +291,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             AsyncStorage.setItem('phoneNumber', phoneNumber);
             setShowSpinner(true);
 
-            loginAPI(client, '+91' + phoneNumber)
+            loginAPI('+91' + phoneNumber)
               .then((confirmResult: any) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);
@@ -289,10 +301,13 @@ export const Login: React.FC<LoginProps> = (props) => {
                 db.ref('ApolloPatients/')
                   .child(dbChildKey)
                   .update({
-                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss a'),
+                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
                   });
 
                 console.log('confirmResult login', confirmResult);
+                try {
+                  signOut();
+                } catch (error) {}
 
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
@@ -303,7 +318,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               })
               .catch((error: Error) => {
                 console.log(error, 'error');
-                console.log(error.message, 'errormessage');
                 setShowSpinner(false);
 
                 db.ref('ApolloPatients/')
@@ -314,10 +328,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
                 CommonLogEvent('OTP_SEND_FAIL', error.message);
                 CommonBugFender('OTP_SEND_FAIL', error);
-                Alert.alert(
-                  'Error',
-                  (error && error.message) || 'The interaction was cancelled by the user.'
-                );
+                handleGraphQlError(error);
               });
           }
         }
@@ -350,7 +361,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <WebView
             source={{
-              uri: 'https://www.apollo247.com/TnC.html',
+              uri: 'https://www.apollo247.com/termsandconditions.html',
             }}
             style={{
               flex: 1,
@@ -446,7 +457,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   letterSpacing: 0,
                 }}
               >
-                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo247
               </Text>
             </HyperLink>
           </View>

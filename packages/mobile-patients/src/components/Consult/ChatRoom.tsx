@@ -32,6 +32,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   DeviceHelper,
   CommonLogEvent,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -94,10 +95,10 @@ import {
   TouchableOpacity,
   View,
   BackHandler,
-  WebView,
   StyleSheet,
   AppState,
   AppStateStatus,
+  WebView,
   Image as ImageReact,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -142,6 +143,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
 import { colors } from '../../theme/colors';
+// import { WebView } from 'react-native-webview';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -265,7 +267,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [heightList, setHeightList] = useState<number>(
     isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
   );
-
+  const [status, setStatus] = useState<STATUS>(appointmentData.status);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
@@ -279,6 +281,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
+
+  const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -391,6 +395,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const stopConsultJr = '^^#stopconsultJr';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -442,6 +447,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         return true;
       }
     } catch (error) {
+      CommonBugFender('ChatRoom_backDataFunctionality_try', error);
       console.log(error, 'error');
     }
   };
@@ -515,7 +521,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[0] && sendAnswerMessage(text);
             setSendAnswers(0);
-          } catch (error) {}
+            setSendAnswers(6);
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers0_try', error);
+          }
           break;
         case 'weight':
           data.weight = item.v[0] || 'No Idea';
@@ -528,7 +537,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[1] && sendAnswerMessage(text);
             setSendAnswers(1);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers1_try', error);
+          }
           break;
         case 'drug':
           if (item.v[0] === 'No') {
@@ -542,7 +553,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setMessageText('');
               !isSendAnswers[2] && sendAnswerMessage(text);
               setSendAnswers(2);
-            } catch (error) {}
+            } catch (error) {
+              CommonBugFender('ChatRoom_Answers2_try', error);
+            }
           }
           break;
         case 'drugAllergies':
@@ -556,7 +569,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[2] && sendAnswerMessage(text);
             setSendAnswers(2);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers3_try', error);
+          }
           break;
         case 'dite':
           if (item.v[0] === 'No') {
@@ -570,7 +585,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setMessageText('');
               !isSendAnswers[3] && sendAnswerMessage(text);
               setSendAnswers(3);
-            } catch (error) {}
+            } catch (error) {
+              CommonBugFender('ChatRoom_Answers4_try', error);
+            }
           }
           break;
         case 'dietAllergies':
@@ -584,7 +601,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[3] && sendAnswerMessage(text);
             setSendAnswers(3);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers5_try', error);
+          }
           break;
         case 'temperature':
           data.temperature = item.v[0] || 'No Idea';
@@ -597,7 +616,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[4] && sendAnswerMessage(text);
             setSendAnswers(4);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers6_try', error);
+          }
           break;
         case 'bp':
           data.bp = item.v[0] || item.v[1] || 'No Idea';
@@ -610,7 +631,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[5] && sendAnswerMessage(text);
             setSendAnswers(5);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers7_try', error);
+          }
           break;
         case 'familyHistory':
           data.familyHistory = item.v[0] || 'No';
@@ -625,7 +648,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[6] && sendAnswerMessage(text);
             setSendAnswers(6);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers8_try', error);
+          }
           break;
         case 'lifeStyleSmoke':
           data.lifeStyle = data.lifeStyle
@@ -642,7 +667,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[7] && sendAnswerMessage(text);
             setSendAnswers(7);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers9_try', error);
+          }
           break;
         case 'lifeStyleDrink':
           data.lifeStyle = data.lifeStyle
@@ -659,7 +686,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setMessageText('');
             !isSendAnswers[8] && sendAnswerMessage(text);
             setSendAnswers(8);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_Answers10_try', error);
+          }
           break;
       }
     });
@@ -682,7 +711,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log(queueData, 'queueData res, adding');
           AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
           console.log('Error occured, adding ', e);
         })
         .finally(() => startJoinTimer(0));
@@ -697,7 +727,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log(queueData, 'queueData res');
           AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_addToConsultQueue', e);
           console.log('Error occured ', e);
         })
         .finally(() => startJoinTimer(0));
@@ -733,7 +764,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then(({ data }: any) => {
         console.log(data, 'data endCallAppointmentSessionAPI');
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_endCallSessionAppointment', e);
         console.log('Error endCallAppointmentSessionAPI ', e);
       });
   };
@@ -762,6 +794,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(data, 'datacancel');
       })
       .catch((e: any) => {
+        CommonBugFender('ChatRoom_cancelAppointmentApi', e);
         setLoading(false);
         console.log('Error occured while adding Doctor', e);
         const message = e.message ? e.message.split(':')[1].trim() : '';
@@ -799,6 +832,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log(resuts, 'READ_EXTERNAL_STORAGE');
       }
     } catch (error) {
+      CommonBugFender('ChatRoom_requestReadSmsPermission_try', error);
       console.log('error', error);
     }
   };
@@ -838,7 +872,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setsessionId(sessionInfo.data.updateAppointmentSession.sessionId);
           settoken(sessionInfo.data.updateAppointmentSession.appointmentToken);
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_updateSessionAPI', e);
           console.log('Error occured while adding Doctor', e);
         });
     }
@@ -1060,7 +1095,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     getHistory(0);
 
-    // registerForPushNotification();
+    registerForPushNotification();
 
     pubnub.addListener({
       status: (statusEvent) => {
@@ -1073,7 +1108,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        // console.log('messageevent', message);
+        // console.log('messageevent', message);]
+        message &&
+          message.message &&
+          message.message.message &&
+          message.message.message === '^^#startconsult' &&
+          setname('DOCTOR');
+        message &&
+          message.message &&
+          message.message.message &&
+          message.message.message === '^^#startconsultJr' &&
+          setname('JUNIOR');
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
@@ -1128,6 +1173,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           })
           .catch((error) => {
+            CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
             console.log(error);
           });
       },
@@ -1153,7 +1199,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-      } catch (error) {}
+      } catch (error) {
+        CommonBugFender('ChatRoom_cleanup_try', error);
+      }
     };
   }, []);
 
@@ -1233,6 +1281,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }, 1000);
     } catch (error) {
+      CommonBugFender('ChatRoom_startCallAbondmentTimer_try', error);
       console.log('error in call abandoment', error);
     }
   };
@@ -1259,7 +1308,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           );
 
           appointmentData = data.data.getAppointmentData.appointmentsHistory[0];
-
+          setStatus(data.data.getAppointmentData.appointmentsHistory[0].status);
           if (toStopTimer) {
             if (appointmentSeniorDoctorStarted) {
               stopCallAbondmentTimer();
@@ -1268,9 +1317,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             callAbondmentMethod(appointmentSeniorDoctorStarted);
           }
-        } catch (error) {}
+        } catch (error) {
+          CommonBugFender('ChatRoom_APIForUpdateAppointmentData_try', error);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_APIForUpdateAppointmentData', error);
         abondmentStarted = false;
         console.log('Error APIForUpdateAppointmentData ', e);
       });
@@ -1278,40 +1330,49 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
-    ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    if (Platform.OS === 'ios') {
+      ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    } else {
+      handlePushNotification('');
+    }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
     console.log('Device Token Received', deviceToken);
+    try {
+      const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
+      const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
+      console.log('android:', androidToken.deviceToken);
 
-    const fcmToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const androidToken = fcmToken ? JSON.parse(fcmToken) : '';
-    console.log('android:', androidToken);
-
-    if (Platform.OS === 'ios') {
-      pubnub.push.addChannels(
-        {
-          channels: [channel],
-          device: deviceToken,
-          pushGateway: 'apns',
-        },
-        (status: any) => {
-          if (status.error) {
-            console.log('operation failed w/ error:', status);
-          } else {
-            console.log('operation done!');
+      if (Platform.OS === 'ios') {
+        pubnub.push.addChannels(
+          {
+            channels: [channel],
+            device: deviceToken,
+            pushGateway: 'apns',
+          },
+          (status: any) => {
+            if (status.error) {
+              console.log('operation failed w/ error:', status);
+            } else {
+              console.log('operation done!');
+            }
           }
-        }
-      );
-      console.log('ios:', token);
-      // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
-    } else {
-      pubnub.push.addChannels({
-        channels: [channel],
-        device: androidToken,
-        pushGateway: 'gcm', // apns, gcm, mpns
-      });
-      // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+        );
+        console.log('ios:', token);
+        // Send iOS Notification from debug console: {"pn_apns":{"aps":{"alert":"Hello World."}}}
+      } else {
+        console.log('androidtoken:', token);
+        pubnub.push.addChannels({
+          channels: [channel],
+          device: androidToken,
+          pushGateway: 'gcm', // apns, gcm, mpns
+        });
+        // Send Android Notification from debug console: {"pn_gcm":{"data":{"message":"Hello World."}}}
+      }
+    } catch (error) {
+      CommonBugFender('ChatRoom_handlePushNotification_try', error);
+      console.log('ioserror:', error);
     }
   };
 
@@ -1334,13 +1395,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           const msgs = res.messages;
           console.log('msgs', msgs);
-
+         
           res.messages.forEach((element, index) => {
             let item = element.entry;
             if (item.prismId) {
-              getPrismUrls(client, patientId, item.prismId).then((data: any) => {
-                item.url = (data && data.urls[0]) || item.url;
-              });
+              getPrismUrls(client, patientId, item.prismId)
+                .then((data: any) => {
+                  item.url = (data && data.urls[0]) || item.url;
+                })
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls', e);
+                });
             }
             newmessage[newmessage.length] = item;
           });
@@ -1382,6 +1447,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             checkAutomatedPatientText();
           }
         } catch (error) {
+          CommonBugFender('ChatRoom_getHistory_try', error);
           setLoading(false);
           console.log('error', error);
         }
@@ -1405,9 +1471,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
-    '4. Avail 1 free follow-up*\n',
-    '5. Chat with your doctor**\n',
-    '* 7 days after your first consultation.\n\n',
+    '4. Avail 1 free follow-up (Within 7 days after your first consultation.)\n',
+    '5. Chat with your doctor\n\n',
     `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
@@ -1603,13 +1668,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           startInterval(startingTime);
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('ChatRoom_checkingAppointmentDates_try', error);
+    }
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
   const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
-    // console.log('pubNubMessages', message);
+    console.log('pubNubMessages', message.message.sentBy);
+   
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -1655,6 +1723,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         abondmentStarted = false;
         APIForUpdateAppointmentData(true);
         setTextChange(false);
+        try {
+          Keyboard.dismiss();
+        } catch (error) {}
 
         // ************* SHOW FEEDBACK POUP ************* \\
       } else if (
@@ -1724,6 +1795,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === callAbandonment) {
         console.log('callAbandonment');
         setShowCallAbandmentPopup(true);
+      } else if (message.message.message === appointmentComplete) {
+        setTextChange(false);
+        setStatus(STATUS.COMPLETED);
       }
     } else {
       console.log('succss');
@@ -1780,7 +1854,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         NextAvailableSlot(result[0] ? result[0] : result, 'Transfer', false);
       }
     } catch (error) {
-      // console.log('checkForRescheduleMessageerror ', error);
+      CommonBugFender('ChatRoom_checkForRescheduleMessage_try', error);
     }
   };
 
@@ -1829,7 +1903,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         },
         (status, response) => {}
       );
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('ChatRoom_send_try', error);
+    }
   };
 
   let leftComponent = 0;
@@ -1951,7 +2027,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     {moment
                       .utc(rowData.transferInfo.transferDateTime)
                       .local()
-                      .format('Do MMMM, dddd \nhh:mm a')}
+                      .format('Do MMMM, dddd \nhh:mm A')}
                   </Text>
                   <TouchableOpacity
                     activeOpacity={1}
@@ -1980,7 +2056,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </View>
                 {rowData.transferInfo.photoUrl &&
                 rowData.transferInfo.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
                 ) ? (
                   <Image
                     source={{ uri: rowData.transferInfo.photoUrl }}
@@ -2032,7 +2108,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         flatListRef.current! &&
                           flatListRef.current!.scrollToEnd({ animated: true });
                       }, 200);
-                    } catch (error) {}
+                    } catch (error) {
+                      CommonBugFender('ChatRoom_RESCHEDULE_try', error);
+                    }
                   }}
                 />
 
@@ -2056,7 +2134,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       console.log(appointmentTransferInput, 'AcceptApi Input');
 
                       transferAppointmentAPI(rowData, appointmentTransferInput);
-                    } catch (error) {}
+                    } catch (error) {
+                      CommonBugFender('ChatRoom_ACCEPT_try', error);
+                    }
                   }}
                 />
               </StickyBottomComponent>
@@ -2209,11 +2289,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
                       })
                       .catch((err: Error) => {
+                        CommonBugFender('ChatRoom_DOWNLOAD_PRESS', err);
                         console.log('error ', err);
                         setLoading(false);
                         // ...
                       });
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('ChatRoom_DOWNLOAD_PRESS_try', error);
+                  }
                 }}
               />
 
@@ -2237,7 +2320,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         rowData.transferInfo.pdfUrl &&
                         rowData.transferInfo.pdfUrl.split('/').pop(),
                     });
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('ChatRoom_VIEW_try', error);
+                  }
                 }}
               />
             </StickyBottomComponent>
@@ -2321,7 +2406,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   color: 'white',
                 }}
               >
-                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm A')}
               </Text>
               <View
                 style={{
@@ -2515,7 +2600,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 type === 'Followup'
                   ? rowData.transferInfo.folloupDateTime
                   : rowData.transferInfo.transferDateTime
-              ).format('Do MMMM, dddd \nhh:mm a')}
+              ).format('Do MMMM, dddd \nhh:mm A')}
 
               {/* {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
               {/* {moment(rowData.transferDateTime ? rowData.transferDateTime : nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')} */}
@@ -2623,7 +2708,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
                       transferAppointmentAPI(rowData, appointmentTransferInput);
                     }
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('ChatRoom_ACCEPT2_try', error);
+                  }
                 }}
               />
             </StickyBottomComponent>
@@ -2655,7 +2742,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => setUrl(rowData.url))
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_PDF', e);
+            setUrl(rowData.url);
+          })
           .finally(() => {
             setLoading(false);
             setShowPDF(true);
@@ -2665,13 +2755,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setLoading(false);
         setShowPDF(true);
       }
-    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) {
+    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/)) {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
             setUrl((data && data.urls[0]) || rowData.url);
           })
-          .catch(() => setUrl(rowData.url))
+          .catch((e) => {
+            CommonBugFender('ChatRoom_OPEN_IMAGE', e);
+            setUrl(rowData.url);
+          })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
@@ -2685,26 +2778,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
-            Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
-              console.error('An error occurred', err)
-            );
+            console.log(data, 'finaldata');
+
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(true);
+            // Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
+            // console.error('An error occurred', err)
+            // );
           })
-          .catch(() =>
-            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err))
-          )
+          .catch(() => {
+            setUrl(rowData.url);
+            setLoading(false);
+            setPatientImageshow(true);
+            //Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+          })
           .finally(() => {
             setLoading(false);
             setPatientImageshow(true);
           });
       } else {
+        setUrl(rowData.url);
         setLoading(false);
-        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
+        setPatientImageshow(true);
+        // Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
       }
     }
   };
 
   const messageView = (rowData: any, index: number) => {
-    // console.log('messageView', rowData.message);
     return (
       <View
         style={{
@@ -2727,7 +2829,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             {appointmentData.doctorInfo.thumbnailUrl &&
             appointmentData.doctorInfo.thumbnailUrl.match(
-              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
             ) ? (
               <Image
                 source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -2754,7 +2856,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <View>
           {rowData.message === imageconsult ? (
             <View>
-              {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+              {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
                 <TouchableOpacity
                   onPress={() => {
                     console.log('IMAGE', rowData.url);
@@ -3020,7 +3122,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
                 appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
                 ) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -3140,7 +3242,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
                 appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
                 ) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -3380,7 +3482,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === acceptedCallMsg ||
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
-      rowData.message === callAbandonment
+      rowData.message === callAbandonment ||
+      rowData.message === appointmentComplete
     ) {
       return null;
     }
@@ -3490,7 +3593,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View>
               {rowData.message === imageconsult ? (
                 <View>
-                  {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                  {rowData.url.match(/\.(jpeg|jpg|gif|png|jfif)$/) ? (
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
@@ -3670,7 +3773,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
         );
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_transferAppointmentAPI', e);
         setLoading(false);
         setBottompopup(true);
       });
@@ -3732,9 +3836,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
             }, 500);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('ChatRoom_checkIfRescheduleAppointment_try', error);
+          }
         })
         .catch((e: any) => {
+          CommonBugFender('ChatRoom_checkIfRescheduleAppointment', e);
           setLoading(false);
           const error = JSON.parse(JSON.stringify(e));
           console.log('checkIfRescheduleerror', error);
@@ -3749,6 +3856,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         });
     } catch (error) {
+      CommonBugFender('ChatRoom_checkIfReschduleApi_try', error);
       console.log('creash in checkIfReschduleApi', error);
     }
   };
@@ -3771,7 +3879,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           .utc(
             Value === 'Followup'
               ? rowData.transferInfo.folloupDateTime
-              : rowData.transferInfo.transferDateTime
+              : rowData.transferInfo && rowData.transferInfo.transferDateTime
           )
           .local()
           .format('YYYY-MM-DD');
@@ -3792,15 +3900,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setNextSlotAvailable(data[0].availableSlot);
             checkIfReschduleApi(rowData, Value, isAutomatic, data[0].availableSlot);
           } catch (error) {
+            CommonBugFender('ChatRoom_getNextAvailableSlots_try', error);
             setNextSlotAvailable('');
           }
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChatRoom_getNextAvailableSlots', e);
           setLoading(false);
           console.log('Error occured ', e);
         })
         .finally(() => {});
     } catch (error) {
+      CommonBugFender('ChatRoom_NextAvailableSlot_try', error);
       console.log('crash in NextAvailableSlot', error);
     }
   };
@@ -3844,7 +3955,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
         );
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_rescheduleAPI', e);
         console.log(e, 'error');
         setLoading(false);
         setBottompopup(true);
@@ -3865,16 +3977,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const diffMonths = Math.ceil(
       moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
     );
-    console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
+    // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
-    if (textChange) {
+    if (textChange && !jrDoctorJoined) {
       time = 'Consult is In-progress';
     } else {
-      if (diffMin <= 0) {
-        time =
-          appointmentData.status === STATUS.COMPLETED
-            ? `Consult is completed`
-            : `Will be joining soon`;
+      if (status === STATUS.COMPLETED) {
+        time = `Consult is completed`;
+      } else if (diffMin <= 0) {
+        time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
         time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
       } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
@@ -3902,7 +4013,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View style={styles.imageContainer}>
               {appointmentData.doctorInfo.thumbnailUrl &&
               appointmentData.doctorInfo.thumbnailUrl.match(
-                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
               ) ? (
                 <Image
                   source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
@@ -4040,9 +4151,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     color: 'white',
                     ...theme.fonts.IBMPlexSansSemiBold(20),
                     textAlign: 'center',
+                    left: 15,
                   }}
                 >
-                  {appointmentData.doctorInfo.displayName}
+                  {name == 'JUNIOR'
+                    ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
+                    : appointmentData.doctorInfo.displayName}
                 </Text>
               </>
             )}
@@ -4280,9 +4394,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             color: 'white',
             ...theme.fonts.IBMPlexSansSemiBold(20),
             textAlign: 'center',
+            left: 15,
           }}
+          numberOfLines={2}
         >
-          {appointmentData.doctorInfo.displayName}
+          {name == 'JUNIOR'
+            ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
+            : appointmentData.doctorInfo.displayName}
         </Text>
         <View
           style={{
@@ -4704,7 +4822,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         {appointmentData.doctorInfo.photoUrl &&
         appointmentData.doctorInfo.photoUrl.match(
-          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
         ) ? (
           <Image
             source={{ uri: appointmentData.doctorInfo.photoUrl }}
@@ -4814,7 +4932,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
         PublishAudioVideo();
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChatRoom_APICallAgain', e);
         console.log('Error occured while adding Doctor', e);
       });
   };
@@ -4933,7 +5052,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   );
                   KeepAwake.activate();
                 })
-                .catch((e: string) => {
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
                   console.log('Error occured', e);
                 })
                 .finally(() => {
@@ -4944,6 +5064,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
           })
           .catch((e) => {
+            CommonBugFender('ChatRoom_uploadDocument', e);
             setLoading(false);
             KeepAwake.activate();
             console.log('upload data error', e);
@@ -5054,7 +5175,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         instructions={[
           'Take clear Picture of your entire file.',
           'Doctor details & date of the test should be clearly visible.',
-          'Only PDF / JPG / PNG type files up to 2 mb are allowed',
+          'Only JPG / PNG type files up to 2 mb are allowed',
         ]}
         isVisible={isDropdownVisible}
         disabledOption={'NONE'}
@@ -5083,6 +5204,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const renderPrescriptionModal = () => {
     return (
       <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           console.log('selectedEPres', selectedEPres);
           setSelectPrescriptionVisible(false);
@@ -5115,12 +5238,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   );
                   KeepAwake.activate();
                 });
+              item.message &&
+                pubnub.publish(
+                  {
+                    channel: channel,
+                    message: {
+                      id: patientId,
+                      message: item.message,
+                      type: 'PHR',
+                      messageDate: new Date(),
+                    },
+                    storeInHistory: true,
+                    sendByPost: true,
+                  },
+                  (status, response) => {}
+                );
             });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         //selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
-        isVisible={isSelectPrescriptionVisible}
+        isVisible={true}
       />
     );
   };
@@ -5249,14 +5387,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-              })
-            );
-            handleCallTheEdSessionAPI();
+            if (callhandelBack) {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                })
+              );
+              handleCallTheEdSessionAPI();
+            }
           }}
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
@@ -5294,7 +5434,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
-          <KeyboardAvoidingView behavior="padding" enabled keyboardVerticalOffset={16}>
+          
             <View
               style={{
                 width: width,
@@ -5394,7 +5534,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               )}
             </View>
-          </KeyboardAvoidingView>
         ) : (
           //  <KeyboardAvoidingView behavior="padding" enabled>
           <View
@@ -5769,7 +5908,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       )}
       {uploadPrescriptionPopup()}
-      {renderPrescriptionModal()}
+      {isSelectPrescriptionVisible && renderPrescriptionModal()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
       <FeedbackPopup
@@ -5785,7 +5924,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         description="How was your overall experience with the following consultation —"
         info={{
           title: `Dr. ${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
-          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm a')}`,
+          description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
           photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
         }}
         type={FEEDBACKTYPE.CONSULT}

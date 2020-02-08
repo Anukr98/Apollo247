@@ -14,7 +14,10 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   ADD_NEW_PROFILE,
   DELETE_PROFILE,
@@ -58,6 +61,7 @@ import {
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
+import { getRelations } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -206,7 +210,7 @@ type RelationArray = {
   title: string;
 };
 
-const relationArray: RelationArray[] = [
+const relationArray1: RelationArray[] = [
   { key: Relation.ME, title: 'Self' },
   {
     key: Relation.FATHER,
@@ -250,6 +254,7 @@ export interface EditProfileProps extends NavigationScreenProps {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
+  const relationArray: RelationArray[] = getRelations() || relationArray1;
   const isEdit = props.navigation.getParam('isEdit');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
@@ -390,6 +395,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               title: 'Network Error!',
               description: 'Please try again later.',
             });
+            CommonBugFender('EditProfile_deleteUserProfile', e);
           });
         // .finally(() => {
         //   setLoading && setLoading(false);
@@ -450,6 +456,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             title: 'Network Error!',
             description: 'Please try again later.',
           });
+          CommonBugFender('EditProfile_updateUserProfile', e);
         });
       // .finally(() => {
       //   // setLoading && setLoading(false);
@@ -500,6 +507,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           title: 'Network Error!',
           description: 'Please try again later.',
         });
+        CommonBugFender('EditProfile_newProfile', e);
       });
     // .finally(() => {
     //   setLoading && setLoading(false);
@@ -536,6 +544,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 console.log(data);
                 data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
                 setUploadVisible(false);
+              })
+              .catch((e) => {
+                CommonBugFender('EditProfile_renderUploadSelection', e);
               })
           );
           setUploadVisible(false);
@@ -769,7 +780,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <TextInputComponent label={'Relation'} noInput={true} />
         {renderRelation()}
         <TextInputComponent
-          label={'Email Address (Optional)'}
+          label={'Email Address'}
           value={`${email}`}
           onChangeText={(email) => setEmail(email)}
           placeholder={'name@email.com'}
@@ -820,7 +831,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   validationMessage = 'Enter valid email';
                 }
                 if (validationMessage) {
-                  Alert.alert('Error', validationMessage);
+                  showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
+                  // Alert.alert('Error', validationMessage);
                 } else {
                   isEdit ? updateUserProfile() : newProfile();
                 }
@@ -911,10 +923,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       {renderUploadSelection()}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
-        <KeyboardAvoidingView
-          behavior={Platform.OS == 'ios' ? 'padding' : undefined}
-          style={{ flex: 1 }}
-        >
+        <KeyboardAvoidingView behavior={undefined} style={{ flex: 1 }}>
           <ScrollView bounces={false} style={{ backgroundColor: '#f7f8f5' }}>
             {renderForm()}
             <View style={{ height: 100 }} />

@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.apollopatient">
+  package="com.apollopatient">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -12,8 +12,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -27,58 +28,43 @@
         android:name="android.hardware.camera.front"
         android:required="false" />
 
-    <application xmlns:tools="http://schemas.android.com/tools"
-        android:name=".MainApplication"
+    <application
+      android:name=".MainApplication"
+      android:label="@string/app_name"
+      android:icon="@mipmap/ic_launcher"
+      android:roundIcon="@mipmap/ic_launcher_round"
+        tools:replace="android:allowBackup,android:theme"
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
         android:largeHeap="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="28">
-        <!-- <meta-data
-            android:name="com.google.android.actions"
-            android:resource="@xml/network_security_config" /> -->
+      android:theme="@style/AppTheme">
+      <activity
+        android:name=".MainActivity"
+        android:label="@string/app_name"
+          android:launchMode="singleTop"
+          android:screenOrientation="portrait"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+        android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
+          >
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+          <intent-filter android:label="@string/app_name">
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <!-- Accepts URIs that begin with "link://patienturl -->
+              <data android:scheme="apollopatients" />
+          </intent-filter>
+      </activity>
+      <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
 
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden|adjustPan">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
-            </intent-filter>
-
-
-        </activity>
-        <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
-
-        <service android:name="io.invertase.firebase.messaging.RNFirebaseMessagingService">
+       <service android:name="io.invertase.firebase.messaging.RNFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService" />
-
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher" />
-        <!--
- Set color used with incoming notification messages. This is used when no color is set for the incoming
-             notification message. See README(https://goo.gl/6BKBk7) for more.
-        -->
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/notificationColor" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
 
         <receiver android:name="io.invertase.firebase.notifications.RNFirebaseNotificationReceiver" />
         <receiver
@@ -93,16 +79,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-
+        
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="40001b65375e3b0193fe0fb56ac6706df22e3eed" />
+        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="53a0b9fd23719632a22d2c262a06bb4e"/>
 
-        <meta-data android:name="com.bugsnag.android.API_KEY" android:value="7839e425f4acbd8e6ff3f907281addca"/>
+        <meta-data android:name=
+            "com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id"
+            />
 
-        <meta-data
-            android:name="firebase_crash_collection_enabled"
-            android:value="${analytics_deactivated}"/>
+<!--        <meta-data-->
+<!--            android:name="firebase_crash_collection_enabled"-->
+<!--            android:value="${analytics_deactivated}"/>-->
 
     </application>
 

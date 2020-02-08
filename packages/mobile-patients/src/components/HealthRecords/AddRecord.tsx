@@ -57,7 +57,10 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { uploadDocumentVariables, uploadDocument } from '../../graphql/types/uploadDocument';
 import {
@@ -67,6 +70,7 @@ import {
 import { BottomPopUp } from '../ui/BottomPopUp';
 import { string } from '../../strings/string';
 import { useUIElements } from '../UIElementsProvider';
+import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -130,10 +134,10 @@ const RecordType: RecordTypeType[] = [
     value: MedicRecordType.TEST_REPORT.toLowerCase().replace('_', ' '),
     key: MedicRecordType.TEST_REPORT,
   },
-  {
-    value: MedicRecordType.CONSULTATION.toLowerCase().replace('_', ' '),
-    key: MedicRecordType.CONSULTATION,
-  },
+  // {
+  //   value: MedicRecordType.CONSULTATION.toLowerCase().replace('_', ' '),
+  //   key: MedicRecordType.CONSULTATION,
+  // },
   {
     value: MedicRecordType.PRESCRIPTION.toLowerCase().replace('_', ' '),
     key: MedicRecordType.PRESCRIPTION,
@@ -236,6 +240,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   // };
 
   const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
+    console.log(prescriptions, 'prescriptions');
+
     return Promise.all(
       prescriptions.map((item) =>
         client.mutate<uploadDocument>({
@@ -243,12 +249,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           fetchPolicy: 'no-cache',
           variables: {
             UploadDocumentInput: {
-              base64FileInput: item.data,
+              base64FileInput: item.base64,
               category: 'HealthChecks',
-              fileType:
-                item.path.substring(item.path.lastIndexOf('.') + 1) == 'jpg'
-                  ? 'JPEG'
-                  : item.path.substring(item.path.lastIndexOf('.') + 1).toUpperCase(),
+              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
               patientId: currentPatient && currentPatient.id,
             },
           },
@@ -281,13 +284,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const isValid = () => {
-    const validRecordDetails = typeofRecord && testName && dateOfTest ? true : false;
+    const validRecordDetails1 = typeofRecord && testName && dateOfTest ? true : false;
+    const validRecordDetails2 = typeofRecord && locationName && dateOfTest ? true : false;
+    const validRecordDetails3 = typeofRecord && docName && dateOfTest ? true : false;
+
+    console.log(validRecordDetails1, 'validRecordDetails', typeofRecord);
+    console.log(validRecordDetails2, 'validRecordDetails2', typeofRecord);
+    console.log(validRecordDetails3, 'validRecordDetails3', typeofRecord);
+
     const valid = isRecordParameterFilled().map((item) => {
       return {
         maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
         changed:
           // item.parameterName !== MedicalRecordInitialValues.parameterName
-          //   &&item.result !== MedicalRecordInitialValues.result?
+          // &&item.result !== MedicalRecordInitialValues.result?
           true,
         // : false,
         notinitial:
@@ -302,7 +312,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       ? testName || docName || locationName
         ? dateOfTest
           ? ''
-          : 'Enter Date Of Test'
+          : typeofRecord === MedicRecordType.PRESCRIPTION
+          ? 'Enter Date of Prescription'
+          : 'Enter Date of Test'
+        : typeofRecord === MedicRecordType.PRESCRIPTION
+        ? 'Enter doctor name'
+        : typeofRecord === MedicRecordType.CONSULTATION
+        ? 'Enter Location of Consultation'
+        : typeofRecord === MedicRecordType.TEST_REPORT
+        ? 'Enter test name'
         : 'Enter Name'
       : 'Select the Record Type';
 
@@ -313,8 +331,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       });
 
+    const finval = validRecordDetails1
+      ? true
+      : validRecordDetails2
+      ? true
+      : validRecordDetails3
+      ? true
+      : false;
+    console.log(finval, 'finval');
+
     return {
-      isvalid: validRecordDetails,
+      isvalid: finval,
       isValidParameter:
         valid.find((i) => i.maxmin === false || (i.changed === false && !i.notinitial)) !==
         undefined,
@@ -341,11 +368,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return number || 0;
   };
   const onSavePress = () => {
-    // console.log('images', Images);
+    console.log('images', Images);
     const valid = isValid();
+    console.log('valid', valid);
     if (valid.isvalid && !valid.isValidParameter) {
       setshowSpinner(true);
-      let uploadedUrls: any = [];
       if (Images.length > 0) {
         multiplePhysicalPrescriptionUpload(Images)
           .then((data) => {
@@ -393,6 +420,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                     }
                   })
                   .catch((e) => {
+                    CommonBugFender(
+                      'AddRecord_ADD_MEDICAL_RECORD_multiplePhysicalPrescriptionUpload',
+                      e
+                    );
                     setshowSpinner(false);
                     console.log(JSON.stringify(e), 'eeeee');
                     Alert.alert('Alert', 'Please fill all the details', [
@@ -411,6 +442,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }
           })
           .catch((e) => {
+            CommonBugFender('AddRecord_multiplePhysicalPrescriptionUpload', e);
             showAphAlert!({
               title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
               description: 'Your upload images are failed ',
@@ -451,6 +483,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }
           })
           .catch((e) => {
+            CommonBugFender('AddRecord_ADD_MEDICAL_RECORD', e);
             setshowSpinner(false);
             console.log(JSON.stringify(e), 'eeeee');
             Alert.alert('Alert', 'Please fill all the details', [
@@ -467,8 +500,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
+    console.log(data, 'renderImagesRow');
+
     var base64Icon = 'data:image/png;base64,';
-    fin = base64Icon.concat(data.data);
+    fin = base64Icon.concat(data.base64);
+    console.log(fin, 'fin');
     return (
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
@@ -506,13 +542,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {/* <PrescriptionThumbnail /> */}
           </View>
           <View style={{ flex: 1 }}>
-            <Text>
-              {data.path
-                .split('\\')
-                .pop()
-                .split('/')
-                .pop()}
-            </Text>
+            <Text>{data.title}</Text>
           </View>
           <TouchableOpacity
             activeOpacity={1}
@@ -615,7 +645,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         return (
           <View>
             <TextInputComponent
-              label={'Name Of Test'}
+              label={'Name of Test'}
               value={testName}
               placeholder={'Enter name of test'}
               onChangeText={(testName) => {
@@ -624,7 +654,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
-            <TextInputComponent label={'Date Of Test'} noInput={true} />
+            <TextInputComponent label={'Date of Test'} noInput={true} />
             {renderDateInpt()}
           </View>
         );
@@ -636,12 +666,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               value={docName}
               placeholder={'Enter doctor name'}
               onChangeText={(docName) => {
-                if (isValidName(docName)) {
+                if (isValidText(docName)) {
                   setDocName(docName);
                 }
               }}
             />
-            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            <TextInputComponent label={'Date of Prescription'} noInput={true} />
             {renderDateInpt()}
             <TextInputComponent
               label={'Location (optional)'}
@@ -659,12 +689,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInputComponent
               label={'Location of Consultation'}
               value={locationName}
-              placeholder={'Enter doctor name'}
+              placeholder={'Enter location of consultation'}
               onChangeText={(text) => {
                 setLocationName(text);
               }}
             />
-            <TextInputComponent label={'Date Of prescription'} noInput={true} />
+            <TextInputComponent label={'Date of Test'} noInput={true} />
             {renderDateInpt()}
           </View>
         );
@@ -682,11 +712,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }}
         >
           <View style={[styles.cardViewStyle, { paddingTop: 6, paddingBottom: 5 }]}>
-            {/* <TextInputComponent
-              label={'Type Of Record'}
-              value={typeofRecord}
-              onChangeText={(typeofRecord) => settypeofRecord(typeofRecord)}
-            /> */}
             <MaterialMenu
               menuContainerStyle={[
                 {
@@ -695,6 +720,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   marginLeft: width / 2 - 95,
                 },
               ]}
+              itemTextStyle={{ textTransform: 'capitalize' }}
               options={RecordType}
               selectedText={typeofRecord}
               onPress={(data) => {
@@ -711,7 +737,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
             >
               <TextInputComponent
-                label={'Type Of Record'}
+                label={'Type of Record'}
                 noInput={true}
                 conatinerstyles={{
                   paddingBottom: 0,
@@ -722,7 +748,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   <Text
                     style={[
                       styles.placeholderTextStyle,
-                      typeofRecord !== undefined ? null : styles.placeholderStyle,
+                      typeofRecord !== undefined
+                        ? { textTransform: 'capitalize' }
+                        : styles.placeholderStyle,
                     ]}
                   >
                     {typeofRecord !== undefined
@@ -734,72 +762,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   </View>
                 </View>
               </View>
-              {/* <TextInputComponent
-                label={'Type Of Record'}
-                noInput={true}
-                conatinerstyles={{
-                  paddingBottom: 0,
-                }}
-              />
-              <InputDropdown
-                setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
-                label={typeofRecord ? typeofRecord.toLowerCase().replace('_', ' ') : ''}
-                containerStyle={{
-                  paddingBottom: 10,
-                }}
-                placeholder={'Select type of record'}
-              /> */}
             </MaterialMenu>
             {inputRecordType()}
-            {/* <TextInputComponent
-              label={'Name Of Test'}
-              value={testName}
-              placeholder={'Enter name of test'}
-              onChangeText={(testName) => {
-                if (isValidText(testName)) {
-                  settestName(testName);
-                }
-              }}
-            />
-            <TextInputComponent
-              label={'Date Of Test'}
-              noInput={true}
-              // value={dateOfTest}
-              // onChangeText={(dateOfTest) => setdateOfTest(dateOfTest)}
-            />
-            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.placeholderViewStyle}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setIsDateTimePickerVisible(true);
-                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
-                }}
-              >
-                <Text
-                  style={[
-                    styles.placeholderTextStyle,
-                    dateOfTest !== '' ? null : styles.placeholderStyle,
-                  ]}
-                >
-                  {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <DatePicker
-              isDateTimePickerVisible={isDateTimePickerVisible}
-              handleDatePicked={(date) => {
-                const formatDate = Moment(date).format('DD/MM/YYYY');
-                setdateOfTest(formatDate);
-                setIsDateTimePickerVisible(false);
-                Keyboard.dismiss();
-              }}
-              hideDateTimePicker={() => {
-                setIsDateTimePickerVisible(false);
-                Keyboard.dismiss();
-              }}
-            /> */}
           </View>
         </CollapseCard>
       </View>
@@ -854,7 +818,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   }}
                 >
                   <TextInputComponent
-                    label={'Name Of Parameter'}
+                    label={'Name of Parameter'}
                     placeholder={'Enter name'}
                     value={item.parameterName || ''}
                     onChangeText={(value) => {
@@ -1074,40 +1038,49 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       </SafeAreaView>
       {renderBottomButton()}
       {displayOrderPopup && (
-        <AddFilePopup
-          onClickClose={() => {
-            setdisplayOrderPopup(false);
+        <UploadPrescriprionPopup
+          isVisible={displayOrderPopup}
+          disabledOption="NONE"
+          //type=""
+          heading={'Upload File'}
+          instructionHeading={'Instructions For Uploading Prescriptions'}
+          instructions={[
+            'Take clear picture of your entire prescription.',
+            'Doctor details & date of the prescription should be clearly visible.',
+            'Medicines will be dispensed as per prescription.',
+          ]}
+          optionTexts={{
+            camera: 'TAKE A PHOTO',
+            gallery: 'CHOOSE\nFROM GALLERY',
           }}
-          getData={(data: (PickerImage | PickerImage[])[]) => {
-            console.log('dataimage', data);
+          onClickClose={() => setdisplayOrderPopup(false)}
+          onResponse={(selectedType: any, response: any) => {
+            setdisplayOrderPopup(false);
+            if (selectedType == 'CAMERA_AND_GALLERY') {
+              if (response.length == 0) return;
+              console.log(response, 'response');
 
-            setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
-            setdisplayOrderPopup(false);
+              setImages(response);
+              setdisplayOrderPopup(false);
+              // props.navigation.navigate(AppRoutes.UploadPrescription, {
+              //   phyPrescriptionsProp: response,
+              // });
+            }
           }}
         />
+        // <AddFilePopup
+        //   onClickClose={() => {
+        //     setdisplayOrderPopup(false);
+        //   }}
+        //   getData={(data: (PickerImage | PickerImage[])[]) => {
+        //     console.log('dataimage', data);
+
+        //     setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
+        //     setdisplayOrderPopup(false);
+        //   }}
+        // />
       )}
-      {/* {showRecordTypePopup && (
-        <MaterialMenu
-          // width={200}
-          options={RecordType}
-          selectedText={typeofRecord}
-          onPress={(data) => {
-            setshowRecordTypePopup(false);
-            settypeofRecord(data.key as MedicalRecordType);
-          }}
-          // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
-        />
-      )} */}
-      {/* {showUnitPopup && (
-        <MaterialMenu
-          Options={MedicalTest}
-          setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
-          setSelectedOption={(value: MedicalTestUnit) => {
-            console.log(value, 'value', selectedUnitIndex);
-            selectedUnitIndex !== undefined && setParametersData('unit', value, selectedUnitIndex);
-          }}
-        />
-      )} */}
+
       {showSpinner && <Spinner />}
       {showPopUp && (
         <BottomPopUp

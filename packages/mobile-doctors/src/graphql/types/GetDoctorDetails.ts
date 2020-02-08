@@ -20,6 +20,9 @@ export interface GetDoctorDetails_getDoctorDetails_consultHours {
   startTime: string;
   endTime: string;
   weekDay: WeekDay;
+  isActive: boolean;
+  consultDuration: number | null;
+  consultBuffer: number | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_packages {

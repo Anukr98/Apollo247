@@ -11,7 +11,7 @@ configuration.autoCaptureSessions = true;
 configuration.automaticallyCollectBreadcrumbs = true;
 configuration.autoNotify = true;
 
-const bugsnag = new Client('7839e425f4acbd8e6ff3f907281addca');
+const bugsnag = new Client('53a0b9fd23719632a22d2c262a06bb4e');
 const bugsnagConfigure = new Client(configuration);
 
 bugsnagConfigure.startSession();

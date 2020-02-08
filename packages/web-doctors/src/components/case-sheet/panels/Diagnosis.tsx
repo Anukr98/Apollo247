@@ -121,6 +121,7 @@ const useStyles = makeStyles((theme: Theme) =>
       '& svg': {
         position: 'absolute',
         right: 0,
+        top: 3,
         '& path': {
           fill: '#fff',
         },
@@ -180,31 +181,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: OptionType,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion.name, query);
-  const parts = parse(suggestion.name, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span
-          key={part.text}
-          style={{
-            fontWeight: part.highlight ? 500 : 400,
-            whiteSpace: 'pre',
-          }}
-        >
-          {part.text}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </div>
-  );
-}
-
 export const Diagnosis: React.FC = () => {
   const classes = useStyles();
   const [idx, setIdx] = React.useState();
@@ -212,6 +188,7 @@ export const Diagnosis: React.FC = () => {
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
     CaseSheetContext
   );
+  const [diagnosisValue, setDiagnosisValue] = useState('');
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const client = useApolloClient();
 
@@ -284,11 +261,39 @@ export const Diagnosis: React.FC = () => {
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchDignosis(newValue);
     }
+    setDiagnosisValue(newValue);
     setState({
       ...state,
       [name]: newValue,
     });
   };
+  function renderSuggestion(
+    suggestion: OptionType,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(suggestion.name, query);
+    const parts = parse(suggestion.name, matches);
+
+    return (
+      diagnosisValue.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+            >
+              {part.text}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
+
   const handleDelete = (item: any, idx: number) => {
     // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
@@ -310,7 +315,7 @@ export const Diagnosis: React.FC = () => {
   return (
     <Typography component="div" className={classes.mainContainer}>
       <Typography component="h4" variant="h4">
-        Diagnosed Medical Condition
+        Provisional Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
         {selectedValues !== null &&

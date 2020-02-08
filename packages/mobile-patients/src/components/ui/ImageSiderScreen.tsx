@@ -2,7 +2,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View, Image, Dimensions } from 'react-native';
 
-import Swiper from 'react-native-swiper';
+// import Swiper from 'react-native-swiper';
 import { NavigationScreenProps } from 'react-navigation';
 import { BackArrowWhite } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -70,7 +70,7 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
             onPressLeftIcon={() => props.navigation.goBack()}
           />
         )}
-        <Swiper
+        {/* <Swiper
           style={styles.wrapper}
           dot={
             <View
@@ -98,19 +98,19 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
             />
           }
           loop={false}
-        >
-          {images.map((image) => (
-            <View style={styles.slide}>
-              <Image
-                style={styles.customImage}
-                source={{
-                  uri: image,
-                }}
-                resizeMode="contain"
-              />
-            </View>
-          ))}
-        </Swiper>
+        > */}
+        {images.map((image) => (
+          <View style={styles.slide}>
+            <Image
+              style={styles.customImage}
+              source={{
+                uri: image,
+              }}
+              resizeMode="contain"
+            />
+          </View>
+        ))}
+        {/* </Swiper> */}
       </View>
     </SafeAreaView>
   );

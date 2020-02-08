@@ -1,6 +1,7 @@
 node_modules
 .npm-cache
 android/app/build
+android/build
 android/.gradle
 android/local.properties
 ios/build
@@ -20,5 +21,5 @@ Crashlytics.framework/
 Fabric.framework/
 
 ios/assets
-ApolloVitalsFramework.framework/
-android/app/libs
+# ApolloVitalsFramework.framework/
+# android/app/libs

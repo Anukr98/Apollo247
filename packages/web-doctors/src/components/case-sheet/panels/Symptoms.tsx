@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
     display: 'flex',
     flexFlow: 'column',
-    padding: '0px 0 10px 10px',
+    padding: '0px 65px 10px 10px',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     borderRadius: 5,
@@ -107,7 +107,6 @@ const useStyles = makeStyles((theme: Theme) => ({
       color: '#01475b',
       fontWeight: 600,
       textAlign: 'center',
-      marginTop: 5,
     },
   },
   medicinePopup: {
@@ -135,7 +134,7 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontSize: 14,
       fontWeight: 500,
       color: 'rgba(2, 71, 91, 0.6)',
-      marginBottom: 10,
+      marginBottom: 7,
       marginTop: 0,
     },
   },
@@ -143,7 +142,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: 16,
     color: '#02475b',
     fontWeight: 500,
-    marginBottom: 30,
+    marginBottom: 20,
     '& button': {
       border: '1px solid #00b38e',
       padding: '5px 10px',
@@ -230,9 +229,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   nodatafound: {
     fontSize: 14,
     margin: '10px 0 10px 4px',
-  },
-  symptomCaption: {
-    marginLeft: 20,
   },
   fullRow: {
     width: '100%',
@@ -528,7 +524,7 @@ export const Symptoms: React.FC = (props) => {
                   {
                     <div>
                       <div>
-                        <Scrollbars autoHide={true} style={{ height: '480px' }}>
+                        <Scrollbars autoHide={true} style={{ height: '65vh' }}>
                           <div className={classes.dialogContent}>
                             <div>
                               <h6>COMPLAINT</h6>
@@ -554,7 +550,7 @@ export const Symptoms: React.FC = (props) => {
                                 )}
                               </div>
                             </div>
-                            <div className={classes.symptomCaption}>
+                            <div>
                               <h6>Since?</h6>
                               <div className={classes.numberTablets}>
                                 <AphTextField
@@ -577,7 +573,7 @@ export const Symptoms: React.FC = (props) => {
                                 )}
                               </div>
                             </div>
-                            <div className={classes.symptomCaption}>
+                            <div>
                               <h6>How often?</h6>
                               <div className={classes.numberTablets}>
                                 <AphTextField
@@ -600,7 +596,7 @@ export const Symptoms: React.FC = (props) => {
                                 )}
                               </div>
                             </div>
-                            <div className={classes.symptomCaption}>
+                            <div>
                               <h6>Severity</h6>
                               <div className={classes.numberTablets}>
                                 <AphTextField
@@ -623,7 +619,7 @@ export const Symptoms: React.FC = (props) => {
                                 )}
                               </div>
                             </div>
-                            <div className={classes.symptomCaption}>
+                            <div>
                               <h6>Details</h6>
                               <div className={classes.numberTablets}>
                                 <AphTextField

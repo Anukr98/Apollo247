@@ -27,6 +27,7 @@ import {
   savePatientNotificationSettingsVariables,
 } from '@aph/mobile-patients/src/graphql/types/savePatientNotificationSettings';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   textStyle: {
@@ -210,6 +211,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
       })
       .catch((error) => {
         setshowSpinner(false);
+        CommonBugFender('NotificationSettings_saveData', error);
         console.log('Error occured', { error });
       });
   }, [

@@ -18,6 +18,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { Connection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
+import { debugLog } from 'customWinstonLogger';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   enum SpecialtySearchType {
@@ -128,12 +129,29 @@ export type DoctorSlotAvailabilityObject = { [index: string]: DoctorSlotAvailabi
 
 export type FacilityDistanceMap = { [index: string]: string };
 
+let apiCallId: number;
+let identifier: string;
+let callStartTime: Date;
 const getDoctorsBySpecialtyAndFilters: Resolver<
   null,
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
+  apiCallId = Math.floor(Math.random() * 1000000);
+  callStartTime = new Date();
+  identifier = args.filterInput.patientId;
+  //create first order curried method with first 4 static parameters being passed.
+  const searchLogger = debugLog(
+    'doctorSearchAPILogger',
+    'getDoctorsBySpecialtyAndFilters',
+    apiCallId,
+    callStartTime,
+    identifier
+  );
+
+  searchLogger(`API_CALL___START`);
+
   let finalConsultNowDoctors: Doctor[] = [],
     finalBookNowDoctors: Doctor[] = [],
     finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
@@ -145,8 +163,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   //get facility distances from user geolocation
   let facilityDistances: FacilityDistanceMap = {};
   if (args.filterInput.geolocation) {
+    searchLogger(`GEOLOCATION_API_CALL___START`);
     const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
     facilityDistances = await facilityRepo.getAllFacilityDistances(args.filterInput.geolocation);
+    searchLogger(`GEOLOCATION_API_CALL___END`);
   }
 
   if (
@@ -257,6 +277,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
 
+  searchLogger(`API_CALL___END`);
   return {
     doctors: finalSortedDoctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
@@ -279,6 +300,15 @@ const applyFilterLogic = async (
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
+  //create first order curried logger method with first 4 static parameters being passed.
+  const searchLogger = debugLog(
+    'doctorSearchAPILogger',
+    'getDoctorsBySpecialtyAndFilters',
+    apiCallId,
+    callStartTime,
+    identifier
+  );
+
   try {
     const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
     specialtyDetails = await specialtiesRepo.findById(filterInput.specialty);
@@ -286,7 +316,9 @@ const applyFilterLogic = async (
       throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
     }
 
+    searchLogger('FILTERING_DOCTORS___START');
     filteredDoctors = await doctorRepository.filterDoctors(filterInput);
+    searchLogger('FILTERING_DOCTORS___END');
     // console.log('basic filtered doctors: ',filteredDoctors)
 
     //apply sort algorithm
@@ -313,6 +345,8 @@ const applyFilterLogic = async (
     const doctorIds = filteredDoctors.map((doctor) => {
       return doctor.id;
     });
+
+    searchLogger(`FILTER_BY_AVAILABILITY_CONSULT_MODE___START`);
 
     //preparin required input parameters based on availability filters selected
     const appointmentDateTimes: AppointmentDateTime[] = [];
@@ -418,6 +452,7 @@ const applyFilterLogic = async (
         //console.log(doctorsConsultModeAvailability);
       }
     }
+    searchLogger(`FILTER_BY_AVAILABILITY_CONSULT_MODE___END`);
   } catch (filterDoctorsError) {
     throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, { filterDoctorsError });
   }
@@ -444,12 +479,14 @@ const applyFilterLogic = async (
     return doctor.id;
   });
 
+  searchLogger('GET_DOCTORS_NEXT_AVAILABILITY___START');
   const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
     finalDoctorIds,
     consultModeFilter,
     doctorsDb,
     consultsDb
   );
+  searchLogger(`GET_DOCTORS_NEXT_AVAILABILITY___END`);
 
   //get consult now and book now doctors by available time
   const { consultNowDoctors, bookNowDoctors } = await doctorRepository.getConsultAndBookNowDoctors(
@@ -457,6 +494,7 @@ const applyFilterLogic = async (
     finalDoctorsList
   );
 
+  searchLogger(`APPLY_RANKING_ALGORITHM___START`);
   //apply sort algorithm on ConsultNow doctors
   if (consultNowDoctors.length > 1) {
     //get patient and matched doctors previous appointments starts here
@@ -506,6 +544,7 @@ const applyFilterLogic = async (
       );
     });
   }
+  searchLogger(`APPLY_RANKING_ALGORITHM___END`);
 
   return {
     consultNowDoctors,

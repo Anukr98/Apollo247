@@ -31,18 +31,18 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     color: '#00b38e',
-    ...theme.fonts.IBMPlexSansSemiBold(14),
+    ...theme.fonts.IBMPlexSans(12),
     textAlign: 'center',
     justifyContent: 'center',
     paddingLeft: 13,
     paddingTop: 2,
-    paddingBottom: 10,
+    paddingBottom: 4,
     paddingRight: 13,
     letterSpacing: 0.02,
   },
   textSelectedStyle: {
     color: '#ffffff',
-    ...theme.fonts.IBMPlexSansMedium(14),
+    ...theme.fonts.IBMPlexSansSemiBold(12),
     textAlign: 'center',
     justifyContent: 'center',
     alignItems: 'center',
@@ -62,8 +62,8 @@ export interface ChipViewCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   containerUnSelectedStyle?: StyleProp<ViewStyle>;
   containerSelectedStyle?: StyleProp<ViewStyle>;
-  textStyle?: StyleProp<ViewStyle>;
-  textSelectedStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
+  textSelectedStyle?: StyleProp<TextStyle>;
   buttonWidth?: number;
   icon?: Element;
 }
@@ -82,6 +82,7 @@ export const ChipViewCard: React.FC<ChipViewCardProps> = (props) => {
   } = props;
   return (
     <TouchableOpacity
+      activeOpacity={1}
       onPress={() => onChange(!isChecked)}
       style={
         isChecked

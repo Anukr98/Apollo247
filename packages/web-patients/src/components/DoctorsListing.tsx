@@ -1,4 +1,4 @@
-import { Theme, Typography, Grid } from '@material-ui/core';
+import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useRef, useEffect } from 'react';
 import { DoctorCard } from 'components/DoctorCard';
@@ -19,21 +19,13 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import { ConsultMode } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    mascotCircle: {
-      cursor: 'pointer',
-      [theme.breakpoints.up('sm')]: {
-        marginLeft: 'auto',
-        position: 'fixed',
-        bottom: 10,
-        right: 15,
-      },
-      '& img': {
-        maxWidth: 72,
-        maxHeight: 72,
-      },
+    root: {
+      width: '100%',
     },
     bottomPopover: {
       overflow: 'initial',
@@ -50,22 +42,31 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 17,
       fontWeight: 500,
       color: '#0087ba',
-      marginBottom: 20,
       [theme.breakpoints.up('sm')]: {
         borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      },
+      [theme.breakpoints.up(991)]: {
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-end',
+      },
+    },
+    headerTitle: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
       },
     },
     filterSection: {
       marginLeft: 'auto',
       marginBottom: 0.5,
+      minWidth: 320,
+      textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
         marginLeft: -20,
         marginRight: -20,
-        marginTop: 20,
         display: 'flex',
+        position: 'relative',
+        zIndex: 1,
       },
       '& button:last-child': {
         marginRight: 0,
@@ -78,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#658f9b',
       backgroundColor: 'transparent',
       textTransform: 'none',
-      borderBottom: '5px solid #f7f8f5',
+      borderBottom: '5px solid transparent',
       borderRadius: 0,
       paddingLeft: 0,
       paddingRight: 0,
@@ -117,39 +118,35 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     searchList: {
-      paddingBottom: 20,
+      paddingLeft: 20,
+      paddingRight: 17,
+      paddingTop: 20,
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 14,
       },
-      '& >div': {
-        [theme.breakpoints.down('xs')]: {
-          marginLeft: -6,
-          marginRight: -6,
-          width: 'calc(100% + 12px)',
-        },
-        '& >div': {
-          [theme.breakpoints.down('xs')]: {
-            padding: '6px !important',
-          },
-        },
-      },
     },
     sectionHead: {
+      paddingLeft: 20,
+      paddingRight: 17,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: theme.palette.common.white,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
         marginLeft: -20,
         marginRight: -20,
-        marginTop: -14,
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 10,
+        marginTop: -15,
       },
       '& h2': {
         [theme.breakpoints.down('xs')]: {
           paddingBottom: 10,
         },
       },
+    },
+    title: {
+      color: '#02475b',
+      fontSize: 36,
+      fontWeight: 600,
+      margin: 0,
+      lineHeight: 1,
     },
     circlularProgress: {
       display: 'flex',
@@ -190,7 +187,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const [show20SecPopup, setShow20SecPopup] = useState<boolean>(false);
   const [show40SecPopup, setShow40SecPopup] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isLargeScreen = useMediaQuery('(min-width:991px)');
   const mascotRef = useRef(null);
 
   type Range = {
@@ -234,42 +232,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         : '',
   };
 
-  // console.log(
-  //   filter.availability &&
-  //     filter.availability.findIndex((v) => {
-  //       console.log(v);
-  //       return v == 'now';
-  //     }),
-  //   filter.availability && filter.availability.length,
-  //   '----------'
-  // );
-
-  // console.log(specialityId);
-
   const { data, loading, error } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
     variables: { filterInput: apiVairables },
     fetchPolicy: 'no-cache',
   });
-
-  // this effect will watch for data loaded and triggers popup after 20 and 40 secs.
-  // useEffect(() => {
-  //   if (data) {
-  //     const timer1 = setTimeout(() => {
-  //       setShow20SecPopup(true);
-  //       setIsPopoverOpen(true);
-  //     }, 20000);
-  //     const timer2 = setTimeout(() => {
-  //       setShow40SecPopup(true);
-  //       setShow20SecPopup(false);
-  //       setIsPopoverOpen(true);
-  //     }, 40000);
-  //     // this will clear Timeout when component unmount like in willComponentUnmount
-  //     return () => {
-  //       clearTimeout(timer1);
-  //       clearTimeout(timer2);
-  //     };
-  //   }
-  // }, [data]);
 
   if (loading) {
     return (
@@ -334,11 +300,17 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }
 
   return (
-    <>
+    <div className={classes.root}>
       <div className={classes.sectionHead} ref={mascotRef}>
-        {doctorsList.length > 0 ? <Typography variant="h2">Okay!</Typography> : ''}
         <div className={classes.pageHeader}>
-          {doctorsList.length > 0 ? <div>Here are our best {specialityName}</div> : ''}
+          {doctorsList.length > 0 ? (
+            <div className={classes.headerTitle}>
+              {doctorsList.length > 0 ? <h2 className={classes.title}>Okay!</h2> : ''}
+              Here are our best {specialityName}
+            </div>
+          ) : (
+            ''
+          )}
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
               return (
@@ -363,52 +335,63 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       </div>
 
       {doctorsList.length > 0 ? (
-        <div className={classes.searchList}>
-          <Grid container spacing={2}>
-            {_map(doctorsList, (doctorDetails) => {
-              return (
-                <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
-                  <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
-                </Grid>
-              );
-            })}
-          </Grid>
-
-          <Popover
-            open={isPopoverOpen}
-            onClose={(e, reason) => {
-              // console.log('hello', e, reason);
-            }}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.bottomPopover }}
-          >
-            {show20SecPopup ? (
-              <MascotWithMessage
-                messageTitle="hi! :)"
-                message="These doctors are best suited for your needs, please select from list."
-                closeButtonLabel="OK, GOT IT"
-                closeMascot={() => setIsPopoverOpen(false)}
-              />
-            ) : show40SecPopup ? (
-              <MascotWithMessage
-                messageTitle="relax :)"
-                message="We're selecting the best doctor suitable for your symptoms."
-                closeButtonLabel="NO, WAIT"
-                closeMascot={() => setIsPopoverOpen(false)}
-              />
-            ) : null}
-          </Popover>
-        </div>
+        <Scrollbars
+          autoHide={true}
+          autoHeight
+          autoHeightMax={
+            isMediumScreen
+              ? 'calc(100vh - 345px)'
+              : isLargeScreen
+              ? 'calc(100vh - 280px)'
+              : 'calc(100vh - 170px)'
+          }
+        >
+          <div className={classes.searchList}>
+            <Grid container spacing={2}>
+              {_map(doctorsList, (doctorDetails) => {
+                return (
+                  <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
+                    <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
+                  </Grid>
+                );
+              })}
+            </Grid>
+            <Popover
+              open={isPopoverOpen}
+              onClose={(e, reason) => {
+                // console.log('hello', e, reason);
+              }}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              classes={{ paper: classes.bottomPopover }}
+            >
+              {show20SecPopup ? (
+                <MascotWithMessage
+                  messageTitle="hi! :)"
+                  message="These doctors are best suited for your needs, please select from list."
+                  closeButtonLabel="OK, GOT IT"
+                  closeMascot={() => setIsPopoverOpen(false)}
+                />
+              ) : show40SecPopup ? (
+                <MascotWithMessage
+                  messageTitle="relax :)"
+                  message="We're selecting the best doctor suitable for your symptoms."
+                  closeButtonLabel="NO, WAIT"
+                  closeMascot={() => setIsPopoverOpen(false)}
+                />
+              ) : null}
+            </Popover>
+          </div>
+        </Scrollbars>
       ) : (
         consultErrorMessage()
       )}
-    </>
+    </div>
   );
 };

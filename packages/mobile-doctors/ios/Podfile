@@ -49,4 +49,11 @@ target 'ApolloPatient' do
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   use_native_modules!
+  pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
+  pod 'QBImagePickerController', :path => '../node_modules/react-native-image-crop-picker/ios/QBImagePicker/QBImagePickerController.podspec'
+  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+
+
+  pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
+
 end

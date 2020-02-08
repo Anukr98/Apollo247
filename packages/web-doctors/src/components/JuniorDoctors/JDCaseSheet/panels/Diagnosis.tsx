@@ -38,22 +38,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
-  const matches = match(suggestion.name, query);
-  const parts = parse(suggestion.name, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
-          {part.text}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Condition
-    </div>
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -212,6 +196,8 @@ export const Diagnosis: React.FC = () => {
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
     CaseSheetContextJrd
   );
+
+  const [diagnosisValue, setDiagnosisValue] = useState('');
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const client = useApolloClient();
 
@@ -271,6 +257,29 @@ export const Diagnosis: React.FC = () => {
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.name;
   }
+  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
+    const matches = match(suggestion.name, query);
+    const parts = parse(suggestion.name, matches);
+
+    return (
+      diagnosisValue.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+            >
+              {part.text}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
 
   useEffect(() => {
     if (searchInput.length > 2) {
@@ -284,6 +293,7 @@ export const Diagnosis: React.FC = () => {
     if (event.nativeEvent.type === 'input' && newValue.length > 2) {
       fetchDignosis(newValue);
     }
+    setDiagnosisValue(newValue);
     setState({
       ...state,
       [name]: newValue,
@@ -310,7 +320,7 @@ export const Diagnosis: React.FC = () => {
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
-        <div className={classes.sectionTitle}>Diagnosed Medical Condition</div>
+        <div className={classes.sectionTitle}>Provisional Diagnosed Medical Condition</div>
         <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&

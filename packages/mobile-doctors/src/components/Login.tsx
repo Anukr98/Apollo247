@@ -1,54 +1,49 @@
-import { AuthContext } from '@aph/mobile-doctors/src/components/AuthProvider';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { timeOutDataType } from '@aph/mobile-doctors/src/components/OTPVerification';
 import { Card } from '@aph/mobile-doctors/src/components/ui/Card';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-doctors/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import { TimeOutData } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { setOnboardingDone } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { string } from '@aph/mobile-doctors/src/strings/string';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import string from '@aph/mobile-doctors/src/strings/strings.json';
+import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   AsyncStorage,
   Dimensions,
+  EmitterSubscription,
   Keyboard,
-  PermissionsAndroid,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
-  WebView,
 } from 'react-native';
-import SmsListener from 'react-native-android-sms-listener';
-import { RNFirebase } from 'react-native-firebase';
-import Hyperlink from 'react-native-hyperlink';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
+import firebase from 'react-native-firebase';
+import HyperLink from 'react-native-hyperlink';
+import { WebView } from 'react-native-webview';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
-import { useAuth } from '../hooks/authHooks';
+import { loginAPI } from '../helpers/loginCalls';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const { height, width } = Dimensions.get('window');
 
-// import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-const isMobileNumberValid = (phoneNumber: string) => true;
-
 const styles = StyleSheet.create({
   container: {
-    //...theme.viewStyles.container,
-    flex: 1,
-    width: '100%',
-    height: 600,
-    backgroundColor: '#f0f4f5',
+    ...theme.viewStyles.container,
   },
   inputTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.INPUT_TEXT,
     paddingRight: 6,
     lineHeight: 28,
+    paddingTop: Platform.OS === 'ios' ? 0 : 6,
     paddingBottom: Platform.OS === 'ios' ? 5 : 0,
   },
   inputStyle: {
@@ -75,36 +70,18 @@ const styles = StyleSheet.create({
   },
   bottomDescription: {
     lineHeight: 24,
-    color: '#890000', //theme.colors.INPUT_FAILURE_TEXT,
-    // opacity: 0.6,
-    paddingVertical: 10,
+    color: theme.colors.INPUT_FAILURE_TEXT,
+    paddingTop: 8,
+    paddingBottom: 12,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
   bottomValidDescription: {
     lineHeight: 24,
     color: theme.colors.INPUT_SUCCESS_TEXT,
     opacity: 0.6,
-    paddingVertical: 10,
+    paddingTop: 8,
+    paddingBottom: 12,
     ...theme.fonts.IBMPlexSansMedium(12),
-  },
-  gethelpText: {
-    marginTop: 22,
-    color: '#fc9916',
-    ...theme.fonts.IBMPlexSansSemiBold(12),
-  },
-
-  statusBarBg: {
-    width: '100%',
-    opacity: 0.05,
-    backgroundColor: '#000000',
-    ...ifIphoneX(
-      {
-        height: 44,
-      },
-      {
-        height: 24,
-      }
-    ),
   },
   viewWebStyles: {
     position: 'absolute',
@@ -118,66 +95,56 @@ const styles = StyleSheet.create({
   },
 });
 
-type ReceivedSmsMessage = {
-  originatingAddress: string;
-  body: string;
-};
-
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  const isValidNumber =
-    // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-    !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
   return isValidNumber;
 };
 
 let otpString = '';
 let didBlurSubscription: NavigationEventSubscription;
+let dbChildKey: string = '';
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
-  const [subscriptionId, setSubscriptionId] = useState<any>();
-  const [showTAC, setshowTAC] = useState<boolean>(false);
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
-  const { analytics } = useAuth();
-
-  const sendOtp = useContext(AuthContext).sendOtp;
+  const { setLoading } = useUIElements();
+  const { setDoctorDetailsError, setDoctorDetails } = useAuth();
+  const client = useApolloClient();
 
   useEffect(() => {
-    setOnboardingDone(true);
-    analytics && analytics.setCurrentScreen(AppRoutes.Login);
-    Platform.OS === 'android' && requestReadSmsPermission();
+    try {
+      fireBaseFCM();
+      // signOut();
+      setLoading && setLoading(false);
+    } catch (error) {}
   }, []);
 
-  const requestReadSmsPermission = () => {
-    PermissionsAndroid.requestMultiple([
-      PermissionsAndroid.PERMISSIONS.READ_SMS,
-      PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-    ])
-      .then((results) => {
-        console.log('granted READ_SMS?', results['android.permission.READ_SMS'] == 'granted');
-        console.log('granted RECEIVE_SMS?', results['android.permission.RECEIVE_SMS'] == 'granted');
-      })
-      .catch((e) => {
-        console.log('Android ask permission error', e);
-      });
+  const fireBaseFCM = async () => {
+    const enabled = await firebase.messaging().hasPermission();
+    if (enabled) {
+      // user has permissions
+      console.log('enabled', enabled);
+    } else {
+      // user doesn't have permission
+      console.log('not enabled');
+      try {
+        await firebase.messaging().requestPermission();
+        console.log('authorized');
+
+        // User has authorised
+      } catch (error) {
+        // User has rejected permissions
+        console.log('not enabled error', error);
+      }
+    }
   };
-
-  useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-      const newOtp = message.body.match(/-*[0-9]+/);
-      otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
-    });
-    setSubscriptionId(subscriptionId);
-
-    didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
-      setPhoneNumber('');
-    });
-  }, [subscriptionId]);
 
   useEffect(() => {
     return () => {
@@ -185,6 +152,25 @@ export const Login: React.FC<LoginProps> = (props) => {
       didBlurSubscription && didBlurSubscription.remove();
     };
   }, [subscriptionId]);
+
+  // useEffect(() => {
+  //   const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
+  //     const newOtp = message.body.match(/-*[0-9]+/);
+  //     otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
+  //   });
+  //   setSubscriptionId(subscriptionId);
+
+  //   didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
+  //     setPhoneNumber('');
+  //   });
+  // }, [subscriptionId]);
+
+  // useEffect(() => {
+  //   return () => {
+  //     subscriptionId && subscriptionId.remove();
+  //     didBlurSubscription && didBlurSubscription.remove();
+  //   };
+  // }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
@@ -200,9 +186,9 @@ export const Login: React.FC<LoginProps> = (props) => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
-        const timeOutData: TimeOutData[] = JSON.parse(data);
-        timeOutData.map((obj) => {
-          if (obj.phoneNumber === `${phoneNumber}`) {
+        const timeOutData = JSON.parse(data);
+        timeOutData.map((obj: timeOutDataType) => {
+          if (obj.phoneNumber === `+91${phoneNumber}`) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
             const dif = t1.getTime() - t2.getTime();
@@ -220,9 +206,56 @@ export const Login: React.FC<LoginProps> = (props) => {
     } catch (error) {
       console.log(error.message);
     }
-    console.log(isNoBlocked, 'isNoBlocked');
-
     return isNoBlocked;
+  };
+
+  const onClickOkay = () => {
+    setDoctorDetailsError(false);
+    setDoctorDetails && setDoctorDetails(null);
+    Keyboard.dismiss();
+    getNetStatus().then(async (status) => {
+      if (status) {
+        if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
+          null;
+        } else {
+          const isBlocked = await _getTimerData();
+          if (isBlocked) {
+            props.navigation.navigate(AppRoutes.OTPVerification, {
+              otpString,
+              phoneNumber: phoneNumber,
+            });
+          } else {
+            AsyncStorage.setItem('phoneNumber', phoneNumber);
+            setShowSpinner(true);
+
+            loginAPI('+91' + phoneNumber)
+              .then((confirmResult: any) => {
+                console.log(confirmResult, 'confirmResult');
+                setShowSpinner(false);
+                console.log('confirmResult login', confirmResult);
+                props.navigation.navigate(AppRoutes.OTPVerification, {
+                  otpString,
+                  phoneNumber: phoneNumber,
+                  dbChildKey,
+                  loginId: confirmResult.loginId,
+                });
+              })
+              .catch((error: Error) => {
+                console.log(error, 'error');
+                console.log(error.message, 'errormessage');
+                setShowSpinner(false);
+                Alert.alert(
+                  'Error',
+                  (error && error.message) || 'The interaction was cancelled by the user.'
+                );
+              });
+          }
+        }
+      } else {
+        setshowOfflinePopup(true);
+        setShowSpinner(false);
+      }
+    });
   };
 
   const openWebView = () => {
@@ -231,11 +264,11 @@ export const Login: React.FC<LoginProps> = (props) => {
       <View style={styles.viewWebStyles}>
         <Header
           headerText={'Terms & Conditions'}
-          // leftIcon="close"
+          leftIcon="close"
           containerStyle={{
             borderBottomWidth: 0,
           }}
-          // onPressLeftIcon={() => setshowTAC(false)}
+          onPressLeftIcon={() => setonClickOpen(false)}
         />
         <View
           style={{
@@ -252,18 +285,18 @@ export const Login: React.FC<LoginProps> = (props) => {
               flex: 1,
               backgroundColor: 'white',
             }}
-            useWebKit={true}
+            // useWebKit={true}
             onLoadStart={() => {
               console.log('onLoadStart');
-              setshowSpinner(true);
+              setShowSpinner(true);
             }}
             onLoadEnd={() => {
               console.log('onLoadEnd');
-              setshowSpinner(false);
+              setShowSpinner(false);
             }}
             onLoad={() => {
               console.log('onLoad');
-              setshowSpinner(false);
+              setShowSpinner(false);
             }}
           />
         </View>
@@ -271,17 +304,14 @@ export const Login: React.FC<LoginProps> = (props) => {
     );
   };
 
-  const isValid = phoneNumber == '' || phoneNumberIsValid;
-
   return (
-    <View style={styles.container}>
-      <View style={styles.statusBarBg} />
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
         <View style={{ height: 56 }} />
         <Card
-          cardContainer={{ marginTop: 0, height: 300 }}
-          heading={string.LocalStrings.hello}
-          description={string.LocalStrings.please_enter_no}
+          cardContainer={{ marginTop: 0, paddingBottom: 12 }}
+          heading={string.login.hello}
+          description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
               <ArrowYellow />
@@ -289,58 +319,16 @@ export const Login: React.FC<LoginProps> = (props) => {
               <ArrowDisabled />
             )
           }
-          onClickButton={async () => {
-            Keyboard.dismiss();
-            if (
-              !(phoneNumber.length == 10 && phoneNumberIsValid && isMobileNumberValid(phoneNumber))
-            ) {
-              return null;
-            } else {
-              const isBlocked = await _getTimerData();
-              console.log('isBlocked', isBlocked);
-
-              if (isBlocked) {
-                props.navigation.navigate(AppRoutes.OTPVerification, {
-                  phoneNumberVerificationCredential: '',
-                  otpString,
-                  phoneNumber: phoneNumber,
-                });
-              } else {
-                setVerifyingPhonenNumber(true);
-                sendOtp &&
-                  sendOtp(phoneNumber)
-                    .then((confirmResult) => {
-                      setVerifyingPhonenNumber(false);
-                      console.log(confirmResult, 'confirmResult');
-
-                      props.navigation.navigate(AppRoutes.OTPVerification, {
-                        // phoneNumberVerificationCredential: confirmResult.verificationId,
-                        // confirmResult,
-                        otpString,
-                        phoneNumber: phoneNumber,
-                      });
-                      setPhoneNumber('');
-                    })
-                    .catch((error: RNFirebase.RnError) => {
-                      console.log(error, 'error');
-                      setVerifyingPhonenNumber(false);
-                      Alert.alert(
-                        'Error',
-                        (error && error.message) || 'The interaction was cancelled by the user.'
-                      );
-                    });
-              }
-            }
-          }}
+          onClickButton={onClickOkay}
           disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
           <View
             style={[
-              { height: 56, paddingTop: 20 },
-              isValid ? styles.inputValidView : styles.inputView,
+              { paddingTop: Platform.OS === 'ios' ? 22 : 15 },
+              phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -348,56 +336,54 @@ export const Login: React.FC<LoginProps> = (props) => {
               maxLength={10}
               value={phoneNumber}
               onChangeText={(value) => validateAndSetPhoneNumber(value)}
-              selectionColor={theme.colors.INPUT_BORDER_SUCCESS}
             />
           </View>
-          <Text style={isValid ? styles.bottomValidDescription : styles.bottomDescription}>
-            {isValid ? string.LocalStrings.otp_sent_to : string.LocalStrings.wrong_number}
+          <Text
+            style={
+              phoneNumber == '' || phoneNumberIsValid
+                ? styles.bottomValidDescription
+                : styles.bottomDescription
+            }
+          >
+            {phoneNumber == '' || phoneNumberIsValid
+              ? string.login.otp_sent_to
+              : string.login.wrong_number}
           </Text>
-          {isValid ? (
-            <View
-              style={{
-                marginRight: 32,
+
+          <View
+            style={{
+              marginRight: 32,
+            }}
+          >
+            <HyperLink
+              linkStyle={{
+                color: '#02475b',
+                ...fonts.IBMPlexSansBold(10),
+                lineHeight: 16,
+                letterSpacing: 0,
               }}
+              linkText={(url) =>
+                url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+              }
+              onPress={(url, text) => setonClickOpen(true)}
             >
-              <Hyperlink
-                linkStyle={{
+              <Text
+                style={{
                   color: '#02475b',
-                  ...theme.fonts.IBMPlexSansBold(11), //fonts.IBMPlexSansBold(11),
+                  ...fonts.IBMPlexSansMedium(10),
                   lineHeight: 16,
                   letterSpacing: 0,
                 }}
-                linkText={(url) =>
-                  url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
-                }
-                onPress={(url, text) => setshowTAC(true)}
               >
-                <Text
-                  style={{
-                    color: '#02475b',
-                    ...theme.fonts.IBMPlexSans(11),
-                    lineHeight: 16,
-                    letterSpacing: 0,
-                  }}
-                >
-                  By logging in, you agree to our https://www.apollo247.com/TnC.html
-                </Text>
-              </Hyperlink>
-            </View>
-          ) : (
-            // <View style={{ height: 28 }} />
-            <TouchableOpacity
-              onPress={() => props.navigation.push(AppRoutes.HelpScreen)}
-              style={{ marginTop: -10 }}
-            >
-              <Text style={[styles.gethelpText]}>{string.LocalStrings.gethelp}</Text>
-            </TouchableOpacity>
-          )}
+                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+              </Text>
+            </HyperLink>
+          </View>
         </Card>
-        {showTAC && openWebView()}
+        {onClickOpen && openWebView()}
       </SafeAreaView>
-      {showSpinner && <Spinner />}
-      {verifyingPhoneNumber ? <Spinner /> : null}
+      {showSpinner ? <Spinner /> : null}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };

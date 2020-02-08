@@ -13,7 +13,10 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SAVE_MEDICINE_ORDER,
   SAVE_MEDICINE_ORDER_PAYMENT,
@@ -249,6 +252,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('CheckoutScene_savePayment', e);
         setShowSpinner(false);
         aphConsole.log({ e });
         showAphAlert!({
@@ -336,12 +340,17 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           placeOrder(orderId, orderAutoId);
         } else {
           console.log('Redirect To Payment Gateway');
-          redirectToPaymentGateway(orderId, orderAutoId).finally(() => {
-            setShowSpinner(false);
-          });
+          redirectToPaymentGateway(orderId, orderAutoId)
+            .catch((e) => {
+              CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
+            })
+            .finally(() => {
+              setShowSpinner(false);
+            });
         }
       })
       .catch((error) => {
+        CommonBugFender('CheckoutScene_saveOrder', error);
         setShowSpinner(false);
         handleGraphQlError(error);
       });
@@ -428,7 +437,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm a')}`}
+                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
                 </Text>
               </View>
             </>
@@ -679,7 +688,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           onPress={() => {
             try {
               CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
-            } catch (error) {}
+            } catch (error) {
+              CommonBugFender('CheckoutScene_renderPayButton_try', error);
+            }
             initiateOrder();
           }}
           // disabled={isPayDisabled}

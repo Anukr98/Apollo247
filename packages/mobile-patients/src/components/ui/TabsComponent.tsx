@@ -57,7 +57,6 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
 
   useEffect(() => {
     if (selected !== props.selectedTab) {
-      console.log(selected, 'TabsComponent', props.selectedTab);
       setselectedTab(props.selectedTab);
     }
   }, [props.selectedTab]);

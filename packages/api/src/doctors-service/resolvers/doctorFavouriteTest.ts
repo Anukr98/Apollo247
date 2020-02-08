@@ -8,6 +8,16 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorFavouriteTestRepository } from 'doctors-service/repositories/doctorFavouriteTestRepository';
 
 export const doctorFavouriteTestTypeDefs = gql`
+  enum DIAGNOSTICS_TYPE {
+    TEST
+    PACKAGE
+  }
+
+  enum TEST_COLLECTION_TYPE {
+    CENTER
+    HC
+  }
+
   type DoctorsFavouriteTests {
     id: ID!
     itemname: String!
@@ -34,14 +44,15 @@ const getDoctorFavouriteTestList: Resolver<
   {},
   DoctorsServiceContext,
   FavouriteTestList
-> = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
+> = async (parent, args, { mobileNumber, doctorsDb, patientsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteTestRepository);
-  const FavouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
-  return { testList: FavouriteTestList };
+  const favouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
+
+  return { testList: favouriteTestList };
 };
 
 const addDoctorFavouriteTest: Resolver<

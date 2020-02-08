@@ -4,7 +4,10 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
 import React, { useState } from 'react';
@@ -206,6 +209,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
         props.setdisplayoverlay(false);
       })
       .catch((e) => {
+        CommonBugFender('AddProfile_newProfile', e);
         handleGraphQlError(e);
       })
       .finally(() => {

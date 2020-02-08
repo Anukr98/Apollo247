@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover } from '@material-ui/core';
+import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
@@ -21,18 +21,15 @@ import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-    },
-    headerSticky: {
-      position: 'fixed',
+    root: {
       width: '100%',
-      zIndex: 99,
-      top: 0,
     },
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      [theme.breakpoints.up(990)]: {
+        marginBottom: 20,
+      },
     },
     doctorListingPage: {
       borderRadius: '0 0 10px 10px',
@@ -43,23 +40,50 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     medicineTopGroup: {
       display: 'flex',
       paddingTop: 25,
+      [theme.breakpoints.down(768)]: {
+        display: 'block',
+      },
     },
     searchSection: {
       width: 'calc(100% - 284px)',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        marginBottom: 15,
+      },
+    },
+    progressLoader: {
+      textAlign: 'center',
+      padding: 20,
     },
     rightSection: {
       marginLeft: 'auto',
       width: 284,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        padding: '0 20px 30px 20px',
+      },
     },
     userName: {
       fontSize: 50,
       fontWeight: 600,
       color: '#02475b',
       lineHeight: '50px',
+      [theme.breakpoints.down(768)]: {
+        padding: 20,
+        position: 'fixed',
+        width: '100%',
+        background: '#fff',
+        zIndex: 999,
+        top: 74,
+        display: 'none',
+      },
     },
     searchMedicineForm: {
       backgroundColor: '#f7f8f5',
@@ -92,9 +116,16 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
         maxWidth: '100%',
       },
+      [theme.breakpoints.down('xs')]: {
+        margin: '51px auto 0 auto',
+        textAlign: 'center',
+      },
     },
     medicineSection: {
       paddingLeft: 15,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 0,
+      },
     },
     sectionGroup: {
       marginBottom: 15,
@@ -308,12 +339,8 @@ export const MedicineLanding: React.FC = (props) => {
   ];
 
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+    <div className={classes.root}>
+      <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
@@ -321,6 +348,11 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
                 <MedicineAutoSearch />
+                {loading && (
+                  <div className={classes.progressLoader}>
+                    <CircularProgress size={30} />
+                  </div>
+                )}
                 {data && data.mainbanners && (
                   <div className={classes.productsBanner}>
                     <img src={`${apiDetails.imageUrl}${data.mainbanners[0].image}`} alt="" />

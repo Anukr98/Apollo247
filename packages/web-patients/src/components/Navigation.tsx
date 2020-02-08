@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme: Theme) => {
     appNavigation: {
       marginLeft: 'auto',
       [theme.breakpoints.down('xs')]: {
-        display: 'none',
+        marginLeft: 0,
       },
       '& a': {
         fontSize: 13,
@@ -22,6 +22,9 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down('sm')]: {
           paddingLeft: 10,
           paddingRight: 10,
+        },
+        [theme.breakpoints.down(990)]: {
+          display: 'none',
         },
       },
     },
@@ -46,11 +49,17 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       display: 'inline-block',
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        padding: '26px 20px 24px 20px',
+      },
       '& img': {
         verticalAlign: 'middle',
       },
       '& >span': {
         position: 'relative',
+      },
+      '&:focus': {
+        outline: 'none',
       },
     },
     itemCount: {

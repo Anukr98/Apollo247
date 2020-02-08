@@ -25,6 +25,7 @@ import {
   getPatientAddressById,
   getPatientAddressByIdVariables,
 } from '../../graphql/types/getPatientAddressById';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -160,6 +161,7 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
         setSlotInfo(formattedSlotsArray[0]);
       })
       .catch((e) => {
+        CommonBugFender('TestScheduleOverlay_fetchSlots', e);
         console.log('getDiagnosticSlots Error', { e });
         if (!(g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS')) {
           handleGraphQlError(e);
@@ -185,6 +187,7 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
           fetchSlots();
         })
         .catch((e) => {
+          CommonBugFender('TestScheduleOverlay_getAddressById', e);
           handleGraphQlError(e);
           setLoading(false);
         });

@@ -5,6 +5,9 @@ const darkRed = '#890000';
 const app_light_blue = '#02475b';
 const app_sharp_Blue = '#01475b';
 const sky_blue = '#0087ba';
+const APP_Sherpa_Blue = '#01475b';
+const shadowGray = '#808080';
+const text_light_blue = 'rgba(2,71,91,0.6)';
 
 const whiteColor = (opacity: number = 1) => `rgba(255,255,255,${opacity})`; //'#ffffff'
 const blackColor = (opacity: number = 1) => `rgba(0,0,0,${opacity})`; //'#000000'
@@ -48,7 +51,11 @@ const Common = {
   APP_YELLOW: orange,
   CLEAR: 'transparent',
   LIGHT_BLUE: app_light_blue,
-  SHARP_BLUE: app_sharp_Blue,
+  SHARP_BLUE: APP_Sherpa_Blue,
+  SHADOW_GRAY: shadowGray,
+  SKY_BLUE: sky_blue,
+  TEXT_LIGHT_BLUE: text_light_blue,
+  SEPARATOR_LINE: 'rgba(2, 71, 91, 0.2)',
 };
 
 const Header = {

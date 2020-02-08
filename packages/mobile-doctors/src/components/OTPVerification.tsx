@@ -1,200 +1,222 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { OkText, OkTextDisabled } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
-import { TimeOutData } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { Card } from '@aph/mobile-doctors/src/components/ui/Card';
+import { CountDownTimer } from '@aph/mobile-doctors/src/components/ui/CountDownTimer';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-doctors/src/components/ui/NoInterNetPopup';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { setDoctorDetails } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { string } from '@aph/mobile-doctors/src/strings/string';
+import string from '@aph/mobile-doctors/src/strings/strings.json';
+import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
+  Alert,
+  AppState,
+  AppStateStatus,
   AsyncStorage,
+  BackHandler,
+  Dimensions,
   Keyboard,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import SmsListener from 'react-native-android-sms-listener';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { NavigationScreenProps } from 'react-navigation';
-import { OTPTextView } from './ui/OTPTextView';
-import { RNFirebase } from 'react-native-firebase';
+import Hyperlink from 'react-native-hyperlink';
+import { WebView } from 'react-native-webview';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { resendOTP, verifyOTP } from '../helpers/loginCalls';
+
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
-    //...theme.viewStyles.container,
-    flex: 1,
-    width: '100%',
-    height: 600,
-    backgroundColor: '#f0f4f5',
+    ...theme.viewStyles.container,
   },
   inputView: {
     flexDirection: 'row',
     justifyContent: 'center',
     height: 56,
-    marginBottom: 8,
+    // marginBottom: 8,
     paddingTop: 2,
-    marginTop: 8,
   },
-  errorTextfincal: {
-    color: '#02475b',
+  errorText: {
+    lineHeight: 24,
+    color: theme.colors.INPUT_FAILURE_TEXT,
     ...theme.fonts.IBMPlexSansMedium(12),
     paddingBottom: 3,
-    opacity: 0.5,
-  },
-  gethelpText: {
-    ...Platform.select({
-      ios: { marginTop: 22 },
-      android: { marginTop: 10 },
-    }),
-    color: '#fc9916',
-    ...theme.fonts.IBMPlexSansBold(12),
-    marginBottom: 5,
   },
   bottomDescription: {
     lineHeight: 24,
     color: theme.colors.INPUT_INFO,
     ...theme.fonts.IBMPlexSansSemiBold(12),
-    marginTop: 15,
   },
   codeInputStyle: {
     borderBottomWidth: 2,
-    width: '14%',
+    width: '100%',
     margin: 0,
     height: 48,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.LIGHT_BLUE,
+    // letterSpacing: 28, // 26
+    // paddingLeft: 12, // 25
   },
-  statusBarBg: {
-    width: '100%',
-    opacity: 0.05,
-    backgroundColor: '#000000',
-    ...ifIphoneX(
-      {
-        height: 44,
-      },
-      {
-        height: 24,
-      }
-    ),
-  },
-  errorText: {
-    color: '#890000',
-    ...theme.fonts.IBMPlexSansMedium(12),
-    paddingBottom: 3,
-  },
-  otpbuttonview: {
+  viewWebStyles: {
     position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0, 0.2)',
-    alignSelf: 'center',
-    justifyContent: 'center',
+    width: width,
+    height: height,
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    elevation: 20,
   },
 });
 
 let timer = 900;
-
-type ReceivedSmsMessage = {
+export type ReceivedSmsMessage = {
   originatingAddress: string;
   body: string;
 };
+export type timeOutDataType = { phoneNumber: string; invalidAttems: number; startTime: string };
 
-export interface OTPVerificationProps extends NavigationScreenProps {
-  // phoneNumberVerificationCredential: PhoneNumberVerificationCredential;
-  // otpString: string;
-  phoneNumber: string;
-}
+export interface OTPVerificationProps
+  extends NavigationScreenProps<{
+    otpString: string;
+    phoneNumber: string;
+    loginId: string;
+  }> {}
+
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
-  const [isValidOTP, setIsValidOTP] = useState<boolean>(true);
+  const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
-  const [intervalId, setIntervalId] = useState<any>(0);
+  const [intervalId, setIntervalId] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
-  // const [errorAuth, setErrorAuth] = useState<boolean>(true);
-  const { sendOtp, verifyOtp } = useAuth();
-  // const client = useApolloClient();
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
+  const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
+  const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    sendOtp,
+    doctorDetails,
+    getDoctorDetailsError,
+    clearFirebaseUser,
+    setDoctorDetails: setContextDoctorDetails,
+  } = useAuth();
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [isOtpVerified, setisOtpVerified] = useState<boolean>(false);
 
-  // const [androidSignedIn, setAndroidSignedIn] = useState(false);
+  const phoneNumber = props.navigation.getParam('phoneNumber');
+
+  const handleBack = async () => {
+    setonClickOpen(false);
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    return true;
+  };
 
   useEffect(() => {
-    _getTimerData();
-  }, []);
-
-  // useEffect(() => {
-  //   setErrorAuth(authError);
-  //   console.log('authError OTPVerification', authError);
-  //   if (authError) {
-  //     clearCurrentUser();
-  //     setIsLoading(false);
-  //     //Alert.alert('Error', 'Unable to connect the server at the moment.');
-  //   }
-  // }, [authError]);
-
-  useEffect(() => {
-    const smsListener = SmsListener.addListener((message: ReceivedSmsMessage) => {
-      const newOtp = message.body.match(/-*[0-9]+/);
-      const otpString = newOtp ? newOtp[0] : '';
-      setOtp(otpString);
-      setIsValidOTP(true);
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
     return () => {
-      smsListener && smsListener.remove();
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
 
   useEffect(() => {
-    if (timer === 0) {
-      timer = 900;
-      setRemainingTime(900);
-      setShowErrorMsg(false);
-      setInvalidOtpCount(0);
-      setIsValidOTP(true);
-      clearInterval(intervalId);
-      _removeFromStore();
+    console.log(getDoctorDetailsError, doctorDetails, 'getDoctorDetailsError');
+
+    if (isOtpVerified) {
+      setTimeout(() => {
+        if (doctorDetails && doctorDetails.id) {
+          console.log(
+            doctorDetails,
+            'doctorDetails doctorType',
+            doctorDetails.doctorType,
+            doctorDetails.doctorType != 'JUNIOR'
+          );
+          if (doctorDetails.doctorType !== 'JUNIOR') {
+            console.log('doctorType JUNIOR');
+
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ProfileSetup })],
+              })
+            );
+          } else {
+            AsyncStorage.setItem('isLoggedIn', 'false');
+            // AsyncStorage.setItem('isProfileFlowDone', 'false');
+            setDoctorDetails(null);
+            clearFirebaseUser && clearFirebaseUser();
+            Alert.alert(
+              'Error',
+              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+            );
+            setshowSpinner(false);
+          }
+        } else {
+          if (getDoctorDetailsError === true) {
+            Alert.alert(
+              'Error',
+              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
+            );
+            setshowSpinner(false);
+          }
+        }
+      }, 2000);
     }
-  }, [timer, intervalId]);
+  }, [doctorDetails, isOtpVerified, props.navigation, getDoctorDetailsError]);
 
-  const startInterval = (timer: number) => {
-    const intervalId = setInterval(() => {
-      timer = timer - 1;
-      setRemainingTime(timer);
-      if (timer == 0) {
-        console.log('descriptionTextStyle remainingTime', remainingTime);
-        setRemainingTime(0);
-        setInvalidOtpCount(0);
-        setIsValidOTP(true);
-        clearInterval(intervalId);
+  const _removeFromStore = useCallback(async () => {
+    try {
+      const getData = await AsyncStorage.getItem('timeOutData');
+      if (getData) {
+        const timeOutData = JSON.parse(getData);
+        const filteredData = timeOutData.filter(
+          (el: timeOutDataType) => el.phoneNumber !== phoneNumber
+        );
+        console.log(filteredData, 'filteredData');
+        await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
       }
-    }, 1000);
-  };
+    } catch (error) {
+      console.log(error, 'error');
+      // Error removing data
+    }
+  }, [props.navigation.state.params]);
 
-  const _getTimerData = async () => {
+  const getTimerData = useCallback(async () => {
     try {
       const data = await AsyncStorage.getItem('timeOutData');
       if (data) {
-        const timeOutData: TimeOutData[] = JSON.parse(data);
+        const timeOutData = JSON.parse(data);
         console.log(timeOutData);
-        const { phoneNumber } = props.navigation.state.params!;
 
-        timeOutData.map((obj) => {
+        timeOutData.map((obj: timeOutDataType) => {
           if (obj.phoneNumber === phoneNumber) {
             const t1 = new Date();
             const t2 = new Date(obj.startTime);
             const dif = t1.getTime() - t2.getTime();
 
-            const seconds = Math.round(dif / 1000);
+            const seconds = Math.ceil(dif / 1000);
             console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
               if (seconds < 900) {
@@ -203,7 +225,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 timer = 900 - seconds;
                 console.log(timer, 'timertimer');
                 setRemainingTime(timer);
-                startInterval(timer);
+                // startInterval(timer);
               } else {
                 _removeFromStore();
               }
@@ -218,33 +240,20 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       // Error retrieving data
       console.log(error.message);
     }
-  };
+  }, [_removeFromStore, props.navigation.state.params]);
 
-  const _removeFromStore = async () => {
-    try {
-      const { phoneNumber } = props.navigation.state.params!;
-      const getData = await AsyncStorage.getItem('timeOutData');
-      if (getData) {
-        const timeOutData: TimeOutData[] = JSON.parse(getData);
-        const filteredData = timeOutData.filter((el) => el.phoneNumber !== phoneNumber);
-        console.log(filteredData, 'filteredData');
-        await AsyncStorage.setItem('timeOutData', JSON.stringify(filteredData));
-      }
-    } catch (error) {
-      console.log(error, 'error');
-      // Error removing data
-    }
-  };
+  useEffect(() => {
+    getTimerData();
+  }, [props.navigation, getTimerData]);
 
   const _storeTimerData = async (invalidAttems: number) => {
     try {
-      const { phoneNumber } = props.navigation.state.params!;
-      let timeOutData: TimeOutData[] = [];
       const getData = await AsyncStorage.getItem('timeOutData');
+      let timeOutData: timeOutDataType[] = [];
       if (getData) {
         timeOutData = JSON.parse(getData);
         let index: number = 0;
-        timeOutData.map((item, i) => {
+        timeOutData.map((item: timeOutDataType, i: number) => {
           if (item.phoneNumber === phoneNumber) {
             index = i + 1;
           }
@@ -277,160 +286,399 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
-  const redirectToProfileSetup = (phoneNumber: string) => {
-    console.log('redirectToProfileSetup called');
-    props.navigation.replace(AppRoutes.OTPVerificationApiCall, { phoneNumber });
+  const navigateTo = (routeName: AppRoutes) => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: routeName,
+          }),
+        ],
+      })
+    );
+    // props.navigation.replace(AppRoutes.ConsultRoom);
   };
 
-  const onClickOk = async () => {
-    Keyboard.dismiss();
-    setIsLoading(true);
-    verifyOtp &&
-      verifyOtp(otp)
-        .then((user: RNFirebase.User | unknown) => {
-          _removeFromStore();
-          redirectToProfileSetup((user as RNFirebase.User).phoneNumber || '');
-        })
-        .catch(async (error) => {
-          setIsLoading(false);
-          setOtp('');
-          console.log('firebaseOtpError');
-          // user entered wrong otp
-          _storeTimerData(invalidOtpCount + 1);
-          setShowErrorMsg(true);
-          if (invalidOtpCount + 1 === 3) {
-            setIsValidOTP(false);
-            startInterval(timer);
-            setIntervalId(intervalId);
-          } else {
-            setIsValidOTP(true);
-          }
-          setInvalidOtpCount(invalidOtpCount + 1);
-        });
+  const onClickOk = () => {
+    try {
+      Keyboard.dismiss();
+    } catch (error) {}
+    getNetStatus().then(async (status) => {
+      if (status) {
+        console.log('otp OTPVerification', otp, otp.length, 'length');
+        setshowSpinner(true);
+
+        const { loginId } = props.navigation.state.params!;
+
+        verifyOTP(loginId, otp)
+          .then((data: any) => {
+            console.log(data.status === true, data.status, 'status');
+
+            if (data.status === true) {
+              // props.navigation.replace(AppRoutes.OTPVerificationApiCall, {
+              //   phoneNumber,
+              // });
+              _removeFromStore();
+              console.log('error', data.authToken);
+
+              sendOtp &&
+                sendOtp(data.authToken).then((data) => {
+                  // setshowSpinner(true);
+                  setisOtpVerified(true);
+                  //set isloggedin to true
+                  AsyncStorage.setItem('isLoggedIn', 'true');
+                });
+            } else {
+              console.log('else error');
+              try {
+                setshowErrorBottomLine(true);
+                setshowSpinner(false);
+                _storeTimerData(invalidOtpCount + 1);
+
+                if (invalidOtpCount + 1 === 3) {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(false);
+                  setIntervalId(intervalId);
+                } else {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(true);
+                }
+                setInvalidOtpCount(invalidOtpCount + 1);
+              } catch (error) {
+                // setshowSpinner(false);
+                // console.log(error);
+              }
+            }
+          })
+          .catch((error: Error) => {
+            try {
+              console.log({
+                error,
+              });
+              setshowErrorBottomLine(true);
+              setshowSpinner(false);
+              // console.log('error', error);
+              _storeTimerData(invalidOtpCount + 1);
+
+              if (invalidOtpCount + 1 === 3) {
+                setShowErrorMsg(true);
+                setIsValidOTP(false);
+                // startInterval(timer);
+                setIntervalId(intervalId);
+              } else {
+                setShowErrorMsg(true);
+                setIsValidOTP(true);
+              }
+              setInvalidOtpCount(invalidOtpCount + 1);
+            } catch (error) {
+              setshowSpinner(false);
+              console.log(error);
+            }
+          });
+      } else {
+        setshowOfflinePopup(true);
+      }
+    });
   };
 
-  const minutes = Math.floor(remainingTime / 60);
-  const seconds = remainingTime - minutes * 60;
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    console.log('nextAppState :' + nextAppState);
+    if (nextAppState === 'active') {
+      getTimerData();
+    }
+  };
+  useEffect(() => {
+    AppState.addEventListener('change', _handleAppStateChange);
+  }, []);
+
+  const onStopTimer = () => {
+    // timer = 900;
+    setRemainingTime(900);
+    setShowErrorMsg(false);
+    setInvalidOtpCount(0);
+    setIsValidOTP(true);
+    clearInterval(intervalId);
+    _removeFromStore();
+  };
+
+  const onStopResendTimer = () => {
+    setShowResentTimer(false);
+  };
 
   const isOtpValid = (otp: string) => {
-    setOtp(otp);
-    if (otp.length === 6 || otp.length === 0) {
-      setIsValidOTP(true);
-    } else {
-      setIsValidOTP(false);
+    if (otp.match(/[0-9]/) || otp === '') {
+      showErrorBottomLine && setshowErrorBottomLine(false);
+      setOtp(otp);
+      if (otp.length === 6) {
+        setIsValidOTP(true);
+      } else {
+        setIsValidOTP(false);
+      }
     }
   };
 
   const onClickResend = () => {
-    const { phoneNumber } = props.navigation.state.params!;
-    setIsresent(true);
-    setOtp('');
+    getNetStatus().then((status) => {
+      if (status) {
+        setIsresent(true);
+        setOtp('');
+        Keyboard.dismiss();
+        console.log('onClickResend', phoneNumber);
+
+        const loginId = props.navigation.getParam('loginId');
+
+        resendOTP('+91' + phoneNumber, loginId)
+          .then((resendResult: any) => {
+            console.log('resendOTP ', resendResult.loginId);
+
+            props.navigation.setParams({
+              loginId: resendResult.loginId,
+            });
+            console.log('confirmResult login', resendResult);
+          })
+          .catch((error: Error) => {
+            console.log(error, 'error');
+            console.log(error.message, 'errormessage');
+            Alert.alert('Error', 'The interaction was cancelled by the user.');
+          });
+      } else {
+        setshowOfflinePopup(true);
+      }
+    });
+  };
+
+  const openWebView = () => {
     Keyboard.dismiss();
-    console.log('onClickResend', phoneNumber);
-    setIsLoading(true);
-    sendOtp &&
-      sendOtp(phoneNumber)
-        .then((_) => {
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          setIsLoading(false);
-          console.log(error, 'error');
-          // Alert.alert('Error', 'Unable to connect the server at the moment.');
-        });
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          headerText={'Terms & Conditions'}
+          leftIcon="close"
+          containerStyle={{
+            borderBottomWidth: 0,
+          }}
+          onPressLeftIcon={() => setonClickOpen(false)}
+        />
+        <View
+          style={{
+            flex: 1,
+            overflow: 'hidden',
+            backgroundColor: 'white',
+          }}
+        >
+          <WebView
+            source={{
+              uri: 'https://www.apollo247.com/TnC.html',
+            }}
+            style={{
+              flex: 1,
+              backgroundColor: 'white',
+            }}
+            // useWebKit={true}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setshowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setshowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setshowSpinner(false);
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderHyperLink = () => {
+    return (
+      <View
+        style={{
+          marginRight: 32,
+          marginTop: 12,
+        }}
+      >
+        <Hyperlink
+          linkStyle={{
+            color: '#02475b',
+            ...fonts.IBMPlexSansBold(10),
+            lineHeight: 16,
+            letterSpacing: 0,
+          }}
+          linkText={(url) =>
+            url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+          }
+          onPress={(url, text) => setonClickOpen(true)}
+        >
+          <Text
+            style={{
+              color: '#02475b',
+              ...fonts.IBMPlexSansMedium(10),
+              lineHeight: 16,
+              letterSpacing: 0,
+            }}
+          >
+            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+          </Text>
+        </Hyperlink>
+      </View>
+    );
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={styles.statusBarBg} />
       <SafeAreaView style={styles.container}>
+        <View
+          style={{
+            height: 56,
+            justifyContent: 'center',
+            paddingLeft: 20,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              height: 25,
+              width: 25,
+              justifyContent: 'center',
+            }}
+            onPress={() => {
+              props.navigation.goBack();
+              intervalId && clearInterval(intervalId);
+              setContextDoctorDetails && setContextDoctorDetails(null);
+            }}
+          >
+            <BackArrow />
+          </TouchableOpacity>
+        </View>
         {invalidOtpCount === 3 && !isValidOTP ? (
-          <OtpCard
+          <Card
             key={1}
-            cardContainer={{ marginTop: 56, height: 300 }}
-            heading={string.LocalStrings.oops}
-            description={string.LocalStrings.incorrect_otp_message}
-            // disableButton={isValidOTP ? false : true}
-            buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
-            disableButton={isValidOTP && otp.length === 6 ? false : true}
-            descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
-            onPress={() => props.navigation.push(AppRoutes.Login)}
+            cardContainer={{
+              marginTop: 0,
+              // height: 290,
+              paddingBottom: 12,
+            }}
+            headingTextStyle={{
+              marginTop: 10,
+            }}
+            heading={string.login.oops}
+            description={string.login.incorrect_otp_message}
+            disableButton={isValidOTP ? false : true}
+            descriptionTextStyle={{
+              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
+            }}
           >
             <View style={styles.inputView}>
-              <OTPTextView
-                handleTextChange={(otp: string) => setOtp(otp)}
-                inputCount={6}
+              <TextInput
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor: 'rgba(0, 179, 142, 0.4)',
+                  },
+                ]}
                 value={otp}
-                textInputStyle={styles.codeInputStyle}
-                tintColor="rgba(2, 71, 91, 0.3)" //"#4c02475b" //{'rgba(0, 179, 142, 0.4)'}
-                offTintColor="rgba(2, 71, 91, 0.3)" //"#4c02475b" //{'rgba(0, 179, 142, 0.4)'}
-                containerStyle={{ flex: 1 }}
+                onChangeText={(otp: string) => setOtp(otp)}
                 editable={false}
+                textContentType={'oneTimeCode'}
               />
             </View>
-            <Text style={[styles.errorTextfincal]}>
-              Try again after {minutes} : {seconds.toString().length < 2 ? '0' + seconds : seconds}
+
+            <Text style={[styles.errorText]}>
+              Try again after —{' '}
+              <CountDownTimer
+                timer={remainingTime}
+                style={[styles.errorText]}
+                onStopTimer={onStopTimer}
+              />
             </Text>
-            <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.HelpScreen)}>
-              <Text style={[styles.gethelpText]}>GET HELP</Text>
-            </TouchableOpacity>
-          </OtpCard>
+            {renderHyperLink()}
+          </Card>
         ) : (
-          <OtpCard
+          <Card
             key={2}
-            cardContainer={{ marginTop: 56, height: 300 }}
-            heading={string.LocalStrings.great}
-            description={
-              isresent ? string.LocalStrings.type_otp_text : string.LocalStrings.resend_otp_text
-            }
+            cardContainer={{
+              marginTop: 0,
+              // height: 260,
+              paddingBottom: 12,
+            }}
+            headingTextStyle={{
+              marginTop: 10,
+            }}
+            heading={string.login.great}
+            description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
             buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
             onClickButton={onClickOk}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
-            descriptionTextStyle={{ paddingBottom: Platform.OS === 'ios' ? 0 : 1 }}
-            onPress={() => props.navigation.goBack()}
+            descriptionTextStyle={{
+              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
+            }}
           >
             <View style={styles.inputView}>
-              <OTPTextView
-                handleTextChange={isOtpValid}
-                inputCount={6}
+              <TextInput
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor: showErrorBottomLine
+                      ? theme.colors.INPUT_BORDER_FAILURE
+                      : theme.colors.INPUT_BORDER_SUCCESS,
+                  },
+                ]}
                 value={otp}
-                textInputStyle={styles.codeInputStyle}
-                tintColor={
-                  invalidOtpCount > 0 && otp.length === 0
-                    ? theme.colors.INPUT_BORDER_FAILURE
-                    : isValidOTP && otp.length === 6
-                    ? theme.colors.INPUT_BORDER_SUCCESS
-                    : '#000000'
-                }
-                offTintColor={
-                  invalidOtpCount > 0 && otp.length === 0
-                    ? theme.colors.INPUT_BORDER_FAILURE
-                    : isValidOTP && otp.length === 6
-                    ? theme.colors.INPUT_BORDER_SUCCESS
-                    : '#000000'
-                }
-                containerStyle={{ flex: 1 }}
+                onChangeText={isOtpValid}
+                keyboardType="numeric"
+                textContentType={'oneTimeCode'}
+                autoFocus
+                maxLength={6}
               />
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
-                Incorrect OTP, {3 - invalidOtpCount} attempt{3 - invalidOtpCount > 1 ? 's' : ''}{' '}
-                {invalidOtpCount == 2 ? 'left' : 'left'}
+                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
+                {invalidOtpCount == 2 ? 'try' : 'tries'}.
               </Text>
             )}
             {
-              <TouchableOpacity onPress={onClickResend}>
-                <Text style={styles.bottomDescription}>{string.LocalStrings.resend_opt}</Text>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={showResentTimer ? () => {} : onClickResend}
+              >
+                <Text
+                  style={[
+                    styles.bottomDescription,
+                    showResentTimer
+                      ? {
+                          opacity: 0.5,
+                        }
+                      : {},
+                  ]}
+                >
+                  {string.login.resend_opt}
+                  {showResentTimer && ' '}
+                  {showResentTimer && (
+                    <CountDownTimer
+                      timer={30}
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                      }}
+                      onStopTimer={onStopResendTimer}
+                    />
+                  )}
+                </Text>
               </TouchableOpacity>
             }
-          </OtpCard>
+            {renderHyperLink()}
+          </Card>
         )}
+        {onClickOpen && openWebView()}
       </SafeAreaView>
-      {isLoading ? (
-        <View style={styles.otpbuttonview}>
-          <ActivityIndicator animating={isLoading} size="large" color="green" />
-        </View>
-      ) : null}
+      {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };

@@ -8,14 +8,12 @@ export const getLocalData = async () => {
     AsyncStorage.getItem('isProfileFlowDone'),
     AsyncStorage.getItem('doctorDetails'),
     AsyncStorage.getItem('isLoggedIn'),
-    AsyncStorage.getItem('checkDelegate'),
   ]);
   return {
     isOnboardingDone: !!data[0],
     isProfileFlowDone: !!data[1],
     doctorDetails: JSON.parse(data[2] || 'null'),
     isLoggedIn: !!data[3],
-    checkDelegate: !!data[4],
   } as LocalStorage;
 };
 
@@ -34,15 +32,11 @@ export const setDoctorDetails = async (doctorDetails: GetDoctorDetails_getDoctor
 export const setLoggedIn = async (flag: boolean) => {
   await AsyncStorage.setItem('isLoggedIn', flag.toString());
 };
-export const CheckDelegate = async (flag: boolean) => {
-  await AsyncStorage.setItem('checkDelegate', flag.toString());
-};
 
 export const clearUserData = async () => {
   await Promise.all([
-    AsyncStorage.setItem('isProfileFlowDone', ''),
-    AsyncStorage.setItem('doctorDetails', ''),
-    AsyncStorage.setItem('isLoggedIn', ''),
-    AsyncStorage.setItem('checkDelegate', ''),
+    AsyncStorage.removeItem('isProfileFlowDone'),
+    AsyncStorage.removeItem('doctorDetails'),
+    AsyncStorage.removeItem('isLoggedIn'),
   ]);
 };

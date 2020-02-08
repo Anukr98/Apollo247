@@ -17,12 +17,24 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 22,
       marginTop: 10,
       marginBottom: 10,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+        borderLeft: 'none',
+        paddingTop: 15,
+        paddingBottom: 15,
+      },
     },
     locationWrap: {
       display: 'flex',
       alignItems: 'center',
       cursor: 'pointer',
-      width: 210,
+      maxWidth: 210,
+      [theme.breakpoints.down('xs')]: {
+        maxWidth: 180,
+      },
+      [theme.breakpoints.down(500)]: {
+        maxWidth: 150,
+      },
     },
     iconType: {
       width: 25,
@@ -42,6 +54,12 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+      },
+      [theme.breakpoints.down(390)]: {
+        display: 'none',
+      },
     },
     textField: {
       marginLeft: theme.spacing(1),
@@ -55,6 +73,18 @@ const useStyles = makeStyles((theme: Theme) => {
     locationIcon: {
       color: '#00b38e',
       marginRight: 5,
+    },
+    iconDesktop: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    iconMobile: {
+      marginLeft: 5,
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
     },
     locationPopWrap: {
       width: 240,
@@ -230,7 +260,11 @@ export const AppLocations: React.FC = (props) => {
         ref={locationRef}
         onClick={() => setIsLocationPopoverOpen(true)}
       >
-        <img className={classes.locationIcon} src={require('images/ic_location_on.svg')} alt="" />
+        <img
+          className={`${classes.locationIcon} ${classes.iconDesktop}`}
+          src={require('images/ic_location_on.svg')}
+          alt=""
+        />
         <span className={classes.selectedLocation}>
           {!isPopoverOpen && selectedAddress.length > 0
             ? selectedAddress
@@ -238,6 +272,11 @@ export const AppLocations: React.FC = (props) => {
             ? currentLocation
             : getAddressFromLocalStorage()}
         </span>
+        <img
+          className={`${classes.locationIcon} ${classes.iconMobile}`}
+          src={require('images/ic_location_on.svg')}
+          alt=""
+        />
       </div>
       <Popover
         open={isLocationPopoverOpen}

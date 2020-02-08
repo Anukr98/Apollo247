@@ -15,6 +15,7 @@ import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterN
 import {
   CommonScreenLog,
   CommonLogEvent,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { APPOINTMENT_STATE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -53,6 +54,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
         setRescheduleCounting(count);
       }
     } catch (error) {
+      CommonBugFender('ReschedulePopUp_setRescheduleCounting_try', error);
       setRescheduleCounting(1);
     }
   });
@@ -70,7 +72,9 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const acceptChange = () => {
     try {
       props.reschduleDateTime ? props.acceptChange() : null;
-    } catch (error) {}
+    } catch (error) {
+      CommonBugFender('ReschedulePopUp_acceptChange_try', error);
+    }
   };
 
   return (
@@ -236,7 +240,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       }}
                     >
                       {moment(props.reschduleDateTime && props.reschduleDateTime).format(
-                        ' DD MMMM YYYY, hh:mm a'
+                        ' DD MMMM YYYY, hh:mm A'
                       )}
                     </Text>
                   ) : (
@@ -276,30 +280,35 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     }}
                     titleTextStyle={{ color: '#fc9916' }}
                     onPress={() =>
-                      getNetStatus().then((status) => {
-                        if (status) {
-                          const dateIsAfter = moment(props.appadatetime).isAfter(
-                            moment(new Date())
-                          );
-                          if (
-                            props.data.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
-                            dateIsAfter
-                          )
-                            props.setdisplayoverlay();
-                          else {
-                            setBottompopup(true);
-                            //props.setResheduleoverlay(false);
-                            // Alert.alert(
-                            //   'Appointment cannot be rescheduled once it is past the scheduled time'
-                            // );
+                      getNetStatus()
+                        .then((status) => {
+                          if (status) {
+                            const dateIsAfter = moment(props.appadatetime).isAfter(
+                              moment(new Date())
+                            );
+                            if (
+                              props.data.appointmentState ===
+                                APPOINTMENT_STATE.AWAITING_RESCHEDULE ||
+                              dateIsAfter
+                            )
+                              props.setdisplayoverlay();
+                            else {
+                              setBottompopup(true);
+                              //props.setResheduleoverlay(false);
+                              // Alert.alert(
+                              //   'Appointment cannot be rescheduled once it is past the scheduled time'
+                              // );
+                            }
+                            //dateIsAfter ? props.setdisplayoverlay() : null;
+                            // props.setdisplayoverlay();
+                          } else {
+                            setNetworkStatus(true);
+                            setshowSpinner(false);
                           }
-                          //dateIsAfter ? props.setdisplayoverlay() : null;
-                          // props.setdisplayoverlay();
-                        } else {
-                          setNetworkStatus(true);
-                          setshowSpinner(false);
-                        }
-                      })
+                        })
+                        .catch((e) => {
+                          CommonBugFender('ReschedulePopUp_getNetStatus', e);
+                        })
                     }
                   />
                   <Button

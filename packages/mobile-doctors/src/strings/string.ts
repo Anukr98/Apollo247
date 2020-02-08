@@ -1,5 +1,4 @@
 import { LocalStrings } from './LocalStrings';
+import JsonString from './strings.json';
 
-export const string = {
-  LocalStrings,
-};
+export const string = JsonString;

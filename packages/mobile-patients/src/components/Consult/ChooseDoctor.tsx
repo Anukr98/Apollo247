@@ -42,7 +42,10 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerText: {
@@ -103,14 +106,18 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   // console.log(appointmentData, 'appointmentData');
   // console.log(props.navigation.state.params!.patientId, 'pppp');
   useEffect(() => {
-    getNetStatus().then((status) => {
-      if (status) {
-        chooseDoctor();
-      } else {
-        setNetworkStatus(true);
-        setshowSpinner(false);
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          chooseDoctor();
+        } else {
+          setNetworkStatus(true);
+          setshowSpinner(false);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('ChooseDoctor_getNetStatus', e);
+      });
   });
 
   const client = useApolloClient();
@@ -141,7 +148,8 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
             data.data.getAvailableDoctors.availalbeDoctors &&
             setChooseDoctorResult(data.data.getAvailableDoctors.availalbeDoctors);
         })
-        .catch((e: string) => {
+        .catch((e) => {
+          CommonBugFender('ChooseDoctor_chooseDoctor', e);
           setshowSpinner(false);
           console.log('Error occured while adding Doctor', e);
         });
@@ -170,7 +178,8 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
         console.log('transfersppointment', data);
         props.navigation.push(AppRoutes.TabBar);
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('ChooseDoctor_transferAppointmentAPI', e);
         console.log('Error occured while adding Doctor', e);
       });
   };
@@ -220,7 +229,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
               {moment
                 .utc(rowData.availableSlot)
                 .local()
-                .format('Do MMMM, dddd, hh:mm a')}
+                .format('Do MMMM, dddd, hh:mm A')}
             </Text>
           </View>
         </TouchableOpacity>

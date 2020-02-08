@@ -44,6 +44,7 @@ import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { OrderCancelOverlay } from './OrderCancelOverlay';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -138,10 +139,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const handleBack = () => {
     if (!goToHomeOnBack) {
-      refetchOrders().then((data: any) => {
-        const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        setOrders(_orders);
-      });
+      refetchOrders()
+        .then((data: any) => {
+          const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          setOrders(_orders);
+        })
+        .catch((e: Error) => {
+          CommonBugFender('TestOrderDetails_refetchOrders', e);
+        });
     }
     props.navigation.goBack();
     return false;
@@ -152,7 +157,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm a');
+    return moment(time).format('hh:mm A');
   };
 
   const renderOrderHistory = () => {
@@ -219,11 +224,13 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           .then(() => {
             setInitialSate();
           })
-          .catch(() => {
+          .catch((e) => {
+            CommonBugFender('TestOrderDetails_refetch_callApiAndRefetchOrderDetails', e);
             setInitialSate();
           });
       })
       .catch((e) => {
+        CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', e);
         console.log({ e });
         handleGraphQlError(e);
         setApiLoading(false);

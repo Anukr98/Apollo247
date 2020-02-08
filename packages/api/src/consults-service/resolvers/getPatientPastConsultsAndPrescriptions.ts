@@ -34,6 +34,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   enum MEDICINE_ORDER_STATUS {
     QUOTE
     PAYMENT_SUCCESS
+    PAYMENT_FAILED
     ORDER_INITIATED
     ORDER_PLACED
     ORDER_VERIFIED
@@ -49,6 +50,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     PRESCRIPTION_CART_READY
     ORDER_CONFIRMED
     CANCEL_REQUEST
+    READY_AT_STORE
   }
 
   input PatientConsultsAndOrdersInput {
@@ -175,11 +177,23 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
 
   const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
   let patientMedicineOrders: MedicineOrders[] = [];
+  let uniqueMedicineRxOrders: MedicineOrders[] = [];
   if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
     patientMedicineOrders = await medicineOrdersRepo.findByPatientId(patient, offset, limit);
+
+    //filtering the medicine orders by unique prescription url
+    const prescriptionUrls: string[] = [];
+    uniqueMedicineRxOrders = patientMedicineOrders.filter((order) => {
+      if (prescriptionUrls.includes(order.prescriptionImageUrl)) {
+        return false;
+      } else {
+        prescriptionUrls.push(order.prescriptionImageUrl);
+        return true;
+      }
+    });
   }
 
-  return { consults: patientAppointments, medicineOrders: patientMedicineOrders };
+  return { consults: patientAppointments, medicineOrders: uniqueMedicineRxOrders };
 };
 
 const getPatientLabResults: Resolver<

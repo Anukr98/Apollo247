@@ -15,11 +15,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  WebView,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getParameterByName } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { WebView } from 'react-native-webview';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {

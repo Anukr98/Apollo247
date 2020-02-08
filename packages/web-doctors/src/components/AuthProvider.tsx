@@ -1,7 +1,8 @@
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { ApolloClient } from 'apollo-client';
+import { ApolloClient, ApolloError } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { ErrorResponse, onError } from 'apollo-link-error';
+import moment from 'moment';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
@@ -10,9 +11,16 @@ import {
   LOGGED_IN_USER_DETAILS,
   LOGIN,
   VERIFY_LOGIN_OTP,
+  RESEND_OTP,
+  UPDATE_DOCTOR_ONLINE_STATUS,
 } from 'graphql/profiles';
-import { LoggedInUserType, LOGIN_TYPE } from 'graphql/types/globalTypes';
+import {
+  UpdateDoctorOnlineStatus,
+  UpdateDoctorOnlineStatusVariables,
+} from 'graphql/types/UpdateDoctorOnlineStatus';
+import { LoggedInUserType, LOGIN_TYPE, DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import { Login, LoginVariables } from 'graphql/types/Login';
+import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import {
   GetDoctorDetails,
@@ -26,9 +34,19 @@ import {
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
-import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
+import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
-import { TrackJS } from 'trackjs';
+import bugsnag from '@bugsnag/js';
+
+const bugsnagClient = bugsnag({
+  apiKey: `${process.env.BUGSNAG_API_KEY}`,
+  releaseStage: `${process.env.NODE_ENV}`,
+  autoBreadcrumbs: true,
+  autoCaptureSessions: true,
+  autoNotify: true,
+});
+
+const sessionClient = bugsnagClient.startSession();
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -39,7 +57,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   //allCurrentPatients: Patient[] | null;
   setCurrentUser: ((p: Doctor) => void) | null;
 
-  sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
+  sendOtp: ((phoneNumber: string, loginId: string) => Promise<unknown>) | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
 
@@ -63,6 +81,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   addDoctorSecretary:
     | ((p: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null) => void)
     | null;
+  sessionClient: any;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -91,6 +110,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setCurrentUserType: null,
   doctorSecretary: null,
   addDoctorSecretary: null,
+  sessionClient: sessionClient,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -113,7 +133,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const authLink = setContext((_, { headers }) => ({
     headers: {
       ...headers,
-      Authorization: authToken ? authToken : `Bearer 3d1833da7020e0602165529446587434`,
+      Authorization: authToken ? authToken : process.env.AUTH_TOKEN,
     },
   }));
   const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
@@ -167,8 +187,6 @@ export const AuthProvider: React.FC = (props) => {
       })
     );
     setIsSendingOtp(false);
-    console.log(loginResult);
-    console.log(loginError);
     if (
       loginResult &&
       loginResult.data &&
@@ -178,22 +196,99 @@ export const AuthProvider: React.FC = (props) => {
     ) {
       setSendOtpError(false);
       return loginResult.data.login.loginId;
+    } else if (loginError) {
+      const logObject = {
+        api: 'Login',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(loginError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      setSendOtpError(true);
+      return false;
     } else {
-      TrackJS.track(`phoneNumber: ${mobileNumber}`);
-      TrackJS.track(`phoneAuthError: ${loginError}`);
-      console.error(loginError);
+      const logObject = {
+        api: 'Login',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(loginResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
       setSendOtpError(true);
       return false;
     }
   };
-  const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
+  const resendOtpApiCall = async (mobileNumber: string, loginId: string) => {
+    const [resendOtpResult, resendOtpError] = await wait(
+      apolloClient.mutate<ResendOtp, ResendOtpVariables>({
+        variables: {
+          mobileNumber: mobileNumber,
+          id: loginId,
+          loginType: LOGIN_TYPE.DOCTOR,
+        },
+        mutation: RESEND_OTP,
+      })
+    );
+    setIsSendingOtp(false);
+    if (
+      resendOtpResult &&
+      resendOtpResult.data &&
+      resendOtpResult.data.resendOtp &&
+      resendOtpResult.data.resendOtp.status &&
+      resendOtpResult.data.resendOtp.loginId
+    ) {
+      setSendOtpError(false);
+      return resendOtpResult.data.resendOtp.loginId;
+    } else if (resendOtpError) {
+      const logObject = {
+        api: 'ResendOtp',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          id: loginId,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(resendOtpError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      setSendOtpError(true);
+      return false;
+    } else {
+      const logObject = {
+        api: 'ResendOtp',
+        inputParam: JSON.stringify({
+          mobileNumber: mobileNumber,
+          id: loginId,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(resendOtpResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      setSendOtpError(true);
+      return false;
+    }
+  };
+  const sendOtp = (phoneNumber: string, loginId: string) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
       localStorage.setItem('loggedInMobileNumber', phoneNumber);
       setIsSendingOtp(true);
-      loginApiCall(phoneNumber).then((loginId) => {
-        resolve(loginId);
-      });
+      if (loginId && loginId !== '') {
+        resendOtpApiCall(phoneNumber, loginId).then((generatedLoginId) => {
+          resolve(generatedLoginId);
+        });
+      } else {
+        loginApiCall(phoneNumber).then((generatedLoginId) => {
+          resolve(generatedLoginId);
+        });
+      }
     }).finally(() => {
       setIsSendingOtp(false);
     });
@@ -211,51 +306,79 @@ export const AuthProvider: React.FC = (props) => {
         mutation: VERIFY_LOGIN_OTP,
       })
     );
-    //setIsSendingOtp(false);
-    console.log(verifyLoginOtpResult.data);
-    console.log(verifyLoginOtpError);
     if (
       verifyLoginOtpResult &&
       verifyLoginOtpResult.data &&
       verifyLoginOtpResult.data.verifyLoginOtp &&
       verifyLoginOtpResult.data.verifyLoginOtp.status &&
-      verifyLoginOtpResult.data.verifyLoginOtp.authToken
+      verifyLoginOtpResult.data.verifyLoginOtp.authToken &&
+      !verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
     ) {
-      //setSendOtpError(false);
       return verifyLoginOtpResult.data.verifyLoginOtp.authToken;
+    } else if (
+      verifyLoginOtpResult &&
+      verifyLoginOtpResult.data &&
+      verifyLoginOtpResult.data.verifyLoginOtp &&
+      verifyLoginOtpResult.data.verifyLoginOtp.isBlocked
+    ) {
+      const logObject = {
+        api: 'verifyLoginOtp',
+        inputParam: JSON.stringify({
+          id: loginId,
+          otp: otp,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: `phone number is blocked for loginId: ${loginId}`,
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      return false;
+    } else if (verifyLoginOtpError) {
+      const logObject = {
+        api: 'verifyLoginOtp',
+        inputParam: JSON.stringify({
+          id: loginId,
+          otp: otp,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(verifyLoginOtpError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      return false;
     } else {
+      const logObject = {
+        api: 'verifyLoginOtp',
+        inputParam: JSON.stringify({
+          id: loginId,
+          otp: otp,
+          loginType: LOGIN_TYPE.DOCTOR,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(verifyLoginOtpResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
       return false;
     }
   };
   const verifyOtp = (otp: string, loginId: string) => {
     return new Promise((resolve, reject) => {
+      setIsSigningIn(true);
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
-          TrackJS.track(`loginId:${loginId} otp:${otp} otp-verification-error`);
           setVerifyOtpError(true);
+          setIsSigningIn(false);
         } else {
           setVerifyOtpError(false);
-          console.log(res);
           app.auth().signInWithCustomToken(res);
         }
         setIsVerifyingOtp(false);
         resolve();
       });
     }).finally(() => {
-      TrackJS.track(`loginId:${loginId} otp:${otp} finally-block-otp-Error`);
       setVerifyOtpError(true);
-      //setIsSendingOtp(false);
     });
-    // if (!otpVerifier) {
-    //   setSendOtpError(true);
-    //   return;
-    // }
-    // setIsVerifyingOtp(true);
-    // const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
-    // TrackJS.track(otpError);
-    // setVerifyOtpError(Boolean(otpError || !otpAuthResult.user));
-    // setIsVerifyingOtp(false);
   };
 
   const signOut = () =>
@@ -265,15 +388,48 @@ export const AuthProvider: React.FC = (props) => {
       .then(() => window.location.replace('/'));
 
   useEffect(() => {
-    console.log('useEffect getFirebaseToken');
     getFirebaseToken();
   }, []);
-
+  const updateDoctorOnlineStatusCall = async (doctorId: string) => {
+    const [updateDoctorOnlineStatusResult, updateDoctorOnlineStatusError] = await wait(
+      apolloClient.mutate<UpdateDoctorOnlineStatus, UpdateDoctorOnlineStatusVariables>({
+        variables: {
+          doctorId: doctorId,
+          onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+        },
+        mutation: UPDATE_DOCTOR_ONLINE_STATUS,
+      })
+    );
+    if (updateDoctorOnlineStatusResult) {
+      return true;
+    } else if (updateDoctorOnlineStatusError) {
+      const logObject = {
+        api: 'UpdateDoctorOnlineStatus',
+        inputParam: JSON.stringify({
+          doctorId: doctorId,
+          onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(updateDoctorOnlineStatusError),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+    } else {
+      const logObject = {
+        api: 'UpdateDoctorOnlineStatus',
+        inputParam: JSON.stringify({
+          doctorId: doctorId,
+          onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+        }),
+        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+        error: JSON.stringify(updateDoctorOnlineStatusResult),
+      };
+      sessionClient.notify(JSON.stringify(logObject));
+      return false;
+    }
+  };
   const getFirebaseToken = () => {
-    console.log('getFirebaseToken111111111111');
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
-        console.log('getFirebaseToken22222222');
         const [jwt, jwtError] = await wait(user.getIdToken());
         if (jwtError || !jwt) {
           if (jwtError) console.error(jwtError);
@@ -292,7 +448,13 @@ export const AuthProvider: React.FC = (props) => {
           >({ mutation: LOGGED_IN_USER_DETAILS })
         );
         if (error || !res.data) {
-          if (error) console.error(signInError);
+          const logObject = {
+            api: 'findLoggedinUserDetails',
+            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+            error: JSON.stringify(error ? error : res),
+          };
+          sessionClient.notify(JSON.stringify(logObject));
+          if (error) console.error(error);
           setSignInError(true);
           setIsSigningIn(false);
           app.auth().signOut();
@@ -318,19 +480,53 @@ export const AuthProvider: React.FC = (props) => {
             })
           );
           if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
+            const logObject = {
+              api: 'GetDoctorDetails',
+              currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+              error: JSON.stringify(signInError ? signInError : signInResult),
+            };
+            sessionClient.notify(JSON.stringify(logObject));
             if (signInError) console.error(signInError);
-            TrackJS.track(signInError);
             setSignInError(true);
             setIsSigningIn(false);
             app.auth().signOut();
             return;
           }
           const doctors = signInResult.data.getDoctorDetails;
-          setCurrentUser(doctors);
-          setSignInError(false);
+          if (
+            doctors &&
+            doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY &&
+            doctors.doctorType !== 'JUNIOR'
+          ) {
+            updateDoctorOnlineStatusCall(doctors.id).then((res) => {
+              if (res) {
+                setCurrentUser(doctors);
+                setSignInError(false);
+                setIsSigningIn(false);
+              } else {
+                alert('unable to update the status of doctor');
+                app.auth().signOut();
+                window.location.reload();
+              }
+            });
+          } else {
+            setCurrentUser(doctors);
+            setSignInError(false);
+            setIsSigningIn(false);
+          }
+        } else if (
+          res.data &&
+          res.data.findLoggedinUserDetails &&
+          res.data.findLoggedinUserDetails.loggedInUserType &&
+          (res.data.findLoggedinUserDetails.loggedInUserType === LoggedInUserType.JDADMIN ||
+            res.data.findLoggedinUserDetails.loggedInUserType === LoggedInUserType.SECRETARY)
+        ) {
+          setIsSigningIn(false);
         }
+      } else {
+        setIsSigningIn(false);
       }
-      setIsSigningIn(false);
+      //setIsSigningIn(false);
     });
   };
   return (
@@ -357,6 +553,7 @@ export const AuthProvider: React.FC = (props) => {
             setIsLoginPopupVisible,
             doctorSecretary,
             addDoctorSecretary,
+            sessionClient,
           }}
         >
           {props.children}

@@ -73,7 +73,7 @@ export const ArrowStep3: React.FC<IconProps> = (props) => (
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_cross.png')} />
+  <IconBase {...props} size="sm" source={require('../../images/icons/ic_cross.png')} />
 );
 
 export const Reload: React.FC<IconProps> = (props) => (
@@ -542,6 +542,14 @@ export const Plus: React.FC<IconProps> = (props) => (
   />
 );
 
+export const PlusOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/ic_plus_onorange.png')}
+  />
+);
+
 export const AddPlus: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 24, width: 24 }}
@@ -658,6 +666,23 @@ export const DropdownBlueUp: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/up.png')}
   />
 );
+
+export const CheckboxSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/check_box_checked.png')}
+  />
+);
+
+export const CheckboxUnSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/check_box_unchecked.png')}
+  />
+);
+
 export const Selected: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 20, width: 20 }}
@@ -704,9 +729,25 @@ export const InpersonIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const PhysicalIcon: React.FC<IconProps> = (props) => (
+export const InpersonWhiteIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 20, width: 20 }}
+    {...props}
+    source={require('../../images/icons/round_clinic_consult_white.png')}
+  />
+);
+
+export const GreenOnline: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 12, width: 18 }}
+    {...props}
+    source={require('../../images/icons/round_video_consult.png')}
+  />
+);
+
+export const PhysicalIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 12, width: 18 }}
     {...props}
     source={require('../../images/icons/round_video_consult_24_px.png')}
   />
@@ -754,4 +795,59 @@ export const EveningUnselected: React.FC<IconProps> = (props) => (
 
 export const NightUnselected: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/ic_night_unselected.png')} />
+);
+
+export const AddAttachmentIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('../../images/icons/ic_add.png')} />
+);
+export const ChatSend: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24 }}
+    {...props}
+    source={require('../../images/icons/round_send_24_px.png')}
+  />
+);
+export const DoctorPlaceholderImage: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 80, width: 80 }}
+    {...props}
+    source={require('../../images/icons/doctorPlaceholder.jpg')}
+  />
+);
+
+export const CameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_camera.png')} />
+);
+
+export const GalleryIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_gallery.png')} />
+);
+
+export const PrescriptionIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_prescription.png')} />
+);
+export const CrossPopup: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 28, height: 28 }}
+    {...props}
+    source={require('../../images/icons/ic_cross_popup.png')}
+  />
+);
+export const Path: React.FC<IconProps> = (props) => (
+  <IconBase
+    {...props}
+    style={{
+      height: 10,
+      width: 12,
+    }}
+    source={require('../../images/icons/path.png')}
+  />
+);
+
+export const Edit: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/icons/edit.png')}
+  />
 );

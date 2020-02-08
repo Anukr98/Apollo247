@@ -333,7 +333,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                   focusPreviousInput();
                 }
               }}
-              error={submitCount !== 0 && submitCount !== 3 && verifyOtpError}
+              error={submitCount !== 0 && submitCount !== 3 && verifyOtpError && !isSigningIn}
             />
           </Grid>
         ))}
@@ -380,7 +380,11 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           onClick={() => {
             setOtp([]);
             setSubmitCount(0);
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+            sendOtp(mobileNumberWithPrefix, loginId).then((res: any) => {
+              if (res) {
+                setLoginId(res);
+              }
+            });
           }}
         >
           Resend OTP
@@ -394,7 +398,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           onClick={() => {
             verifyOtp(otp.join(''), loginId).then(() => setDisplayOtpInput(true));
             // verifyOtp(otp.join(''));
-            // setSubmitCount(submitCount + 1);
+            setSubmitCount(submitCount + 1);
           }}
           disabled={
             isSendingOtp || isVerifyingOtp || otp.join('').length !== numOtpDigits || showTimer
@@ -440,7 +444,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           }
           onKeyPress={(e) => {
             if (!showErrorMessage && mobileNumber.length === 10 && e.key == 'Enter') {
-              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then((res: any) => {
+              sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
                 if (res) {
                   setLoginId(res);
                 }
@@ -480,7 +484,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             !isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10 || isSendingOtp
           }
           onClick={() => {
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then((res: any) => {
+            sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
               if (res) {
                 setLoginId(res);
               }

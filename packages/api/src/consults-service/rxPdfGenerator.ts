@@ -1,5 +1,7 @@
 import { format, getTime } from 'date-fns';
 import path from 'path';
+import util from 'util';
+
 import PDFDocument from 'pdfkit';
 import {
   RxPdfData,
@@ -20,6 +22,10 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { Connection } from 'typeorm';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { Patient } from 'profiles-service/entities';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -386,18 +392,18 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   const renderFooter = () => {
     drawHorizontalDivider(doc.page.height - 80);
     const disclaimerText =
-      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital.';
+      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital. This is an electronically generated prescription and will not require a doctor signature.';
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(10)
       .fillColor('#000000')
       .opacity(0.5)
-      .text(disclaimerText, margin, doc.page.height - 70, { align: 'left' });
+      .text(disclaimerText, margin, doc.page.height - 80, { align: 'left' });
     return doc;
   };
 
   const renderSymptoms = (prescriptions: RxPdfData['caseSheetSymptoms']) => {
-    renderSectionHeader('Chief Complaints', headerEndY + 100);
+    renderSectionHeader('Chief Complaints', headerEndY + 150);
 
     prescriptions.forEach((prescription, index) => {
       const textArray = [];
@@ -436,7 +442,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
-    renderSectionHeader('Medication Prescribed', headerEndY + 100);
+    renderSectionHeader('Medication Prescribed', headerEndY + 150);
 
     prescriptions.forEach((prescription, index) => {
       // const medicineTimings = prescripti
@@ -489,7 +495,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnoses = (diagnoses: RxPdfData['diagnoses']) => {
     if (diagnoses) {
-      renderSectionHeader('Diagnosis');
+      renderSectionHeader('Provisional Diagnosis');
       diagnoses.forEach((diag, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();
@@ -605,6 +611,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       if (doctorInfo.signature) {
         const request = require('sync-request');
         const res = request('GET', doctorInfo.signature);
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
         doc.image(res.body, margin + 15, doc.y, { height: 72, width: 200 });
         doc.moveDown(0.5);
       }
@@ -613,6 +622,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
+
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
 
       doc
         .opacity(1)
@@ -704,10 +717,66 @@ export const uploadRxPdf = async (
   await delay(350);
 
   const blob = await client.uploadFile({ name, filePath });
+  const blobUrl = client.getBlobUrl(blob.name);
+  console.log('blobUrl===', blobUrl);
+  const base64pdf = await convertPdfUrlToBase64(blobUrl);
   fs.unlink(filePath, (error) => console.log(error));
-  return blob;
+  const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
+  return uploadData;
+
+  //previous code
+  // const blob = await client.uploadFile({ name, filePath });
+  // return blob;
 
   function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+};
+
+const convertPdfUrlToBase64 = async (pdfUrl: string) => {
+  const pdf2base64 = require('pdf-to-base64');
+  util.promisify(pdf2base64);
+  try {
+    const base64pdf = await pdf2base64(pdfUrl);
+    console.log('pdfData:', base64pdf);
+    return base64pdf;
+  } catch (e) {
+    throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+  }
+};
+
+export const uploadPdfBase64ToPrism = async (
+  uploadDocInput: UploadDocumentInput,
+  patientDetails: Patient,
+  patientsDb: Connection
+) => {
+  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  const mobileNumber = patientDetails.mobileNumber;
+
+  //get authtoken for the logged in user mobile number
+  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+
+  if (!prismAuthToken) return { status: false, fileId: '' };
+
+  //get users list for the mobile number
+  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+
+  //check if current user uhid matches with response uhids
+  const uhid = await patientsRepo.validateAndGetUHID(patientDetails.id, prismUserList);
+
+  if (!uhid) {
+    return { status: false, fileId: '' };
+  }
+
+  //get authtoken for the logged in user mobile number
+  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
+
+  if (!prismUHIDAuthToken) return { status: false, fileId: '' };
+
+  //just call get prism user details with the corresponding uhid
+  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
+
+  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismUHIDAuthToken, uploadDocInput);
+
+  return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };

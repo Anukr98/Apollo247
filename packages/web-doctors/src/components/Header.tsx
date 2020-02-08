@@ -16,8 +16,17 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
-import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { LoggedInUserType, DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
+import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/profiles';
+import {
+  UpdateDoctorOnlineStatus,
+  UpdateDoctorOnlineStatusVariables,
+} from 'graphql/types/UpdateDoctorOnlineStatus';
 import { clientRoutes } from 'helpers/clientRoutes';
+import IdleTimer from 'react-idle-timer';
+import ReactCountdownClock from 'react-countdown-clock';
+import { useMutation } from 'react-apollo-hooks';
+import { ApolloError } from 'apollo-client';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -151,29 +160,98 @@ const useStyles = makeStyles((theme: Theme) => {
     accontDiv: {
       height: 48,
     },
+    popoverTile: {
+      color: '#fcb716',
+      fontWeight: 500,
+    },
+    countdownLoader: {
+      position: 'absolute',
+      right: 12,
+      top: 12,
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const { signOut, isSigningIn, isSignedIn } = useAuth();
+  const { currentPatient, signOut, isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
   const [stickyPopup, setStickyPopup] = React.useState(true);
   const [selectedTab, setSelectedTab] = React.useState(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [showIdleTimer, setShowIdleTimer] = React.useState(false);
+  const [isOnline, setIsOnline] = React.useState(true);
+  const [showLoader, setShowLoader] = React.useState(false);
 
   // TODO remove currentPatient and name it as currentDoctor
-
   const currentUserType = useAuth().currentUserType;
 
   const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
   const isAdminDoctor = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
   const isSecretary = useAuth() && currentUserType === LoggedInUserType.SECRETARY;
 
+  function getCookieValue() {
+    const name = 'action=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return '';
+  }
+  const idleTimerRef = useRef(null);
+  const idleTimeValueInMinutes = 10;
+  const changeDoctorStatus = () => {
+    if (currentPatient && currentPatient.id) {
+      setShowLoader(true);
+      mutationUpdateDoctorOnlineStatus()
+        .then((response) => {
+          if (isOnline) {
+            setIsOnline(false);
+          } else {
+            setIsOnline(true);
+            setShowIdleTimer(false);
+          }
+          setShowLoader(false);
+        })
+        .catch((e: ApolloError) => {
+          setShowLoader(false);
+          console.log('An error occurred updating doctor status.');
+        });
+    }
+  };
+  const mutationUpdateDoctorOnlineStatus = useMutation<
+    UpdateDoctorOnlineStatus,
+    UpdateDoctorOnlineStatusVariables
+  >(UPDATE_DOCTOR_ONLINE_STATUS, {
+    variables: {
+      doctorId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      onlineStatus: isOnline ? DOCTOR_ONLINE_STATUS.AWAY : DOCTOR_ONLINE_STATUS.ONLINE,
+    },
+  });
   return (
     <header className={classes.header}>
+      {!isJuniorDoctor &&
+        isSignedIn &&
+        getCookieValue() !== 'audiocall' &&
+        getCookieValue() !== 'videocall' && (
+          <IdleTimer
+            ref={idleTimerRef}
+            element={document}
+            onIdle={(e) => {
+              setShowIdleTimer(true);
+            }}
+            debounce={250}
+            timeout={1000 * 60 * idleTimeValueInMinutes}
+          />
+        )}
       <div className={classes.container}>
         <div className={classes.logo}>
           <Link to="/">
@@ -415,6 +493,48 @@ export const Header: React.FC = (props) => {
             </Popover>
           )}
         </div>
+        <Dialog
+          open={showIdleTimer}
+          onClose={() => setShowIdleTimer(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Alert</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {isOnline
+                ? "Hi! Seems like you've gone offline. Please click on 'Cancel' to continue."
+                : "You have been marked as 'Away', please click on 'Ok' to make yourself 'Online'"}
+              {isOnline && (
+                <div className={classes.countdownLoader}>
+                  <ReactCountdownClock
+                    seconds={60}
+                    color="#fcb716"
+                    alpha={0.9}
+                    size={50}
+                    onComplete={() => changeDoctorStatus()}
+                  />
+                </div>
+              )}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="primary"
+              onClick={() => {
+                if (isOnline) {
+                  setShowIdleTimer(false);
+                } else {
+                  changeDoctorStatus();
+                }
+              }}
+              disabled={showLoader}
+              autoFocus
+            >
+              {isOnline ? 'Cancel' : 'Ok'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </header>
   );

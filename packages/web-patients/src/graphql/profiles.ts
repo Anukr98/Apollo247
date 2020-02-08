@@ -30,6 +30,7 @@ export const GET_CURRENT_PATIENTS = gql`
         uhid
         dateOfBirth
         emailAddress
+        photoUrl
       }
     }
   }
@@ -269,6 +270,14 @@ export const SAVE_ORDER_CANCEL_STATUS = gql`
     saveOrderCancelStatus(orderCancelInput: $orderCancelInput) {
       requestStatus
       requestMessage
+    }
+  }
+`;
+export const ADD_CHAT_DOCUMENT = gql`
+  mutation AddChatDocument($appointmentId: ID!, $documentPath: String!) {
+    addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
+      id
+      documentPath
     }
   }
 `;

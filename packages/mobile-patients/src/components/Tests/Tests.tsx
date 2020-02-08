@@ -27,6 +27,7 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   SEARCH_DIAGNOSTICS,
   SAVE_SEARCH,
+  SEARCH_DIAGNOSTICS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -89,6 +90,12 @@ import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  searchDiagnosticsById,
+  searchDiagnosticsByIdVariables,
+  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -194,14 +201,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
-    if (currentPatient && profile.id !== currentPatient.id) {
+    if (currentPatient && profile && profile.id !== currentPatient.id) {
       setLoadingContext!(true);
       setProfile(currentPatient);
-      ordersRefetch().then((data: any) => {
-        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        setOrdersFetched(orderData);
-        setLoadingContext!(false);
-      });
+      ordersRefetch()
+        .then((data: any) => {
+          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          setOrdersFetched(orderData);
+          setLoadingContext!(false);
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_ordersRefetch_PATIENT_CHANGE', e);
+        });
     }
   }, [currentPatient]);
 
@@ -223,6 +234,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           );
         })
         .catch((e) => {
+          CommonBugFender('Tests_GET_DIAGNOSTICS_CITES', e);
           console.log('getDiagnosticsCites Error\n', { e });
           showAphAlert!({
             unDismissable: true,
@@ -270,18 +282,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 doRequestAndAccessLocation()
                   .then((response) => {
                     //console.log('response', { response });
+                    setLoadingContext!(false);
                     setLocationDetails!(response);
                   })
                   .catch((e) => {
+                    CommonBugFender('Tests_ALLOW_AUTO_DETECT', e);
+                    setLoadingContext!(false);
                     showAphAlert!({
                       title: 'Uh oh! :(',
                       description: 'Unable to access location.',
                     });
                     setLocationError(true);
                     setshowLocationpopup(true);
-                  })
-                  .finally(() => {
-                    setLoadingContext!(false);
                   });
               }}
             />
@@ -306,15 +318,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (locationForDiagnostics && locationForDiagnostics.cityId) {
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
+          setLoading(false);
           aphConsole.log('getTestsPackages\n', { data });
           setTestPackages(g(data, 'data') || []);
         })
         .catch((e) => {
-          aphConsole.log('getTestsPackages Error\n', { e });
-        })
-        .finally(() => {
+          CommonBugFender('Tests_getTestsPackages', e);
           setLoading(false);
+          aphConsole.log('getTestsPackages Error\n', { e });
         });
+      // .finally(() => {
+      //   setLoading(false);
+      // });
     } else {
       setTestPackages([]);
       setLoading(false);
@@ -348,10 +363,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     hRefetch();
     if (ordersFetched.length == 0) {
-      ordersRefetch().then((data: any) => {
-        const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-        orderData.length > 0 && setOrdersFetched(orderData);
-      });
+      ordersRefetch()
+        .then((data: any) => {
+          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          orderData.length > 0 && setOrdersFetched(orderData);
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_ordersRefetch_initial', e);
+        });
     }
   }, []);
 
@@ -378,36 +397,43 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const autoSearch = (searchText: string) => {
-    getNetStatus().then((status) => {
-      if (status) {
-        autoCompletePlaceSearch(searchText)
-          .then((obj) => {
-            console.log({});
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          autoCompletePlaceSearch(searchText)
+            .then((obj) => {
+              console.log({});
 
-            try {
-              if (obj.data.predictions) {
-                const address = obj.data.predictions.map(
-                  (item: {
-                    place_id: string;
-                    structured_formatting: {
-                      main_text: string;
-                    };
-                  }) => {
-                    return {
-                      name: item.structured_formatting.main_text,
-                      placeId: item.place_id,
-                    };
-                  }
-                );
-                setlocationSearchList(address);
+              try {
+                if (obj.data.predictions) {
+                  const address = obj.data.predictions.map(
+                    (item: {
+                      place_id: string;
+                      structured_formatting: {
+                        main_text: string;
+                      };
+                    }) => {
+                      return {
+                        name: item.structured_formatting.main_text,
+                        placeId: item.place_id,
+                      };
+                    }
+                  );
+                  setlocationSearchList(address);
+                }
+              } catch (e) {
+                CommonBugFender('Tests_autoSearch_try', e);
               }
-            } catch {}
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-    });
+            })
+            .catch((error) => {
+              CommonBugFender('Tests_autoSearch', error);
+              console.log(error);
+            });
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('Tests_getNetStatus_autoSearch', e);
+      });
   };
 
   const findAddrComponents = (
@@ -462,6 +488,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('Tests_saveLatlong', error);
         console.log('saveLatlong error\n', error);
       });
   };
@@ -568,14 +595,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              getNetStatus().then((status) => {
-                if (status) {
-                  setshowLocationpopup(true);
-                  // fetchCurrentLocation();
-                } else {
-                  setError(true);
-                }
-              });
+              getNetStatus()
+                .then((status) => {
+                  if (status) {
+                    setshowLocationpopup(true);
+                    // fetchCurrentLocation();
+                  } else {
+                    setError(true);
+                  }
+                })
+                .catch((e) => {
+                  CommonBugFender('Tests_getNetStatus', e);
+                });
             }}
           >
             <LocationOff />
@@ -647,12 +678,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             onPress={() =>
               props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
             }
-            style={{ right: 20 }}
+            // style={{ right: 20 }}
           >
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
-          <NotificationIcon />
+          {/* <NotificationIcon /> */}
         </View>
       </View>
     );
@@ -882,7 +913,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         addCartItem!({
           id: `${diagnostics!.itemId!}`,
           mou: tests.length,
-          name: diagnostics!.itemName,
+          name: packageName!,
           price: diagnostics!.rate,
           specialPrice: specialPrice,
           thumbnail: packageImage,
@@ -1112,24 +1143,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const fetchPackageDetails = (
-    name: string,
-    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+    itemIds: string,
+    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
   ) => {
     {
       setLoadingContext!(true);
       client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
+        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
+          query: SEARCH_DIAGNOSTICS_BY_ID,
           variables: {
-            searchText: name,
-            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-            patientId: (currentPatient && currentPatient.id) || '',
+            itemIds: itemIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
+          setLoadingContext!(false);
           aphConsole.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {
@@ -1137,12 +1167,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           }
         })
         .catch((e) => {
+          CommonBugFender('Tests_fetchPackageDetails', e);
+          setLoadingContext!(false);
           aphConsole.log({ e });
           errorAlert();
-        })
-        .finally(() => {
-          setLoadingContext!(false);
         });
+      // .finally(() => {
+      //   setLoadingContext!(false);
+      // });
     }
   };
 
@@ -1150,6 +1182,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setLoadingContext!(true);
     getPackageData(id)
       .then(({ data }) => {
+        setLoadingContext!(false);
         console.log('getPackageData\n', { data });
         const product = g(data, 'data');
         if (product && product.length) {
@@ -1159,12 +1192,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('Tests_fetchPackageInclusion', e);
+        setLoadingContext!(false);
         console.log('getPackageData Error\n', { e });
         errorAlert();
-      })
-      .finally(() => {
-        setLoadingContext!(false);
       });
+    // .finally(() => {
+    //   setLoadingContext!(false);
+    // });
   };
 
   const renderTestPackages = () => {
@@ -1203,7 +1238,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 },
                 !!cartItems.find((_item) => _item.id == item.ItemID),
                 () => {
-                  fetchPackageDetails(item.ItemName, (product) => {
+                  fetchPackageDetails(item.ItemID, (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
                         ...item,
@@ -1214,7 +1249,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   });
                 },
                 () => {
-                  fetchPackageDetails(item.ItemName, (product) => {
+                  fetchPackageDetails(item.ItemID, (product) => {
                     addCartItem!({
                       id: item.ItemID,
                       name: item.ItemName,
@@ -1373,6 +1408,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           setsearchSate('success');
         })
         .catch((e) => {
+          CommonBugFender('Tests_onSearchMedicine', e);
           // aphConsole.log({ e });
           setsearchSate('fail');
         });

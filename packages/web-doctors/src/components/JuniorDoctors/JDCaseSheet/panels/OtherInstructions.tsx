@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     chipItem: {
       padding: 12,
-      paddingRight: 12,
+      paddingRight: 40,
       fontSize: 14,
       fontWeight: 600,
       color: '#02475b',
@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) =>
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
       height: 'auto',
       wordBreak: 'break-word',
+      position: 'relative',
       '& span': {
         padding: 0,
         whiteSpace: 'normal',
@@ -85,6 +86,9 @@ const useStyles = makeStyles((theme: Theme) =>
         maxWidth: 20,
         width: '100%',
         height: 20,
+        position: 'absolute',
+        top: 11,
+        right: 10,
       },
     },
     autoSuggestBox: {

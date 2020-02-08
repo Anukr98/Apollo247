@@ -33,15 +33,24 @@ import { StoragePoc } from 'components/StoragePoc';
 import { TrackJS } from 'trackjs';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 import { MedicineDetails } from 'components/Medicine/MedicineDetails';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     app: {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
-      paddingBottom: 20,
+      paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
-        paddingBottom: 90,
+        paddingTop: 75,
+      },
+      [theme.breakpoints.down(990)]: {
+        paddingBottom: 60,
+      },
+    },
+    appNotSignedIn: {
+      [theme.breakpoints.down(990)]: {
+        paddingBottom: 0,
       },
     },
   };
@@ -49,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const App: React.FC = () => {
   const classes = useStyles({});
-  const { signInError } = useAuth();
+  const { signInError, isSignedIn } = useAuth();
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
   }, [signInError]);

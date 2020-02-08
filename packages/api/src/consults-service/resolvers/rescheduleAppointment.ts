@@ -421,6 +421,15 @@ const bookRescheduleAppointment: Resolver<
       appointment: apptDetails,
     };
     await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
+  } else {
+    //update reschedule record.
+    if (rescheduleDetails) {
+      const rescheduleAppointmentAttrs = {
+        id: rescheduleDetails.id,
+        rescheduleStatus: TRANSFER_STATUS.COMPLETED,
+      };
+      await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
+    }
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {

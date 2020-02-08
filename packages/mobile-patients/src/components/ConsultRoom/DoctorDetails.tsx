@@ -50,7 +50,9 @@ import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/Avai
 import {
   CommonLogEvent,
   CommonScreenLog,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const { height, width } = Dimensions.get('window');
 
@@ -171,6 +173,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
+  const { VirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -195,15 +198,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
-    getNetStatus().then((status) => {
-      if (status) {
-        fetchDoctorDetails();
-        fetchAppointmentHistory();
-      } else {
-        setshowSpinner(false);
-        setshowOfflinePopup(true);
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          fetchDoctorDetails();
+          fetchAppointmentHistory();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_getNetStatus', e);
+      });
   }, []);
 
   useEffect(() => {
@@ -234,9 +241,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ) {
             setAppointmentHistory(data.getAppointmentHistory.appointmentsHistory);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('DoctorDetails_fetchAppointmentHistory_try', e);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_fetchAppointmentHistory', e);
         console.log('Error occured', e);
       });
   };
@@ -287,9 +297,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               setavailableInMinPhysical(timeDiff);
             }
           }
-        } catch (error) {}
+        } catch (error) {
+          CommonBugFender('DoctorDetails_fetchNextAvailableSlots_try', error);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_fetchNextAvailableSlots', e);
         setshowSpinner(false);
         console.log('Error occured ', e);
       });
@@ -312,9 +325,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('DoctorDetails_fetchDoctorDetails_try', e);
+        }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
         setshowSpinner(false);
         console.log('Error occured', e);
       });
@@ -382,10 +398,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const formatTime = (time: string) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
-    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm a');
+    return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
   const formatDateTime = (time: string) => {
-    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm a');
+    return Moment(new Date(time), 'HH:mm:ss.SSSz').format('hh:mm A');
   };
 
   const renderDoctorDetails = () => {
@@ -410,8 +426,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </Text>
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
-                {doctorDetails.specialty ? doctorDetails.specialty.name : ''} |{' '}
-                {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'}
+                {doctorDetails.specialty && doctorDetails.specialty.name
+                  ? doctorDetails.specialty.name
+                  : ''}{' '}
+                | {doctorDetails.experience} YR{Number(doctorDetails.experience) == 1 ? '' : 'S'}
               </Text>
               <Text style={styles.educationTextStyles}>{doctorDetails.qualification}</Text>
               <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
@@ -423,23 +441,32 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               {!!clinicAddress && (
                 <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
               )}
-              {doctorDetails.languages && (
+              {doctorDetails.languages ? (
                 <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
                   {doctorDetails.languages.split(',').join(' | ')}
                 </Text>
-              )}
+              ) : null}
               <View style={styles.separatorStyle} />
               <View style={styles.onlineConsultView}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.onlineConsultLabel}>Online Consult</Text>
                   <Text style={styles.onlineConsultAmount}>
-                    {/* Rs. {doctorDetails.onlineConsultationFees} */}
-                    <Text
-                      style={{ textDecorationLine: 'line-through', textDecorationStyle: 'solid' }}
-                    >
-                      (Rs. 999)
-                    </Text>{' '}
-                    Rs. 1
+                    {Number(VirtualConsultationFee) <= 0 ||
+                    VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                      <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
+                    ) : (
+                      <>
+                        <Text
+                          style={{
+                            textDecorationLine: 'line-through',
+                            textDecorationStyle: 'solid',
+                          }}
+                        >
+                          {`(Rs. ${doctorDetails.onlineConsultationFees})`}
+                        </Text>
+                        <Text> Rs. {VirtualConsultationFee}</Text>
+                      </>
+                    )}
                   </Text>
                   <AvailabilityCapsule availableTime={availableTime} />
                 </View>
@@ -522,7 +549,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           <Image
                             source={{
                               uri:
-                                item && item.facility.imageUrl
+                                item && item.facility && item.facility.imageUrl
                                   ? item.facility.imageUrl
                                   : 'https://via.placeholder.com/328x136',
                             }}
@@ -718,7 +745,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     {Moment.utc(item.appointmentDateTime)
                       .local()
-                      .format('DD MMMM, hh:mm a')}
+                      .format('DD MMMM, hh:mm A')}
                   </Text>
                   <View style={styles.separatorStyle} />
                   <View style={{ flexDirection: 'row' }}>
@@ -761,6 +788,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         // dismissed
       }
     } catch (error) {
+      CommonBugFender('DoctorDetails_onShare_try', error);
       // Alert(error.message);
     }
   };
@@ -801,13 +829,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <Button
               title={'BOOK APPOINTMENT'}
               onPress={() => {
-                getNetStatus().then((status) => {
-                  if (status) {
-                    setdisplayoverlay(true);
-                  } else {
-                    setshowOfflinePopup(true);
-                  }
-                });
+                getNetStatus()
+                  .then((status) => {
+                    if (status) {
+                      setdisplayoverlay(true);
+                    } else {
+                      setshowOfflinePopup(true);
+                    }
+                  })
+                  .catch((e) => {
+                    CommonBugFender('DoctorDetails_getNetStatus', e);
+                  });
               }}
               style={{ marginHorizontal: 60, flex: 1 }}
             />

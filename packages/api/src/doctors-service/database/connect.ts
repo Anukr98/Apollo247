@@ -14,6 +14,9 @@ import {
   RescheduleAppointmentDetails,
   SdDashboardSummary,
   TransferAppointmentDetails,
+  PhrDocumentsSummary,
+  JdDashboardSummary,
+  AuditHistory,
 } from 'consults-service/entities/';
 import {
   AdminDoctorMapper,
@@ -34,6 +37,8 @@ import {
   Packages,
   Secretary,
   StarTeam,
+  Auditor,
+  AdminAuditorMapper,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -46,6 +51,7 @@ import {
   DiagnosticPincodeHubs,
   Diagnostics,
   LoginOtp,
+  LoginOtpArchive,
   MedicalRecordParameters,
   MedicalRecords,
   MedicineOrderInvoice,
@@ -90,6 +96,8 @@ export const connect = async () => {
         Packages,
         Secretary,
         StarTeam,
+        Auditor,
+        AdminAuditorMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -117,6 +125,9 @@ export const connect = async () => {
         RescheduleAppointmentDetails,
         SdDashboardSummary,
         TransferAppointmentDetails,
+        PhrDocumentsSummary,
+        JdDashboardSummary,
+        AuditHistory,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -139,6 +150,7 @@ export const connect = async () => {
         DiagnosticPincodeHubs,
         Diagnostics,
         LoginOtp,
+        LoginOtpArchive,
         MedicalRecordParameters,
         MedicalRecords,
         MedicineOrderInvoice,

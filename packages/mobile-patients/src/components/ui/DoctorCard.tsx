@@ -1,17 +1,23 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
-import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getDoctorDetailsById_getDoctorDetailsById_specialty,
-  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { SEARCH_TYPE, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
+import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
+import {
+  DoctorType,
+  SEARCH_TYPE,
+  ConsultMode,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -24,13 +30,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
-import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -119,22 +118,24 @@ export interface DoctorCardProps extends NavigationScreenProps {
   onPress?: (doctorId: string) => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
-  doctorAvailalbeSlots?:
-    | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
-    | null;
+  // doctorAvailalbeSlots?:
+  //   | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
+  //   | null;
   saveSearch?: boolean;
   doctorsNextAvailability?:
     | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
     | null;
+  numberOfLines?: number;
+  availableModes?: ConsultMode | null;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>();
   const [availableTime, setavailableTime] = useState<string>('');
 
-  const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
-    (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
-  >([]);
+  // const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
+  //   (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
+  // >([]);
   const [doctorsNextAvailability, setdoctorsNextAvailability] = useState<
     | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
     | null
@@ -152,33 +153,33 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const client = useApolloClient();
 
-  const setAvailability = useCallback(
-    (
-      doctorAvailalbeSlots:
-        | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
-        | null
-    ) => {
-      const filterData = doctorAvailalbeSlots
-        ? doctorAvailalbeSlots.filter((item) => {
-            if (item && rowData) {
-              return item.doctorId === rowData.id;
-            }
-          })
-        : [];
-      if (filterData.length > 0 && filterData[0]!.availableSlot) {
-        const nextSlot = filterData[0] ? filterData[0]!.availableSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
-        let timeDiff: number = 0;
-        const today: Date = new Date();
-        const date2: Date = new Date(nextSlot);
-        if (date2 && today) {
-          timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
-        }
-        setavailableTime(nextSlot);
-        setavailableInMin(timeDiff);
-      }
-    },
-    [rowData]
-  );
+  // const setAvailability = useCallback(
+  //   (
+  //     doctorAvailalbeSlots:
+  //       | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
+  //       | null
+  //   ) => {
+  //     const filterData = doctorAvailalbeSlots
+  //       ? doctorAvailalbeSlots.filter((item) => {
+  //           if (item && rowData) {
+  //             return item.doctorId === rowData.id;
+  //           }
+  //         })
+  //       : [];
+  //     if (filterData.length > 0 && filterData[0]!.availableSlot) {
+  //       const nextSlot = filterData[0] ? filterData[0]!.availableSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+  //       let timeDiff: number = 0;
+  //       const today: Date = new Date();
+  //       const date2: Date = new Date(nextSlot);
+  //       if (date2 && today) {
+  //         timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
+  //       }
+  //       setavailableTime(nextSlot);
+  //       setavailableInMin(timeDiff);
+  //     }
+  //   },
+  //   [rowData]
+  // );
 
   const setNextAvailability = useCallback(
     (
@@ -193,8 +194,19 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }
           })
         : [];
-      if (filterData.length > 0 && filterData[0]!.referenceSlot) {
-        const nextSlot = filterData[0] ? filterData[0]!.referenceSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+      let nextSlot;
+      if (props.availableModes) {
+        nextSlot =
+          props.availableModes === ConsultMode.ONLINE
+            ? filterData[0]!.onlineSlot
+            : props.availableModes === ConsultMode.PHYSICAL
+            ? filterData[0]!.physicalSlot
+            : null;
+        console.log(props.availableModes, nextSlot);
+      } else if (filterData.length > 0 && filterData[0]!.referenceSlot) {
+        nextSlot = filterData[0] ? filterData[0]!.referenceSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+      }
+      if (nextSlot) {
         let timeDiff: number = 0;
         const today: Date = new Date();
         const date2: Date = new Date(nextSlot);
@@ -202,7 +214,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
         }
         setavailableTime(nextSlot);
-
         setavailableInMin(timeDiff);
       }
     },
@@ -210,20 +221,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   );
 
   useEffect(() => {
-    if (props.doctorAvailalbeSlots && props.doctorAvailalbeSlots !== doctorAvailalbeSlots) {
-      setdoctorAvailalbeSlots(props.doctorAvailalbeSlots);
-      setAvailability(props.doctorAvailalbeSlots);
-    } else if (
-      props.doctorsNextAvailability &&
-      props.doctorsNextAvailability != doctorsNextAvailability
-    ) {
+    // if (props.doctorAvailalbeSlots && props.doctorAvailalbeSlots !== doctorAvailalbeSlots) {
+    //   setdoctorAvailalbeSlots(props.doctorAvailalbeSlots);
+    //   setAvailability(props.doctorAvailalbeSlots);
+    // } else
+    if (props.doctorsNextAvailability && props.doctorsNextAvailability != doctorsNextAvailability) {
       setdoctorsNextAvailability(props.doctorsNextAvailability);
       setNextAvailability(props.doctorsNextAvailability);
     }
   }, [
-    props.doctorAvailalbeSlots,
-    doctorAvailalbeSlots,
-    setAvailability,
+    // props.doctorAvailalbeSlots,
+    // doctorAvailalbeSlots,
+    // setAvailability,
     props.doctorsNextAvailability,
     doctorsNextAvailability,
     setNextAvailability,
@@ -297,6 +306,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           console.log(data, 'saveSearch result');
         })
         .catch((error) => {
+          CommonBugFender('DoctorCard_navigateToDetails', error);
           console.log('Error occured', { error });
         });
     }
@@ -376,8 +386,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   {rowData.specialty.userFriendlyNomenclature}
                 </Text>
               ) : null}
-              <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>
-              {!!clinicAddress && <Text style={styles.doctorLocation}>{clinicAddress}</Text>}
+              <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
+                {rowData.qualification}
+              </Text>
+              {!!clinicAddress && (
+                <Text style={styles.doctorLocation} numberOfLines={props.numberOfLines}>
+                  {clinicAddress}
+                </Text>
+              )}
             </View>
           </View>
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>

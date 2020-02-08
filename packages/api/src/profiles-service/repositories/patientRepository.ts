@@ -516,6 +516,46 @@ export class PatientRepository extends Repository<Patient> {
     return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
   }
 
+  async getPatientOpPrescriptions(uhid: string, authToken: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const url = `${process.env.PRISM_GET_USER_OP_PRESCRIPTIONS_API}?authToken=${authToken}&uhid=${uhid}`;
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PRISM: ${url}`,
+      'getPatientOpPrescriptions()->API_CALL_STARTING',
+      '',
+      ''
+    );
+    const opPrescriptions = await fetch(url, prismHeaders)
+      .then((res) => {
+        return res.json();
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'API_CALL_ERROR',
+          'getPatientOpPrescriptions()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
+      });
+
+    log(
+      'profileServiceLogger',
+      'API_CALL_RESPONSE',
+      'getPatientOpPrescriptions()->API_CALL_RESPONSE',
+      JSON.stringify(opPrescriptions),
+      ''
+    );
+
+    return opPrescriptions.errorCode == '0' ? opPrescriptions.response : [];
+  }
+
   saveNewProfile(patientAttrs: Partial<Patient>) {
     return this.create(patientAttrs)
       .save()
@@ -539,7 +579,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   updateUhid(id: string, uhid: string) {
-    return this.update(id, { uhid });
+    return this.update(id, { uhid, uhidCreatedDate: new Date() });
   }
 
   updateToken(id: string, athsToken: string) {
@@ -759,6 +799,10 @@ export class PatientRepository extends Repository<Patient> {
     const patientDetails = await this.getPatientDetails(id);
     if (patientDetails == null)
       throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
+    let patientDob = new Date('1984-01-01');
+    if (patientDetails.dateOfBirth != null) {
+      patientDob = patientDetails.dateOfBirth;
+    }
     const athsTokenInput = {
       AdminId: process.env.ATHS_TOKEN_ADMIN ? process.env.ATHS_TOKEN_ADMIN.toString() : '',
       AdminPassword: process.env.ATHS_TOKEN_PWD ? process.env.ATHS_TOKEN_PWD.toString() : '',
@@ -766,7 +810,7 @@ export class PatientRepository extends Repository<Patient> {
       LastName: patientDetails.lastName,
       countryCode: ApiConstants.COUNTRY_CODE.toString(),
       PhoneNumber: patientDetails.mobileNumber,
-      DOB: format(patientDetails.dateOfBirth, 'dd/MM/yyyy'),
+      DOB: format(patientDob, 'dd/MM/yyyy'),
       Gender: '1',
       PartnerUserId: '1012',
       SourceApp: process.env.ATHS_SOURCE_APP ? process.env.ATHS_SOURCE_APP.toString() : '',

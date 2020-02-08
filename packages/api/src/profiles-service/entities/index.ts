@@ -27,13 +27,19 @@ export enum PATIENT_ADDRESS_TYPE {
 
 export enum Relation {
   ME = 'ME',
-  MOTHER = 'MOTHER',
-  FATHER = 'FATHER',
-  SISTER = 'SISTER',
   BROTHER = 'BROTHER',
   COUSIN = 'COUSIN',
-  WIFE = 'WIFE',
+  DAUGHTER = 'DAUGHTER',
+  FATHER = 'FATHER',
+  GRANDDAUGHTER = 'GRANDDAUGHTER',
+  GRANDFATHER = 'GRANDFATHER',
+  GRANDMOTHER = 'GRANDMOTHER',
+  GRANDSON = 'GRANDSON',
   HUSBAND = 'HUSBAND',
+  MOTHER = 'MOTHER',
+  SISTER = 'SISTER',
+  SON = 'SON',
+  WIFE = 'WIFE',
   OTHER = 'OTHER',
 }
 
@@ -47,6 +53,7 @@ export enum SEARCH_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   QUOTE = 'QUOTE',
   PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
+  PAYMENT_FAILED = 'PAYMENT_FAILED',
   ORDER_INITIATED = 'ORDER_INITIATED',
   ORDER_PLACED = 'ORDER_PLACED',
   ORDER_VERIFIED = 'ORDER_VERIFIED',
@@ -62,6 +69,7 @@ export enum MEDICINE_ORDER_STATUS {
   PRESCRIPTION_CART_READY = 'PRESCRIPTION_CART_READY',
   ORDER_CONFIRMED = 'ORDER_CONFIRMED',
   CANCEL_REQUEST = 'CANCEL_REQUEST',
+  READY_AT_STORE = 'READY_AT_STORE',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -593,6 +601,9 @@ export class Patient extends BaseEntity {
   uhid: string;
 
   @Column({ nullable: true })
+  referralCode: string;
+
+  @Column({ nullable: true })
   relation: Relation;
 
   @Column({ nullable: true, default: true })
@@ -606,6 +617,9 @@ export class Patient extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @Column({ nullable: true })
+  uhidCreatedDate: Date;
 
   @BeforeInsert()
   updateDateCreation() {
@@ -1569,6 +1583,33 @@ export class PatientHelpTickets extends BaseEntity {
 
 @Entity()
 export class LoginOtp extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  loginType: LOGIN_TYPE;
+
+  @Column()
+  mobileNumber: string;
+
+  @Column()
+  otp: string;
+
+  @Column({ default: OTP_STATUS.NOT_VERIFIED })
+  status: string;
+
+  @Column({ default: 0 })
+  incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
+@Entity()
+export class LoginOtpArchive extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 

@@ -1,5 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Diagnostics, DiagnosticPincodeHubs } from 'profiles-service/entities';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {
@@ -43,5 +45,27 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
 
   findDiagnosticById(itemId: number) {
     return this.findOne({ where: { itemId } });
+  }
+
+  async getDiagnosticsByName(itemName: string[]) {
+    return this.createQueryBuilder('diagnostics')
+      .where('diagnostics.itemName IN (:...name)', { name: itemName })
+      .getMany()
+      .catch((getDiagnosticError) => {
+        throw new AphError(AphErrorMessages.INVALID_DIAGNOSIS_LIST, undefined, {
+          getDiagnosticError,
+        });
+      });
+  }
+
+  async getDiagnosticByName(itemName: string) {
+    return this.createQueryBuilder('diagnostics')
+      .where('diagnostics.itemName = :name', { name: itemName })
+      .getMany()
+      .catch((getDiagnosticError) => {
+        throw new AphError(AphErrorMessages.INVALID_DIAGNOSIS_LIST, undefined, {
+          getDiagnosticError,
+        });
+      });
   }
 }

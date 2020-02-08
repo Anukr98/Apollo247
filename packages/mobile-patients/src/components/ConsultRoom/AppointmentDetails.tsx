@@ -12,7 +12,10 @@ import {
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   CANCEL_APPOINTMENT,
@@ -37,7 +40,7 @@ import {
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, statusBarHeight, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -154,8 +157,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
-  const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-  const { showAphAlert } = useUIElements();
+  // const [sucesspopup, setSucessPopup] = useState<boolean>(false);
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -172,16 +175,20 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const client = useApolloClient();
 
   const NextAvailableSlotAPI = () => {
-    getNetStatus().then((status) => {
-      if (status) {
-        console.log('nextAvailableSlot called');
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          console.log('nextAvailableSlot called');
 
-        nextAvailableSlot();
-      } else {
-        setNetworkStatus(true);
-        setshowSpinner(false);
-      }
-    });
+          nextAvailableSlot();
+        } else {
+          setNetworkStatus(true);
+          setshowSpinner(false);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AppointmentDetails_getNetStatus', e);
+      });
   };
 
   useEffect(() => {
@@ -194,7 +201,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       const time = `Today, ${moment
         .utc(data.appointmentDateTime)
         .local()
-        .format('hh:mm a')}`;
+        .format('hh:mm A')}`;
       setAppointmentTime(time);
     } else {
       const time = `${moment
@@ -218,10 +225,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           console.log(data, 'nextavailable res');
           data[0] && setAvailability(data[0].physicalAvailableSlot);
         } catch (error) {
+          CommonBugFender('AppointmentDetails_nextAvailableSlot_try', error);
           setAvailability('');
         }
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('AppointmentDetails_nextAvailableSlot', e);
         setshowSpinner(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
@@ -262,9 +271,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               setBelowThree(false);
             }
             setNewRescheduleCount(data);
-          } catch (error) {}
+          } catch (error) {
+            CommonBugFender('AppointmentDetails_CHECK_IF_RESCHDULE_try', error);
+          }
         })
         .catch((e: any) => {
+          CommonBugFender('AppointmentDetails_checkIfReschedule', e);
           setshowSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
           console.log('Error occured while checkIfRescheduleprofile', error);
@@ -273,6 +285,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           setResheduleoverlay(true);
         });
     } catch (error) {
+      CommonBugFender('AppointmentDetails_checkIfReschedule_try', error);
       setshowSpinner(false);
       console.log(error, 'error');
     }
@@ -334,7 +347,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           })
         );
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('AppointmentDetails_rescheduleAPI', e);
         setBottompopup(true);
       });
     // }
@@ -347,6 +361,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
       rescheduleAPI(availability);
     } catch (error) {
+      CommonBugFender('AppointmentDetails_rescheduleAPI_try', error);
       console.log(error, 'error');
     }
   };
@@ -378,7 +393,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       .then((data: any) => {
         setshowSpinner(false);
         console.log(data, 'data');
-        setSucessPopup(true);
+        // setSucessPopup(true);
+        showAppointmentCancellSuccessAlert();
+
         // props.navigation.dispatch(
         //   StackActions.reset({
         //     index: 0,
@@ -388,6 +405,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         // );
       })
       .catch((e: any) => {
+        CommonBugFender('AppointmentDetails_cancelAppointmentApi', e);
         setshowSpinner(false);
         console.log('Error occured while adding Doctor', e);
         const message = e.message ? e.message.split(':')[1].trim() : '';
@@ -399,6 +417,27 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         }
       });
     // }
+  };
+
+  const showAppointmentCancellSuccessAlert = () => {
+    setShowCancelPopup(false);
+    // setSucessPopup(false);
+    const appointmentNum = g(data, 'displayId');
+    const doctorName = g(data, 'doctorInfo', 'displayName');
+    showAphAlert!({
+      title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+      description: `As per your request, your appointment #${appointmentNum} with ${doctorName} scheduled for ${appointmentTime} has been cancelled.`,
+      onPressOk: () => {
+        hideAphAlert!();
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+          })
+        );
+      },
+    });
   };
 
   if (data.doctorInfo) {
@@ -543,7 +582,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   );
                   try {
                     isAwaitingReschedule || dateIsAfter ? NextAvailableSlotAPI() : null;
-                  } catch (error) {}
+                  } catch (error) {
+                    CommonBugFender('AppointmentDetails_NextAvailableSlotAPI_try', error);
+                  }
                 }
               }}
             />
@@ -702,7 +743,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
-        {sucesspopup && (
+        {/* {sucesspopup && (
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={'Appointment sucessfully cancelled'}
@@ -736,7 +777,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               </View>
             </View>
           </BottomPopUp>
-        )}
+        )} */}
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{

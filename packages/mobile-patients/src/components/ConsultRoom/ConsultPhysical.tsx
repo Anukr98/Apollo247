@@ -45,6 +45,7 @@ import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCa
 import {
   CommonLogEvent,
   CommonScreenLog,
+  CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAppCommonData } from '../AppCommonDataProvider';
@@ -199,9 +200,12 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             props.setDate(date2);
             fetchPhysicalSlots(date2);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('ConsultPhysical_checkAvailabilitySlot_try', e);
+        }
       })
       .catch((e: any) => {
+        CommonBugFender('ConsultPhysical_checkAvailabilitySlot', e);
         props.setshowSpinner && props.setshowSpinner(false);
         console.log('error', e);
       });
@@ -228,6 +232,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         }
       })
       .catch((error) => {
+        CommonBugFender('ConsultPhysical_findDistance', error);
         console.log(error);
       });
   };
@@ -241,6 +246,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           findDistance(`${response.latitude}, ${response.longitude}`);
         })
         .catch((e) => {
+          CommonBugFender('ConsultPhysical_fetchLocation', e);
           showAphAlert!({
             title: 'Uh oh! :(',
             description: 'Unable to access location.',
@@ -260,7 +266,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     //     await Permissions.request('location')
     //       .then((response) => {
     //         if (response === 'authorized') {
-    //           navigator.geolocation.getCurrentPosition(
+    //           Geolocation.getCurrentPosition(
     //             (position) => {
     //               findDistance(position.coords.latitude + ',' + position.coords.longitude);
     //             },
@@ -288,6 +294,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         console.log('location permission denied');
       }
     } catch (err) {
+      CommonBugFender('ConsultPhysical_requestLocationPermission_try', err);
       console.log(err);
     }
   }, [fetchLocation]);
@@ -298,11 +305,15 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    getNetStatus().then((status) => {
-      if (status) {
-        Platform.OS === 'android' ? requestLocationPermission() : fetchLocation();
-      }
-    });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          Platform.OS === 'android' ? requestLocationPermission() : fetchLocation();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultPhysical_getNetStatus', e);
+      });
   }, [requestLocationPermission, fetchLocation]);
 
   const setTimeArrayData = async (availableSlots: string[], selectedDate: Date = date) => {
@@ -337,9 +348,12 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots, selectedDate);
             setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('ConsultPhysical_fetchPhysicalSlots_try', e);
+        }
       })
       .catch((e: any) => {
+        CommonBugFender('ConsultPhysical_fetchPhysicalSlots', e);
         props.setshowSpinner(false);
         console.log('error', e);
       });

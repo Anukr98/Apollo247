@@ -38,6 +38,7 @@ export type Option = {
 type OptionsObject = {
   key: string;
   value: string | number;
+  data?: any;
 };
 
 export interface MaterialMenuProps {

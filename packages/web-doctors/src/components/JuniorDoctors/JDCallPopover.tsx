@@ -219,7 +219,7 @@ const useStyles = makeStyles((theme: Theme) => {
     cross: {
       position: 'absolute',
       right: 0,
-      top: '10px',
+      top: 7,
       fontSize: '18px',
       color: '#02475b',
     },
@@ -331,6 +331,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 88,
       backgroundColor: '#eeeeee',
       position: 'relative',
+      outline: 'none',
     },
     modalBoxClose: {
       position: 'absolute',
@@ -356,26 +357,26 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         letterSpacing: '0.5px',
         color: '#01475b',
-        padding: '15px',
+        padding: '17px 20px',
+        textTransform: 'uppercase',
       },
     },
     tabFooter: {
       background: 'white',
       position: 'absolute',
-      height: 60,
-      paddingTop: '10px',
       borderBottomLeftRadius: '10px',
       borderBottomRightRadius: '10px',
       width: '480px',
       bottom: '0px',
       textAlign: 'right',
-      paddingRight: '20px',
+      padding: '16px 20px 16px 0',
     },
     tabBody: {
       background: 'white',
       minHeight: 80,
-      marginTop: 10,
+      margin: 20,
       padding: '10px 15px 15px 15px',
+      borderRadius: 5,
       '& p': {
         margin: 0,
         fontSize: '15px',
@@ -661,6 +662,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -698,6 +700,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const { sessionClient } = useAuth();
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [errorState, setErrorState] = React.useState<errorObject>({
     reasonError: false,
@@ -730,6 +733,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  useEffect(() => {
+    if (props.sessionId !== '') {
+      onStartConsult();
+      startInterval(900);
+    }
+  }, [props.sessionId]);
 
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
@@ -933,7 +942,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartAppointmentButton(true);
     }
   };
-  const client = useApolloClient();
   setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
     setRemainingTime(900);
@@ -1056,7 +1064,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== covertVideoMsg &&
           message.message.message !== covertAudioMsg &&
           message.message.message !== cancelConsultInitiated &&
-          message.message.message !== callAbandonment
+          message.message.message !== callAbandonment &&
+          message.message.message !== appointmentComplete
         ) {
           setIsNewMsg(true);
         } else {
@@ -1156,7 +1165,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     isJuniorDoctor = currentDoctor.doctorType === DoctorType.JUNIOR;
     jrDoctorId = currentDoctor.id;
   }
-
+  const patientName = patientDetails
+    ? patientDetails!.firstName + ' ' + patientDetails!.lastName
+    : '';
   const mutationCancelJrdConsult = useMutation<CancelAppointment, CancelAppointmentVariables>(
     CANCEL_APPOINTMENT,
     {
@@ -1290,11 +1301,14 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                   appointmentInfo!.status !== STATUS.PENDING)
               }
               onClick={() => {
-                !startAppointment ? onStartConsult() : onStopConsult();
-                !startAppointment ? startInterval(900) : stopInterval();
-                setStartAppointment(!startAppointment);
-                props.createSessionAction();
+                if (startAppointment) {
+                  onStopConsult();
+                  stopInterval();
+                } else {
+                  props.createSessionAction();
+                }
                 setCaseSheetEdit(true);
+                setStartAppointment(!startAppointment);
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -1647,13 +1661,77 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     }
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
-                    mutationRemoveConsult();
-                    if (document.getElementById('homeId')) {
-                      document.getElementById('homeId')!.click();
-                    }
+                    mutationRemoveConsult()
+                      .then(() => {})
+                      .catch((e: ApolloError) => {
+                        const logObject = {
+                          api: 'RemoveFromConsultQueue',
+                          inputParam: JSON.stringify({
+                            id: parseInt(params.queueId, 10),
+                          }),
+                          appointmentId: params.appointmentId,
+                          doctorId: currentDoctor!.id,
+                          doctorDisplayName: currentDoctor!.displayName,
+                          patientId: params.patientId,
+                          patientName: patientName,
+                          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                          appointmentDateTime: props.appointmentDateTime
+                            ? moment(new Date(props.appointmentDateTime)).format(
+                                'MMMM DD YYYY h:mm:ss a'
+                              )
+                            : '',
+                          error: JSON.stringify(e),
+                        };
+
+                        sessionClient.notify(JSON.stringify(logObject));
+                      });
+                    const text = {
+                      id: props.doctorId,
+                      message: cancelConsultInitiated,
+                      isTyping: true,
+                      messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.JUNIOR,
+                    };
+                    pubnub.publish(
+                      {
+                        message: text,
+                        channel: channel,
+                        storeInHistory: true,
+                      },
+                      (status: any, response: any) => {
+                        if (document.getElementById('homeId')) {
+                          document.getElementById('homeId')!.click();
+                        }
+                      }
+                    );
+
                     //window.location.href = clientRoutes.juniorDoctor();
                   })
                   .catch((e: ApolloError) => {
+                    const logObject = {
+                      api: 'CancelAppointment',
+                      inputParam: JSON.stringify({
+                        appointmentId: params.appointmentId,
+                        cancelReason:
+                          cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
+                        cancelledBy: REQUEST_ROLES.JUNIOR,
+                        cancelledById: currentDoctor!.id,
+                      }),
+                      appointmentId: params.appointmentId,
+                      doctorId: currentDoctor!.id,
+                      doctorDisplayName: currentDoctor!.displayName,
+                      patientId: params.patientId,
+                      patientName: patientName,
+                      currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                      appointmentDateTime: props.appointmentDateTime
+                        ? moment(new Date(props.appointmentDateTime)).format(
+                            'MMMM DD YYYY h:mm:ss a'
+                          )
+                        : '',
+                      error: JSON.stringify(e),
+                    };
+
+                    sessionClient.notify(JSON.stringify(logObject));
                     setCancelError(e.graphQLErrors[0].message);
                   });
               }}
@@ -1680,6 +1758,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
+              JDPhotoUrl={currentPatient && currentPatient.photoUrl ? currentPatient.photoUrl : ''}
             />
           )}
         </div>

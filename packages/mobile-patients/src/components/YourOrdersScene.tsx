@@ -27,6 +27,7 @@ import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_LIST } from '../graphql/profiles';
 import { useUIElements } from './UIElementsProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -68,18 +69,22 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   useEffect(() => {
     setLoading!(true);
     refetch &&
-      refetch().then(({ data }) => {
-        const _orders = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || []).filter(
-          (item) =>
-            !(
-              (item!.medicineOrdersStatus || []).length == 1 &&
-              (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-            )
-        );
-        setLoading!(false);
-        setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
-        setisChanged(!isChanged);
-      });
+      refetch()
+        .then(({ data }) => {
+          const _orders = (g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || []).filter(
+            (item) =>
+              !(
+                (item!.medicineOrdersStatus || []).length == 1 &&
+                (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+              )
+          );
+          setLoading!(false);
+          setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
+          setisChanged(!isChanged);
+        })
+        .catch((e) => {
+          CommonBugFender('YourOrdersScene_refetch', e);
+        });
   }, []);
 
   useEffect(() => {
@@ -174,7 +179,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('D MMM YY, hh:mm a');
+    return moment(time).format('D MMM YY, hh:mm A');
   };
 
   const renderOrder = (

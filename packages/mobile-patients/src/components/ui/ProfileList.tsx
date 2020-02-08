@@ -26,6 +26,7 @@ import { GET_PATIENT_ADDRESS_LIST } from '../../graphql/profiles';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useUIElements } from '../UIElementsProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -175,6 +176,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           }
         )
         .catch((e) => {
+          CommonBugFender('ProfileList_setAddressList', e);
+
           unsetloaderDisplay ? null : setLoading && setLoading(false);
           setAddressCalled(false);
         });

@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
 
 export interface TabHeaderProps {
   containerStyle?: StyleProp<ViewStyle>;
+  hideHomeIcon?: boolean;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
 }
 
@@ -75,7 +76,7 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
           );
         }}
       >
-        <HomeIcon />
+        {!props.hideHomeIcon ? <HomeIcon /> : null}
       </TouchableOpacity>
       <View style={{ flexDirection: 'row' }}>
         <TouchableOpacity
@@ -83,12 +84,12 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
           onPress={() =>
             props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
           }
-          style={{ right: 20 }}
+          // style={{ right: 20 }}
         >
           <CartIcon style={{}} />
           {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
         </TouchableOpacity>
-        <NotificationIcon />
+        {/* <NotificationIcon /> */}
       </View>
     </View>
   );

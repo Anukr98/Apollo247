@@ -19,6 +19,7 @@ import { patientLogSort, patientLogType } from 'graphql/types/globalTypes';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetPatientLog_getPatientLog as patientLog } from 'graphql/types/GetPatientLog';
 import { createContext } from 'react';
+import { AphButton } from '@aph/web-ui-components';
 
 const tabsArray: any = [
   {
@@ -209,6 +210,28 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       paddingTop: 5,
     },
+    loadMorButtonDiv: {
+      textAlign: 'right',
+      paddingRight: 72,
+      paddingBottom: 23,
+    },
+    loadMorButton: {
+      width: 125,
+      height: 32,
+      paddingTop: 5,
+      paddingBottom: 6,
+      borderRadius: 16,
+      backgroundColor: '#fc9916',
+      textAlign: 'center',
+      textTransform: 'uppercase',
+      fontWeight: 600,
+      fontSize: 14,
+      display: 'inline-block',
+      color: '#fff',
+      '&:hover': {
+        backgroundColor: '#fc9916',
+      },
+    },
     menuPopover: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       marginLeft: -2,
@@ -283,12 +306,10 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
   const client = useApolloClient();
   const limit = 10;
 
-  const scrollFunction = (e: any) => {
-    if (e.target.scrollTop + e.target.clientHeight === e.target.scrollHeight) {
-      if (totalCount !== patientList.length) {
-        setOffset(offset + limit);
-        dataLoading();
-      }
+  const loadMoreFunction = () => {
+    if (totalCount !== patientList.length) {
+      setOffset(offset + limit);
+      dataLoading();
     }
   };
   const dataLoading = () => {
@@ -376,6 +397,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
             setTotalCount(_data.data.getPatientLog.totalResultCount);
           }
           setLoading(false);
+          setOffset(10);
         })
         .catch((e: any) => {
           //setError('Error occured in getcasesheet api');
@@ -406,13 +428,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <Scrollbars
-        autoHide={true}
-        style={{ height: 'calc(100vh - 65px)' }}
-        onScroll={(e) => {
-          scrollFunction(e);
-        }}
-      >
+      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
         <div className={classes.container}>
           <div>
             <div className={classes.tabHeading}>
@@ -420,7 +436,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                 <span>
                   {`hello  ${currentPatient &&
                     currentPatient!.displayName &&
-                    currentPatient!.displayName.toLowerCase()} :)`}
+                    currentPatient!.displayName} :)`}
                 </span>
               </Typography>
               <p>here are all your patients</p>
@@ -497,6 +513,13 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                   <TabContainer>
                     <AllPatient patientData={patientList} />
                   </TabContainer>
+                )}
+                {offset <= patientList.length && (
+                  <div className={classes.loadMorButtonDiv}>
+                    <AphButton className={classes.loadMorButton} onClick={() => loadMoreFunction()}>
+                      Show More
+                    </AphButton>
+                  </div>
                 )}
               </div>
             )}

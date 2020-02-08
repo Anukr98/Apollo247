@@ -29,7 +29,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  medicineDatailsUrl: `${process.env.PHARMACY_MED_UAT_URL}/popcsrchpdp_api.php`,
+  medicineDatailsUrl: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
 };
 
 interface OptionType {
@@ -58,34 +58,6 @@ function renderInputComponent(inputProps: any) {
       }}
       {...other}
     />
-  );
-}
-
-function renderSuggestion(
-  suggestion: OptionType,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion.label, query);
-  const parts = parse(suggestion.label, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span
-          key={part.text}
-          style={{
-            fontWeight: part.highlight ? 500 : 400,
-            whiteSpace: 'pre',
-          }}
-          title={suggestion.label}
-        >
-          {part.text.length > 46
-            ? part.text.substring(0, 45).toLowerCase() + '...'
-            : part.text.toLowerCase()}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" />
-    </div>
   );
 }
 
@@ -236,6 +208,7 @@ const useStyles = makeStyles((theme: Theme) =>
     favMedBg: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
+      paddingRight: 10,
     },
     favmedicineHeading: {
       fontSize: 14,
@@ -248,7 +221,9 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
-      top: -9,
+      top: 0,
+      marginTop: -8,
+      minWidth: 'auto',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -324,8 +299,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
-        padding: '0 25px',
-        marginTop: 5,
+        padding: '0 50px',
       },
     },
     numberTablets: {
@@ -347,6 +321,15 @@ const useStyles = makeStyles((theme: Theme) =>
         boxShadow: 'none',
         '&:focus': {
           outline: 'none',
+        },
+      },
+      '& input': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+          outlineColor: 'transparent',
         },
       },
     },
@@ -478,17 +461,21 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     unitsSelect: {
       marginTop: 0,
-      '& div': {
-        '&:focus': {
-          boxShadow: '0 8px 6px -6px rgba(128, 128, 128, 0.3)',
-          transition: 'all 0.2s',
+      '& > div': {
+        '& > div': {
+          '&:focus': {
+            transition: 'all 0.2s',
+            backgroundColor: 'rgba(240, 244, 245, 0.3)',
+            borderTopLeftRadius: 5,
+            borderTopRightRadius: 5,
+          },
         },
       },
     },
     medicineCard: {
       color: 'rgba(0, 0, 0, 0.54)',
       border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 40px 12px 12px',
+      padding: '12px 64px 12px 12px',
       position: 'relative',
       maxWidth: '100%',
       boxShadow: 'none',
@@ -511,6 +498,17 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     inputField: {
       padding: '0 20px 0 20px',
+    },
+    tabletCountField: {
+      '& input': {
+        '&:focus': {
+          transition: 'all 0.2s',
+          backgroundColor: 'rgba(240, 244, 245, 0.3)',
+          borderTopLeftRadius: 5,
+          borderTopRightRadius: 5,
+          outlineColor: 'transparent',
+        },
+      },
     },
   })
 );
@@ -754,6 +752,35 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ];
+  function renderSuggestion(
+    suggestion: OptionType,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(suggestion.label, query);
+    const parts = parse(suggestion.label, matches);
+
+    return (
+      medicine.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+              title={suggestion.label}
+            >
+              {part.text.length > 46
+                ? part.text.substring(0, 45).toLowerCase() + '...'
+                : part.text.toLowerCase()}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
   const [medicine, setMedicine] = useState('');
@@ -1342,8 +1369,12 @@ export const MedicinePrescription: React.FC = () => {
                 : '';
             const unitHtmls =
               medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
-                ? term(medicine.medicineUnit.toLowerCase(), '(s)')
-                : medicine.medicineUnit.toLowerCase() + '(s)';
+                ? term(
+                    medicine.medicineUnit.toLowerCase(),
+                    medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+                  )
+                : medicine.medicineUnit.toLowerCase() +
+                  (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
             const isInDuration =
               medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
                 ? ''
@@ -1444,8 +1475,12 @@ export const MedicinePrescription: React.FC = () => {
                 const favUnitHtmls =
                   favMedicine.medicineUnit[favMedicine.medicineUnit.length - 1].toLowerCase() ===
                   's'
-                    ? term(favMedicine.medicineUnit.toLowerCase(), '(s)')
-                    : favMedicine.medicineUnit.toLowerCase() + '(s)';
+                    ? term(
+                        favMedicine.medicineUnit.toLowerCase(),
+                        favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
+                      )
+                    : favMedicine.medicineUnit.toLowerCase() +
+                      (favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
                 const isInDuration =
                   favMedicine.medicineTimings.length === 1 &&
                   favMedicine.medicineTimings[0] === 'AS_NEEDED'
@@ -1853,6 +1888,7 @@ export const MedicinePrescription: React.FC = () => {
                           <Grid item lg={6} md={6} xs={6}>
                             <h6>Take</h6>
                             <AphTextField
+                              className={classes.tabletCountField}
                               autoFocus
                               inputProps={{ maxLength: 6 }}
                               value={tabletsCount === 0 ? '' : tabletsCount}

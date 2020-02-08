@@ -8,6 +8,7 @@ import {
   getCaseSheet,
   getCaseSheetVariables,
   getCaseSheet_getCaseSheet_caseSheetDetails,
+  getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -46,11 +47,24 @@ import {
 import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '../UIElementsProvider';
 import { mimeType } from '../../helpers/mimeType';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  g,
+  addTestsToCart,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import {
+  useDiagnosticsCart,
+  DiagnosticsCartItem,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -189,6 +203,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
+        CommonBugFender('ConsultDetails_GET_CASESHEET_DETAILS', error);
         setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
         console.log(errorMessage, 'err');
@@ -328,62 +343,150 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </View>
     );
   };
-  const { setCartItems, cartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const { addMultipleCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const {
+    addMultipleCartItems: addMultipleTestCartItems,
+    addMultipleEPrescriptions: addMultipleTestEPrescriptions,
+  } = useDiagnosticsCart();
+  const { locationDetails } = useAppCommonData();
+
+  const onAddTestsToCart = () => {
+    if (!locationDetails) {
+      Alert.alert(
+        'Uh oh.. :(',
+        'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
+      );
+      return;
+    }
+    setLoading && setLoading(true);
+
+    const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
+      []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
+
+    if (!testPrescription.length) {
+      Alert.alert('Uh oh.. :(', 'No items are available in your location for now.');
+      setLoading && setLoading(false);
+      return;
+    }
+    const presToAdd = {
+      id: caseSheetDetails!.id,
+      date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: g(data, 'displayName') || '',
+      forPatient: (currentPatient && currentPatient.firstName) || '',
+      medicines: '',
+      uploadedUrl: docUrl,
+    } as EPrescription;
+
+    // Adding tests to DiagnosticsCart
+    addTestsToCart(testPrescription, client, g(locationDetails, 'city') || '')
+      .then((tests: DiagnosticsCartItem[]) => {
+        // Adding ePrescriptions to DiagnosticsCart
+        const unAvailableItemsArray = testPrescription.filter(
+          (item) => !tests.find((val) => val.name == item.itemname!)
+        );
+
+        const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
+
+        if (tests.length) {
+          addMultipleTestCartItems!(tests);
+          addMultipleTestEPrescriptions!([
+            {
+              ...presToAdd,
+              medicines: (tests as DiagnosticsCartItem[]).map((item) => item.name).join(', '),
+            },
+          ]);
+        }
+        if (testPrescription.length == unAvailableItemsArray.length) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Unfortunately, we do not have any diagnostic(s) available right now.`
+          );
+        } else if (unAvailableItems) {
+          Alert.alert(
+            'Uh oh.. :(',
+            `Out of ${testPrescription.length} diagnostic(s), you are trying to order, following diagnostic(s) are not available.\n\n${unAvailableItems}\n`
+          );
+        }
+      })
+      .catch((e) => {
+        Alert.alert('Uh oh.. :(', e);
+      });
+    props.navigation.push(AppRoutes.TestsCart, {
+      isComingFromConsult: true,
+    });
+  };
 
   const onAddToCart = () => {
     setLoading && setLoading(true);
 
-    const medPrescription = caseSheetDetails!.medicinePrescription || [];
+    const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
+      (item) => item!.id
+    );
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
+        console.log('Promise.all medPrescription result', { result });
         setLoading && setLoading(false);
-        const medicines = result
-          .map(({ data: { productdp } }, index) => {
-            const medicineDetails = (productdp && productdp[0]) || {};
-            if (!medicineDetails.is_in_stock) {
-              return null;
-            }
-            const _qty =
-              medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
-              medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
-                ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
-                  parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1') *
-                  (medPrescription[index]!.medicineToBeTaken!.length || 1) *
-                  parseFloat(medPrescription[index]!.medicineDosage! || '1')
-                : 1;
-            const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
+        const medicinesAll = result.map(({ data: { productdp } }, index) => {
+          const medicineDetails = (productdp && productdp[0]) || {};
+          if (medicineDetails.id == 0) {
+            return null;
+          }
+          const _qty =
+            medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
+            medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
+              ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
+                parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1') *
+                (medPrescription[index]!.medicineToBeTaken!.length || 1) *
+                parseFloat(medPrescription[index]!.medicineDosage! || '1')
+              : 1;
+          const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
 
-            return {
-              id: medicineDetails!.sku!,
-              mou: medicineDetails.mou,
-              name: medicineDetails!.name,
-              price: medicineDetails!.price,
-              specialPrice: medicineDetails.special_price
-                ? typeof medicineDetails.special_price == 'string'
-                  ? parseInt(medicineDetails.special_price)
-                  : medicineDetails.special_price
-                : undefined,
-              // quantity: parseInt(medPrescription[index]!.medicineDosage!),
-              quantity: qty,
-              prescriptionRequired: medicineDetails.is_prescription_required == '1',
-              thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-            } as ShoppingCartItem;
-          })
-          .filter((item) => (item ? true : false));
+          return {
+            id: medicineDetails!.sku!,
+            mou: medicineDetails.mou,
+            name: medicineDetails!.name,
+            price: medicineDetails!.price,
+            specialPrice: medicineDetails.special_price
+              ? typeof medicineDetails.special_price == 'string'
+                ? parseInt(medicineDetails.special_price)
+                : medicineDetails.special_price
+              : undefined,
+            // quantity: parseInt(medPrescription[index]!.medicineDosage!),
+            quantity: qty,
+            prescriptionRequired: medicineDetails.is_prescription_required == '1',
+            thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+            isInStock: !!medicineDetails.is_in_stock,
+          } as ShoppingCartItem;
+        });
+        const medicines = medicinesAll.filter((item) => !!item);
+        console.log({ medicinesAll });
+        console.log({ medicines });
 
-        const filteredItemsFromCart = cartItems.filter(
-          (cartItem) => !medicines.find((item) => (item && item.id) == cartItem.id)
-        );
+        addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
-        setCartItems!([...filteredItemsFromCart, ...(medicines as ShoppingCartItem[])]);
+        const totalItems = (caseSheetDetails!.medicinePrescription || []).length;
+        // const customItems = medicinesAll.length - medicines.length;
+        const outOfStockItems = medicines.filter((item) => !item!.isInStock).length;
+        const outOfStockMeds = medicines
+          .filter((item) => !item!.isInStock)
+          .map((item) => `${item!.name}`)
+          .join(', ');
 
-        if (medPrescription.length > medicines.length) {
-          const outOfStockCount = medPrescription.length - medicines.length;
-          Alert.alert('Alert', `${outOfStockCount} item(s) are out of stock.`);
-          // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        if (outOfStockItems > 0) {
+          const alertMsg =
+            totalItems == outOfStockItems
+              ? 'Unfortunately, we do not have any medicines available right now.'
+              : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
+          Alert.alert('Uh oh.. :(', alertMsg);
         }
+
+        // if (medPrescription.length > medicines.filter((item) => item!.isInStock).length) {
+        //   // const outOfStockCount = medPrescription.length - medicines.length;
+        //   // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        // }
 
         const rxMedicinesCount =
           medicines.length == 0 ? 0 : medicines.filter((item) => item!.prescriptionRequired).length;
@@ -391,7 +494,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         const presToAdd = {
           id: caseSheetDetails!.id,
           date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
-          doctorName: '',
+          doctorName: g(data, 'displayName') || '',
           forPatient: (currentPatient && currentPatient.firstName) || '',
           medicines: (medicines || []).map((item) => item!.name).join(', '),
           uploadedUrl: docUrl,
@@ -406,6 +509,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
+        CommonBugFender('ConsultDetails_onAddToCart', e);
         setLoading && setLoading(false);
         console.log({ e });
         handleGraphQlError(e);
@@ -434,29 +538,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         </View>
 
                         <Text style={styles.dataTextStyle}>
-                          {item.medicineFormTypes === 'OTHERS'
-                            ? 'Take ' + item!.medicineDosage! &&
-                              parseFloat(item!.medicineDosage!) +
-                                ' ' +
-                                item!.medicineUnit!.toLowerCase() +
-                                ' (s)' +
-                                '  '
-                            : 'Apply ' + item!.medicineUnit!.toLowerCase() + '  '}
-                          {/* {item.medicineTimings!.length *
-                            parseFloat(item!.medicineConsumptionDurationInDays!) *
-                            item.medicineToBeTaken!.length *
-                            parseFloat(item!.medicineDosage!) +
-                            ` ` +
-                            item.medicineUnit} */}
-                          {/* parseInt(item.medicineDosage || '1') > 1 */}
-                          {/* {item.medicineTimings!.length > 1 &&
-                          (item.medicineUnit == MEDICINE_UNIT.TABLET ||
-                            item.medicineUnit == MEDICINE_UNIT.CAPSULE)
-                            ? 'S'
-                            : ''} */}
-                          {/* {item.medicineTimings
-                            ? `\n${item.medicineTimings.length} times a day  for ${item.medicineConsumptionDurationInDays} days\n`
-                            : ''} */}
+                          {item.medicineFormTypes == 'OTHERS'
+                            ? 'Take ' +
+                              item!.medicineDosage! +
+                              ' ' +
+                              item!.medicineUnit!.toLowerCase() +
+                              ' (s)' +
+                              ' '
+                            : 'Apply ' + item!.medicineUnit!.toLowerCase() + ' '}
+
                           {item!.medicineFrequency! &&
                             item!.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
                               ' '}
@@ -472,14 +562,34 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                                 )
                                 .join(', ')
                             : ''}
-                          {' in the ' +
-                            item!
-                              .medicineTimings!.join(', ')
-                              .replace(/[^a-zA-Z ]/g, ' ')
-                              .toLowerCase()}
+                          {item.medicineTimings!.length > 0 ? ' in the ' : ''}
+                          {item.medicineTimings
+                            ? item.medicineTimings
+                                .map(
+                                  (item) =>
+                                    item &&
+                                    item
+                                      .split('_')
+                                      .join(' ')
+                                      .toLowerCase()
+                                )
+                                .map(
+                                  (val, idx, array) =>
+                                    `${val}${
+                                      idx == array.length - 2
+                                        ? ' and '
+                                        : idx > array.length - 2
+                                        ? ''
+                                        : ', '
+                                    }`
+                                )
+                            : ''}
+
                           {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
-                          {item!.medicineConsumptionDurationInDays! &&
-                          item!.medicineConsumptionDurationInDays!.length === 1
+                          {item.medicineConsumptionDurationInDays == ''
+                            ? ''
+                            : item!.medicineConsumptionDurationInDays! &&
+                              item!.medicineConsumptionDurationInDays!.length == 1
                             ? ' for ' + item!.medicineConsumptionDurationInDays! + ' day'
                             : ' for ' + item!.medicineConsumptionDurationInDays! + ' days'}
                         </Text>
@@ -516,7 +626,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="DIAGNOSIS"
+          heading="PROVISIONAL DIAGNOSIS"
           collapse={showDiagnosis}
           onPress={() => setshowDiagnosis(!showDiagnosis)}
         >
@@ -625,6 +735,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         setdisplayoverlay(true);
                       })
                       .catch((error) => {
+                        CommonBugFender('ConsultDetails_renderFollowUp', error);
                         console.log('Error occured', { error });
                       });
                   }}
@@ -655,7 +766,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="TESTS SECTION"
+          heading="PRESCRIBED TESTS"
           collapse={testShow}
           onPress={() => setTestShow(!testShow)}
         >
@@ -663,16 +774,29 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             {caseSheetDetails!.diagnosticPrescription &&
             caseSheetDetails!.diagnosticPrescription !== null ? (
               <View>
-                <Text style={styles.labelStyle}>
-                  {/* {caseSheetDetails!.diagnosticPrescription[0]!.itemname} */}
-                  {caseSheetDetails!
-                    .diagnosticPrescription!.map((item, i) => {
-                      if (item && item.itemname !== '') {
-                        return `${i + 1}. ${item.itemname}`;
-                      }
-                    })
-                    .join('\n')}
-                </Text>
+                {caseSheetDetails!.diagnosticPrescription.map((item, index, array) => {
+                  return (
+                    <>
+                      <Text style={styles.labelStyle}>{item!.itemname}</Text>
+                      <Spearator style={{ marginBottom: index == array.length - 1 ? 2.5 : 11.5 }} />
+                    </>
+                  );
+                })}
+                <TouchableOpacity
+                  style={{ marginTop: 12 }}
+                  onPress={() => {
+                    onAddTestsToCart();
+                  }}
+                >
+                  <Text
+                    style={[
+                      theme.viewStyles.yellowTextStyle,
+                      { textAlign: 'right', paddingBottom: 16 },
+                    ]}
+                  >
+                    {strings.health_records_home.order_test}
+                  </Text>
+                </TouchableOpacity>
               </View>
             ) : (
               <View>
@@ -691,9 +815,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         <View>
           {renderSymptoms()}
           {renderPrescriptions()}
+          {renderTestNotes()}
           {renderDiagnosis()}
           {renderGenerealAdvice()}
-          {renderTestNotes()}
           {renderFollowUp()}
         </View>
       );
@@ -772,6 +896,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                               );
                         })
                         .catch((err) => {
+                          CommonBugFender('ConsultDetails_renderFollowUp', err);
                           console.log('error ', err);
                           setLoading && setLoading(false);
                           // ...

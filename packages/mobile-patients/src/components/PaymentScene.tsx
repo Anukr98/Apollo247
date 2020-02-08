@@ -6,7 +6,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  WebView,
   BackHandler,
   NavState,
 } from 'react-native';
@@ -22,6 +21,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getParameterByName, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
+import { WebView } from 'react-native-webview';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -169,7 +169,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm a')}`}
+                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
                 </Text>
               </View>
             </>
@@ -249,7 +249,15 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       clearCartInfo && clearCartInfo();
     }
     if (isMatchesFailUrl) {
-      handleOrderFailure();
+      const responseMessage = getParameterByName('responseMessage', redirectedUrl!);
+      const responseCode = getParameterByName('responseCode', redirectedUrl!);
+      console.log({ responseMessage, responseCode });
+      if (responseCode == '141' && responseMessage == 'User has not completed transaction.') {
+        // To handle Paytm PG page back button
+        props.navigation.goBack();
+      } else {
+        handleOrderFailure();
+      }
     }
   };
 

@@ -3,6 +3,8 @@ import { Theme, Button } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/styles';
 import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -73,6 +75,40 @@ const useStyles = makeStyles((theme: Theme) => {
     rightActions: {
       textAlign: 'right',
     },
+    minimizeImg: {
+      position: 'absolute',
+      minWidth: 48,
+      minHeight: 48,
+      top: 0,
+      right: 0,
+      zIndex: 9,
+      borderRadius: 10,
+      width: 264,
+      height: 198,
+      overflow: 'hidden',
+      backgroundColor: '#000',
+    },
+    minimizeVideoImg: {
+      zIndex: 9,
+      width: 170,
+      height: 170,
+      position: 'absolute',
+      top: 0,
+      backgroundColor: '#000',
+    },
+    maximizeImg: {
+      position: 'absolute',
+      minWidth: 1020,
+      minHeight: 409,
+      top: 0,
+      right: 0,
+      zIndex: 9,
+      borderRadius: 10,
+      width: 264,
+      height: 198,
+      overflow: 'hidden',
+      backgroundColor: '#000',
+    },
     callActions: {
       position: 'absolute',
       bottom: 0,
@@ -103,6 +139,21 @@ const useStyles = makeStyles((theme: Theme) => {
     stopCallBtn: {
       marginLeft: 'auto',
     },
+    hidePublisherVideo: {
+      display: 'none',
+    },
+    hideVideoContainer: {
+      right: 15,
+      width: 170,
+      height: 170,
+      position: 'absolute',
+      // bottom: 125,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
+      borderRadius: 10,
+      overflow: 'hidden',
+      top: 60,
+      backgroundColor: '#000',
+    },
     otPublisher: {
       '& >div': {
         '& >div': {
@@ -119,10 +170,43 @@ const useStyles = makeStyles((theme: Theme) => {
         maxHeight: 154,
       },
     },
+
     largePoster: {
       '& img': {
         maxHeight: 'calc(100vh - 195px)',
       },
+    },
+    minimizeBtns: {
+      position: 'absolute',
+      width: 170,
+      height: 170,
+      zIndex: 9,
+    },
+    stopCallIcon: {
+      width: 40,
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
+    },
+    fullscreenIcon: {
+      width: 34,
+      position: 'absolute',
+      bottom: 14,
+      left: 10,
+    },
+    timerCls: {
+      position: 'absolute',
+      top: 80,
+      zIndex: 99,
+      left: 40,
+      fontSize: 12,
+      fontWeight: 600,
+      color: '#f7f8f5',
+    },
+    doctorName: {
+      fontSize: 20,
+      fontWeight: 600,
+      marginTop: -50,
     },
   };
 });
@@ -137,6 +221,21 @@ interface ConsultProps {
   isNewMsg: boolean;
   timerMinuts: number;
   timerSeconds: number;
+  doctorDetails: DoctorDetails;
+  convertCall: () => void;
+  videoCall: boolean;
+  audiocallmsg: boolean;
+}
+function getCookieValue() {
+  const name = 'action=';
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return '';
 }
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
@@ -145,6 +244,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   // const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
   // const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  const [docImg, setDocImg] = React.useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
+
+  const patientProfile = currentPatient && currentPatient.photoUrl;
+
+  const { doctorDetails, videoCall } = props;
 
   return (
     <div className={classes.root}>
@@ -153,12 +258,27 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
         }`}
       >
-        {/* {!props.showVideoChat && (
-          <span>
-            {`Time start ${props.timerMinuts.toString().length < 2 ? '0' + props.timerMinuts : props.timerMinuts} : 
+        {!props.showVideoChat && (
+          <div className={classes.timerCls}>
+            {doctorDetails && doctorDetails.getDoctorDetailsById && (
+              <div className={classes.doctorName}>
+                {`${
+                  doctorDetails && doctorDetails.getDoctorDetailsById
+                    ? doctorDetails.getDoctorDetailsById.displayName
+                    : ''
+                }` +
+                  "'s" +
+                  ' team has joined'}
+              </div>
+            )}
+            {/* {!props.showVideoChat && (
+              <span>
+                {`Time start ${props.timerMinuts.toString().length < 2 ? '0' + props.timerMinuts : props.timerMinuts} : 
              ${props.timerSeconds.toString().length < 2 ? '0' + props.timerSeconds : props.timerSeconds}`}
-          </span>
-        )} */}
+              </span>
+            )} */}
+          </div>
+        )}
 
         {isCall && (
           <OTSession
@@ -172,40 +292,59 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               },
             }}
           >
-            <div className={classes.otPublisher}>
-              <OTPublisher
-                properties={{
-                  publishAudio: mute,
-                  publishVideo: subscribeToVideo,
-                  width: 204,
-                  height: 154,
-                }}
-              />
-            </div>
-            {/* {props.showVideoChat || !subscribeToVideo ? (
-              ''
-            ) : (
-              <div className={classes.otPublisher}>
+            <div
+              className={`${classes.minimizeImg}
+            ${props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''}`}
+            >
+              <div>
                 <OTPublisher
+                  resolution={'352x288'}
                   properties={{
                     publishAudio: mute,
                     publishVideo: subscribeToVideo,
-                    width: 204,
-                    height: 154,
                   }}
                 />
               </div>
-            )} */}
+            </div>
             <div
-              className={`${classes.videoContainer} ${
-                props.showVideoChat ? classes.smallVideoContainer : classes.largeVideoContainer
-              }`}
+              className={props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer}
             >
-              {!subscribeToVideo && !props.showVideoChat && (
-                <div className={`${classes.videoPoster} ${classes.largePoster}`}>
-                  <img src={require('images/doctor_profile_image.png')} />
-                </div>
+              {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'videocall' && (
+                <img
+                  className={classes.minimizeImg}
+                  src={
+                    patientProfile !== null
+                      ? patientProfile
+                      : require('images/DefaultPatient_Video.svg')
+                  }
+                />
               )}
+              {(!subscribeToVideo && !props.showVideoChat) ||
+                (videoCall && (
+                  <img
+                    className={classes.maximizeImg}
+                    src={
+                      doctorDetails &&
+                      doctorDetails.getDoctorDetailsById &&
+                      doctorDetails.getDoctorDetailsById.photoUrl !== null
+                        ? doctorDetails.getDoctorDetailsById.photoUrl
+                        : require('images/DefaultPatient_Video.svg')
+                    }
+                  />
+                ))}
+              {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'audiocall' && (
+                <img
+                  className={classes.maximizeImg}
+                  src={
+                    doctorDetails &&
+                    doctorDetails.getDoctorDetailsById &&
+                    doctorDetails.getDoctorDetailsById.photoUrl !== null
+                      ? doctorDetails.getDoctorDetailsById.photoUrl
+                      : require('images/DefaultPatient_Video.svg')
+                  }
+                />
+              )}
+
               <OTStreams>
                 <OTSubscriber
                   properties={{
@@ -217,8 +356,17 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               {props.showVideoChat && (
                 <div>
                   {!subscribeToVideo && (
-                    <div className={`${classes.videoPoster} ${classes.smallPoster}`}>
-                      <img src={require('images/doctor_profile_image.png')} />
+                    <div>
+                      <img
+                        src={
+                          doctorDetails &&
+                          doctorDetails.getDoctorDetailsById &&
+                          doctorDetails.getDoctorDetailsById.photoUrl !== null
+                            ? doctorDetails.getDoctorDetailsById.photoUrl
+                            : require('images/DefaultPatient_Video.svg')
+                        }
+                        className={classes.minimizeVideoImg}
+                      />
                     </div>
                   )}
                   <div className={classes.callActions}>
@@ -237,17 +385,21 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   </div>
                 </div>
               )}
+
               {!props.showVideoChat && (
                 <div className={classes.videoButtonContainer}>
                   <Grid container alignItems="flex-start" spacing={0}>
                     <Grid item xs={4}>
                       {isCall && (
                         <Button onClick={() => props.toggelChatVideo()}>
-                          {props.isNewMsg ? (
-                            <img src={require('images/ic_message.svg')} alt="msgicon" />
-                          ) : (
-                            <img src={require('images/ic_chat_circle.svg')} alt="msgicon" />
-                          )}
+                          <img
+                            src={
+                              props.isNewMsg
+                                ? require('images/ic_message.svg')
+                                : require('images/ic_chat_circle.svg')
+                            }
+                            alt="msgicon"
+                          />
                         </Button>
                       )}
                     </Grid>
@@ -262,13 +414,23 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                           <img src={require('images/ic_unmute.svg')} alt="unmute" />
                         </Button>
                       )}
-                      {isCall && subscribeToVideo && (
-                        <Button onClick={() => setSubscribeToVideo(!subscribeToVideo)}>
+                      {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
+                        <Button
+                          onClick={() => {
+                            props.convertCall();
+                            setSubscribeToVideo(!subscribeToVideo);
+                          }}
+                        >
                           <img src={require('images/ic_videoon.svg')} alt="video on" />
                         </Button>
                       )}
-                      {isCall && !subscribeToVideo && (
-                        <Button onClick={() => setSubscribeToVideo(!subscribeToVideo)}>
+                      {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
+                        <Button
+                          onClick={() => {
+                            props.convertCall();
+                            setSubscribeToVideo(!subscribeToVideo);
+                          }}
+                        >
                           <img src={require('images/ic_videooff.svg')} alt="video off" />
                         </Button>
                       )}

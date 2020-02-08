@@ -16,6 +16,7 @@ import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -146,6 +147,7 @@ export const AuthProvider: React.FC = (props) => {
       AsyncStorage.removeItem('selectUserId');
       console.log('authprovider signOut');
     } catch (error) {
+      CommonBugFender('AuthProvider_signOut_try', error);
       console.log('signOut error', error);
     }
   }, [auth]);
@@ -185,15 +187,21 @@ export const AuthProvider: React.FC = (props) => {
         apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
         authStateRegistered = false;
         setAuthToken(jwt);
-        getNetStatus().then((item) => {
-          item && getPatientApiCall();
-        });
+        getNetStatus()
+          .then((item) => {
+            item && getPatientApiCall();
+          })
+          .catch((e) => {
+            CommonBugFender('AuthProvider_getNetStatus', e);
+          });
       }
       setIsSigningIn(false);
     });
   };
 
   const getPatientApiCall = async () => {
+    console.log('getPatientApiCall');
+
     const versionInput = {
       appVersion:
         Platform.OS === 'ios'
@@ -214,6 +222,7 @@ export const AuthProvider: React.FC = (props) => {
         setAllPatients(data);
       })
       .catch(async (error) => {
+        CommonBugFender('AuthProvider_getPatientApiCall', error);
         const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
         const item = JSON.parse(retrievedItem);
         setAllPatients(item);

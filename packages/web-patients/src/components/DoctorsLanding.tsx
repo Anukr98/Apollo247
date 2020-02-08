@@ -1,5 +1,4 @@
-import { BottomNavigation, Theme, Grid, CircularProgress } from '@material-ui/core';
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { Theme, Grid, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
@@ -16,64 +15,31 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { NavigationBottom } from 'components/NavigationBottom';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { Link } from 'react-router-dom';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
+    root: {
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
-    },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
+        paddingBottom: 10,
       },
     },
     container: {
       maxWidth: 1064,
       margin: 'auto',
     },
-    bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-      '& button': {
-        padding: '10px 0',
-      },
-    },
-    labelRoot: {
-      width: '100%',
-    },
-    iconLabel: {
-      fontSize: 12,
-      color: '#67919d',
-      paddingTop: 10,
-      textTransform: 'uppercase',
-    },
-    iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
-    },
     doctorListingPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
-        paddingBottom: 20,
+        position: 'absolute',
+        top: 0,
+        zIndex: 99,
+        width: '100%',
       },
     },
     breadcrumbs: {
@@ -90,10 +56,6 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        zIndex: 2,
-        top: 0,
-        width: '100%',
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
@@ -111,8 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 328px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingRight: 20,
-        paddingTop: 14,
+        paddingRight: 3,
       },
     },
     sectionHeader: {
@@ -139,7 +100,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     backArrow: {
       cursor: 'pointer',
-      marginRight: 50,
+      marginRight: 20,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
@@ -172,27 +133,27 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 14,
       },
-      '& >div': {
-        [theme.breakpoints.down('xs')]: {
-          marginLeft: -8,
-          marginRight: -8,
-          width: 'calc(100% + 16px)',
-        },
-        '& >div': {
-          [theme.breakpoints.down('xs')]: {
-            padding: '8px !important',
-          },
-        },
-      },
     },
     customScroll: {
       paddingLeft: 20,
       paddingRight: 17,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 14,
+      },
     },
     circlularProgress: {
       display: 'flex',
       padding: 20,
       justifyContent: 'center',
+    },
+    filterBtn: {
+      boxShadow: 'none',
+      padding: 0,
+      minWidth: 'auto',
+      marginLeft: 'auto',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
     },
   };
 });
@@ -218,6 +179,8 @@ export const DoctorsLanding: React.FC = (props) => {
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isLargeScreen = useMediaQuery('(min-width:991px)');
 
   let showError = false,
     matchingDoctorsFound = 0,
@@ -272,22 +235,25 @@ export const DoctorsLanding: React.FC = (props) => {
     showError = true;
 
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+    <div className={classes.root}>
+      <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.welcome())}>
+            <Link to={clientRoutes.welcome()}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
-            </a>
+            </Link>
             Doctors / Specialities
+            {specialitySelected.length > 0 ? (
+              <AphButton className={classes.filterBtn}>
+                <img src={require('images/ic_filter.svg')} alt="" />
+              </AphButton>
+            ) : (
+              ''
+            )}
           </div>
           <div className={classes.doctorListingSection}>
             <DoctorsFilter
@@ -305,105 +271,188 @@ export const DoctorsLanding: React.FC = (props) => {
             />
             <div className={classes.searchSection}>
               {!loading ? (
-                <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
-                  <div className={classes.customScroll}>
-                    {filterOptions.searchKeyword.length <= 0 &&
-                    specialitySelected.length === 0 &&
-                    showSearchAndPastSearch ? (
-                      <PastSearches
-                        speciality={(specialitySelected) =>
-                          setSpecialitySelected(specialitySelected)
-                        }
-                        disableFilter={(disableFilters) => {
-                          setDisableFilters(disableFilters);
-                        }}
-                      />
-                    ) : null}
+                specialitySelected.length > 0 ? (
+                  <DoctorsListing
+                    filter={filterOptions}
+                    specialityName={specialitySelected}
+                    specialityId={derivedSpecialityId}
+                  />
+                ) : (
+                  <Scrollbars
+                    autoHide={true}
+                    autoHeight
+                    autoHeightMax={
+                      isMediumScreen
+                        ? 'calc(100vh - 240px)'
+                        : isLargeScreen
+                        ? 'calc(100vh - 195px)'
+                        : 'calc(100vh - 170px)'
+                    }
+                  >
+                    <div className={classes.customScroll}>
+                      {filterOptions.searchKeyword.length <= 0 &&
+                      specialitySelected.length === 0 &&
+                      showSearchAndPastSearch ? (
+                        <PastSearches
+                          speciality={(specialitySelected) =>
+                            setSpecialitySelected(specialitySelected)
+                          }
+                          disableFilter={(disableFilters) => {
+                            setDisableFilters(disableFilters);
+                          }}
+                        />
+                      ) : null}
+                      {matchingDoctorsFound > 0 || matchingSpecialitesFound > 0 ? (
+                        <>
+                          {data &&
+                          data.SearchDoctorAndSpecialtyByName &&
+                          filterOptions.searchKeyword.length > 0 &&
+                          matchingDoctorsFound > 0 &&
+                          showSearchAndPastSearch ? (
+                            <>
+                              <div className={classes.sectionHeader}>
+                                <span>Matching Doctors</span>
+                                <span className={classes.count}>
+                                  {matchingDoctorsFound > 0
+                                    ? matchingDoctorsFound.toString().padStart(2, '0')
+                                    : matchingDoctorsFound}
+                                </span>
+                              </div>
+                              <div className={classes.searchList}>
+                                <Grid spacing={2} container>
+                                  {_map(
+                                    data.SearchDoctorAndSpecialtyByName.doctors,
+                                    (doctorDetails) => {
+                                      return (
+                                        <Grid
+                                          item
+                                          xs={12}
+                                          sm={12}
+                                          md={12}
+                                          lg={6}
+                                          key={_uniqueId('doctor_')}
+                                        >
+                                          <DoctorCard doctorDetails={doctorDetails} />
+                                        </Grid>
+                                      );
+                                    }
+                                  )}
+                                </Grid>
+                              </div>
+                            </>
+                          ) : null}
 
-                    {specialitySelected.length > 0 ? (
-                      <DoctorsListing
-                        filter={filterOptions}
-                        specialityName={specialitySelected}
-                        specialityId={derivedSpecialityId}
-                      />
-                    ) : (
-                      <>
-                        {matchingDoctorsFound > 0 || matchingSpecialitesFound > 0 ? (
-                          <>
-                            {data &&
-                            data.SearchDoctorAndSpecialtyByName &&
-                            filterOptions.searchKeyword.length > 0 &&
-                            matchingDoctorsFound > 0 &&
-                            showSearchAndPastSearch ? (
-                              <>
-                                <div className={classes.sectionHeader}>
-                                  <span>Matching Doctors</span>
-                                  <span className={classes.count}>
-                                    {matchingDoctorsFound > 0
-                                      ? matchingDoctorsFound.toString().padStart(2, '0')
-                                      : matchingDoctorsFound}
-                                  </span>
-                                </div>
-                                <div className={classes.searchList}>
-                                  <Grid spacing={2} container>
-                                    {_map(
-                                      data.SearchDoctorAndSpecialtyByName.doctors,
-                                      (doctorDetails) => {
-                                        return (
-                                          <Grid
-                                            item
-                                            xs={12}
-                                            sm={12}
-                                            md={12}
-                                            lg={6}
-                                            key={_uniqueId('doctor_')}
-                                          >
-                                            <DoctorCard doctorDetails={doctorDetails} />
-                                          </Grid>
-                                        );
-                                      }
-                                    )}
-                                  </Grid>
-                                </div>
-                              </>
-                            ) : null}
+                          {/* show suggested doctors if only one doctor is returned.*/}
+                          {matchingDoctorsFound === 1 ? (
+                            <>
+                              <div className={classes.sectionHeader}>
+                                <span>Other Suggested Doctors</span>
+                                <span className={classes.count}>
+                                  {otherDoctorsFound > 0
+                                    ? otherDoctorsFound.toString().padStart(2, '0')
+                                    : otherDoctorsFound}
+                                </span>
+                              </div>
+                              <div className={classes.searchList}>
+                                <Grid spacing={2} container>
+                                  {_map(
+                                    data.SearchDoctorAndSpecialtyByName.otherDoctors,
+                                    (doctorDetails) => {
+                                      return (
+                                        <Grid
+                                          item
+                                          xs={12}
+                                          sm={12}
+                                          md={12}
+                                          lg={6}
+                                          key={_uniqueId('doctor_')}
+                                        >
+                                          <DoctorCard doctorDetails={doctorDetails} />
+                                        </Grid>
+                                      );
+                                    }
+                                  )}
+                                </Grid>
+                              </div>
+                            </>
+                          ) : (
+                            <Specialities
+                              keyword={filterOptions.searchKeyword}
+                              matched={(matchingSpecialities) =>
+                                setMatchingSpecialities(matchingSpecialities)
+                              }
+                              speciality={(specialitySelected) =>
+                                setSpecialitySelected(specialitySelected)
+                              }
+                              disableFilter={(disableFilters) => {
+                                setDisableFilters(disableFilters);
+                              }}
+                              subHeading={
+                                filterOptions.searchKeyword !== '' && showSearchAndPastSearch
+                                  ? 'Matching Specialities'
+                                  : 'Specialities'
+                              }
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {data &&
+                          data.SearchDoctorAndSpecialtyByName &&
+                          data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors ? (
+                            <>
+                              <div className={classes.sectionHeader}>
+                                <span>Possible Doctors</span>
+                                <span className={classes.count}>
+                                  {data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+                                    .length > 0
+                                    ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.length
+                                        .toString()
+                                        .padStart(2, '0')
+                                    : '0'}
+                                </span>
+                              </div>
+                              <div className={classes.searchList}>
+                                <Grid spacing={2} container>
+                                  {_map(
+                                    data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors,
+                                    (doctorDetails) => {
+                                      return (
+                                        <Grid
+                                          item
+                                          xs={12}
+                                          sm={12}
+                                          md={12}
+                                          lg={6}
+                                          key={_uniqueId('doctor_')}
+                                        >
+                                          <DoctorCard doctorDetails={doctorDetails} />
+                                        </Grid>
+                                      );
+                                    }
+                                  )}
+                                </Grid>
+                              </div>
+                            </>
+                          ) : null}
 
-                            {/* show suggested doctors if only one doctor is returned.*/}
-                            {matchingDoctorsFound === 1 ? (
-                              <>
-                                <div className={classes.sectionHeader}>
-                                  <span>Other Suggested Doctors</span>
-                                  <span className={classes.count}>
-                                    {otherDoctorsFound > 0
-                                      ? otherDoctorsFound.toString().padStart(2, '0')
-                                      : otherDoctorsFound}
-                                  </span>
-                                </div>
-                                <div className={classes.searchList}>
-                                  <Grid spacing={2} container>
-                                    {_map(
-                                      data.SearchDoctorAndSpecialtyByName.otherDoctors,
-                                      (doctorDetails) => {
-                                        return (
-                                          <Grid
-                                            item
-                                            xs={12}
-                                            sm={12}
-                                            md={12}
-                                            lg={6}
-                                            key={_uniqueId('doctor_')}
-                                          >
-                                            <DoctorCard doctorDetails={doctorDetails} />
-                                          </Grid>
-                                        );
-                                      }
-                                    )}
-                                  </Grid>
-                                </div>
-                              </>
-                            ) : (
+                          {data &&
+                          data.SearchDoctorAndSpecialtyByName &&
+                          data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties ? (
+                            <>
+                              <div className={classes.sectionHeader}>
+                                <span>Possible Specialities</span>
+                                <span className={classes.count}>
+                                  {data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties
+                                    .length > 0
+                                    ? data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties.length
+                                        .toString()
+                                        .padStart(2, '0')
+                                    : '0'}
+                                </span>
+                              </div>
                               <Specialities
-                                keyword={filterOptions.searchKeyword}
+                                keyword=""
                                 matched={(matchingSpecialities) =>
                                   setMatchingSpecialities(matchingSpecialities)
                                 }
@@ -413,91 +462,15 @@ export const DoctorsLanding: React.FC = (props) => {
                                 disableFilter={(disableFilters) => {
                                   setDisableFilters(disableFilters);
                                 }}
-                                subHeading={
-                                  filterOptions.searchKeyword !== '' && showSearchAndPastSearch
-                                    ? 'Matching Specialities'
-                                    : 'Specialities'
-                                }
+                                subHeading=""
                               />
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {data &&
-                            data.SearchDoctorAndSpecialtyByName &&
-                            data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors ? (
-                              <>
-                                <div className={classes.sectionHeader}>
-                                  <span>Possible Doctors</span>
-                                  <span className={classes.count}>
-                                    {data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
-                                      .length > 0
-                                      ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.length
-                                          .toString()
-                                          .padStart(2, '0')
-                                      : '0'}
-                                  </span>
-                                </div>
-                                <div className={classes.searchList}>
-                                  <Grid spacing={2} container>
-                                    {_map(
-                                      data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors,
-                                      (doctorDetails) => {
-                                        return (
-                                          <Grid
-                                            item
-                                            xs={12}
-                                            sm={12}
-                                            md={12}
-                                            lg={6}
-                                            key={_uniqueId('doctor_')}
-                                          >
-                                            <DoctorCard doctorDetails={doctorDetails} />
-                                          </Grid>
-                                        );
-                                      }
-                                    )}
-                                  </Grid>
-                                </div>
-                              </>
-                            ) : null}
-
-                            {data &&
-                            data.SearchDoctorAndSpecialtyByName &&
-                            data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties ? (
-                              <>
-                                <div className={classes.sectionHeader}>
-                                  <span>Possible Specialities</span>
-                                  <span className={classes.count}>
-                                    {data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties
-                                      .length > 0
-                                      ? data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties.length
-                                          .toString()
-                                          .padStart(2, '0')
-                                      : '0'}
-                                  </span>
-                                </div>
-                                <Specialities
-                                  keyword=""
-                                  matched={(matchingSpecialities) =>
-                                    setMatchingSpecialities(matchingSpecialities)
-                                  }
-                                  speciality={(specialitySelected) =>
-                                    setSpecialitySelected(specialitySelected)
-                                  }
-                                  disableFilter={(disableFilters) => {
-                                    setDisableFilters(disableFilters);
-                                  }}
-                                  subHeading=""
-                                />
-                              </>
-                            ) : null}
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </Scrollbars>
+                            </>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+                  </Scrollbars>
+                )
               ) : (
                 <div className={classes.circlularProgress}>
                   <CircularProgress />
@@ -507,45 +480,7 @@ export const DoctorsLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
-
-      <BottomNavigation showLabels className={classes.bottomMenuRoot}>
-        <BottomNavigationAction
-          label="Consult Room"
-          icon={<img src={require('images/ic_consultroom.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Health Records"
-          icon={<img src={require('images/ic_myhealth.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="Tests & Medicines"
-          icon={<img src={require('images/ic_orders.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-        <BottomNavigationAction
-          label="My Account"
-          icon={<img src={require('images/ic_account_dark.svg')} />}
-          classes={{
-            root: classes.labelRoot,
-            label: classes.iconLabel,
-            selected: classes.iconSelected,
-          }}
-        />
-      </BottomNavigation>
+      <NavigationBottom />
     </div>
   );
 };

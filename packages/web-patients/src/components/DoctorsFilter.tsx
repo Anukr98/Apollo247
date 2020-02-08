@@ -14,6 +14,7 @@ import _without from 'lodash/without';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
 import { usePrevious } from 'hooks/reactCustomHooks';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -23,14 +24,11 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 328,
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        top: 46,
-        zIndex: 1,
         borderRadius: 0,
         paddingTop: 0,
         width: '100%',
         paddingBottom: 20,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
     filterSection: {
@@ -38,12 +36,21 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 15,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
+        position: 'absolute',
+        top: 0,
+        zIndex: 2,
+        backgroundColor: '#f0f1ec',
+        width: '100%',
+        padding: 0,
       },
     },
     customScroll: {
       width: '100%',
       paddingLeft: 10,
       paddingRight: 15,
+      [theme.breakpoints.down('xs')]: {
+        padding: '10px 0 20px 0',
+      },
     },
     searchInput: {
       paddingLeft: 20,
@@ -54,6 +61,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f8f5',
       padding: 10,
       marginTop: 5,
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 10,
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        borderRadius: 0,
+      },
     },
     filterType: {
       color: '#02475b',
@@ -132,6 +144,32 @@ const useStyles = makeStyles((theme: Theme) => {
     showCalendar: {
       display: 'block',
     },
+    searchInputDisabled: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    filterHeader: {
+      backgroundColor: '#fff',
+      padding: 16,
+      fontSize: 13,
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      boxShadow: '0 5px 20px rgba(0, 0, 0, 0.1)',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+      '& button': {
+        boxShadow: 'none',
+        padding: 0,
+        minWidth: 'auto',
+      },
+      '& >span': {
+        width: 'calc(100% - 48px)',
+        textAlign: 'center',
+      },
+    },
   });
 });
 
@@ -196,6 +234,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
 
   const prevDateSelected = usePrevious(dateSelected);
   const selectedSpecialtyName = existingFilters.specialtyName;
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const filterOptions = {
     searchKeyword: searchKeyword,
@@ -242,7 +282,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   return (
     <div className={classes.root}>
       <AphTextField
-        classes={{ root: classes.searchInput }}
+        classes={{
+          root: `${classes.searchInput} ${!disableFilters ? classes.searchInputDisabled : ''}`,
+        }}
         placeholder="Search doctors or specialities"
         onChange={(event) => {
           if (selectedSpecialtyName !== '' && selectedSpecialtyName !== event.currentTarget.value) {
@@ -271,7 +313,26 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           disableFilters ? classes.filterSectionDisabled : ''
         }`}
       >
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 275px'}>
+        <div className={classes.filterHeader}>
+          <AphButton>
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </AphButton>
+          <span>FILTERS</span>
+          <AphButton>
+            <img src={require('images/ic_refresh.svg')} alt="" />
+          </AphButton>
+        </div>
+        <Scrollbars
+          autoHide={true}
+          autoHeight
+          autoHeightMax={
+            isMediumScreen
+              ? 'calc(100vh - 320px)'
+              : isSmallScreen
+              ? 'calc(100vh - 120px)'
+              : 'calc(100vh - 275px)'
+          }
+        >
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
               <div className={classes.filterType}>City</div>

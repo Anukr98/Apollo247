@@ -4,6 +4,7 @@ import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
 import { ServiceList } from 'components/ServiceList';
 import React from 'react';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -64,10 +65,12 @@ export const Welcome: React.FC = (props) => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
-        <HeroBanner />
-        <ServiceList />
-      </div>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 70px'}>
+        <div className={classes.container}>
+          <HeroBanner />
+          <ServiceList />
+        </div>
+      </Scrollbars>
     </div>
   );
 };

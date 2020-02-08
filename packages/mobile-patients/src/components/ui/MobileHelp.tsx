@@ -28,7 +28,10 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps } from 'react-navigation';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -299,6 +302,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         // );
       })
       .catch((e) => {
+        CommonBugFender('MobileHelp_onSubmit', e);
         setShowSpinner(false);
         props.navigation.goBack();
         handleGraphQlError(e);

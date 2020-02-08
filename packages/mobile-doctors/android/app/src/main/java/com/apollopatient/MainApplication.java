@@ -4,6 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.bugsnag.BugsnagReactNative;
+import com.reactnative.ivpusic.imagepicker.PickerPackage;
+import com.imagepicker.ImagePickerPackage;
 import io.invertase.firebase.RNFirebasePackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.reactnativecommunity.geolocation.GeolocationPackage;
@@ -43,6 +46,9 @@ public class MainApplication extends Application implements ReactApplication {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           // packages.add(new MyReactNativePackage());
             // new MainReactPackage(),
+
+           // new PickerPackage(),
+            //new ImagePickerPackage(),
 //            new RNFirebasePackage(),
             // new DocumentPickerPackage(),
             // new OTPackage(),
@@ -59,6 +65,9 @@ public class MainApplication extends Application implements ReactApplication {
             packages.add(new RNFirebaseAuthPackage());
             packages.add(new RNFirebaseMessagingPackage());
             packages.add(new RNFirebaseNotificationsPackage());
+//      packages.add(new ImagePickerPackage());
+//      packages.add(new PickerPackage());
+
 //            packages.add(new AsyncStoragePackage());
 //            packages.add(new StreamPackage());
 //            packages.add(new RNFirebaseRemoteConfigPackage());

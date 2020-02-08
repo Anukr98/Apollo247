@@ -1,4 +1,13 @@
-import { aphConsole, formatAddress, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  aphConsole,
+  formatAddress,
+  g,
+  isValidTestSlot,
+  TestSlot,
+  formatTestSlot,
+  getUniqueTestSlots,
+  getTestSlotDetailsByTime,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -10,23 +19,24 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CalendarShow, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { ScheduleCalander } from '@aph/mobile-patients/src/components/ui/ScheduleCalander';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
-  SEARCH_DIAGNOSTICS,
   UPLOAD_DOCUMENT,
+  SEARCH_DIAGNOSTICS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -39,11 +49,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-  searchDiagnostics_searchDiagnostics_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
   Clinic,
@@ -67,6 +72,13 @@ import {
   Keyboard,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import Geolocation from '@react-native-community/geolocation';
+import {
+  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
+  searchDiagnosticsById,
+  searchDiagnosticsByIdVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -114,11 +126,6 @@ type clinicHoursData = {
   week: string;
   time: string;
 };
-
-type TimeArray = {
-  label: string;
-  time: string;
-}[];
 
 export interface TestsCartProps extends NavigationScreenProps {
   isComingFromConsult: boolean;
@@ -170,9 +177,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     { title: 'Home Visit', subtitle: 'Appointment Slot' },
     { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
   ];
-  const [timeArray, settimeArray] = useState<TimeArray>([]);
 
-  const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
+  const [slots, setSlots] = useState<TestSlot[]>([]);
+  const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
@@ -207,9 +214,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
-        setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
+        setselectedTimeSlot({
+          date: new Date(diagnosticSlot.date),
+          diagnosticBranchCode: '',
+          employeeCode: diagnosticSlot.diagnosticEmployeeCode,
+          employeeName: '', // not sending name to API hence keeping empty
+          slotInfo: {
+            __typename: 'SlotInfo',
+            endTime: diagnosticSlot.slotEndTime,
+            slot: diagnosticSlot.employeeSlotId,
+            startTime: diagnosticSlot.slotStartTime,
+            status: 'empty',
+          },
+        });
+        // setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
       } else {
         setDate(new Date());
+        setselectedTimeSlot(undefined);
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
@@ -246,6 +267,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         )
         .catch((e) => {
+          CommonBugFender('TestsCart_GET_PATIENT_ADDRESS_LIST', e);
           setLoading!(false);
           showAphAlert!({
             title: `Uh oh.. :(`,
@@ -258,7 +280,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (testCentresLoaded) {
       if (!(locationDetails && locationDetails.pincode)) {
-        navigator.geolocation.getCurrentPosition(
+        Geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
             getPlaceInfoByLatLng(latitude, longitude)
@@ -277,9 +299,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     ).long_name;
                     filterClinics(_pincode || '');
                   }
-                } catch {}
+                } catch (e) {
+                  CommonBugFender('TestsCart_getPlaceInfoByLatLng_try', e);
+                }
               })
               .catch((error) => {
+                CommonBugFender('TestsCart_getPlaceInfoByLatLng', error);
                 console.log(error, 'geocode error');
               });
           },
@@ -354,24 +379,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchPackageDetails = (
-    name: string,
-    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+    itemIds: string,
+    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
   ) => {
     {
       setLoading!(true);
       client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
+        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
+          query: SEARCH_DIAGNOSTICS_BY_ID,
           variables: {
-            searchText: name,
-            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-            patientId: (currentPatient && currentPatient.id) || '',
+            itemIds: itemIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           console.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {
@@ -379,6 +402,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }
         })
         .catch((e) => {
+          CommonBugFender('TestsCart_fetchPackageDetails', e);
           console.log({ e });
           errorAlert();
         })
@@ -431,7 +455,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
-                fetchPackageDetails(test.name, (product) => {
+                fetchPackageDetails(test.id, (product) => {
                   props.navigation.navigate(AppRoutes.TestDetails, {
                     testDetails: {
                       ItemID: test.id,
@@ -514,56 +538,55 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           },
         })
         .then(({ data }) => {
+          const diagnosticSlots = g(data, 'getDiagnosticSlots', 'diagnosticSlot') || [];
+          console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+
+          const slotsArray: TestSlot[] = [];
+          diagnosticSlots!.forEach((item) => {
+            item!.slotInfo!.forEach((slot) => {
+              if (isValidTestSlot(slot!, date)) {
+                slotsArray.push({
+                  employeeCode: item!.employeeCode,
+                  employeeName: item!.employeeName,
+                  slotInfo: slot,
+                  date: date,
+                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode'),
+                } as TestSlot);
+              }
+            });
+          });
+
+          const uniqueSlots = getUniqueTestSlots(slotsArray);
+
+          console.log('ARRAY OF SLOTS', { slotsArray });
+          console.log('UNIQUE SLOTS', { uniqueSlots });
+
+          setSlots(slotsArray);
+          uniqueSlots.length &&
+            setselectedTimeSlot(
+              getTestSlotDetailsByTime(
+                slotsArray,
+                uniqueSlots[0].startTime!,
+                uniqueSlots[0].endTime!
+              )
+            );
+
           setDeliveryAddressId!(selectedAddress.id);
           setPinCode!(selectedAddress.zipcode!);
-          console.log({ data, date }, 'GET_DIAGNOSTIC_SLOTS');
-          const finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-          const t = finalaray!
-            .slotInfo!.filter((item) => item!.status != 'booked')
-            .filter((item) =>
-              moment(date)
-                .format('DMY')
-                .toString() ===
-              moment()
-                .format('DMY')
-                .toString()
-                ? parseInt(item!.startTime!.split(':')[0], 10) >=
-                  parseInt(
-                    moment()
-                      .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                      .format('k'),
-                    10
-                  )
-                  ? parseInt(item!.startTime!.split(':')[1], 10) >
-                    moment()
-                      .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES, 'minutes')
-                      .minute()
-                  : false
-                : true
-            )
-            .map((item) => {
-              return {
-                label: (item!.slot || '').toString(),
-                time: `${item!.startTime} - ${item!.endTime}`,
-              };
-            });
-          console.log(t, 'finalaray');
-          settimeArray(t);
-          setselectedTimeSlot(g(t, '0' as any, 'time')!);
           setDisplaySchedule(true);
         })
         .catch((e) => {
+          CommonBugFender('TestsCart_checkServicability', e);
           console.log('Error occured', { e });
           setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticSlot && setDiagnosticSlot(null);
           setPinCode && setPinCode('');
-          setselectedTimeSlot('');
+          setselectedTimeSlot(undefined);
           const noHubSlots = g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS';
           showAphAlert!({
             title: 'Uh oh.. :(',
-            description: noHubSlots
-              ? 'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.'
-              : 'Oops! seems like we are having an issue. Please try again.',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
           });
         })
         .finally(() => {
@@ -633,7 +656,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View style={[styles.rowSpaceBetweenStyle, { paddingBottom: 16 }]}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true });
+              setDiagnosticSlot && setDiagnosticSlot(null);
+              setselectedTimeSlot(undefined);
+            }}
           >
             ADD NEW ADDRESS
           </Text>
@@ -649,6 +676,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       if (val && id) {
                         setDeliveryAddressId && setDeliveryAddressId(id);
                         setDiagnosticSlot && setDiagnosticSlot(null);
+                        setselectedTimeSlot(undefined);
                       }
                     },
                   });
@@ -681,6 +709,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         updateClinicSelection();
       })
       .catch((e) => {
+        CommonBugFender('TestsCart_searchClinicApi', e);
         setStorePickUpLoading(false);
       });
   };
@@ -716,7 +745,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               setClinicDetails(filterArray || []);
               setSlicedStoreList((filterArray || []).slice(0, 2));
             })
-            .catch(() => {
+            .catch((e) => {
+              CommonBugFender('TestsCart_filterClinics', e);
               setClinicDetails([]);
             })
             .finally(() => {
@@ -823,13 +853,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>
           <Text style={styles.dateTextStyle}>
-            {selectedTimeSlot ? selectedTimeSlot : 'No slot selected'}
+            {selectedTimeSlot
+              ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)} - ${formatTestSlot(
+                  selectedTimeSlot.slotInfo.endTime!
+                )}`
+              : 'No slot selected'}
           </Text>
         </View>
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
           onPress={() => {
-            timeArray ? setDisplaySchedule(true) : null;
+            setDisplaySchedule(true);
           }}
         >
           PICK ANOTHER SLOT
@@ -1138,6 +1172,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setisPhysicalUploadComplete(true);
         })
         .catch((e) => {
+          CommonBugFender('TestsCart_physicalPrescriptionUpload', e);
           aphConsole.log({ e });
           setLoading!(false);
           showAphAlert!({
@@ -1407,22 +1442,38 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       </View>
     );
   };
-
+  const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
+  const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   return (
     <View style={{ flex: 1 }}>
-      {displaySchedule && (
-        <ScheduleCalander
-          date={date}
-          setDate={(date) => setDate(date)}
-          setdisplayoverlay={(val) => setDisplaySchedule(val)}
-          selectedTimeSlot={selectedTimeSlot}
-          setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
-          isDropDown={true}
-          dropdownArray={timeArray}
-          setDropArray={(array) => settimeArray(array)}
-          CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
-        />
-      )}
+      <TestSlotSelectionOverlay
+        heading="Schedule Appointment"
+        date={date}
+        maxDate={moment()
+          .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+          .toDate()}
+        isVisible={displaySchedule}
+        onClose={() => setDisplaySchedule(false)}
+        slots={slots}
+        zipCode={parseInt(zipCode, 10)}
+        slotInfo={selectedTimeSlot}
+        onSchedule={(date: Date, slotInfo: TestSlot) => {
+          console.log({ slotInfo });
+
+          setDate(date);
+          setselectedTimeSlot(slotInfo);
+          setDiagnosticSlot!({
+            slotStartTime: slotInfo.slotInfo.startTime!,
+            slotEndTime: slotInfo.slotInfo.endTime!,
+            date: date.getTime(),
+            employeeSlotId: slotInfo.slotInfo.slot!,
+            diagnosticBranchCode: slotInfo.diagnosticBranchCode,
+            diagnosticEmployeeCode: slotInfo.employeeCode,
+            city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+          });
+          setDisplaySchedule(false);
+        }}
+      />
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}

@@ -20,6 +20,7 @@ import {
   ScrollView,
 } from 'react-navigation';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -35,6 +36,8 @@ const styles = StyleSheet.create({
   },
 });
 
+let upcomingNextRendered: boolean = false;
+
 export interface AppointmentsListProps extends NavigationScreenProps {
   appointmentsHistory: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[];
   newPatientsList: (string | null)[];
@@ -45,22 +48,32 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
   const isNewPatient = (id: string) => {
     return props.newPatientsList.indexOf(id) > -1;
   };
+  const { doctorDetails } = useAuth();
 
-  const getStatusCircle = (status: Appointments['timeslottype']) =>
-    status == 'past' ? (
-      <PastAppointmentIcon />
-    ) : status == 'missed' ? (
-      <MissedAppointmentIcon />
-    ) : status == 'next' ? (
-      <NextAppointmentIcon />
-    ) : (
+  const getStatusCircle = (status: string, showNext: boolean) => {
+    return showNext ? (
       <UpComingIcon />
+    ) : status == 'COMPLETED' ? (
+      <PastAppointmentIcon />
+    ) : (
+      <NextAppointmentIcon />
     );
+  };
+  // status == 'past' ? (
+  //   <PastAppointmentIcon />
+  // ) : status == 'missed' ? (
+  //   <MissedAppointmentIcon />
+  // ) : status == 'next' ? (
+  //   <NextAppointmentIcon />
+  // ) : (
+  //   <UpComingIcon />
+  // );
 
   const renderLeftTimeLineView = (
-    status: Appointments['timeslottype'],
+    status: string,
     showTop: boolean,
-    showBottom: boolean
+    showBottom: boolean,
+    showNext: boolean
   ) => {
     return (
       <View style={styles.leftTimeLineContainer}>
@@ -72,7 +85,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             },
           ]}
         />
-        {getStatusCircle(status)}
+        {getStatusCircle(status, showNext)}
         <View
           style={[
             styles.verticalLine,
@@ -124,7 +137,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     }
   };
 
-  const formatTiming = (appointmentDateTime: string) => {
+  const formatTiming = (appointmentDateTime: string, consultDuration?: number) => {
     const aptmtDate = moment
       .utc(appointmentDateTime)
       .local()
@@ -132,9 +145,19 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     const slotStartTime = moment(aptmtDate).format('h:mm') || '';
     const slotEndTime =
       moment(aptmtDate)
-        .add(15, 'minutes')
+        .add(consultDuration, 'minutes')
         .format('h:mm A') || '';
     return `${slotStartTime} - ${slotEndTime}`;
+  };
+
+  const showUpNext = (aptTime: string, index: number) => {
+    if (index === 0) upcomingNextRendered = false;
+    if (new Date(aptTime) > new Date() && !upcomingNextRendered) {
+      upcomingNextRendered = true;
+      return true;
+    } else {
+      return false;
+    }
   };
 
   return (
@@ -146,6 +169,19 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       >
         {props.appointmentsHistory.map((_i, index, array) => {
           const i = _i!;
+          const filterData =
+            doctorDetails &&
+            doctorDetails!.consultHours!.filter((item) => {
+              if (item) {
+                item.weekDay ===
+                  moment(i.appointmentDateTime)
+                    .format('dddd')
+                    .toUpperCase();
+              }
+            })[0];
+          const consultDuration = filterData ? filterData.consultDuration : 15;
+          const showNext = showUpNext(i.appointmentDateTime, index);
+
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
@@ -158,14 +194,15 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 }}
               >
                 {renderLeftTimeLineView(
-                  i.appointmentDateTime,
+                  i.status,
                   index == 0 ? false : true,
-                  index == array.length - 1 ? false : true
+                  index == array.length - 1 ? false : true,
+                  showNext
                 )}
                 <CalendarCard
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
-                    console.log('appppp', appId);
+                    console.log('appppp', appId, i);
                     props.navigation.push(AppRoutes.ConsultRoomScreen, {
                       DoctorId: doctorId,
                       PatientId: patientId,
@@ -174,10 +211,11 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       AppId: appId,
                       Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
                       AppointmentStatus: i.status,
+                      AppoinementData: i,
                     });
                   }}
                   doctorname={i.patientInfo!.firstName || ''}
-                  timing={formatTiming(i.appointmentDateTime)}
+                  timing={formatTiming(i.appointmentDateTime, consultDuration)}
                   symptoms={[]}
                   doctorId={i.doctorId}
                   patientId={i.patientId}
@@ -187,6 +225,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   consultTime={i.appointmentDateTime}
                   appId={i.id}
                   appintmentdatetime={i.appointmentDateTime}
+                  showNext={showNext}
                 />
               </View>
             </>

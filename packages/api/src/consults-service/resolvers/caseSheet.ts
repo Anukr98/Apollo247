@@ -23,6 +23,8 @@ import {
   PatientLifeStyle,
   PatientMedicalHistory,
   Gender,
+  UPLOAD_FILE_TYPES,
+  PRISM_DOCUMENT_CATEGORY,
 } from 'profiles-service/entities';
 import { DoctorType } from 'doctors-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
@@ -32,6 +34,7 @@ import {
   convertCaseSheetToRxPdfData,
   generateRxPdfDocument,
   uploadRxPdf,
+  uploadPdfBase64ToPrism,
 } from 'consults-service/rxPdfGenerator';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/patientFamilyHistoryRepository';
@@ -39,6 +42,7 @@ import { PatientLifeStyleRepository } from 'profiles-service/repositories/patien
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
+import { differenceInSeconds } from 'date-fns';
 
 export type DiagnosisJson = {
   name: string;
@@ -124,14 +128,25 @@ export const caseSheetTypeDefs = gql`
 
   enum Relation {
     ME
-    MOTHER
-    FATHER
-    SISTER
     BROTHER
     COUSIN
-    WIFE
+    DAUGHTER
+    FATHER
+    GRANDDAUGHTER
+    GRANDFATHER
+    GRANDMOTHER
+    GRANDSON
     HUSBAND
+    MOTHER
+    SISTER
+    SON
+    WIFE
     OTHER
+  }
+
+  enum TEST_COLLECTION_TYPE {
+    HC
+    CENTER
   }
 
   type Address {
@@ -205,6 +220,7 @@ export const caseSheetTypeDefs = gql`
     symptoms: [SymptomList]
     status: String
     sentToPatient: Boolean
+    updatedDate: DateTime
   }
 
   type Diagnosis {
@@ -249,6 +265,7 @@ export const caseSheetTypeDefs = gql`
   input DiagnosticPrescriptionInput {
     itemname: String
   }
+
   enum MEDICINE_FORM_TYPES {
     GEL_LOTION_OINTMENT
     OTHERS
@@ -397,6 +414,7 @@ export const caseSheetTypeDefs = gql`
   type PatientPrescriptionSentResponse {
     success: Boolean
     blobName: String
+    prismFileId: String
   }
 
   extend type Mutation {
@@ -529,6 +547,8 @@ const getCaseSheet: Resolver<
 
 type PatientPrescriptionSentResponse = {
   success: boolean;
+  blobName: string;
+  prismFileId: string;
 };
 
 type ModifyCaseSheetInput = {
@@ -736,6 +756,12 @@ const modifyCaseSheet: Resolver<
     );
   }
 
+  getCaseSheetData.updatedDate = new Date();
+  getCaseSheetData.preperationTimeInSeconds = differenceInSeconds(
+    getCaseSheetData.updatedDate,
+    getCaseSheetData.createdDate
+  );
+
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
@@ -890,6 +916,8 @@ const updatePatientPrescriptionSentStatus: Resolver<
 
   let caseSheetAttrs: Partial<CaseSheet> = {
     sentToPatient: args.sentToPatient,
+    blobName: '',
+    prismFileId: '',
   };
 
   if (args.sentToPatient) {
@@ -901,16 +929,35 @@ const updatePatientPrescriptionSentStatus: Resolver<
 
     const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
     const pdfDocument = generateRxPdfDocument(rxPdfData);
-    const blob = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
-    if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+    const uploadedPdfData = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
+    if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+
+    const uploadPdfInput = {
+      fileType: UPLOAD_FILE_TYPES.PDF,
+      base64FileInput: uploadedPdfData.base64pdf,
+      patientId: patientData.id,
+      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+    };
+
+    const prismUploadResponse = await uploadPdfBase64ToPrism(
+      uploadPdfInput,
+      patientData,
+      patientsDb
+    );
+
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
-      blobName: blob.name,
+      blobName: uploadedPdfData.name,
+      prismFileId: prismUploadResponse.fileId,
     };
   }
 
   await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
-  return { success: true, blobName: caseSheetAttrs.blobName };
+  return {
+    success: true,
+    blobName: caseSheetAttrs.blobName || '',
+    prismFileId: caseSheetAttrs.prismFileId || '',
+  };
 };
 
 export const caseSheetResolvers = {

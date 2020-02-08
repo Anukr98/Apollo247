@@ -64,6 +64,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   isConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
   isSeniorConsultStarted: boolean | null;
+  symptoms: string | null;
   doctorInfo: getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 

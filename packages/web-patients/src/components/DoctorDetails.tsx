@@ -24,9 +24,10 @@ import { DoctorType } from 'graphql/types/globalTypes';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
+import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 type Params = { id: string };
 
@@ -36,20 +37,8 @@ export interface DoctorDetailsProps {
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 61,
-      },
-    },
-    headerSticky: {
-      position: 'fixed',
+    root: {
       width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -57,9 +46,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorDetailsPage: {
       borderRadius: '0 0 10px 10px',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
+        position: 'absolute',
+        top: 0,
+        zIndex: 99,
+        width: '100%',
       },
     },
     breadcrumbs: {
@@ -73,23 +66,21 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       position: 'relative',
+      zIndex: 1,
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        zIndex: 2,
-        top: 0,
-        width: '100%',
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingBottom: 20,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        padding: '16px 20px',
       },
     },
     doctorProfileSection: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#dcdfce',
+      },
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
         padding: '20px 3px 20px 20px',
@@ -97,29 +88,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
+      marginLeft: 'auto',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         paddingLeft: 0,
       },
-    },
-    sectionHeader: {
-      color: theme.palette.secondary.dark,
-      fontSize: 14,
-      fontWeight: 500,
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      paddingBottom: 10,
-      paddingTop: 10,
-      marginBottom: 20,
-      display: 'flex',
-      alignItems: 'center',
-    },
-    count: {
-      marginLeft: 'auto',
-    },
-    topPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
     },
     modalBox: {
       maxWidth: 676,
@@ -169,7 +142,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     backArrow: {
       cursor: 'pointer',
-      marginRight: 50,
+      marginRight: 20,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
@@ -200,6 +173,30 @@ const useStyles = makeStyles((theme: Theme) => {
     customScroll: {
       paddingLeft: 20,
       paddingRight: 17,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
+    },
+    bookAppointment: {
+      position: 'absolute',
+      right: 20,
+      top: 12,
+      minWidth: 200,
+      [theme.breakpoints.down(990)]: {
+        display: 'none',
+      },
+    },
+    flotingBtn: {
+      position: 'fixed',
+      bottom: 20,
+      textAlign: 'center',
+      width: '100%',
+      [theme.breakpoints.up(991)]: {
+        display: 'none',
+      },
+      '& button': {
+        minWidth: 200,
+      },
     },
   };
 });
@@ -215,6 +212,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const { currentPatient } = useAllCurrentPatients();
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const currentUserId = currentPatient && currentPatient.id;
 
@@ -257,37 +256,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ? doctorDetails.getDoctorDetailsById.id
         : '';
 
-    // if (
-    //   doctorDetails &&
-    //   doctorDetails.getDoctorDetailsById &&
-    //   doctorDetails.getDoctorDetailsById.consultHours &&
-    //   doctorDetails.getDoctorDetailsById.consultHours.length > 0
-    // ) {
-    //   doctorDetails.getDoctorDetailsById.consultHours.forEach((consultHour) => {
-    //     const currentDay = new Date().toLocaleString('en-IN', { weekday: 'long' }).toUpperCase();
-    //     const consultDay = consultHour && consultHour.weekDay ? consultHour.weekDay : '';
-    //     const consultMode =
-    //       consultHour && consultHour.consultMode ? consultHour.consultMode : ConsultMode.PHYSICAL;
-    //     if (currentDay === consultDay) {
-    //       availableForPhysicalConsultation =
-    //         consultMode === ConsultMode.PHYSICAL || ConsultMode.BOTH ? true : false;
-    //       availableForVirtualConsultation =
-    //         consultMode === ConsultMode.ONLINE || ConsultMode.BOTH ? true : false;
-    //       return;
-    //     }
-    //   });
-    // }
-    // this needs to be reworked after availability api.
-
-    // console.log(availableForPhysicalConsultation, availableForVirtualConsultation);
-
     return (
-      <div className={classes.welcome}>
-        <div className={classes.headerSticky}>
-          <div className={classes.container}>
-            <Header />
-          </div>
-        </div>
+      <div className={classes.root}>
+        <Header />
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
@@ -299,24 +270,31 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </Link>
               Doctor Details
             </div>
-            <div className={classes.doctorProfileSection}>
-              <DoctorProfile
-                doctorDetails={doctorDetails}
-                avaPhy={availableForPhysicalConsultation}
-                avaOnline={availableForVirtualConsultation}
-              />
-              <div className={classes.searchSection}>
-                <span className={classes.count}>
-                  <AphButton onClick={(e) => setIsPopoverOpen(true)} fullWidth color="primary">
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMax={
+                isMediumScreen
+                  ? 'calc(100vh - 240px)'
+                  : isSmallScreen
+                  ? 'calc(100vh - 140px)'
+                  : 'calc(100vh - 154px)'
+              }
+            >
+              <div className={classes.doctorProfileSection}>
+                <DoctorProfile
+                  doctorDetails={doctorDetails}
+                  avaPhy={availableForPhysicalConsultation}
+                  avaOnline={availableForVirtualConsultation}
+                />
+                <div className={classes.searchSection}>
+                  <AphButton
+                    onClick={(e) => setIsPopoverOpen(true)}
+                    color="primary"
+                    className={classes.bookAppointment}
+                  >
                     Book Appointment
                   </AphButton>
-                </span>
-                <Scrollbars
-                  style={{ height: '100%' }}
-                  autoHide={true}
-                  autoHeight
-                  autoHeightMax={'calc(100vh - 195px'}
-                >
                   <div className={classes.customScroll}>
                     {isStarDoctor && (
                       <>
@@ -326,10 +304,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     )}
                     <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
                   </div>
-                </Scrollbars>
+                </div>
               </div>
-            </div>
+            </Scrollbars>
           </div>
+        </div>
+        <div className={classes.flotingBtn}>
+          <AphButton onClick={(e) => setIsPopoverOpen(true)} color="primary">
+            Book Appointment
+          </AphButton>
         </div>
         <Modal
           open={isPopoverOpen}

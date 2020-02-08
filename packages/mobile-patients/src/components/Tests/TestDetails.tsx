@@ -25,6 +25,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -163,6 +164,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
         })
         .catch((e) => {
+          CommonBugFender('TestDetails', e);
           aphConsole.log('getPackageData Error \n', { e });
           setsearchSate('fail');
         });

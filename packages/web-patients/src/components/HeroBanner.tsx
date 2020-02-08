@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     heroBanner: {
       borderRadius: '0 0 10px 10px',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f8f5',
       padding: 40,
       paddingTop: 46,
       position: 'relative',

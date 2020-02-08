@@ -79,6 +79,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 600,
       fontSize: 14,
       color: '#02475b !important',
+      position: 'relative',
       '&:focus': {
         backgroundColor: 'rgba(0,0,0,0.02)',
       },
@@ -87,7 +88,12 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '100%',
         textAlign: 'left',
         whiteSpace: 'normal',
-        padding: 10,
+        padding: '10px 50px 10px 10px',
+      },
+      '& img': {
+        position: 'absolute',
+        right: 10,
+        top: 10,
       },
     },
     othersBtnfavContainer: {
@@ -129,7 +135,9 @@ const useStyles = makeStyles((theme: Theme) =>
         whiteSpace: 'normal',
         padding: 10,
         wordBreak: 'break-word',
-        paddingRight: 20,
+        paddingRight: 30,
+        color: '#02475b !important',
+        fontSize: 14,
       },
     },
     btnAddDoctor: {

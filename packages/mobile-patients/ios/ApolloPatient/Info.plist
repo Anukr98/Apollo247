@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>24X7</string>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -35,16 +35,26 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>apolloPatients</string>
+				<string>apollopatients</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>vita-app-chron</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FirebaseScreenReportingEnabled</key>
 	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>ITunesAppleID</key>
-	<string>1491463275</string>
+	<string>1496740273</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -70,6 +80,12 @@
 	<string>${PRODUCT_NAME} need access to the calendar to select the date for booking appointments.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>${PRODUCT_NAME} need access to the camera to update your avatar.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>${PRODUCT_NAME} wants to access your contacts list.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Please allow access to Health kit so we may show you information about your physical activity.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Please allow access to Health kit so we may show you information about your physical activity.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This will enable the nearby location functionality to get nearest doctors. To start using the app, choose “Allow” so the app can find your location.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -99,6 +115,12 @@
 		<string>IBMPlexSans-ExtraLight.ttf</string>
 		<string>IBMPlexSans-Bold.ttf</string>
 		<string>IBMPlexSans-BoldItalic.ttf</string>
+		<string>Comfortaa_Regular.ttf</string>
+		<string>OpenSans-Bold.ttf</string>
+		<string>OpenSans-ExtraBold.ttf</string>
+		<string>OpenSans-Light.ttf</string>
+		<string>OpenSans-Regular.ttf</string>
+		<string>OpenSans-Semibold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -115,6 +137,8 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>

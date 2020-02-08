@@ -73,6 +73,7 @@ export interface HeaderProps {
   leftIcon?: 'backArrow' | 'close' | 'backArrowWhite';
   rightIcon?: string;
   rightComponent?: React.ReactNode;
+  leftComponent?: React.ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
   onPress?: TouchableOpacityProps['onPress'];
   onPressLeftIcon?: TouchableOpacityProps['onPress'];
@@ -131,11 +132,23 @@ export const Header: React.FC<HeaderProps> = (props) => {
             }}
           >
             {leftIcon === 'backArrow' && <BackArrow />}
-            {leftIcon === 'close' && <Remove />}
+            {leftIcon === 'close' && <Remove style={{ height: 24, width: 24 }} />}
 
             {/* {leftIcon === 'backArrowWhite' && <BackArrowWhite />} */}
           </TouchableOpacity>
         )}
+
+        {props.leftComponent ? (
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {props.leftComponent}
+          </View>
+        ) : null}
       </View>
       <View style={[{ flexGrow: 1 }, titleTextViewStyle]}>
         {titleComponent ? titleComponent : null}

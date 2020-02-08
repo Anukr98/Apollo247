@@ -1,7 +1,8 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, Not, Between } from 'typeorm';
 import { MedicalRecords } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { addDays, format } from 'date-fns';
 
 @EntityRepository(MedicalRecords)
 export class MedicalRecordsRepository extends Repository<MedicalRecords> {
@@ -60,6 +61,14 @@ export class MedicalRecordsRepository extends Repository<MedicalRecords> {
       throw new AphError(AphErrorMessages.DELETE_MEDICAL_RECORD_ERROR, undefined, {
         deleteError,
       });
+    });
+  }
+
+  getRecordSummary(selDate: Date) {
+    const startDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return this.count({
+      where: { documentURLs: Not(''), createdDate: Between(startDate, endDate) },
     });
   }
 }

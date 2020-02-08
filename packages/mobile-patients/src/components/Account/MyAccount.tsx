@@ -1,79 +1,61 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  Location,
-  NotificaitonAccounts,
-  EditIconNew,
   Afternoon,
-  ManageProfileIcon,
-  NotificationIcon,
-  CartIconWhite,
-  CartIcon,
-  HomeIcon,
+  EditIconNew,
   Invoice,
+  Location,
+  ManageProfileIcon,
+  NotificaitonAccounts,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Moment from 'moment';
-import React, { useEffect, useState } from 'react';
-import {
-  Animated,
-  AsyncStorage,
-  Dimensions,
-  Platform,
-  SafeAreaView,
-  Share,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-  ViewStyle,
-} from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  StackActions,
-  ScrollView,
-} from 'react-navigation';
-import { getNetStatus, statusBarHeight, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   DELETE_DEVICE_TOKEN,
-  GET_DIAGNOSTIC_ORDER_LIST,
   GET_MEDICINE_ORDERS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import DeviceInfo from 'react-native-device-info';
-import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
+import { g, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  ADD_NEW_PROFILE,
-  DELETE_PROFILE,
-  EDIT_PROFILE,
-  UPLOAD_FILE,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { useShoppingCart } from '../ShoppingCartProvider';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
-import { TabHeader } from '../ui/TabHeader';
+  AsyncStorage,
+  Dimensions,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+  Platform,
+} from 'react-native';
 import {
-  getDiagnosticOrdersList,
-  getDiagnosticOrdersListVariables,
-} from '../../graphql/types/getDiagnosticOrdersList';
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
 } from '../../graphql/types/GetMedicineOrdersList';
-const { height, width } = Dimensions.get('window');
+import { TabHeader } from '../ui/TabHeader';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '../../strings/AppConfig';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
@@ -107,37 +89,40 @@ const styles = StyleSheet.create({
   editIcon: {
     width: 40,
     height: 40,
+    // bottom: 16,
+    // right: 0,
+    // position: 'absolute',
+  },
+  editIconstyles: {
     bottom: 16,
     right: 0,
     position: 'absolute',
-  },
-  editIconstyles: {
     marginRight: 20,
     marginBottom: 17,
   },
-  noteIcon: {
-    width: 24,
-    height: 24,
-    bottom: 0,
-    right: 0,
-    top: 0,
-    position: 'absolute',
-  },
-  noteIconstyles: {
-    // marginRight: 20,
-    // marginBottom: 17,
-  },
-  cartIconstyles: {
-    marginRight: 24,
-  },
-  cartIcon: {
-    width: 24,
-    height: 24,
-    bottom: 0,
-    right: 24,
-    top: 0,
-    position: 'absolute',
-  },
+  // noteIcon: {
+  //   width: 24,
+  //   height: 24,
+  //   bottom: 0,
+  //   right: 0,
+  //   top: 0,
+  //   position: 'absolute',
+  // },
+  // noteIconstyles: {
+  //   // marginRight: 20,
+  //   // marginBottom: 17,
+  // },
+  // cartIconstyles: {
+  //   // marginRight: 24,
+  // },
+  // cartIcon: {
+  //   width: 24,
+  //   height: 24,
+  //   // bottom: 0,
+  //   // right: 24,
+  //   // top: 0,
+  //   // position: 'absolute',
+  // },
 });
 type Appointments = {
   date: string;
@@ -162,17 +147,12 @@ export interface MyAccountProps extends NavigationScreenProps {}
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const [scrollY] = useState(new Animated.Value(0));
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [profileDetails, setprofileDetails] = useState<
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
 
-  const [scrollVal, setScrollVal] = useState<boolean>(false);
-  const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
-  const cartItemsCount = cartItems.length + shopCartItems.length;
   const buildName = () => {
     switch (apiRoutes.graphql()) {
       case 'https://aph.dev.api.popcornapps.com//graphql':
@@ -221,34 +201,25 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     };
   }, [props.navigation]);
 
-  const headMov = scrollY.interpolate({
-    inputRange: [0, 180, 181],
-    outputRange: [0, -105, -105],
-  });
-  const headColor = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: ['white', 'white'],
-  });
-  const imgOp = scrollY.interpolate({
-    inputRange: [0, 180, 181],
-    outputRange: [1, 0, 0],
-  });
-
   useEffect(() => {
-    getNetStatus().then((status) => {
-      if (status) {
-        if (currentPatient !== profileDetails) {
-          setprofileDetails(currentPatient);
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          if (currentPatient !== profileDetails) {
+            setprofileDetails(currentPatient);
+            setshowSpinner(false);
+          }
+          if (currentPatient === profileDetails) {
+            setshowSpinner(false);
+          }
+        } else {
+          setNetworkStatus(true);
           setshowSpinner(false);
         }
-        if (currentPatient === profileDetails) {
-          setshowSpinner(false);
-        }
-      } else {
-        setNetworkStatus(true);
-        setshowSpinner(false);
-      }
-    });
+      })
+      .catch((e) => {
+        CommonBugFender('MyAccount_getNetStatus', e);
+      });
   }, [currentPatient, profileDetails]);
 
   const renderDetails = () => {
@@ -287,26 +258,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       );
     return null;
   };
-
-  // const onShare = async () => {
-  //   try {
-  //     const result = await Share.share({
-  //       message: profileDetails ? `${profileDetails.firstName} ${profileDetails.lastName}` : '',
-  //     });
-
-  //     if (result.action === Share.sharedAction) {
-  //       if (result.activityType) {
-  //         // shared with activity type of result.activityType
-  //       } else {
-  //         // shared
-  //       }
-  //     } else if (result.action === Share.dismissedAction) {
-  //       // dismissed
-  //     }
-  //   } catch (error) {
-  //     // Alert(error.message);
-  //   }
-  // };
 
   const onPressLogout = () => {
     signOut();
@@ -348,73 +299,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         setshowSpinner(false);
         onPressLogout();
       })
-      .catch((e: string) => {
+      .catch((e) => {
+        CommonBugFender('MyAccount_deleteDeviceToken', e);
         try {
           console.log('deleteDeviceTokenerror', e);
           setshowSpinner(false);
           onPressLogout();
-        } catch {}
-      });
-  };
-
-  const renderTopView = () => {
-    return (
-      <View
-        style={
-          {
-            //  justifyContent: 'space-between',
-            //  flexDirection: 'row',
-            //  paddingTop: 16,
-            //  paddingHorizontal: 20,
-            // backgroundColor: theme.colors.WHITE,
-          }
+        } catch (err) {
+          CommonBugFender('MyAccount_deleteDeviceToken_logout_try', err);
         }
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          // onPress={() => props.navigation.popToTop()}
-          onPress={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ConsultRoom,
-                  }),
-                ],
-              })
-            );
-          }}
-        ></TouchableOpacity>
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() =>
-              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
-            }
-            style={styles.cartIconstyles}
-          >
-            <CartIconWhite style={styles.cartIcon} />
-            {/* {cartItemsCount > 0 && renderBadge(cartItemsCount, {})} */}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={1}
-            // onPress={() => {
-            //   props.navigation.navigate(AppRoutes.EditProfile, {
-            //     isEdit: true,
-            //     profileData: currentPatient,
-            //     mobileNumber: currentPatient && currentPatient!.mobileNumber,
-            //   });
-            // }}
-            style={styles.noteIconstyles}
-          >
-            <NotificationIcon style={styles.noteIcon} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+      });
   };
 
   const [imgHeight, setImgHeight] = useState(120);
@@ -471,122 +365,38 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             <EditIconNew style={styles.editIcon} />
           </TouchableOpacity>
         </View>
-        {/* </Animated.View> */}
-
-        <Header
-          container={{
-            zIndex: 3,
-            position: 'absolute',
-            top: statusBarHeight(),
-            left: 0,
-            right: 0,
-            height: 56,
-            backgroundColor: 'transparent',
-            borderBottomWidth: 0,
-          }}
-          rightComponent={renderTopView()}
-        />
-
-        <View
-          style={{
-            zIndex: 3,
-            position: 'absolute',
-            top: statusBarHeight() + 16,
-            left: 20,
-            right: 0,
-            width: 77,
-            height: 57,
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            // onPress={() => props.navigation.popToTop()}
-            onPress={() => {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: 0,
-                  key: null,
-                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-                })
-              );
-            }}
-          >
-            {/* <HomeLogo /> */}
-          </TouchableOpacity>
-        </View>
       </>
     );
   };
 
-  const handleScroll = (event: any) => {
-    console.log(event.nativeEvent.contentOffset.y);
-    if (event.nativeEvent.contentOffset.y > 100) {
-      setScrollVal(true);
-    } else {
-      setScrollVal(false);
-    }
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
+    setScrollOffset(event.nativeEvent.contentOffset.y);
   };
 
-  const renderTopRow = () => {
-    console.log(scrollVal);
+  const renderTopView = () => {
+    const containerStyle: ViewStyle =
+      scrollOffset > 1
+        ? {
+            shadowColor: '#808080',
+            shadowOffset: { width: 0, height: 0 },
+            zIndex: 1,
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 5,
+          }
+        : {
+            zIndex: 1,
+            backgroundColor: 'transparent',
+          };
     return (
-      <View
-        style={{
-          justifyContent: 'space-between',
-          flexDirection: 'row',
-          paddingVertical: 15,
-          paddingHorizontal: 20,
-          top: 16,
-          marginBottom: 20,
-          backgroundColor: theme.colors.WHITE,
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          // onPress={() => props.navigation.popToTop()}
-          onPress={() => {
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [
-                  NavigationActions.navigate({
-                    routeName: AppRoutes.ConsultRoom,
-                  }),
-                ],
-              })
-            );
-          }}
-        >
-          <HomeIcon />
-        </TouchableOpacity>
-        <View style={{ flexDirection: 'row', paddingHorizontal: 20 }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() =>
-              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
-            }
-            style={styles.cartIconstyles}
-          >
-            <CartIcon style={styles.cartIcon} />
-            {/* {cartItemsCount > 0 && renderBadge(cartItemsCount, {})} */}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={1}
-            // onPress={() => {
-            //   props.navigation.navigate(AppRoutes.EditProfile, {
-            //     isEdit: true,
-            //     profileData: currentPatient,
-            //     mobileNumber: currentPatient && currentPatient!.mobileNumber,
-            //   });
-            // }}
-            style={styles.noteIconstyles}
-          >
-            <NotificationIcon style={styles.noteIcon} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <TabHeader
+        // hideHomeIcon={!(scrollOffset > 1)}
+        containerStyle={[containerStyle, { position: 'absolute', width: '100%' }]}
+        navigation={props.navigation}
+      />
     );
   };
 
@@ -628,13 +438,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             })
           }
         />
-        <ListCard
+        {/* <ListCard
           // container={{ marginBottom: 32 }}
           container={{ marginTop: 4 }}
           title={'Notification Settings'}
           leftIcon={<NotificaitonAccounts />}
           onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
-        />
+        /> */}
         <ListCard
           container={{ marginBottom: 32 }}
           title={'Logout'}
@@ -644,20 +454,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
-  const renderHeaderScroll = () => {
-    // const todayConsults = consultations.filter(
-    // (item) => item.appointmentDateTime.split('T')[0] === new Date().toISOString().split('T')[0]
-    // );
-    const containerStyle: ViewStyle = {
-      shadowColor: '#808080',
-      shadowOffset: { width: 0, height: 0 },
-      zIndex: 1,
-      shadowOpacity: 0.4,
-      shadowRadius: 5,
-      elevation: 5,
-    };
-    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
-  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -665,7 +462,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           ...theme.viewStyles.container,
         }}
       >
-        {scrollVal && renderHeaderScroll()}
+        {renderTopView()}
         <ScrollView
           bounces={false}
           style={{ flex: 1 }}
@@ -675,8 +472,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           {renderAnimatedHeader()}
           {profileDetails && renderDetails()}
           {renderRows()}
-          {/* {!scrollVal == true ? profileDetails && renderDetails() : renderTopRow()}
-          {renderRows()} */}
           <NeedHelpAssistant navigation={props.navigation} />
           <View style={{ height: 92, marginBottom: 0 }}>
             <Text
@@ -689,7 +484,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 20,
               }}
             >
-              {`${buildName()} - v ${DeviceInfo.getVersion()}.${DeviceInfo.getBuildNumber()}`}
+              {`${buildName()} - v ${
+                Platform.OS === 'ios'
+                  ? AppConfig.Configuration.iOS_Version
+                  : AppConfig.Configuration.Android_Version
+              }`}
             </Text>
           </View>
         </ScrollView>

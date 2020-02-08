@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultGroup: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: '#f7f8f5',
       padding: 16,
       marginTop: 10,
       marginBottom: 10,
@@ -429,7 +429,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           )}
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
             <Grid container spacing={2}>
-              <Grid item sm={6}>
+              <Grid item sm={6} xs={12}>
                 <div
                   className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
                     showCalendar || scheduleLater || !consultNowAvailable
@@ -444,7 +444,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   />
                 </div>
               </Grid>
-              <Grid item sm={6}>
+              <Grid item sm={6} xs={12}>
                 {morningSlots.length > 0 ||
                 afternoonSlots.length > 0 ||
                 eveningSlots.length > 0 ||

@@ -185,6 +185,10 @@ android {
 }
 
 dependencies {
+    implementation project(':bugsnag-react-native')
+    implementation project(':react-native-image-crop-picker')
+    implementation project(':react-native-image-picker')
+    implementation project(':react-native-webview')
     implementation project(':react-native-firebase')
     implementation project(':@react-native-community_async-storage')
     implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])

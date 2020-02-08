@@ -45,12 +45,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     videoContainer: {
-      height: 'calc(100vh - 200px)',
+      height: 'calc(100vh - 248px)',
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
+      marginTop: 68,
       overflow: 'hidden',
       position: 'relative',
+      textAlign: 'center',
     },
     hideVideoContainer: {
       right: 15,
@@ -69,6 +71,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hidePublisherVideo: {
       display: 'none',
+    },
+    hidePublisherVideoSD: {
+      height: 170,
     },
     minimizeBtns: {
       position: 'absolute',
@@ -96,20 +101,37 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#000',
     },
     minimizeImg: {
-      left: 0,
-      bottom: 0,
-      width: '100%',
-      height: '100%',
-      zIndex: 9,
       position: 'absolute',
+      minWidth: 48,
+      minHeight: 48,
+      top: 0,
+      right: 0,
+      zIndex: 9,
+      borderRadius: 10,
+      width: 264,
+      height: 198,
+      overflow: 'hidden',
+      backgroundColor: '#000',
+    },
+    maximizeImg: {
+      position: 'relative',
+      minWidth: 'auto',
+      minHeight: 'calc(100vh - 212px)',
+      zIndex: 9,
+      borderRadius: 0,
+      width: 'auto',
+      height: 'calc(100vh - 212px)',
+      overflow: 'hidden',
+      backgroundColor: '#000',
     },
     timerCls: {
       position: 'absolute',
-      top: 40,
+      top: 80,
       zIndex: 99,
       left: 40,
       fontSize: 12,
       fontWeight: 600,
+      color: '#f7f8f5',
     },
     patientName: {
       fontSize: 20,
@@ -150,7 +172,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  const { patientDetails } = useContext(CaseSheetContext);
+  const { patientDetails, createdDoctorProfile } = useContext(CaseSheetContext);
   const apikey = process.env.OPENTOK_KEY;
   const sessionHandler = {
     connectionDestroyed: (event: any) => {
@@ -250,177 +272,193 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           )}
 
           {isCall && (
-            <OTSession
-              apiKey={apikey}
-              sessionId={props.sessionId}
-              token={props.token}
-              eventHandlers={sessionHandler}
-            >
-              <OTPublisher
-                className={
-                  props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
-                }
-                resolution={'352x288'}
-                properties={{
-                  publishAudio: mute,
-                  publishVideo: subscribeToVideo,
-                  // subscribeToVideo: subscribeToVideo,
-                  // subscribeToAudio: subscribeToAudio,
-                }}
-                eventHandlers={publisherHandler}
-              />
-
-              <div
-                className={
-                  props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
-                }
+            <div className={'sdCall'}>
+              <OTSession
+                apiKey={apikey}
+                sessionId={props.sessionId}
+                token={props.token}
+                eventHandlers={sessionHandler}
               >
-                {!subscribeToVideo && !props.showVideoChat && (
-                  <img
-                    className={classes.minimizeImg}
-                    src={
-                      patientDetails!.photoUrl
-                        ? patientDetails!.photoUrl
-                        : require('images/DefaultPatient_Video.svg')
-                    }
-                  />
-                )}
-                {/* <div
+                <OTPublisher
+                  className={
+                    props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
+                  }
+                  resolution={'352x288'}
+                  properties={{
+                    publishAudio: mute,
+                    publishVideo: subscribeToVideo,
+                    // subscribeToVideo: subscribeToVideo,
+                    // subscribeToAudio: subscribeToAudio,
+                  }}
+                  eventHandlers={publisherHandler}
+                />
+
+                <div
                   className={
                     props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
                   }
-                > */}
-                <OTStreams>
-                  <OTSubscriber
-                    // properties={{
-                    //   subscribeToVideo: subscribeToVideo,
-                    //   subscribeToAudio: subscribeToAudio,
-                    // }}
-                    eventHandlers={subscriberHandler}
-                  />
-                </OTStreams>
-                {/* </div> */}
-
-                {props.showVideoChat && (
-                  <div>
-                    {!subscribeToVideo && (
+                >
+                  {!subscribeToVideo &&
+                    !props.showVideoChat &&
+                    getCookieValue() === 'videocall' && (
                       <img
+                        className={classes.minimizeImg}
+                        src={
+                          createdDoctorProfile && createdDoctorProfile.photoUrl
+                            ? createdDoctorProfile.photoUrl
+                            : require('images/DefaultPatient_Video.svg')
+                        }
+                      />
+                    )}
+                  {!subscribeToVideo &&
+                    !props.showVideoChat &&
+                    getCookieValue() === 'audiocall' && (
+                      <img
+                        className={classes.maximizeImg}
                         src={
                           patientDetails!.photoUrl
                             ? patientDetails!.photoUrl
                             : require('images/DefaultPatient_Video.svg')
                         }
-                        className={classes.minimizeVideoImg}
                       />
                     )}
-                    <div className={classes.minimizeBtns}>
-                      <img
-                        src={require('images/ic_stopcall.svg')}
-                        className={classes.stopCallIcon}
-                        onClick={() => {
-                          setIscall(false);
-                          props.stopAudioVideoCall();
-                        }}
-                      />
-                      <img
-                        src={require('images/ic_maximize.svg')}
-                        className={classes.fullscreenIcon}
-                        onClick={() => props.toggelChatVideo()}
-                      />
+                  {/* <div
+                  className={
+                    props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
+                  }
+                > */}
+                  <OTStreams>
+                    <OTSubscriber
+                      // properties={{
+                      //   subscribeToVideo: subscribeToVideo,
+                      //   subscribeToAudio: subscribeToAudio,
+                      // }}
+                      eventHandlers={subscriberHandler}
+                    />
+                  </OTStreams>
+                  {/* </div> */}
+
+                  {props.showVideoChat && (
+                    <div>
+                      {!subscribeToVideo && (
+                        <img
+                          src={
+                            patientDetails!.photoUrl
+                              ? patientDetails!.photoUrl
+                              : require('images/DefaultPatient_Video.svg')
+                          }
+                          className={classes.minimizeVideoImg}
+                        />
+                      )}
+                      <div className={classes.minimizeBtns}>
+                        <img
+                          src={require('images/ic_stopcall.svg')}
+                          className={classes.stopCallIcon}
+                          onClick={() => {
+                            setIscall(false);
+                            props.stopAudioVideoCall();
+                          }}
+                        />
+                        <img
+                          src={require('images/ic_maximize.svg')}
+                          className={classes.fullscreenIcon}
+                          onClick={() => props.toggelChatVideo()}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
-                {!props.showVideoChat && (
-                  <div className={classes.videoButtonContainer}>
-                    <Grid container alignItems="flex-start" spacing={0}>
-                      <Grid item lg={1} sm={2} xs={2}>
-                        {isCall && (
-                          <button
-                            className={classes.muteBtn}
-                            onClick={() => props.toggelChatVideo()}
-                          >
-                            <img
-                              className={classes.whiteArrow}
-                              src={
-                                props.isNewMsg
-                                  ? require('images/ic_message.svg')
-                                  : require('images/ic_chat_circle.svg')
-                              }
-                              alt="msgicon"
-                            />
-                          </button>
-                        )}
+                  )}
+                  {!props.showVideoChat && (
+                    <div className={classes.videoButtonContainer}>
+                      <Grid container alignItems="flex-start" spacing={0}>
+                        <Grid item lg={1} sm={2} xs={2}>
+                          {isCall && (
+                            <button
+                              className={classes.muteBtn}
+                              onClick={() => props.toggelChatVideo()}
+                            >
+                              <img
+                                className={classes.whiteArrow}
+                                src={
+                                  props.isNewMsg
+                                    ? require('images/ic_message.svg')
+                                    : require('images/ic_chat_circle.svg')
+                                }
+                                alt="msgicon"
+                              />
+                            </button>
+                          )}
+                        </Grid>
+                        <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
+                          {isCall && mute && (
+                            <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                              <img
+                                className={classes.whiteArrow}
+                                src={require('images/ic_mute.svg')}
+                                alt="mute"
+                              />
+                            </button>
+                          )}
+                          {isCall && !mute && (
+                            <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
+                              <img
+                                className={classes.whiteArrow}
+                                src={require('images/ic_unmute.svg')}
+                                alt="unmute"
+                              />
+                            </button>
+                          )}
+                          {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
+                            <button
+                              className={classes.muteBtn}
+                              onClick={() => {
+                                setSubscribeToVideo(!subscribeToVideo);
+                                props.convertCall();
+                              }}
+                            >
+                              <img
+                                className={classes.whiteArrow}
+                                src={require('images/ic_videoon.svg')}
+                                alt="videoon"
+                              />
+                            </button>
+                          )}
+                          {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
+                            <button
+                              className={classes.muteBtn}
+                              onClick={() => {
+                                setSubscribeToVideo(!subscribeToVideo);
+                                props.convertCall();
+                              }}
+                            >
+                              <img
+                                className={classes.whiteArrow}
+                                src={require('images/ic_videooff.svg')}
+                                alt="videooff"
+                              />
+                            </button>
+                          )}
+                          {isCall && (
+                            <button
+                              onClick={() => {
+                                props.toggelChatVideo();
+                                props.stopAudioVideoCall();
+                                setIscall(false);
+                              }}
+                            >
+                              <img
+                                className={classes.whiteArrow}
+                                src={require('images/ic_stopcall.svg')}
+                                alt="stopcall"
+                              />
+                            </button>
+                          )}
+                        </Grid>
                       </Grid>
-                      <Grid item lg={10} sm={8} xs={8} className={classes.VideoAlignment}>
-                        {isCall && mute && (
-                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
-                            <img
-                              className={classes.whiteArrow}
-                              src={require('images/ic_mute.svg')}
-                              alt="mute"
-                            />
-                          </button>
-                        )}
-                        {isCall && !mute && (
-                          <button className={classes.muteBtn} onClick={() => setMute(!mute)}>
-                            <img
-                              className={classes.whiteArrow}
-                              src={require('images/ic_unmute.svg')}
-                              alt="unmute"
-                            />
-                          </button>
-                        )}
-                        {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
-                          <button
-                            className={classes.muteBtn}
-                            onClick={() => {
-                              setSubscribeToVideo(!subscribeToVideo);
-                              props.convertCall();
-                            }}
-                          >
-                            <img
-                              className={classes.whiteArrow}
-                              src={require('images/ic_videoon.svg')}
-                              alt="videoon"
-                            />
-                          </button>
-                        )}
-                        {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
-                          <button
-                            className={classes.muteBtn}
-                            onClick={() => {
-                              setSubscribeToVideo(!subscribeToVideo);
-                              props.convertCall();
-                            }}
-                          >
-                            <img
-                              className={classes.whiteArrow}
-                              src={require('images/ic_videooff.svg')}
-                              alt="videooff"
-                            />
-                          </button>
-                        )}
-                        {isCall && (
-                          <button
-                            onClick={() => {
-                              props.toggelChatVideo();
-                              props.stopAudioVideoCall();
-                              setIscall(false);
-                            }}
-                          >
-                            <img
-                              className={classes.whiteArrow}
-                              src={require('images/ic_stopcall.svg')}
-                              alt="stopcall"
-                            />
-                          </button>
-                        )}
-                      </Grid>
-                    </Grid>
-                  </div>
-                )}
-              </div>
-            </OTSession>
+                    </div>
+                  )}
+                </div>
+              </OTSession>
+            </div>
           )}
         </div>
       </div>

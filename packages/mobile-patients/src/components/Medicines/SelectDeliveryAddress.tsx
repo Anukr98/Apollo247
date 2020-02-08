@@ -7,7 +7,10 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
@@ -77,6 +80,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
                   }
                 })
                 .catch((e) => {
+                  CommonBugFender('SelectDeliveryAddress_pinCodeServiceabilityApi', e);
                   Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
                 })
                 .finally(() => {

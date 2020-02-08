@@ -9,12 +9,16 @@ enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   PROD = 'PROD',
+  PERFORM = 'PERFORM',
+  VAPT = 'VAPT',
 }
 
-const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
-  DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60,
+  DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
+  DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
+  DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
 };
 
 const PharmaApiConfig = {
@@ -36,7 +40,10 @@ const PharmaApiConfig = {
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`],
-    GET_PACKAGE_DATA: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`],
+    GET_PACKAGE_DATA: [
+      // `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`
+      `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
+    ],
     GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
   },
   prod: {
@@ -84,7 +91,7 @@ const ConfigurationDev = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
@@ -93,7 +100,9 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.7',
-  Android_Version: '1.74',
+  Android_Version: '1.93',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
 
 // QA
@@ -114,7 +123,7 @@ const ConfigurationQA = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
@@ -122,8 +131,10 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.8',
-  Android_Version: '1.22',
+  iOS_Version: '1.4',
+  Android_Version: '1.24',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
 
 //Production
@@ -144,7 +155,7 @@ const ConfigurationProd = {
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', // PRODUCTION
+  PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
@@ -152,8 +163,74 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
+  iOS_Version: '1.22',
+  Android_Version: '1.22',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+};
+
+//PERFORMANCE
+const ConfigurationPERFORM = {
+  LOG_ENVIRONMENT: 'perform',
+  ANALYTICAL_ENIVRONMENT: 'perform',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://aspmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://aspmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://aspmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
   iOS_Version: '1.7',
-  Android_Version: '1.16',
+  Android_Version: '1.83',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
+};
+
+//VAPT
+const ConfigurationVAPT = {
+  LOG_ENVIRONMENT: 'VAPT',
+  ANALYTICAL_ENIVRONMENT: 'VAPT',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  iOS_Version: '1.1',
+  Android_Version: '1.1',
+  CONDITIONAL_MANAGENET_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
 
 const Configuration =
@@ -161,6 +238,10 @@ const Configuration =
     ? ConfigurationProd
     : APP_ENV == AppEnv.QA
     ? ConfigurationQA
+    : APP_ENV == AppEnv.PERFORM
+    ? ConfigurationPERFORM
+    : APP_ENV == AppEnv.VAPT
+    ? ConfigurationVAPT
     : ConfigurationDev;
 
 export const MedicineFeedBackData = {
@@ -328,85 +409,88 @@ export const NeedHelp = [
   {
     category: 'Pharmacy',
     options: [
-      'Payment Issues in online pharmacy payments',
       'Area pharmacy store not found on app',
+      'Cancel the medicine order',
+      'Delay in pharmacy order',
       'Difference in quantity of medicine delivered',
-      'Excess amount charged on delivery Delay in Pharmacy Order',
-      'Medicines not delivered',
+      'Excess amount charged on delivery',
+      'Inappropriate attitude and behavior of pharmacy staff',
       'Incorrect medicines',
-      'Issues in Order confirmations',
+      'Issues in order confirmations',
+      'Medicines not delivered',
+      'Order cancelled, no refund',
       'Orders cancelled without any information',
-      'Order Cancelled, No Refund',
-      'Inappropriate Attitude and Behavior of Pharmacy staff',
-      'Updates in Order delivery or status of the order',
-      'Software - Not User Friendly',
+      'Payment issues in online pharmacy',
+      'Software not user-friendly',
+      'Updates in order delivery or status of the order',
     ],
   },
   {
-    category: 'Virtual Consult',
+    category: 'Virtual/Online Consult',
     options: [
-      'Require Reschedule',
-      'Delay in consult',
-      'No updates on delays, reschedules or cancellations of the consult',
-      'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
       'Application issues (bandwidth & payment errors)',
+      'Behavior and attitude of the doctor',
+      'Delay in consult',
+      'Delayed prescription',
       'Doctor not available',
-      'No past / Upcoming consultation details',
       'How to consult virtually – demo video',
+      'No past / upcoming consultation details',
+      'No updates on delays, reschedules or cancellations of the consult',
+      'Require reschedule',
+      'Payment issues',
     ],
   },
   {
     category: 'Health Records',
     options: [
+      'Add multiple UHID’s linked to other mobile numbers',
+      'Delay in responses to queries',
       'Incomplete health records',
-      'Delay in responses to Queries',
+      'Issues in downloading the records',
+      'No / Wrong UHID',
+      'No records available for linked UHID',
       'Personal details are not editable',
       'Unable to see my reports',
-      'No / Wrong UHID',
-      'Add multiple UHID’s linked to other mobile numbers',
-      'No records available for linked UHID',
-      'Issues in downloading the records',
     ],
   },
   {
     category: 'Physical Consult',
     options: [
-      'Require Reschedule',
-      'Long Waiting time for Physical consult',
+      'App appointment dishonored at confirmed time slot',
+      'Application issues(bandwidth & payment errors)',
+      'Behavior and attitude of the doctor',
+      "Can't find doctor’s name in respective list",
+      'Delayed prescription',
+      'Doctor not available',
+      'Long waiting time for physical consult',
+      'No past / upcoming consultation details',
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
-      'Delayed Prescription',
-      'Behavior and Attitude of the doctor',
-      'Application issues(bandwidth & payment errors)',
-      'Doctor not available',
-      'App appointment dishonored at confirmed time slot',
-      'No past / Upcoming consultation details',
-      "Can't find Doctor’s name in respective list",
+      'Require reschedule',
     ],
   },
   {
     category: 'Feedback',
     options: [
-      'Feedback on Consultation',
-      'Feedback on Health Records',
-      'Feedback on Medicine Deliver',
+      'Feedback on app',
+      'Feedback on consultation',
+      'Feedback on health records',
+      'Feedback on medicine deliver',
     ],
   },
   {
     category: 'Diagnostics',
     options: [
-      'Require Reschedule',
-      'Payment Issues while ordering',
-      'Sample pick up related',
       'Excess amount related',
-      'Issues in Order confirmation',
+      'Issues in order confirmation',
+      'Payment issues while ordering',
       'Pickup cancelled without any information',
-      'Pickup Cancelled, No Refund',
+      'Pickup cancelled, no refund',
       'Report not received',
-      'Wrong report received',
+      'Require reschedule',
+      'Sample pick up related',
       'Sample pick up staff related',
+      'Wrong report received',
     ],
   },
 ];

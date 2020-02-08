@@ -15,10 +15,14 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
+import ApolloClient from 'apollo-client';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { useAuth } from 'hooks/authHooks';
+import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -188,6 +192,10 @@ const useStyles = makeStyles((theme: Theme) => {
     patientBubble: {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
+      maxWidth: '100%',
+      '& pre': {
+        whiteSpace: 'pre-wrap',
+      },
     },
     callStatusMessage: {
       paddingTop: 12,
@@ -315,6 +323,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
+        maxHeight: 'calc(100vh - 212px)',
       },
     },
     timeStamp: {
@@ -325,6 +334,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: -5,
       paddingTop: 5,
       color: '#02475b',
+    },
+    phrMsg: {
+      fontFamily: 'IBM Plex Sans,sans-serif',
     },
   };
 });
@@ -338,6 +350,7 @@ interface MessagesObjectProps {
   url: string;
   messageDate: string;
   sentBy: string;
+  type: string;
 }
 
 interface ConsultRoomProps {
@@ -370,6 +383,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
   const apolloClient = useApolloClient();
+  const { currentPatient: currentDoctor, sessionClient } = useAuth();
 
   // this hook is used to send auto chat message when the consult is closed by system
   const covertVideoMsg = '^^convert`video^^';
@@ -393,6 +407,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
   const callAbandonment = '^^#callAbandonment';
+  const appointmentComplete = '^^#appointmentComplete';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -415,8 +430,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerSeconds = startingTime - timerMinuts * 60;
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
-  const { patientDetails } = useContext(CaseSheetContext);
-  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
+  const { setDocumentArray, appointmentInfo, patientDetails } = useContext(CaseSheetContextJrd);
   const startIntervalTimer = (timer: number) => {
     setInterval(() => {
       timer = timer + 1;
@@ -475,7 +489,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== covertVideoMsg &&
           message.message.message !== covertAudioMsg &&
           message.message.message !== cancelConsultInitiated &&
-          message.message.message !== callAbandonment
+          message.message.message !== callAbandonment &&
+          message.message.message !== appointmentComplete
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -490,7 +505,28 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   }, []);
-
+  const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
+    return new Promise((res, rej) => {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENTS,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: patientId,
+              fileIds: fileIds,
+            },
+          },
+        })
+        .then(({ data }) => {
+          res({ urls: data.downloadDocuments.downloadPaths });
+        })
+        .catch((e: any) => {
+          const error = JSON.parse(JSON.stringify(e));
+          rej({ error: e });
+        });
+    });
+  };
   const getHistory = (timetoken: number | undefined) => {
     pubnub.history(
       {
@@ -502,9 +538,20 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       },
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
-        console.log(newmessage);
         res.messages.forEach((element: any, index: any) => {
-          newmessage.push(element.entry);
+          let item = element.entry;
+          if (item.prismId) {
+            getPrismUrls(apolloClient, patientId, item.prismId)
+              .then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              })
+              .catch((e: any) => {
+                // CommonBugFender('ChatRoom_getPrismUrls', e);
+              });
+            newmessage[index] = item;
+          } else {
+            newmessage.push(element.entry);
+          }
         });
         insertText = newmessage;
         setMessages(newmessage);
@@ -548,7 +595,27 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           setDocumentArray((_data.data.addChatDocument as unknown) as appointmentDocument);
         }
       })
-      .catch((error: ApolloError) => {});
+      .catch((error: ApolloError) => {
+        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+        const logObject = {
+          api: 'AddChatDocument',
+          inputParam: JSON.stringify({ appointmentId: props.appointmentId, documentPath: url }),
+          appointmentId: props.appointmentId,
+          doctorId: doctorId,
+          doctorDisplayName: currentDoctor!.displayName,
+          patientId: patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: appointmentInfo!.appointmentDateTime
+            ? moment(new Date(appointmentInfo!.appointmentDateTime)).format(
+                'MMMM DD YYYY h:mm:ss a'
+              )
+            : '',
+          error: JSON.stringify(error),
+        };
+
+        sessionClient.notify(JSON.stringify(logObject));
+      });
   };
 
   const send = () => {
@@ -602,7 +669,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
-      rowData.message !== callAbandonment
+      rowData.message !== callAbandonment &&
+      rowData.message !== appointmentComplete
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -656,11 +724,19 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <div
                   className={classes.imageUpload}
                   onClick={() => {
-                    setModalOpen(true);
-                    setImgPrevUrl(rowData.url);
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }
                   }}
                 >
-                  <img src={rowData.url} alt={rowData.url} />
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
+                  ) : (
+                    <a href={rowData.url}>
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}
@@ -693,7 +769,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== covertVideoMsg &&
       rowData.message !== covertAudioMsg &&
       rowData.message !== cancelConsultInitiated &&
-      rowData.message !== callAbandonment
+      rowData.message !== callAbandonment &&
+      rowData.message !== appointmentComplete
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -750,19 +827,31 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               {rowData.message === documentUpload ? (
                 <div
                   onClick={() => {
-                    setModalOpen(true);
-                    setImgPrevUrl(rowData.url);
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }
                   }}
                   className={classes.imageUpload}
                 >
-                  <img src={rowData.url} alt={rowData.url} />
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
+                  ) : (
+                    <a href={rowData.url} target="_blank">
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}
                 </div>
               ) : (
                 <>
-                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.type === 'PHR' ? (
+                    <pre className={classes.phrMsg}>{getAutomatedMessage(rowData)}</pre>
+                  ) : (
+                    <span>{getAutomatedMessage(rowData)}</span>
+                  )}
                   {rowData.messageDate && (
                     <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
                   )}
@@ -879,6 +968,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             isCallAccepted={isCallAccepted}
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
+            JDPhotoUrl={''}
           />
         )}
         {(!showVideo || showVideoChat) && (

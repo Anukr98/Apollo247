@@ -60,8 +60,8 @@ target 'ApolloPatient' do
   pod 'TwilioChatClient', '2.2.0'
   pod 'JWTDecode', '~> 2.4'
   pod 'OpenTok', '~> 2.16.3'
+  pod 'Stylish'
  
-  pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   pod 'rn-fetch-blob', :path => '../node_modules/rn-fetch-blob'
   pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
   pod 'react-native-pdf', :path => '../node_modules/react-native-pdf'
@@ -73,12 +73,13 @@ target 'ApolloPatient' do
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
   pod 'ReactNativePermissions', :path => '../node_modules/react-native-permissions'
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
-  pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
-  pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
-  pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
-  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+  pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
+  pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
+  pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
+  pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
 
 end

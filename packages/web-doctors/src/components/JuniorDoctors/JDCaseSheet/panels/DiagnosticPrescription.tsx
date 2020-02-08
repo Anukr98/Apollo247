@@ -48,25 +48,6 @@ function renderInputComponent(inputProps: any) {
   );
 }
 
-function renderSuggestion(
-  suggestion: any | null,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion!.itemName, query);
-  const parts = parse(suggestion!.itemName, matches);
-
-  return (
-    <div>
-      {parts.map((part) => (
-        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
-          {part.text}
-        </span>
-      ))}
-      <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
-    </div>
-  );
-}
-
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     suggestionsContainer: {
@@ -193,7 +174,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     chipItem: {
       padding: 12,
-      paddingRight: 12,
+      paddingRight: 40,
       fontSize: 14,
       fontWeight: 600,
       color: '#02475b',
@@ -204,6 +185,7 @@ const useStyles = makeStyles((theme: Theme) =>
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
       height: 'auto',
       wordBreak: 'break-word',
+      position: 'relative',
       '& span': {
         padding: 0,
         whiteSpace: 'normal',
@@ -215,6 +197,9 @@ const useStyles = makeStyles((theme: Theme) =>
         margin: 0,
         marginLeft: 12,
         maxWidth: 20,
+        position: 'absolute',
+        top: 11,
+        right: 10,
       },
     },
     addNewDiagnostic: {
@@ -352,6 +337,34 @@ export const DiagnosticPrescription: React.FC = () => {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
+
+  function renderSuggestion(
+    suggestion: any | null,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(suggestion!.itemName, query);
+    const parts = parse(suggestion!.itemName, matches);
+
+    return (
+      otherDiagnostic.length > 2 && (
+        <div>
+          {parts.map((part) => (
+            <span
+              key={part.text}
+              style={{
+                fontWeight: part.highlight ? 500 : 400,
+                whiteSpace: 'pre',
+              }}
+              title={suggestion!.itemName} //added by Vishal
+            >
+              {part.text}
+            </span>
+          ))}
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+        </div>
+      )
+    );
+  }
 
   const handleChange = (itemname: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
@@ -495,7 +508,7 @@ export const DiagnosticPrescription: React.FC = () => {
           )}
         />
       )}
-      {lengthOfSuggestions === 0 && otherDiagnostic.trim().length > 2 && (
+      { otherDiagnostic.trim().length > 2 && (
         <div className={classes.addNewDiagnostic}>
           <AphButton
             onClick={() => {

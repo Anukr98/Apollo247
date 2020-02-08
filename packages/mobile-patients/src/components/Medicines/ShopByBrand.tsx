@@ -4,7 +4,10 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Brand, getAllBrands } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -93,6 +96,7 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
         }
       })
       .catch((err) => {
+        CommonBugFender('ShopByBrand_getAllBrands', err);
         console.log(err, 'errr');
       })
       .finally(() => {

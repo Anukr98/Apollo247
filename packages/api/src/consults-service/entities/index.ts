@@ -174,6 +174,9 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   parentId: string;
 
+  @Column({ default: '0' })
+  paymentOrderId: string;
+
   @Column({ default: 0 })
   rescheduleCount: number;
 
@@ -229,6 +232,9 @@ export class Appointment extends BaseEntity {
     (appointmentDocuments) => appointmentDocuments.appointment
   )
   appointmentDocuments: AppointmentDocuments[];
+
+  @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
+  auditHistory: AuditHistory[];
 }
 //Appointment ends
 
@@ -494,6 +500,10 @@ export enum MEDICINE_UNIT {
   TABLET = 'TABLET',
 }
 
+export enum AUDIT_STATUS {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+}
 export type CaseSheetMedicinePrescription = {
   externalId: string;
   id: string;
@@ -510,7 +520,9 @@ export type CaseSheetMedicinePrescription = {
   medicineUnit: MEDICINE_UNIT;
 };
 export type CaseSheetDiagnosis = { name: string };
-export type CaseSheetDiagnosisPrescription = { itemname: string };
+export type CaseSheetDiagnosisPrescription = {
+  itemname: string;
+};
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
   details: string;
@@ -579,6 +591,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   patientId: string;
 
+  @Column({ default: () => 0, type: 'float' })
+  preperationTimeInSeconds: number;
+
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
 
@@ -600,6 +615,9 @@ export class CaseSheet extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: AUDIT_STATUS.PENDING })
+  auditStatus: AUDIT_STATUS;
 }
 //case sheet ends
 
@@ -786,6 +804,47 @@ export class AppointmentNoShow extends BaseEntity {
 }
 //Appointment no show details end
 
+//documents summary starts
+@Entity()
+export class PhrDocumentsSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  documentDate: Date;
+
+  @Column({ default: 0 })
+  appointmentDoc: number;
+
+  @Column({ default: 0 })
+  medicineOrderDoc: number;
+
+  @Column({ default: 0 })
+  standAloneDoc: number;
+
+  @Column({ default: 0 })
+  newUser: number;
+
+  @Column({ default: 0 })
+  oldUser: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
 //SD dashboard summary starts
 @Entity()
 export class FeedbackDashboardSummary extends BaseEntity {
@@ -830,6 +889,107 @@ export class FeedbackDashboardSummary extends BaseEntity {
   }
 }
 
+//JD dashboard summary starts
+@Entity()
+export class JdDashboardSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  doctorId: string;
+
+  @Column()
+  doctorName: string;
+
+  @Column({ default: '' })
+  adminIds: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  waitTimePerChat: number;
+
+  //Case sheet fill time per chat, Avg time
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  caseSheetFillTime: number;
+
+  @Column({ default: 0 })
+  totalCompletedChats: number;
+
+  //Total time taken per chat, Avg  time
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  timePerChat: number;
+
+  @Column({ default: 0 })
+  audioChats: number;
+
+  @Column({ default: 0 })
+  videoChats: number;
+
+  @Column({ default: 0 })
+  chatConsults: number;
+
+  @Column({ default: 0 })
+  jdsUtilization: number;
+
+  @Column({ default: 0 })
+  loggedInHours: number;
+
+  @Column({ default: 0 })
+  awayHours: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  totalConsultationTime: number;
+
+  @Column({ default: 0 })
+  casesCompleted: number;
+
+  //No. of cases started less than 15 mins before scheduled appointment
+  @Column({ default: 0 })
+  cases15Less: number;
+
+  @Column({ default: 0 })
+  casesOngoing: number;
+
+  //% of on-time consultations (start)
+  @Column({ default: 0 })
+  startOnTimeConsults: number;
+
+  //% of consults within 15 mins
+  @Column({ default: 0 })
+  completeWithin15: number;
+
+  //% of consults more than 15 mins
+  @Column({ default: 0 })
+  completeMore15: number;
+
+  //Avg. time for consult
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  avgTimePerConsult: number;
+
+  //total allocated chats
+  @Column({ default: 0 })
+  totalAllocatedChats: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//JD dashboard summary end
+
 //SD dashboard summary starts
 @Entity()
 export class SdDashboardSummary extends BaseEntity {
@@ -842,14 +1002,23 @@ export class SdDashboardSummary extends BaseEntity {
   @Column()
   doctorName: string;
 
+  @Column({ default: '' })
+  adminIds: string;
+
   @Column()
   appointmentDateTime: Date;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  casesheetPrepTime: number;
 
   @Column({ default: 0 })
   totalConsultations: number;
 
   @Column({ default: 0 })
   totalVirtualConsultations: number;
+
+  @Column({ default: 0 })
+  totalPhysicalConsultations: number;
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   onTimeConsultations: number;
@@ -872,6 +1041,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   rescheduledByDoctor: number;
 
+  @Column({ default: 0 })
+  rescheduledByPatient: number;
+
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   timePerConsult: number;
 
@@ -879,10 +1051,19 @@ export class SdDashboardSummary extends BaseEntity {
   consultSlots: number;
 
   @Column({ default: 0 })
+  totalFollowUp: number;
+
+  @Column({ default: 0 })
   paidFollowUp: number;
 
   @Column({ default: 0 })
   unPaidFollowUp: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  loggedInHours: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  awayHours: number;
 
   @Column()
   createdDate: Date;
@@ -901,6 +1082,142 @@ export class SdDashboardSummary extends BaseEntity {
   }
 }
 //SD dashboard summary end
+
+//Doctor fee summary starts
+@Entity()
+export class DoctorFeeSummary extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  appointmentDateTime: Date;
+
+  @Column()
+  doctorId: string;
+
+  @Column({ default: '' })
+  doctorName: string;
+
+  @Column({ default: '' })
+  specialtiyId: string;
+
+  @Column({ default: '' })
+  specialityName: string;
+
+  @Column({ default: '' })
+  areaName: string;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  amountPaid: number;
+
+  @Column()
+  appointmentsCount: number;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Doctor fee summary end
+
+// PlannedDoctors starts
+
+@Entity()
+export class PlannedDoctors extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  availabilityDate: Date;
+
+  @Column()
+  speciality: string;
+
+  @Column()
+  specialityId: string;
+
+  @Column()
+  morning: Number;
+
+  @Column()
+  afternoon: Number;
+
+  @Column()
+  evening: Number;
+
+  @Column()
+  night: Number;
+
+  @Column({ default: 10 })
+  plannedMorning: Number;
+
+  @Column({ default: 10 })
+  plannedAfternoon: Number;
+
+  @Column({ default: 10 })
+  plannedEvening: Number;
+
+  @Column({ default: 10 })
+  plannedNight: Number;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+// PlannedDoctors ends
+//auditor history table start
+@Entity()
+export class AuditHistory extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  doctorType: string;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
+  appointment: Appointment;
+
+  @Column()
+  auditorId: string;
+
+  @Column({ nullable: true, type: 'json' })
+  comment: string;
+
+  @Column({ nullable: true })
+  rating: number;
+
+  @Column({ nullable: true })
+  qaRating: number;
+}
+
+//auditor history table end
 
 ///////////////////////////////////////////////////////////
 // RxPdf

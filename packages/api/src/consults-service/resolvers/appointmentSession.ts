@@ -19,6 +19,13 @@ import { JuniorAppointmentsSessionRepository } from 'consults-service/repositori
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
+import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import { sendMail } from 'notifications-service/resolvers/email';
+import { EmailMessage } from 'types/notificationMessageTypes';
+import { ApiConstants } from 'ApiConstants';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+import { addMilliseconds, format } from 'date-fns';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -277,6 +284,9 @@ const createAppointmentSession: Resolver<
       appointmentId: createAppointmentSessionInput.appointmentId,
       notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
     };
+    if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+      pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+    }
     const notificationResult = await sendNotification(
       pushNotificationInput,
       patientsDb,
@@ -331,6 +341,9 @@ const createAppointmentSession: Resolver<
     appointmentId: createAppointmentSessionInput.appointmentId,
     notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
   };
+  if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
+    pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+  }
   const notificationResult = await sendNotification(
     pushNotificationInput,
     patientsDb,
@@ -416,9 +429,67 @@ const endAppointmentSession: Resolver<
       rescheduleStatus: TRANSFER_STATUS.INITIATED,
       appointment: apptDetails,
     };
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorDetails = await doctorRepo.findById(apptDetails.doctorId);
+    let docName = '';
+    let hospitalName = '';
+    if (doctorDetails) {
+      docName = doctorDetails.displayName;
+    }
+    if (apptDetails.hospitalId != '' && apptDetails.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(apptDetails.hospitalId);
+      if (facilityDets) {
+        const streetLine2 = facilityDets.streetLine2 == null ? '' : facilityDets.streetLine2 + ',';
+        hospitalName =
+          facilityDets.name +
+          ', ' +
+          facilityDets.streetLine1 +
+          ', ' +
+          streetLine2 +
+          ' ' +
+          facilityDets.city +
+          ', ' +
+          facilityDets.state;
+      }
+    }
+    const istDateTime = addMilliseconds(apptDetails.appointmentDateTime, 19800000);
+
+    const apptDate = format(istDateTime, 'dd/MM/yyyy');
+    const apptTime = format(istDateTime, 'hh:mm aa');
+    const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
+
+    const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${apptDetails.patientName}<br>Appointment Date Time: ${apptDate}, ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
+    const ccEmailIds =
+      process.env.NODE_ENV == 'dev' ||
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
+        ? ApiConstants.PATIENT_APPT_CC_EMAILID
+        : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
     if (endAppointmentSessionInput.noShowBy == REQUEST_ROLES.DOCTOR) {
       rescheduleAppointmentAttrs.rescheduleInitiatedBy = TRANSFER_INITIATED_TYPE.DOCTOR;
       rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
+      const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
+      const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
+      console.log(adminDetails, 'adminDetails');
+      if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
+
+      const listOfEmails: string[] = [];
+
+      adminDetails.length > 0 &&
+        adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
+      console.log('listOfEmails', listOfEmails);
+      listOfEmails.forEach(async (adminemail) => {
+        const adminEmailContent: EmailMessage = {
+          ccEmail: ccEmailIds.toString(),
+          toEmail: adminemail.toString(),
+          subject: mailSubject.toString(),
+          fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
+          fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
+          messageContent: mailContent,
+        };
+        sendMail(adminEmailContent);
+      });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
     await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);

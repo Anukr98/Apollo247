@@ -19,7 +19,10 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -131,6 +134,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         setIsLoading(false);
       })
       .catch((err) => {
+        CommonBugFender('SearchByBrand_getProductsByCategoryApi', e);
         console.log(err, 'errr');
       })
       .finally(() => {
@@ -173,6 +177,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       prescriptionRequired: is_prescription_required == '1',
       quantity: 1,
       thumbnail,
+      isInStock: true,
     });
   };
 
@@ -737,6 +742,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           setsearchSate('success');
         })
         .catch((e) => {
+          CommonBugFender('SearchByBrand_onSearchMedicine', e);
           // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');

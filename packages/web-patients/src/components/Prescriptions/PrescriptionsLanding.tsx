@@ -6,24 +6,12 @@ import { Prescriptions } from 'components/Prescriptions/Prescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    welcome: {
-      paddingTop: 88,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 101,
-      },
+    root: {
+      padding: '100%',
     },
     booksLink: {
       color: theme.palette.primary.main,
       textDecoration: 'underline',
-    },
-    headerSticky: {
-      position: 'fixed',
-      width: '100%',
-      zIndex: 99,
-      top: 0,
-      [theme.breakpoints.down('xs')]: {
-        display: 'none',
-      },
     },
     container: {
       maxWidth: 1064,
@@ -71,12 +59,8 @@ export const PrescriptionsLanding: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
   return (
-    <div className={classes.welcome}>
-      <div className={classes.headerSticky}>
-        <div className={classes.container}>
-          <Header />
-        </div>
-      </div>
+    <div className={classes.root}>
+      <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <Tabs

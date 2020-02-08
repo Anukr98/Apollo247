@@ -11,9 +11,15 @@ type DayTimes = {
 
 @EntityRepository(ConsultHours)
 export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
+  getMaxConsultationMinutes() {
+    return this.createQueryBuilder('consult_hours')
+      .select('max("consultDuration") as maxConsultDuration')
+      .getRawOne();
+  }
   getConsultHours(doctor: string, weekDay: string) {
     return this.find({
       where: [{ doctor, weekDay, consultMode: 'ONLINE' }, { doctor, weekDay, consultMode: 'BOTH' }],
+      order: { startTime: 'ASC' },
     });
   }
 
@@ -23,6 +29,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
         { doctor, weekDay, facility, consultMode: 'BOTH' },
         { doctor, weekDay, facility, consultMode: 'PHYSICAL' },
       ],
+      order: { startTime: 'ASC' },
     });
   }
 
@@ -32,6 +39,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
         { doctor, weekDay, consultMode: 'PHYSICAL' },
         { doctor, weekDay, consultMode: 'BOTH' },
       ],
+      order: { startTime: 'ASC' },
     });
   }
 

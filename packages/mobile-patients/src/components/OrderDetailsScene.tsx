@@ -25,6 +25,7 @@ import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetailsVariables,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -65,6 +66,7 @@ import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
 } from '../graphql/types/GetMedicineOrdersList';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -200,7 +202,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const getFormattedTime = (time: string) => {
-    return moment(time).format('hh:mm a');
+    return moment(time).format('hh:mm A');
   };
 
   const reOrder = () => {
@@ -274,6 +276,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
+        CommonBugFender('OrderDetailsScene_reOrder', e);
         setLoading!(false);
         showErrorPopup('Something went wrong.');
       });
@@ -283,29 +286,66 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const isDelivered = orderStatusList.find(
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
     );
+    const isCancelled = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+    );
+    const isDeliveryOrder = orderDetails.patientAddressId;
+    const tatInfo = orderDetails.orderTat;
+    const expectedDeliveryDiff = moment.duration(
+      moment(tatInfo! /*'D-MMM-YYYY HH:mm a'*/).diff(moment())
+      // moment('27-JAN-2020 10:51 AM').diff(moment())
+    );
+    const hours = expectedDeliveryDiff.asHours();
+    // const formattedDateDeliveryTime =
+    //   hours > 0 ? `${hours.toFixed()}hr(s)` : `${expectedDeliveryDiff.asMinutes()}minute(s)`;
+
+    const showExpectedDelivery =
+      isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
+    const statusList = orderStatusList
+      .filter(
+        (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+      )
+      .concat(
+        showExpectedDelivery
+          ? [
+              {
+                statusDate: tatInfo,
+                id: 'idToBeDelivered',
+                orderStatus: 'TO_BE_DELIVERED' as any,
+              } as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
+            ]
+          : []
+      );
 
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {orderStatusList
-            .filter(
-              (item, idx, array) =>
-                array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
-            )
-            .map((order, index, array) => {
-              return (
-                <OrderProgressCard
-                  style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-                  key={index}
-                  description={''}
-                  status={getOrderStatusText(order!.orderStatus!)}
-                  date={getFormattedDate(order!.statusDate)}
-                  time={getFormattedTime(order!.statusDate)}
-                  isStatusDone={true}
-                  nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
-                />
-              );
-            })}
+          {statusList.map((order, index, array) => {
+            return (
+              <OrderProgressCard
+                style={index < array.length - 1 ? { marginBottom: 8 } : {}}
+                key={index}
+                description={
+                  order!.id == 'idToBeDelivered'
+                    ? `To Be Delivered Within — ${expectedDeliveryDiff
+                        .humanize()
+                        .replace(' hours', 'hrs')}`
+                    : ''
+                }
+                status={getOrderStatusText(order!.orderStatus!)}
+                date={getFormattedDate(order!.statusDate)}
+                time={getFormattedTime(order!.statusDate)}
+                isStatusDone={order!.id != 'idToBeDelivered'}
+                nextItemStatus={
+                  index == array.length - 1
+                    ? 'NOT_EXIST'
+                    : order!.id != 'idToBeDelivered' && showExpectedDelivery
+                    ? 'NOT_DONE'
+                    : 'DONE'
+                }
+              />
+            );
+          })}
         </View>
         {isDelivered ? (
           <Button
@@ -521,28 +561,34 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             .then(() => {
               setInitialSate();
             })
-            .catch(() => {
+            .catch((e) => {
+              CommonBugFender('OrderDetailsScene_refetch', e);
               setInitialSate();
             });
           refetchOrders &&
-            refetchOrders().then((data) => {
-              const _orders = (
-                g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || []
-              ).filter(
-                (item) =>
-                  !(
-                    (item!.medicineOrdersStatus || []).length == 1 &&
-                    (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
-                  )
-              );
-              console.log(_orders, 'hdub');
-              setOrders(_orders);
-            });
+            refetchOrders()
+              .then((data) => {
+                const _orders = (
+                  g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || []
+                ).filter(
+                  (item) =>
+                    !(
+                      (item!.medicineOrdersStatus || []).length == 1 &&
+                      (item!.medicineOrdersStatus || []).find((item) => !item!.hideStatus)
+                    )
+                );
+                console.log(_orders, 'hdub');
+                setOrders(_orders);
+              })
+              .catch((e) => {
+                CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
+              });
         } else {
           Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
         }
       })
       .catch((e) => {
+        CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder_SAVE_ORDER_CANCEL_STATUS', e);
         setShowSpinner(false);
         handleGraphQlError(e);
       });
@@ -582,7 +628,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
     );
-    if (cannotCancelOrder || !orderStatusList.length) return null;
+    const isCancelOrderAllowed = orderStatusList.find(
+      (item) =>
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_CONFIRMED
+    );
+    if (!isCancelOrderAllowed || cannotCancelOrder || !orderStatusList.length) return null;
     return (
       <MaterialMenu
         options={['Cancel Order'].map((item) => ({
@@ -616,7 +667,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={`ORDER #${orderAutoId}`}
             container={{ borderBottomWidth: 0 }}
-            rightComponent={renderMoreMenu()}
+            // rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}

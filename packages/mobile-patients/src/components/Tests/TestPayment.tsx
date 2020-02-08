@@ -4,7 +4,10 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getParameterByName, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -18,10 +21,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-  WebView,
   Linking,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { WebView } from 'react-native-webview';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -185,7 +188,9 @@ export const TestPayment: React.FC<TestPaymentProps> = (props) => {
     const ontapNumber = (number: string) => {
       Linking.openURL(`tel:${number}`)
         .then(() => {})
-        .catch(() => {});
+        .catch((e) => {
+          CommonBugFender('TestPayment_Linking_Call', e);
+        });
     };
 
     return (

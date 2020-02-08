@@ -33,7 +33,10 @@ import {
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
@@ -169,43 +172,50 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
   };
 
   const fetchSlots = (selectedDate: Date = date) => {
-    getNetStatus().then((status) => {
-      if (status) {
-        props.setshowSpinner && props.setshowSpinner(true);
-        const availableDate = Moment(selectedDate).format('YYYY-MM-DD');
-        client
-          .query<getDoctorAvailableSlots>({
-            query: GET_AVAILABLE_SLOTS,
-            fetchPolicy: 'no-cache',
-            variables: {
-              DoctorAvailabilityInput: {
-                availableDate: availableDate,
-                doctorId: props.doctor ? props.doctor.id : '',
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          props.setshowSpinner && props.setshowSpinner(true);
+          const availableDate = Moment(selectedDate).format('YYYY-MM-DD');
+          client
+            .query<getDoctorAvailableSlots>({
+              query: GET_AVAILABLE_SLOTS,
+              fetchPolicy: 'no-cache',
+              variables: {
+                DoctorAvailabilityInput: {
+                  availableDate: availableDate,
+                  doctorId: props.doctor ? props.doctor.id : '',
+                },
               },
-            },
-          })
-          .then(({ data }) => {
-            try {
-              console.log(data, 'availableSlots', availableDate);
-              if (
-                data &&
-                data.getDoctorAvailableSlots &&
-                data.getDoctorAvailableSlots.availableSlots
-              ) {
-                props.setshowSpinner && props.setshowSpinner(false);
-                setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, selectedDate);
+            })
+            .then(({ data }) => {
+              try {
+                console.log(data, 'availableSlots', availableDate);
+                if (
+                  data &&
+                  data.getDoctorAvailableSlots &&
+                  data.getDoctorAvailableSlots.availableSlots
+                ) {
+                  props.setshowSpinner && props.setshowSpinner(false);
+                  setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, selectedDate);
+                }
+              } catch (e) {
+                CommonBugFender('ConsultDoctorOnline_fetchSlots_try', e);
               }
-            } catch {}
-          })
-          .catch((e: string) => {
-            props.setshowSpinner && props.setshowSpinner(false);
-            console.log('Error occured', e);
-          });
-      } else {
-        props.setshowSpinner && props.setshowSpinner(false);
-        props.setshowOfflinePopup(true);
-      }
-    });
+            })
+            .catch((e) => {
+              CommonBugFender('ConsultDoctorOnline_fetchSlots', e);
+              props.setshowSpinner && props.setshowSpinner(false);
+              console.log('Error occured', e);
+            });
+        } else {
+          props.setshowSpinner && props.setshowSpinner(false);
+          props.setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultDoctorOnline_getNetStatus', e);
+      });
   };
 
   const todayDate = new Date().toISOString().slice(0, 10);
@@ -255,9 +265,12 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
             props.setDate(date2);
             fetchSlots(date2);
           }
-        } catch {}
+        } catch (e) {
+          CommonBugFender('ConsultDoctorOnline_checkAvailabilitySlot_try', e);
+        }
       })
       .catch((e: any) => {
+        CommonBugFender('ConsultDoctorOnline_checkAvailabilitySlot', e);
         props.setshowSpinner && props.setshowSpinner(false);
         console.log('error', e);
       });

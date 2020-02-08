@@ -105,18 +105,16 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelReason
   );
 
-  //cancel medmantra appointment
-  if (appointment.apolloAppointmentId) {
-    appointmentRepo.cancelMedMantraAppointment(appointment, cancelAppointmentInput.cancelReason);
-  }
-
   //remove from consult queue
   const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
   const existingQueueItem = await cqRepo.findByAppointmentId(appointment.id);
   if (existingQueueItem !== undefined && existingQueueItem != null)
     await cqRepo.update(existingQueueItem.id, { isActive: false });
 
-  if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.DOCTOR) {
+  if (
+    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.DOCTOR ||
+    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.JUNIOR
+  ) {
     const pushNotificationInput = {
       appointmentId: appointment.id,
       notificationType: NotificationType.DOCTOR_CANCEL_APPOINTMENT,
@@ -129,6 +127,7 @@ const cancelAppointment: Resolver<
       appointmentId: appointment.id,
       notificationType: NotificationType.PATIENT_CANCEL_APPOINTMENT,
     };
+    console.log('sending notification for cancel', appointment.id);
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
@@ -137,33 +136,34 @@ const cancelAppointment: Resolver<
   const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
 
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
-  const apptTime = format(istDateTime, 'hh:mm');
+  const apptTime = format(istDateTime, 'hh:mm aa');
   const patientName = appointment.patientName;
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   let docName = '';
   let hospitalName = '';
   if (doctorDetails) {
-    docName = doctorDetails.firstName + '' + doctorDetails.lastName;
+    docName = doctorDetails.displayName;
   }
 
   if (appointment.hospitalId != '' && appointment.hospitalId != null) {
     const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
     const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
     if (facilityDets) {
+      const streetLine2 = facilityDets.streetLine2 == null ? '' : facilityDets.streetLine2 + ',';
       hospitalName =
         facilityDets.name +
-        ' ' +
+        ', ' +
         facilityDets.streetLine1 +
-        ' ' +
-        facilityDets.streetLine2 +
+        ', ' +
+        streetLine2 +
         ' ' +
         facilityDets.city +
-        ' ' +
+        ', ' +
         facilityDets.state;
     }
   }
-  const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${patientName}<br>Appointment Date Time: ${apptDate}  ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
+  const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${patientName}<br>Appointment Date Time: ${apptDate}, ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
@@ -179,6 +179,7 @@ const cancelAppointment: Resolver<
     fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
     messageContent: mailContent,
   };
+  console.log('sending mail for cancel', appointment.id);
   if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
     sendMail(emailContent);
   }

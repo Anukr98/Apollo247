@@ -8,6 +8,7 @@ import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 export interface ShoppingCartItem {
   id: string;
@@ -18,6 +19,7 @@ export interface ShoppingCartItem {
   prescriptionRequired: boolean;
   thumbnail: string | null;
   specialPrice?: number;
+  isInStock: boolean;
 }
 
 export interface PhysicalPrescription {
@@ -38,6 +40,8 @@ export interface EPrescription {
   medicines: string;
   doctorName: string;
   prismPrescriptionFileId: string;
+  message?: string;
+  healthRecord?: boolean;
 }
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
@@ -46,6 +50,7 @@ export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
   addCartItem: ((item: ShoppingCartItem) => void) | null;
+  addMultipleCartItems: ((items: ShoppingCartItem[]) => void) | null;
   removeCartItem: ((itemId: ShoppingCartItem['id']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
@@ -62,6 +67,7 @@ export interface ShoppingCartContextProps {
 
   ePrescriptions: EPrescription[];
   addEPrescription: ((item: EPrescription) => void) | null;
+  addMultipleEPrescriptions: ((items: EPrescription[]) => void) | null;
   setEPrescriptions: ((items: EPrescription[]) => void) | null;
   removeEPrescription: ((id: EPrescription['id']) => void) | null;
 
@@ -100,6 +106,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   cartItems: [],
   setCartItems: null,
   addCartItem: null,
+  addMultipleCartItems: null,
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
@@ -111,6 +118,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   ePrescriptions: [],
   addEPrescription: null,
+  addMultipleEPrescriptions: null,
   setEPrescriptions: null,
   removeEPrescription: null,
 
@@ -201,6 +209,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setEPrescriptions(newItems);
   };
 
+  const addMultipleEPrescriptions: ShoppingCartContextProps['addMultipleEPrescriptions'] = (
+    itemsToAdd
+  ) => {
+    const existingFilteredEPres = ePrescriptions.filter(
+      (item) => !itemsToAdd.find((val) => val.id == item.id)
+    );
+    // console.log('existingFilteredEPres\n', { existingFilteredEPres });
+    const updatedEPres = [...existingFilteredEPres, ...itemsToAdd];
+    // console.log('updatedEPres\n', { updatedEPres });
+    setEPrescriptions(updatedEPres);
+  };
+
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
     _setCartItems(cartItems);
     AsyncStorage.setItem(AsyncStorageKeys.cartItems, JSON.stringify(cartItems)).catch(() => {
@@ -213,6 +233,20 @@ export const ShoppingCartProvider: React.FC = (props) => {
       return;
     }
     const newCartItems = [itemToAdd, ...cartItems];
+    setCartItems(newCartItems);
+  };
+
+  const addMultipleCartItems: ShoppingCartContextProps['addMultipleCartItems'] = (itemsToAdd) => {
+    // If tried to add same items (by id) which already exists in the cart, it will update with new values like quantity.
+    const existingFilteredCartItems = cartItems.filter(
+      (item) => !itemsToAdd.find((val) => val.id == item.id)
+    );
+    // console.log('existingFilteredCartItems\n', { existingFilteredCartItems });
+    const newCartItems = [
+      ...existingFilteredCartItems,
+      ...itemsToAdd.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i),
+    ];
+    // console.log('newCartItems\n', { newCartItems });
     setCartItems(newCartItems);
   };
 
@@ -329,6 +363,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
       } catch (error) {
+        CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
         showGenericAlert('Failed to get cart items from local storage.');
       }
     };
@@ -371,6 +406,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         cartItems,
         setCartItems,
         addCartItem,
+        addMultipleCartItems,
         removeCartItem,
         updateCartItem,
         cartTotal,
@@ -382,6 +418,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         ePrescriptions,
         addEPrescription,
+        addMultipleEPrescriptions,
         removeEPrescription,
         setEPrescriptions,
 

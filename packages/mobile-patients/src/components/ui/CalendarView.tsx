@@ -29,6 +29,7 @@ export interface CalendarViewProps {
   onCalendarTypeChanged?: (type: CALENDAR_TYPE) => void;
   minDate?: Date;
   showWeekView?: boolean;
+  maxDate?: Date;
   styles?: StyleProp<ViewStyle>;
 }
 
@@ -154,6 +155,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         }}
         date={calendarDate}
         minDate={props.minDate}
+        maxDate={props.maxDate}
         onTapDate={(selectedDate: Date) => {
           console.log(selectedDate, 'onTapDate');
           const isDiabled = props.minDate
@@ -250,6 +252,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
           }}
           current={calendarDate}
           minDate={props.minDate}
+          maxDate={props.maxDate}
           dayComponent={(day) => renderMonthCalendarDayComponent(day)}
           markedDates={{
             [props.date.toISOString().slice(0, 10)]: {

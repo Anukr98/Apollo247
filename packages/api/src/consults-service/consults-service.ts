@@ -54,6 +54,10 @@ import {
   chooseDoctorResolvers,
 } from 'consults-service/resolvers/chooseDoctor';
 import {
+  chatTranscriptsTypeDefs,
+  chatTranscriptsResolvers,
+} from 'consults-service/resolvers/chatTranscripts';
+import {
   cancelAppointmentTypeDefs,
   cancelAppointmentResolvers,
 } from 'consults-service/resolvers/cancelAppointment';
@@ -82,6 +86,10 @@ import {
   appointmentsSummaryResolvers,
 } from 'consults-service/resolvers/appointmentsSummary';
 import {
+  availableDoctorsTypeDefs,
+  availableDoctorsResolvers,
+} from 'consults-service/resolvers/availableDoctors';
+import {
   getAppointmentOverviewTypeDefs,
   getAppointmentOverviewResolvers,
 } from 'consults-service/resolvers/appointmentOverview';
@@ -93,6 +101,10 @@ import {
   sdDashboardSummaryTypeDefs,
   sdDashboardSummaryResolvers,
 } from 'consults-service/resolvers/sdDashboardSummary';
+import {
+  jdDashboardSummaryTypeDefs,
+  jdDashboardSummaryResolvers,
+} from 'consults-service/resolvers/jdDashboardSummary';
 import {
   appointmentNotificationTypeDefs,
   appointmentNotificationResolvers,
@@ -186,6 +198,10 @@ import { winstonLogger } from 'customWinstonLogger';
         resolvers: chooseDoctorResolvers,
       },
       {
+        typeDefs: chatTranscriptsTypeDefs,
+        resolvers: chatTranscriptsResolvers,
+      },
+      {
         typeDefs: cancelAppointmentTypeDefs,
         resolvers: cancelAppointmentResolvers,
       },
@@ -210,6 +226,10 @@ import { winstonLogger } from 'customWinstonLogger';
         resolvers: appointmentsSummaryResolvers,
       },
       {
+        typeDefs: availableDoctorsTypeDefs,
+        resolvers: availableDoctorsResolvers,
+      },
+      {
         typeDefs: doctorCallNotificationTypeDefs,
         resolvers: doctorCallNotificationResolvers,
       },
@@ -220,6 +240,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: sdDashboardSummaryTypeDefs,
         resolvers: sdDashboardSummaryResolvers,
+      },
+      {
+        typeDefs: jdDashboardSummaryTypeDefs,
+        resolvers: jdDashboardSummaryResolvers,
       },
       {
         typeDefs: appointmentNotificationTypeDefs,
