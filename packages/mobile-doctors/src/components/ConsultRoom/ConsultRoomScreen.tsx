@@ -86,7 +86,7 @@ import {
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { messageCodes, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -129,9 +129,9 @@ export interface ConsultRoomScreenProps
     AppId: string;
     Appintmentdatetime: string; //Date;
     AppoinementData: any;
-
     // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
+  activeTabIndex?: number;
   // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
 }
 
@@ -151,7 +151,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const channel = props.navigation.getParam('AppId');
   const doctorId = props.navigation.getParam('DoctorId');
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [activeTabIndex, setActiveTabIndex] = useState(props.activeTabIndex || 0);
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
   const [messages, setMessages] = useState([]);
@@ -3274,7 +3274,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca', selectedType);
             console.log('CAMERA_AND_GALLERY', response);
-            response.map((item: any) => {
+            response.forEach((item: any) => {
               if (
                 item.fileType == 'jpg' ||
                 item.fileType == 'jpeg' ||
@@ -3299,7 +3299,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       id: doctorId,
                       message: messageCodes.imageconsult,
                       fileType: 'image',
-                      url: data!.data!.uploadChatDocument.filePath || '',
+                      url: g(data, 'data', 'uploadChatDocument', 'filePath') || '',
                       messageDate: new Date(),
                     };
                     pubnub.publish(
@@ -3455,7 +3455,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           loading={(val) => setShowLoading(val)}
           onDone={(reschduleObject) => {
             console.log(reschduleObject, 'reschduleObject');
-
             pubnub.publish(
               {
                 message: {

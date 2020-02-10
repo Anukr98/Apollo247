@@ -55,6 +55,7 @@ import {
   GET_CASESHEET,
   GET_DOCTOR_FAVOURITE_TEST_LIST,
   MODIFY_CASESHEET,
+  CREATE_CASESHEET_FOR_SRD,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
@@ -529,8 +530,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     //     console.log('Error occured while create session', e);
     //   });
   }, []);
+  const cerateCaseSheetSRDAPI = () => {
+    setLoading && setLoading(true);
+    client
+      .mutate({
+        mutation: CREATE_CASESHEET_FOR_SRD,
+        variables: {
+          appointmentId: AppId,
+        },
+      })
+      .then((data) => {
+        getCaseSheetAPI();
+      })
+      .catch(() => {
+        setLoading && setLoading(false);
+        showAphAlert &&
+          showAphAlert({
+            title: 'Alert!',
+            description: 'Error occured while creating Case Sheet. Please try again',
+          });
+      });
+  };
 
-  useEffect(() => {
+  const getCaseSheetAPI = () => {
     setLoading && setLoading(true);
     client
       .query<GetCaseSheet>({
@@ -571,7 +593,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             .filter((i) => i.value !== '')
         );
         setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
-        setJuniorDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || null);
+        setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
         setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
         setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
         setDiagnosticPrescription(
@@ -618,9 +640,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
+        const message = e.message ? e.message.split(':')[1].trim() : '';
+        if (message === 'NO_CASESHEET_EXIST') {
+          cerateCaseSheetSRDAPI();
+        }
+        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
       });
+  };
+
+  useEffect(() => {
+    getCaseSheetAPI();
   }, []);
 
   const startDate = moment(new Date()).format('YYYY-MM-DD');
