@@ -90,7 +90,7 @@ import { messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
-
+let missedCallTimer: any;
 const styles = StyleSheet.create({
   mainview: {
     backgroundColor: '#ffffff',
@@ -260,6 +260,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     joinTimerNoShow && clearInterval(joinTimerNoShow);
   };
 
+  const startMissedCallTimer = (timer: number, callback?: () => void) => {
+    stopMissedCallTimer();
+    missedCallTimer = setInterval(() => {
+      timer = timer - 1;
+      console.log('timer missedCall', timer);
+      if (timer === 0) {
+        stopMissedCallTimer();
+        callback && callback();
+      }
+    }, 1000);
+  };
+
+  const stopMissedCallTimer = () => {
+    console.log('stop missed Call', missedCallTimer);
+    missedCallTimer && clearInterval(missedCallTimer);
+  };
   const [missedCallCounter, setMissedCallCounter] = useState<number>(0);
 
   const stopAllCalls = () => {
@@ -344,6 +360,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endAppointmentApiCall = (status: STATUS) => {
+    stopNoShow();
+    stopMissedCallTimer();
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
         mutation: END_APPOINTMENT_SESSION,
@@ -545,6 +563,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           if (message.message.message === messageCodes.acceptedCallMsg) {
             startTimer(0);
             stopNoShow();
+            stopMissedCallTimer();
+            setMissedCallCounter(0);
             setCallAccepted(true);
           } else if (message.message.message === messageCodes.endCallMsg) {
             setIsCall(false);
@@ -2057,6 +2077,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setIsAudioCall(false);
               setHideStatusBar(false);
               stopTimer();
+              stopMissedCallTimer();
               setChatReceived(false);
               setConvertVideo(false);
               setShowVideo(true);
@@ -2284,6 +2305,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           onPress={() => {
             setIsCall(false);
             setChatReceived(false);
+            stopMissedCallTimer();
             setTextInputStyles({
               width: width,
               height: 66,
@@ -2518,6 +2540,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               stopTimer();
               setHideStatusBar(false);
               setChatReceived(false);
+              stopMissedCallTimer();
               setTextInputStyles({
                 width: width,
                 height: 66,
@@ -2650,7 +2673,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 },
                 (status, response) => {
                   if (response) {
-                    startNoShow(45, () => {
+                    startMissedCallTimer(45, () => {
                       stopAllCalls();
                       if (missedCallCounter < 2) {
                         setMissedCallCounter(missedCallCounter + 1);
