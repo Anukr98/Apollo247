@@ -564,6 +564,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (message.message.isTyping) {
           if (message.message.message === acceptedCallMsg) {
             startTimer(0);
+            stopNoShow();
             setCallAccepted(true);
           } else if (message.message.message === endCallMsg) {
             setIsCall(false);
