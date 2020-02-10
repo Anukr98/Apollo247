@@ -86,6 +86,7 @@ import {
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -323,7 +324,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
     const stoptext = {
       id: doctorId,
-      message: `${isAudioCall ? 'Audio' : 'Video'} call ended`,
+      message: `${isAudioCall ? 'Audio' : 'Video'} ${strings.consult_room.call_ended}`,
       duration: callTimerStarted,
       isTyping: true,
       messageDate: new Date(),
@@ -343,17 +344,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const callAbandonmentCall = () => {
     showAphAlert &&
       showAphAlert({
-        title: `Hi,`,
-        description:
-          'We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.',
+        title: `${strings.common.hi},`,
+        description: strings.consult_room.patient_is_not_acitve_descr,
         CTAs: [
           {
-            text: 'Continue',
+            text: strings.consult_room.continue,
             onPress: () => hideAphAlert!(),
             type: 'white-button',
           },
           {
-            text: 'Reschedule',
+            text: strings.consult_room.reschedule,
             onPress: () => {
               endAppointmentApiCall(STATUS.CALL_ABANDON);
               hideAphAlert!();
@@ -405,7 +405,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while End casesheet', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
   const { doctorDetails } = useAuth();
@@ -877,7 +877,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                             marginTop: 2,
                           }}
                         >
-                          You missed a voice call
+                          {strings.consult_room.you_missed_voice_call}
                         </Text>
                       ) : (
                         <Text
@@ -891,7 +891,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                             marginTop: 2,
                           }}
                         >
-                          You missed a video call
+                          {strings.consult_room.you_missed_video_call}
                         </Text>
                       )}
                     </View>
@@ -957,7 +957,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                           ...theme.fonts.IBMPlexSansMedium(10),
                         }}
                       >
-                        Duration - {rowData.duration}
+                        {strings.consult_room.duration} - {rowData.duration}
                       </Text>
                     </View>
                   </View>
@@ -1076,7 +1076,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
-                  Duration - {rowData.duration}
+                  {strings.consult_room.duration} - {rowData.duration}
                 </Text>
                 <Text
                   style={{
@@ -1809,9 +1809,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 lineHeight: 16,
               }}
             >
-              {`Your appointment with ${PatientInfoAll.firstName} is scheduled to start at ${moment(
-                Appintmentdatetime
-              ).format('hh.mm A')}`}
+              {`${strings.consult_room.your_appnt_with} ${PatientInfoAll.firstName} ${
+                strings.consult_room.is_scheduled_to_start
+              } ${moment(Appintmentdatetime).format('hh.mm A')}`}
             </Text>
           </View>
         )}
@@ -1858,7 +1858,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   ...theme.fonts.IBMPlexSansSemiBold(10),
                 }}
               >
-                Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                {strings.consult_room.time_left}{' '}
+                {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
                 {seconds.toString().length < 2 ? '0' + seconds : seconds}
               </Text>
             </View>
@@ -1945,7 +1946,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             letterSpacing: 0.46,
           }}
         >
-          {callAccepted ? callTimerStarted : 'RINGING'}
+          {callAccepted ? callTimerStarted : strings.consult_room.ringing}
         </Text>
         <View
           style={{
@@ -2078,7 +2079,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 {
                   message: {
                     isTyping: true,
-                    message: 'Audio call ended',
+                    message: strings.consult_room.audio_call_ended,
                     duration: callTimerStarted,
                     id: doctorId,
                     messageDate: new Date(),
@@ -2197,7 +2198,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       ...theme.fonts.IBMPlexSansSemiBold(10),
                     }}
                   >
-                    Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
+                    {strings.consult_room.time_left}{' '}
+                    {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
                     {seconds.toString().length < 2 ? '0' + seconds : seconds}
                   </Text>
                 </View>
@@ -2233,7 +2235,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 ? `${callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes} : ${
                     callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds
                   }`
-                : 'CALLING'}
+                : strings.consult_room.calling}
             </Text>
             {PipView && renderOnCallPipButtons()}
             {!PipView && renderChatNotificationIcon()}
@@ -2316,7 +2318,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               {
                 message: {
                   isTyping: true,
-                  message: 'Video call ended',
+                  message: strings.consult_room.video_call_ended,
                   duration: callTimerStarted,
                   id: doctorId,
                   messageDate: new Date(),
@@ -2550,7 +2552,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 {
                   message: {
                     isTyping: true,
-                    message: 'Video call ended',
+                    message: strings.consult_room.video_call_ended,
                     duration: callTimerStarted,
                     id: doctorId,
                   },
@@ -2634,13 +2636,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               ...theme.fonts.IBMPlexSansSemiBold(20),
             }}
           >
-            How do you want to talk to the patient?
+            {strings.consult_room.how_do_you_talk}
           </Text>
           <TouchableOpacity
             onPress={() => {
               if (!startConsult) {
                 console.log('consult not started');
-                Alert.alert('Apollo', 'Please start the consultation');
+                Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
                 return;
               }
 
@@ -2707,7 +2709,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     ...theme.fonts.IBMPlexSansBold(13),
                   }}
                 >
-                  AUDIO CALL
+                  {strings.buttons.audio_call}
                 </Text>
               </View>
             </View>
@@ -2716,7 +2718,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             onPress={() => {
               if (!startConsult) {
                 console.log('consult not started');
-                Alert.alert('Apollo', 'Please start the consultation');
+                Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
                 return;
               }
               if (isAudioCall) {
@@ -2781,7 +2783,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     ...theme.fonts.IBMPlexSansBold(13),
                   }}
                 >
-                  VIDEO CALL
+                  {strings.buttons.video_call}
                 </Text>
               </View>
             </View>
@@ -2835,7 +2837,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 marginTop: 13,
               }}
             >
-              Tap to return to call
+              {strings.consult_room.tap_to_return_call}
             </Text>
           </View>
         </TouchableOpacity>
@@ -2955,7 +2957,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   console.log('ChatSend', textMessage);
 
                   if (textMessage.length == 0) {
-                    Alert.alert('Apollo', 'Please write something to send message.');
+                    Alert.alert(strings.common.apollo, strings.consult_room.Please_write_something);
                     return;
                   }
 
@@ -2994,7 +2996,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           ]}
         >
           <MaterialTabs
-            items={['Case Sheet', 'Chat']}
+            items={[strings.consult_room.case_sheet, strings.consult_room.chat]}
             selectedIndex={activeTabIndex}
             onChange={(index) => setActiveTabIndex(index)}
             barColor="#ffffff"
@@ -3104,9 +3106,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     const diffInHours = diff.asHours();
 
     if (diff.hours() > 0 && diff.hours() < 12)
-      return `Time to consult ${moment(new Date(0, 0, 0, diff.hours(), diff.minutes())).format(
-        'hh: mm'
-      )}`;
+      return `${strings.consult_room.time_to_consult} {' '} ${moment(
+        new Date(0, 0, 0, diff.hours(), diff.minutes())
+      ).format('hh: mm')}`;
     return '';
   };
 
@@ -3128,12 +3130,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        middleText="CONSULT ROOM"
+        middleText={strings.consult_room.consult_room}
         timerText={
           consultStarted
-            ? `Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-                seconds.toString().length < 2 ? '0' + seconds : seconds
-              }`
+            ? `${strings.consult_room.time_left}{' '} ${
+                minutes.toString().length < 2 ? '0' + minutes : minutes
+              } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
             : getTimerText()
         }
         timerremaintext={!consultStarted ? PatientConsultTime : undefined}
@@ -3218,7 +3220,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }}
             options={[
               {
-                optionText: 'Reschedule Consult',
+                optionText: strings.consult_room.reschedule_consult,
                 onPress: () => {
                   setDropdownShow(false);
                   setDisplayReSchedulePopUp(true);
@@ -3236,18 +3238,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const uploadPrescriptionPopup = () => {
     return (
       <UploadPrescriprionPopup
-        heading="Attach File(s)"
-        instructionHeading="Instructions For Uploading Files"
-        instructions={[
-          'Take clear Picture of your entire file.',
-          'Doctor details & date of the test should be clearly visible.',
-          'Only JPG / PNG type files up to 2 mb are allowed',
-        ]}
+        heading={strings.consult_room.attach_files}
+        instructionHeading={strings.consult_room.instruction_for_upload}
+        instructions={[strings.consult_room.instruction_list]}
         isVisible={isDropdownVisible}
-        disabledOption={'NONE'}
+        disabledOption={strings.consult_room.none}
         optionTexts={{
-          camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE FROM\nGALLERY',
+          camera: strings.consult_room.take_a_photo,
+          gallery: strings.consult_room.choose_from_gallery,
         }}
         hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
