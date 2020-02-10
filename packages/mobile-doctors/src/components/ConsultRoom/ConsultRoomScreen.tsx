@@ -281,6 +281,65 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const [missedCallCounter, setMissedCallCounter] = useState<number>(0);
+
+  const stopAllCalls = () => {
+    console.log('isA', isAudioCall, '\nisVe', isCall);
+    setIsAudioCall(false);
+    setHideStatusBar(false);
+    setChatReceived(false);
+    setConvertVideo(false);
+    setShowVideo(true);
+    setIsCall(false);
+    setTextInputStyles({
+      width: width,
+      height: 66,
+      backgroundColor: 'white',
+      top: 5,
+      bottom: -10,
+    });
+    setLinestyles({
+      marginLeft: 20,
+      marginRight: 64,
+      marginTop: -10,
+      height: 2,
+      backgroundColor: '#00b38e',
+    });
+
+    const text = {
+      id: doctorId,
+      message: endCallMsg,
+      isTyping: true,
+      messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status: any, response: any) => {}
+    );
+    const stoptext = {
+      id: doctorId,
+      message: `${isAudioCall ? 'Audio' : 'Video'} call ended`,
+      duration: callTimerStarted,
+      isTyping: true,
+      messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: stoptext,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status: any, response: any) => {}
+    );
+  };
+
   const callAbandonmentCall = () => {
     showAphAlert &&
       showAphAlert({
@@ -575,7 +634,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             console.log('occupancyPatient', occupancyPatient);
             if (occupancyPatient.length > 0) {
               console.log('vsndfiburdcna;ldfhionjioshbvkn', joinTimerNoShow);
-
+              stopNoShow();
               joinTimerNoShow && clearInterval(joinTimerNoShow);
               abondmentStarted = false;
               patientJoined = true;
@@ -588,7 +647,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               );
               if (!abondmentStarted && patientJoined) {
                 abondmentStarted = true;
-                startNoShow(60, () => {
+                startNoShow(200, () => {
                   callAbandonmentCall();
                 });
               }
@@ -2605,14 +2664,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 },
                 (status, response) => {
                   if (response) {
-                    if (missedCallCounter < 3) {
-                      startNoShow(45, () => {
-                        // stopCall()
+                    startNoShow(45, () => {
+                      stopAllCalls();
+                      if (missedCallCounter < 2) {
                         setMissedCallCounter(missedCallCounter + 1);
-                      });
-                    } else {
-                      callAbandonmentCall();
-                    }
+                      } else {
+                        callAbandonmentCall();
+                      }
+                    });
                   }
                 }
               );
@@ -2677,7 +2736,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   channel: channel,
                   storeInHistory: true,
                 },
-                (status, response) => {}
+                (status, response) => {
+                  if (response) {
+                    startNoShow(45, () => {
+                      stopAllCalls();
+                      if (missedCallCounter < 2) {
+                        setMissedCallCounter(missedCallCounter + 1);
+                      } else {
+                        callAbandonmentCall();
+                      }
+                    });
+                  }
+                }
               );
             }}
           >
