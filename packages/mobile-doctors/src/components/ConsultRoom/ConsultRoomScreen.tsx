@@ -70,6 +70,7 @@ import {
   Linking,
   WebView,
 } from 'react-native';
+import { Image as ImageNative } from 'react-native-elements';
 import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
@@ -82,10 +83,10 @@ import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/upload
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import {
   EndAppointmentSession,
-  EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -119,27 +120,6 @@ let diffInHours: number;
 let callAbandonmentTimer: any;
 let callAbandonmentStoppedTimer: number = 200;
 
-const videoCallMsg = '^^callme`video^^';
-const audioCallMsg = '^^callme`audio^^';
-const acceptedCallMsg = '^^callme`accept^^';
-const startConsultMsg = '^^#startconsult';
-const stopConsultMsg = '^^#stopconsult';
-const typingMsg = '^^#typing';
-const endCallMsg = '^^callme`stop^^';
-const covertVideoMsg = '^^convert`video^^';
-const covertAudioMsg = '^^convert`audio^^';
-const rescheduleconsult = '^^#rescheduleconsult';
-const followupconsult = '^^#followupconsult';
-const consultPatientStartedMsg = '^^#PatientConsultStarted';
-const firstMessage = '^^#firstMessage';
-const secondMessage = '^^#secondMessage';
-const languageQue = '^^#languageQue';
-const jdThankyou = '^^#jdThankyou';
-const imageconsult = '^^#DocumentUpload';
-const stopConsultJr = '^^#stopconsultJr';
-const startConsultjr = '^^#startconsultJr';
-const callAbandonment = '^^#callAbandonment';
-const appointmentComplete = '^^#appointmentComplete';
 export interface ConsultRoomScreenProps
   extends NavigationScreenProps<{
     DoctorId: string;
@@ -307,7 +287,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
     const text = {
       id: doctorId,
-      message: endCallMsg,
+      message: messageCodes.endCallMsg,
       isTyping: true,
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
@@ -382,7 +362,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('_data', _data);
         const text = {
           id: doctorId,
-          message: callAbandonment,
+          message: messageCodes.callAbandonment,
           isTyping: true,
           messageDate: new Date(),
           sentBy: REQUEST_ROLES.DOCTOR,
@@ -414,7 +394,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const consultTime =
     (doctorDetails &&
       (
-        doctorDetails!.consultHours!.filter(
+        doctorDetails.consultHours!.filter(
           (item) =>
             item!.weekDay ===
             moment(Appintmentdatetime)
@@ -562,21 +542,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       message: (message) => {
         console.log('addListener', message.message.message);
         if (message.message.isTyping) {
-          if (message.message.message === acceptedCallMsg) {
+          if (message.message.message === messageCodes.acceptedCallMsg) {
             startTimer(0);
             stopNoShow();
             setCallAccepted(true);
-          } else if (message.message.message === endCallMsg) {
+          } else if (message.message.message === messageCodes.endCallMsg) {
             setIsCall(false);
             setIsAudioCall(false);
             setHideStatusBar(false);
             stopTimer();
             setCallAccepted(false);
             setReturnToCall(false);
-          } else if (message.message.message === covertVideoMsg) {
+          } else if (message.message.message === messageCodes.covertVideoMsg) {
             setConvertVideo(true);
-          } else if (message.message.message === covertAudioMsg) {
-            console.log('covertVideoMsg', covertAudioMsg);
+          } else if (message.message.message === messageCodes.covertAudioMsg) {
+            console.log('covertVideoMsg', messageCodes.covertAudioMsg);
             setConvertVideo(false);
           } else if (
             message.message.message === 'Audio call ended' ||
@@ -591,25 +571,25 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             setCallAccepted(false);
             setReturnToCall(false);
           }
-        } else if (message.message.message === consultPatientStartedMsg) {
+        } else if (message.message.message === messageCodes.consultPatientStartedMsg) {
           console.log('consultPatientStartedMsg');
           addMessages(message);
-        } else if (message.message.message === startConsultjr) {
+        } else if (message.message.message === messageCodes.startConsultjr) {
           console.log('startConsultjr');
           addMessages(message);
-        } else if (message.message.message === imageconsult) {
+        } else if (message.message.message === messageCodes.imageconsult) {
           console.log('imageconsult');
           addMessages(message);
-        } else if (message.message.message === firstMessage) {
+        } else if (message.message.message === messageCodes.firstMessage) {
           console.log('firstMessage');
           addMessages(message);
-        } else if (message.message.message === secondMessage) {
+        } else if (message.message.message === messageCodes.secondMessage) {
           console.log('secondMessage');
           addMessages(message);
-        } else if (message.message.message === languageQue) {
+        } else if (message.message.message === messageCodes.languageQue) {
           console.log('languageQue');
           addMessages(message);
-        } else if (message.message.message === jdThankyou) {
+        } else if (message.message.message === messageCodes.jdThankyou) {
           console.log('jdThankyou');
           addMessages(message);
         } else {
@@ -654,7 +634,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               }
             }
             const PatientConsultStartedMessage = insertText.filter((obj: any) => {
-              return obj.message === consultPatientStartedMsg;
+              return obj.message === messageCodes.consultPatientStartedMsg;
             });
             console.log(PatientConsultStartedMessage, 'PatientConsultStartedMessage');
             console.log(startConsult, 'startconsult');
@@ -767,26 +747,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       id: string;
       message: string;
       duration: string;
+      automatedText?: string;
     },
     index: number
   ) => {
     if (
-      rowData.message === typingMsg ||
-      rowData.message === endCallMsg ||
-      rowData.message === audioCallMsg ||
-      rowData.message === videoCallMsg ||
-      rowData.message === acceptedCallMsg ||
-      rowData.message === rescheduleconsult ||
-      rowData.message === followupconsult ||
-      rowData.message === appointmentComplete ||
-      rowData.message === stopConsultMsg ||
-      rowData.message === firstMessage ||
-      rowData.message === secondMessage ||
-      rowData.message === covertVideoMsg ||
-      rowData.message === covertAudioMsg ||
-      rowData.message === callAbandonment ||
-      rowData.message === startConsultMsg ||
-      rowData.message === jdThankyou
+      rowData.message === messageCodes.typingMsg ||
+      rowData.message === messageCodes.endCallMsg ||
+      rowData.message === messageCodes.audioCallMsg ||
+      rowData.message === messageCodes.videoCallMsg ||
+      rowData.message === messageCodes.acceptedCallMsg ||
+      rowData.message === messageCodes.rescheduleconsult ||
+      rowData.message === messageCodes.followupconsult ||
+      rowData.message === messageCodes.appointmentComplete ||
+      rowData.message === messageCodes.stopConsultMsg ||
+      rowData.message === messageCodes.firstMessage ||
+      rowData.message === messageCodes.secondMessage ||
+      rowData.message === messageCodes.covertVideoMsg ||
+      rowData.message === messageCodes.covertAudioMsg ||
+      rowData.message === messageCodes.callAbandonment ||
+      rowData.message === messageCodes.startConsultMsg ||
+      rowData.message === messageCodes.jdThankyou
     ) {
       return null;
     }
@@ -989,7 +970,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
               <View
                 style={{
-                  backgroundColor: rowData.message === imageconsult ? '' : 'white',
+                  backgroundColor: rowData.message === messageCodes.imageconsult ? '' : 'white',
                   marginLeft: 38,
                   borderRadius: 10,
                   // width: 244,
@@ -1004,11 +985,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     textAlign: 'left',
                   }}
                 >
-                  {rowData.message === languageQue ||
-                  rowData.message === startConsultjr ||
-                  rowData.message === stopConsultJr
+                  {rowData.message === messageCodes.languageQue ||
+                  rowData.message === messageCodes.startConsultjr ||
+                  rowData.message === messageCodes.stopConsultJr
                     ? rowData.automatedText
-                    : rowData.message === imageconsult
+                    : rowData.message === messageCodes.imageconsult
                     ? renderImageView(rowData)
                     : rowData.message}
                 </Text>
@@ -1022,7 +1003,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
-                  {rowData.message === imageconsult ? '' : convertChatTime(rowData)}
+                  {rowData.message === messageCodes.imageconsult ? '' : convertChatTime(rowData)}
                 </Text>
               </View>
             </View>
@@ -1099,11 +1080,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 flexDirection: 'row',
               }}
             >
-              {rowData.message === consultPatientStartedMsg ? (
+              {rowData.message === messageCodes.consultPatientStartedMsg ? (
                 <>{patientAutomatedMessage(rowData, index)}</>
-              ) : rowData.message === firstMessage || rowData.message === secondMessage ? (
+              ) : rowData.message === messageCodes.firstMessage ||
+                rowData.message === messageCodes.secondMessage ? (
                 <>{doctorAutomatedMessage(rowData, index)}</>
-              ) : rowData.message === imageconsult ? (
+              ) : rowData.message === messageCodes.imageconsult ? (
                 renderImageView(rowData)
               ) : (
                 <>{messageView(rowData, index)}</>
@@ -1305,7 +1287,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           </View>
         )}
         <View>
-          {rowData.message === imageconsult ? (
+          {rowData.message === messageCodes.imageconsult ? (
             <View>
               {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
                 <TouchableOpacity
@@ -1327,7 +1309,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       marginLeft: 38,
                     }}
                   >
-                    <Image
+                    <ImageNative
                       placeholderStyle={{
                         height: 180,
                         width: '100%',
@@ -1375,7 +1357,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       marginLeft: 38,
                     }}
                   >
-                    <Image
+                    <ImageNative
                       placeholderStyle={{
                         height: 180,
                         width: '100%',
@@ -1489,7 +1471,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 </>
               ) : null}
             </View>
-          ) : rowData.message === stopConsultJr ? (
+          ) : rowData.message === messageCodes.stopConsultJr ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -1662,7 +1644,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 flex: 1,
               }}
             >
-              <Image
+              <ImageNative
                 placeholderStyle={{
                   height: 180,
                   width: '100%',
@@ -1709,7 +1691,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 flex: 1,
               }}
             >
-              <Image
+              <ImageNative
                 placeholderStyle={{
                   height: 180,
                   width: '100%',
@@ -2021,7 +2003,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 {
                   message: {
                     isTyping: true,
-                    message: showVideo === true ? covertVideoMsg : covertAudioMsg,
+                    message:
+                      showVideo === true
+                        ? messageCodes.covertVideoMsg
+                        : messageCodes.covertAudioMsg,
                   },
                   channel: channel,
                   storeInHistory: false,
@@ -2658,7 +2643,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 {
                   message: {
                     isTyping: true,
-                    message: audioCallMsg, //'^^#audiocall',
+                    message: messageCodes.audioCallMsg, //'^^#audiocall',
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -2732,7 +2717,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 {
                   message: {
                     isTyping: true,
-                    message: videoCallMsg, //'^^#videocall',
+                    message: messageCodes.videoCallMsg, //'^^#videocall',
                   },
                   channel: channel,
                   storeInHistory: true,
@@ -3024,6 +3009,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               onStopConsult={onStopConsult}
               startConsult={startConsult}
               navigation={props.navigation}
+              messagePublish={(message: any) => {
+                pubnub.publish(
+                  {
+                    message: message,
+                    channel: channel,
+                    storeInHistory: true,
+                  },
+                  (status, response) => {}
+                );
+              }}
             />
           ) : (
             <View
@@ -3046,7 +3041,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: startConsultMsg,
+          message: messageCodes.startConsultMsg,
         },
         channel: channel,
         storeInHistory: true,
@@ -3279,7 +3274,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     setShowLoading(false);
                     const text = {
                       id: doctorId,
-                      message: imageconsult,
+                      message: messageCodes.imageconsult,
                       fileType: 'image',
                       url: data!.data!.uploadChatDocument.filePath || '',
                       messageDate: new Date(),
@@ -3442,7 +3437,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               {
                 message: {
                   id: doctorId,
-                  message: rescheduleconsult,
+                  message: messageCodes.rescheduleconsult,
                   transferInfo: reschduleObject,
                 },
                 channel: AppId,

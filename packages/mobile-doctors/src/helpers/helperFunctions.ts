@@ -124,6 +124,29 @@ export const formatInt = (value: string) => {
   return number || 0;
 };
 
+export const messageCodes = {
+  videoCallMsg: '^^callme`video^^',
+  audioCallMsg: '^^callme`audio^^',
+  acceptedCallMsg: '^^callme`accept^^',
+  startConsultMsg: '^^#startconsult',
+  stopConsultMsg: '^^#stopconsult',
+  typingMsg: '^^#typing',
+  endCallMsg: '^^callme`stop^^',
+  covertVideoMsg: '^^convert`video^^',
+  covertAudioMsg: '^^convert`audio^^',
+  rescheduleconsult: '^^#rescheduleconsult',
+  followupconsult: '^^#followupconsult',
+  consultPatientStartedMsg: '^^#PatientConsultStarted',
+  firstMessage: '^^#firstMessage',
+  secondMessage: '^^#secondMessage',
+  languageQue: '^^#languageQue',
+  jdThankyou: '^^#jdThankyou',
+  imageconsult: '^^#DocumentUpload',
+  stopConsultJr: '^^#stopconsultJr',
+  startConsultjr: '^^#startconsultJr',
+  callAbandonment: '^^#callAbandonment',
+  appointmentComplete: '^^#appointmentComplete',
+};
 export const formatFloating = (value: string) => {
   let number =
     value.indexOf('.') === value.length - 1 ||
