@@ -203,8 +203,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
               >
                 {renderLeftTimeLineView(
                   i.status,
-                  index == 0 ? false : true,
-                  index == array.length - 1 ? false : true,
+                  index !== 0,
+                  index !== array.length - 1,
                   showNext
                 )}
                 <CalendarCard
@@ -216,7 +216,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       i.caseSheet.length > 0 &&
                       i.caseSheet.findIndex(
                         (i) => i && i.doctorType === DoctorType.JUNIOR && i.status === 'COMPLETED'
-                      ) > 0
+                      ) > -1
                     ) {
                       props.navigation.push(AppRoutes.ConsultRoomScreen, {
                         DoctorId: doctorId,

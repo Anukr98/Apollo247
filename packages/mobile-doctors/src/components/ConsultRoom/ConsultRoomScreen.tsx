@@ -68,8 +68,8 @@ import {
   Platform,
   Image,
   Linking,
-  WebView,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { Image as ImageNative } from 'react-native-elements';
 import MaterialTabs from 'react-native-material-tabs';
 import { NavigationScreenProps } from 'react-navigation';
