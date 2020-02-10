@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { View, SafeAreaView, Text, ScrollView } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
+import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import moment from 'moment';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import {
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import { DoctorType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 export interface CaseSheetDetailsProps extends NavigationScreenProps {
   consultDetails: GetCaseSheet_getCaseSheet_pastAppointments;
@@ -28,6 +28,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const [showMP, setshowMP] = useState(false);
   const [showTP, setshowTP] = useState(false);
   const [showReferral, setshowReferral] = useState(false);
+  const [showHelpModel, setshowHelpModel] = useState(false);
 
   const consultDetails = props.navigation.getParam('consultDetails');
   const patientDetails = props.navigation.getParam('patientDetails');
@@ -46,7 +47,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
@@ -320,6 +321,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           {renderReferral()}
         </ScrollView>
       </SafeAreaView>
+      {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </View>
   );
 };

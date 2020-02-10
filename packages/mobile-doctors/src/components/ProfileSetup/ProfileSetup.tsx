@@ -15,6 +15,7 @@ import {
   saveDoctorDeviceToken,
   saveDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -32,7 +33,6 @@ import {
 import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
@@ -247,7 +247,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       rightIcons={[
         {
           icon: <RoundIcon />,
-          onPress: () => setmodelvisible(true), // props.navigation.push(AppRoutes.NeedHelpAppointment),
+          onPress: () => setmodelvisible(true),
         },
       ]}
     />

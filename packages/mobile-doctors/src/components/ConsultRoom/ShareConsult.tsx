@@ -1,31 +1,26 @@
-import { MedicineProduct, searchMedicineApi } from '@aph/mobile-doctors/src/components/ApiCall';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
   Cancel,
-  PatientPlaceHolderImage,
-  Up,
   PlaceHolderDoctor,
-  UnSelected,
   Selected,
+  UnSelected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { AxiosResponse } from 'axios';
 import React, { useState } from 'react';
 import {
-  Alert,
+  Dimensions,
   SafeAreaView,
   StyleSheet,
-  TextInput,
-  View,
-  TouchableOpacity,
   Text,
-  Dimensions,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -122,7 +117,6 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
         ]}
       ></Header>

@@ -1,18 +1,10 @@
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import {
-  BackArrow,
-  Down,
-  RoundChatIcon,
-  RoundIcon,
-  Up,
-  DotIcon,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
-import { StyleSheet, View, Text } from 'react-native';
-import { NavigationScreenProps, ScrollView, SafeAreaView } from 'react-navigation';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import React, { useRef } from 'react';
+import { BackArrow, DotIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useRef } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps, SafeAreaView, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   cardView: {
@@ -106,7 +98,6 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
         rightIcons={[
           {
             icon: <DotIcon />,
-            // onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
         ]}
       />
