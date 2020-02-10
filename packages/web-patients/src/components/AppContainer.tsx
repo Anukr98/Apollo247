@@ -64,7 +64,7 @@ const App: React.FC = () => {
   }, [signInError]);
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
-      <div className={classes.app}>
+      <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
         <Switch>
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
