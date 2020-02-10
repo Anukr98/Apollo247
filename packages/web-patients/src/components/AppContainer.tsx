@@ -106,6 +106,7 @@ const App: React.FC = () => {
             component={PrescriptionsLanding}
           />
           <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
+          <AuthRouted exact path={clientRoutes.appointmentSuccess()} component={Appointments} />
           <AuthRouted
             exact
             path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
