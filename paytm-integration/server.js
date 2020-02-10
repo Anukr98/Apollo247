@@ -253,12 +253,17 @@ app.get('/consulttransaction', (req, res) => {
 
 app.get('/consultpg-success', (req, res) => {
   const payloadToken = req.query.tk;
+  const reqSource = req.session.source;
   if (payloadToken) {
     res.statusCode = 200;
     res.send({
       status: 'success',
       orderId: payloadToken,
     });
+    if (reqSource === 'web') {
+      const redirectUrl = `${process.env.NAVIGATE_URL}/success`;
+      res.redirect(redirectUrl);
+    }
   } else {
     res.statusCode = 401;
     res.send({
@@ -278,7 +283,6 @@ app.get('/consultpg-error', (req, res) => {
 app.get('/consultpayment', (req, res) => {
   //res.send('consult payment');
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-
   // validate the order and token.
   axios({
     url: process.env.API_URL,

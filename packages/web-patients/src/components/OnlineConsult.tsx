@@ -12,8 +12,7 @@ import {
   GetDoctorAvailableSlotsVariables,
 } from 'graphql/types/GetDoctorAvailableSlots';
 import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
-import { Mutation } from 'react-apollo';
-import { BookAppointment, BookAppointmentVariables } from 'graphql/types/BookAppointment';
+import { useMutation } from 'react-apollo-hooks';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -380,6 +379,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       lateNightSlots.length === 0) ||
     (timeSelected === '' && slotAvailableNext === '');
 
+  const paymentMutation = useMutation(BOOK_APPOINTMENT);
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
@@ -505,57 +506,67 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         </div>
       ) : (
         <div className={classes.bottomActions}>
-          <Mutation<BookAppointment, BookAppointmentVariables>
-            mutation={BOOK_APPOINTMENT}
-            variables={{
-              bookAppointment: {
-                patientId: currentPatient ? currentPatient.id : '',
-                doctorId: doctorId,
-                appointmentDateTime:
-                  consultNow && !scheduleLater
-                    ? autoSlot
-                    : new Date(
-                        `${apiDateFormat} ${
-                          timeSelected !== ''
-                            ? timeSelected.padStart(5, '0')
-                            : slotAvailableNext.padStart(5, '0')
-                        }:00`
-                      ).toISOString(),
-                appointmentType: APPOINTMENT_TYPE.ONLINE,
-                hospitalId: hospitalId,
-              },
+          <AphButton
+            color="primary"
+            disabled={disableSubmit || mutationLoading || isDialogOpen}
+            onClick={() => {
+              setMutationLoading(true);
+              paymentMutation({
+                variables: {
+                  bookAppointment: {
+                    patientId: currentPatient ? currentPatient.id : '',
+                    doctorId: doctorId,
+                    appointmentDateTime:
+                      consultNow && !scheduleLater
+                        ? autoSlot
+                        : new Date(
+                            `${apiDateFormat} ${
+                              timeSelected !== ''
+                                ? timeSelected.padStart(5, '0')
+                                : slotAvailableNext.padStart(5, '0')
+                            }:00`
+                          ).toISOString(),
+                    appointmentType: APPOINTMENT_TYPE.ONLINE,
+                    hospitalId: hospitalId,
+                  },
+                },
+              })
+                .then((res: any) => {
+                  disableSubmit = false;
+                  if (
+                    res &&
+                    res.data &&
+                    res.data.bookAppointment &&
+                    res.data.bookAppointment.appointment
+                  ) {
+                    const pgUrl = `${
+                      process.env.CONSULT_PG_BASE_URL
+                    }/consultpayment?appointmentId=${
+                      res.data.bookAppointment.appointment.id
+                    }&patientId=${
+                      currentPatient ? currentPatient.id : ''
+                    }&price=${onlineConsultationFees}&source=web`;
+                    window.location.href = pgUrl;
+                    // setMutationLoading(false);
+                    // setIsDialogOpen(true);
+                  }
+                })
+                .catch((errorResponse) => {
+                  alert(errorResponse);
+                  disableSubmit = false;
+                  setMutationLoading(false);
+                });
             }}
-            onCompleted={() => {
-              disableSubmit = false;
-              setMutationLoading(false);
-              setIsDialogOpen(true);
-            }}
-            onError={(errorResponse) => {
-              alert(errorResponse);
-              disableSubmit = false;
-              setMutationLoading(false);
-            }}
+            className={
+              disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
+            }
           >
-            {(mutate) => (
-              <AphButton
-                color="primary"
-                disabled={disableSubmit || mutationLoading || isDialogOpen}
-                onClick={() => {
-                  setMutationLoading(true);
-                  mutate();
-                }}
-                className={
-                  disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
-                }
-              >
-                {mutationLoading ? (
-                  <CircularProgress size={22} color="secondary" />
-                ) : (
-                  `PAY Rs. ${onlineConsultationFees}`
-                )}
-              </AphButton>
+            {mutationLoading ? (
+              <CircularProgress size={22} color="secondary" />
+            ) : (
+              `PAY Rs. ${onlineConsultationFees}`
             )}
-          </Mutation>
+          </AphButton>
         </div>
       )}
       <AphDialog
