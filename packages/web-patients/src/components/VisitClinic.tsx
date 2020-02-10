@@ -16,11 +16,9 @@ import {
 } from 'graphql/types/GetDoctorPhysicalAvailableSlots';
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { Mutation } from 'react-apollo';
-import { BookAppointment, BookAppointmentVariables } from 'graphql/types/BookAppointment';
+import { useMutation } from 'react-apollo-hooks';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { clientRoutes } from 'helpers/clientRoutes';
 // import { Redirect } from 'react-router';
 import _forEach from 'lodash/forEach';
 import { getIstTimestamp } from 'helpers/dateHelpers';
@@ -186,7 +184,7 @@ interface VisitClinicProps {
 }
 
 export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [clinicSelected, setClinicSelected] = useState<string>('');
@@ -361,6 +359,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         } ${clinics[0].facility.streetLine3 ? `${clinics[0].facility.streetLine3}` : ''}`
       : '';
 
+  const paymentMutation = useMutation(BOOK_APPOINTMENT);
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
@@ -441,47 +440,54 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <Mutation<BookAppointment, BookAppointmentVariables>
-          mutation={BOOK_APPOINTMENT}
-          variables={{
-            bookAppointment: {
-              patientId: currentPatient ? currentPatient.id : '',
-              doctorId: doctorId,
-              appointmentDateTime: new Date(
-                `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
-              ).toISOString(),
-              appointmentType: APPOINTMENT_TYPE.PHYSICAL,
-              hospitalId: defaultClinicId,
-            },
+        <AphButton
+          color="primary"
+          disabled={disableSubmit || mutationLoading || isDialogOpen}
+          onClick={(e) => {
+            setMutationLoading(true);
+            paymentMutation({
+              variables: {
+                bookAppointment: {
+                  patientId: currentPatient ? currentPatient.id : '',
+                  doctorId: doctorId,
+                  appointmentDateTime: new Date(
+                    `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
+                  ).toISOString(),
+                  appointmentType: APPOINTMENT_TYPE.PHYSICAL,
+                  hospitalId: defaultClinicId,
+                },
+              },
+            })
+              .then((res: any) => {
+                if (
+                  res &&
+                  res.data &&
+                  res.data.bookAppointment &&
+                  res.data.bookAppointment.appointment
+                ) {
+                  const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
+                    res.data.bookAppointment.appointment.id
+                  }&patientId=${
+                    currentPatient ? currentPatient.id : ''
+                  }&price=${physicalConsultationFees}&source=web`;
+                  window.location.href = pgUrl;
+                  // setMutationLoading(false);
+                  // setIsDialogOpen(true);
+                }
+              })
+              .catch((errorResponse) => {
+                alert(errorResponse);
+                setMutationLoading(false);
+              });
           }}
-          onCompleted={() => {
-            setMutationLoading(false);
-            setIsDialogOpen(true);
-          }}
-          onError={(error) => {
-            alert(error);
-          }}
+          className={disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''}
         >
-          {(mutate) => (
-            <AphButton
-              color="primary"
-              disabled={disableSubmit || mutationLoading || isDialogOpen}
-              onClick={(e) => {
-                setMutationLoading(true);
-                mutate();
-              }}
-              className={
-                disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
-              }
-            >
-              {mutationLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                `PAY Rs. ${physicalConsultationFees}`
-              )}
-            </AphButton>
+          {mutationLoading ? (
+            <CircularProgress size={22} color="secondary" />
+          ) : (
+            `PAY Rs. ${physicalConsultationFees}`
           )}
-        </Mutation>
+        </AphButton>
       </div>
       <AphDialog
         open={isDialogOpen}
