@@ -27,6 +27,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       height: 60,
+      [theme.breakpoints.down('xs')]:{
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     cardIcon: {
       textAlign: 'center',
@@ -56,7 +59,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [
       {
-        breakpoint: 1024,
+        breakpoint: 992,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
@@ -65,11 +68,14 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
         },
       },
       {
-        breakpoint: 600,
+        breakpoint: 768,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 2,
           initialSlide: 2,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
       },
       {
@@ -77,6 +83,9 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
       },
     ],

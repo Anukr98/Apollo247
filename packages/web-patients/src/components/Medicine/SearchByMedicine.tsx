@@ -13,6 +13,9 @@ import axios from 'axios';
 import _lowerCase from 'lodash/lowerCase';
 import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
+import { AphButton } from '@aph/web-ui-components';
+import { NavigationBottom } from 'components/NavigationBottom';
+
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,6 +32,10 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
         paddingBottom: 20,
+        position: 'absolute',
+        top: 0,
+        width: '100%',
+        zIndex: 999,
       },
     },
     breadcrumbs: {
@@ -45,15 +52,12 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        zIndex: 2,
-        top: 0,
-        width: '100%',
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
         paddingLeft: 20,
         paddingRight: 20,
+        justifyContent: 'space-between',
       },
     },
     brandListingSection: {
@@ -66,8 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 328px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingRight: 20,
-        paddingTop: 14,
+        paddingTop: 20,
       },
     },
     backArrow: {
@@ -87,6 +90,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         verticalAlign: 'bottom',
       },
+      [theme.breakpoints.down('xs')]:{
+        marginRight: 10,
+      },
     },
     whiteArrow: {
       verticalAlign: 'middle',
@@ -104,6 +110,23 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 17,
       paddingBottom: 10,
+    },
+    filterBtn: {
+      boxShadow: 'none',
+      padding: 0,
+      minWidth: 'auto',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
+    scrollBar:{
+      height: 'calc(100vh - 195px) !important',
+      [theme.breakpoints.down(992)]:{
+        height: 'calc(100vh - 245px) !important',
+      },
+      [theme.breakpoints.down('xs')]:{
+        height: 'calc(100vh - 208px) !important',
+      },
     },
   };
 });
@@ -293,7 +316,10 @@ export const SearchByMedicine: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            {getTitle()}({medicineListFiltered && medicineListFiltered.length})
+            <div>{getTitle()}({medicineListFiltered && medicineListFiltered.length})</div>
+            <AphButton className={classes.filterBtn}>
+                <img src={require('images/ic_filter.svg')} alt="" />
+              </AphButton>
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter
@@ -303,7 +329,7 @@ export const SearchByMedicine: React.FC = (props) => {
               setFilterData={setFilterData}
             />
             <div className={classes.searchSection}>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+              <Scrollbars className={classes.scrollBar} autoHide={true}>
                 <div className={classes.customScroll}>
                   <MedicinesCartContext.Consumer>
                     {() =>
@@ -323,6 +349,7 @@ export const SearchByMedicine: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };
