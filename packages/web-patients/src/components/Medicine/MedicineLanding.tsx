@@ -18,6 +18,7 @@ import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -42,6 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
         padding: 0,
+        boxShadow: 'none',
       },
     },
     medicineTopGroup: {
@@ -55,7 +57,6 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 284px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        marginBottom: 15,
       },
     },
     progressLoader: {
@@ -67,7 +68,8 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 284,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        padding: '0 20px 30px 20px',
+        padding: '20px 20px 0 20px',
+        backgroundColor: '#f7f8f5',
       },
     },
     userName: {
@@ -140,6 +142,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]:{
+        backgroundColor: '#fff',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     preServiceType: {
       backgroundColor: '#f7f8f5',
@@ -149,11 +155,15 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]:{
+        backgroundColor: '#fff',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     textVCenter: {
       alignItems: 'center',
       minHeight: 54,
-      paddingbottom: 10,
+      paddingBottom: 10,
     },
     serviceIcon: {
       marginRight: 10,
@@ -206,6 +216,10 @@ const useStyles = makeStyles((theme: Theme) => {
     allProductsList: {
       padding: '30px 40px',
       paddingBottom: 10,
+      [theme.breakpoints.down('xs')]:{
+        paddingTop: 25,
+        paddingRight: 0,
+      },
     },
     sliderSection: {
       paddingBottom: 22,
@@ -468,6 +482,7 @@ export const MedicineLanding: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <NavigationBottom />
     </div>
   );
 };
