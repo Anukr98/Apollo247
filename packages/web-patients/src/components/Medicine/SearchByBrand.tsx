@@ -23,10 +23,6 @@ const useStyles = makeStyles((theme: Theme) => {
     searchByBrandPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
-        paddingBottom: 20,
-      },
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -43,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
-        zIndex: 2,
+        zIndex: 999,
         top: 0,
         width: '100%',
         borderBottom: 'none',
