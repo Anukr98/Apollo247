@@ -26,7 +26,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AccountStarTeam } from '@aph/mobile-doctors/src/components/Account/AccountStarTem';
-import { string } from '@aph/mobile-doctors/src/strings/string';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -263,7 +263,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
-          Alert.alert('Error', errorMessage);
+          Alert.alert(strings.common.error, errorMessage);
         });
     } else {
       setIsLoading(true);
@@ -284,7 +284,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
               ...{ delegateNumber: phoneNumber },
             } as GetDoctorDetails_getDoctorDetails;
             setDoctorDetails && setDoctorDetails(newDoctorDetails);
-            Alert.alert('Successfully Updated Delegate Number');
+            Alert.alert(strings.alerts.successfully_updated_delegate_num);
             props.navigation.goBack();
           }
         })
@@ -294,7 +294,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
-          Alert.alert('Error', errorMessage);
+          Alert.alert(strings.common.error, errorMessage);
         });
     }
   };
@@ -309,7 +309,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   };
 
   const formatSpecialityAndExperience = (speciality: string, experience: string) =>
-    `${(speciality || '').toUpperCase()}     |   ${experience}YRS`;
+    `${(speciality || '').toUpperCase()}     |   ${experience} ${strings.common.yrs}`;
 
   const getFormattedLocation = () => {
     let location = '';
@@ -342,7 +342,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="My PROFILE"
+        headerText={strings.account.my_profile.toUpperCase()}
         rightIcons={[
           {
             icon: <RoundIcon />,
@@ -386,7 +386,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         </View>
         <View style={{ marginLeft: 14 }}>
           <Text>
-            <Text style={styles.descriptionview}>Call</Text>
+            <Text style={styles.descriptionview}>{strings.common.call}</Text>
             <Text
               style={{
                 color: '#fc9916',
@@ -395,9 +395,9 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
               }}
             >
               {' '}
-              1800 - 3455 - 3455{' '}
+              {strings.common.toll_free_num}{' '}
             </Text>
-            <Text style={styles.descriptionview}>to make any changes</Text>
+            <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
           </Text>
         </View>
       </View>
@@ -430,7 +430,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             marginBottom: 18,
           }}
         >
-          Enter the mobile number you’d like to assign access of your account to
+          {strings.account.enter_mobile_num_to_access_ac}
         </Text>
 
         <View
@@ -469,14 +469,14 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
       <View style={{ backgroundColor: '#f0f4f5' }}>
         <View style={styles.footerButtonsContainer}>
           <Button
-            title="CANCEL"
+            title={strings.buttons.cancel}
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
             onPress={() => props.navigation.pop()}
             style={[styles.buttonsaveStyle, { marginRight: 16 }]}
           />
           <Button
-            title="SAVE"
+            title={strings.buttons.save}
             style={styles.buttonendStyle}
             onPress={() => delegateNumberUpdate(phoneNumber)}
           />
@@ -489,7 +489,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
       <View>{showHeaderView()}</View>
       <KeyboardAwareScrollView bounces={false}>
         <ScrollView bounces={false}>
-          <SquareCardWithTitle title="Your Profile">
+          <SquareCardWithTitle title={strings.account.your_profile}>
             <View style={styles.cardView}>
               <View
                 style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}
@@ -517,7 +517,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
               ) : null}
               <View style={styles.columnContainer}>
                 <Text style={[styles.drname]} numberOfLines={1}>
-                  {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
+                  {`${strings.common.dr} ${profileData!.firstName} ${profileData!.lastName}`}
                 </Text>
                 <Text style={styles.drnametext}>
                   {formatSpecialityAndExperience(
@@ -527,19 +527,22 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 </Text>
                 <View style={styles.understatusline} />
               </View>
-              {profileRow('Education', profileData!.qualification!)}
-              {profileRow('Speciality', profileData!.specialty.name!)}
-              {profileRow('Services', profileData!.specialization || '')}
+              {profileRow(strings.account.education, profileData!.qualification!)}
+              {profileRow(strings.account.speciality, profileData!.specialty.name!)}
+              {profileRow(strings.account.services, profileData!.specialization || '')}
               {profileRow(
-                'Awards',
+                strings.account.awards,
                 (profileData!.awards || '')
                   .replace('&amp;', '&')
                   .replace(/<\/?[^>]+>/gi, '')
                   .trim()
               )}
-              {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
-              {profileRow('MCI Number', profileData!.registrationNumber)}
-              {profileRow('In-person Consult Location', getFormattedLocation())}
+              {profileRow(
+                strings.account.speaks,
+                (profileData!.languages || '').split(',').join(', ')
+              )}
+              {profileRow(strings.account.mci_num, profileData!.registrationNumber)}
+              {profileRow(strings.account.in_person_consult_loc, getFormattedLocation())}
             </View>
             {profileData!.doctorType == 'STAR_APOLLO' ? (
               <AccountStarTeam
@@ -558,7 +561,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                   // marginBottom: 18,
                 }}
               >
-                Secretary Login
+                {strings.account.secretay_login}
               </Text>
               {renderMobilePhoneView()}
               {renderHelpView()}

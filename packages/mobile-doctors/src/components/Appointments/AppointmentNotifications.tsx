@@ -3,6 +3,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, Alert } from 'react-native';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 export interface AppointmentNotificationsProps {}
 
@@ -16,7 +17,7 @@ export const AppointmentNotifications: React.FC<AppointmentNotificationsProps> =
             onPress: () => Alert.alert('click'),
           },
         ]}
-        middleText="NOTIFICATIONS"
+        middleText={strings.appointments.notifications_title}
       />
     </SafeAreaView>
   );

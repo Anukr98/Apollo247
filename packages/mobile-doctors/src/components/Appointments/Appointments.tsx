@@ -42,6 +42,7 @@ import { WeekView } from './WeekView';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -376,7 +377,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           <NoCalenderData />
           <Text
             style={styles.noAppointmentsText}
-          >{`No consults scheduled ${getCurrentDaytext}!`}</Text>
+          >{`${strings.appointments.no_consults_scheduled} ${getCurrentDaytext}!`}</Text>
         </View>
       </ScrollView>
     );
