@@ -910,12 +910,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       marginLeft: 40,
                     }}
                   >
-                    <ChatCallIcon
-                      style={{
-                        width: 20,
-                        height: 20,
-                      }}
-                    />
+                    <ChatCallIcon />
                     <View
                       style={{
                         marginLeft: 12,
@@ -1024,12 +1019,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 flexDirection: 'row',
               }}
             >
-              <ChatCallIcon
-                style={{
-                  width: 20,
-                  height: 20,
-                }}
-              />
+              <ChatCallIcon />
               <View>
                 <Text
                   style={{
@@ -1642,19 +1632,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             {chatReceived ? (
               <ChatWithNotification
                 style={{
-                  height: 88,
-                  width: 88,
                   left: -20,
                   top: -20,
                 }}
               />
             ) : (
-              <ChatIcon
-                style={{
-                  height: 48,
-                  width: 48,
-                }}
-              />
+              <ChatIcon />
             )}
           </TouchableOpacity>
         </View>
@@ -2056,19 +2039,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           {chatReceived ? (
             <ChatWithNotification
               style={{
-                height: 88,
-                width: 80,
                 left: -20,
                 top: -20,
               }}
             />
           ) : (
-            <ChatIcon
-              style={{
-                height: 48,
-                width: 48,
-              }}
-            />
+            <ChatIcon />
           )}
         </TouchableOpacity>
       </View>
@@ -2222,8 +2198,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           >
             <ClosePopup
               style={{
-                width: 24,
-                height: 24,
                 top: 16,
                 position: 'absolute',
                 right: 16,
@@ -2298,12 +2272,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   flexDirection: 'row',
                 }}
               >
-                <RoundCallIcon
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                />
+                <RoundCallIcon />
                 <Text
                   style={{
                     marginLeft: 8,
@@ -2372,12 +2341,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   flexDirection: 'row',
                 }}
               >
-                <RoundVideoIcon
-                  style={{
-                    width: 24,
-                    height: 24,
-                  }}
-                />
+                <RoundVideoIcon />
                 <Text
                   style={{
                     marginLeft: 8,
@@ -2569,8 +2533,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               >
                 <ChatSend
                   style={{
-                    width: 24,
-                    height: 24,
                     marginTop: 8,
                     marginLeft: 14,
                   }}
@@ -2939,8 +2901,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           <CrossPopup
             style={{
               marginRight: 1,
-              width: 28,
-              height: 28,
             }}
           />
         </TouchableOpacity>

@@ -2239,7 +2239,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               }}
             >
               <View style={{ flexDirection: 'row' }}>
-                <RoundCallIcon style={{ width: 24, height: 24 }} />
+                <RoundCallIcon />
                 <Text
                   style={{
                     marginLeft: 8,
@@ -2266,7 +2266,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               }}
             >
               <View style={{ flexDirection: 'row' }}>
-                <RoundVideoIcon style={{ width: 24, height: 24 }} />
+                <RoundVideoIcon />
                 <Text
                   style={{
                     marginLeft: 8,
