@@ -408,6 +408,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       AppRoutes.MultiSignup,
                       'There should be 1 profile with relation set as Me'
                     );
+                  } else if (referral !== '' && !isValidReferral) {
+                    Alert.alert('Apollo', 'Enter valid referral code');
                   } else {
                     setVerifyingPhoneNumber(true);
 
@@ -417,7 +419,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
                         referralCode: (profile.relation == Relation.ME && referral) || null,
                       };
-                      console.log('patientsDetails', patientsDetails);
+                      console.log('patientsDetails', { patientsDetails });
                       CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
                       mutate({
                         variables: {
@@ -495,6 +497,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
           <Gift style={{ marginRight: 20, marginTop: 12 }} />
           <TextInputComponent
+            maxLength={8}
             label={
               'Do You Have A Referral Code? (Optional)'
               // referredBy
