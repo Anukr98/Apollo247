@@ -307,6 +307,10 @@ export const CheckedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check.png')} />
 );
 
+export const WhiteTickIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_check_white.png')} />
+);
+
 export const ArrowLeft: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_left.png')} />
 );
