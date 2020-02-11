@@ -1,6 +1,9 @@
+import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
+import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
+import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import {
-  AddIcon,
+  AddAttachmentIcon,
   BackArrow,
   BackCameraIcon,
   Call,
@@ -9,44 +12,50 @@ import {
   ChatSend,
   ChatWithNotification,
   ClosePopup,
+  CrossPopup,
   DoctorImage,
+  DoctorPlaceholderImage,
   DotIcon,
   EndCallIcon,
   FrontCameraIcon,
   FullScreenIcon,
+  Mascot,
   MissedCallIcon,
   MuteIcon,
   PatientPlaceHolderImage,
   RoundCallIcon,
   RoundChatIcon,
   RoundVideoIcon,
-  SpeakerOn,
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
-  AddAttachmentIcon,
-  Mascot,
-  DoctorPlaceholderImage,
-  CrossPopup,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Image as ImageNative } from 'react-native-elements';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
   CREATEAPPOINTMENTSESSION,
-  UPLOAD_CHAT_FILE,
   END_APPOINTMENT_SESSION,
+  UPLOAD_CHAT_FILE,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
 import {
-  REQUEST_ROLES,
-  STATUS,
-  APPOINTMENT_STATE,
-} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
+import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
+import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import moment, { duration } from 'moment';
+import moment from 'moment';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import Pubnub, { HereNowResponse } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
@@ -55,8 +64,12 @@ import {
   Alert,
   Dimensions,
   FlatList,
+  Image,
   Keyboard,
+  KeyboardAvoidingView,
   KeyboardEvent,
+  Linking,
+  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -64,30 +77,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Linking,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
-import { Image as ImageNative } from 'react-native-elements';
 import MaterialTabs from 'react-native-material-tabs';
+import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
-import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
-import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
-import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
-import {
-  EndAppointmentSession,
-  EndAppointmentSessionVariables,
-} from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { messageCodes, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -107,6 +100,31 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     elevation: 10,
     backgroundColor: 'white',
+  },
+  imageStyle: {
+    width: 32,
+    height: 32,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+  },
+  automatedLeftText: {
+    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
+    paddingTop: 8,
+    paddingBottom: 4,
+    paddingHorizontal: 16,
+    textAlign: 'left',
+  },
+  automatedRightText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.WHITE),
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    textAlign: 'right',
+  },
+  automatedTextView: {
+    backgroundColor: '#0087ba',
+    marginLeft: 38,
+    borderRadius: 10,
   },
 });
 
@@ -557,32 +575,36 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           console.log(statusEvent.operation);
         }
       },
-      message: (message) => {
-        console.log('addListener', message.message.message);
-        if (message.message.isTyping) {
-          if (message.message.message === messageCodes.acceptedCallMsg) {
-            startTimer(0);
-            stopNoShow();
-            stopMissedCallTimer();
-            setMissedCallCounter(0);
-            setCallAccepted(true);
-          } else if (message.message.message === messageCodes.endCallMsg) {
-            setIsCall(false);
-            setIsAudioCall(false);
-            setHideStatusBar(false);
-            stopTimer();
-            setCallAccepted(false);
-            setReturnToCall(false);
-          } else if (message.message.message === messageCodes.covertVideoMsg) {
-            setConvertVideo(true);
-          } else if (message.message.message === messageCodes.covertAudioMsg) {
-            console.log('covertVideoMsg', messageCodes.covertAudioMsg);
-            setConvertVideo(false);
-          } else if (
-            message.message.message === 'Audio call ended' ||
-            message.message.message === 'Video call ended'
-          ) {
-            console.log('aftercal');
+      message: ({ message }) => {
+        console.log('addListener', message);
+        const messageText = message.message;
+        if (message.isTyping) {
+          // if (messageText === acceptedCallMsg) {
+          //   startTimer(0);
+          //   setCallAccepted(true);
+          // } else if (messageText === endCallMsg) {
+          //   setIsCall(false);
+          //   setIsAudioCall(false);
+          //   setHideStatusBar(false);
+          //   stopTimer();
+          //   setCallAccepted(false);
+          //   setReturnToCall(false);
+          // } else if (messageText === covertVideoMsg) {
+          //   setConvertVideo(true);
+          // } else if (messageText === covertAudioMsg) {
+          //   console.log('covertVideoMsg', covertAudioMsg);
+          //   setConvertVideo(false);
+          // } else if (messageText === 'Audio call ended' || messageText === 'Video call ended') {
+          //   console.log('aftercal');
+          //   addMessages(message);
+          //   setIsCall(false);
+          //   setIsAudioCall(false);
+          //   setHideStatusBar(false);
+          //   stopTimer();
+          //   setCallAccepted(false);
+          //   setReturnToCall(false);
+          // }
+          const audioVideoMethod = () => {
             addMessages(message);
             setIsCall(false);
             setIsAudioCall(false);
@@ -590,29 +612,70 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             stopTimer();
             setCallAccepted(false);
             setReturnToCall(false);
+          };
+          switch (messageText) {
+            case messageCodes.acceptedCallMsg:
+              startTimer(0);
+              setCallAccepted(true);
+              break;
+            case messageCodes.endCallMsg:
+              setIsCall(false);
+              setIsAudioCall(false);
+              setHideStatusBar(false);
+              stopTimer();
+              setCallAccepted(false);
+              setReturnToCall(false);
+              break;
+            case messageCodes.covertVideoMsg:
+              setConvertVideo(true);
+              break;
+            case messageCodes.covertAudioMsg:
+              setConvertVideo(false);
+              break;
+            case 'Audio call ended':
+              audioVideoMethod();
+              break;
+            case 'Video call ended':
+              audioVideoMethod();
+              break;
+            default:
           }
-        } else if (message.message.message === messageCodes.consultPatientStartedMsg) {
-          console.log('consultPatientStartedMsg');
+        } else if (
+          [
+            messageCodes.consultPatientStartedMsg,
+            messageCodes.startConsultjr,
+            messageCodes.imageconsult,
+            messageCodes.firstMessage,
+            messageCodes.secondMessage,
+            messageCodes.languageQue,
+            messageCodes.jdThankyou,
+          ].includes(messageText)
+        ) {
           addMessages(message);
-        } else if (message.message.message === messageCodes.startConsultjr) {
-          console.log('startConsultjr');
-          addMessages(message);
-        } else if (message.message.message === messageCodes.imageconsult) {
-          console.log('imageconsult');
-          addMessages(message);
-        } else if (message.message.message === messageCodes.firstMessage) {
-          console.log('firstMessage');
-          addMessages(message);
-        } else if (message.message.message === messageCodes.secondMessage) {
-          console.log('secondMessage');
-          addMessages(message);
-        } else if (message.message.message === messageCodes.languageQue) {
-          console.log('languageQue');
-          addMessages(message);
-        } else if (message.message.message === messageCodes.jdThankyou) {
-          console.log('jdThankyou');
-          addMessages(message);
-        } else {
+        }
+        // else if (messageText === consultPatientStartedMsg) {
+        //   console.log('consultPatientStartedMsg');
+        //   addMessages(message);
+        // } else if (messageText === startConsultjr) {
+        //   console.log('startConsultjr');
+        //   addMessages(message);
+        // } else if (messageText === imageconsult) {
+        //   console.log('imageconsult');
+        //   addMessages(message);
+        // } else if (messageText === firstMessage) {
+        //   console.log('firstMessage');
+        //   addMessages(message);
+        // } else if (messageText === secondMessage) {
+        //   console.log('secondMessage');
+        //   addMessages(message);
+        // } else if (messageText === languageQue) {
+        //   console.log('languageQue');
+        //   addMessages(message);
+        // } else if (messageText === jdThankyou) {
+        //   console.log('jdThankyou');
+        //   addMessages(message);
+        // }
+        else {
           addMessages(message);
           setTimeout(() => {
             flatListRef.current! && flatListRef.current!.scrollToEnd();
@@ -668,7 +731,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     const addMessages = (message: Pubnub.MessageEvent) => {
       console.log('messages', messages);
       console.log('before insertText', insertText);
-      insertText[insertText.length] = message.message;
+      insertText[insertText.length] = message;
       setMessages(() => [...(insertText as [])]);
       console.log('after insertText', insertText);
       console.log('messages', messages);
@@ -772,22 +835,40 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     index: number
   ) => {
     if (
-      rowData.message === messageCodes.typingMsg ||
-      rowData.message === messageCodes.endCallMsg ||
-      rowData.message === messageCodes.audioCallMsg ||
-      rowData.message === messageCodes.videoCallMsg ||
-      rowData.message === messageCodes.acceptedCallMsg ||
-      rowData.message === messageCodes.rescheduleconsult ||
-      rowData.message === messageCodes.followupconsult ||
-      rowData.message === messageCodes.appointmentComplete ||
-      rowData.message === messageCodes.stopConsultMsg ||
-      rowData.message === messageCodes.firstMessage ||
-      rowData.message === messageCodes.secondMessage ||
-      rowData.message === messageCodes.covertVideoMsg ||
-      rowData.message === messageCodes.covertAudioMsg ||
-      rowData.message === messageCodes.callAbandonment ||
-      rowData.message === messageCodes.startConsultMsg ||
-      rowData.message === messageCodes.jdThankyou
+      [
+        messageCodes.typingMsg,
+        messageCodes.endCallMsg,
+        messageCodes.audioCallMsg,
+        messageCodes.videoCallMsg,
+        messageCodes.acceptedCallMsg,
+        messageCodes.rescheduleconsult,
+        messageCodes.followupconsult,
+        messageCodes.appointmentComplete,
+        messageCodes.firstMessage,
+        messageCodes.secondMessage,
+        messageCodes.covertVideoMsg,
+        messageCodes.covertAudioMsg,
+        messageCodes.callAbandonment,
+        messageCodes.startConsultMsg,
+        messageCodes.stopConsultMsg,
+        messageCodes.jdThankyou,
+      ].includes(rowData.message)
+      // rowData.message === typingMsg ||
+      // rowData.message === endCallMsg ||
+      // rowData.message === audioCallMsg ||
+      // rowData.message === videoCallMsg ||
+      // rowData.message === acceptedCallMsg ||
+      // rowData.message === rescheduleconsult ||
+      // rowData.message === followupconsult ||
+      // rowData.message === appointmentComplete ||
+      // rowData.message === stopConsultMsg ||
+      // rowData.message === firstMessage ||
+      // rowData.message === secondMessage ||
+      // rowData.message === covertVideoMsg ||
+      // rowData.message === covertAudioMsg ||
+      // rowData.message === callAbandonment ||
+      // rowData.message === startConsultMsg ||
+      // rowData.message === jdThankyou
     ) {
       return null;
     }
@@ -819,17 +900,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     paddingVertical: 17,
                   }}
                 >
-                  {leftComponent === 1 ? (
-                    <DoctorImage
-                      style={{
-                        width: 32,
-                        height: 32,
-                        bottom: 0,
-                        position: 'absolute',
-                        left: 0,
-                      }}
-                    />
-                  ) : null}
+                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
                   <View
                     style={{
                       marginLeft: 40,
@@ -867,35 +938,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                           marginTop: 3,
                         }}
                       />
-                      {rowData.message === 'Audio call ended' ? (
-                        <Text
-                          style={{
-                            color: '#890000',
-                            marginLeft: 27,
-                            textAlign: 'left',
-                            ...theme.fonts.IBMPlexSansMedium(12),
-                            lineHeight: 24,
-                            letterSpacing: 0.04,
-                            marginTop: 2,
-                          }}
-                        >
-                          {strings.consult_room.you_missed_voice_call}
-                        </Text>
-                      ) : (
-                        <Text
-                          style={{
-                            color: '#890000',
-                            marginLeft: 27,
-                            textAlign: 'left',
-                            ...theme.fonts.IBMPlexSansMedium(12),
-                            lineHeight: 24,
-                            letterSpacing: 0.04,
-                            marginTop: 2,
-                          }}
-                        >
-                          {strings.consult_room.you_missed_video_call}
-                        </Text>
-                      )}
+                      <Text
+                        style={{
+                          color: '#890000',
+                          marginLeft: 27,
+                          textAlign: 'left',
+                          ...theme.fonts.IBMPlexSansMedium(12),
+                          lineHeight: 24,
+                          letterSpacing: 0.04,
+                          marginTop: 2,
+                        }}
+                      >
+                        {rowData.message === 'Audio call ended'
+                          ? strings.consult_room.you_missed_voice_call
+                          : strings.consult_room.you_missed_video_call}
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -909,17 +966,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     alignSelf: 'flex-end',
                   }}
                 >
-                  {leftComponent === 1 ? (
-                    <DoctorImage
-                      style={{
-                        width: 32,
-                        height: 32,
-                        bottom: 0,
-                        position: 'absolute',
-                        left: 0,
-                      }}
-                    />
-                  ) : null}
+                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
                   <View
                     style={{
                       borderRadius: 10,
@@ -976,17 +1023,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 alignSelf: 'flex-start',
               }}
             >
-              {leftComponent === 1 ? (
-                <DoctorImage
-                  style={{
-                    width: 32,
-                    height: 32,
-                    bottom: 0,
-                    position: 'absolute',
-                    left: 0,
-                  }}
-                />
-              ) : null}
+              {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
 
               <View
                 style={{
@@ -1100,22 +1137,39 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 flexDirection: 'row',
               }}
             >
-              {rowData.message === messageCodes.consultPatientStartedMsg ? (
-                <>{patientAutomatedMessage(rowData, index)}</>
-              ) : rowData.message === messageCodes.firstMessage ||
-                rowData.message === messageCodes.secondMessage ? (
-                <>{doctorAutomatedMessage(rowData, index)}</>
-              ) : rowData.message === messageCodes.imageconsult ? (
-                renderImageView(rowData)
-              ) : (
-                <>{messageView(rowData, index)}</>
-              )}
+              {rowData.message === messageCodes.consultPatientStartedMsg
+                ? patientAutomatedMessage(rowData, index)
+                : rowData.message === messageCodes.firstMessage ||
+                  rowData.message === messageCodes.secondMessage
+                ? doctorAutomatedMessage(rowData, index)
+                : rowData.message === messageCodes.imageconsult
+                ? renderImageView(rowData)
+                : messageView(rowData, index)}
             </View>
           )}
         </View>
       );
     }
   };
+
+  const renderAutomatedText = (rowData: any, style = {}) => (
+    <View style={[styles.automatedTextView, style]}>
+      {rowData.automatedText ? (
+        <>
+          <Text style={styles.automatedLeftText}>{rowData.automatedText}</Text>
+          <Text style={styles.automatedRightText}>{convertChatTime(rowData)}</Text>
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              height: 4,
+              width: 20,
+            }}
+          />
+        </>
+      ) : null}
+    </View>
+  );
+
   const patientAutomatedMessage = (rowData: any, index: number) => {
     return (
       <View
@@ -1127,69 +1181,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         }}
       >
         {leftComponent === 1 && (
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              bottom: 0,
-              position: 'absolute',
-              left: 0,
-            }}
-          >
-            <Mascot
-              style={{
-                width: 32,
-                height: 32,
-                bottom: 0,
-                position: 'absolute',
-                left: 0,
-              }}
-            />
+          <View style={styles.imageStyle}>
+            <Mascot style={styles.imageStyle} />
           </View>
         )}
-        <View
-          style={{
-            backgroundColor: '#0087ba',
-            marginLeft: 38,
-            borderRadius: 10,
-            marginBottom: 4,
-          }}
-        >
-          {rowData.automatedText ? (
-            <>
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingTop: 8,
-                  paddingBottom: 4,
-                  paddingHorizontal: 16,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 4,
-                  textAlign: 'right',
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                {convertChatTime(rowData)}
-              </Text>
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  height: 4,
-                  width: 20,
-                }}
-              />
-            </>
-          ) : null}
-        </View>
+        {renderAutomatedText(rowData, { marginBottom: 4 })}
       </View>
     );
   };
@@ -1205,76 +1201,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         }}
       >
         {leftComponent === 1 && (
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              bottom: 0,
-              position: 'absolute',
-              left: 0,
-            }}
-          >
-            <Mascot
-              style={{
-                width: 32,
-                height: 32,
-                bottom: 0,
-                position: 'absolute',
-                left: 0,
-              }}
-            />
+          <View style={styles.imageStyle}>
+            <Mascot style={styles.imageStyle} />
           </View>
         )}
-        <View
-          style={{
-            backgroundColor: '#0087ba',
-            marginLeft: 38,
-            borderRadius: 10,
-            marginBottom: 4,
-            width: 244,
-          }}
-        >
-          {rowData.automatedText ? (
-            <>
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingTop: 8,
-                  paddingBottom: 4,
-                  paddingHorizontal: 16,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 4,
-                  textAlign: 'right',
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                {convertChatTime(rowData)}
-              </Text>
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  height: 4,
-                  width: 20,
-                }}
-              />
-            </>
-          ) : null}
-        </View>
+        {renderAutomatedText(rowData, { marginBottom: 4, width: 244 })}
       </View>
     );
   };
+
   const messageView = (rowData: any, index: number) => {
     console.log(rowData, 'messageView');
-
+    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
     return (
       <View
         style={{
@@ -1286,254 +1224,67 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         }}
       >
         {leftComponent === 1 && (
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              bottom: 0,
-              position: 'absolute',
-              left: 0,
-            }}
-          >
-            <DoctorPlaceholderImage
-              style={{
-                width: 32,
-                height: 32,
-                bottom: 0,
-                position: 'absolute',
-                left: 0,
-              }}
-            />
+          <View style={styles.imageStyle}>
+            <DoctorPlaceholderImage style={styles.imageStyle} />
           </View>
         )}
         <View>
           {rowData.message === messageCodes.imageconsult ? (
             <View>
-              {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
-                <TouchableOpacity
-                  onPress={() => {
-                    console.log('IMAGE', rowData.url);
+              <TouchableOpacity
+                onPress={() => {
+                  console.log('IMAGE', rowData.url);
+                  if (isMatched) {
                     openPopUp(rowData);
+                  }
+                }}
+                activeOpacity={1}
+              >
+                <View
+                  style={{
+                    backgroundColor: 'transparent',
+                    width: 180,
+                    height: 180,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    marginBottom: isMatched ? 4 : 0,
+                    flex: 1,
+                    marginLeft: 38,
                   }}
-                  activeOpacity={1}
                 >
-                  <View
-                    style={{
+                  <ImageNative
+                    placeholderStyle={{
+                      height: 180,
+                      width: '100%',
+                      alignItems: 'center',
                       backgroundColor: 'transparent',
+                    }}
+                    PlaceholderContent={
+                      <Spinner
+                        style={{
+                          backgroundColor: 'transparent',
+                        }}
+                      />
+                    }
+                    source={{
+                      uri: rowData.url,
+                    }}
+                    style={{
+                      resizeMode: 'stretch',
                       width: 180,
                       height: 180,
                       borderRadius: 10,
-                      marginVertical: 2,
-                      marginBottom: 4,
-                      flex: 1,
-                      marginLeft: 38,
                     }}
-                  >
-                    <ImageNative
-                      placeholderStyle={{
-                        height: 180,
-                        width: '100%',
-                        alignItems: 'center',
-                        backgroundColor: 'transparent',
-                      }}
-                      PlaceholderContent={
-                        <Spinner
-                          style={{
-                            backgroundColor: 'transparent',
-                          }}
-                        />
-                      }
-                      source={{
-                        uri: rowData.url,
-                      }}
-                      style={{
-                        resizeMode: 'stretch',
-                        width: 180,
-                        height: 180,
-                        borderRadius: 10,
-                      }}
-                    />
-                  </View>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    console.log('pdf', rowData.url);
-                    //openPopUp(rowData);
-                    // setShowWeb(true);
-                    // setPatientImageshow(true);
-                  }}
-                >
-                  <View
-                    style={{
-                      backgroundColor: 'transparent',
-                      width: 180,
-                      height: 180,
-                      borderRadius: 10,
-                      marginVertical: 2,
-                      marginBottom: 4,
-                      flex: 1,
-                      marginLeft: 38,
-                    }}
-                  >
-                    <ImageNative
-                      placeholderStyle={{
-                        height: 180,
-                        width: '100%',
-                        alignItems: 'center',
-                        backgroundColor: 'transparent',
-                      }}
-                      PlaceholderContent={
-                        <Spinner
-                          style={{
-                            backgroundColor: 'transparent',
-                          }}
-                        />
-                      }
-                      source={{
-                        uri: rowData.url,
-                      }}
-                      style={{
-                        resizeMode: 'stretch',
-                        width: 180,
-                        height: 180,
-                        borderRadius: 10,
-                      }}
-                    />
-                  </View>
-                </TouchableOpacity>
-              )}
+                  />
+                </View>
+              </TouchableOpacity>
             </View>
           ) : rowData.message === '^^#startconsultJr' ? (
-            <View
-              style={{
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              {rowData.automatedText ? (
-                <>
-                  <Text
-                    style={{
-                      color: '#ffffff',
-                      paddingTop: 8,
-                      paddingBottom: 4,
-                      paddingHorizontal: 16,
-                      ...theme.fonts.IBMPlexSansMedium(15),
-                      textAlign: 'left',
-                    }}
-                  >
-                    {rowData.automatedText}
-                  </Text>
-                  <Text
-                    style={{
-                      color: '#ffffff',
-                      paddingHorizontal: 16,
-                      paddingVertical: 4,
-                      textAlign: 'right',
-                      ...theme.fonts.IBMPlexSansMedium(10),
-                    }}
-                  >
-                    {convertChatTime(rowData)}
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor: 'transparent',
-                      height: 4,
-                      width: 20,
-                    }}
-                  />
-                </>
-              ) : null}
-            </View>
+            renderAutomatedText(rowData)
           ) : rowData.message === '^^#startconsult' ? (
-            <View
-              style={{
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              {rowData.automatedText ? (
-                <>
-                  <Text
-                    style={{
-                      color: '#ffffff',
-                      paddingTop: 8,
-                      paddingBottom: 4,
-                      paddingHorizontal: 16,
-                      ...theme.fonts.IBMPlexSansMedium(15),
-                      textAlign: 'left',
-                    }}
-                  >
-                    {rowData.automatedText}
-                  </Text>
-                  <Text
-                    style={{
-                      color: '#ffffff',
-                      paddingHorizontal: 16,
-                      paddingVertical: 4,
-                      textAlign: 'right',
-                      ...theme.fonts.IBMPlexSansMedium(10),
-                    }}
-                  >
-                    {convertChatTime(rowData)}
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor: 'transparent',
-                      height: 4,
-                      width: 20,
-                    }}
-                  />
-                </>
-              ) : null}
-            </View>
+            renderAutomatedText(rowData)
           ) : rowData.message === messageCodes.stopConsultJr ? (
-            <View
-              style={{
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              {rowData.automatedText ? (
-                <>
-                  <Text
-                    style={{
-                      color: '#ffffff',
-                      paddingTop: 8,
-                      paddingBottom: 4,
-                      paddingHorizontal: 16,
-                      ...theme.fonts.IBMPlexSansMedium(15),
-                      textAlign: 'left',
-                    }}
-                  >
-                    {rowData.automatedText}
-                  </Text>
-                  <Text
-                    style={{
-                      color: '#ffffff',
-                      paddingHorizontal: 16,
-                      paddingVertical: 4,
-                      textAlign: 'right',
-                      ...theme.fonts.IBMPlexSansMedium(10),
-                    }}
-                  >
-                    {convertChatTime(rowData)}
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor: 'transparent',
-                      height: 4,
-                      width: 20,
-                    }}
-                  />
-                </>
-              ) : null}
-            </View>
+            renderAutomatedText(rowData)
           ) : (
             <>
               <View
@@ -1644,100 +1395,60 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const renderImageView = (rowData: any) => {
+    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
     return (
       <View>
-        {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
-          <TouchableOpacity
-            onPress={() => {
-              console.log('IMAGE11', rowData.url);
+        <TouchableOpacity
+          onPress={() => {
+            console.log('IMAGE11', rowData.url);
+
+            if (isMatched) {
               openPopUp(rowData);
-            }}
-            activeOpacity={1}
-          >
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: 180,
-                height: 180,
-                borderRadius: 10,
-                marginVertical: 2,
-                flex: 1,
-              }}
-            >
-              <ImageNative
-                placeholderStyle={{
-                  height: 180,
-                  width: '100%',
-                  alignItems: 'center',
-                  backgroundColor: 'transparent',
-                }}
-                PlaceholderContent={
-                  <Spinner
-                    style={{
-                      backgroundColor: 'transparent',
-                    }}
-                  />
-                }
-                source={{
-                  uri: rowData.url,
-                }}
-                style={{
-                  resizeMode: 'stretch',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                }}
-              />
-            </View>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              console.log('pdf', rowData.url);
+            } else {
               openPopUp(rowData);
               setShowWeb(true);
               setPatientImageshow(true);
+            }
+          }}
+          activeOpacity={1}
+        >
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              width: 180,
+              height: 180,
+              borderRadius: 10,
+              marginVertical: 2,
+              flex: 1,
+              marginBottom: isMatched ? 4 : 0,
             }}
           >
-            <View
-              style={{
+            <ImageNative
+              placeholderStyle={{
+                height: 180,
+                width: '100%',
+                alignItems: 'center',
                 backgroundColor: 'transparent',
+              }}
+              PlaceholderContent={
+                <Spinner
+                  style={{
+                    backgroundColor: 'transparent',
+                  }}
+                />
+              }
+              source={{
+                uri: rowData.url,
+              }}
+              style={{
+                resizeMode: 'stretch',
                 width: 180,
                 height: 180,
                 borderRadius: 10,
-                marginVertical: 2,
-                marginBottom: 4,
-                flex: 1,
               }}
-            >
-              <ImageNative
-                placeholderStyle={{
-                  height: 180,
-                  width: '100%',
-                  alignItems: 'center',
-                  backgroundColor: 'transparent',
-                }}
-                PlaceholderContent={
-                  <Spinner
-                    style={{
-                      backgroundColor: 'transparent',
-                    }}
-                  />
-                }
-                source={{
-                  uri: rowData.url,
-                }}
-                style={{
-                  resizeMode: 'stretch',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                }}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
+            />
+          </View>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -3431,7 +3142,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           source={{
             uri: url,
           }}
-          useWebKit={true}
         />
       </View>
     );

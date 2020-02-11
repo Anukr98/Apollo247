@@ -1,11 +1,9 @@
 import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
+import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { ChipIconView } from '@aph/mobile-doctors/src/components/ui/ChipIconView';
-
 import { DropDown, Option } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
@@ -15,8 +13,9 @@ import {
   Edit,
   RoundIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { SmartPrescriptionCard } from '@aph/mobile-doctors/src/components/ui/SmartPrescriptionCard';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import {
   ADD_DOCTOR_FAVOURITE_ADVICE,
@@ -25,7 +24,6 @@ import {
   GET_DOCTOR_FAVOURITE_MEDICINE_LIST,
   GET_DOCTOR_FAVOURITE_TEST_LIST,
   SAVE_DOCTORS_FAVOURITE_MEDICINE,
-  SEARCH_DIAGNOSTIC,
   UPDATE_DOCTOR_FAVOURITE_ADVICE,
   UPDATE_DOCTOR_FAVOURITE_MEDICINE,
   UPDATE_DOCTOR_FAVOURITE_TEST,
@@ -59,11 +57,7 @@ import {
   SaveDoctorsFavouriteMedicine,
   SaveDoctorsFavouriteMedicineVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SaveDoctorsFavouriteMedicine';
-import {
-  searchDiagnostic,
-  searchDiagnosticVariables,
-  searchDiagnostic_searchDiagnostic,
-} from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
+import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
 import {
   UpdateDoctorFavouriteAdvice,
   UpdateDoctorFavouriteAdviceVariables,
@@ -76,13 +70,14 @@ import {
   UpdateDoctorFavouriteTest,
   UpdateDoctorFavouriteTestVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateDoctorFavouriteTest';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Keyboard,
@@ -93,11 +88,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
-import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -231,6 +221,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const [searchmedicineList, setsearchmedicineList] = useState<MedicineProduct[]>([]);
   const [EditTestId, setEditTestId] = useState<string>('');
   const [EditTestName, setEditTestName] = useState<string>('');
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
 
   useEffect(() => {
     GetFavouriteMedicineList();
@@ -409,7 +400,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true),
           },
         ]}
       />
@@ -886,6 +877,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}
+      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
     </View>
   );
 };

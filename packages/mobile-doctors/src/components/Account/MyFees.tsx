@@ -1,4 +1,3 @@
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
@@ -7,6 +6,7 @@ import {
   RoundIcon,
   Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
@@ -102,6 +102,8 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
   console.log('p', profileData);
   const BankDetails = profileData!.packages![0];
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+  const [showHelpModel, setshowHelpModel] = useState(false);
+
   const showHeaderView = () => {
     return (
       <Header
@@ -126,13 +128,13 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
     );
   };
-  const feeprofileRowBold = (title: Element, description: string) => {
+  const feeprofileRowBold = (title: JSX.Element, description: string) => {
     if (!description) return null;
     return (
       <View style={styles.commonView}>
@@ -320,7 +322,11 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
             <Text>
               <Text style={styles.descriptionview}>{strings.common.call}</Text>
               <Text
-                style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 }}
+                style={{
+                  color: '#fc9916',
+                  ...theme.fonts.IBMPlexSansSemiBold(16),
+                  lineHeight: 22,
+                }}
               >
                 {' '}
                 {strings.common.toll_free_num}{' '}
@@ -330,6 +336,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
           </View>
         </View>
       </ScrollView>
+      {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </SafeAreaView>
   );
 };

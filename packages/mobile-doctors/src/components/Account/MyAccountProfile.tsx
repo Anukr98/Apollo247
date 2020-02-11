@@ -1,47 +1,45 @@
-import { StarDoctorsTeam } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam';
-import {
-  Star,
-  BackArrow,
-  RoundIcon,
-  RoundChatIcon,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
-import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  TextInput,
-  Platform,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AccountStarTeam } from '@aph/mobile-doctors/src/components/Account/AccountStarTem';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { useApolloClient } from 'react-apollo-hooks';
+import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import {
+  BackArrow,
+  RoundChatIcon,
+  RoundIcon,
+  Star,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
+import {
+  REMOVE_DELEGATE_NUMBER,
+  UPDATE_DELEGATE_NUMBER,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { RemoveDelegateNumber } from '@aph/mobile-doctors/src/graphql/types/RemoveDelegateNumber';
 import {
   UpdateDelegateNumber,
   UpdateDelegateNumberVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateDelegateNumber';
-import {
-  UPDATE_DELEGATE_NUMBER,
-  REMOVE_DELEGATE_NUMBER,
-} from '@aph/mobile-doctors/src/graphql/profiles';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-
-import { RemoveDelegateNumber } from '@aph/mobile-doctors/src/graphql/types/RemoveDelegateNumber';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  Image,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -220,6 +218,8 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { doctorDetails, setDoctorDetails } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showHelpModel, setshowHelpModel] = useState(false);
+
   console.log('doctorDetailsmy', doctorDetails);
 
   // useEffect(() => {
@@ -346,7 +346,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
@@ -484,6 +484,11 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
       </View>
     );
   };
+
+  const renderNeedHelpModal = () => {
+    return showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View>{showHeaderView()}</View>
@@ -571,6 +576,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           </SquareCardWithTitle>
         </ScrollView>
       </KeyboardAwareScrollView>
+      {renderNeedHelpModal()}
     </SafeAreaView>
   );
 };

@@ -1,30 +1,30 @@
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
+import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, RoundChatIcon, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { format } from 'date-fns';
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import {
+  GET_BLOCKED_CALENDAR,
+  REMOVE_BLOCKED_CALENDAR_ITEM,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetBlockedCalendar,
   GetBlockedCalendarVariables,
   GetBlockedCalendar_getBlockedCalendar_blockedCalendar,
 } from '@aph/mobile-doctors/src/graphql/types/GetBlockedCalendar';
-import {
-  GET_BLOCKED_CALENDAR,
-  REMOVE_BLOCKED_CALENDAR_ITEM,
-} from '@aph/mobile-doctors/src/graphql/profiles';
-import moment from 'moment';
-import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { format } from 'date-fns';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -94,6 +94,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
     GetBlockedCalendar_getBlockedCalendar_blockedCalendar[]
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [showHelpModel, setshowHelpModel] = useState(false);
 
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
@@ -185,7 +186,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
@@ -353,6 +354,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         </ScrollView>
       </SafeAreaView>
       {showSpinner && <Spinner />}
+      {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </View>
   );
 };
