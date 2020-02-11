@@ -32,6 +32,7 @@ import Hyperlink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { height, width } = Dimensions.get('window');
 
@@ -167,18 +168,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             // AsyncStorage.setItem('isProfileFlowDone', 'false');
             setDoctorDetails(null);
             clearFirebaseUser && clearFirebaseUser();
-            Alert.alert(
-              'Error',
-              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
-            );
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin);
             setshowSpinner(false);
           }
         } else {
           if (getDoctorDetailsError === true) {
-            Alert.alert(
-              'Error',
-              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
-            );
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin);
             setshowSpinner(false);
           }
         }
@@ -441,7 +436,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           .catch((error: Error) => {
             console.log(error, 'error');
             console.log(error.message, 'errormessage');
-            Alert.alert('Error', 'The interaction was cancelled by the user.');
+            Alert.alert(strings.common.error, 'The interaction was cancelled by the user.');
           });
       } else {
         setshowOfflinePopup(true);
@@ -454,7 +449,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     return (
       <View style={styles.viewWebStyles}>
         <Header
-          headerText={'Terms & Conditions'}
+          headerText={strings.login.terms_conditions}
           leftIcon="close"
           containerStyle={{
             borderBottomWidth: 0,
@@ -523,7 +518,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               letterSpacing: 0,
             }}
           >
-            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+            {strings.login.by_signingup_descr}
           </Text>
         </Hyperlink>
       </View>
@@ -590,7 +585,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
 
             <Text style={[styles.errorText]}>
-              Try again after —{' '}
+              {strings.otp.try_again}{' '}
               <CountDownTimer
                 timer={remainingTime}
                 style={[styles.errorText]}
@@ -639,7 +634,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
-                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
+                {strings.otp.incorrect_otp} {3 - invalidOtpCount} {strings.otp.more}{' '}
                 {invalidOtpCount == 2 ? 'try' : 'tries'}.
               </Text>
             )}

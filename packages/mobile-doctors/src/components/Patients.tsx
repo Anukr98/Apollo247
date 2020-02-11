@@ -35,6 +35,7 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -204,7 +205,10 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             marginLeft: 20,
             marginBottom: 2,
           }}
-        >{`hello dr. ${(doctorDetails ? doctorDetails.firstName : '').toLowerCase()} :)`}</Text>
+        >{`${strings.case_sheet.hello_dr} ${(doctorDetails
+          ? doctorDetails.firstName
+          : ''
+        ).toLowerCase()} :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),
@@ -213,7 +217,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             marginBottom: 14,
             lineHeight: 24,
           }}
-        >{`here are all your patients `}</Text>
+        >
+          {strings.case_sheet.here_are_all_patients}
+        </Text>
       </View>
     );
   };
@@ -362,7 +368,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                       textAlign: 'center',
                     }}
                   >
-                    No Data
+                    {strings.common.no_data}
                   </Text>
                 </View>
               )}
@@ -412,7 +418,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                       0.54
                     )}
                   >
-                    SORT BY
+                    {strings.case_sheet.sort_by}
                   </Text>
                   <TouchableOpacity activeOpacity={1} onPress={() => setshowSorting(false)}>
                     <ClosePopup style={{ height: 24, width: 24 }} />

@@ -28,6 +28,7 @@ import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -230,7 +231,7 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
                 });
               }}
             >
-              SKIP
+              {strings.buttons.skip}
             </Text>
           </View>
           // </TouchableOpacity>

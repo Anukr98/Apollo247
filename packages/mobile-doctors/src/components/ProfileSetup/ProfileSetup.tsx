@@ -33,6 +33,7 @@ import {
 import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
@@ -301,7 +302,11 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         {tabIndex == 0 ? (
           <Button
             onPress={onPressProceed}
-            title={data!.doctorType == 'STAR_APOLLO' ? 'SAVE AND PROCEED' : 'PROCEED'}
+            title={
+              data!.doctorType == 'STAR_APOLLO'
+                ? strings.buttons.save_proceed
+                : strings.buttons.proceed
+            }
             titleTextStyle={styles.buttonTextStyle}
             style={{ width: 240 }}
           />
@@ -309,14 +314,18 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
           <>
             <Button
               onPress={onPressBack}
-              title="BACK"
+              title={strings.buttons.back}
               titleTextStyle={styles.buttonTextStyle}
               variant="white"
               style={[styles.buttonStyle, { marginRight: 16 }]}
             />
             <Button
               onPress={onPressProceed}
-              title={data!.doctorType == 'STAR_APOLLO' ? 'SAVE AND PROCEED' : 'PROCEED'}
+              title={
+                data!.doctorType == 'STAR_APOLLO'
+                  ? strings.buttons.save_proceed
+                  : strings.buttons.proceed
+              }
               titleTextStyle={styles.buttonTextStyle}
               style={styles.buttonStyle}
             />
