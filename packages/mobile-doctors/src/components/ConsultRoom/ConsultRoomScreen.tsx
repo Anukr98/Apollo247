@@ -1423,6 +1423,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
+  const renderMuteIcon = () => (
+    <TouchableOpacity onPress={() => setMute(mute === true ? false : true)}>
+      {mute === true ? <UnMuteIcon /> : <MuteIcon />}
+    </TouchableOpacity>
+  );
+
   const callMinutes = Math.floor(callTimer / 60);
   const callSeconds = callTimer - callMinutes * 60;
   const callTimerStarted = `${
@@ -1686,43 +1692,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               );
             }}
           >
-            {showVideo === true ? (
-              <VideoOnIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            ) : (
-              <VideoOffIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            )}
+            {showVideo === true ? <VideoOnIcon /> : <VideoOffIcon />}
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
-            }}
-          >
-            {mute === true ? (
-              <UnMuteIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            ) : (
-              <MuteIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            )}
-          </TouchableOpacity>
+          {renderMuteIcon()}
           <TouchableOpacity
             onPress={() => {
               setIsAudioCall(false);
@@ -1748,12 +1720,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               );
             }}
           >
-            <EndCallIcon
-              style={{
-                width: 60,
-                height: 60,
-              }}
-            />
+            <EndCallIcon />
           </TouchableOpacity>
         </View>
       </View>
@@ -1811,7 +1778,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   audioVolume: 100,
                 }}
               />
-
               <OTPublisher
                 style={publisherStyles}
                 properties={{
@@ -2133,42 +2099,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
             }}
           >
-            {cameraPosition === 'front' ? (
-              <BackCameraIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            ) : (
-              <FrontCameraIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            )}
+            {cameraPosition === 'front' ? <BackCameraIcon /> : <FrontCameraIcon />}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               showVideo === true ? setShowVideo(false) : setShowVideo(true);
             }}
           >
-            {showVideo === true ? (
-              <VideoOnIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            ) : (
-              <VideoOffIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            )}
+            {showVideo === true ? <VideoOnIcon /> : <VideoOffIcon />}
           </TouchableOpacity>
           {/* <TouchableOpacity
             onPress={async () => {
@@ -2196,27 +2134,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           >
             <AttachmentIcon style={{ height: 60, width: 60 }} />
           </TouchableOpacity> */}
-          <TouchableOpacity
-            onPress={() => {
-              mute === true ? setMute(false) : setMute(true);
-            }}
-          >
-            {mute === true ? (
-              <UnMuteIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            ) : (
-              <MuteIcon
-                style={{
-                  height: 60,
-                  width: 60,
-                }}
-              />
-            )}
-          </TouchableOpacity>
+          {renderMuteIcon()}
           <TouchableOpacity
             onPress={() => {
               setIsCall(false);
@@ -2253,12 +2171,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               );
             }}
           >
-            <EndCallIcon
-              style={{
-                height: 60,
-                width: 60,
-              }}
-            />
+            <EndCallIcon />
           </TouchableOpacity>
         </View>
       </View>

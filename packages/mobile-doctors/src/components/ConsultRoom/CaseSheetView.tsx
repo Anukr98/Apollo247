@@ -1338,32 +1338,33 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {/* {diagnosticPrescriptionData == null ? (
           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
         ) : ( */}
-        {favTest && favTest.length && (
+        {favTest && favTest.length ? (
           <Text style={[styles.familyText, { marginBottom: 12 }]}>
             {strings.smartPrescr.fav_test}
           </Text>
-        )}
-        {favTest &&
-          favTest.map((showdata, i) => {
-            if (showdata)
-              return (
-                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
-                  <DiagnosicsCard
-                    diseaseName={showdata.itemname}
-                    icon={
-                      <TouchableOpacity
-                        onPress={() => {
-                          // removeDiagnosticPresecription(showdata, i);
-                          setTests([...tests, { ...showdata, isSelected: true }]);
-                        }}
-                      >
-                        <Green />
-                      </TouchableOpacity>
-                    }
-                  />
-                </View>
-              );
-          })}
+        ) : null}
+        {favTest && favTest.length
+          ? favTest.map((showdata, i) => {
+              if (showdata)
+                return (
+                  <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
+                    <DiagnosicsCard
+                      diseaseName={showdata.itemname}
+                      icon={
+                        <TouchableOpacity
+                          onPress={() => {
+                            // removeDiagnosticPresecription(showdata, i);
+                            setTests([...tests, { ...showdata, isSelected: true }]);
+                          }}
+                        >
+                          <Green />
+                        </TouchableOpacity>
+                      }
+                    />
+                  </View>
+                );
+            })
+          : null}
         {caseSheetEdit && (
           <AddIconLabel
             label={strings.buttons.add_tests}
