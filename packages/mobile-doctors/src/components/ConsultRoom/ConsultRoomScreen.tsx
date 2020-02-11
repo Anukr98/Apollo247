@@ -83,6 +83,8 @@ import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+// import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -171,6 +173,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [dropdownShow, setDropdownShow] = useState(false);
   const channel = props.navigation.getParam('AppId');
   const doctorId = props.navigation.getParam('DoctorId');
+  const patientId = props.navigation.getParam('PatientId');
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
   const [activeTabIndex, setActiveTabIndex] = useState(props.activeTabIndex || 0);
   const flatListRef = useRef<FlatList<never> | undefined | null>();
@@ -190,6 +193,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
+  const [prismImage, setPrismImage] = useState<string>([]);
   const [textinputStyles, setTextInputStyles] = useState<Object>({
     width: width,
     height: 66,
@@ -727,7 +731,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       },
       (status, res) => {
         const newmessage: object[] = [];
+        res.messages.forEach((element, index) => {
+          let item = element.entry;
+          console.log(item, 'element');
+          if (item.prismId) {
+            getPrismUrls(client, patientId, item.prismId)
+              .then((data: any) => {
+                console.log('happy', data);
 
+                item.url = (data && data.urls[0]) || item.url;
+              })
+              .catch((e) => {
+                CommonBugFender('ChatRoom_getPrismUrls', e);
+              });
+          }
+          newmessage[newmessage.length] = item;
+        });
         try {
           res.messages.forEach((element, index) => {
             newmessage[index] = element.entry;
@@ -966,7 +985,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   style={{
                     color: '#0087ba',
                     paddingHorizontal: 16,
-                    paddingVertical: 12,
+                    paddingVertical: 4,
                     ...theme.fonts.IBMPlexSansMedium(16),
                     textAlign: 'left',
                   }}
@@ -1148,7 +1167,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           backgroundColor: 'transparent',
           width: rowData.message !== null ? 282 : 0,
           borderRadius: 10,
-          marginVertical: 2,
+          marginVertical: -2,
           // alignSelf: 'flex-start',
         }}
       >
@@ -1286,6 +1305,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               marginVertical: 2,
               flex: 1,
               marginBottom: isMatched ? 4 : 0,
+              top: 5,
             }}
           >
             <ImageNative
@@ -1329,6 +1349,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         // setShowWeb(true);
       }
     };
+
     return renderCommonImageView(rowData, isMatched, onPress);
   };
 
@@ -2434,7 +2455,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('Error occured while adding Doctor', e);
       });
     setTimeout(() => {
-      flatListRef.current && flatListRef.current!.scrollToEnd();
+      //flatListRef.current && flatListRef.current!.scrollToEnd();
     }, 1000);
     return (
       <View
