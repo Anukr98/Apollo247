@@ -147,6 +147,7 @@ export const messageCodes = {
   callAbandonment: '^^#callAbandonment',
   appointmentComplete: '^^#appointmentComplete',
 };
+
 export const formatFloating = (value: string) => {
   let number =
     value.indexOf('.') === value.length - 1 ||

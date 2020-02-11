@@ -56,6 +56,7 @@ import {
   GET_DOCTOR_FAVOURITE_TEST_LIST,
   MODIFY_CASESHEET,
   CREATE_CASESHEET_FOR_SRD,
+  END_CALL_NOTIFICATION,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
@@ -135,6 +136,10 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { ChoicePopUp } from '@aph/mobile-doctors/src/components/ui/ChoicePopUp';
+import { PrescriptionView } from '@aph/mobile-doctors/src/components/ui/PrescriptionView';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { EndCallNotification, EndCallNotificationVariables } from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
 
 const { height, width } = Dimensions.get('window');
 
@@ -795,66 +800,129 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         Alert.alert(strings.common.error, errorMessage);
       });
   };
+  const followUpMessage = () => {
+    if (followup && followupDays) {
+      const followupObj = {
+        appointmentId: AppId,
+        folloupDateTime: followup
+          ? moment(
+              g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
+                new Date()
+            )
+              .add(Number(followupDays), 'd')
+              .format('YYYY-MM-DD')
+          : '',
+        doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+        caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
+        doctorInfo: doctorDetails,
+        pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+          caseSheetData,
+          'caseSheetDetails',
+          'blobName'
+        )}`,
+      };
+      props.messagePublish &&
+        props.messagePublish({
+          id: followupObj.doctorId,
+          message: messageCodes.followupconsult,
+          transferInfo: followupObj,
+          messageDate: new Date(),
+          sentBy: REQUEST_ROLES.DOCTOR,
+        });
+    }
+  };
+  const prescriptionView = () => {
+    props.navigation.navigate(AppRoutes.RenderPdf, {
+      uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+        caseSheetData,
+        'caseSheetDetails',
+        'blobName'
+      )}`,
+      title: 'PRESCRIPTION',
+      CTAs: [
+        {
+          title: 'EDIT CASE SHEET',
+          variant: 'white',
+          onPress: () => {
+            props.navigation.pop();
+          },
+        },
+        {
+          title: 'SEND TO PATIENT',
+          variant: 'orange',
+          onPress: () => {
+            followUpMessage();
+
+          },
+        },
+      ],
+    });
+  };
 
   const endConsult = () => {
     setLoading && setLoading(true);
     saveDetails();
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: AppId,
-            status: STATUS.COMPLETED,
+    props.overlayDisplay(
+      <ChoicePopUp
+        onClose={() => {
+          props.overlayDisplay(null);
+        }}
+        headingText={`You’re ending your consult with ${g(
+          caseSheetData,
+          'patientDetails',
+          'firstName'
+        ) || 'patient'}.`}
+        CTAs={[
+          {
+            title: 'PREVIEW PRESCRIPTION',
+            variant: 'orange',
+            onPress: () => {
+              client
+                .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+                  mutation: END_APPOINTMENT_SESSION,
+                  variables: {
+                    endAppointmentSessionInput: {
+                      appointmentId: AppId,
+                      status: STATUS.COMPLETED,
+                    },
+                  },
+                  fetchPolicy: 'no-cache',
+                })
+                .then((_data) => {
+                  setLoading && setLoading(false);
+                  props.overlayDisplay(null);
+                  prescriptionView();
+                  // endCallNotification();
+                  const text = {
+                    id: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+                    message: '^^#appointmentComplete',
+                    isTyping: true,
+                    messageDate: new Date(),
+                    sentBy: REQUEST_ROLES.DOCTOR,
+                  };
+                  props.messagePublish && props.messagePublish(text);
+                })
+                .catch((e) => {
+                  setLoading && setLoading(false);
+                  props.overlayDisplay(null);
+                  console.log('Error occured while End casesheet', e);
+                  const error = JSON.parse(JSON.stringify(e));
+                  const errorMessage = error && error.message;
+                  console.log('Error occured while End casesheet', errorMessage, error);
+                  Alert.alert(strings.common.error, errorMessage);
+                });
+            },
           },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        setLoading && setLoading(false);
-        setShowPopUp(true);
-        console.log('_data', _data);
-        if (followup && followupDays) {
-          const followupObj = {
-            appointmentId: AppId,
-            folloupDateTime: followup
-              ? moment(
-                  g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
-                    new Date()
-                )
-                  .add(Number(followupDays), 'd')
-                  .format('YYYY-MM-DD')
-              : '',
-            doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
-            caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
-            doctorInfo: doctorDetails,
-            pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-              caseSheetData,
-              'caseSheetDetails',
-              'blobName'
-            )}`,
-          };
-          props.messagePublish &&
-            props.messagePublish({
-              id: followupObj.doctorId,
-              message: messageCodes.followupconsult,
-              transferInfo: followupObj,
-              messageDate: new Date(),
-              sentBy: REQUEST_ROLES.DOCTOR,
-            });
-        }
-        //setShowButtons(false);
-        // props.onStopConsult();
-      })
-      .catch((e) => {
-        setLoading && setLoading(false);
-        setShowPopUp(false);
-        console.log('Error occured while End casesheet', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
-      });
+          {
+            title: 'EDIT CASE SHEET',
+            variant: 'white',
+            onPress: () => {
+              props.overlayDisplay(null);
+            },
+          },
+        ]}
+      />
+    );
   };
 
   const [enableConsultButton, setEnableConsultButton] = useState(false);

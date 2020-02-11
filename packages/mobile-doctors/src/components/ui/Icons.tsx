@@ -56,6 +56,10 @@ export const DropdownGreen: React.FC<IconProps> = (props) => (
   />
 );
 
+export const Download: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_download.png')} />
+);
+
 export const ArrowFull: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('../../images/icons/ic_arrowFull.png')} />
 );

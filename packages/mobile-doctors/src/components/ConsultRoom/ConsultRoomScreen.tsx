@@ -81,6 +81,7 @@ import {
 import MaterialTabs from 'react-native-material-tabs';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -1148,81 +1149,83 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const messageView = (rowData: any, index: number) => {
     console.log(rowData, 'messageView');
-    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+    const isMatched = rowData.url && rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+    // const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
     const onPress = () => {
       console.log('IMAGE', rowData.url);
       if (isMatched) {
         openPopUp(rowData);
       }
     };
-    return;
-    <View
-      style={{
-        backgroundColor: 'transparent',
-        width: rowData.message !== null ? 282 : 0,
-        borderRadius: 10,
-        marginVertical: 2,
-        // alignSelf: 'flex-start',
-      }}
-    >
-      {leftComponent === 1 && (
-        <View style={styles.imageStyle}>
-          <DoctorPlaceholderImage style={styles.imageStyle} />
-        </View>
-      )}
-      <View>
-        {rowData.message === messageCodes.imageconsult ? (
-          renderCommonImageView(rowData, isMatched, onPress)
-        ) : rowData.message === '^^#startconsultJr' ? (
-          renderAutomatedText(rowData)
-        ) : rowData.message === '^^#startconsult' ? (
-          renderAutomatedText(rowData)
-        ) : rowData.message === messageCodes.stopConsultJr ? (
-          renderAutomatedText(rowData)
-        ) : (
-          <>
-            <View
-              style={{
-                backgroundColor: 'white',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              <Text
-                style={{
-                  color: '#0087ba',
-                  paddingHorizontal: 16,
-                  paddingTop: 8,
-                  paddingBottom: 3,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.message}
-              </Text>
-              <Text
-                style={{
-                  color: 'rgba(2,71,91,0.6)',
-                  paddingHorizontal: 16,
-                  paddingVertical: 4,
-                  textAlign: 'right',
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                {convertChatTime(rowData)}
-              </Text>
-            </View>
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                height: 4,
-                width: 20,
-              }}
-            />
-          </>
+    return (
+      <View
+        style={{
+          backgroundColor: 'transparent',
+          width: rowData.message !== null ? 282 : 0,
+          borderRadius: 10,
+          marginVertical: 2,
+          // alignSelf: 'flex-start',
+        }}
+      >
+        {leftComponent === 1 && (
+          <View style={styles.imageStyle}>
+            <DoctorPlaceholderImage style={styles.imageStyle} />
+          </View>
         )}
+        <View>
+          {rowData.message === messageCodes.imageconsult ? (
+            renderCommonImageView(rowData, isMatched, onPress)
+          ) : rowData.message === '^^#startconsultJr' ? (
+            renderAutomatedText(rowData)
+          ) : rowData.message === '^^#startconsult' ? (
+            renderAutomatedText(rowData)
+          ) : rowData.message === messageCodes.stopConsultJr ? (
+            renderAutomatedText(rowData)
+          ) : (
+            <>
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  marginLeft: 38,
+                  borderRadius: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    paddingHorizontal: 16,
+                    paddingTop: 8,
+                    paddingBottom: 3,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
+              </View>
+              <View
+                style={{
+                  backgroundColor: 'transparent',
+                  height: 4,
+                  width: 20,
+                }}
+              />
+            </>
+          )}
+        </View>
       </View>
-    </View>;
+    );
   };
 
   const openPopUp = (rowData: any) => {
@@ -1339,10 +1342,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
       if (isMatched) {
         openPopUp(rowData);
+        setPatientImageshow(true);
       } else {
         openPopUp(rowData);
-        setShowWeb(true);
-        setPatientImageshow(true);
+        // setShowWeb(true);
       }
     };
     return renderCommonImageView(rowData, isMatched, onPress);
@@ -2642,14 +2645,23 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               startConsult={startConsult}
               navigation={props.navigation}
               messagePublish={(message: any) => {
-                pubnub.publish(
+                console.log(
                   {
-                    message: message,
+                    ...message,
                     channel: channel,
                     storeInHistory: true,
                   },
-                  (status, response) => {}
+                  'fmskxc'
                 );
+
+                // pubnub.publish(
+                //   {
+                //     message,
+                //     channel: channel,
+                //     storeInHistory: true,
+                //   },
+                //   (status, response) => {}
+                // );
               }}
             />
           ) : (
@@ -3085,6 +3097,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {uploadPrescriptionPopup()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
+      {showPDF && (
+        <RenderPdf
+          uri={url}
+          title={
+            url
+              .split('/')
+              .pop()!
+              .split('=')
+              .pop() || 'Document'
+          }
+          isPopup={true}
+          setDisplayPdf={() => {
+            setShowPDF(false);
+            setUrl('');
+          }}
+          navigation={props.navigation}
+        />
+      )}
     </SafeAreaView>
   );
 };
