@@ -81,6 +81,8 @@ import {
 import MaterialTabs from 'react-native-material-tabs';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+// import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -671,8 +673,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             const PatientConsultStartedMessage = insertText.filter((obj: any) => {
               return obj.message === messageCodes.consultPatientStartedMsg;
             });
-            console.log(PatientConsultStartedMessage, 'PatientConsultStartedMessage');
-            console.log(startConsult, 'startconsult');
           })
           .catch((error) => {
             console.log(error);
@@ -715,7 +715,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   }, []);
 
   const keyboardDidHide = () => {
-    console.log('Keyboard hide');
     setHeightList(height - 185);
   };
   let insertText: object[] = [];
@@ -811,7 +810,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     if (rowData.id !== doctorId) {
       leftComponent++;
       rightComponent = 0;
-      console.log(rowData, 'rowData');
       return (
         <View>
           {leftComponent === 1 ? (
@@ -1147,87 +1145,85 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
-    console.log(rowData, 'messageView');
-    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+    const isMatched = rowData.url && rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+    // const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
     const onPress = () => {
-      console.log('IMAGE', rowData.url);
       if (isMatched) {
         openPopUp(rowData);
       }
     };
-    return;
-    <View
-      style={{
-        backgroundColor: 'transparent',
-        width: rowData.message !== null ? 282 : 0,
-        borderRadius: 10,
-        marginVertical: 2,
-        // alignSelf: 'flex-start',
-      }}
-    >
-      {leftComponent === 1 && (
-        <View style={styles.imageStyle}>
-          <DoctorPlaceholderImage style={styles.imageStyle} />
-        </View>
-      )}
-      <View>
-        {rowData.message === messageCodes.imageconsult ? (
-          renderCommonImageView(rowData, isMatched, onPress)
-        ) : rowData.message === '^^#startconsultJr' ? (
-          renderAutomatedText(rowData)
-        ) : rowData.message === '^^#startconsult' ? (
-          renderAutomatedText(rowData)
-        ) : rowData.message === messageCodes.stopConsultJr ? (
-          renderAutomatedText(rowData)
-        ) : (
-          <>
-            <View
-              style={{
-                backgroundColor: 'white',
-                marginLeft: 38,
-                borderRadius: 10,
-              }}
-            >
-              <Text
-                style={{
-                  color: '#0087ba',
-                  paddingHorizontal: 16,
-                  paddingTop: 8,
-                  paddingBottom: 3,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.message}
-              </Text>
-              <Text
-                style={{
-                  color: 'rgba(2,71,91,0.6)',
-                  paddingHorizontal: 16,
-                  paddingVertical: 4,
-                  textAlign: 'right',
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                {convertChatTime(rowData)}
-              </Text>
-            </View>
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                height: 4,
-                width: 20,
-              }}
-            />
-          </>
+    return (
+      <View
+        style={{
+          backgroundColor: 'transparent',
+          width: rowData.message !== null ? 282 : 0,
+          borderRadius: 10,
+          marginVertical: 2,
+          // alignSelf: 'flex-start',
+        }}
+      >
+        {leftComponent === 1 && (
+          <View style={styles.imageStyle}>
+            <DoctorPlaceholderImage style={styles.imageStyle} />
+          </View>
         )}
+        <View>
+          {rowData.message === messageCodes.imageconsult ? (
+            renderCommonImageView(rowData, isMatched, onPress)
+          ) : rowData.message === '^^#startconsultJr' ? (
+            renderAutomatedText(rowData)
+          ) : rowData.message === '^^#startconsult' ? (
+            renderAutomatedText(rowData)
+          ) : rowData.message === messageCodes.stopConsultJr ? (
+            renderAutomatedText(rowData)
+          ) : (
+            <>
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  marginLeft: 38,
+                  borderRadius: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    paddingHorizontal: 16,
+                    paddingTop: 8,
+                    paddingBottom: 3,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: 'rgba(2,71,91,0.6)',
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
+              </View>
+              <View
+                style={{
+                  backgroundColor: 'transparent',
+                  height: 4,
+                  width: 20,
+                }}
+              />
+            </>
+          )}
+        </View>
       </View>
-    </View>;
+    );
   };
 
   const openPopUp = (rowData: any) => {
-    console.log('setShowLoading', rowData);
-
     setShowLoading(true);
     if (rowData.url.match(/\.(pdf)$/)) {
       if (rowData.prismId) {
@@ -1335,14 +1331,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const renderImageView = (rowData: any) => {
     const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
     const onPress = () => {
-      console.log('IMAGE11', rowData.url);
-
       if (isMatched) {
         openPopUp(rowData);
+        setPatientImageshow(true);
       } else {
         openPopUp(rowData);
-        setShowWeb(true);
-        setPatientImageshow(true);
+        // setShowWeb(true);
       }
     };
     return renderCommonImageView(rowData, isMatched, onPress);
@@ -1501,29 +1495,78 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         />
 
         <OTSession
-          apiKey={'46401302'}
+          apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
           sessionId={sessionId}
           token={token}
-          // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
-          // token={
-          //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-          // }
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
         >
           <OTPublisher
-            style={publisherStyles}
+            // style={publisherStyles}
+            // properties={{
+            //   publishVideo: convertVideo ? true : false,
+            //   publishAudio: mute,
+            //   audioVolume: 100,
+            // }}
+            // eventHandlers={publisherEventHandlers}
+            style={
+              convertVideo
+                ? publisherStyles
+                : {
+                    position: 'absolute',
+                    top: 44,
+                    right: 20,
+                    width: 1,
+                    height: 1,
+                    zIndex: 1000,
+                  }
+            }
             properties={{
+              cameraPosition: cameraPosition,
               publishVideo: convertVideo ? true : false,
               publishAudio: mute,
               audioVolume: 100,
             }}
+            resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
+            onPublishStart={(event: any) => {
+              console.log('onPublishStart', event);
+            }}
+            onPublishStop={(event: any) => {
+              console.log('onPublishStop', event);
+            }}
+            onPublishError={(event: any) => {
+              console.log('onPublishError', event);
+            }}
           />
           <OTSubscriber
-            style={subscriberStyles}
-            subscribeToSelf={true}
+            // style={subscriberStyles}
+            // subscribeToSelf={true}
+            // eventHandlers={subscriberEventHandlers}
+            // properties={{
+            //   subscribeToAudio: true,
+            //   subscribeToVideo: convertVideo ? true : false,
+            //   audioVolume: 100,
+            // }}
+            style={
+              convertVideo
+                ? subscriberStyles
+                : {
+                    width: 1,
+                    height: 1,
+                  }
+            }
             eventHandlers={subscriberEventHandlers}
+            subscribeToSelf={true}
+            onSubscribeStart={(event: any) => {
+              console.log('Watching started', event);
+            }}
+            onSubscribeStop={(event: any) => {
+              console.log('onSubscribeStop', event);
+            }}
+            onSubscribeError={(event: any) => {
+              console.log('onSubscribeError', event);
+            }}
             properties={{
               subscribeToAudio: true,
               subscribeToVideo: convertVideo ? true : false,
@@ -1728,11 +1771,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }}
           >
             <OTSession
-              apiKey={'46401302'}
-              // sessionId={'2_MX40NjM5MzU4Mn5-MTU2NTQzNzkyNTgwMX40Qm0rbEtFb3VVQytGZHVQdmR0NHAveG1-fg'}
-              // token={
-              //   'T1==cGFydG5lcl9pZD00NjM5MzU4MiZzaWc9YmM2MzFhZTEwYWNlODBhZmNhNjMwNDIwOGRkNmZhYzkyMGU3ZjcyMDpzZXNzaW9uX2lkPTJfTVg0ME5qTTVNelU0TW41LU1UVTJOVFF6TnpreU5UZ3dNWDQwUW0wcmJFdEZiM1ZWUXl0R1pIVlFkbVIwTkhBdmVHMS1mZyZjcmVhdGVfdGltZT0xNTY1NDM3OTczJm5vbmNlPTAuNDc1MTYzNTI2Njc3MTIwMzYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTU2ODAyOTk3MyZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ=='
-              // }
+              apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
               sessionId={sessionId}
               token={token}
               eventHandlers={sessionEventHandlers}
@@ -1746,34 +1785,69 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               }}
             >
               <OTSubscriber
+                // style={subscriberStyles}
+                // subscribeToSelf={true}
+                // eventHandlers={subscriberEventHandlers}
+                // properties={{
+                //   subscribeToAudio: true,
+                //   subscribeToVideo: true,
+                //   //audioVolume: 100,
+                // }}
                 style={subscriberStyles}
                 subscribeToSelf={true}
                 eventHandlers={subscriberEventHandlers}
+                onSubscribeStart={(event: any) => {
+                  console.log('Watching started', event);
+                }}
+                onSubscribeStop={(event: any) => {
+                  console.log('onSubscribeStop', event);
+                }}
+                onSubscribeError={(event: any) => {
+                  console.log('onSubscribeError', event);
+                }}
                 properties={{
                   subscribeToAudio: true,
                   subscribeToVideo: true,
-                  //audioVolume: 100,
+                  audioVolume: 100,
                 }}
               />
 
               <OTPublisher
-                style={{
-                  position: 'absolute',
-                  top: 44,
-                  right: 20,
-                  width: 112,
-                  height: 148,
-                  zIndex: 100,
-                  elevation: 1000,
-                  borderRadius: 30,
-                }}
+                style={publisherStyles}
                 properties={{
                   cameraPosition: cameraPosition,
                   publishVideo: showVideo,
                   publishAudio: mute,
-                  //audioVolume: 100,
+                  audioVolume: 100,
                 }}
+                resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
+                onPublishStart={(event: any) => {
+                  console.log('onPublishStart', event);
+                }}
+                onPublishStop={(event: any) => {
+                  console.log('onPublishStop', event);
+                }}
+                onPublishError={(event: any) => {
+                  console.log('onPublishError', event);
+                }}
+                // style={{
+                //   position: 'absolute',
+                //   top: 44,
+                //   right: 20,
+                //   width: 112,
+                //   height: 148,
+                //   zIndex: 100,
+                //   elevation: 1000,
+                //   borderRadius: 30,
+                // }}
+                // properties={{
+                //   cameraPosition: cameraPosition,
+                //   publishVideo: showVideo,
+                //   publishAudio: mute,
+                //   //audioVolume: 100,
+                // }}
+                // eventHandlers={publisherEventHandlers}
               />
             </OTSession>
             <Text
@@ -2757,13 +2831,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         middleText={strings.consult_room.consult_room}
-        timerText={
-          consultStarted
-            ? `${strings.consult_room.time_left}{' '} ${
-                minutes.toString().length < 2 ? '0' + minutes : minutes
-              } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
-            : getTimerText()
-        }
+        // timerText={
+        //   consultStarted
+        //     ? `${strings.consult_room.time_left}{' '} ${
+        //         minutes.toString().length < 2 ? '0' + minutes : minutes
+        //       } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
+        //     : getTimerText()
+        // }
         timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         textStyles={{
           marginTop: 10,
@@ -3085,6 +3159,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {uploadPrescriptionPopup()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
+      {/* {showPDF && (
+        <RenderPdf
+          uri={url}
+          title={
+            url
+              .split('/')
+              .pop()!
+              .split('=')
+              .pop() || 'Document'
+          }
+          isPopup={true}
+          setDisplayPdf={() => {
+            setShowPDF(false);
+            setUrl('');
+          }}
+          navigation={props.navigation}
+        />
+      )} */}
     </SafeAreaView>
   );
 };
