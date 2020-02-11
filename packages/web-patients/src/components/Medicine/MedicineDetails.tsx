@@ -501,7 +501,6 @@ export const MedicineDetails: React.FC = (props) => {
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
                       <Scrollbars className={classes.scrollResponsive} autoHide={true} autoHeight autoHeightMax={'calc(100vh - 215px'}>
-                        <div>
                           <div className={classes.productInformation}>
                             <MedicineImageGallery data={medicineDetails} />
                             <div className={classes.productDetails}>
@@ -568,7 +567,6 @@ export const MedicineDetails: React.FC = (props) => {
                               ) : null}
                             </div>
                           </div>
-                        </div>
                       </Scrollbars>
                     </div>
                     <MedicineInformation data={medicineDetails} />
