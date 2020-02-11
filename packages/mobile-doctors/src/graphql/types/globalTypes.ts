@@ -377,6 +377,7 @@ export interface UpdatePatientInput {
   uhid?: string | null;
   emailAddress?: string | null;
   dateOfBirth?: any | null;
+  referralCode?: string | null;
   relation?: Relation | null;
   photoUrl?: string | null;
 }

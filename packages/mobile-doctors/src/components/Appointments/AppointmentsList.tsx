@@ -7,7 +7,11 @@ import {
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
-import { APPOINTMENT_TYPE, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  APPOINTMENT_TYPE,
+  STATUS,
+  DoctorType,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import moment from 'moment';
 import React from 'react';
@@ -21,6 +25,7 @@ import {
 } from 'react-navigation';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -49,6 +54,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return props.newPatientsList.indexOf(id) > -1;
   };
   const { doctorDetails } = useAuth();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   const getStatusCircle = (status: string, showNext: boolean) => {
     return showNext ? (
@@ -147,7 +153,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       moment(aptmtDate)
         .add(consultDuration, 'minutes')
         .format('h:mm A') || '';
-    return `${slotStartTime} - ${slotEndTime}`;
+    return `${slotStartTime} ${consultDuration ? `- ${slotEndTime}` : ``}`;
   };
 
   const showUpNext = (aptTime: string, index: number) => {
@@ -171,15 +177,17 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           const i = _i!;
           const filterData =
             doctorDetails &&
-            doctorDetails!.consultHours!.filter((item) => {
+            doctorDetails.consultHours!.filter((item) => {
               if (item) {
-                item.weekDay ===
+                return (
+                  item.weekDay ===
                   moment(i.appointmentDateTime)
                     .format('dddd')
-                    .toUpperCase();
+                    .toUpperCase()
+                );
               }
             })[0];
-          const consultDuration = filterData ? filterData.consultDuration : 15;
+          const consultDuration = filterData && filterData.consultDuration;
           const showNext = showUpNext(i.appointmentDateTime, index);
 
           return (
@@ -195,27 +203,43 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
               >
                 {renderLeftTimeLineView(
                   i.status,
-                  index == 0 ? false : true,
-                  index == array.length - 1 ? false : true,
+                  index !== 0,
+                  index !== array.length - 1,
                   showNext
                 )}
                 <CalendarCard
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
                     console.log('appppp', appId, i);
-                    props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                      DoctorId: doctorId,
-                      PatientId: patientId,
-                      PatientConsultTime: null,
-                      PatientInfoAll: PatientInfo,
-                      AppId: appId,
-                      Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
-                      AppointmentStatus: i.status,
-                      AppoinementData: i,
-                    });
+                    if (
+                      i.caseSheet &&
+                      i.caseSheet.length > 0 &&
+                      i.caseSheet.findIndex(
+                        (i) => i && i.doctorType === DoctorType.JUNIOR && i.status === 'COMPLETED'
+                      ) > -1
+                    ) {
+                      props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                        DoctorId: doctorId,
+                        PatientId: patientId,
+                        PatientConsultTime: null,
+                        PatientInfoAll: PatientInfo,
+                        AppId: appId,
+                        Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
+                        AppointmentStatus: i.status,
+                        AppoinementData: i,
+                      });
+                    } else {
+                      showAphAlert &&
+                        showAphAlert({
+                          title: 'Alert!',
+                          description:
+                            'You can start this consultation only after Junior Doctor has filled the case sheet.',
+                        });
+                    }
                   }}
+                  appointmentStatus={i.appointmentState || ''}
                   doctorname={i.patientInfo!.firstName || ''}
-                  timing={formatTiming(i.appointmentDateTime, consultDuration)}
+                  timing={formatTiming(i.appointmentDateTime, consultDuration || undefined)}
                   symptoms={[]}
                   doctorId={i.doctorId}
                   patientId={i.patientId}
