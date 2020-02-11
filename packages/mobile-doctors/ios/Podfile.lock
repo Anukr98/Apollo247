@@ -293,6 +293,8 @@ PODS:
     - React
   - react-native-netinfo (5.3.3):
     - React
+  - react-native-pdf (6.0.1):
+    - React
   - react-native-splash-screen (3.2.0):
     - React
   - react-native-webview (8.0.4):
@@ -332,6 +334,8 @@ PODS:
     - React-cxxreact (= 0.61.3)
     - React-jsi (= 0.61.3)
     - ReactCommon/jscallinvoker (= 0.61.3)
+  - rn-fetch-blob (0.12.0):
+    - React-Core
   - RNCAsyncStorage (1.7.1):
     - React
   - RNFirebase (5.5.7):
@@ -350,7 +354,7 @@ PODS:
     - React-Core
     - React-RCTImage
     - RSKImageCropper
-  - RNVectorIcons (6.5.0):
+  - RNVectorIcons (6.6.0):
     - React
   - RSKImageCropper (2.2.3)
   - Yoga (1.14.0)
@@ -383,6 +387,7 @@ DEPENDENCIES:
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-pdf (from `../node_modules/react-native-pdf`)
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -396,6 +401,7 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/jscallinvoker (from `../node_modules/react-native/ReactCommon`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - RNFirebase (from `../node_modules/react-native-firebase/ios`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -471,6 +477,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-picker"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-pdf:
+    :path: "../node_modules/react-native-pdf"
   react-native-splash-screen:
     :path: "../node_modules/react-native-splash-screen"
   react-native-webview:
@@ -495,6 +503,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Vibration"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  rn-fetch-blob:
+    :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-community/async-storage"
   RNFirebase:
@@ -551,6 +561,7 @@ SPEC CHECKSUMS:
   react-native-geolocation: cbd9d6bd06bac411eed2671810f454d4908484a8
   react-native-image-picker: 7e19aefccd42aad840a758181e16ce05d4e95578
   react-native-netinfo: 75711548b53a527515d9226e6370249f75083e63
+  react-native-pdf: 29a09815e99c92743aa8459a90564aaddd4065e0
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-webview: 987e8c4a6faf5b9e45cf8e32beb98087953b8109
   React-RCTActionSheet: 94671eef55b01a93be735605822ef712d5ea208e
@@ -563,14 +574,15 @@ SPEC CHECKSUMS:
   React-RCTText: b8f895b94aa0e7778fef28d13f3d71eed4a10c3d
   React-RCTVibration: 262588c97551b0b1c675468cda857466ba5af18f
   ReactCommon: c2c63d9290b422ca6ad5b3663073a015dd892ae9
+  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 8539fc80a0075fcc9c8e2dff84cd22dc5bf1dacf
   RNFirebase: 3c0d26909841ad3c72ca46d85aba333ef49903bc
   RNGestureHandler: 5329a942fce3d41c68b84c2c2276ce06a696d8b0
   RNImageCropPicker: fcdbbbef2f0ea869c6d9ce39b8e4fd67e94009f4
-  RNVectorIcons: f6cf608dee5b2cb5726ff3b629a5258586d5677b
+  RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 733b2ac4e3c5d0d2302c2a5d0233533fb32b1ea6
+PODFILE CHECKSUM: 9d8d0f15adf1385d461365183b7e1781f56f5696
 
 COCOAPODS: 1.8.4

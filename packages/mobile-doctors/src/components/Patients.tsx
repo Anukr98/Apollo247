@@ -276,7 +276,28 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           doctorname={item.patientInfo!.firstName}
           icon={
             <View style={{ marginRight: 12 }}>
-              <Chat />
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                    DoctorId: (doctorDetails && doctorDetails.id) || '',
+                    PatientId: item.patientid,
+                    PatientConsultTime: null,
+                    PatientInfoAll: item.patientInfo,
+                    AppId:
+                      (item.appointmentids &&
+                        item.appointmentids.length > 0 &&
+                        item.appointmentids[0]) ||
+                      '',
+                    Appintmentdatetime: item.appointmentdatetime, //getDateFormat(i.appointmentDateTime),
+                    // AppointmentStatus: i.status,
+                    // AppoinementData: i,
+                    activeTabIndex: 1,
+                  });
+                }}
+              >
+                <Chat />
+              </TouchableOpacity>
             </View>
           }
           consults={item.consultscount}

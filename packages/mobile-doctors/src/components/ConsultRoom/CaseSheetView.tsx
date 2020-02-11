@@ -55,6 +55,7 @@ import {
   GET_CASESHEET,
   GET_DOCTOR_FAVOURITE_TEST_LIST,
   MODIFY_CASESHEET,
+  CREATE_CASESHEET_FOR_SRD,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
@@ -95,7 +96,12 @@ import {
   UpdateCaseSheetVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateCaseSheet';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { medUsageType, nameFormater, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import {
+  medUsageType,
+  nameFormater,
+  g,
+  messageCodes,
+} from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
@@ -127,6 +133,7 @@ import {
   modifyCaseSheet,
   modifyCaseSheetVariables,
 } from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -408,6 +415,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   startConsult: boolean;
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   overlayDisplay: (renderDisplay: React.ReactNode) => void;
+  messagePublish?: (message: any) => void;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -447,8 +455,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [switchValue, setSwitchValue] = useState<boolean | null>(true);
 
   const [diagnosisView, setDiagnosisView] = useState(false);
-  const [date, setDate] = useState<Date>(new Date());
-  const [selectDate, setSelectDate] = useState<string>('mm/dd/yyyy');
+
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -488,6 +495,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   let Delegate = '';
   const { showAphAlert, hideAphAlert, setLoading, loading } = useUIElements();
+  const { doctorDetails } = useAuth();
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
@@ -522,8 +530,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     //     console.log('Error occured while create session', e);
     //   });
   }, []);
+  const cerateCaseSheetSRDAPI = () => {
+    setLoading && setLoading(true);
+    client
+      .mutate({
+        mutation: CREATE_CASESHEET_FOR_SRD,
+        variables: {
+          appointmentId: AppId,
+        },
+      })
+      .then((data) => {
+        getCaseSheetAPI();
+      })
+      .catch(() => {
+        setLoading && setLoading(false);
+        showAphAlert &&
+          showAphAlert({
+            title: 'Alert!',
+            description: 'Error occured while creating Case Sheet. Please try again',
+          });
+      });
+  };
 
-  useEffect(() => {
+  const getCaseSheetAPI = () => {
     setLoading && setLoading(true);
     client
       .query<GetCaseSheet>({
@@ -564,7 +593,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             .filter((i) => i.value !== '')
         );
         setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
-        setJuniorDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || null);
+        setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
         setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
         setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
         setDiagnosticPrescription(
@@ -611,12 +640,19 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
-        const error = JSON.parse(JSON.stringify(e));
-        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
+        const message = e.message ? e.message.split(':')[1].trim() : '';
+        if (message === 'NO_CASESHEET_EXIST') {
+          cerateCaseSheetSRDAPI();
+        }
+        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
       });
+  };
+
+  useEffect(() => {
+    getCaseSheetAPI();
   }, []);
 
-  const startDate = moment(date).format('YYYY-MM-DD');
+  const startDate = moment(new Date()).format('YYYY-MM-DD');
 
   useEffect(() => {
     setShowButtons(props.startConsult);
@@ -776,7 +812,35 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setLoading && setLoading(false);
         setShowPopUp(true);
         console.log('_data', _data);
-
+        if (followup && followupDays) {
+          const followupObj = {
+            appointmentId: AppId,
+            folloupDateTime: followup
+              ? moment(
+                  g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
+                    new Date()
+                )
+                  .add(Number(followupDays), 'd')
+                  .format('YYYY-MM-DD')
+              : '',
+            doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+            caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
+            doctorInfo: doctorDetails,
+            pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+              caseSheetData,
+              'caseSheetDetails',
+              'blobName'
+            )}`,
+          };
+          props.messagePublish &&
+            props.messagePublish({
+              id: followupObj.doctorId,
+              message: messageCodes.followupconsult,
+              transferInfo: followupObj,
+              messageDate: new Date(),
+              sentBy: REQUEST_ROLES.DOCTOR,
+            });
+        }
         //setShowButtons(false);
         // props.onStopConsult();
       })
@@ -831,7 +895,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     //console.log({ Appintmentdatetimeconsultpage });
     return (
       <View style={{ backgroundColor: '#f0f4f5' }}>
-        {showButtons == false ? (
+        {!showButtons ? (
           <View style={styles.footerButtonsContainersave}>
             <Button
               title="START CONSULT"
@@ -1207,12 +1271,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         </CollapseCard>
       </View>
     );
-  };
-  const removeDiagnosticPresecription = (item: any, i) => {
-    removeDiagnosticPrescriptionDataList(item);
-    setDiagnosticPrescription(getDiagnosticPrescriptionDataList());
-    // setDiagnosticPrescription(JSON.parse(JSON.stringify(diagnosticPrescriptionData)).slice(i, 1));
-    setTests([...tests, { ...item, isSelected: true }]);
   };
 
   const renderDiagonisticPrescription = () => {
@@ -1933,19 +1991,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderPastAppData = (apmnt: any) => {
-    return (
-      <View>
-        {apmnt == [] ? (
-          <Text style={styles.symptomsText}>No Data</Text>
-        ) : (
-          <View>
-            <Text>{apmnt.status}</Text>
-          </View>
-        )}
-      </View>
-    );
-  };
+
   const renderHeaderText = (header: string) => {
     return (
       <Text
@@ -2017,10 +2063,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     // alignItems: 'center',
                   }}
                 >
-                  {renderLeftTimeLineView(
-                    index == 0 ? false : true,
-                    index == array.length - 1 ? false : true
-                  )}
+                  {renderLeftTimeLineView(index !== 0, index !== array.length - 1)}
                   <TouchableOpacity
                     activeOpacity={1}
                     style={{
@@ -2050,7 +2093,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         ...theme.viewStyles.text('M', 12, theme.colors.darkBlueColor(0.6), 1, 12),
                       }}
                     >
-                      {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
+                      {moment(i ? i.appointmentDateTime : '').format('D MMMM, HH:MM A')}
                     </Text>
                     <View style={{ flexDirection: 'row' }}>
                       <View style={{ marginRight: 24 }}>
@@ -2083,10 +2126,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {renderHeaderText('Reports')}
             {records.length > 0 ? <View></View> : renderInfoText('No Data')}
             {renderHeaderText('Past Consultations')}
-            {/* {pastList &&
-              pastList.map((apmnt: any, i) => {
-                return <View style={{ marginBottom: 0 }}>{renderPastAppData(apmnt)}</View>;
-              })} */}
             {renderPastConsults()}
           </View>
         </CollapseCard>
