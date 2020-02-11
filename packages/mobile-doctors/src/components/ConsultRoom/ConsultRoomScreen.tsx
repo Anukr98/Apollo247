@@ -579,31 +579,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('addListener', message);
         const messageText = message.message;
         if (message.isTyping) {
-          // if (messageText === acceptedCallMsg) {
-          //   startTimer(0);
-          //   setCallAccepted(true);
-          // } else if (messageText === endCallMsg) {
-          //   setIsCall(false);
-          //   setIsAudioCall(false);
-          //   setHideStatusBar(false);
-          //   stopTimer();
-          //   setCallAccepted(false);
-          //   setReturnToCall(false);
-          // } else if (messageText === covertVideoMsg) {
-          //   setConvertVideo(true);
-          // } else if (messageText === covertAudioMsg) {
-          //   console.log('covertVideoMsg', covertAudioMsg);
-          //   setConvertVideo(false);
-          // } else if (messageText === 'Audio call ended' || messageText === 'Video call ended') {
-          //   console.log('aftercal');
-          //   addMessages(message);
-          //   setIsCall(false);
-          //   setIsAudioCall(false);
-          //   setHideStatusBar(false);
-          //   stopTimer();
-          //   setCallAccepted(false);
-          //   setReturnToCall(false);
-          // }
           const audioVideoMethod = () => {
             addMessages(message);
             setIsCall(false);
@@ -652,30 +627,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           ].includes(messageText)
         ) {
           addMessages(message);
-        }
-        // else if (messageText === consultPatientStartedMsg) {
-        //   console.log('consultPatientStartedMsg');
-        //   addMessages(message);
-        // } else if (messageText === startConsultjr) {
-        //   console.log('startConsultjr');
-        //   addMessages(message);
-        // } else if (messageText === imageconsult) {
-        //   console.log('imageconsult');
-        //   addMessages(message);
-        // } else if (messageText === firstMessage) {
-        //   console.log('firstMessage');
-        //   addMessages(message);
-        // } else if (messageText === secondMessage) {
-        //   console.log('secondMessage');
-        //   addMessages(message);
-        // } else if (messageText === languageQue) {
-        //   console.log('languageQue');
-        //   addMessages(message);
-        // } else if (messageText === jdThankyou) {
-        //   console.log('jdThankyou');
-        //   addMessages(message);
-        // }
-        else {
+        } else {
           addMessages(message);
           setTimeout(() => {
             flatListRef.current! && flatListRef.current!.scrollToEnd();
@@ -853,22 +805,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         messageCodes.stopConsultMsg,
         messageCodes.jdThankyou,
       ].includes(rowData.message)
-      // rowData.message === typingMsg ||
-      // rowData.message === endCallMsg ||
-      // rowData.message === audioCallMsg ||
-      // rowData.message === videoCallMsg ||
-      // rowData.message === acceptedCallMsg ||
-      // rowData.message === rescheduleconsult ||
-      // rowData.message === followupconsult ||
-      // rowData.message === appointmentComplete ||
-      // rowData.message === stopConsultMsg ||
-      // rowData.message === firstMessage ||
-      // rowData.message === secondMessage ||
-      // rowData.message === covertVideoMsg ||
-      // rowData.message === covertAudioMsg ||
-      // rowData.message === callAbandonment ||
-      // rowData.message === startConsultMsg ||
-      // rowData.message === jdThankyou
     ) {
       return null;
     }
@@ -1213,123 +1149,80 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const messageView = (rowData: any, index: number) => {
     console.log(rowData, 'messageView');
     const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
-    return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          width: rowData.message !== null ? 282 : 0,
-          borderRadius: 10,
-          marginVertical: 2,
-          // alignSelf: 'flex-start',
-        }}
-      >
-        {leftComponent === 1 && (
-          <View style={styles.imageStyle}>
-            <DoctorPlaceholderImage style={styles.imageStyle} />
-          </View>
-        )}
-        <View>
-          {rowData.message === messageCodes.imageconsult ? (
-            <View>
-              <TouchableOpacity
-                onPress={() => {
-                  console.log('IMAGE', rowData.url);
-                  if (isMatched) {
-                    openPopUp(rowData);
-                  }
-                }}
-                activeOpacity={1}
-              >
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 180,
-                    height: 180,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    marginBottom: isMatched ? 4 : 0,
-                    flex: 1,
-                    marginLeft: 38,
-                  }}
-                >
-                  <ImageNative
-                    placeholderStyle={{
-                      height: 180,
-                      width: '100%',
-                      alignItems: 'center',
-                      backgroundColor: 'transparent',
-                    }}
-                    PlaceholderContent={
-                      <Spinner
-                        style={{
-                          backgroundColor: 'transparent',
-                        }}
-                      />
-                    }
-                    source={{
-                      uri: rowData.url,
-                    }}
-                    style={{
-                      resizeMode: 'stretch',
-                      width: 180,
-                      height: 180,
-                      borderRadius: 10,
-                    }}
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
-          ) : rowData.message === '^^#startconsultJr' ? (
-            renderAutomatedText(rowData)
-          ) : rowData.message === '^^#startconsult' ? (
-            renderAutomatedText(rowData)
-          ) : rowData.message === messageCodes.stopConsultJr ? (
-            renderAutomatedText(rowData)
-          ) : (
-            <>
-              <View
-                style={{
-                  backgroundColor: 'white',
-                  marginLeft: 38,
-                  borderRadius: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#0087ba',
-                    paddingHorizontal: 16,
-                    paddingTop: 8,
-                    paddingBottom: 3,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.message}
-                </Text>
-                <Text
-                  style={{
-                    color: 'rgba(2,71,91,0.6)',
-                    paddingHorizontal: 16,
-                    paddingVertical: 4,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {convertChatTime(rowData)}
-                </Text>
-              </View>
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  height: 4,
-                  width: 20,
-                }}
-              />
-            </>
-          )}
+    const onPress = () => {
+      console.log('IMAGE', rowData.url);
+      if (isMatched) {
+        openPopUp(rowData);
+      }
+    };
+    return;
+    <View
+      style={{
+        backgroundColor: 'transparent',
+        width: rowData.message !== null ? 282 : 0,
+        borderRadius: 10,
+        marginVertical: 2,
+        // alignSelf: 'flex-start',
+      }}
+    >
+      {leftComponent === 1 && (
+        <View style={styles.imageStyle}>
+          <DoctorPlaceholderImage style={styles.imageStyle} />
         </View>
+      )}
+      <View>
+        {rowData.message === messageCodes.imageconsult ? (
+          renderCommonImageView(rowData, isMatched, onPress)
+        ) : rowData.message === '^^#startconsultJr' ? (
+          renderAutomatedText(rowData)
+        ) : rowData.message === '^^#startconsult' ? (
+          renderAutomatedText(rowData)
+        ) : rowData.message === messageCodes.stopConsultJr ? (
+          renderAutomatedText(rowData)
+        ) : (
+          <>
+            <View
+              style={{
+                backgroundColor: 'white',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#0087ba',
+                  paddingHorizontal: 16,
+                  paddingTop: 8,
+                  paddingBottom: 3,
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.message}
+              </Text>
+              <Text
+                style={{
+                  color: 'rgba(2,71,91,0.6)',
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                }}
+              >
+                {convertChatTime(rowData)}
+              </Text>
+            </View>
+            <View
+              style={{
+                backgroundColor: 'transparent',
+                height: 4,
+                width: 20,
+              }}
+            />
+          </>
+        )}
       </View>
-    );
+    </View>;
   };
 
   const openPopUp = (rowData: any) => {
@@ -1394,24 +1287,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
-  const renderImageView = (rowData: any) => {
-    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+  const renderCommonImageView = (rowData: any, isMatched: boolean, onPress: () => void) => {
     return (
       <View>
-        <TouchableOpacity
-          onPress={() => {
-            console.log('IMAGE11', rowData.url);
-
-            if (isMatched) {
-              openPopUp(rowData);
-            } else {
-              openPopUp(rowData);
-              setShowWeb(true);
-              setPatientImageshow(true);
-            }
-          }}
-          activeOpacity={1}
-        >
+        <TouchableOpacity onPress={onPress} activeOpacity={1}>
           <View
             style={{
               backgroundColor: 'transparent',
@@ -1452,6 +1331,23 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       </View>
     );
   };
+
+  const renderImageView = (rowData: any) => {
+    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
+    const onPress = () => {
+      console.log('IMAGE11', rowData.url);
+
+      if (isMatched) {
+        openPopUp(rowData);
+      } else {
+        openPopUp(rowData);
+        setShowWeb(true);
+        setPatientImageshow(true);
+      }
+    };
+    return renderCommonImageView(rowData, isMatched, onPress);
+  };
+
   const convertChatTime = (timeStamp: any) => {
     let utcString;
     if (timeStamp.messageDate) {
