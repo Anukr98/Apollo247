@@ -80,8 +80,6 @@ export interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, onReload }) => {
-  console.log('p', profileData);
-
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
     return (

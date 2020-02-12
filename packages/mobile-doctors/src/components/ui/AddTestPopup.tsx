@@ -19,8 +19,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
-const { width, height } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   searchTestDropdown: {
     margin: 0,

@@ -28,6 +28,7 @@ import {
   RoundVideoIcon,
   UnMuteIcon,
   VideoOffIcon,
+  FileBig,
   VideoOnIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Image as ImageNative } from 'react-native-elements';
@@ -731,7 +732,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const newmessage: object[] = [];
         res.messages.forEach((element, index) => {
           let item = element.entry;
-          console.log(item, 'element');
+          // console.log(item, 'element');
           if (item.prismId) {
             getPrismUrls(client, patientId, item.prismId)
               .then((data: any) => {
@@ -1303,33 +1304,44 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               marginVertical: 2,
               flex: 1,
               marginBottom: isMatched ? 4 : 0,
-              top: 5,
+              top: isMatched ? 5 : 0,
             }}
           >
-            <ImageNative
-              placeholderStyle={{
-                height: 180,
-                width: '100%',
-                alignItems: 'center',
-                backgroundColor: 'transparent',
-              }}
-              PlaceholderContent={
-                <Spinner
-                  style={{
-                    backgroundColor: 'transparent',
-                  }}
-                />
-              }
-              source={{
-                uri: rowData.url,
-              }}
-              style={{
-                resizeMode: 'stretch',
-                width: 180,
-                height: 180,
-                borderRadius: 10,
-              }}
-            />
+            {isMatched ? (
+              <ImageNative
+                placeholderStyle={{
+                  height: 180,
+                  width: '100%',
+                  alignItems: 'center',
+                  backgroundColor: 'transparent',
+                }}
+                PlaceholderContent={
+                  <Spinner
+                    style={{
+                      backgroundColor: 'transparent',
+                    }}
+                  />
+                }
+                source={{
+                  uri: rowData.url,
+                }}
+                style={{
+                  resizeMode: 'stretch',
+                  width: 180,
+                  height: 180,
+                  borderRadius: 10,
+                }}
+              />
+            ) : (
+              <FileBig
+                style={{
+                  resizeMode: 'stretch',
+                  width: 180,
+                  height: 180,
+                  borderRadius: 10,
+                }}
+              />
+            )}
           </View>
         </TouchableOpacity>
       </View>
@@ -2742,6 +2754,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <View
                 style={{
                   marginTop: 0,
+                  opacity: isAfter ? 1 : 0.5,
                 }}
               >
                 <Call />

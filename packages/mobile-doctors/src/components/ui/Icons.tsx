@@ -737,3 +737,11 @@ export const Edit: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/edit.png')}
   />
 );
+
+export const FileBig: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 40, width: 40 }}
+    {...props}
+    source={require('../../images/icons/ic_file_big.png')}
+  />
+);
