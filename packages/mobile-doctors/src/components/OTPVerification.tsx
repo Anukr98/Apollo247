@@ -192,7 +192,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             AsyncStorage.setItem('isLoggedIn', 'false');
             setDoctorDetails(null);
             clearFirebaseUser && clearFirebaseUser();
-            Alert.alert(strings.common.error, 'hi', [
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
               {
                 text: 'OK',
                 onPress: () => {
@@ -201,7 +201,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 },
               },
             ]);
-            // Alert.alert(strings.common.error, strings.otp.reach_out_admin);
             setshowSpinner(false);
           }
         }
