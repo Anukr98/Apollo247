@@ -2719,7 +2719,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('Error occured while adding Doctor', e);
       });
     setTimeout(() => {
-      //flatListRef.current && flatListRef.current!.scrollToEnd();
+      flatListRef.current && flatListRef.current!.scrollToEnd();
     }, 1000);
     sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, false);
     console.log('onStartConsult');
