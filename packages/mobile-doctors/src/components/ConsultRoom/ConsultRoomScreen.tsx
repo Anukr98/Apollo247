@@ -1759,6 +1759,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setChatReceived(false);
               setConvertVideo(false);
               setShowVideo(true);
+              endCallNotificationAPI(true);
               pubnub.publish(
                 {
                   message: {
@@ -2024,6 +2025,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               height: 2,
               backgroundColor: '#00b38e',
             });
+            endCallNotificationAPI(true);
             pubnub.publish(
               {
                 message: {
@@ -2204,6 +2206,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 height: 2,
                 backgroundColor: '#00b38e',
               });
+              endCallNotificationAPI(true);
               pubnub.publish(
                 {
                   message: {
