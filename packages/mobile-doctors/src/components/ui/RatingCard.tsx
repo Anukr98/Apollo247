@@ -19,6 +19,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -139,7 +140,7 @@ export const RatingCard: React.FC<CardProps> = (props) => {
           lineHeight: 24,
         }}
       >
-        How was your overall consultation experience?
+        {strings.common.consultation_experience}
       </Text>
       <View style={styles.iconView}>
         {Object.keys(feedback).map((key, i, array) => {

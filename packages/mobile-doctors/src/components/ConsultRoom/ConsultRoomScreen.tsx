@@ -2480,7 +2480,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <View>
                 <TextInput
                   autoCorrect={false}
-                  placeholder="Type here…"
+                  placeholder={strings.smartPrescr.type_here}
                   multiline={true}
                   style={{
                     marginLeft: 16,

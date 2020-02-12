@@ -636,7 +636,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
             <DatePicker
               value={startDate}
               label={strings.block_homepage.which_day_would_block}
-              placeholder={'Select a date'}
+              placeholder={strings.common.select_date}
               containerStyle={{ marginTop: 32 }}
               minimumDate={new Date()}
               onChangeDate={(date) => {

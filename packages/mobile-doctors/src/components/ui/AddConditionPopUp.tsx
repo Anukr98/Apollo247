@@ -26,6 +26,8 @@ import {
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+
 const { width, height } = Dimensions.get('window');
 
 export interface AddConditionPopUpProps {
@@ -76,7 +78,7 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
             marginRight: 20,
           }}
         >
-          {'ADD CONDITION'}
+          {strings.consult.add_condition}
         </Text>
       </View>
     );
@@ -99,7 +101,7 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
         ]}
       >
         <Button
-          title={'DONE'}
+          title={strings.buttons.done}
           onPress={() => {
             props.onDone && props.onDone(value);
             props.onClose();
@@ -210,7 +212,7 @@ export const AddConditionPopUp: React.FC<AddConditionPopUpProps> = (props) => {
         style={[theme.viewStyles.cardContainer, { marginTop: 20, marginBottom: 20, padding: 16 }]}
       >
         <TextInput
-          placeholder={'Search Condition'}
+          placeholder={strings.consult.search_condition}
           textAlignVertical={'top'}
           placeholderTextColor={theme.colors.placeholderTextColor}
           style={{

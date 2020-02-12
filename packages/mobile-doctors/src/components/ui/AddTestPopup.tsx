@@ -17,6 +17,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -219,7 +220,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
               >
                 <View>
                   <TextInputComponent
-                    placeholder="Search Tests"
+                    placeholder={strings.smartPrescr.search_test}
                     inputStyle={styles.inputView}
                     multiline={true}
                     value={searchTestVal}
@@ -255,7 +256,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
               <View style={{ backgroundColor: '#ffffff' }}>
                 <View style={styles.doneButtonStyle}>
                   <Button
-                    title="DONE"
+                    title={strings.buttons.done}
                     disabled={!searchTestVal || !tempTestArray}
                     onPress={() => {
                       props.onPressDone(searchTestVal, tempTestArray);
@@ -275,7 +276,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                 </View>
               </View>
               <View style={styles.doneButtonStyle}>
-                <Button title="DONE" />
+                <Button title={strings.buttons.done} />
               </View>
             </View>
           )}

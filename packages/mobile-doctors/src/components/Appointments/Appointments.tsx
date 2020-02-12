@@ -284,7 +284,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             marginLeft: 20,
             marginBottom: 2,
           }}
-        >{`hello dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
+        >{`${strings.case_sheet.hello_dr} ${(doctorName || '').toLowerCase()} :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),
@@ -293,7 +293,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             marginBottom: 14,
             lineHeight: 24,
           }}
-        >{`here’s your schedule for ${
+        >{`${strings.appointments.here_your_schedule} ${
           moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
             ? 'today'
             : moment(date).format('MMM, DD')
@@ -332,7 +332,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           containerStyle={{ marginRight: 20, width: 200 }}
           options={[
             {
-              optionText: '  Block Calendar',
+              optionText: strings.appointments.block_Calendar,
               icon: <Block />,
               onPress: () => {
                 // setDropdownVisible(false);
@@ -341,7 +341,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
               },
             },
             {
-              optionText: '  Manage Calendar',
+              optionText: strings.appointments.manage_calendar,
               icon: <CalendarIcon />,
               onPress: () => {
                 setDropdownVisible(false);

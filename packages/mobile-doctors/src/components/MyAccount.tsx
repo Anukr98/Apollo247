@@ -6,6 +6,7 @@ import React from 'react';
 import { Alert, View, AsyncStorage } from 'react-native';
 import { NavigationScreenProps, StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
@@ -23,7 +24,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     >
       <Button
         style={{ width: '80%' }}
-        title="LOGOUT"
+        title={strings.buttons.logout}
         onPress={() => {
           // signOut && signOut();
           // props.navigation.dispatch(
@@ -45,7 +46,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             })
             .catch((e) => {
               console.log(e);
-              Alert.alert('Error', 'Something went wrong while signing you out.');
+              Alert.alert(strings.common.error, strings.login.signout_error);
             });
         }}
       />

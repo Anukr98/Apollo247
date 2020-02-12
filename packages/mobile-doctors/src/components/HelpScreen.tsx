@@ -1,11 +1,11 @@
 import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
-import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, StyleSheet, View, Text } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -58,21 +58,21 @@ export const HelpScreen: React.FC<HelpScreenProps> = (props) => {
         <View style={{ height: 56 }} />
         <OtpCard
           cardContainer={styles.needdataview}
-          heading="need help?"
+          heading={strings.login.needhelp}
           onPress={() => props.navigation.pop()}
           headingTextStyle={styles.headingText}
         >
           <View style={styles.mainview}>
-            <Text style={styles.descriptionview}>{string.LocalStrings.helpText}</Text>
+            <Text style={styles.descriptionview}>{strings.login.helpText}</Text>
           </View>
           <View style={{ marginBottom: 44, marginTop: 20 }}>
             <Text style={styles.descriptionview}>
-              Call
+              {strings.common.call}
               <Text style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
                 {' '}
-                1800 - 3455 - 3455{' '}
+                {strings.common.toll_free_num}{' '}
               </Text>
-              to reach anexpert from our team who will resolveyour issue.
+              {strings.common.reach_an_expert}
             </Text>
           </View>
         </OtpCard>

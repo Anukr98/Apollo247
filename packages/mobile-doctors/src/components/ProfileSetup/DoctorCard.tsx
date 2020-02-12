@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { theme } from '../../theme/theme';
 import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -132,7 +133,7 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
             <View style={{ flex: 1 }}>
               <View style={styles.iconview}>
                 <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                  Dr. {props.doctorName}
+                  {strings.common.dr} {props.doctorName}
                 </Text>
                 <TouchableOpacity
                   onPress={() => setisMenuHidden(!isMenuHidden)}
@@ -147,7 +148,7 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
 
               <Text style={styles.doctorSpecializationStyles}>
                 {props.specialization ? props.specialization + ' | ' : ''}
-                {props.experience} YRS
+                {props.experience} {strings.common.yrs}
               </Text>
               <Text style={styles.educationTextStyles}>{props.education}</Text>
               <Text style={styles.doctorLocation}>{props.location}</Text>
@@ -212,7 +213,7 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
               setisMenuHidden(false);
               props.onRemove(props.doctorId);
             }}
-            title="Remove"
+            title={strings.common.remove}
             titleTextStyle={styles.titleTextStyle}
             style={[styles.containerStyles]}
           />

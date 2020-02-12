@@ -31,6 +31,7 @@ import { WebView } from 'react-native-webview';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { height, width } = Dimensions.get('window');
 
@@ -245,8 +246,8 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(error.message, 'errormessage');
                 setShowSpinner(false);
                 Alert.alert(
-                  'Error',
-                  (error && error.message) || 'The interaction was cancelled by the user.'
+                  strings.common.error,
+                  (error && error.message) || strings.login.interaction_cancelled_by_user
                 );
               });
           }
@@ -263,7 +264,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     return (
       <View style={styles.viewWebStyles}>
         <Header
-          headerText={'Terms & Conditions'}
+          headerText={strings.login.terms_conditions}
           leftIcon="close"
           containerStyle={{
             borderBottomWidth: 0,
@@ -375,7 +376,8 @@ export const Login: React.FC<LoginProps> = (props) => {
                   letterSpacing: 0,
                 }}
               >
-                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+                {/* By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7 */}
+                {strings.login.by_signingup_descr}
               </Text>
             </HyperLink>
           </View>
