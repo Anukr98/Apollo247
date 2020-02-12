@@ -81,8 +81,8 @@ import {
 import MaterialTabs from 'react-native-material-tabs';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-// import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -2593,7 +2593,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               messagePublish={(message: any) => {
                 pubnub.publish(
                   {
-                    message: message,
+                    message,
                     channel: channel,
                     storeInHistory: true,
                   },
@@ -2658,7 +2658,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: '^^#stopconsult',
+          message: messageCodes.stopConsultMsg,
         },
         channel: channel,
         storeInHistory: true,
@@ -3032,7 +3032,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {uploadPrescriptionPopup()}
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
-      {/* {showPDF && (
+      {showPDF && (
         <RenderPdf
           uri={url}
           title={
@@ -3049,7 +3049,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }}
           navigation={props.navigation}
         />
-      )} */}
+      )}
     </SafeAreaView>
   );
 };

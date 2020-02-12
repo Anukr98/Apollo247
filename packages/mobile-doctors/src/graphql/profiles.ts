@@ -1065,3 +1065,11 @@ export const GET_BLOCKED_CALENDAR = gql`
     }
   }
 `;
+
+export const END_CALL_NOTIFICATION = gql`
+  query EndCallNotification($appointmentCallId: String) {
+    endCallNotification(appointmentCallId: $appointmentCallId) {
+      status
+    }
+  }
+`;
