@@ -12,6 +12,7 @@ import {
   StyleProp,
   TextStyle,
   ViewStyle,
+  StyleSheet,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import Pdf from 'react-native-pdf';
@@ -24,6 +25,55 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 
 const { width, height } = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+  popUPContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, .8)',
+    zIndex: 5,
+    elevation: 3,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+  },
+  headerIconStyle: {
+    backgroundColor: 'white',
+    height: 28,
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+  },
+  pdfContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 16,
+    marginBottom: 16,
+    borderRadius: 0,
+    height: 'auto',
+    maxHeight: height - 150,
+    overflow: 'hidden',
+  },
+  ctaContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    alignItems: 'center',
+  },
+  stickyBottomStyle: {
+    ...theme.viewStyles.cardContainer,
+    paddingHorizontal: 0,
+    height: 80,
+    paddingTop: 0,
+  },
+});
 
 export interface RenderPdfProps
   extends NavigationScreenProps<{
@@ -145,21 +195,8 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
   };
   const renderCTAs = () => {
     return (
-      <StickyBottomComponent
-        style={{
-          ...theme.viewStyles.cardContainer,
-          paddingHorizontal: 0,
-          height: 80,
-          paddingTop: 0,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            marginHorizontal: 20,
-            alignItems: 'center',
-          }}
-        >
+      <StickyBottomComponent style={styles.stickyBottomStyle}>
+        <View style={styles.ctaContainer}>
           {ctas &&
             ctas.map((i, index) => (
               <Button
@@ -184,44 +221,17 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
   };
   if (isPopup) {
     return (
-      <View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          flex: 1,
-          backgroundColor: 'rgba(0, 0, 0, .8)',
-          zIndex: 5,
-          elevation: 3,
-        }}
-      >
+      <View style={styles.popUPContainer}>
         <View
           style={{
             paddingHorizontal: 20,
           }}
         >
-          <View
-            style={{
-              flexDirection: 'row',
-              marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              borderRadius: 14,
-            }}
-          >
+          <View style={styles.headerContainer}>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => downloadPDF()}
-              style={{
-                backgroundColor: 'white',
-                height: 28,
-                width: 28,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 14,
-              }}
+              style={styles.headerIconStyle}
             >
               <Download />
             </TouchableOpacity>
@@ -230,31 +240,12 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
               onPress={() => {
                 setDisplayPdf && setDisplayPdf();
               }}
-              style={{
-                backgroundColor: 'white',
-                height: 28,
-                width: 28,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 14,
-              }}
+              style={styles.headerIconStyle}
             >
               <CrossPopup />
             </TouchableOpacity>
           </View>
-          <View
-            style={{
-              ...theme.viewStyles.cardViewStyle,
-              marginTop: 16,
-              marginBottom: 16,
-              borderRadius: 0,
-              height: 'auto',
-              maxHeight: height - 150,
-              overflow: 'hidden',
-            }}
-          >
-            {PDFView()}
-          </View>
+          <View style={styles.pdfContainer}>{PDFView()}</View>
         </View>
       </View>
     );

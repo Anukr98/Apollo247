@@ -2629,23 +2629,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               startConsult={startConsult}
               navigation={props.navigation}
               messagePublish={(message: any) => {
-                console.log(
+                pubnub.publish(
                   {
-                    ...message,
+                    message,
                     channel: channel,
                     storeInHistory: true,
                   },
-                  'fmskxc'
+                  (status, response) => {}
                 );
-
-                // pubnub.publish(
-                //   {
-                //     message,
-                //     channel: channel,
-                //     storeInHistory: true,
-                //   },
-                //   (status, response) => {}
-                // );
               }}
             />
           ) : (
