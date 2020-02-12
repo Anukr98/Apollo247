@@ -2568,22 +2568,33 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderPatientImage = () => {
     return (
       <View style={{ marginBottom: 20 }}>
-        <Image
-          source={{
-            uri: (patientDetails && patientDetails.photoUrl) || '',
-          }}
-          style={{ height: width, width: width }}
-          resizeMode={'contain'}
-          placeholderStyle={{
-            height: width,
-            width: width,
-            alignItems: 'center',
-            backgroundColor: 'transparent',
-          }}
-          PlaceholderContent={
-            loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
-          }
-        />
+        {patientDetails && patientDetails.photoUrl ? (
+          <Image
+            source={{
+              uri: (patientDetails && patientDetails.photoUrl) || '',
+            }}
+            style={{ height: width, width: width }}
+            resizeMode={'contain'}
+            placeholderStyle={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+            PlaceholderContent={
+              loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
+            }
+          />
+        ) : (
+          <PatientPlaceHolderImage
+            style={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+          />
+        )}
       </View>
     );
   };
@@ -2599,7 +2610,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderVitals()}
           {renderPatientHistoryLifestyle()}
           {renderPatientHealthWallet()}
-
           {renderJuniorDoctorNotes()}
           {renderDiagnosisView()}
           {renderMedicinePrescription()}
