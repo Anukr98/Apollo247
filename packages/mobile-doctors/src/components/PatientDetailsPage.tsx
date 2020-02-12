@@ -109,7 +109,6 @@ export interface PatientsProps
 
 export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const client = useApolloClient();
-  console.log('Appointments', props.navigation.getParam('patientId'));
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
 
   const [familyValues, setFamilyValues] = useState<any>([]);

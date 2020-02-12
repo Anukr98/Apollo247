@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 export interface CaseSheetDetailsProps extends NavigationScreenProps {
   consultDetails: GetCaseSheet_getCaseSheet_pastAppointments;
@@ -38,6 +39,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const caseSheet = consultDetails.caseSheet.filter(
     (item: any) => item.doctorType !== DoctorType.JUNIOR
   );
+  const { doctorDetails } = useAuth();
 
   const renderHeader = () => {
     return (
@@ -59,7 +61,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
     // const data = consultDetails.caseSheet.filter(
     //   (item: any) => item.doctorType !== DoctorType.JUNIOR
     // );
-    const symptoms = caseSheet.length ? caseSheet[0].symptoms : null;
+    const symptoms = caseSheet.length > 0 ? caseSheet[0].symptoms : null;
     if (symptoms)
       return (
         <CollapseCard
@@ -239,17 +241,15 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
       >
         <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
           {renderLabelDesc(strings.common.medicines)}
-          {caseSheet.length && caseSheet[0].medicinePrescription
-            ? caseSheet[0].medicinePrescription.map((item: any) => (
-                <View>
-                  {item.medicineName && (
-                    <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>
-                      {item.medicineName}
-                    </Text>
-                  )}
-                </View>
-              ))
-            : null}
+          {caseSheet.length > 0 &&
+            caseSheet[0].medicinePrescription &&
+            caseSheet[0].medicinePrescription.map((item: any) => (
+              <View>
+                <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>
+                  {item.medicineName}
+                </Text>
+              </View>
+            ))}
         </View>
       </CollapseCard>
     );
@@ -301,11 +301,11 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
               marginHorizontal: 20,
               marginBottom: 4,
             }}
-          >{`${strings.case_sheet.submitted_by} ${
-            consultDetails.doctorInfo ? consultDetails.doctorInfo.firstName : ''
-          } ${strings.case_sheet.on} ${moment(consultDetails.appointmentDateTime).format(
-            'DD/MM/YYYY'
-          )} at\n${moment(consultDetails.appointmentDateTime).format('hh.mm A')}`}</Text>
+          >{`${strings.case_sheet.submitted_by} ${doctorDetails ? doctorDetails!.firstName : ''} ${
+            strings.case_sheet.on
+          } ${moment(consultDetails.appointmentDateTime).format('DD/MM/YYYY')} at\n${moment(
+            consultDetails.appointmentDateTime
+          ).format('hh.mm A')}`}</Text>
           <Text
             style={{
               ...theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.6)),
