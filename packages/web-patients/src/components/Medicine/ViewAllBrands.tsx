@@ -20,6 +20,12 @@ const useStyles = makeStyles((theme: Theme) => {
     viewAllBrands: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        zIndex: 999,
+        top: 0,
+        width: '100%',
+      },
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -35,20 +41,27 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        zIndex: 2,
-        top: 0,
         width: '100%',
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
         paddingLeft: 20,
         paddingRight: 20,
+        boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+      },
+    },
+    headerTitle: {
+      [theme.breakpoints.down('xs')]: {
+        flex: 1,
+        textAlign: 'center',
       },
     },
     backArrow: {
       cursor: 'pointer',
       marginRight: 50,
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 0,
+      },
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
@@ -80,6 +93,14 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       marginLeft: 20,
       marginRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        borderBottom: 'none',
+        boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+        margin: 0,
+        position: 'relative',
+        paddingLeft: 14,
+        zIndex: 999,
+      },
       '& ul': {
         margin: 0,
         padding: 0,
@@ -88,6 +109,9 @@ const useStyles = makeStyles((theme: Theme) => {
         listStyleType: 'none',
         '& li': {
           flexGrow: 1,
+          [theme.breakpoints.down('xs')]: {
+            minWidth: 50,
+          },
           '& a': {
             fontSize: 14,
             fontWeight: 500,
@@ -100,6 +124,27 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    backHeader: {
+      backgroundColor: '#fff',
+      padding: 16,
+      fontSize: 13,
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      boxShadow: '0 5px 20px rgba(0, 0, 0, 0.1)',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+      '& button': {
+        boxShadow: 'none',
+        padding: 0,
+        minWidth: 'auto',
+      },
+      '& >span': {
+        width: 'calc(100% - 48px)',
+        textAlign: 'center',
+      },
+    },
     filterActive: {
       '& a': {
         borderBottom: '4px solid #00b38e !important',
@@ -109,6 +154,22 @@ const useStyles = makeStyles((theme: Theme) => {
     filterSection: {
       paddingLeft: 20,
       paddingRight: 5,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+      },
+    },
+    loader: {
+      textAlign: 'center',
+      margin: '10px auto',
+      display: 'block',
+    },
+    scrollbar: {
+      [theme.breakpoints.down('xs')]: {
+        maxHeight: 'calc(100vh - 110px) !important',
+        '& > div': {
+          maxHeight: 'calc(100vh - 110px) !important',
+        },
+      },
     },
     customScroll: {
       paddingRight: 15,
@@ -122,6 +183,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:last-child': {
         borderBottom: 'none',
       },
+      [theme.breakpoints.down('xs')]: {
+        borderBottom: 'none',
+      },
     },
     brandType: {
       fontSize: 14,
@@ -129,22 +193,55 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       width: 80,
       padding: 4,
+      [theme.breakpoints.down('xs')]: {
+        opacity: 0,
+        width: 'auto',
+        fontSize: 0,
+      },
     },
     brandList: {
       fontSize: 16,
       color: '#01475b',
       width: 'calc(100% - 80px)',
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        flexGrow: 1,
+        alignItems: 'center',
+      },
       '& ul': {
         margin: 0,
         padding: 0,
         display: 'flex',
         flexWrap: 'wrap',
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+        },
         '& li': {
           width: '25%',
           listStyleType: 'none',
           padding: 4,
+          [theme.breakpoints.down('xs')]: {
+            width: '100%',
+            borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+            marginTop: 15,
+            display: 'flex',
+            '& a': {
+              textTransform: 'lowercase',
+              width: '100%',
+              '&:first-letter': {
+                textTransform: 'capitalize',
+              },
+            },
+          },
         },
+      },
+    },
+    arrowIcon: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        marginLeft: 'auto',
+        float: 'right',
       },
     },
   };
@@ -246,16 +343,23 @@ export const ViewAllBrands: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </Link>
-            Shop By Brand
+            <div className={classes.headerTitle}>Shop By Brand</div>
           </div>
           <div className={classes.filterHeader}>
-            <ul>{alphabetFilter}</ul>
+            <Scrollbars autoHide={true} autoHeight>
+              <ul>{alphabetFilter}</ul>
+            </Scrollbars>
           </div>
-          <div className={classes.filterSection}>
-            {isLoading ? (
-              <CircularProgress size={40} />
-            ) : (
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 212px)'}>
+          <Scrollbars
+            className={classes.scrollbar}
+            autoHide={true}
+            autoHeight
+            autoHeightMax={'calc(100vh - 212px)'}
+          >
+            <div className={classes.filterSection}>
+              {isLoading ? (
+                <CircularProgress className={classes.loader} size={40} />
+              ) : (
                 <div className={classes.customScroll}>
                   {alphabets.map((alpha: string, index: number) => (
                     <div key={index} className={classes.brandRow}>
@@ -277,6 +381,11 @@ export const ViewAllBrands: React.FC = (props) => {
                                   )}
                                 >
                                   {brand.value.title}
+                                  <img
+                                    className={classes.arrowIcon}
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt=""
+                                  />
                                 </Link>
                               </li>
                             ))}
@@ -285,9 +394,9 @@ export const ViewAllBrands: React.FC = (props) => {
                     </div>
                   ))}
                 </div>
-              </Scrollbars>
-            )}
-          </div>
+              )}
+            </div>
+          </Scrollbars>
         </div>
       </div>
     </div>
