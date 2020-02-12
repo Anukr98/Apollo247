@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
+import { ConsultMode } from 'doctors-service/entities';
 
 export enum Gender {
   MALE = 'MALE',
@@ -121,8 +122,9 @@ export enum PHARMA_CART_TYPE {
 }
 
 export enum DiscountType {
+  FLATPRICE = 'FLATPRICE',
   PERCENT = 'PERCENT',
-  AMOUNT = 'AMOUNT',
+  PRICEOFF = 'PRICEOFF',
 }
 
 export enum MedicalTestUnit {
@@ -966,32 +968,23 @@ export class MedicalRecordParameters extends BaseEntity {
 //Coupon starts
 @Entity()
 export class Coupon extends BaseEntity {
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @Column({ type: 'text' })
   code: string;
 
+  @ManyToOne((type) => ConsultCouponRules, (consultCouponRules) => consultCouponRules.coupon)
+  consultCouponRules: ConsultCouponRules;
+
   @Column({ type: 'text', nullable: true })
   description: string;
-
-  @Column()
-  discountType: DiscountType;
-
-  @Column()
-  discount: number;
-
-  @Column({ type: 'timestamp', nullable: true })
-  expirationDate: Date;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ default: false })
   isActive: Boolean;
-
-  @Column({ nullable: true })
-  minimumOrderAmount: number;
 
   @Column({ nullable: true })
   updatedDate: Date;
@@ -1002,6 +995,101 @@ export class Coupon extends BaseEntity {
   }
 }
 //Coupon ends
+
+enum customerTypeInCoupons {
+  FIRST = 'FIRST',
+  RECURRING = 'RECURRING',
+}
+
+//Consult Coupon Rules starts
+@Entity()
+export class ConsultCouponRules extends BaseEntity {
+  @OneToMany((type) => Coupon, (coupon) => coupon.consultCouponRules)
+  coupon: Coupon[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'text', default: ConsultMode.BOTH })
+  couponApplicability: ConsultMode;
+
+  @Column({ nullable: true })
+  couponApplicableCustomerType: customerTypeInCoupons;
+
+  @Column({ nullable: true })
+  couponReuseCount: number;
+
+  @Column({ nullable: true })
+  couponStartDate: Date;
+
+  @Column({ nullable: true })
+  couponEndDate: Date;
+
+  @Column({ nullable: true })
+  couponDueDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: false })
+  isActive: Boolean;
+
+  @Column({ type: 'float8', nullable: true })
+  minimumCartValue: number;
+
+  @Column({ type: 'float8', nullable: true })
+  maximumCartValue: number;
+
+  @Column({ type: 'text', nullable: true })
+  discountType: DiscountType;
+
+  @Column({ type: 'float8', nullable: true })
+  discountValue: number;
+
+  @Column({ default: 1 })
+  numberOfCouponsNeeded: number; //single or series
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Consult Coupon Rules ends
+
+//Coupon usage details starts
+@Entity()
+export class CouponUsageDetails extends BaseEntity {
+  @Column({ nullable: true, type: 'uuid' })
+  couponId: string;
+
+  @Column({ nullable: true, type: 'uuid' })
+  consultId: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true, type: 'uuid' })
+  orderId: string;
+
+  @Column({ nullable: true, type: 'uuid' })
+  patientId: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+//coupon usage details ends
 
 //patientMedicalHistory starts
 @Entity()
