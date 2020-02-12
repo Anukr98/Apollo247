@@ -100,6 +100,7 @@ import {
   EndCallNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -227,6 +228,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
+  const {
+    favList,
+    // favListError,
+    // favlistLoading,
+    favMed,
+    // favMedLoading,
+    // favMedError,
+    favTest,
+    // favTestLoading,
+    // favTestError,
+  } = CaseSheetAPI();
 
   useEffect(() => {
     // callAbandonmentCall();
@@ -2502,29 +2514,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const ChatRoom = () => {
-    client
-      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-        mutation: CREATEAPPOINTMENTSESSION,
-        variables: {
-          createAppointmentSessionInput: {
-            appointmentId: AppId,
-            requestRole: REQUEST_ROLES.DOCTOR,
-          },
-        },
-      })
-      .then((_data: any) => {
-        console.log('createsession', _data);
-        console.log('sessionid', _data.data.createAppointmentSession.sessionId);
-        console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
-      })
-      .catch((e: any) => {
-        console.log('Error occured while adding Doctor', e);
-      });
-    setTimeout(() => {
-      //flatListRef.current && flatListRef.current!.scrollToEnd();
-    }, 1000);
     return (
       <View
         style={{
@@ -2689,6 +2678,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   (status, response) => {}
                 );
               }}
+              favList={favList}
+              favMed={favMed}
+              favTest={favTest}
             />
           ) : (
             <View
@@ -2706,6 +2698,29 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const onStartConsult = () => {
+    client
+      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+        mutation: CREATEAPPOINTMENTSESSION,
+        variables: {
+          createAppointmentSessionInput: {
+            appointmentId: AppId,
+            requestRole: REQUEST_ROLES.DOCTOR,
+          },
+        },
+      })
+      .then((_data: any) => {
+        console.log('createsession', _data);
+        console.log('sessionid', _data.data.createAppointmentSession.sessionId);
+        console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
+        setsessionId(_data.data.createAppointmentSession.sessionId);
+        settoken(_data.data.createAppointmentSession.appointmentToken);
+      })
+      .catch((e: any) => {
+        console.log('Error occured while adding Doctor', e);
+      });
+    setTimeout(() => {
+      //flatListRef.current && flatListRef.current!.scrollToEnd();
+    }, 1000);
     sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, false);
     console.log('onStartConsult');
     pubnub.publish(
@@ -2844,6 +2859,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       />
     );
   };
+
   const renderDropdown = () => {
     return (
       <View
