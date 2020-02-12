@@ -75,7 +75,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   }, [doctorDetails]);
 
   const renderProfileData = (getDoctorDetails: any) => {
-    console.log('getDoctorDetails', getDoctorDetails!.firstName);
     if (!getDoctorDetails!.firstName) return null;
     return (
       <View>
@@ -93,7 +92,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
   const renderMciNumberData = (getDoctorDetails: any) => {
-    console.log('getDoctorDetails', getDoctorDetails!.registrationNumber);
     if (!getDoctorDetails!.registrationNumber) return null;
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
