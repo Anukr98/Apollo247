@@ -388,20 +388,31 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             <BackArrow />
           </TouchableOpacity>
         </View>
-        <Image
-          source={{
-            uri: (patientDetails && patientDetails.photoUrl) || '',
-          }}
-          style={{ height: width, width: width }}
-          resizeMode={'contain'}
-          placeholderStyle={{
-            height: width,
-            width: width,
-            alignItems: 'center',
-            backgroundColor: 'transparent',
-          }}
-          PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
-        />
+        {patientDetails && patientDetails.photoUrl ? (
+          <Image
+            source={{
+              uri: (patientDetails && patientDetails.photoUrl) || '',
+            }}
+            style={{ height: width, width: width }}
+            resizeMode={'contain'}
+            placeholderStyle={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+            PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+          />
+        ) : (
+          <PatientPlaceHolderImage
+            style={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+          />
+        )}
       </View>
     );
   };

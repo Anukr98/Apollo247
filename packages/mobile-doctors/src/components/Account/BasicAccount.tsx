@@ -115,7 +115,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('MyStats ');
             props.navigation.navigate(AppRoutes.MyStats);
           }}
         >
@@ -135,7 +134,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('hi', data);
             props.navigation.navigate(AppRoutes.MyAccountProfile, { ProfileData: data });
           }}
         >
@@ -155,7 +153,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('hi', data);
             props.navigation.navigate(AppRoutes.MyAvailability, { ProfileData: data });
           }}
         >
@@ -176,7 +173,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('hi', data);
             props.navigation.navigate(AppRoutes.MyFees, { ProfileData: data });
           }}
         >
@@ -203,7 +199,6 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         </View> */}
         <TouchableOpacity
           onPress={() => {
-            console.log('smart prescr', data);
             props.navigation.navigate(AppRoutes.SmartPrescription, { ProfileData: data });
           }}
         >

@@ -101,15 +101,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
     const enabled = await firebase.messaging().hasPermission();
     if (enabled) {
       // user has permissions
-      console.log('enabled', enabled);
       callDeviceTokenAPI();
     } else {
       // user doesn't have permission
-      console.log('not enabled');
       try {
         await firebase.messaging().requestPermission();
         console.log('authorized');
-
         // User has authorised
       } catch (error) {
         // User has rejected permissions
@@ -166,7 +163,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                 },
               })
               .then((data: any) => {
-                console.log('APICALLED', data.data.saveDoctorDeviceToken.deviceToken.deviceToken);
                 AsyncStorage.setItem(
                   'deviceToken',
                   JSON.stringify(data.data.saveDoctorDeviceToken.deviceToken.deviceToken)

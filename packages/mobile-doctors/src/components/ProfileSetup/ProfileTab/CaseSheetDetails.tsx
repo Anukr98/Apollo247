@@ -68,7 +68,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           onPress={() => setshowCF(!showCF)}
           containerStyle={{ marginVertical: 10 }}
         >
-          {symptoms.map((item) => (
+          {symptoms.map((item: any) => (
             <View style={{ marginHorizontal: 16 }}>
               <Text style={theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE)}>
                 {item.symptom}

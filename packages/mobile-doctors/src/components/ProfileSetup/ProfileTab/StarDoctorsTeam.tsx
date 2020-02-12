@@ -90,9 +90,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   const [profileData, setProfileData] = useState(_profileData);
   const starDoctors = _profileData.starTeam!;
   const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
-  console.log('starDoctorsActive', starDoctorsActive);
   const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
-  console.log('starDoctorsInActive2', starDoctorsInActive);
 
   const onSelectStarDoctor = (searchText: boolean) => {
     setDropdownOpen(!isDropdownOpen);
