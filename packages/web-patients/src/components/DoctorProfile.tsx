@@ -244,7 +244,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     }
   }
 
-  const availabilityMarkup = (availableIn: number) => {
+  const availabilityMarkup = (availableIn: number) => {  
+    const availableSlots = data&&data.getDoctorNextAvailableSlot&&data.getDoctorNextAvailableSlot.doctorAvailalbeSlots&& data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+    const firstAvailableSLot =availableSlots&& availableSlots[0];
+    const firstAvailableSLotTime=firstAvailableSLot&&firstAvailableSLot.availableSlot
     if (availableIn === 0) {
       return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
     } else if (availableIn > 0 && availableIn <= 15) {
@@ -257,10 +260,11 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       return <div className={`${classes.availability}`}>AVAILABLE IN {availableIn} MINS</div>;
     } else if (availableIn > 45 && availableIn <= 60) {
       return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
-    } else if (availableIn > 60) {
+    } else if (availableIn > 60 && firstAvailableSLotTime) {
+      const isToday=new Date(firstAvailableSLotTime).getDate()===new Date().getDate()      
       return (
         <div className={`${classes.availability}`}>
-          TODAY {format(new Date(availableSlot), 'h:mm a')}
+         { isToday ?`TODAY ${format(new Date(firstAvailableSLotTime), 'h:mm a')}`:` ${format(new Date(firstAvailableSLotTime), 'dd-MMM-yyyy h:mm a')}`}
         </div>
       );
     }
@@ -357,7 +361,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     <img src={require('images/ic-rupee.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    Online Consultation
+                    Online Consultation999
                     <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
                     {availabilityMarkup(availableIn)}
                   </div>
