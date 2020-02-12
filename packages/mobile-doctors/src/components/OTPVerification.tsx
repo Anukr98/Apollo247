@@ -90,10 +90,11 @@ export type timeOutDataType = { phoneNumber: string; invalidAttems: number; star
 
 export interface OTPVerificationProps
   extends NavigationScreenProps<{
-    otpString: string;
     phoneNumber: string;
     loginId: string;
   }> {}
+
+let errorAlertShown = false;
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
@@ -127,6 +128,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
+    AppState.addEventListener('change', _handleAppStateChange);
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
@@ -138,6 +140,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
+      AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
 
@@ -163,23 +166,47 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 actions: [NavigationActions.navigate({ routeName: AppRoutes.ProfileSetup })],
               })
             );
-          } else {
+          } else if (!errorAlertShown) {
+            errorAlertShown = true;
+            console.log('doctorType JUNIOR else');
+
             AsyncStorage.setItem('isLoggedIn', 'false');
-            // AsyncStorage.setItem('isProfileFlowDone', 'false');
             setDoctorDetails(null);
             clearFirebaseUser && clearFirebaseUser();
-            Alert.alert(strings.common.error, strings.otp.reach_out_admin);
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
+              {
+                text: 'OK',
+                onPress: () => {
+                  console.log('OK Pressed');
+                  errorAlertShown = false;
+                },
+              },
+            ]);
             setshowSpinner(false);
           }
         } else {
-          if (getDoctorDetailsError === true) {
-            Alert.alert(strings.common.error, strings.otp.reach_out_admin);
+          console.log(getDoctorDetailsError, 'getDoctorDetailsError else');
+
+          if (getDoctorDetailsError === true && !errorAlertShown) {
+            errorAlertShown = true;
+            AsyncStorage.setItem('isLoggedIn', 'false');
+            setDoctorDetails(null);
+            clearFirebaseUser && clearFirebaseUser();
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
+              {
+                text: 'OK',
+                onPress: () => {
+                  console.log('OK Pressed');
+                  errorAlertShown = false;
+                },
+              },
+            ]);
             setshowSpinner(false);
           }
         }
       }, 2000);
     }
-  }, [doctorDetails, isOtpVerified, props.navigation, getDoctorDetailsError]);
+  }, [doctorDetails, isOtpVerified, props.navigation, getDoctorDetailsError, clearFirebaseUser]);
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -196,7 +223,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       console.log(error, 'error');
       // Error removing data
     }
-  }, [props.navigation.state.params]);
+  }, [phoneNumber]);
 
   const getTimerData = useCallback(async () => {
     try {
@@ -235,7 +262,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       // Error retrieving data
       console.log(error.message);
     }
-  }, [_removeFromStore, props.navigation.state.params]);
+  }, [_removeFromStore, phoneNumber]);
 
   useEffect(() => {
     getTimerData();
@@ -384,9 +411,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       getTimerData();
     }
   };
-  useEffect(() => {
-    AppState.addEventListener('change', _handleAppStateChange);
-  }, []);
 
   const onStopTimer = () => {
     // timer = 900;

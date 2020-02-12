@@ -31,7 +31,7 @@ export interface AuthContextProps {
   getDoctorDetailsApi: (() => Promise<boolean>) | null;
   // signOut: (() => void) | null;
   getDoctorDetailsError: boolean;
-  setDoctorDetailsError: (() => void) | null;
+  setDoctorDetailsError: ((arg0: boolean) => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -194,7 +194,7 @@ export const AuthProvider: React.FC = (props) => {
     console.log('authprovider');
 
     auth.onAuthStateChanged(async (user) => {
-      console.log('authprovider', authStateRegistered, user);
+      console.log('authprovider onAuthStateChanged', authStateRegistered, user);
 
       if (user && !authStateRegistered) {
         console.log('authprovider login');
@@ -238,7 +238,8 @@ export const AuthProvider: React.FC = (props) => {
         .catch(async (error) => {
           console.log('GetDoctorDetails error', error);
           setDoctorDetailsError(true);
-          clearFirebaseUser();
+          // clearFirebaseUser();
+          // clearUserData();
           reject(false);
         });
     });
