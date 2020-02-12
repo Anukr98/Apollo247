@@ -83,26 +83,6 @@ export const UPDATE_PATIENT = gql`
 //   }
 // `;
 
-export const GET_PATIENTS_MOBILE = gql`
-  query getPatientByMobileNumber($mobileNumber: String) {
-    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
-      patients {
-        id
-        uhid
-        firstName
-        lastName
-        mobileNumber
-        dateOfBirth
-        emailAddress
-        gender
-        relation
-        photoUrl
-        photoUrl
-      }
-    }
-  }
-`;
-
 export const ADD_NEW_PROFILE = gql`
   mutation addNewProfile($PatientProfileInput: PatientProfileInput!) {
     addNewProfile(patientProfileInput: $PatientProfileInput) {
@@ -841,21 +821,6 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
   }
 `;
 
-// export const GET_PATIENTS_MOBILE = gql`
-//   query getPatientByMobileNumber($mobileNumber: String) {
-//     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
-//       patients {
-//         id
-//         firstName
-//         dateOfBirth
-//         gender
-//         uhid
-//         lastName
-//         relation
-//       }
-//     }
-//   }
-// `;
 export const GET_PATIENTS = gql`
   query getPatients {
     getPatients {
@@ -887,26 +852,6 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
-
-// export const GET_PATIENTS_MOBILE = gql`
-//   query getPatientByMobileNumber($mobileNumber: String) {
-//     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
-//       patients {
-//         id
-//         uhid
-//         firstName
-//         lastName
-//         mobileNumber
-//         dateOfBirth
-//         emailAddress
-//         gender
-//         relation
-//         photoUrl
-//         photoUrl
-//       }
-//     }
-//   }
-// `;
 
 // export const ADD_NEW_PROFILE = gql`
 //   mutation addNewProfile($PatientProfileInput: PatientProfileInput!) {
@@ -2017,6 +1962,25 @@ export const RESEND_OTP = gql`
       status
       message
       loginId
+    }
+  }
+`;
+
+export const GET_PATIENTS_MOBILE = gql`
+  query getPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        uhid
+        firstName
+        lastName
+        mobileNumber
+        dateOfBirth
+        emailAddress
+        gender
+        relation
+        photoUrl
+      }
     }
   }
 `;

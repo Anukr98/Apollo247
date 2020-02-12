@@ -124,7 +124,7 @@ export interface MultiSignupProps extends NavigationScreenProps {}
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { analytics, signOut, getPatientApiCall } = useAuth();
+  const { analytics, signOut, getPatientByPrism } = useAuth();
   const [profiles, setProfiles] = useState<GetCurrentPatients_getCurrentPatients_patients[] | null>(
     []
   );
@@ -434,7 +434,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               {data
                 ? (setVerifyingPhoneNumber(false),
                   console.log('data', data.updatePatient.patient),
-                  getPatientApiCall(),
+                  getPatientByPrism(),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),

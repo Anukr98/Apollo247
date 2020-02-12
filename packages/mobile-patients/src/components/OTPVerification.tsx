@@ -32,7 +32,6 @@ import {
   AppState,
   AppStateStatus,
   TextInput,
-  WebView,
 } from 'react-native';
 // import { WebView } from 'react-native-webview';
 import firebase from 'react-native-firebase';

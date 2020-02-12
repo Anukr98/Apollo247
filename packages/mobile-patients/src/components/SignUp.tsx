@@ -130,7 +130,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [referral, setReferral] = useState<string>('');
-  const { signOut, getPatientApiCall } = useAuth();
+  const { signOut, getPatientByPrism } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
 
@@ -177,7 +177,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
-      getPatientApiCall();
+      getPatientByPrism();
     }
   }, [currentPatient]);
 
@@ -436,7 +436,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   {data
                     ? (setVerifyingPhoneNumber(false),
                       console.log('data', data.updatePatient.patient),
-                      getPatientApiCall(),
+                      getPatientByPrism(),
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', 'false'),
