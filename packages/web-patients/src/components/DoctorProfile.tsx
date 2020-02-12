@@ -361,7 +361,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     <img src={require('images/ic-rupee.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    Online Consultation999
+                    Online Consultation
                     <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
                     {availabilityMarkup(availableIn)}
                   </div>
