@@ -139,7 +139,10 @@ import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { ChoicePopUp } from '@aph/mobile-doctors/src/components/ui/ChoicePopUp';
 import { PrescriptionView } from '@aph/mobile-doctors/src/components/ui/PrescriptionView';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { EndCallNotification, EndCallNotificationVariables } from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
+import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
 
 const { height, width } = Dimensions.get('window');
 
@@ -851,8 +854,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           title: 'SEND TO PATIENT',
           variant: 'orange',
           onPress: () => {
+            props.onStopConsult();
             followUpMessage();
-
           },
         },
       ],
@@ -1468,11 +1471,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {item.medicineUnit ? (type === 'Take' ? unit + '(s) ' : unit + ' ') : ''}
           {item.medicineFrequency ? nameFormater(item.medicineFrequency).toLowerCase() + ' ' : ''}
           {item.medicineConsumptionDurationInDays
-            ? 'for ' +
-              item.medicineConsumptionDurationInDays +
-              ' ' +
-              item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase() +
-              '(s) '
+            ? `for ${item.medicineConsumptionDurationInDays} ${
+                item.medicineConsumptionDurationUnit
+                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                  : ``
+              }`
             : ''}
           {item.medicineToBeTaken.length
             ? item.medicineToBeTaken.map((i: any) => nameFormater(i).toLowerCase()).join(', ') + ' '

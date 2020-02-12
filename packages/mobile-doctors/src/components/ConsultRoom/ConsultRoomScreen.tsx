@@ -2696,7 +2696,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: '^^#stopconsult',
+          message: messageCodes.stopConsultMsg,
         },
         channel: channel,
         storeInHistory: true,
