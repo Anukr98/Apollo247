@@ -281,30 +281,35 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           containerStyle={index === 0 ? { marginTop: 30 } : {}}
           doctorname={item.patientInfo!.firstName}
           icon={
-            <View style={{ marginRight: 12 }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                    DoctorId: (doctorDetails && doctorDetails.id) || '',
-                    PatientId: item.patientid,
-                    PatientConsultTime: null,
-                    PatientInfoAll: item.patientInfo,
-                    AppId:
-                      (item.appointmentids &&
-                        item.appointmentids.length > 0 &&
-                        item.appointmentids[0]) ||
-                      '',
-                    Appintmentdatetime: item.appointmentdatetime, //getDateFormat(i.appointmentDateTime),
-                    // AppointmentStatus: i.status,
-                    // AppoinementData: i,
-                    activeTabIndex: 1,
-                  });
-                }}
-              >
-                <Chat />
-              </TouchableOpacity>
-            </View>
+            moment(new Date(item.appointmentdatetime))
+              .add(6, 'days')
+              .startOf('day')
+              .isSameOrAfter(moment(new Date()).startOf('day')) ? (
+              <View style={{ marginRight: 12 }}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                      DoctorId: (doctorDetails && doctorDetails.id) || '',
+                      PatientId: item.patientid,
+                      PatientConsultTime: null,
+                      PatientInfoAll: item.patientInfo,
+                      AppId:
+                        (item.appointmentids &&
+                          item.appointmentids.length > 0 &&
+                          item.appointmentids[0]) ||
+                        '',
+                      Appintmentdatetime: item.appointmentdatetime, //getDateFormat(i.appointmentDateTime),
+                      // AppointmentStatus: i.status,
+                      // AppoinementData: i,
+                      activeTabIndex: 1,
+                    });
+                  }}
+                >
+                  <Chat />
+                </TouchableOpacity>
+              </View>
+            ) : null
           }
           consults={item.consultscount}
           lastconsult={moment(item.appointmentdatetime).format('DD/MM/YYYY')}

@@ -84,7 +84,6 @@ import { NavigationScreenProps } from 'react-navigation';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-// import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -193,7 +192,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
-  const [prismImage, setPrismImage] = useState<string>([]);
   const [textinputStyles, setTextInputStyles] = useState<Object>({
     width: width,
     height: 66,
@@ -217,9 +215,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   useEffect(() => {
     // callAbandonmentCall();
     console.log('PatientConsultTime'), PatientConsultTime;
-    // setTimeout(() => {
-    //   flatListRef.current && flatListRef.current!.scrollToEnd();
-    // }, 1000);
+    setTimeout(() => {
+      flatListRef.current && flatListRef.current!.scrollToEnd();
+    }, 1000);
   }, []);
 
   const [talkStyles, setTalkStyles] = useState<object>({
