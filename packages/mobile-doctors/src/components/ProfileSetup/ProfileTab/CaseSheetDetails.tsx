@@ -69,7 +69,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           containerStyle={{ marginVertical: 10 }}
         >
           {symptoms.map((item: any) => (
-            <View style={{ marginHorizontal: 16 }}>
+            <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
               <Text style={theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE)}>
                 {item.symptom}
               </Text>
@@ -211,17 +211,18 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
       >
         <View style={{ marginHorizontal: 16 }}>
           {renderLabelDesc(strings.case_sheet.diagonsed_medical_condi)}
-          {caseSheet.length && (
+          {caseSheet.length > 0 && (
             <View
               style={{ marginTop: 10, marginBottom: 20, flexDirection: 'row', flexWrap: 'wrap' }}
             >
-              {caseSheet[0].diagnosticPrescription &&
-                caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
-                  <CapsuleView
-                    diseaseName={itemname}
-                    containerStyle={{ marginRight: 12, marginBottom: 12 }}
-                  />
-                ))}
+              {caseSheet[0].diagnosticPrescription
+                ? caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
+                    <CapsuleView
+                      diseaseName={itemname}
+                      containerStyle={{ marginRight: 12, marginBottom: 12 }}
+                    />
+                  ))
+                : null}
             </View>
           )}
         </View>
@@ -238,15 +239,17 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
       >
         <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
           {renderLabelDesc(strings.common.medicines)}
-          {caseSheet.length &&
-            caseSheet[0].medicinePrescription &&
-            caseSheet[0].medicinePrescription.map((item: any) => (
-              <View>
-                <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>
-                  {item.medicineName}
-                </Text>
-              </View>
-            ))}
+          {caseSheet.length && caseSheet[0].medicinePrescription
+            ? caseSheet[0].medicinePrescription.map((item: any) => (
+                <View>
+                  {item.medicineName && (
+                    <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>
+                      {item.medicineName}
+                    </Text>
+                  )}
+                </View>
+              ))
+            : null}
         </View>
       </CollapseCard>
     );
