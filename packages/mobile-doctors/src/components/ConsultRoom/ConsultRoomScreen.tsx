@@ -38,6 +38,8 @@ import {
   CREATEAPPOINTMENTSESSION,
   END_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE,
+  SEND_CALL_NOTIFICATION,
+  END_CALL_NOTIFICATION,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
@@ -47,7 +49,12 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
-import { REQUEST_ROLES, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  REQUEST_ROLES,
+  STATUS,
+  DOCTOR_CALL_TYPE,
+  APPT_CALL_TYPE,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
@@ -83,6 +90,14 @@ import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import {
+  SendCallNotification,
+  SendCallNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
+import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
@@ -303,6 +318,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const stopAllCalls = () => {
     console.log('isA', isAudioCall, '\nisVe', isCall);
+    endCallNotificationAPI(true);
     setIsAudioCall(false);
     setHideStatusBar(false);
     setChatReceived(false);
@@ -428,6 +444,43 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         Alert.alert(strings.common.error, errorMessage);
       });
   };
+  const [callId, setCallId] = useState<string>();
+  const [chatId, setChatId] = useState<string>();
+  const sendCallNotificationAPI = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+    client
+      .query<SendCallNotification, SendCallNotificationVariables>({
+        query: SEND_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentId: AppId,
+          callType: callType,
+          doctorType: DOCTOR_CALL_TYPE.SENIOR,
+        },
+      })
+      .then((_data) => {
+        if (g(_data, 'data', 'sendCallNotification', 'status')) {
+          if (isCall) {
+            setCallId(g(_data, 'data', 'sendCallNotification', 'callDetails', 'id'));
+          } else {
+            setChatId(g(_data, 'data', 'sendCallNotification', 'callDetails', 'id'));
+          }
+        }
+      })
+      .catch((error) => {});
+  };
+
+  const endCallNotificationAPI = (isCall: boolean) => {
+    client
+      .query<EndCallNotification, EndCallNotificationVariables>({
+        query: END_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentCallId: isCall ? callId : chatId,
+        },
+      })
+      .catch((error) => {});
+  };
+
   const { doctorDetails } = useAuth();
   let dateIsAfter = moment(new Date()).isAfter(moment(Appintmentdatetime));
 
@@ -1706,6 +1759,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setChatReceived(false);
               setConvertVideo(false);
               setShowVideo(true);
+              endCallNotificationAPI(true);
               pubnub.publish(
                 {
                   message: {
@@ -1971,6 +2025,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               height: 2,
               backgroundColor: '#00b38e',
             });
+            endCallNotificationAPI(true);
             pubnub.publish(
               {
                 message: {
@@ -2151,6 +2206,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 height: 2,
                 backgroundColor: '#00b38e',
               });
+              endCallNotificationAPI(true);
               pubnub.publish(
                 {
                   message: {
@@ -2250,6 +2306,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setShowPopUp(false);
               setHideStatusBar(true);
               setChatReceived(false);
+              sendCallNotificationAPI(APPT_CALL_TYPE.AUDIO, true);
               Keyboard.dismiss();
               pubnub.publish(
                 {
@@ -2319,6 +2376,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setShowPopUp(false);
               setHideStatusBar(true);
               setChatReceived(false);
+              sendCallNotificationAPI(APPT_CALL_TYPE.VIDEO, true);
               Keyboard.dismiss();
               pubnub.publish(
                 {
@@ -2636,6 +2694,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const onStartConsult = () => {
+    sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, false);
     console.log('onStartConsult');
     pubnub.publish(
       {
@@ -2672,7 +2731,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const onStopConsult = () => {
     console.log('onStopConsult');
-
+    endCallNotificationAPI(false);
     pubnub.publish(
       {
         message: {

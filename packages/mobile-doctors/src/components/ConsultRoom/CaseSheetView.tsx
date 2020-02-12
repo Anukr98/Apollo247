@@ -57,6 +57,7 @@ import {
   MODIFY_CASESHEET,
   CREATE_CASESHEET_FOR_SRD,
   END_CALL_NOTIFICATION,
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
@@ -137,12 +138,12 @@ import {
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { ChoicePopUp } from '@aph/mobile-doctors/src/components/ui/ChoicePopUp';
-import { PrescriptionView } from '@aph/mobile-doctors/src/components/ui/PrescriptionView';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
   EndCallNotification,
   EndCallNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
+import { UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables } from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
 
 const { height, width } = Dimensions.get('window');
 
@@ -520,26 +521,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     // favTestLoading,
     // favTestError,
   } = CaseSheetAPI();
+const [prescriptionPdf, setPrescriptionPdf] = useState('');
 
-  useEffect(() => {
-    // client2
-    //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-    //     mutation: CREATEAPPOINTMENTSESSION,
-    //     variables: {
-    //       createAppointmentSessionInput: {
-    //         appointmentId: AppId,
-    //         requestRole: REQUEST_ROLES.DOCTOR,
-    //       },
-    //     },
-    //   })
-    //   .then((_data: any) => {
-    //     console.log('creat', _data);
-    //     setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
-    //   })
-    //   .catch((e: any) => {
-    //     console.log('Error occured while create session', e);
-    //   });
-  }, []);
+const sendToPatientAction = () => {
+  client
+    .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+      mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+      variables: {
+        caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id') || '',
+        sentToPatient: true,
+      },
+    })
+    .then((_data) => {
+      if (g(_data, 'data', 'updatePatientPrescriptionSentStatus', 'success')) {
+        setPrescriptionPdf(`${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+        _data,
+        'data',
+        'updatePatientPrescriptionSentStatus',
+        'blobName'
+      )}`);
+      }
+    })
+    .catch((e) => {});
+};
   const cerateCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
     client
@@ -624,6 +628,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
         setDisplayId(
           g(_data.data.getCaseSheet, 'caseSheetDetails', 'appointment', 'displayId') || ''
+        );
+        setPrescriptionPdf(
+          `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+            caseSheetData,
+            'caseSheetDetails',
+            'blobName'
+          )}`
         );
         try {
           setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
@@ -836,11 +847,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
   const prescriptionView = () => {
     props.navigation.navigate(AppRoutes.RenderPdf, {
-      uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-        caseSheetData,
-        'caseSheetDetails',
-        'blobName'
-      )}`,
+      uri: prescriptionPdf,
       title: 'PRESCRIPTION',
       CTAs: [
         {
@@ -855,6 +862,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           variant: 'orange',
           onPress: () => {
             props.onStopConsult();
+            sendToPatientAction();
             followUpMessage();
           },
         },
