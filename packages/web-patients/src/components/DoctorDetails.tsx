@@ -377,6 +377,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       </div>
     );
   } else {
-    return <LinearProgress />;
+    return null;
   }
 };

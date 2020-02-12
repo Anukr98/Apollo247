@@ -221,8 +221,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   let slotAvailableNext = '';
   let autoSlot = '';
 
-  // console.log('-------', autoSlot);
-
   const doctorName =
     doctorDetails &&
     doctorDetails.getDoctorDetailsById &&
@@ -261,6 +259,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
   const prevDateSelected = usePrevious(dateSelected);
+  let isToday = false;
 
   useEffect(() => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');
@@ -283,8 +282,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
-
-  // console.log(availableSlotsData);
 
   // get doctor next availability.
   const { data: nextAvailableSlot, loading: nextAvailableSlotLoading } = useQueryWithSkip<
@@ -313,6 +310,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   }
 
   let differenceInMinutes = 0;
+  let differenceInHours = 0;
+  let firstAvailableSlots = '';
 
   // it must be always one record or we return only first record.
   if (
@@ -330,11 +329,20 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
         // const currentTime = new Date(new Date().toISOString()).getTime();
         const slotTime = new Date(availability.availableSlot).getTime();
+        firstAvailableSlots = availability.availableSlot;
+        if (new Date(availability.availableSlot).getDate() === new Date().getDate()) {
+          isToday = true;
+        } else {
+          isToday = false;
+        }
         const currentTime = new Date(new Date().toISOString()).getTime();
         if (slotTime > currentTime) {
           const difference = slotTime - currentTime;
           const slotArray = availability.availableSlot.split('T');
-          differenceInMinutes = Math.round(difference / 60000);
+          const diffAsDate = new Date(difference);
+          differenceInHours = diffAsDate.getUTCHours(); // hours
+          differenceInMinutes = diffAsDate.getUTCMinutes(); // minutes
+          // differenceInMinutes = Math.round(difference / 60000);
           slotAvailableNext = slotArray[1].substr(0, 5);
           autoSlot = availability.availableSlot;
         }
@@ -343,8 +351,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       }
     });
   }
-
-  // console.log('diff in minutes.....', differenceInMinutes);
 
   const availableSlots =
     (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
@@ -367,11 +373,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   });
 
   const consultNowAvailable = differenceInMinutes > 0 && differenceInMinutes <= 15;
-
-  // console.log(consultNowAvailable, 'consult now available.....');
-  // console.log(slotAvailableNext, consultNow, timeSelected);
-  // console.log(slotAvailableNext, '..................................timeselected', timeSelected);
-
   let disableSubmit =
     (morningSlots.length === 0 &&
       afternoonSlots.length === 0 &&
@@ -387,12 +388,20 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         <div className={classes.customScrollBar}>
           {!props.isRescheduleConsult && (
             <div className={classes.consultGroup}>
-              {differenceInMinutes > 0 ? (
+              {differenceInMinutes > 0 && isToday ? (
                 <p>
-                  Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
+                  {`Dr. ${doctorName} is available in`}{' '}
+                  {differenceInHours > 0 && `${differenceInHours} hours`}{' '}
+                  {` ${differenceInMinutes} mins! Would you like to
+                  consult now or schedule for later?`}
+                </p>
+              ) : (
+                <p>
+                  {`Dr. ${doctorName} is available on`}{' '}
+                  {format(new Date(firstAvailableSlots), 'dd MMM , h:mm a')}! Would you like to
                   consult now or schedule for later?
                 </p>
-              ) : null}
+              )}
               <div className={classes.actions}>
                 <AphButton
                   onClick={(e) => {
