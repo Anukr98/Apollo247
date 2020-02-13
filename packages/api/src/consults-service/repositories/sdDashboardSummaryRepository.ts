@@ -22,7 +22,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentSessions } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
-import { ca } from 'date-fns/locale';
 
 type NewPatientCount = {
   patientid: string;
@@ -66,12 +65,13 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     });
     if (checkRecordExist) {
       return PhrDocumentsSummary.update(checkRecordExist.id, phrDocSummaryAttrs);
-    }
-    else {
+    } else {
       return PhrDocumentsSummary.create(phrDocSummaryAttrs)
         .save()
         .catch((createErrors) => {
-          throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+          throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, {
+            createErrors,
+          });
         });
     }
   }
@@ -420,19 +420,21 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     let count: number = 0;
     return new Promise<number>((resolve, reject) => {
       appointmentList.forEach(async (appt, index, array) => {
-        const calldetails = await AppointmentCallDetails.findOne({ where: { appointment: appt.id } });
+        const calldetails = await AppointmentCallDetails.findOne({
+          where: { appointment: appt.id },
+        });
         if (calldetails) {
-          let apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
-          let callFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
+          const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
+          const callFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
           if (apptFormat === callFormat) {
-            count = count + 1
+            count = count + 1;
           }
         }
         if (index + 1 === array.length) {
-          resolve(count)
+          resolve(count);
         }
-      })
-    })
+      });
+    });
     return count;
     // return appointmentList.length;
     // const apptIds: string[] = [];
@@ -561,7 +563,12 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
 }
 @EntityRepository(CurrentAvailabilityStatus)
 export class CurrentAvailStatusRepository extends Repository<CurrentAvailabilityStatus> {
-  async updateavailabilityStatus(specialityId: string, specialityName: string, totalDoc: number, onlineDoc: number) {
+  async updateavailabilityStatus(
+    specialityId: string,
+    specialityName: string,
+    totalDoc: number,
+    onlineDoc: number
+  ) {
     const CurrentAvailabilityStatusData: Partial<CurrentAvailabilityStatus> = {
       specialityId: specialityId,
       specialtyName: specialityName,
@@ -573,7 +580,7 @@ export class CurrentAvailStatusRepository extends Repository<CurrentAvailability
       this.update(specialityId, CurrentAvailabilityStatusData);
     } else {
       return this.save(CurrentAvailabilityStatusData).catch((saveCurrentAvailabilityError) => {
-        throw new AphError(AphErrorMessages.SAVE_CURENT_AVAILABILITY_COUNT_ERROR, undefined, {
+        throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
           saveCurrentAvailabilityError,
         });
       });

@@ -17,7 +17,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import {
   SdDashboardSummaryRepository,
-  CurrentAvailStatusRepository
+  CurrentAvailStatusRepository,
 } from 'consults-service/repositories/sdDashboardSummaryRepository';
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
@@ -61,7 +61,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
-    updateSpecialtyCount(specialityId:String):updateSpecialtyCountResult
+    updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
   }
 
   extend type Query {
@@ -366,14 +366,14 @@ const updateSpecialtyCount: Resolver<
   //get online doctors count for given speciality
   const totalOnlineDoctorsCount = await docRepo.getToatalDoctorsForSpeciality(args.specialityId, 2);
   //insert in db
-  const sepecialityCountResult = await CurrentAvailStatusRepo.updateavailabilityStatus(
+  await CurrentAvailStatusRepo.updateavailabilityStatus(
     args.specialityId,
     specialityDetails.name,
     totalDoctorsCount,
     totalOnlineDoctorsCount
   );
   //send response
-  return { updated: true }
+  return { updated: true };
 };
 export const sdDashboardSummaryResolvers = {
   Mutation: {
