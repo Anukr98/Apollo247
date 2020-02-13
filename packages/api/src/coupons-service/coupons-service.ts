@@ -1,24 +1,24 @@
 import '@aph/universal/dist/global';
 import { buildFederatedSchema } from '@apollo/federation';
-import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
-import { CouponServiceContext } from 'coupons-service/couponServiceContext';
-import { connect } from 'coupons-service/database/connect';
-import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
-import gql from 'graphql-tag';
 import 'reflect-metadata';
-import { getConnection } from 'typeorm';
-import { format, differenceInMilliseconds } from 'date-fns';
-import { winstonLogger } from 'customWinstonLogger';
 import {
   validateConsultCouponTypeDefs,
   validateConsultCouponResolvers,
 } from 'coupons-service/resolvers/validateConsultCoupon';
+import { GatewayHeaders } from 'api-gateway';
+import { getConnection } from 'typeorm';
+import { CouponServiceContext } from 'coupons-service/couponServiceContext';
+import { connect } from 'coupons-service/database/connect';
+
+import { format, differenceInMilliseconds } from 'date-fns';
+import { winstonLogger } from 'customWinstonLogger';
+//import fetch from 'node-fetch';
 
 (async () => {
   await connect();
 
-  const consultsLogger = winstonLogger.loggers.get('consultServiceLogger');
+  const couponLogger = winstonLogger.loggers.get('couponServiceLogger');
 
   const server = new ApolloServer({
     context: async ({ req }) => {
@@ -37,18 +37,6 @@ import {
     },
     schema: buildFederatedSchema([
       {
-        typeDefs: gql`
-          scalar Date
-          scalar Time
-          scalar DateTime
-        `,
-        resolvers: {
-          Date: GraphQLDate,
-          Time: GraphQLTime,
-          DateTime: GraphQLDateTime,
-        },
-      },
-      {
         typeDefs: validateConsultCouponTypeDefs,
         resolvers: validateConsultCouponResolvers,
       },
@@ -57,7 +45,7 @@ import {
       /* This plugin is defined in-line. */
       {
         serverWillStart() {
-          consultsLogger.log('info', 'Server starting up!');
+          couponLogger.log('info', 'Server starting up!');
         },
         requestDidStart({ operationName, request }) {
           /* Within this returned object, define functions that respond
@@ -66,7 +54,7 @@ import {
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
           return {
             parsingDidStart(requestContext) {
-              consultsLogger.log({
+              couponLogger.log({
                 message: 'Request Starting',
                 time: reqStartTimeFormatted,
                 operation: requestContext.request.query,
@@ -75,11 +63,7 @@ import {
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                consultsLogger.log(
-                  'error',
-                  `Encountered Error at ${reqStartTimeFormatted}: `,
-                  error
-                );
+                couponLogger.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
               });
             },
             willSendResponse({ response }) {
@@ -94,7 +78,7 @@ import {
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              consultsLogger.log(responseLog);
+              couponLogger.log(responseLog);
             },
           };
         },

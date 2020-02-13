@@ -48,6 +48,12 @@ export type Resolver<Parent, Args, Context, Result> = (
         )}/graphql`,
       },
       {
+        name: 'coupons',
+        url: `http://${process.env.COUPONS_SERVICE_HOST}${getPortStr(
+          process.env.COUPONS_SERVICE_PORT
+        )}/graphql`,
+      },
+      {
         name: 'notifications',
         url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}${getPortStr(
           process.env.NOTIFICATIONS_SERVICE_PORT ? process.env.NOTIFICATIONS_SERVICE_PORT : '80'

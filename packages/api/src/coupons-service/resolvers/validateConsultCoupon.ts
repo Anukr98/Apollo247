@@ -8,14 +8,18 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { CouponConsultRulesRepository } from 'profiles-service/repositories/CouponConsultRulesRepository';
+import { CouponGenericRulesRepository } from 'profiles-service/repositories/CouponGenericRulesRepository';
+import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { DiscountType } from 'profiles-service/entities';
 
 export const validateConsultCouponTypeDefs = gql`
-  type Validcode {
-    validityStatus: Boolean
+  type ValidateCodeResponse {
+    validityStatus: Boolean!
+    revisedAmount: string!
   }
 
   extend type Query {
-    validateConsultCoupon(appointmentId: ID, code: String): Validcode
+    validateConsultCoupon(appointmentId: ID!, Code: String!): ValidateCodeResponse
   }
 `;
 
@@ -23,7 +27,7 @@ const validateConsultCoupon: Resolver<
   null,
   { appointmentId: string; code: string },
   CouponServiceContext,
-  { validityStatus: boolean }
+  { validityStatus: boolean; revisedAmount: number }
 > = async (parent, args, { mobileNumber, patientsDb, doctorsDb, consultsDb }) => {
   //check for patient request validity
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -45,24 +49,64 @@ const validateConsultCoupon: Resolver<
   const couponData = await couponRepo.findCouponByCode(args.code);
   if (couponData == null) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
 
-  //get coupon related rule
+  //get coupon related generic rule
+  const couponGenericRuleRepo = patientsDb.getCustomRepository(CouponGenericRulesRepository);
+  const couponGenericRulesData = await couponGenericRuleRepo.findRuleById(
+    couponData.couponGenericRule
+  );
+  if (couponGenericRulesData == null) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
+
+  //get coupon related consult rule
   const couponRuleRepo = patientsDb.getCustomRepository(CouponConsultRulesRepository);
   const couponRulesData = await couponRuleRepo.findRuleById(couponData.couponConsultRule);
   if (couponRulesData == null) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
 
+  //get Doctor fees
+  let doctorFees = 0;
+  if (appointmentData.appointmentType === APPOINTMENT_TYPE.ONLINE)
+    doctorFees = <number>doctorData.onlineConsultationFees;
+  else doctorFees = <number>doctorData.physicalConsultationFees;
+
   //check for coupon applicability as per rules configured
-  let validityStatus = true;
 
   //consult mode check
   if (
     couponRulesData.couponApplicability &&
     appointmentData.appointmentType.toString() !== couponRulesData.couponApplicability.toString()
   )
-    validityStatus = false;
+    return { validityStatus: false, revisedAmount: doctorFees };
 
   //minimum cart value check
+  if (
+    couponGenericRulesData.minimumCartValue &&
+    doctorFees < couponGenericRulesData.minimumCartValue
+  )
+    return { validityStatus: false, revisedAmount: doctorFees };
 
-  return { validityStatus };
+  //maximum cart value check
+  if (
+    couponGenericRulesData.maximumCartValue &&
+    doctorFees > couponGenericRulesData.maximumCartValue
+  )
+    return { validityStatus: false, revisedAmount: doctorFees };
+
+  let revisedAmount = doctorFees;
+  if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue) {
+    if (couponGenericRulesData.discountType === DiscountType.PERCENT) {
+      revisedAmount = doctorFees - (doctorFees * couponGenericRulesData.discountValue) / 100;
+    }
+    if (
+      couponGenericRulesData.discountType === DiscountType.PRICEOFF &&
+      doctorFees > couponGenericRulesData.discountValue
+    ) {
+      revisedAmount = doctorFees - couponGenericRulesData.discountValue;
+    }
+    if (couponGenericRulesData.discountType === DiscountType.FLATPRICE) {
+      revisedAmount = couponGenericRulesData.discountValue;
+    }
+  }
+
+  return { validityStatus: true, revisedAmount: revisedAmount };
 };
 
 export const validateConsultCouponResolvers = {

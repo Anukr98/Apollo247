@@ -51,8 +51,8 @@ services:
       (! curl -s http://${PROFILES_SERVICE_HOST}:${PROFILES_SERVICE_PORT}/graphql) ||
       (! curl -s http://${DOCTORS_SERVICE_HOST}:${DOCTORS_SERVICE_PORT}/graphql) ||
       (! curl -s http://${CONSULTS_SERVICE_HOST}:${CONSULTS_SERVICE_PORT}/graphql) ||
-      (! curl -s http://${NOTIFICATIONS_SERVICE_HOST}:${NOTIFICATIONS_SERVICE_PORT}/graphql) ||
-      (! curl -s http://${COUPONS_SERVICE_HOST}:${COUPONS_SERVICE_PORT}/graphql)
+      (! curl -s http://${COUPONS_SERVICE_HOST}:${COUPONS_SERVICE_PORT}/graphql) ||
+      (! curl -s http://${NOTIFICATIONS_SERVICE_HOST}:${NOTIFICATIONS_SERVICE_PORT}/graphql)
       ) > /dev/null;
       do echo waiting for services to start...; sleep 5;
       done;
@@ -68,8 +68,8 @@ services:
       - profiles-service
       - doctors-service
       - consults-service
-      - notifications-service
       - coupons-service
+      - notifications-service
       - rabbitmq
       - storage
 
