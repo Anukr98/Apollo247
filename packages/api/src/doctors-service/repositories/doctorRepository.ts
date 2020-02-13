@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
-import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
+import { Doctor, ConsultMode, DoctorType, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
 import {
   Range,
   FilterDoctorInput,
@@ -409,8 +409,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -427,8 +427,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });
@@ -724,5 +724,27 @@ export class DoctorRepository extends Repository<Doctor> {
         },
       });
     }
+  }
+  async getToatalDoctorsForSpeciality(specialty: string, doctype: number) {
+    if (doctype === 1) {
+      const queryBuilder = this.createQueryBuilder('doctor')
+        .where('doctor.specialty = :specialty', { specialty })
+
+      let doctorsResult = await queryBuilder.getMany();
+      return doctorsResult.length;
+    } else {
+      const queryBuilder = this.createQueryBuilder('doctor')
+        .where('doctor.specialty = :specialty', { specialty })
+
+      let doctorsResult = await queryBuilder.getMany();
+      const doc: Doctor[] = [];
+      await doctorsResult.map((doctor) => {
+        if (doctor.onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE) {
+          doc.push(doctor);
+        }
+      });
+      return doc.length;
+    }
+
   }
 }

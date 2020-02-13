@@ -17,6 +17,7 @@ import {
   PhrDocumentsSummary,
   JdDashboardSummary,
   AuditHistory,
+  CurrentAvailabilityStatus,
 } from 'consults-service/entities/';
 import {
   AdminDoctorMapper,
@@ -128,6 +129,7 @@ export const connect = async () => {
         PhrDocumentsSummary,
         JdDashboardSummary,
         AuditHistory,
+        CurrentAvailabilityStatus,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
