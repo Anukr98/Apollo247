@@ -3,13 +3,17 @@ import { buildFederatedSchema } from '@apollo/federation';
 import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
 import { CouponServiceContext } from 'coupons-service/couponServiceContext';
-import { connect } from 'consults-service/database/connect';
+import { connect } from 'coupons-service/database/connect';
 import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
+import {
+  validateConsultCouponTypeDefs,
+  validateConsultCouponResolvers,
+} from 'coupons-service/resolvers/validateConsultCoupon';
 
 (async () => {
   await connect();
@@ -43,6 +47,10 @@ import { winstonLogger } from 'customWinstonLogger';
           Time: GraphQLTime,
           DateTime: GraphQLDateTime,
         },
+      },
+      {
+        typeDefs: validateConsultCouponTypeDefs,
+        resolvers: validateConsultCouponResolvers,
       },
     ]),
     plugins: [

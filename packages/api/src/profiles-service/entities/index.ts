@@ -974,8 +974,11 @@ export class Coupon extends BaseEntity {
   @Column({ type: 'text' })
   code: string;
 
-  @ManyToOne((type) => ConsultCouponRules, (consultCouponRules) => consultCouponRules.coupon)
-  consultCouponRules: ConsultCouponRules;
+  @ManyToOne((type) => CouponConsultRules, (couponConsultRule) => couponConsultRule.coupon)
+  couponConsultRule: CouponConsultRules;
+
+  @ManyToOne((type) => CouponGenericRules, (couponGenericRule) => couponGenericRule.coupon)
+  couponGenericRule: CouponGenericRules;
 
   @Column({ type: 'text', nullable: true })
   description: string;
@@ -1003,8 +1006,8 @@ enum customerTypeInCoupons {
 
 //Consult Coupon Rules starts
 @Entity()
-export class ConsultCouponRules extends BaseEntity {
-  @OneToMany((type) => Coupon, (coupon) => coupon.consultCouponRules)
+export class CouponGenericRules extends BaseEntity {
+  @OneToMany((type) => Coupon, (coupon) => coupon.couponGenericRule)
   coupon: Coupon[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -1059,6 +1062,34 @@ export class ConsultCouponRules extends BaseEntity {
 }
 //Consult Coupon Rules ends
 
+//Consult Coupon Rules starts
+@Entity()
+export class CouponConsultRules extends BaseEntity {
+  @OneToMany((type) => Coupon, (coupon) => coupon.couponConsultRule)
+  coupon: Coupon[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'text', default: ConsultMode.BOTH })
+  couponApplicability: ConsultMode;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: false })
+  isActive: Boolean;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Consult Coupon Rules ends
+
 //Coupon usage details starts
 @Entity()
 export class CouponUsageDetails extends BaseEntity {
@@ -1088,7 +1119,6 @@ export class CouponUsageDetails extends BaseEntity {
     this.updatedDate = new Date();
   }
 }
-
 //coupon usage details ends
 
 //patientMedicalHistory starts
