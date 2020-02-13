@@ -407,32 +407,25 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         status: Not(STATUS.CANCELLED),
       },
     });
-    const apptIds: string[] = [];
-    let duration = 0;
-    if (appointmentList.length > 0) {
-      appointmentList.map((appt) => {
-        apptIds.push(appt.id);
+    let count: number = 0;
+    return new Promise<number>((resolve, reject) => {
+      appointmentList.forEach(async (appt, index, array) => {
+        const calldetails = await AppointmentCallDetails.findOne({
+          where: { appointment: appt.id },
+        });
+        if (calldetails) {
+          const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
+          const callFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
+          if (apptFormat === callFormat) {
+            count = count + 1;
+          }
+        }
+        if (index + 1 === array.length) {
+          resolve(count);
+        }
       });
-      console.log(apptIds, 'apptIds in ontime consultation');
-
-      const callDetails = await AppointmentCallDetails.createQueryBuilder(
-        'appointment_call_details'
-      )
-        .select([
-          'appointment_call_details."appointmentId" as "appointmentid"',
-          'sum(appointment_call_details."callDuration") as "totalduration"',
-        ])
-        .andWhere('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
-        .andWhere('appointment_call_details.endTime is not null')
-        .groupBy('appointment_call_details."appointmentId"')
-        .getRawMany();
-      console.log(callDetails, 'callDetails');
-
-      if (callDetails.length > 0) {
-        duration = parseFloat((callDetails[0].totalduration / 60).toFixed(2));
-      }
-    }
-    return duration;
+    });
+    return count;
   }
 
   async getPatientTypes(appointmentDate: Date, doctorId: string) {

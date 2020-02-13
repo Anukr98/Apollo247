@@ -199,13 +199,13 @@ const getCurrentPatients: Resolver<
       }
 
       homeLogger('PRISM_GET_USERS_API_CALL___END');
-      log(
-        'profileServiceLogger',
-        'API_CALL_RESPONSE',
-        'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
-        JSON.stringify(uhids),
-        ''
-      );
+      // log(
+      //   'profileServiceLogger',
+      //   'API_CALL_RESPONSE',
+      //   'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
+      //   JSON.stringify(uhids),
+      //   ''
+      // );
 
       console.log(uhids, 'uhid', isPrismWorking);
     } catch (e) {
