@@ -6,6 +6,7 @@ import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { format } from 'date-fns';
 import { AddPlus, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -55,9 +56,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
     <View style={styles.container}>
       {profileData!.delegateNumber ? (
         <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 0 }}>
-          <Text style={styles.consultDescText}>
-            What type of consults will you be available for?
-          </Text>
+          <Text style={styles.consultDescText}>{strings.account.what_type_of_consult}</Text>
           <Text
             style={{
               marginLeft: 20,
@@ -65,9 +64,10 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
               ...theme.fonts.IBMPlexSansMedium(16),
               color: '#02475b',
               marginBottom: 20,
+              textTransform: 'capitalize',
             }}
           >
-            Physical, Online
+            {strings.common.physical}, {strings.common.online}
           </Text>
           {/* <View style={styles.consultTypeSelection}>
             <SelectableButton
@@ -97,7 +97,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         </SquareCardWithTitle>
       ) : null}
       <SquareCardWithTitle
-        title="Consultation Hours"
+        title={strings.account.consult_hours}
         containerStyle={{ marginTop: 16, paddingBottom: 16 }}
       >
         {profileData!.consultHours!.map((i, idx) => (
@@ -132,7 +132,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
               marginLeft: 8,
             }}
           >
-            ADD CONSULTATION HOURS
+            {strings.account.add_consult_hours}
           </Text>
         </TouchableOpacity>
       </SquareCardWithTitle>
@@ -143,14 +143,14 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
 
         <View style={{ marginLeft: 14 }}>
           <Text>
-            <Text style={styles.descriptionview}>Call</Text>
+            <Text style={styles.descriptionview}>{strings.common.call}</Text>
             <Text
               style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 }}
             >
               {' '}
-              1800 - 3455 - 3455{' '}
+              {strings.common.toll_free_num}{' '}
             </Text>
-            <Text style={styles.descriptionview}>to make any changes</Text>
+            <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
           </Text>
         </View>
       </View>

@@ -16,7 +16,6 @@ import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
 
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -90,7 +89,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         verticalAlign: 'bottom',
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         marginRight: 10,
       },
     },
@@ -108,7 +107,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     customScroll: {
       paddingLeft: 20,
-      paddingRight: 17,
+      paddingRight: 20,
       paddingBottom: 10,
     },
     filterBtn: {
@@ -119,13 +118,13 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
-    scrollBar:{
+    scrollBar: {
       height: 'calc(100vh - 195px) !important',
-      [theme.breakpoints.down(992)]:{
+      [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 245px) !important',
       },
-      [theme.breakpoints.down('xs')]:{
-        height: 'calc(100vh - 208px) !important',
+      [theme.breakpoints.down('xs')]: {
+        height: 'calc(100vh - 190px) !important',
       },
     },
   };
@@ -316,10 +315,12 @@ export const SearchByMedicine: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            <div>{getTitle()}({medicineListFiltered && medicineListFiltered.length})</div>
+            <div>
+              {getTitle()}({medicineListFiltered && medicineListFiltered.length})
+            </div>
             <AphButton className={classes.filterBtn}>
-                <img src={require('images/ic_filter.svg')} alt="" />
-              </AphButton>
+              <img src={require('images/ic_filter.svg')} alt="" />
+            </AphButton>
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter

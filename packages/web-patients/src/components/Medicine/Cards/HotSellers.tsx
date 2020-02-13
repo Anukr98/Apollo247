@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },

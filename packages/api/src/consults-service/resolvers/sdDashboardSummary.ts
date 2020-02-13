@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import {
   SdDashboardSummary,
@@ -11,9 +12,13 @@ import {
 } from 'consults-service/entities';
 import { ConsultMode } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
+import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { SdDashboardSummaryRepository } from 'consults-service/repositories/sdDashboardSummaryRepository';
+import {
+  SdDashboardSummaryRepository,
+  CurrentAvailStatusRepository,
+} from 'consults-service/repositories/sdDashboardSummaryRepository';
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -48,12 +53,15 @@ export const sdDashboardSummaryTypeDefs = gql`
   type GetopenTokFileUrlResult {
     urls: [String]
   }
-
+  type updateSpecialtyCountResult {
+    updated: Boolean
+  }
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
+    updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
   }
 
   extend type Query {
@@ -89,7 +97,9 @@ type FeedbackCounts = {
   rating: string;
   ratingcount: number;
 };
-
+type updateSpecialtyCountResult = {
+  updated: Boolean;
+};
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
   apptRepo: consultsDb.getCustomRepository(AppointmentRepository),
   patRepo: patientsDb.getCustomRepository(PatientRepository),
@@ -101,6 +111,8 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   adminMapRepo: doctorsDb.getCustomRepository(AdminDoctorMap),
   medRecordRepo: patientsDb.getCustomRepository(MedicalRecordsRepository),
   loginSessionRepo: doctorsDb.getCustomRepository(LoginHistoryRepository),
+  DoctorSpecialtyRepo: doctorsDb.getCustomRepository(DoctorSpecialtyRepository),
+  CurrentAvailStatusRepo: consultsDb.getCustomRepository(CurrentAvailStatusRepository),
 });
 
 const updateConsultRating: Resolver<
@@ -118,7 +130,7 @@ const updateConsultRating: Resolver<
     okRating = 0,
     poorRating = 0,
     greatRating = 0;
-  console.log(feedbackData, 'feedback ata');
+  console.log(feedbackData, 'feedback data');
   if (feedbackData.length > 0) {
     feedbackData.forEach((record) => {
       console.log(record, 'record');
@@ -147,7 +159,6 @@ const updateConsultRating: Resolver<
   }
   return { ratingRowsCount: feedbackData.length };
 };
-
 const updatePhrDocSummary: Resolver<
   null,
   { summaryDate: Date },
@@ -233,6 +244,7 @@ const updateSdSummary: Resolver<
         '1'
       );
       const callDuration = await dashboardRepo.getOnTimeConsultations(doctor.id, args.summaryDate);
+
       const casesheetPrepTime = await dashboardRepo.getCasesheetPrepTime(
         doctor.id,
         args.summaryDate
@@ -329,7 +341,7 @@ const updateDoctorFeeSummary: Resolver<
 const getopenTokFileUrl: Resolver<
   null,
   { appointmentId: string },
-  ConsultServiceContext,
+  DoctorsServiceContext,
   GetopenTokFileUrlResult
 > = async (parent, args, context) => {
   const { dashboardRepo } = getRepos(context);
@@ -339,13 +351,37 @@ const getopenTokFileUrl: Resolver<
   const fileUrls = await dashboardRepo.getFileDownloadUrls(args.appointmentId);
   return { urls: fileUrls };
 };
-
+const updateSpecialtyCount: Resolver<
+  null,
+  { specialityId: string },
+  DoctorsServiceContext,
+  updateSpecialtyCountResult
+> = async (parent, args, context) => {
+  const { docRepo, DoctorSpecialtyRepo, CurrentAvailStatusRepo } = getRepos(context);
+  //get speciality details
+  const specialityDetails = await DoctorSpecialtyRepo.findById(args.specialityId);
+  if (!specialityDetails) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
+  //get totalDoctors count for given speciality
+  const totalDoctorsCount = await docRepo.getToatalDoctorsForSpeciality(args.specialityId, 1);
+  //get online doctors count for given speciality
+  const totalOnlineDoctorsCount = await docRepo.getToatalDoctorsForSpeciality(args.specialityId, 2);
+  //insert in db
+  await CurrentAvailStatusRepo.updateavailabilityStatus(
+    args.specialityId,
+    specialityDetails.name,
+    totalDoctorsCount,
+    totalOnlineDoctorsCount
+  );
+  //send response
+  return { updated: true };
+};
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
     updateDoctorFeeSummary,
     updatePhrDocSummary,
     updateConsultRating,
+    updateSpecialtyCount,
   },
 
   Query: {

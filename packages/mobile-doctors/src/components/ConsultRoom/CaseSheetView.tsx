@@ -1,18 +1,13 @@
 import {
-  getDiagnosticPrescriptionDataList,
-  getDiagonsisList,
-  getMedicineList,
-  getSysmptonsList,
-  removeDiagnosticPrescriptionDataList,
   setDiagnosticPrescriptionDataList,
   setDiagonsisList,
   setMedicineList,
   setSysmptonsList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
-import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AddConditionPopUp } from '@aph/mobile-doctors/src/components/ui/AddConditionPopUp';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { AddInstructionPopUp } from '@aph/mobile-doctors/src/components/ui/AddInstructionPopUp';
@@ -20,6 +15,7 @@ import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedic
 import { AddSymptomPopUp } from '@aph/mobile-doctors/src/components/ui/AddSymptomPopUp';
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { ChoicePopUp } from '@aph/mobile-doctors/src/components/ui/ChoicePopUp';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
   AddPlus,
@@ -34,75 +30,73 @@ import {
   GreenOnline,
   GreenRemove,
   InpersonIcon,
+  InpersonWhiteIcon,
   PatientPlaceHolderImage,
   PhysicalIcon,
-  PlusOrange,
   RoundCallIcon,
   RoundVideoIcon,
-  Selected,
   Start,
   ToogleOff,
   ToogleOn,
-  UnSelected,
-  InpersonWhiteIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { CaseSheetContext } from '@aph/mobile-doctors/src/context/CaseSheetContext';
 import {
-  CREATEAPPOINTMENTSESSION,
+  CREATE_CASESHEET_FOR_SRD,
   END_APPOINTMENT_SESSION,
   GET_CASESHEET,
-  GET_DOCTOR_FAVOURITE_TEST_LIST,
   MODIFY_CASESHEET,
-  CREATE_CASESHEET_FOR_SRD,
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  CreateAppointmentSession,
-  CreateAppointmentSessionVariables,
-} from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import {
   GetCaseSheet,
+  GetCaseSheet_getCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
   GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
   GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
-  GetCaseSheet_getCaseSheet_patientDetails,
-  GetCaseSheet_getCaseSheet,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteAdviceList';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
+  APPOINTMENT_TYPE,
   MEDICINE_UNIT,
+  ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
-  APPOINTMENT_TYPE,
-  ModifyCaseSheetInput,
-  SymptomInput,
-  CASESHEET_STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
-  UpdateCaseSheet,
-  UpdateCaseSheetVariables,
-} from '@aph/mobile-doctors/src/graphql/types/UpdateCaseSheet';
+  modifyCaseSheet,
+  modifyCaseSheetVariables,
+} from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
+import {
+  UpdatePatientPrescriptionSentStatus,
+  UpdatePatientPrescriptionSentStatusVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import {
-  medUsageType,
-  nameFormater,
   g,
+  medUsageType,
   messageCodes,
+  nameFormater,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
@@ -110,7 +104,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -118,6 +111,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
@@ -126,15 +120,6 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { Image } from 'react-native-elements';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import {
-  modifyCaseSheet,
-  modifyCaseSheetVariables,
-} from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 const { height, width } = Dimensions.get('window');
 
@@ -418,6 +403,18 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   overlayDisplay: (renderDisplay: React.ReactNode) => void;
   messagePublish?: (message: any) => void;
+  favList:
+    | (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[]
+    | null
+    | undefined;
+  favMed:
+    | (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]
+    | null
+    | undefined;
+  favTest:
+    | (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
+    | null
+    | undefined;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -501,37 +498,32 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
-  const {
-    favList,
-    // favListError,
-    // favlistLoading,
-    favMed,
-    // favMedLoading,
-    // favMedError,
-    favTest,
-    // favTestLoading,
-    // favTestError,
-  } = CaseSheetAPI();
 
-  useEffect(() => {
-    // client2
-    //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-    //     mutation: CREATEAPPOINTMENTSESSION,
-    //     variables: {
-    //       createAppointmentSessionInput: {
-    //         appointmentId: AppId,
-    //         requestRole: REQUEST_ROLES.DOCTOR,
-    //       },
-    //     },
-    //   })
-    //   .then((_data: any) => {
-    //     console.log('creat', _data);
-    //     setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
-    //   })
-    //   .catch((e: any) => {
-    //     console.log('Error occured while create session', e);
-    //   });
-  }, []);
+  const [prescriptionPdf, setPrescriptionPdf] = useState('');
+
+  const sendToPatientAction = () => {
+    client
+      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+        mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+        variables: {
+          caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id') || '',
+          sentToPatient: true,
+        },
+      })
+      .then((_data) => {
+        if (g(_data, 'data', 'updatePatientPrescriptionSentStatus', 'success')) {
+          setPrescriptionPdf(
+            `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+              _data,
+              'data',
+              'updatePatientPrescriptionSentStatus',
+              'blobName'
+            )}`
+          );
+        }
+      })
+      .catch((e) => {});
+  };
   const cerateCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
     client
@@ -616,6 +608,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
         setDisplayId(
           g(_data.data.getCaseSheet, 'caseSheetDetails', 'appointment', 'displayId') || ''
+        );
+        setPrescriptionPdf(
+          `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+            caseSheetData,
+            'caseSheetDetails',
+            'blobName'
+          )}`
         );
         try {
           setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
@@ -795,66 +794,126 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         Alert.alert(strings.common.error, errorMessage);
       });
   };
+  const followUpMessage = () => {
+    if (followup && followupDays) {
+      const followupObj = {
+        appointmentId: AppId,
+        folloupDateTime: followup
+          ? moment(
+              g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
+                new Date()
+            )
+              .add(Number(followupDays), 'd')
+              .format('YYYY-MM-DD')
+          : '',
+        doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+        caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
+        doctorInfo: doctorDetails,
+        pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+          caseSheetData,
+          'caseSheetDetails',
+          'blobName'
+        )}`,
+      };
+      props.messagePublish &&
+        props.messagePublish({
+          id: followupObj.doctorId,
+          message: messageCodes.followupconsult,
+          transferInfo: followupObj,
+          messageDate: new Date(),
+          sentBy: REQUEST_ROLES.DOCTOR,
+        });
+    }
+  };
+  const prescriptionView = () => {
+    props.navigation.navigate(AppRoutes.RenderPdf, {
+      uri: prescriptionPdf,
+      title: 'PRESCRIPTION',
+      CTAs: [
+        {
+          title: 'EDIT CASE SHEET',
+          variant: 'white',
+          onPress: () => {
+            props.navigation.pop();
+          },
+        },
+        {
+          title: 'SEND TO PATIENT',
+          variant: 'orange',
+          onPress: () => {
+            props.onStopConsult();
+            sendToPatientAction();
+            followUpMessage();
+          },
+        },
+      ],
+    });
+  };
 
   const endConsult = () => {
     setLoading && setLoading(true);
     saveDetails();
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: AppId,
-            status: STATUS.COMPLETED,
+    props.overlayDisplay(
+      <ChoicePopUp
+        onClose={() => {
+          props.overlayDisplay(null);
+        }}
+        headingText={`You’re ending your consult with ${g(
+          caseSheetData,
+          'patientDetails',
+          'firstName'
+        ) || 'patient'}.`}
+        CTAs={[
+          {
+            title: 'PREVIEW PRESCRIPTION',
+            variant: 'orange',
+            onPress: () => {
+              client
+                .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+                  mutation: END_APPOINTMENT_SESSION,
+                  variables: {
+                    endAppointmentSessionInput: {
+                      appointmentId: AppId,
+                      status: STATUS.COMPLETED,
+                    },
+                  },
+                  fetchPolicy: 'no-cache',
+                })
+                .then((_data) => {
+                  setLoading && setLoading(false);
+                  props.overlayDisplay(null);
+                  prescriptionView();
+                  // endCallNotification();
+                  const text = {
+                    id: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+                    message: '^^#appointmentComplete',
+                    isTyping: true,
+                    messageDate: new Date(),
+                    sentBy: REQUEST_ROLES.DOCTOR,
+                  };
+                  props.messagePublish && props.messagePublish(text);
+                })
+                .catch((e) => {
+                  setLoading && setLoading(false);
+                  props.overlayDisplay(null);
+                  console.log('Error occured while End casesheet', e);
+                  const error = JSON.parse(JSON.stringify(e));
+                  const errorMessage = error && error.message;
+                  console.log('Error occured while End casesheet', errorMessage, error);
+                  Alert.alert(strings.common.error, errorMessage);
+                });
+            },
           },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        setLoading && setLoading(false);
-        setShowPopUp(true);
-        console.log('_data', _data);
-        if (followup && followupDays) {
-          const followupObj = {
-            appointmentId: AppId,
-            folloupDateTime: followup
-              ? moment(
-                  g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
-                    new Date()
-                )
-                  .add(Number(followupDays), 'd')
-                  .format('YYYY-MM-DD')
-              : '',
-            doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
-            caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
-            doctorInfo: doctorDetails,
-            pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-              caseSheetData,
-              'caseSheetDetails',
-              'blobName'
-            )}`,
-          };
-          props.messagePublish &&
-            props.messagePublish({
-              id: followupObj.doctorId,
-              message: messageCodes.followupconsult,
-              transferInfo: followupObj,
-              messageDate: new Date(),
-              sentBy: REQUEST_ROLES.DOCTOR,
-            });
-        }
-        //setShowButtons(false);
-        // props.onStopConsult();
-      })
-      .catch((e) => {
-        setLoading && setLoading(false);
-        setShowPopUp(false);
-        console.log('Error occured while End casesheet', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
-      });
+          {
+            title: 'EDIT CASE SHEET',
+            variant: 'white',
+            onPress: () => {
+              props.overlayDisplay(null);
+            },
+          },
+        ]}
+      />
+    );
   };
 
   const [enableConsultButton, setEnableConsultButton] = useState(false);
@@ -905,23 +964,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               buttonIcon={<Start />}
               onPress={() => {
                 setCaseSheetEdit(true);
-                client
-                  .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-                    mutation: CREATEAPPOINTMENTSESSION,
-                    variables: {
-                      createAppointmentSessionInput: {
-                        appointmentId: AppId,
-                        requestRole: REQUEST_ROLES.DOCTOR,
-                      },
-                    },
-                  })
-                  .then((_data: any) => {
-                    console.log('creat', _data);
-                    setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
-                  })
-                  .catch((e: any) => {
-                    console.log('Error occured while create session', e);
-                  });
                 setShowButtons(true);
                 props.onStartConsult();
               }}
@@ -1338,13 +1380,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {/* {diagnosticPrescriptionData == null ? (
           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
         ) : ( */}
-        {favTest && favTest.length ? (
+        {props.favTest && props.favTest.length ? (
           <Text style={[styles.familyText, { marginBottom: 12 }]}>
             {strings.smartPrescr.fav_test}
           </Text>
         ) : null}
-        {favTest && favTest.length
-          ? favTest.map((showdata, i) => {
+        {props.favTest && props.favTest.length
+          ? props.favTest.map((showdata, i) => {
               if (showdata)
                 return (
                   <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
@@ -1400,11 +1442,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {item.medicineUnit ? (type === 'Take' ? unit + '(s) ' : unit + ' ') : ''}
           {item.medicineFrequency ? nameFormater(item.medicineFrequency).toLowerCase() + ' ' : ''}
           {item.medicineConsumptionDurationInDays
-            ? 'for ' +
-              item.medicineConsumptionDurationInDays +
-              ' ' +
-              item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase() +
-              '(s) '
+            ? `for ${item.medicineConsumptionDurationInDays} ${
+                item.medicineConsumptionDurationUnit
+                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                  : ``
+              }`
             : ''}
           {item.medicineToBeTaken.length
             ? item.medicineToBeTaken.map((i: any) => nameFormater(i).toLowerCase()).join(', ') + ' '
@@ -1515,9 +1557,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 );
               })}
 
-          {favMed ? favMed.length > 0 && renderHeaderText(strings.smartPrescr.fav_med) : null}
-          {favMed
-            ? favMed.map(
+          {props.favMed
+            ? props.favMed.length > 0 && renderHeaderText(strings.smartPrescr.fav_med)
+            : null}
+          {props.favMed
+            ? props.favMed.map(
                 (
                   med: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null
                 ) => {
@@ -2239,7 +2283,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               }}
             >
               <View style={{ flexDirection: 'row' }}>
-                <RoundCallIcon style={{ width: 24, height: 24 }} />
+                <RoundCallIcon />
                 <Text
                   style={{
                     marginLeft: 8,
@@ -2266,7 +2310,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               }}
             >
               <View style={{ flexDirection: 'row' }}>
-                <RoundVideoIcon style={{ width: 24, height: 24 }} />
+                <RoundVideoIcon />
                 <Text
                   style={{
                     marginLeft: 8,
@@ -2338,11 +2382,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   </TouchableOpacity>
                 ))
               : renderInfoText(strings.case_sheet.no_advice_selected)}
-            {favList && favList.length > 0
+            {props.favList && props.favList.length > 0
               ? renderHeaderText(strings.case_sheet.fav_diagnostics)
               : null}
-            {favList &&
-              favList.map(
+            {props.favList &&
+              props.favList.map(
                 (item) =>
                   item && (
                     <TouchableOpacity
@@ -2497,22 +2541,33 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderPatientImage = () => {
     return (
       <View style={{ marginBottom: 20 }}>
-        <Image
-          source={{
-            uri: (patientDetails && patientDetails.photoUrl) || '',
-          }}
-          style={{ height: width, width: width }}
-          resizeMode={'contain'}
-          placeholderStyle={{
-            height: width,
-            width: width,
-            alignItems: 'center',
-            backgroundColor: 'transparent',
-          }}
-          PlaceholderContent={
-            loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
-          }
-        />
+        {patientDetails && patientDetails.photoUrl ? (
+          <Image
+            source={{
+              uri: (patientDetails && patientDetails.photoUrl) || '',
+            }}
+            style={{ height: width, width: width }}
+            resizeMode={'contain'}
+            placeholderStyle={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+            PlaceholderContent={
+              loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
+            }
+          />
+        ) : (
+          <PatientPlaceHolderImage
+            style={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+          />
+        )}
       </View>
     );
   };
@@ -2528,7 +2583,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderVitals()}
           {renderPatientHistoryLifestyle()}
           {renderPatientHealthWallet()}
-
           {renderJuniorDoctorNotes()}
           {renderDiagnosisView()}
           {renderMedicinePrescription()}

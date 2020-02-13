@@ -60,6 +60,10 @@ export const DropdownGreen: React.FC<IconProps> = (props) => (
   />
 );
 
+export const Download: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_download.png')} />
+);
+
 export const ArrowFull: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('../../images/icons/ic_arrowFull.png')} />
 );
@@ -372,7 +376,14 @@ export const DoctorCall: React.FC<IconProps> = (props) => (
 );
 
 export const ChatIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/ic_chat_circle.png')} />
+  <IconBase
+    style={{
+      height: 48,
+      width: 48,
+    }}
+    {...props}
+    source={require('../../images/icons/ic_chat_circle.png')}
+  />
 );
 
 export const FullScreenIcon: React.FC<IconProps> = (props) => (
@@ -416,7 +427,7 @@ export const PickCallIcon: React.FC<IconProps> = (props) => (
 );
 
 export const ClosePopup: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/round_clear_24_px.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/round_clear_24_px.png')} />
 );
 
 export const VideoOnIcon: React.FC<IconProps> = (props) => (
@@ -456,15 +467,22 @@ export const BackCameraIcon: React.FC<IconProps> = (props) => (
 );
 
 export const RoundCallIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/roundCallIcon.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/roundCallIcon.png')} />
 );
 
 export const RoundVideoIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/round_videocam_24_px.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/round_videocam_24_px.png')} />
 );
 
 export const ChatWithNotification: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/ChatWithNotification.png')} />
+  <IconBase
+    style={{
+      height: 88,
+      width: 80,
+    }}
+    {...props}
+    source={require('../../images/icons/ChatWithNotification.png')}
+  />
 );
 
 export const RoundChatIcon: React.FC<IconProps> = (props) => (
@@ -526,7 +544,7 @@ export const SampleImage: React.FC<IconProps> = (props) => (
   />
 );
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('../../images/icons/ChatCall.png')} />
+  <IconBase size="xs" {...props} source={require('../../images/icons/ChatCall.png')} />
 );
 
 export const MissedCallIcon: React.FC<IconProps> = (props) => (
@@ -717,5 +735,13 @@ export const Edit: React.FC<IconProps> = (props) => (
     style={{ height: 24, width: 24, resizeMode: 'contain' }}
     {...props}
     source={require('../../images/icons/edit.png')}
+  />
+);
+
+export const FileBig: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 40, width: 40 }}
+    {...props}
+    source={require('../../images/icons/ic_file_big.png')}
   />
 );

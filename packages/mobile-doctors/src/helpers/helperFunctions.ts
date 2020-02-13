@@ -1,6 +1,26 @@
 import moment from 'moment';
 import NetInfo from '@react-native-community/netinfo';
 import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
+
+export const getBuildEnvironment = () => {
+  switch (apiRoutes.graphql()) {
+    case 'https://aph.dev.api.popcornapps.com//graphql':
+      return 'DEV';
+    case 'https://aph.staging.api.popcornapps.com//graphql':
+      return 'QA';
+    case 'https://aph.uat.api.popcornapps.com//graphql':
+      return 'UAT';
+    case 'https://aph.vapt.api.popcornapps.com//graphql':
+      return 'VAPT';
+    case 'https://api.apollo247.com//graphql':
+      return 'PROD';
+    case 'https://asapi.apollo247.com//graphql':
+      return 'PRF';
+    default:
+      return '';
+  }
+};
 
 export const timeTo12HrFormat = (time: string) => {
   return moment(time).format('h:mm a');
@@ -147,6 +167,7 @@ export const messageCodes = {
   callAbandonment: '^^#callAbandonment',
   appointmentComplete: '^^#appointmentComplete',
 };
+
 export const formatFloating = (value: string) => {
   let number =
     value.indexOf('.') === value.length - 1 ||

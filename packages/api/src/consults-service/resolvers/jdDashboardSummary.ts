@@ -135,6 +135,10 @@ const updateJdSummary: Resolver<
         doctor.id
       );
       const casesOngoing = await dashboardRepo.getOngoingCases(args.summaryDate, doctor.id);
+      const caseSheetNotSatisfactory = await dashboardRepo.getCasesheetNotSatisfactory(
+        args.summaryDate,
+        doctor.id
+      );
       const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
       let adminIds = '';
       if (adminIdRows.length > 0) {
@@ -166,6 +170,7 @@ const updateJdSummary: Resolver<
         avgTimePerConsult,
         totalAllocatedChats,
         casesOngoing,
+        caseSheetNotSatisfactory,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);
     });

@@ -8,12 +8,12 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: 290,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         width: '80px !important',
         position: 'absolute',
         marginLeft: 20,
       },
-      [theme.breakpoints.down(992)]:{
+      [theme.breakpoints.down(992)]: {
         width: '100%',
       },
       '& .image-gallery-slides': {

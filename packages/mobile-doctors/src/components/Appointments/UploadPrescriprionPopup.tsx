@@ -249,7 +249,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         }}
       >
         <TouchableOpacity onPress={() => props.onClickClose()}>
-          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+          <CrossPopup style={{ marginRight: 1 }} />
         </TouchableOpacity>
       </View>
     );

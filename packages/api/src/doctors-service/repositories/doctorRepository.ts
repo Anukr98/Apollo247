@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
-import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
+import { Doctor, ConsultMode, DoctorType, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
 import {
   Range,
   FilterDoctorInput,
@@ -17,7 +17,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
-import { ApiConstants } from 'ApiConstants';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Doctor)
@@ -723,6 +722,31 @@ export class DoctorRepository extends Repository<Doctor> {
           doctorType: DoctorType.JUNIOR,
         },
       });
+    }
+  }
+  async getToatalDoctorsForSpeciality(specialty: string, doctype: number) {
+    if (doctype === 1) {
+      const queryBuilder = this.createQueryBuilder('doctor').where(
+        'doctor.specialty = :specialty',
+        { specialty }
+      );
+
+      const doctorsResult = await queryBuilder.getMany();
+      return doctorsResult.length;
+    } else {
+      const queryBuilder = this.createQueryBuilder('doctor').where(
+        'doctor.specialty = :specialty',
+        { specialty }
+      );
+
+      const doctorsResult = await queryBuilder.getMany();
+      const doc: Doctor[] = [];
+      await doctorsResult.map((doctor) => {
+        if (doctor.onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE) {
+          doc.push(doctor);
+        }
+      });
+      return doc.length;
     }
   }
 }

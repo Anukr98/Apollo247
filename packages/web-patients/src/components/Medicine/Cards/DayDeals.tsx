@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: '14px 12px 14px 15px',
       display: 'flex',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
