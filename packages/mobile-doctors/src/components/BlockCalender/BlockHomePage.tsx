@@ -131,7 +131,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   const [isValidTime, setisValidTime] = useState<boolean>(true);
 
   const { doctorDetails } = useAuth();
-  console.log(doctorDetails, 'doctorDetails');
   const consultHours =
     doctorDetails && doctorDetails.consultHours && doctorDetails.consultHours.length
       ? doctorDetails.consultHours
@@ -179,14 +178,17 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   };
 
   const navigateWithData = (res: any) => {
-    props.navigation.goBack();
+    console.log('bbh', res.data, res.data.addBlockedCalendarItem);
+
     props.navigation.state.params &&
       props.navigation.state.params.onAddBlockCalendar &&
       res.data &&
-      res.data.addBlockedCalendarItem &&
+      (res.data.addBlockedCalendarItem || res.data.blockMultipleCalendarItems) &&
       props.navigation.state.params.onAddBlockCalendar(
-        res.data.addBlockedCalendarItem.blockedCalendar
+        res.data.addBlockedCalendarItem.blockedCalendar ||
+          res.data.blockMultipleCalendarItems.blockedCalendar
       );
+    props.navigation.goBack();
   };
 
   const SaveBlockCalendar = () => {
@@ -215,7 +217,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         reason: selectedReason.key,
       };
       console.log(variables, 'variables');
-
       client
         .mutate({
           mutation: ADD_BLOCKED_CALENDAR_ITEM,
@@ -320,10 +321,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         }}
         bottomPadding={{ paddingBottom: 20 }}
         onPress={(selectedReason) => {
-          // console.log(selectedReason, 'selectedReason');
-
           setselectedReason(selectedReason);
-          // onRelationSelect(selectedRelation, (profileData && profileData.relation!) || '')
         }}
       >
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
@@ -396,7 +394,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
       </View>
     );
   };
-  console.log(customTime, 'customTime');
 
   const checkIsValid = (customTime: { start: Date | undefined; end: Date | undefined }[]) => {
     const minutesOfDay = (m: Date) => {

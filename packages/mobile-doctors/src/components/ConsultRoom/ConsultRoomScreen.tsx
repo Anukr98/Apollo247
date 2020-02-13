@@ -101,6 +101,7 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -2527,7 +2528,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
           enabled
         >
-          <View style={textinputStyles}>
+          <View
+            style={{
+              width: width,
+              height: 66,
+              backgroundColor: 'white',
+              bottom: isIphoneX() ? 36 : 0,
+              //top: isIphoneX() ? 24 : 0,
+            }}
+          >
             <View
               style={{
                 flexDirection: 'row',
