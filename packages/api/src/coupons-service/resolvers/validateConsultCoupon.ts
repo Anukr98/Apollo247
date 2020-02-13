@@ -90,6 +90,7 @@ const validateConsultCoupon: Resolver<
   )
     return { validityStatus: false, revisedAmount: doctorFees };
 
+  //discount amount calculation
   let revisedAmount = doctorFees;
   if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue) {
     if (couponGenericRulesData.discountType === DiscountType.PERCENT) {

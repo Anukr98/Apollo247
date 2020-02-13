@@ -1013,9 +1013,6 @@ export class CouponGenericRules extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Column({ type: 'text', default: ConsultMode.BOTH })
-  couponApplicability: ConsultMode;
-
   @Column({ nullable: true })
   couponApplicableCustomerType: customerTypeInCoupons;
 
