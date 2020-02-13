@@ -17,6 +17,8 @@ import React, { createRef, RefObject, useEffect, useState, useRef } from 'react'
 import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
+import { LOGIN_TYPE } from 'graphql/types/globalTypes';
+import { CountdownCircleTimer } from 'react-countdown-circle-timer';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -87,6 +89,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const initialOTPMessage = 'Type in the OTP sent to you, to authenticate';
   const resentOTPMessage = 'Type in the OTP that has been resent to you for authentication';
+  const blockedMessage = 'You entered an incorrect OTP 3 times. Please try again after some time';
   const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
 
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
@@ -94,17 +97,20 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   const placeRecaptchaAfterMe = useRef(null);
 
   const [submitCount, setSubmitCount] = useState(0);
-  const [showTimer, setShowTimer] = useState(false);
-  const countDown = useRef(179);
-  const [timer, setTimer] = useState(179);
+  // const [isIncorrectOtp, setIsIncorrectOtp] = useState<boolean>(false);
+  // const [showTimer, setShowTimer] = useState(false);
+  // const [timer, setTimer] = useState(179);
+  const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
+  const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
 
   const {
-    sendOtp,
     isSendingOtp,
     verifyOtp,
     verifyOtpError,
     isVerifyingOtp,
     isSigningIn,
+    customLoginId,
+    resendOtp,
   } = useAuth();
 
   useEffect(() => {
@@ -117,165 +123,133 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (submitCount > 0) {
-      if (submitCount === 3) {
-        setShowTimer(true);
+    if (disableResendOtpButtonCounter >= 0) {
+      setTimeout(() => setDisableResendOtpButtonCounter(disableResendOtpButtonCounter - 1), 1000);
+    } else {
+      setDisableResendOtpButton(false);
+    }
+  }, [disableResendOtpButtonCounter]);
 
-        const intervalId = setInterval(() => {
-          countDown.current--;
-          setTimer(countDown.current);
-
-          if (countDown.current === 0) {
-            clearInterval(intervalId);
-            setSubmitCount(0);
-            setShowTimer(false);
-            countDown.current = 179;
-          }
-        }, 1000);
-      }
+  useEffect(() => {
+    if (submitCount === 3) {
+      setOtpStatusText(blockedMessage);
     }
   }, [submitCount]);
 
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">
-        {(isSigningIn ||
-          isVerifyingOtp ||
-          (!verifyOtpError && submitCount === 3) ||
-          submitCount != 3) &&
-          'great'}
-        {!(isSigningIn || isVerifyingOtp) && verifyOtpError && submitCount === 3 && 'oops!'}
+        {verifyOtpError && submitCount === 3 ? 'oops!' : 'great'}
       </Typography>
-      <p>
-        {(isSigningIn ||
-          isVerifyingOtp ||
-          (!verifyOtpError && submitCount === 3) ||
-          submitCount != 3) &&
-          otpStatusText}
-      </p>
-      <p>
-        {!(isSigningIn || isVerifyingOtp) &&
-          verifyOtpError &&
-          submitCount === 3 &&
-          'You entered an incorrect OTP 3 times'}
-      </p>
-      <form>
-        <Grid container spacing={1}>
-          {_times(numOtpDigits, (index) => (
-            <Grid item xs={2} key={index}>
-              <AphTextField
-                autoFocus={index === 0}
-                inputRef={otpInputRefs[index]}
-                value={_isNumber(otp[index]) ? otp[index] : ''}
-                inputProps={{ type: 'tel', maxLength: 1 }}
-                onChange={(e) => {
-                  const newOtp = [...otp];
-                  const num = parseInt(e.currentTarget.value, 10);
-                  if (isNaN(num)) {
-                    delete newOtp[index];
-                  } else {
-                    newOtp[index] = num;
-                    const nextInput = otpInputRefs[index + 1];
-                    if (nextInput && nextInput.current) {
-                      nextInput.current.focus();
+      <p>{otpStatusText}</p>
+      {verifyOtpError && submitCount === 3 ? null : (
+        <form>
+          <Grid container spacing={1}>
+            {_times(numOtpDigits, (index) => (
+              <Grid item xs={2} key={index}>
+                <AphTextField
+                  autoFocus={index === 0}
+                  inputRef={otpInputRefs[index]}
+                  value={_isNumber(otp[index]) ? otp[index] : ''}
+                  inputProps={{ type: 'tel', maxLength: 1 }}
+                  onChange={(e) => {
+                    const newOtp = [...otp];
+                    const num = parseInt(e.currentTarget.value, 10);
+                    if (isNaN(num)) {
+                      delete newOtp[index];
+                    } else {
+                      newOtp[index] = num;
+                      const nextInput = otpInputRefs[index + 1];
+                      if (nextInput && nextInput.current) {
+                        nextInput.current.focus();
+                      }
                     }
-                  }
-                  setOtp(newOtp);
-                }}
-                onKeyDown={(e) => {
-                  const backspaceWasPressed = e.key === 'Backspace';
-                  const currentInputIsEmpty = otp[index] == null;
-                  const focusPreviousInput = () => {
-                    const prevInput = otpInputRefs[index - 1];
-                    if (prevInput && prevInput.current) {
-                      prevInput.current.focus();
+                    setOtp(newOtp);
+                  }}
+                  onKeyDown={(e) => {
+                    const backspaceWasPressed = e.key === 'Backspace';
+                    const currentInputIsEmpty = otp[index] == null;
+                    const focusPreviousInput = () => {
+                      const prevInput = otpInputRefs[index - 1];
+                      if (prevInput && prevInput.current) {
+                        prevInput.current.focus();
+                      }
+                    };
+                    if (backspaceWasPressed && currentInputIsEmpty) {
+                      focusPreviousInput();
                     }
-                  };
-                  if (backspaceWasPressed && currentInputIsEmpty) {
-                    focusPreviousInput();
-                  }
-                }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-        {verifyOtpError && (
-          <FormHelperText
-            component="div"
-            className={classes.helpText}
-            error={verifyOtpError}
-            style={{ opacity: verifyOtpError ? 1.0 : 0 }}
-          >
-            <div>
-              {!(isSigningIn || isVerifyingOtp) &&
-                showTimer &&
-                'Try again after ' +
-                  Math.floor(timer / 60) +
-                  ':' +
-                  (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
-            </div>
-            <div>
-              {!showTimer &&
-                submitCount === 2 &&
-                submitCount > 0 &&
-                ' Incorrect OTP, ' + (3 - submitCount) + ' attempt left'}
-              {!showTimer &&
-                submitCount === 1 &&
-                submitCount > 0 &&
-                ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
-            </div>
-          </FormHelperText>
-        )}
-        {showTimer ? (
-          ''
-        ) : (
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+          {verifyOtpError && (
+            <FormHelperText
+              component="div"
+              className={classes.helpText}
+              error={verifyOtpError}
+              style={{ opacity: verifyOtpError ? 1.0 : 0 }}
+            >
+              <div>
+                {submitCount > 0 && ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
+              </div>
+            </FormHelperText>
+          )}
           <Button
             variant="text"
-            disabled={isSendingOtp}
+            disabled={isSendingOtp || disableResendOtpButton}
             className={classes.resendBtn}
             onClick={(e) => {
-              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+              resendOtp(mobileNumberWithPrefix, customLoginId);
               setOtp([]);
               setSubmitCount(0);
               setOtpStatusText(resentOTPMessage);
               const firstInput = otpInputRefs[0].current;
               if (firstInput) firstInput.focus();
+              setDisableResendOtpButton(true);
+              setDisableResendOtpButtonCounter(30);
             }}
           >
             Resend OTP
-          </Button>
-        )}
-        <div className={classes.action}>
-          <Fab
-            type="submit"
-            color="primary"
-            disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
-            onClick={(e) => {
-              e.preventDefault();
-              verifyOtp(otp.join(''));
-              setSubmitCount(submitCount + 1);
-            }}
-          >
-            {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
-              <AphCircularProgress color="inherit" />
-            ) : (
-              <img src={require('images/ic_arrow_forward.svg')} />
-            )}
-          </Fab>
-        </div>
-      </form>
-      <div ref={placeRecaptchaAfterMe} />
+          </Button>{' '}
+          {disableResendOtpButton
+            ? `00:${String(disableResendOtpButtonCounter).padStart(2, '0')}`
+            : null}
+          <div className={classes.action}>
+            <Fab
+              type="submit"
+              color="primary"
+              disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
+              onClick={(e) => {
+                e.preventDefault();
+                verifyOtp(otp.join(''), customLoginId).then((authToken) => {
+                  if (!authToken) {
+                    setSubmitCount(submitCount + 1);
+                  }
+                });
+              }}
+            >
+              {isSigningIn || isSendingOtp || isVerifyingOtp ? (
+                <AphCircularProgress color="inherit" />
+              ) : (
+                <img src={require('images/ic_arrow_forward.svg')} />
+              )}
+            </Fab>
+          </div>
+        </form>
+      )}
+      {/* <div ref={placeRecaptchaAfterMe} /> */}
     </div>
   );
 };
 
-export const SignIn: React.FC = (props) => {
+export const SignIn: React.FC = () => {
   const classes = useStyles();
 
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const placeRecaptchaAfterMe = useRef(null);
 
-  const { sendOtp, sendOtpError, isSendingOtp } = useAuth();
+  const { sendOtp, sendOtpError, isSendingOtp, customLoginId } = useAuth();
 
   return (
     <div data-cypress="SignIn">
@@ -283,9 +257,7 @@ export const SignIn: React.FC = (props) => {
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
-          sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-            setDisplayOtpInput(true)
-          );
+          sendOtp(mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
         }}
         render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
           if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;

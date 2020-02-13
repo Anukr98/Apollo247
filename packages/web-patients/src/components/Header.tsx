@@ -170,7 +170,7 @@ export const Header: React.FC = (props) => {
               <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DialogContent>
                   <div className={classes.logoutModal}>
-                    <h3>You are successfully Logged in with Apollo 24x7</h3>
+                    <h3>Are you sure. You want to logout from Apollo 24x7 ?</h3>
                     <div className={classes.bottomActions}>
                       <AphButton color="secondary" onClick={() => setIsDialogOpen(false)} autoFocus>
                         Cancel
