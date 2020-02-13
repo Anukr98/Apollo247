@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
         textAlign: 'center',
       },
-  },
+    },
     medicineDetailsGroup: {
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
@@ -70,8 +70,8 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 50,
       },
     },
-    medicineDetailsHeader:{
-      display:'none',
+    medicineDetailsHeader: {
+      display: 'none',
       background: '#fff',
       padding: 20,
       alignItems: 'center',
@@ -79,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
       width: '100%',
       zIndex: 999,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         display: 'flex',
       },
     },
@@ -93,15 +93,16 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
       },
     },
-    scrollResponsive:{
-      [theme.breakpoints.down(992)]:{
+    scrollResponsive: {
+      [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 250px) !important',
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         maxHeight: 'inherit !important',
+        height: 'auto !important',
       },
-      '& > div':{
-        [theme.breakpoints.down('xs')]:{
+      '& > div': {
+        [theme.breakpoints.down('xs')]: {
           maxHeight: 'inherit !important',
         },
       },
@@ -133,7 +134,7 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
-    detailsHeader:{
+    detailsHeader: {
       flex: 1,
     },
     blackArrow: {
@@ -160,11 +161,11 @@ const useStyles = makeStyles((theme: Theme) => {
     productDetails: {
       paddingLeft: 20,
       width: 'calc(100% - 290px)',
-      [theme.breakpoints.down(992)]:{
+      [theme.breakpoints.down(992)]: {
         width: '100%',
         paddingTop: 20,
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         paddingTop: 0,
         paddingLeft: 0,
       },
@@ -176,13 +177,13 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 10,
       },
     },
-    productBasicInfo:{
-      [theme.breakpoints.down('xs')]:{
+    productBasicInfo: {
+      [theme.breakpoints.down('xs')]: {
         paddingLeft: 115,
       },
     },
-    productDetailed:{
-      [theme.breakpoints.down('xs')]:{
+    productDetailed: {
+      [theme.breakpoints.down('xs')]: {
         padding: '20px 0',
       },
     },
@@ -194,7 +195,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         margin: '5px 0',
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         borderTop: '0.5px solid rgba(2,71,91,0.3)',
         margin: '0 20px',
         padding: '20px 0',
@@ -220,10 +221,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& svg': {
         color: '#02475b',
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
       },
-      '&:before':{
+      '&:before': {
         content: '""',
         borderTop: '0.5px solid rgba(2,71,91,0.3)',
         position: 'absolute',
@@ -256,7 +257,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#0087ba',
       lineHeight: '22px',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         padding: '15px 20px',
         backgroundColor: '#fff',
         boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
@@ -275,7 +276,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& ul': {
         padding: '0 0 0 20px',
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         padding: 20,
       },
@@ -500,73 +501,78 @@ export const MedicineDetails: React.FC = (props) => {
                 {medicineDetails && (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
-                      <Scrollbars className={classes.scrollResponsive} autoHide={true} autoHeight autoHeightMax={'calc(100vh - 215px'}>
-                          <div className={classes.productInformation}>
-                            <MedicineImageGallery data={medicineDetails} />
-                            <div className={classes.productDetails}>
-                              <div className={classes.productBasicInfo}>
-                                <h2>{medicineDetails.name}</h2>
-                                <div className={classes.textInfo}>
-                                  <label>Manufacturer</label>
-                                  {medicineDetails.manufacturer}
-                                </div>
-                                {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
-                                  <div className={classes.textInfo}>
-                                    <label>Composition</label>
-                                    {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
-                                  </div>
-                                )}
-                                <div className={classes.textInfo}>
-                                  <label>Pack Of</label>
-                                  {`${medicineDetails.mou} ${
-                                    medicinePharmacyDetails && medicinePharmacyDetails.length > 0
-                                      ? medicinePharmacyDetails[0].Doseform
-                                      : ''
-                                  }`}
-                                </div>
-                                {medicineDetails.is_prescription_required !== '0' && (
-                                  <div className={classes.prescriptionBox}>
-                                    <span>This medicine requires doctor’s prescription</span>
-                                    <span className={classes.preImg}>
-                                      <img src={require('images/ic_tablets.svg')} alt="" />
-                                    </span>
-                                  </div>
-                                )}
+                      <Scrollbars
+                        className={classes.scrollResponsive}
+                        autoHide={true}
+                        autoHeight
+                        autoHeightMax={'calc(100vh - 215px'}
+                      >
+                        <div className={classes.productInformation}>
+                          <MedicineImageGallery data={medicineDetails} />
+                          <div className={classes.productDetails}>
+                            <div className={classes.productBasicInfo}>
+                              <h2>{medicineDetails.name}</h2>
+                              <div className={classes.textInfo}>
+                                <label>Manufacturer</label>
+                                {medicineDetails.manufacturer}
                               </div>
-                              {medicinePharmacyDetails &&
-                              medicinePharmacyDetails.length > 0 &&
-                              medicinePharmacyDetails[0].Overview &&
-                              medicinePharmacyDetails[0].Overview.length > 0 ? (
-                                <>
-                                  <Tabs
-                                    value={tabValue}
-                                    variant="scrollable"
-                                    scrollButtons="on"
-                                    classes={{
-                                      root: classes.tabsRoot,
-                                      indicator: classes.tabsIndicator,
-                                    }}
-                                    onChange={(e, newValue) => {
-                                      setTabValue(newValue);
-                                    }}
-                                  >
-                                    {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                                  </Tabs>
-                                  {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                                </>
-                              ) : medicineDetails.description ? (
-                                <div className={classes.productDetailed}>
-                                  <div className={classes.productInfo}>Product Information</div>
-                                  <div className={classes.productDescription}>
-                                    {description &&
-                                      description.split('rn').map((data, index) => {
-                                        return <p key={index}>{data}</p>;
-                                      })}
-                                  </div>
+                              {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+                                <div className={classes.textInfo}>
+                                  <label>Composition</label>
+                                  {`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}
                                 </div>
-                              ) : null}
+                              )}
+                              <div className={classes.textInfo}>
+                                <label>Pack Of</label>
+                                {`${medicineDetails.mou} ${
+                                  medicinePharmacyDetails && medicinePharmacyDetails.length > 0
+                                    ? medicinePharmacyDetails[0].Doseform
+                                    : ''
+                                }`}
+                              </div>
+                              {medicineDetails.is_prescription_required !== '0' && (
+                                <div className={classes.prescriptionBox}>
+                                  <span>This medicine requires doctor’s prescription</span>
+                                  <span className={classes.preImg}>
+                                    <img src={require('images/ic_tablets.svg')} alt="" />
+                                  </span>
+                                </div>
+                              )}
                             </div>
+                            {medicinePharmacyDetails &&
+                            medicinePharmacyDetails.length > 0 &&
+                            medicinePharmacyDetails[0].Overview &&
+                            medicinePharmacyDetails[0].Overview.length > 0 ? (
+                              <>
+                                <Tabs
+                                  value={tabValue}
+                                  variant="scrollable"
+                                  scrollButtons="on"
+                                  classes={{
+                                    root: classes.tabsRoot,
+                                    indicator: classes.tabsIndicator,
+                                  }}
+                                  onChange={(e, newValue) => {
+                                    setTabValue(newValue);
+                                  }}
+                                >
+                                  {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                </Tabs>
+                                {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                              </>
+                            ) : medicineDetails.description ? (
+                              <div className={classes.productDetailed}>
+                                <div className={classes.productInfo}>Product Information</div>
+                                <div className={classes.productDescription}>
+                                  {description &&
+                                    description.split('rn').map((data, index) => {
+                                      return <p key={index}>{data}</p>;
+                                    })}
+                                </div>
+                              </div>
+                            ) : null}
                           </div>
+                        </div>
                       </Scrollbars>
                     </div>
                     <MedicineInformation data={medicineDetails} />

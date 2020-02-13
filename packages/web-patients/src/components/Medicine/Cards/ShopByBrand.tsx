@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       height: 60,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },

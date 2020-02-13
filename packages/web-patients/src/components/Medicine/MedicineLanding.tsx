@@ -35,6 +35,9 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 82,
+      },
     },
     pageTopHeader: {
       backgroundColor: theme.palette.common.white,
@@ -49,8 +52,9 @@ const useStyles = makeStyles((theme: Theme) => {
     medicineTopGroup: {
       display: 'flex',
       paddingTop: 25,
-      [theme.breakpoints.down(768)]: {
+      [theme.breakpoints.down('xs')]: {
         display: 'block',
+        paddingTop: 0,
       },
     },
     searchSection: {
@@ -70,6 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         padding: '20px 20px 0 20px',
         backgroundColor: '#f7f8f5',
+        marginTop: 20,
       },
     },
     userName: {
@@ -119,7 +124,6 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: '100%',
       },
       [theme.breakpoints.down('xs')]: {
-        margin: '51px auto 0 auto',
         textAlign: 'center',
       },
     },
@@ -219,10 +223,16 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 25,
         paddingRight: 0,
+        paddingLeft: 20,
       },
     },
     sliderSection: {
       paddingBottom: 22,
+      [theme.breakpoints.down('xs')]: {
+        '&:last-child': {
+          paddingBottom: 10,
+        },
+      },
     },
     sectionTitle: {
       fontSize: 14,
@@ -236,6 +246,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     viewAllLink: {
       marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 20,
+      },
       '& a': {
         fontSize: 13,
         fontWeight: 'bold',
