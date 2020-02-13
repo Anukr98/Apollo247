@@ -13,6 +13,7 @@ import {
   CaseSheet,
   CASESHEET_STATUS,
   TRANSFER_INITIATED_TYPE,
+  CurrentAvailabilityStatus,
 } from 'consults-service/entities';
 import { format, addDays, differenceInMinutes } from 'date-fns';
 import { ConsultMode, DoctorType } from 'doctors-service/entities';
@@ -56,6 +57,24 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         });
     }
   }
+  async saveDocumentSummary(phrDocSummaryAttrs: Partial<PhrDocumentsSummary>) {
+    const checkRecordExist = await PhrDocumentsSummary.findOne({
+      where: {
+        documentDate: phrDocSummaryAttrs.documentDate,
+      },
+    });
+    if (checkRecordExist) {
+      return PhrDocumentsSummary.update(checkRecordExist.id, phrDocSummaryAttrs);
+    } else {
+      return PhrDocumentsSummary.create(phrDocSummaryAttrs)
+        .save()
+        .catch((createErrors) => {
+          throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, {
+            createErrors,
+          });
+        });
+    }
+  }
 
   saveFeedbackDetails(feedbackSummaryAttrs: Partial<FeedbackDashboardSummary>) {
     return FeedbackDashboardSummary.create(feedbackSummaryAttrs)
@@ -80,15 +99,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
     });
   }
-
-  saveDocumentSummary(phrDocSummaryAttrs: Partial<PhrDocumentsSummary>) {
-    return PhrDocumentsSummary.create(phrDocSummaryAttrs)
-      .save()
-      .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
-      });
-  }
-
   async getPatientCancelCount(doctorId: string, selDate: Date) {
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
@@ -521,6 +531,32 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         .andWhere('case_sheet."doctorType" != :docType', { docType: DoctorType.JUNIOR })
         .getMany();
       return caseSheetRows.length;
+    }
+  }
+}
+@EntityRepository(CurrentAvailabilityStatus)
+export class CurrentAvailStatusRepository extends Repository<CurrentAvailabilityStatus> {
+  async updateavailabilityStatus(
+    specialityId: string,
+    specialityName: string,
+    totalDoc: number,
+    onlineDoc: number
+  ) {
+    const CurrentAvailabilityStatusData: Partial<CurrentAvailabilityStatus> = {
+      specialityId: specialityId,
+      specialtyName: specialityName,
+      totalCount: totalDoc,
+      onlineCount: onlineDoc,
+    };
+    const specialityData = await this.find({ where: [{ specialityId }] });
+    if (specialityData.length > 0) {
+      this.update(specialityId, CurrentAvailabilityStatusData);
+    } else {
+      return this.save(CurrentAvailabilityStatusData).catch((saveCurrentAvailabilityError) => {
+        throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
+          saveCurrentAvailabilityError,
+        });
+      });
     }
   }
 }
