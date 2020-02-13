@@ -87,7 +87,7 @@ export const FollowUp: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item sm={6}>
+          <Grid item xs={12} sm={6}>
             <div className={classes.cardTitle}>Online Consult / Clinic Visit</div>
             <div className={classes.cardSection}>Recommended after 5 days</div>
           </Grid>
