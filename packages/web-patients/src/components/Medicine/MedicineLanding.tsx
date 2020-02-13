@@ -146,7 +146,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('xs')]:{
         backgroundColor: '#fff',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
@@ -159,7 +159,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('xs')]:{
         backgroundColor: '#fff',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
@@ -220,7 +220,7 @@ const useStyles = makeStyles((theme: Theme) => {
     allProductsList: {
       padding: '30px 40px',
       paddingBottom: 10,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('xs')]:{
         paddingTop: 25,
         paddingRight: 0,
         paddingLeft: 20,
