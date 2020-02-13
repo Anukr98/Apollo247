@@ -972,6 +972,9 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   totalAllocatedChats: number;
 
+  @Column({ default: 0 })
+  caseSheetNotSatisfactory: number;
+
   @Column()
   createdDate: Date;
 
@@ -1020,7 +1023,8 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   totalPhysicalConsultations: number;
 
-  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  //@Column('decimal', { precision: 10, scale: 5, default: 0 })
+  @Column({ default: 0 })
   onTimeConsultations: number;
 
   @Column({ default: 0 })

@@ -4,11 +4,13 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { addDays } from 'date-fns';
+import { APPOINTMENT_TYPE } from 'consults-service/entities';
 
 export const getNextAvailableSlotTypeDefs = gql`
   input DoctorNextAvailableSlotInput {
     availableDate: Date!
     doctorIds: [ID!]!
+    availableType: APPOINTMENT_TYPE
   }
 
   type SlotAvailabilityResult {
@@ -43,6 +45,7 @@ type SlotAvailabilityResult = {
 type DoctorNextAvailabeSlotInput = {
   availableDate: Date;
   doctorIds: string[];
+  availableType: APPOINTMENT_TYPE;
 };
 
 type DoctorNextAvailabeSlotInputArgs = {
@@ -59,7 +62,7 @@ const getDoctorNextAvailableSlot: Resolver<
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   //const weekDay = format(new Date(), 'EEEE').toUpperCase();
   const doctorAvailalbeSlots: SlotAvailability[] = [];
-  function slots(doctorId: string) {
+  function slots(doctorId: string, availableType: APPOINTMENT_TYPE) {
     return new Promise<SlotAvailability>(async (resolve) => {
       let availableSlot: string = '';
       let physicalAvailableSlot: string = '';
@@ -91,10 +94,19 @@ const getDoctorNextAvailableSlot: Resolver<
         doctorId,
         'PHYSICAL'
       );
-      if (docConsultHrsOnline > 0) {
+      if (
+        docConsultHrsOnline > 0 &&
+        (availableType == APPOINTMENT_TYPE.BOTH || availableType == APPOINTMENT_TYPE.ONLINE)
+      ) {
         //if the slot is empty check for next day
         let nextDate = new Date();
+
         while (true) {
+          // const docBlockSlots = await appts.checkIfDayBlocked(doctorId, nextDate, doctorsDb);
+          // console.log(docBlockSlots, 'docBlockslots');
+          /*if (docBlockSlots[1] == 1 && docBlockSlots[0] > 1) {
+            nextDate = addDays(nextDate, docBlockSlots[0]);
+          } else {*/
           const nextSlot = await appts.getDoctorNextSlotDate(
             doctorId,
             nextDate,
@@ -106,10 +118,11 @@ const getDoctorNextAvailableSlot: Resolver<
             break;
           }
           nextDate = addDays(nextDate, 1);
+          //}
         }
       }
 
-      if (docConsultHrsPhysical > 0) {
+      if (docConsultHrsPhysical > 0 && availableType == APPOINTMENT_TYPE.BOTH) {
         //if the slot is empty check for next day
         let nextDate = new Date();
         while (true) {
@@ -138,8 +151,12 @@ const getDoctorNextAvailableSlot: Resolver<
     });
   }
   const promises: object[] = [];
+  let availableType = APPOINTMENT_TYPE.BOTH;
+  if (DoctorNextAvailableSlotInput.availableType) {
+    availableType = DoctorNextAvailableSlotInput.availableType;
+  }
   DoctorNextAvailableSlotInput.doctorIds.map(async (doctorId) => {
-    promises.push(slots(doctorId));
+    promises.push(slots(doctorId, availableType));
   });
   await Promise.all(promises);
   return { doctorAvailalbeSlots };
