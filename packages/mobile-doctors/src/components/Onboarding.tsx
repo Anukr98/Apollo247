@@ -27,6 +27,7 @@ import { NavigationScreenProps } from 'react-navigation';
 const { height } = Dimensions.get('window');
 import SplashScreen from 'react-native-splash-screen';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -204,7 +205,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
             props.navigation.replace(AppRoutes.Login);
           }}
         >
-          SKIP
+          {strings.buttons.skip}
         </Text>
       </View>
     </SafeAreaView>

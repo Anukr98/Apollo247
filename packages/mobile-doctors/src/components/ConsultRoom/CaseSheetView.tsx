@@ -1,18 +1,13 @@
 import {
-  getDiagnosticPrescriptionDataList,
-  getDiagonsisList,
-  getMedicineList,
-  getSysmptonsList,
-  removeDiagnosticPrescriptionDataList,
   setDiagnosticPrescriptionDataList,
   setDiagonsisList,
   setMedicineList,
   setSysmptonsList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
-import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AddConditionPopUp } from '@aph/mobile-doctors/src/components/ui/AddConditionPopUp';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { AddInstructionPopUp } from '@aph/mobile-doctors/src/components/ui/AddInstructionPopUp';
@@ -20,6 +15,7 @@ import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedic
 import { AddSymptomPopUp } from '@aph/mobile-doctors/src/components/ui/AddSymptomPopUp';
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { ChoicePopUp } from '@aph/mobile-doctors/src/components/ui/ChoicePopUp';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
   AddPlus,
@@ -34,75 +30,73 @@ import {
   GreenOnline,
   GreenRemove,
   InpersonIcon,
+  InpersonWhiteIcon,
   PatientPlaceHolderImage,
   PhysicalIcon,
-  PlusOrange,
   RoundCallIcon,
   RoundVideoIcon,
-  Selected,
   Start,
   ToogleOff,
   ToogleOn,
-  UnSelected,
-  InpersonWhiteIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { CaseSheetContext } from '@aph/mobile-doctors/src/context/CaseSheetContext';
 import {
-  CREATEAPPOINTMENTSESSION,
+  CREATE_CASESHEET_FOR_SRD,
   END_APPOINTMENT_SESSION,
   GET_CASESHEET,
-  GET_DOCTOR_FAVOURITE_TEST_LIST,
   MODIFY_CASESHEET,
-  CREATE_CASESHEET_FOR_SRD,
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  CreateAppointmentSession,
-  CreateAppointmentSessionVariables,
-} from '@aph/mobile-doctors/src/graphql/types/CreateAppointmentSession';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import {
   GetCaseSheet,
+  GetCaseSheet_getCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
   GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
   GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
-  GetCaseSheet_getCaseSheet_patientDetails,
-  GetCaseSheet_getCaseSheet,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteAdviceList';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
+  APPOINTMENT_TYPE,
   MEDICINE_UNIT,
+  ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
-  APPOINTMENT_TYPE,
-  ModifyCaseSheetInput,
-  SymptomInput,
-  CASESHEET_STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
-  UpdateCaseSheet,
-  UpdateCaseSheetVariables,
-} from '@aph/mobile-doctors/src/graphql/types/UpdateCaseSheet';
+  modifyCaseSheet,
+  modifyCaseSheetVariables,
+} from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
+import {
+  UpdatePatientPrescriptionSentStatus,
+  UpdatePatientPrescriptionSentStatusVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import {
-  medUsageType,
-  nameFormater,
   g,
+  medUsageType,
   messageCodes,
+  nameFormater,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
@@ -110,7 +104,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -118,6 +111,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image } from 'react-native-elements';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
@@ -126,14 +120,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { Image } from 'react-native-elements';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import {
-  modifyCaseSheet,
-  modifyCaseSheetVariables,
-} from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -416,6 +403,18 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   overlayDisplay: (renderDisplay: React.ReactNode) => void;
   messagePublish?: (message: any) => void;
+  favList:
+    | (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[]
+    | null
+    | undefined;
+  favMed:
+    | (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]
+    | null
+    | undefined;
+  favTest:
+    | (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
+    | null
+    | undefined;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -499,37 +498,32 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const client = useApolloClient();
-  const {
-    favList,
-    // favListError,
-    // favlistLoading,
-    favMed,
-    // favMedLoading,
-    // favMedError,
-    favTest,
-    // favTestLoading,
-    // favTestError,
-  } = CaseSheetAPI();
 
-  useEffect(() => {
-    // client2
-    //   .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-    //     mutation: CREATEAPPOINTMENTSESSION,
-    //     variables: {
-    //       createAppointmentSessionInput: {
-    //         appointmentId: AppId,
-    //         requestRole: REQUEST_ROLES.DOCTOR,
-    //       },
-    //     },
-    //   })
-    //   .then((_data: any) => {
-    //     console.log('creat', _data);
-    //     setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
-    //   })
-    //   .catch((e: any) => {
-    //     console.log('Error occured while create session', e);
-    //   });
-  }, []);
+  const [prescriptionPdf, setPrescriptionPdf] = useState('');
+
+  const sendToPatientAction = () => {
+    client
+      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+        mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+        variables: {
+          caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id') || '',
+          sentToPatient: true,
+        },
+      })
+      .then((_data) => {
+        if (g(_data, 'data', 'updatePatientPrescriptionSentStatus', 'success')) {
+          setPrescriptionPdf(
+            `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+              _data,
+              'data',
+              'updatePatientPrescriptionSentStatus',
+              'blobName'
+            )}`
+          );
+        }
+      })
+      .catch((e) => {});
+  };
   const cerateCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
     client
@@ -614,6 +608,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
         setDisplayId(
           g(_data.data.getCaseSheet, 'caseSheetDetails', 'appointment', 'displayId') || ''
+        );
+        setPrescriptionPdf(
+          `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+            caseSheetData,
+            'caseSheetDetails',
+            'blobName'
+          )}`
         );
         try {
           setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
@@ -782,7 +783,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         console.log('_data', _data);
         const result = _data.data!.modifyCaseSheet;
         console.log('UpdateCaseSheetData', result);
-        Alert.alert('UpdateCaseSheet', 'SuccessFully Updated');
+        Alert.alert(strings.alerts.update_cs, strings.alerts.successfully_updated);
       })
       .catch((e) => {
         setLoading && setLoading(false);
@@ -790,69 +791,129 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
+  };
+  const followUpMessage = () => {
+    if (followup && followupDays) {
+      const followupObj = {
+        appointmentId: AppId,
+        folloupDateTime: followup
+          ? moment(
+              g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
+                new Date()
+            )
+              .add(Number(followupDays), 'd')
+              .format('YYYY-MM-DD')
+          : '',
+        doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+        caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
+        doctorInfo: doctorDetails,
+        pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+          caseSheetData,
+          'caseSheetDetails',
+          'blobName'
+        )}`,
+      };
+      props.messagePublish &&
+        props.messagePublish({
+          id: followupObj.doctorId,
+          message: messageCodes.followupconsult,
+          transferInfo: followupObj,
+          messageDate: new Date(),
+          sentBy: REQUEST_ROLES.DOCTOR,
+        });
+    }
+  };
+  const prescriptionView = () => {
+    props.navigation.navigate(AppRoutes.RenderPdf, {
+      uri: prescriptionPdf,
+      title: 'PRESCRIPTION',
+      CTAs: [
+        {
+          title: 'EDIT CASE SHEET',
+          variant: 'white',
+          onPress: () => {
+            props.navigation.pop();
+          },
+        },
+        {
+          title: 'SEND TO PATIENT',
+          variant: 'orange',
+          onPress: () => {
+            props.onStopConsult();
+            sendToPatientAction();
+            followUpMessage();
+          },
+        },
+      ],
+    });
   };
 
   const endConsult = () => {
     setLoading && setLoading(true);
     saveDetails();
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: AppId,
-            status: STATUS.COMPLETED,
+    props.overlayDisplay(
+      <ChoicePopUp
+        onClose={() => {
+          props.overlayDisplay(null);
+        }}
+        headingText={`You’re ending your consult with ${g(
+          caseSheetData,
+          'patientDetails',
+          'firstName'
+        ) || 'patient'}.`}
+        CTAs={[
+          {
+            title: 'PREVIEW PRESCRIPTION',
+            variant: 'orange',
+            onPress: () => {
+              client
+                .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+                  mutation: END_APPOINTMENT_SESSION,
+                  variables: {
+                    endAppointmentSessionInput: {
+                      appointmentId: AppId,
+                      status: STATUS.COMPLETED,
+                    },
+                  },
+                  fetchPolicy: 'no-cache',
+                })
+                .then((_data) => {
+                  setLoading && setLoading(false);
+                  props.overlayDisplay(null);
+                  prescriptionView();
+                  // endCallNotification();
+                  const text = {
+                    id: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+                    message: '^^#appointmentComplete',
+                    isTyping: true,
+                    messageDate: new Date(),
+                    sentBy: REQUEST_ROLES.DOCTOR,
+                  };
+                  props.messagePublish && props.messagePublish(text);
+                })
+                .catch((e) => {
+                  setLoading && setLoading(false);
+                  props.overlayDisplay(null);
+                  console.log('Error occured while End casesheet', e);
+                  const error = JSON.parse(JSON.stringify(e));
+                  const errorMessage = error && error.message;
+                  console.log('Error occured while End casesheet', errorMessage, error);
+                  Alert.alert(strings.common.error, errorMessage);
+                });
+            },
           },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        setLoading && setLoading(false);
-        setShowPopUp(true);
-        console.log('_data', _data);
-        if (followup && followupDays) {
-          const followupObj = {
-            appointmentId: AppId,
-            folloupDateTime: followup
-              ? moment(
-                  g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
-                    new Date()
-                )
-                  .add(Number(followupDays), 'd')
-                  .format('YYYY-MM-DD')
-              : '',
-            doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
-            caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
-            doctorInfo: doctorDetails,
-            pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-              caseSheetData,
-              'caseSheetDetails',
-              'blobName'
-            )}`,
-          };
-          props.messagePublish &&
-            props.messagePublish({
-              id: followupObj.doctorId,
-              message: messageCodes.followupconsult,
-              transferInfo: followupObj,
-              messageDate: new Date(),
-              sentBy: REQUEST_ROLES.DOCTOR,
-            });
-        }
-        //setShowButtons(false);
-        // props.onStopConsult();
-      })
-      .catch((e) => {
-        setLoading && setLoading(false);
-        setShowPopUp(false);
-        console.log('Error occured while End casesheet', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
-        Alert.alert('Error', errorMessage);
-      });
+          {
+            title: 'EDIT CASE SHEET',
+            variant: 'white',
+            onPress: () => {
+              props.overlayDisplay(null);
+            },
+          },
+        ]}
+      />
+    );
   };
 
   const [enableConsultButton, setEnableConsultButton] = useState(false);
@@ -898,28 +959,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {!showButtons ? (
           <View style={styles.footerButtonsContainersave}>
             <Button
-              title="START CONSULT"
+              title={strings.buttons.start_consult}
               disabled={!enableConsultButton}
               buttonIcon={<Start />}
               onPress={() => {
                 setCaseSheetEdit(true);
-                client
-                  .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-                    mutation: CREATEAPPOINTMENTSESSION,
-                    variables: {
-                      createAppointmentSessionInput: {
-                        appointmentId: AppId,
-                        requestRole: REQUEST_ROLES.DOCTOR,
-                      },
-                    },
-                  })
-                  .then((_data: any) => {
-                    console.log('creat', _data);
-                    setGetCaseshhetId(_data.data.createAppointmentSession.caseSheetId);
-                  })
-                  .catch((e: any) => {
-                    console.log('Error occured while create session', e);
-                  });
                 setShowButtons(true);
                 props.onStartConsult();
               }}
@@ -930,13 +974,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={styles.footerButtonsContainer}>
             <Button
               onPress={() => saveDetails()}
-              title="SAVE"
+              title={strings.buttons.save}
               titleTextStyle={styles.buttonTextStyle}
               variant="white"
               style={[styles.buttonsaveStyle, { marginRight: 16 }]}
             />
             <Button
-              title="END CONSULT"
+              title={strings.buttons.end_consult}
               buttonIcon={<End />}
               onPress={() => {
                 endConsult();
@@ -952,9 +996,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderSymptonsView = () => {
     return (
       <View>
-        <CollapseCard heading="Chief Complaints" collapse={show} onPress={() => setShow(!show)}>
+        <CollapseCard
+          heading={strings.case_sheet.chief_complaints}
+          collapse={show}
+          onPress={() => setShow(!show)}
+        >
           {symptonsData == null || symptonsData.length == 0 ? (
-            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
+            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
+              {strings.common.no_data}
+            </Text>
           ) : (
             symptonsData.map(
               (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null) => {
@@ -992,15 +1042,27 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             )
                           }
                           icon={<GreenRemove style={{ height: 20, width: 20 }} />}
-                          days={showdata.since ? `Since : ${showdata.since}` : undefined}
+                          days={
+                            showdata.since
+                              ? `${strings.common.since} : ${showdata.since}`
+                              : undefined
+                          }
                           howoften={
-                            showdata.howOften ? `How Often : ${showdata.howOften}` : undefined
+                            showdata.howOften
+                              ? `${strings.common.how_often}: ${showdata.howOften}`
+                              : undefined
                           }
                           seviarity={
-                            showdata.severity ? `Severity :${showdata.severity}` : undefined
+                            showdata.severity
+                              ? `${strings.common.severity} :${showdata.severity}`
+                              : undefined
                           }
                           editIcon={<Edit style={{ height: 20, width: 20 }} />}
-                          details={showdata.details ? `Details :${showdata.details}` : undefined}
+                          details={
+                            showdata.details
+                              ? `${strings.common.details} :${showdata.details}`
+                              : undefined
+                          }
                         />
                       </View>
                     </View>
@@ -1023,7 +1085,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         ) {
                           setSymptonsData([...(symptonsData || []), data]);
                         } else {
-                          Alert.alert('', 'Already Exists');
+                          Alert.alert('', strings.alerts.already_exists);
                         }
                       }}
                       onClose={() => props.overlayDisplay(null)}
@@ -1031,7 +1093,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   )
                 }
               >
-                <Text style={styles.addDoctorText}>ADD SYMPTOM</Text>
+                <Text style={styles.addDoctorText}>{strings.buttons.add_symptom}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1087,19 +1149,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="Vitals"
+          heading={strings.case_sheet.vitals}
           collapse={vitalsShow}
           onPress={() => setVitalsShow(!vitalsShow)}
         >
           <View style={{ marginHorizontal: 16 }}>
-            {renderFields('Height', (medicalHistory && medicalHistory.height) || '', (text) => {
-              setMedicalHistory({
-                ...medicalHistory,
-                height: text,
-              } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
-            })}
             {renderFields(
-              'Weight (kgs)',
+              strings.case_sheet.height,
+              (medicalHistory && medicalHistory.height) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  height: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              }
+            )}
+            {renderFields(
+              strings.case_sheet.weight,
               (medicalHistory && medicalHistory.weight) || '',
               (text) => {
                 setMedicalHistory({
@@ -1108,14 +1174,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
               }
             )}
-            {renderFields('BP (mm Hg)', (medicalHistory && medicalHistory.bp) || '', (text) => {
-              setMedicalHistory({
-                ...medicalHistory,
-                bp: text,
-              } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
-            })}
             {renderFields(
-              'Temperature (°F)',
+              strings.case_sheet.bp,
+              (medicalHistory && medicalHistory.bp) || '',
+              (text) => {
+                setMedicalHistory({
+                  ...medicalHistory,
+                  bp: text,
+                } as GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory);
+              }
+            )}
+            {renderFields(
+              strings.case_sheet.temperature,
               (medicalHistory && medicalHistory.temperature) || '',
               (text) => {
                 setMedicalHistory({
@@ -1170,13 +1240,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="Patient History & Lifestyle"
+          heading={strings.case_sheet.patient_history_lifestyle}
           collapse={patientHistoryshow}
           onPress={() => setpatientHistoryshow(!patientHistoryshow)}
         >
           <View style={{ marginHorizontal: 16 }}>
             {renderFields(
-              'Medication History*',
+              strings.case_sheet.medication_history,
               (medicalHistory && medicalHistory.pastMedicalHistory) || '',
               (text) => {
                 setMedicalHistory({
@@ -1187,7 +1257,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               true
             )}
             {renderFields(
-              'Drug Allergies',
+              strings.case_sheet.drug_allergies,
               (medicalHistory && medicalHistory.drugAllergies) || '',
               (text) => {
                 setMedicalHistory({
@@ -1198,7 +1268,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               true
             )}
             {renderFields(
-              'Diet Allergies/Restrictions',
+              strings.case_sheet.diet_allergies,
               (medicalHistory && medicalHistory.dietAllergies) || '',
               (text) => {
                 setMedicalHistory({
@@ -1209,7 +1279,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               true
             )}
             {renderFields(
-              'Lifestyle and Habits',
+              strings.case_sheet.lifestyle_habits,
               (lifeStyleData && lifeStyleData.map((i) => i && i.description).join('\n')) || '',
               (text) => {
                 const _lifeStyleData = text.split('\n').map((i) => {
@@ -1226,7 +1296,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               true
             )}
             {renderFields(
-              'Menstrual History',
+              strings.case_sheet.menstrual_history,
               (medicalHistory && medicalHistory.menstrualHistory) || '',
               (text) => {
                 setMedicalHistory({
@@ -1237,7 +1307,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               true
             )}
             {renderFields(
-              'Family Medical History',
+              strings.case_sheet.family_medical_history,
               getFamilyHistory(),
               (text) => {
                 setFamilyHistory(text);
@@ -1254,7 +1324,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="Junior Doctor’s Notes"
+          heading={strings.case_sheet.jr_doctor_notes}
           collapse={juniorshow}
           onPress={() => setJuniorShow(!juniorshow)}
         >
@@ -1276,11 +1346,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderDiagonisticPrescription = () => {
     return (
       <CollapseCard
-        heading="Test Prescription"
+        heading={strings.case_sheet.test_prescription}
         collapse={showdiagonisticPrescription}
         onPress={() => setshowdiagonisticPrescription(!showdiagonisticPrescription)}
       >
-        <Text style={[styles.familyText, { marginBottom: 12 }]}>Tests</Text>
+        <Text style={[styles.familyText, { marginBottom: 12 }]}>{strings.case_sheet.tests}</Text>
         {tests.length ? (
           tests.map((item, index) => {
             return (
@@ -1303,38 +1373,43 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             );
           })
         ) : (
-          <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
+          <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
+            {strings.common.no_data}
+          </Text>
         )}
         {/* {diagnosticPrescriptionData == null ? (
           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
         ) : ( */}
-        {favTest && favTest.length && (
-          <Text style={[styles.familyText, { marginBottom: 12 }]}>Favorite Tests</Text>
-        )}
-        {favTest &&
-          favTest.map((showdata, i) => {
-            if (showdata)
-              return (
-                <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
-                  <DiagnosicsCard
-                    diseaseName={showdata.itemname}
-                    icon={
-                      <TouchableOpacity
-                        onPress={() => {
-                          // removeDiagnosticPresecription(showdata, i);
-                          setTests([...tests, { ...showdata, isSelected: true }]);
-                        }}
-                      >
-                        <Green />
-                      </TouchableOpacity>
-                    }
-                  />
-                </View>
-              );
-          })}
+        {props.favTest && props.favTest.length ? (
+          <Text style={[styles.familyText, { marginBottom: 12 }]}>
+            {strings.smartPrescr.fav_test}
+          </Text>
+        ) : null}
+        {props.favTest && props.favTest.length
+          ? props.favTest.map((showdata, i) => {
+              if (showdata)
+                return (
+                  <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
+                    <DiagnosicsCard
+                      diseaseName={showdata.itemname}
+                      icon={
+                        <TouchableOpacity
+                          onPress={() => {
+                            // removeDiagnosticPresecription(showdata, i);
+                            setTests([...tests, { ...showdata, isSelected: true }]);
+                          }}
+                        >
+                          <Green />
+                        </TouchableOpacity>
+                      }
+                    />
+                  </View>
+                );
+            })
+          : null}
         {caseSheetEdit && (
           <AddIconLabel
-            label="ADD TESTS"
+            label={strings.buttons.add_tests}
             onPress={
               () => setShowAddTestPopup(true) //props.navigation.push(AppRoutes.AddDiagnostics)
             }
@@ -1367,11 +1442,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {item.medicineUnit ? (type === 'Take' ? unit + '(s) ' : unit + ' ') : ''}
           {item.medicineFrequency ? nameFormater(item.medicineFrequency).toLowerCase() + ' ' : ''}
           {item.medicineConsumptionDurationInDays
-            ? 'for ' +
-              item.medicineConsumptionDurationInDays +
-              ' ' +
-              item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase() +
-              '(s) '
+            ? `for ${item.medicineConsumptionDurationInDays} ${
+                item.medicineConsumptionDurationUnit
+                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                  : ``
+              }`
             : ''}
           {item.medicineToBeTaken.length
             ? item.medicineToBeTaken.map((i: any) => nameFormater(i).toLowerCase()).join(', ') + ' '
@@ -1400,14 +1475,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderMedicinePrescription = () => {
     return (
       <CollapseCard
-        heading="Medicine Prescription"
+        heading={strings.case_sheet.medicine_prescription}
         collapse={medicinePrescription}
         onPress={() => setMedicinePrescription(!medicinePrescription)}
       >
         <View style={{ marginHorizontal: 20, marginBottom: 19 }}>
-          {renderHeaderText('Medicines')}
+          {renderHeaderText(strings.common.medicines)}
           {medicinePrescriptionData == null || medicinePrescriptionData.length == 0
-            ? renderInfoText('No Medicine Added')
+            ? renderInfoText(strings.case_sheet.no_medicine_Added)
             : medicinePrescriptionData.map((showdata: any, i) => {
                 const isSelected =
                   selectedMedicinesId.findIndex(
@@ -1482,9 +1557,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 );
               })}
 
-          {favMed ? favMed.length > 0 && renderHeaderText('Favorite Medicines') : null}
-          {favMed
-            ? favMed.map(
+          {props.favMed
+            ? props.favMed.length > 0 && renderHeaderText(strings.smartPrescr.fav_med)
+            : null}
+          {props.favMed
+            ? props.favMed.map(
                 (
                   med: GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null
                 ) => {
@@ -1549,7 +1626,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             : null}
           {caseSheetEdit && (
             <AddIconLabel
-              label="ADD MEDICINE"
+              label={strings.smartPrescr.add_medicine}
               onPress={() =>
                 props.overlayDisplay(
                   <AddMedicinePopUp
@@ -1571,7 +1648,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           [...selectedMedicinesId, data.externalId || ''].filter((i) => i !== '')
                         );
                       } else {
-                        Alert.alert('', 'Already Exists');
+                        Alert.alert('', strings.alerts.already_exists);
                       }
                     }}
                   />
@@ -1589,7 +1666,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="Follow Up"
+          heading={strings.case_sheet.follow_up}
           collapse={followup}
           onPress={() => setFollowUp(!followup)}
         >
@@ -1602,7 +1679,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   marginBottom: 10,
                 }}
               >
-                (The first follow up for the patient will be free for upto 7 days)
+                {strings.case_sheet.first_follow_up_descr}
               </Text>
             )}
             <View
@@ -1612,7 +1689,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 justifyContent: 'space-between',
               }}
             >
-              <Text style={styles.medicineText}>Do you recommend a follow up?</Text>
+              <Text style={styles.medicineText}>
+                {strings.case_sheet.do_you_recommend_followup}
+              </Text>
               {!switchValue ? (
                 <View>
                   <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
@@ -1635,7 +1714,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <View>
                 <View style={styles.medicineunderline}></View>
                 <View style={{ marginBottom: 20, marginRight: 25 }}>
-                  <Text style={[styles.medicineText, { marginBottom: 7 }]}>Follow Up After</Text>
+                  <Text style={[styles.medicineText, { marginBottom: 7 }]}>
+                    {strings.case_sheet.follow_up_after}
+                  </Text>
                   <View style={{ flex: 1, justifyContent: 'center' }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                       <TextInput
@@ -1658,13 +1739,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           marginLeft: 8,
                         }}
                       >
-                        Days
+                        {strings.common.days}
                       </Text>
                     </View>
                   </View>
                 </View>
                 <TextInput
-                  placeholder={'Add instructions here..'}
+                  placeholder={strings.common.add_instructions_here}
                   style={[styles.inputView, { marginBottom: 18 }]}
                   multiline={true}
                   textAlignVertical={'top'}
@@ -1726,7 +1807,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       marginBottom: 12,
                     }}
                   >
-                    Recommended Consult Type
+                    {strings.case_sheet.recommend_consult_type}
                   </Text>
                   <View style={{ flexDirection: 'row' }}>
                     <View>
@@ -1749,7 +1830,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
                           }
                         }}
-                        title="Online"
+                        title={strings.case_sheet.online}
                         isChecked={
                           followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
                           followUpConsultationType === APPOINTMENT_TYPE.BOTH
@@ -1784,7 +1865,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
                           }
                         }}
-                        title="In-person"
+                        title={strings.case_sheet.in_person}
                         isChecked={
                           followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
                           followUpConsultationType === APPOINTMENT_TYPE.BOTH
@@ -1813,12 +1894,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="Diagnosis"
+          heading={strings.case_sheet.diagnosis}
           collapse={diagnosisView}
           onPress={() => setDiagnosisView(!diagnosisView)}
         >
           <View style={{ marginHorizontal: 16, marginBottom: 19 }}>
-            {renderHeaderText('Diagnosed Medical Condition')}
+            {renderHeaderText(strings.case_sheet.diagonsed_medical_condi)}
             <View
               style={{
                 flexDirection: 'row',
@@ -1828,7 +1909,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               }}
             >
               {diagnosisData == null || diagnosisData.length == 0
-                ? renderInfoText('No Data')
+                ? renderInfoText(strings.common.no_data)
                 : diagnosisData.map((showdata: any, i) => {
                     return (
                       <DiagnosisCard
@@ -1845,7 +1926,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </View>
             {caseSheetEdit && (
               <AddIconLabel
-                label="ADD CONDITION"
+                label={strings.consult.add_condition}
                 onPress={() => {
                   props.overlayDisplay(
                     <AddConditionPopUp
@@ -1890,13 +1971,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View style={{ zIndex: -1 }}>
         <CollapseCard
-          heading="Other Instructions"
+          heading={strings.common.other_instructions}
           collapse={otherInstructions}
           onPress={() => setOtherInstructions(!otherInstructions)}
         >
-          <Text style={[styles.familyText, { marginBottom: 12 }]}>Instructions to the patient</Text>
+          <Text style={[styles.familyText, { marginBottom: 12 }]}>
+            {strings.case_sheet.instructions_to_patient}
+          </Text>
           {otherInstructionsData == null ? (
-            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No Data</Text>
+            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
+              {strings.common.no_data}
+            </Text>
           ) : (
             otherInstructionsData.map(
               (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions, i: any) => {
@@ -1917,7 +2002,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           )}
           {otherInstructionsadd ? (
             <View>
-              <Text style={[styles.familyText, { marginBottom: 12 }]}>Add Instruction</Text>
+              <Text style={[styles.familyText, { marginBottom: 12 }]}>
+                {strings.common.add_instructions}
+              </Text>
               <View
                 style={{
                   flexDirection: 'row',
@@ -1942,7 +2029,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     color: '#01475b',
                     marginBottom: 16,
                   }}
-                  placeholder="Enter instruction here.."
+                  placeholder={strings.common.enter_instructions_here}
                   underlineColorAndroid="transparent"
                   multiline={true}
                   placeholderTextColor="rgba(2, 71, 91, 0.4)"
@@ -1953,11 +2040,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 <TouchableOpacity
                   onPress={() => {
                     if (othervalue == '' || othervalue.trim() == '') {
-                      Alert.alert('Please add other instructions');
+                      Alert.alert(strings.alerts.please_add_other_instructions);
                     } else if (
                       otherInstructionsData.find((item: any) => item.instruction == othervalue)
                     ) {
-                      Alert.alert('This instruction already added');
+                      Alert.alert(strings.alerts.instruction_already_added);
                     } else {
                       setOtherInstructionsData([
                         ...otherInstructionsData,
@@ -1981,7 +2068,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           ) : (
             caseSheetEdit && (
               <AddIconLabel
-                label="ADD INSTRUCTIONS"
+                label={strings.buttons.add_instructions}
                 onPress={() => setOtherInstructionsAdd(!otherInstructionsadd)}
                 style={{ marginLeft: 16, marginTop: 0, marginBottom: 19 }}
               />
@@ -1991,7 +2078,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-
   const renderHeaderText = (header: string) => {
     return (
       <Text
@@ -2116,16 +2202,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="Patient Health Vault"
+          heading={strings.case_sheet.patient_health_vault}
           collapse={patientHealthWallet}
           onPress={() => setPatientHealthWallet(!patientHealthWallet)}
         >
           <View style={{ marginHorizontal: 16 }}>
-            {renderHeaderText('Photos uploaded by the Patient')}
-            {patientImages.length > 0 ? <View></View> : renderInfoText('No Data')}
-            {renderHeaderText('Reports')}
-            {records.length > 0 ? <View></View> : renderInfoText('No Data')}
-            {renderHeaderText('Past Consultations')}
+            {renderHeaderText(strings.case_sheet.photos_uploaded_by_patient)}
+            {patientImages.length > 0 ? <View></View> : renderInfoText(strings.common.no_data)}
+            {renderHeaderText(strings.case_sheet.reports)}
+            {records.length > 0 ? <View></View> : renderInfoText(strings.common.no_data)}
+            {renderHeaderText(strings.case_sheet.past_consultations)}
             {renderPastConsults()}
           </View>
         </CollapseCard>
@@ -2182,7 +2268,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               ...theme.fonts.IBMPlexSansSemiBold(20),
             }}
           >
-            How do you want to talk to the patient?
+            {strings.case_sheet.how_do_you_talk}
           </Text>
           <TouchableOpacity onPress={() => {}}>
             <View
@@ -2197,7 +2283,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               }}
             >
               <View style={{ flexDirection: 'row' }}>
-                <RoundCallIcon style={{ width: 24, height: 24 }} />
+                <RoundCallIcon />
                 <Text
                   style={{
                     marginLeft: 8,
@@ -2206,7 +2292,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     ...theme.fonts.IBMPlexSansBold(13),
                   }}
                 >
-                  AUDIO CALL
+                  {strings.buttons.audio_call}
                 </Text>
               </View>
             </View>
@@ -2224,7 +2310,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               }}
             >
               <View style={{ flexDirection: 'row' }}>
-                <RoundVideoIcon style={{ width: 24, height: 24 }} />
+                <RoundVideoIcon />
                 <Text
                   style={{
                     marginLeft: 8,
@@ -2233,7 +2319,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     ...theme.fonts.IBMPlexSansBold(13),
                   }}
                 >
-                  VIDEO CALL
+                  {strings.buttons.video_call}
                 </Text>
               </View>
             </View>
@@ -2251,7 +2337,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       ) {
         setAddedAdvices([...addedAdvices, advice]);
       } else {
-        showAphAlert && showAphAlert({ title: 'Alert!', description: 'Advice already exists.' });
+        showAphAlert &&
+          showAphAlert({
+            title: strings.common.alert,
+            description: strings.case_sheet.advice_exists,
+          });
       }
     } else if (action === 'd') {
       if (addedAdvices.findIndex((item) => item.key === advice.key) >= 0) {
@@ -2264,12 +2354,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading="Advice/Instructions"
+          heading={strings.case_sheet.advice_instructions}
           collapse={adviceInstructions}
           onPress={() => setAdviceInstructions(!adviceInstructions)}
         >
           <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
-            {renderHeaderText('Instructions to the patient')}
+            {renderHeaderText(strings.case_sheet.instructions_to_patient)}
             {addedAdvices.length > 0
               ? addedAdvices.map((item) => (
                   <TouchableOpacity
@@ -2291,10 +2381,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     </View>
                   </TouchableOpacity>
                 ))
-              : renderInfoText('No Advice/Instructions selected')}
-            {favList && favList.length > 0 ? renderHeaderText('Favorite Diagnostics') : null}
-            {favList &&
-              favList.map(
+              : renderInfoText(strings.case_sheet.no_advice_selected)}
+            {props.favList && props.favList.length > 0
+              ? renderHeaderText(strings.case_sheet.fav_diagnostics)
+              : null}
+            {props.favList &&
+              props.favList.map(
                 (item) =>
                   item && (
                     <TouchableOpacity
@@ -2319,7 +2411,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               )}
             {caseSheetEdit && (
               <AddIconLabel
-                label="ADD INSTRUCTIONS"
+                label={strings.buttons.add_instructions}
                 onPress={() => {
                   props.overlayDisplay(
                     <AddInstructionPopUp
@@ -2402,13 +2494,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </Text>
           </View>
           {patientDetails && patientDetails.uhid != '' ? (
-            <Text style={styles.uhidText}>UHID : {patientDetails.uhid} </Text>
+            <Text style={styles.uhidText}>
+              {strings.case_sheet.uhid} : {patientDetails.uhid}{' '}
+            </Text>
           ) : null}
 
           <View style={styles.understatusline} />
           <View>
-            {registerDetails('Appt ID: ', displayId)}
-            {registerDetailsAppDate('Appt Date: ', Appintmentdatetimeconsultpage)}
+            {registerDetails(strings.case_sheet.appt_id + ' : ', displayId)}
+            {registerDetailsAppDate(strings.case_sheet.appt_date, Appintmentdatetimeconsultpage)}
           </View>
         </View>
       );
@@ -2447,22 +2541,33 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderPatientImage = () => {
     return (
       <View style={{ marginBottom: 20 }}>
-        <Image
-          source={{
-            uri: (patientDetails && patientDetails.photoUrl) || '',
-          }}
-          style={{ height: width, width: width }}
-          resizeMode={'contain'}
-          placeholderStyle={{
-            height: width,
-            width: width,
-            alignItems: 'center',
-            backgroundColor: 'transparent',
-          }}
-          PlaceholderContent={
-            loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
-          }
-        />
+        {patientDetails && patientDetails.photoUrl ? (
+          <Image
+            source={{
+              uri: (patientDetails && patientDetails.photoUrl) || '',
+            }}
+            style={{ height: width, width: width }}
+            resizeMode={'contain'}
+            placeholderStyle={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+            PlaceholderContent={
+              loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
+            }
+          />
+        ) : (
+          <PatientPlaceHolderImage
+            style={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+          />
+        )}
       </View>
     );
   };
@@ -2478,7 +2583,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderVitals()}
           {renderPatientHistoryLifestyle()}
           {renderPatientHealthWallet()}
-
           {renderJuniorDoctorNotes()}
           {renderDiagnosisView()}
           {renderMedicinePrescription()}
@@ -2493,9 +2597,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
             <View style={styles.inputBorderView}>
               <View style={{ margin: 16 }}>
-                <Text style={styles.notes}>Personal Notes</Text>
+                <Text style={styles.notes}>{strings.case_sheet.personal_note}</Text>
                 <TextInput
-                  placeholder={'What you enter here won’t be shown to the patient..'}
+                  placeholder={strings.case_sheet.note_placeholder}
                   textAlignVertical={'top'}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   style={styles.inputView}

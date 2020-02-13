@@ -4,6 +4,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   mainview: {
@@ -36,7 +37,7 @@ export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) =
             onPress: () => props.navigation.goBack(),
           },
         ]}
-        headerText="NEED HELP?"
+        headerText={strings.need_help.need_help_q}
       />
     );
   };
@@ -45,16 +46,16 @@ export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) =
       {showHeaderView()}
       <View style={styles.fullview}>
         <View style={styles.mainview}>
-          <Text style={styles.descriptionview}>Don’t worry. We are here for you :)</Text>
+          <Text style={styles.descriptionview}>{strings.need_help.dont_worry_we_are_here}</Text>
         </View>
         <View style={{ marginLeft: 16, marginBottom: 32 }}>
           <Text style={styles.descriptionview}>
-            Call
+            {strings.common.call}
             <Text style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
               {' '}
-              1800 - 3455 - 3455{' '}
+              {strings.common.toll_free_num}{' '}
             </Text>
-            to reach an expert from our team who will resolve your issue.
+            {strings.need_help.reach_an_expert}
           </Text>
         </View>
       </View>

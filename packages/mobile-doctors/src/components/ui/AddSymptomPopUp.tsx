@@ -19,6 +19,7 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -70,7 +71,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
             marginRight: 20,
           }}
         >
-          {props.data ? 'UPDATE COMPLAINT' : 'ADD COMPLAINT'}
+          {props.data ? strings.consult.update_complaint : strings.consult.add_complaint}
         </Text>
       </View>
     );
@@ -91,13 +92,13 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
         ]}
       >
         <Button
-          title={'CANCEL'}
+          title={strings.buttons.cancel}
           variant={'white'}
           onPress={() => props.onClose()}
           style={{ width: (width - 110) / 2, marginRight: 16 }}
         />
         <Button
-          title={props.data ? 'UPDATE SYMPTOM' : 'ADD SYMPTOM'}
+          title={props.data ? strings.buttons.update_symptom : strings.buttons.add_symptom}
           onPress={() => {
             if (value) {
               if (value.symptom) {
@@ -106,24 +107,24 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
                 } else {
                   showAphAlert &&
                     showAphAlert({
-                      title: 'Alert!',
-                      description: 'Enter Severity',
+                      title: strings.common.alert,
+                      description: strings.consult.enter_severity,
                     });
                   return;
                 }
               } else {
                 showAphAlert &&
                   showAphAlert({
-                    title: 'Alert!',
-                    description: 'Enter Symptom',
+                    title: strings.common.alert,
+                    description: strings.consult.enter_symptom,
                   });
                 return;
               }
             } else {
               showAphAlert &&
                 showAphAlert({
-                  title: 'Alert!',
-                  description: 'Complaint data is empty',
+                  title: strings.common.alert,
+                  description: strings.consult.complaint_data_empty,
                   onPressOk: () => {
                     props.onClose();
                     hideAphAlert && hideAphAlert();
@@ -143,7 +144,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
     return (
       <View style={{ padding: 16 }}>
         <TextInputComponent
-          label={'Symptom'}
+          label={strings.consult.symptom}
           labelStyle={theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.7))}
           inputStyle={{
             paddingBottom: 4,
@@ -158,7 +159,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
           }}
         />
         <TextInputComponent
-          label={'Since (Optional)'}
+          label={strings.consult.since_optional}
           labelStyle={theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.7))}
           inputStyle={{
             paddingBottom: 4,
@@ -173,7 +174,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
           }}
         />
         <TextInputComponent
-          label={'How Often? (Optional)'}
+          label={strings.consult.how_often_optional}
           labelStyle={theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.7))}
           inputStyle={{
             paddingBottom: 4,
@@ -188,7 +189,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
           }}
         />
         <TextInputComponent
-          label={'Severity?'}
+          label={strings.consult.severity}
           labelStyle={theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.7))}
           inputStyle={{
             paddingBottom: 4,
@@ -203,7 +204,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
           }}
         />
         <TextInputComponent
-          label={'Details'}
+          label={strings.common.details}
           labelStyle={theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.7))}
           inputStyle={{
             borderWidth: 2,
@@ -215,7 +216,7 @@ export const AddSymptomPopUp: React.FC<AddSymptomPopUpProps> = (props) => {
             paddingTop: 12,
             ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE),
           }}
-          placeholder={'Enter the details here'}
+          placeholder={strings.consult.enter_details_here}
           multiline={true}
           textInputprops={{ textAlignVertical: 'top' }}
           value={(value && value.details) || ''}

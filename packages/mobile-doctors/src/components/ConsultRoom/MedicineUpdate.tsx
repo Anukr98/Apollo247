@@ -14,13 +14,13 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f7f7f7',
   },
-
   dosage: {
     color: 'rgba(2, 71, 91, 0.6)',
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -208,7 +208,7 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
             elevation: 5,
           }}
         >
-          <Text style={styles.dosage}>Dosage</Text>
+          <Text style={styles.dosage}>{strings.medicine.dosage}</Text>
           <View style={{ flexDirection: 'row', marginLeft: 16 }}>
             <TouchableOpacity onPress={() => setCount(count - 1)}>
               <View>
@@ -216,7 +216,8 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
               </View>
             </TouchableOpacity>
             <Text style={styles.countText}>
-              {count} tablet{count > 1 ? 's' : ''}
+              {count} {strings.medicine.tablet}
+              {count > 1 ? 's' : ''}
             </Text>
             <TouchableOpacity onPress={() => setCount(count + 1)}>
               <View style={{ marginLeft: 10 }}>
@@ -233,7 +234,7 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
               //marginBottom: 24,
             }}
           ></View>
-          <Text style={styles.dosage}>Time of the Day</Text>
+          <Text style={styles.dosage}>{strings.medicine.time_of_the_day}</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -260,7 +261,7 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
               );
             })}
           </View>
-          <Text style={styles.dosage}>To be taken</Text>
+          <Text style={styles.dosage}>{strings.medicine.tobe_taken}</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -287,7 +288,7 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
               );
             })}
           </View>
-          <Text style={styles.dosage}>Duration of Consumption</Text>
+          <Text style={styles.dosage}>{strings.medicine.duration_of_consumption}</Text>
           <View style={[styles.inputValidView]}>
             <TextInput
               style={styles.inputStyle}
@@ -296,9 +297,9 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
               autoCorrect={true}
             />
           </View>
-          <Text style={styles.dosage}>Instructions (if any)</Text>
+          <Text style={styles.dosage}>{strings.medicine.instruction_label}</Text>
           <TextInputComponent
-            placeholder="Enter instructions here.."
+            placeholder={strings.medicine.enter_instruction_here}
             inputStyle={styles.inputView}
             multiline={true}
             value={value}
@@ -308,14 +309,14 @@ export const MedicineUpdate: React.FC<ProfileProps> = (props) => {
         </View>
         <View style={styles.footerButtonsContainer}>
           <Button
-            title="DELETE"
+            title={strings.buttons.delete}
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
             style={[styles.buttonsaveStyle, { marginRight: 16 }]}
             onPress={() => removeData()}
           />
           <Button
-            title="UPDATE"
+            title={strings.buttons.update}
             style={styles.buttonendStyle}
             onPress={() => {
               let dosagefianl = '';

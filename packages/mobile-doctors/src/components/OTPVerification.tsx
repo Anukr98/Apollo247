@@ -32,6 +32,7 @@ import Hyperlink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { height, width } = Dimensions.get('window');
 
@@ -89,10 +90,11 @@ export type timeOutDataType = { phoneNumber: string; invalidAttems: number; star
 
 export interface OTPVerificationProps
   extends NavigationScreenProps<{
-    otpString: string;
     phoneNumber: string;
     loginId: string;
   }> {}
+
+let errorAlertShown = false;
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
@@ -126,6 +128,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
+    AppState.addEventListener('change', _handleAppStateChange);
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
@@ -137,6 +140,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
       _willBlurSubscription && _willBlurSubscription.remove();
+      AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
 
@@ -162,29 +166,47 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 actions: [NavigationActions.navigate({ routeName: AppRoutes.ProfileSetup })],
               })
             );
-          } else {
+          } else if (!errorAlertShown) {
+            errorAlertShown = true;
+            console.log('doctorType JUNIOR else');
+
             AsyncStorage.setItem('isLoggedIn', 'false');
-            // AsyncStorage.setItem('isProfileFlowDone', 'false');
             setDoctorDetails(null);
             clearFirebaseUser && clearFirebaseUser();
-            Alert.alert(
-              'Error',
-              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
-            );
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
+              {
+                text: 'OK',
+                onPress: () => {
+                  console.log('OK Pressed');
+                  errorAlertShown = false;
+                },
+              },
+            ]);
             setshowSpinner(false);
           }
         } else {
-          if (getDoctorDetailsError === true) {
-            Alert.alert(
-              'Error',
-              'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
-            );
+          console.log(getDoctorDetailsError, 'getDoctorDetailsError else');
+
+          if (getDoctorDetailsError === true && !errorAlertShown) {
+            errorAlertShown = true;
+            AsyncStorage.setItem('isLoggedIn', 'false');
+            setDoctorDetails(null);
+            clearFirebaseUser && clearFirebaseUser();
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
+              {
+                text: 'OK',
+                onPress: () => {
+                  console.log('OK Pressed');
+                  errorAlertShown = false;
+                },
+              },
+            ]);
             setshowSpinner(false);
           }
         }
       }, 2000);
     }
-  }, [doctorDetails, isOtpVerified, props.navigation, getDoctorDetailsError]);
+  }, [doctorDetails, isOtpVerified, props.navigation, getDoctorDetailsError, clearFirebaseUser]);
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -201,7 +223,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       console.log(error, 'error');
       // Error removing data
     }
-  }, [props.navigation.state.params]);
+  }, [phoneNumber]);
 
   const getTimerData = useCallback(async () => {
     try {
@@ -240,7 +262,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       // Error retrieving data
       console.log(error.message);
     }
-  }, [_removeFromStore, props.navigation.state.params]);
+  }, [_removeFromStore, phoneNumber]);
 
   useEffect(() => {
     getTimerData();
@@ -389,9 +411,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       getTimerData();
     }
   };
-  useEffect(() => {
-    AppState.addEventListener('change', _handleAppStateChange);
-  }, []);
 
   const onStopTimer = () => {
     // timer = 900;
@@ -441,7 +460,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           .catch((error: Error) => {
             console.log(error, 'error');
             console.log(error.message, 'errormessage');
-            Alert.alert('Error', 'The interaction was cancelled by the user.');
+            Alert.alert(strings.common.error, 'The interaction was cancelled by the user.');
           });
       } else {
         setshowOfflinePopup(true);
@@ -454,7 +473,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     return (
       <View style={styles.viewWebStyles}>
         <Header
-          headerText={'Terms & Conditions'}
+          headerText={strings.login.terms_conditions}
           leftIcon="close"
           containerStyle={{
             borderBottomWidth: 0,
@@ -523,7 +542,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               letterSpacing: 0,
             }}
           >
-            By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+            {strings.login.by_signingup_descr}
           </Text>
         </Hyperlink>
       </View>
@@ -590,7 +609,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
 
             <Text style={[styles.errorText]}>
-              Try again after —{' '}
+              {strings.otp.try_again}{' '}
               <CountDownTimer
                 timer={remainingTime}
                 style={[styles.errorText]}
@@ -639,7 +658,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             </View>
             {showErrorMsg && (
               <Text style={styles.errorText}>
-                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
+                {strings.otp.incorrect_otp} {3 - invalidOtpCount} {strings.otp.more}{' '}
                 {invalidOtpCount == 2 ? 'try' : 'tries'}.
               </Text>
             )}

@@ -4,6 +4,8 @@ import React from 'react';
 import { SafeAreaView, Alert, View, Text, StyleSheet } from 'react-native';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+
 const styles = StyleSheet.create({
   mainview: {
     marginLeft: 20,
@@ -33,14 +35,14 @@ export const CallRequestScreen: React.FC<CallRequestScreenProps> = (props) => {
               onPress: () => Alert.alert('click'),
             },
           ]}
-          middleText="NEED HELP"
+          middleText={strings.need_help.need_help_tittle}
         />
       </View>
       <View style={styles.mainview}>
-        <Text style={styles.descriptionview}>Call requested</Text>
+        <Text style={styles.descriptionview}>{strings.need_help.call_requested}</Text>
       </View>
       <View style={{ marginLeft: 20, marginBottom: 32 }}>
-        <Text style={styles.textview}>You will receive a call from us shortly.</Text>
+        <Text style={styles.textview}>{strings.need_help.you_will_receive_call}</Text>
       </View>
     </SafeAreaView>
   );

@@ -28,6 +28,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '14px 12px',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     cardIcon: {
       paddingRight: 16,
@@ -67,11 +70,14 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
         },
       },
       {
-        breakpoint: 600,
+        breakpoint: 768,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 2,
           initialSlide: 2,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
       },
       {
@@ -79,6 +85,9 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
       },
     ],

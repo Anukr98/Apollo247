@@ -66,6 +66,11 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LOGIN_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = "HOME_DELIVERY",
   STORE_PICKUP = "STORE_PICKUP",
@@ -345,6 +350,12 @@ export interface OrderCancelInput {
   remarksCode?: string | null;
 }
 
+export interface OtpVerificationInput {
+  id: string;
+  otp: string;
+  loginType: LOGIN_TYPE;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
@@ -396,6 +407,7 @@ export interface UpdatePatientInput {
   uhid?: string | null;
   emailAddress?: string | null;
   dateOfBirth?: any | null;
+  referralCode?: string | null;
   relation?: Relation | null;
   photoUrl?: string | null;
 }

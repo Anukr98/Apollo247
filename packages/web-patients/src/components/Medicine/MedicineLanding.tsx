@@ -18,6 +18,7 @@ import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -34,6 +35,9 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 82,
+      },
     },
     pageTopHeader: {
       backgroundColor: theme.palette.common.white,
@@ -42,20 +46,21 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
         padding: 0,
+        boxShadow: 'none',
       },
     },
     medicineTopGroup: {
       display: 'flex',
       paddingTop: 25,
-      [theme.breakpoints.down(768)]: {
+      [theme.breakpoints.down('xs')]: {
         display: 'block',
+        paddingTop: 0,
       },
     },
     searchSection: {
       width: 'calc(100% - 284px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        marginBottom: 15,
       },
     },
     progressLoader: {
@@ -67,7 +72,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 284,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        padding: '0 20px 30px 20px',
+        padding: '20px 20px 0 20px',
+        backgroundColor: '#f7f8f5',
+        marginTop: 20,
       },
     },
     userName: {
@@ -117,7 +124,6 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: '100%',
       },
       [theme.breakpoints.down('xs')]: {
-        margin: '51px auto 0 auto',
         textAlign: 'center',
       },
     },
@@ -140,6 +146,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]:{
+        backgroundColor: '#fff',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     preServiceType: {
       backgroundColor: '#f7f8f5',
@@ -149,11 +159,15 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]:{
+        backgroundColor: '#fff',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     textVCenter: {
       alignItems: 'center',
       minHeight: 54,
-      paddingbottom: 10,
+      paddingBottom: 10,
     },
     serviceIcon: {
       marginRight: 10,
@@ -206,9 +220,19 @@ const useStyles = makeStyles((theme: Theme) => {
     allProductsList: {
       padding: '30px 40px',
       paddingBottom: 10,
+      [theme.breakpoints.down('xs')]:{
+        paddingTop: 25,
+        paddingRight: 0,
+        paddingLeft: 20,
+      },
     },
     sliderSection: {
       paddingBottom: 22,
+      [theme.breakpoints.down('xs')]: {
+        '&:last-child': {
+          paddingBottom: 10,
+        },
+      },
     },
     sectionTitle: {
       fontSize: 14,
@@ -222,6 +246,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     viewAllLink: {
       marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 20,
+      },
       '& a': {
         fontSize: 13,
         fontWeight: 'bold',
@@ -468,6 +495,7 @@ export const MedicineLanding: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <NavigationBottom />
     </div>
   );
 };

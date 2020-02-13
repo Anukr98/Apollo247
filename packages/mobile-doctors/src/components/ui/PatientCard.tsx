@@ -14,6 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -139,7 +140,7 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
             {props.lastconsult && (
               <View style={[styles.iconview, { marginTop: 7, marginBottom: 5 }]}>
                 <Text style={styles.lastconsult} numberOfLines={1}>
-                  Last Consult: {props.lastconsult}
+                  {strings.consult.last_consult}: {props.lastconsult}
                 </Text>
               </View>
             )}
@@ -147,7 +148,7 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
               {props.revenue && (
                 <>
                   <Text style={styles.consultstyles}>
-                    Total Revenue — Rs. {props.revenue || '-'}
+                    {strings.consult.total_revenue} {props.revenue || '-'}
                   </Text>
                   <View
                     style={{
@@ -160,7 +161,9 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
                 </>
               )}
               <Text style={styles.consultstyles} numberOfLines={1}>
-                {`${props.consults} Consult${Number(props.consults) !== 1 ? 's' : ''}`}
+                {`${props.consults} ${strings.consult.consult}${
+                  Number(props.consults) !== 1 ? 's' : ''
+                }`}
               </Text>
             </View>
           </View>

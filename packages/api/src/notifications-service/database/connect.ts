@@ -42,6 +42,9 @@ import {
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 import {
+  Coupon,
+  CouponConsultRules,
+  CouponGenericRules,
   DiagnosticHotSellers,
   DiagnosticOrderLineItems,
   DiagnosticOrderPayments,
@@ -135,6 +138,9 @@ export const connect = async () => {
     {
       name: 'patients-db',
       entities: [
+        Coupon,
+        CouponConsultRules,
+        CouponGenericRules,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,

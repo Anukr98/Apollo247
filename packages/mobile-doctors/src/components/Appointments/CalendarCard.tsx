@@ -16,6 +16,7 @@ import {
 import { theme } from '../../theme/theme';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { TagCard } from '@aph/mobile-doctors/src/components/ui/TagCard';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -99,7 +100,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
     return (
       <View style={styles.newtagWrapperStyle}>
         <TagCard
-          label={'NEW'}
+          label={strings.appointments.new}
           containerStyle={{
             height: 'auto',
             width: 'auto',
@@ -116,7 +117,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
   const renderSlotTiming = (timeSlotType: Appointments['timeslottype'], timing: string) => {
     const formatTiming = (timing: string, type: Appointments['timeslottype']) =>
       // `${type == 'missed' ? 'MISSED: ' : type == 'up-next' ? 'UP NEXT: ' : ''}${timing}`;
-      `${props.showNext ? 'UP NEXT: ' : ''}${timing}`;
+      `${props.showNext ? strings.appointments.up_next : ''}${timing}`;
     return (
       <Text
         style={[

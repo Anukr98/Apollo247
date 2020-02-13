@@ -193,6 +193,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-exception-handler')
+    implementation project(':react-native-exit-app')
     implementation project(':rn-fetch-blob')
     implementation project(':react-native-pdf')
     implementation project(':bugsnag-react-native')
