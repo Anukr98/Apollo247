@@ -21,6 +21,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum APPT_CALL_TYPE {
+  AUDIO = "AUDIO",
+  CHAT = "CHAT",
+  VIDEO = "VIDEO",
+}
+
 export enum AccountType {
   CURRENT = "CURRENT",
   SAVINGS = "SAVINGS",
@@ -40,6 +46,11 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = "FIXED",
   PREFERRED = "PREFERRED",
+}
+
+export enum DOCTOR_CALL_TYPE {
+  JUNIOR = "JUNIOR",
+  SENIOR = "SENIOR",
 }
 
 export enum DOCTOR_DEVICE_TYPE {
@@ -377,6 +388,7 @@ export interface UpdatePatientInput {
   uhid?: string | null;
   emailAddress?: string | null;
   dateOfBirth?: any | null;
+  referralCode?: string | null;
   relation?: Relation | null;
   photoUrl?: string | null;
 }

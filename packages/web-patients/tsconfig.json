@@ -5,7 +5,8 @@
     "baseUrl": "src",
     "traceResolution": false,
     "jsx": "react",
-    "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
+    "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"],
+    "esModuleInterop": true
   },
   "exclude": ["node_modules", "dist", "src/cypress"]
 }

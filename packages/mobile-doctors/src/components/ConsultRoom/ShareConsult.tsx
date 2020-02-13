@@ -1,30 +1,26 @@
-import { MedicineProduct, searchMedicineApi } from '@aph/mobile-doctors/src/components/ApiCall';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
   Cancel,
-  PatientPlaceHolderImage,
-  Up,
   PlaceHolderDoctor,
-  UnSelected,
   Selected,
+  UnSelected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { AxiosResponse } from 'axios';
 import React, { useState } from 'react';
 import {
-  Alert,
+  Dimensions,
   SafeAreaView,
   StyleSheet,
-  TextInput,
-  View,
-  TouchableOpacity,
   Text,
-  Dimensions,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -117,11 +113,10 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="SHARE CASE SHEET WITH"
+        headerText={strings.case_sheet.share_case_sheet}
         rightIcons={[
           {
             icon: <Cancel />,
-            //onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
           },
         ]}
       ></Header>
@@ -231,7 +226,7 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
                 color: '#01475b',
                 paddingBottom: 4,
               }}
-              placeholder="Search"
+              placeholder={strings.case_sheet.search}
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={doctorSearchText}
               onChangeText={(text) => searchFilterFunction(text)}
@@ -254,13 +249,13 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
             }}
           >
             <TextInput
-              placeholder="write message"
+              placeholder={strings.case_sheet.write_message}
               placeholderTextColor="rgba(2, 71, 91, 0.6)"
               editable={selectedId != 0}
               style={{ marginTop: 16, marginBottom: 16, ...theme.fonts.IBMPlexSansMedium(13) }}
             />
             <Button
-              title="Send"
+              title={strings.case_sheet.send}
               titleTextStyle={styles.titleTextStyle}
               style={selectedId != 0 ? styles.buttonViewfull : styles.buttonView}
               //onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}

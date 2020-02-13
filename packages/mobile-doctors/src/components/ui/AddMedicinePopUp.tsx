@@ -45,6 +45,7 @@ import {
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -284,7 +285,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             marginRight: 20,
           }}
         >
-          {medName ? medName : 'ADD MEDICINE'}
+          {medName ? medName : strings.smartPrescr.add_medicine}
         </Text>
       </View>
     );
@@ -305,13 +306,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         ]}
       >
         <Button
-          title={'CANCEL'}
+          title={strings.buttons.cancel}
           variant={'white'}
           onPress={() => props.onClose()}
           style={{ width: (width - 110) / 2, marginRight: 16 }}
         />
         <Button
-          title={'ADD MEDICINE'}
+          title={strings.smartPrescr.add_medicine}
           onPress={() => {
             const dataSend = {
               medicineName: medName,
@@ -499,7 +500,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             marginTop: 12,
           }}
         >
-          {'For'}
+          {strings.smartPrescr.for}
         </Text>
         <View
           style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-end' }}
@@ -569,7 +570,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           }}
         >
           <ChipViewCard
-            title={'After food'}
+            title={strings.smartPrescr.after_food}
             isChecked={afterFoodValue}
             onChange={() => {
               setAfterFoodValue(!afterFoodValue);
@@ -580,7 +581,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           />
 
           <ChipViewCard
-            title={'Before Food'}
+            title={strings.smartPrescr.before_food}
             isChecked={beforeFoodValue}
             onChange={() => {
               setBeforeFoodValue(!beforeFoodValue);
@@ -596,7 +597,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             marginTop: 12,
           }}
         >
-          {'In the'}
+          {strings.smartPrescr.in_the}
         </Text>
         <View
           style={{
@@ -607,7 +608,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           }}
         >
           <ChipViewCard
-            title={'Morning'}
+            title={strings.smartPrescr.morning}
             isChecked={morningValue}
             onChange={() => {
               setMorningValue(!morningValue);
@@ -617,7 +618,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             textSelectedStyle={styles.chipSelectedTextStyle}
           />
           <ChipViewCard
-            title={'Noon'}
+            title={strings.smartPrescr.noon}
             isChecked={noonValue}
             onChange={() => {
               setNoonValue(!noonValue);
@@ -627,7 +628,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             textSelectedStyle={styles.chipSelectedTextStyle}
           />
           <ChipViewCard
-            title={'Evening'}
+            title={strings.smartPrescr.evening}
             isChecked={eveningValue}
             onChange={() => {
               setEveningValue(!eveningValue);
@@ -637,7 +638,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             textSelectedStyle={styles.chipSelectedTextStyle}
           />
           <ChipViewCard
-            title={'Night'}
+            title={strings.smartPrescr.night}
             isChecked={nightValue}
             onChange={() => {
               setNightValue(!nightValue);
@@ -647,7 +648,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             textSelectedStyle={styles.chipSelectedTextStyle}
           />
           <ChipViewCard
-            title={'As Needed'}
+            title={strings.smartPrescr.as_needed}
             isChecked={asNeededValue}
             onChange={() => {
               setAsNeededValue(!asNeededValue);
@@ -670,10 +671,10 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             marginTop: 10,
           }}
         >
-          {'Additional Instructions (if any)'}
+          {strings.smartPrescr.additional_instru}
         </Text>
         <TextInput
-          placeholder={'Type here…'}
+          placeholder={strings.smartPrescr.type_here}
           style={{
             borderWidth: 2,
             borderRadius: 10,
@@ -824,7 +825,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         <TextInput
           autoFocus
           style={styles.inputStyle}
-          placeholder="Search Medicine"
+          placeholder={strings.consult.search_medicine}
           placeholderTextColor="rgba(1, 71, 91, 0.3)"
           value={medSearchText}
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}

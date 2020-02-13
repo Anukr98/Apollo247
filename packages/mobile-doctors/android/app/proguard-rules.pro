@@ -17,3 +17,4 @@
 #}
 -keep class com.google.firebase.** { *; }
 -ignorewarnings
+-keep class com.facebook.hermes.unicode.** { *; }

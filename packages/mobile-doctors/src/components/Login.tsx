@@ -7,16 +7,18 @@ import { NoInterNetPopup } from '@aph/mobile-doctors/src/components/ui/NoInterNe
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import string from '@aph/mobile-doctors/src/strings/strings.json';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import {
+  default as string,
+  default as strings,
+} from '@aph/mobile-doctors/src/strings/strings.json';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   AsyncStorage,
   Dimensions,
-  EmitterSubscription,
   Keyboard,
   Platform,
   SafeAreaView,
@@ -28,9 +30,8 @@ import {
 import firebase from 'react-native-firebase';
 import HyperLink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
-import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const { height, width } = Dimensions.get('window');
 
@@ -102,26 +103,20 @@ const isPhoneNumberValid = (number: string) => {
   return isValidNumber;
 };
 
-let otpString = '';
-let didBlurSubscription: NavigationEventSubscription;
-let dbChildKey: string = '';
-
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
-  const { setDoctorDetailsError, setDoctorDetails } = useAuth();
-  const client = useApolloClient();
+  const { setDoctorDetailsError, setDoctorDetails, clearFirebaseUser } = useAuth();
 
   useEffect(() => {
     try {
       fireBaseFCM();
-      // signOut();
+      clearFirebaseUser && clearFirebaseUser();
       setLoading && setLoading(false);
     } catch (error) {}
   }, []);
@@ -145,32 +140,6 @@ export const Login: React.FC<LoginProps> = (props) => {
       }
     }
   };
-
-  useEffect(() => {
-    return () => {
-      subscriptionId && subscriptionId.remove();
-      didBlurSubscription && didBlurSubscription.remove();
-    };
-  }, [subscriptionId]);
-
-  // useEffect(() => {
-  //   const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-  //     const newOtp = message.body.match(/-*[0-9]+/);
-  //     otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
-  //   });
-  //   setSubscriptionId(subscriptionId);
-
-  //   didBlurSubscription = props.navigation.addListener('didBlur', (payload) => {
-  //     setPhoneNumber('');
-  //   });
-  // }, [subscriptionId]);
-
-  // useEffect(() => {
-  //   return () => {
-  //     subscriptionId && subscriptionId.remove();
-  //     didBlurSubscription && didBlurSubscription.remove();
-  //   };
-  // }, [subscriptionId]);
 
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
@@ -210,7 +179,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const onClickOkay = () => {
-    setDoctorDetailsError(false);
+    setDoctorDetailsError && setDoctorDetailsError(false);
     setDoctorDetails && setDoctorDetails(null);
     Keyboard.dismiss();
     getNetStatus().then(async (status) => {
@@ -221,7 +190,6 @@ export const Login: React.FC<LoginProps> = (props) => {
           const isBlocked = await _getTimerData();
           if (isBlocked) {
             props.navigation.navigate(AppRoutes.OTPVerification, {
-              otpString,
               phoneNumber: phoneNumber,
             });
           } else {
@@ -234,9 +202,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 setShowSpinner(false);
                 console.log('confirmResult login', confirmResult);
                 props.navigation.navigate(AppRoutes.OTPVerification, {
-                  otpString,
                   phoneNumber: phoneNumber,
-                  dbChildKey,
                   loginId: confirmResult.loginId,
                 });
               })
@@ -245,8 +211,8 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(error.message, 'errormessage');
                 setShowSpinner(false);
                 Alert.alert(
-                  'Error',
-                  (error && error.message) || 'The interaction was cancelled by the user.'
+                  strings.common.error,
+                  (error && error.message) || strings.login.interaction_cancelled_by_user
                 );
               });
           }
@@ -263,7 +229,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     return (
       <View style={styles.viewWebStyles}>
         <Header
-          headerText={'Terms & Conditions'}
+          headerText={strings.login.terms_conditions}
           leftIcon="close"
           containerStyle={{
             borderBottomWidth: 0,
@@ -375,7 +341,8 @@ export const Login: React.FC<LoginProps> = (props) => {
                   letterSpacing: 0,
                 }}
               >
-                By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7
+                {/* By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7 */}
+                {strings.login.by_signingup_descr}
               </Text>
             </HyperLink>
           </View>

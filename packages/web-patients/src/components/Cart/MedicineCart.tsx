@@ -29,18 +29,20 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
 } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
 import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
-
-// import { MedicineCard } from 'components/Medicine/MedicineCard';
-// import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingTop: 20,
-      paddingBottom: 20,
-      paddingRight: 20,
-      PaddingLeft: 3,
-      display: 'flex',
+      paddingTop: 10,
+      [theme.breakpoints.up('sm')]: {
+        paddingRight: 20,
+        paddingTop: 20,
+        PaddingLeft: 3,
+        display: 'flex',
+        paddingBottom: 20,
+      },
     },
     buttonDisable: {
       backgroundColor: '#fed984',
@@ -49,12 +51,21 @@ const useStyles = makeStyles((theme: Theme) => {
     leftSection: {
       width: 'calc(100% - 328px)',
       paddingRight: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     rightSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
       padding: '20px 5px',
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        backgroundColor: 'transparent',
+        borderRadius: 0,
+        paddingBottom: 10,
+      },
     },
     medicineSection: {
       paddingLeft: 15,
@@ -74,6 +85,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+      },
     },
     textVCenter: {
       alignItems: 'center',
@@ -164,6 +178,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       display: 'inline-block',
       width: '100%',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+      },
     },
     tabsRoot: {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -197,6 +214,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       fontSize: 14,
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+      },
     },
     topSection: {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -222,6 +242,15 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 15,
       paddingTop: 10,
       paddingBottom: 0,
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+        position: 'fixed',
+        width: '100%',
+        left: 0,
+        bottom: 0,
+        backgroundColor: '#dcdfce',
+        zIndex: 991,
+      },
     },
     dialogContent: {
       paddingTop: 6,
@@ -399,6 +428,40 @@ const useStyles = makeStyles((theme: Theme) => {
     ePrescriptionTitle: {
       zIndex: 9999,
     },
+    cartItemsScroll: {
+      [theme.breakpoints.up(768)]: {
+        maxHeight: 'calc(100vh - 208px)',
+      },
+      [theme.breakpoints.up(990)]: {
+        maxHeight: 'calc(100vh - 148px)',
+      },
+      [theme.breakpoints.down('xs')]: {
+        maxHeight: '100%',
+        '& >div:nth-child(2)': {
+          display: 'none',
+        },
+        '& >div:nth-child(3)': {
+          display: 'none',
+        },
+      },
+    },
+    paymentsScroll: {
+      [theme.breakpoints.up(768)]: {
+        height: 'calc(100vh - 299px) !important',
+      },
+      [theme.breakpoints.up(990)]: {
+        height: 'calc(100vh - 239px) !important',
+      },
+      [theme.breakpoints.down('xs')]: {
+        height: '100% !important',
+        '& >div:nth-child(2)': {
+          display: 'none',
+        },
+        '& >div:nth-child(3)': {
+          display: 'none',
+        },
+      },
+    },
   };
 });
 
@@ -441,6 +504,7 @@ export const MedicineCart: React.FC = (props) => {
   const removeImagePrescription = (fileName: string) => {
     setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
   };
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const removePrescription = (id: string, type: string) => {
     switch (type) {
@@ -560,7 +624,13 @@ export const MedicineCart: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 148px)'}>
+        <Scrollbars
+          className={classes.cartItemsScroll}
+          autoHide={true}
+          renderView={(props) =>
+            isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
+          }
+        >
           <div className={classes.medicineListGroup}>
             <div className={classes.sectionHeader}>
               <span>Medicines In Your Cart</span>
@@ -656,7 +726,13 @@ export const MedicineCart: React.FC = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.rightSection}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 239px)' }}>
+        <Scrollbars
+          autoHide={true}
+          className={classes.paymentsScroll}
+          renderView={(props) =>
+            isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
+          }
+        >
           <div className={classes.medicineSection}>
             <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
               <span>Where Should We Deliver?</span>
@@ -870,6 +946,7 @@ export const MedicineCart: React.FC = (props) => {
           medicineOrderData={medicineOrderData}
         />
       </AphDialog>
+      <NavigationBottom />
     </div>
   );
 };

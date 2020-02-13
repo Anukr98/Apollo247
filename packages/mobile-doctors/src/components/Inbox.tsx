@@ -5,20 +5,12 @@ import {
   ApploLogo,
   Notification,
   RoundIcon,
-  Up,
   Search,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import { Platform, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 export interface PatientsProps extends NavigationScreenProps {}
@@ -38,6 +30,12 @@ export const Inbox: React.FC<PatientsProps> = (props) => {
   ];
   const [data, setData] = useState(_data);
   const [doctorSearchText, setDoctorSearchText] = useState<string>('');
+  const [modelvisible, setmodelvisible] = useState(false);
+
+  const renderNeedHelpModal = () => {
+    return modelvisible ? <NeedHelpCard onPress={() => setmodelvisible(false)} /> : null;
+  };
+
   const renderMainHeader = () => {
     return (
       <Header
@@ -49,7 +47,7 @@ export const Inbox: React.FC<PatientsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setmodelvisible(true),
           },
           {
             icon: <Notification />,
@@ -174,6 +172,7 @@ export const Inbox: React.FC<PatientsProps> = (props) => {
       {renderMainHeader()}
       <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
       {renderTabPage()}
+      {renderNeedHelpModal()}
     </SafeAreaView>
   );
 };

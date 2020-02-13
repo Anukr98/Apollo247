@@ -24,6 +24,12 @@ const useStyles = makeStyles((theme: Theme) => {
     cardWrap: {
       padding: 8,
       position: 'relative',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+      [theme.breakpoints.down('xs')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     productIcon: {
       textAlign: 'center',
@@ -113,20 +119,24 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [
       {
-        breakpoint: 1024,
+        breakpoint: 992,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
           infinite: true,
           dots: true,
+          centerPadding: '50px',
         },
       },
       {
-        breakpoint: 600,
+        breakpoint: 768,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 2,
           initialSlide: 2,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
       },
       {
@@ -134,6 +144,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
+          centerMode: true,
+          nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
+          prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
       },
     ],

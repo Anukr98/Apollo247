@@ -2,6 +2,7 @@ import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacityProps, View, ViewStyle } from 'react-native';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   headingText: {
@@ -63,7 +64,7 @@ export const NeedHelpCard: React.FC<NeedHelpCardProps> = (props) => {
       overlayStyle={{ marginHorizontal: 40, marginTop: 74 }}
     >
       <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
-        <Text style={styles.headingText}>need help?</Text>
+        <Text style={styles.headingText}>{strings.need_help.need_help_q.toLowerCase()}</Text>
         {data.map((item, i) => (
           <View style={i + 1 !== data.length && styles.viewStyle}>
             <Text style={styles.labelStyle}>{item.label}</Text>

@@ -27,6 +27,7 @@ import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/g
 import { useApolloClient } from 'react-apollo-hooks';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 import Pubnub from 'pubnub';
 
@@ -197,7 +198,7 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="RESCHDULE CONSULT"
+        headerText={strings.consult_room.reschedule_consult.toUpperCase()}
         rightIcons={[
           {
             icon: <Cancel />,
@@ -309,7 +310,7 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
           errorMessage,
           error
         );
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
   return (
@@ -317,7 +318,7 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
       <View style={styles.commonView}>{showHeaderView()}</View>
       <ScrollView bounces={false} style={styles.container}>
         <View style={styles.commonView}>
-          <Text style={styles.commonText}>Why do you want to reschedule this consult?</Text>
+          <Text style={styles.commonText}>{strings.consult_room.why_do_you_reschudule}</Text>
           <View style={{ marginRight: 20, marginLeft: 20, marginBottom: 16 }}>
             <TouchableOpacity onPress={() => setDropdownOpen(!isDropdownOpen)}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -357,7 +358,7 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
           }}
         >
           <Button
-            title="RESCHDULE CONSULT"
+            title={strings.consult_room.reschedule_consult.toUpperCase()}
             titleTextStyle={styles.titleTextStyle}
             style={selectreason != 'Select a reason' ? styles.buttonViewfull : styles.buttonView}
             onPress={() => renderReschduleDetails()}

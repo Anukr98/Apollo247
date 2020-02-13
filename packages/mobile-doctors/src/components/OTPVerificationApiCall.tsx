@@ -9,6 +9,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { Alert } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 export interface OTPVerificationApiCallProps extends NavigationScreenProps {
   phoneNumber: string;
@@ -26,10 +27,7 @@ export const OTPVerificationApiCall: React.FC<OTPVerificationApiCallProps> = (pr
       console.log(error, 'error GetDoctorDetails');
       CommonBugFender('OTPVerificationApiCall', error);
       props.navigation.goBack();
-      Alert.alert(
-        'Error',
-        'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
-      );
+      Alert.alert(strings.common.error, strings.otp.reach_out_admin);
     } else {
       // set to context
       const userPhone: string = props.navigation.getParam('phoneNumber');

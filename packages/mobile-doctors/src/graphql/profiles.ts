@@ -598,6 +598,65 @@ export const GET_CASESHEET = gql`
   }
 `;
 
+export const CREATE_CASESHEET_FOR_SRD = gql`
+  mutation CreateSeniorDoctorCaseSheet($appointmentId: String) {
+    createSeniorDoctorCaseSheet(appointmentId: $appointmentId) {
+      appointment {
+        id
+        appointmentDateTime
+        appointmentState
+        appointmentType
+        displayId
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        rescheduleCount
+      }
+      blobName
+      consultType
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        itemname
+      }
+      doctorId
+      doctorType
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineDosage
+        medicineInstructions
+        medicineTimings
+        medicineUnit
+        medicineToBeTaken
+        medicineName
+        id
+        medicineConsumptionDuration
+        medicineFormTypes
+        medicineFrequency
+        medicineConsumptionDurationUnit
+      }
+      notes
+      otherInstructions {
+        instruction
+      }
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+        details
+      }
+    }
+  }
+`;
 export const SAVE_DOCTOR_DEVICE_TOKEN = gql`
   mutation saveDoctorDeviceToken($SaveDoctorDeviceTokenInput: SaveDoctorDeviceTokenInput!) {
     saveDoctorDeviceToken(SaveDoctorDeviceTokenInput: $SaveDoctorDeviceTokenInput) {
@@ -1003,6 +1062,42 @@ export const GET_BLOCKED_CALENDAR = gql`
         start
         end
       }
+    }
+  }
+`;
+
+export const SEND_CALL_NOTIFICATION = gql`
+  query SendCallNotification(
+    $appointmentId: String
+    $callType: APPT_CALL_TYPE
+    $doctorType: DOCTOR_CALL_TYPE
+  ) {
+    sendCallNotification(
+      appointmentId: $appointmentId
+      callType: $callType
+      doctorType: $doctorType
+    ) {
+      status
+      callDetails {
+        id
+      }
+    }
+  }
+`;
+
+export const END_CALL_NOTIFICATION = gql`
+  query EndCallNotification($appointmentCallId: String) {
+    endCallNotification(appointmentCallId: $appointmentCallId) {
+      status
+    }
+  }
+`;
+
+export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
+  mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
+    updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
+      success
+      blobName
     }
   }
 `;

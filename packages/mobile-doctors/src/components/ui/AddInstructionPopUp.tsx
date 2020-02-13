@@ -14,6 +14,8 @@ import { isIphoneX } from 'react-native-iphone-x-helper';
 import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+
 const { width, height } = Dimensions.get('window');
 
 export interface AddInstructionPopUpProps {
@@ -60,7 +62,7 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
             marginRight: 20,
           }}
         >
-          {'Favourite Advice'}
+          {strings.smartPrescr.fav_advice}
         </Text>
       </View>
     );
@@ -81,13 +83,13 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
         ]}
       >
         <Button
-          title={'CANCEL'}
+          title={strings.buttons.cancel}
           variant={'white'}
           onPress={() => props.onClose()}
           style={{ width: (width - 110) / 2, marginRight: 16 }}
         />
         <Button
-          title={'ADD ADVICE'}
+          title={strings.smartPrescr.add_advice}
           onPress={() => {
             if (value) {
               props.onDone && props.onDone(value);
@@ -104,7 +106,7 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
     return (
       <View style={{ padding: 16 }}>
         <TextInput
-          placeholder={'Type your favourite advice'}
+          placeholder={strings.smartPrescr.fav_advice_placeholder}
           textAlignVertical={'top'}
           placeholderTextColor={theme.colors.placeholderTextColor}
           style={{

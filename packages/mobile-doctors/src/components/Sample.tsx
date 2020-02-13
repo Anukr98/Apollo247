@@ -7,13 +7,12 @@ import {
   RoundIcon,
   Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import MaterialTabs from 'react-native-material-tabs';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { _doctors } from '@aph/mobile-doctors/src/helpers/APIDummyData';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -36,6 +35,8 @@ export const Sample: React.FC<PatientsProps> = (props) => {
   const [activeTabIndex, setActiveTabIndex] = useState(true);
   const [regular, setRegular] = useState(false);
   const [followup, setFollowup] = useState(false);
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
+
   const _data = [
     { id: 1, name: 'Dr. Sanjeev Shah', speciality: '2 Consults', type: true },
     { id: 2, name: 'Dr. Sheetal Sharma', speciality: '2 Consults', type: false },
@@ -59,7 +60,7 @@ export const Sample: React.FC<PatientsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true),
           },
           {
             icon: <Notification />,
@@ -322,6 +323,7 @@ export const Sample: React.FC<PatientsProps> = (props) => {
           </View>
         )}
       </View>
+      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
     </SafeAreaView>
   );
 };

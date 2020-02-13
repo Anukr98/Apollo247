@@ -56,4 +56,8 @@ target 'ApolloPatient' do
 
   pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
 
+  pod 'RNExitApp', :path => '../node_modules/react-native-exit-app'
+
+  pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
+
 end

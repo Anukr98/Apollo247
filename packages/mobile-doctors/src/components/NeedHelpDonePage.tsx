@@ -4,7 +4,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 
 const styles = StyleSheet.create({
@@ -46,8 +46,8 @@ export const NeedHelpDonePage: React.FC<NeedHelpDonePageProps> = (props) => {
         <OtpCard
           isModelCard={true}
           cardContainer={styles.needdataview}
-          heading="done!"
-          description="You will receive a call from us shortly."
+          heading={strings.need_help.done}
+          description={strings.need_help.you_will_receive_call}
           onPress={() => props.navigation.pop(2)}
         ></OtpCard>
       </SafeAreaView>
