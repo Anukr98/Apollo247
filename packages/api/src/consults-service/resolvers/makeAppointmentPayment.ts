@@ -95,12 +95,24 @@ const makeAppointmentPayment: Resolver<
   AppointmentPaymentResult
 > = async (parent, { paymentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const processingAppointment = await apptsRepo.findByOrderIdAndStatus(
+  let processingAppointment;
+  processingAppointment = await apptsRepo.findByOrderIdAndStatus(
     paymentInput.orderId,
     STATUS.PAYMENT_PENDING
   );
   if (!processingAppointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+
+  if (paymentInput.amountPaid == 0 || paymentInput.amountPaid == 0.0) {
+    processingAppointment = await apptsRepo.findByIdAndStatus(
+      paymentInput.orderId,
+      STATUS.PAYMENT_PENDING
+    );
+
+    if (!processingAppointment) {
+      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+    }
   }
 
   //insert payment details
