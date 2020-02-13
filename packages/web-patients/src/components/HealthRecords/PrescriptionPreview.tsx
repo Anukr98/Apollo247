@@ -11,6 +11,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 12,
       padding: 40,
       textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+      },
       '& img': {
         maxWidth: '100%',
         verticalAlign: 'middle',

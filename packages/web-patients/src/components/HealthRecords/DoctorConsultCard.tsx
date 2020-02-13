@@ -12,6 +12,10 @@ const useStyles = makeStyles((theme: Theme) => {
       border: '1px solid #f7f8f5',
       marginBottom: 28,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     doctorInfoGroup: {
       display: 'flex',
@@ -108,7 +112,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const DoctorConsultCard: React.FC = (props) => {
   const classes = useStyles();
   return (
-    <div className={`${classes.root} ${classes.activeCard}`}>
+    <div className={`${classes.root}`}>
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorImg}>
           <Avatar

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Header } from 'components/Header';
 import { Consultations } from 'components/HealthRecords/Consultations';
 import { MedicalRecords } from 'components/HealthRecords/MedicalRecords';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -19,13 +20,18 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
-        paddingBottom: 20,
+        paddingBottom: 0,
       },
     },
     tabsRoot: {
       marginLeft: 20,
       marginRight: 20,
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 0,
+        marginRight: 0,
+        backgroundColor: '#f7f8f5',
+      },
     },
     tabRoot: {
       fontSize: 13,
@@ -88,6 +94,7 @@ export const PHRLanding: React.FC = (props) => {
           )}
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };

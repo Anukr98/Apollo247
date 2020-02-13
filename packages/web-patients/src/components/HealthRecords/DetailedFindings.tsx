@@ -103,23 +103,23 @@ export const DetailedFindings: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item sm={12}>
+          <Grid item xs={12} sm={12}>
             <div className={classes.cardTitle}>Lymphocytes</div>
             <div className={classes.cardSection}>
               <Grid container spacing={2}>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Result</label>
                     <div className={`${classes.result} ${classes.resultError}`}>15</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Units</label>
                     <div className={classes.result}>%</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Normal Range</label>
                     <div className={`${classes.result}`}>20 - 40</div>
@@ -128,25 +128,25 @@ export const DetailedFindings: React.FC = (props) => {
               </Grid>
             </div>
           </Grid>
-          <Grid item sm={12}>
+          <Grid item xs={12} sm={12}>
             <div className={classes.cardTitle}>
               Haemoglobin (Optical Light Scatter / Cyanmethaemoglobin)
             </div>
             <div className={classes.cardSection}>
               <Grid container spacing={2}>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Result</label>
                     <div className={`${classes.result}`}>11.4</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Units</label>
                     <div className={classes.result}>gm/dl</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Normal Range</label>
                     <div className={`${classes.result}`}>13.0 - 18.0</div>
@@ -155,23 +155,23 @@ export const DetailedFindings: React.FC = (props) => {
               </Grid>
             </div>
           </Grid>
-          <Grid item sm={12}>
+          <Grid item xs={12} sm={12}>
             <div className={classes.cardTitle}>Lymphocytes</div>
             <div className={classes.cardSection}>
               <Grid container spacing={2}>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Result</label>
                     <div className={`${classes.result} ${classes.resultError}`}>15</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Units</label>
                     <div className={classes.result}>%</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Normal Range</label>
                     <div className={`${classes.result}`}>20 - 40</div>
@@ -180,25 +180,25 @@ export const DetailedFindings: React.FC = (props) => {
               </Grid>
             </div>
           </Grid>
-          <Grid item sm={12}>
+          <Grid item xs={12} sm={12}>
             <div className={classes.cardTitle}>
               Haemoglobin (Optical Light Scatter / Cyanmethaemoglobin)
             </div>
             <div className={classes.cardSection}>
               <Grid container spacing={2}>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Result</label>
                     <div className={`${classes.result}`}>11.4</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Units</label>
                     <div className={classes.result}>gm/dl</div>
                   </div>
                 </Grid>
-                <Grid item sm={3}>
+                <Grid item xs={6} sm={3}>
                   <div className={classes.resultGroup}>
                     <label>Normal Range</label>
                     <div className={`${classes.result}`}>13.0 - 18.0</div>
