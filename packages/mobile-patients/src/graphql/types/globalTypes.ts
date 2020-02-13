@@ -352,6 +352,17 @@ export interface AppointmentHistoryInput {
   doctorId: string;
 }
 
+export interface AppointmentPaymentInput {
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId?: string | null;
+  orderId?: string | null;
+}
+
 export interface BookAppointmentInput {
   patientId: string;
   doctorId: string;
@@ -451,6 +462,7 @@ export interface DoctorAvailabilityInput {
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
+  availableType?: APPOINTMENT_TYPE | null;
 }
 
 export interface DoctorPhysicalAvailabilityInput {

@@ -138,6 +138,23 @@ export const BOOK_APPOINTMENT = gql`
   }
 `;
 
+export const MAKE_APPOINTMENT_PAYMENT = gql`
+  mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
+    makeAppointmentPayment(paymentInput: $paymentInput) {
+      appointment {
+        id
+        amountPaid
+        paymentRefId
+        paymentDateTime
+        responseCode
+        responseMessage
+        bankTxnId
+        orderId
+      }
+    }
+  }
+`;
+
 export const SAVE_SEARCH = gql`
   mutation saveSearch($saveSearchInput: SaveSearchInput!) {
     saveSearch(saveSearchInput: $saveSearchInput) {

@@ -10,6 +10,7 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   BOOK_APPOINTMENT,
   BOOK_FOLLOWUP_APPOINTMENT,
+  MAKE_APPOINTMENT_PAYMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
@@ -35,7 +36,7 @@ import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -44,6 +45,10 @@ import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCa
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -85,7 +90,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { VirtualConsultationFee } = useAppCommonData();
 
   const renderErrorPopup = (desc: string) =>
@@ -119,6 +124,73 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         console.log('error', e);
       });
   }, []);
+
+  const handleOrderSuccess = (doctorName: string) => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    showAphAlert!({
+      unDismissable: true,
+      title: 'Appointment Confirmation',
+      description: `Your appointment has been successfully booked with Dr. ${doctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`,
+      children: (
+        <View style={{ height: 60, alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              height: 60,
+              paddingRight: 25,
+              backgroundColor: 'transparent',
+              justifyContent: 'center',
+            }}
+            onPress={() => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.TabBar);
+              CommonLogEvent(
+                AppRoutes.ConsultPayment,
+                'Navigate to consult room after booking payment sucess.'
+              );
+            }}
+          >
+            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  };
+
+  const makePayment = (id: string, amountPaid: number, paymentDateTime: string) => {
+    client
+      .mutate<makeAppointmentPayment, makeAppointmentPaymentVariables>({
+        mutation: MAKE_APPOINTMENT_PAYMENT,
+        variables: {
+          paymentInput: {
+            amountPaid: amountPaid,
+            paymentRefId: '',
+            paymentStatus: 'TXN_SUCCESS',
+            paymentDateTime: paymentDateTime,
+            responseCode: '', // Note: Send coupon code once coupon API is updated
+            responseMessage: 'Coupon applied',
+            bankTxnId: '',
+            orderId: id,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        console.log(JSON.stringify(data!.makeAppointmentPayment));
+        handleOrderSuccess(`${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`);
+      })
+      .catch((e) => {
+        // const error = g(e, 'graphQLErrors', '0', 'message');
+        handleGraphQlError(e);
+      })
+      .finally(() => setshowSpinner(false));
+  };
 
   const onSubmitBookAppointment = () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
@@ -158,7 +230,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         ? VirtualConsultationFee
         : props.doctor!.onlineConsultationFees;
 
-    console.log('price', price);
+    console.log('\n\n\n\n\n\n\n\nprice', price, typeof price, '\n\n\n\n\n\n\n\n\n');
     client
       .mutate<bookAppointment>({
         mutation: BOOK_APPOINTMENT,
@@ -168,15 +240,21 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        setshowSpinner(false);
-        props.navigation.navigate(AppRoutes.ConsultPayment, {
-          doctorName: `${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`,
-          appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
-          price:
-            tabs[0].title === selectedTab
-              ? price //1 //props.doctor!.onlineConsultationFees
-              : props.doctor!.physicalConsultationFees,
-        });
+        if (price == '0') {
+          // If amount is zero don't redirect to PG
+          const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
+          makePayment(g(apptmt, 'id')!, Number(price), g(apptmt, 'appointmentDateTime'));
+        } else {
+          setshowSpinner(false);
+          props.navigation.navigate(AppRoutes.ConsultPayment, {
+            doctorName: `${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`,
+            appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
+            price:
+              tabs[0].title === selectedTab
+                ? price //1 //props.doctor!.onlineConsultationFees
+                : props.doctor!.physicalConsultationFees,
+          });
+        }
       })
       .catch((error) => {
         CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
