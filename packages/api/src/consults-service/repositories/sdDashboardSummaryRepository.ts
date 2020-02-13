@@ -436,33 +436,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     });
     return count;
-    // return appointmentList.length;
-    // const apptIds: string[] = [];
-    // let duration = 0;
-    // if (appointmentList.length > 0) {
-    //   appointmentList.map((appt) => {
-
-    //     apptIds.push(appt.id);
-    //   });
-    //   console.log(apptIds, 'apptIds in ontime consultation');
-    //   const callDetails = await AppointmentCallDetails.createQueryBuilder(
-    //     'appointment_call_details'
-    //   )
-    //     .select([
-    //       'appointment_call_details."appointmentId" as "appointmentid"',
-    //       'sum(appointment_call_details."callDuration") as "totalduration"',
-    //     ])
-    //     .andWhere('appointment_call_details."appointmentId" in (:...apptIds)', { apptIds })
-    //     .andWhere('appointment_call_details.endTime is not null')
-    //     .groupBy('appointment_call_details."appointmentId"')
-    //     .getRawMany();
-    //   console.log(callDetails, 'callDetails');
-
-    //   if (callDetails.length > 0) {
-    //     duration = parseFloat((callDetails[0].totalduration / 60).toFixed(2));
-    //   }
-    // }
-    // return duration;
   }
 
   async getPatientTypes(appointmentDate: Date, doctorId: string) {
