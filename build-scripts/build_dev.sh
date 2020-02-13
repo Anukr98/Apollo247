@@ -29,7 +29,7 @@ cd -
 echo -e "\nbuilding coupons-service..."
 cd packages/api
 npm run start:coupons-service || exit 2
-cd 
+cd -
 
 echo -e "\nbuilding consults-service..."
 cd packages/api
