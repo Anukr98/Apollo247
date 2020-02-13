@@ -46,6 +46,7 @@ export class AdminDoctorMap extends Repository<AdminDoctorMapper> {
   getAdminIds(doctor: string) {
     return this.find({
       where: { doctor },
+      relations: ['adminuser'],
     });
   }
 

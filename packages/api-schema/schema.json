@@ -13517,6 +13517,16 @@
               }
             },
             "defaultValue": null
+          },
+          {
+            "name": "availableType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "APPOINTMENT_TYPE",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,

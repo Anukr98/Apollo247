@@ -973,6 +973,9 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   totalAllocatedChats: number;
 
+  @Column({ default: 0 })
+  caseSheetNotSatisfactory: number;
+
   @Column()
   createdDate: Date;
 
