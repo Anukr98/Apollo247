@@ -287,6 +287,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           onlineConsultationFees
           physicalConsultationFees
@@ -464,6 +465,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         firstName
         lastName
         displayName
+        fullName
         experience
         specialty {
           name
@@ -506,6 +508,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           specialty {
             name
@@ -548,6 +551,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         firstName
         lastName
         displayName
+        fullName
         experience
         specialty {
           name
@@ -602,6 +606,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       salutation
       firstName
       lastName
+      fullName
+      displayName
       doctorType
       qualification
       mobileNumber
@@ -686,6 +692,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         firstName
         lastName
         displayName
+        fullName
         experience
         city
         photoUrl
@@ -1585,6 +1592,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           city
           onlineConsultationFees
@@ -1717,6 +1725,7 @@ export const GET_APPOINTMENT_DATA = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           onlineConsultationFees
           physicalConsultationFees

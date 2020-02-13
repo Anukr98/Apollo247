@@ -35,6 +35,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   firstName: string;
   lastName: string;
   displayName: string | null;
+  fullName: string | null;
   experience: string | null;
   onlineConsultationFees: string;
   physicalConsultationFees: string;

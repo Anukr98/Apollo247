@@ -395,7 +395,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   DoctorName:
                     props.navigation.state.params!.data &&
                     props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.firstName,
+                    props.navigation.state.params!.data.doctorInfo.fullName,
                 },
               }),
             ],
