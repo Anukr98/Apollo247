@@ -18,6 +18,7 @@
     "start:doctors-service": "webpack --config webpack.config.doctors-service.js",
     "start:profiles-service": "webpack --config webpack.config.profiles-service.js",
     "start:notifications-service": "webpack --config webpack.config.notifications-service.js",
+    "start:coupons-service": "webpack --config webpack.config.coupons-service.js",
     "typecheck": "tsc --project . --noEmit"
   },
   "devDependencies": {

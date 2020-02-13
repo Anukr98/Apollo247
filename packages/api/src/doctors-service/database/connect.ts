@@ -43,6 +43,9 @@ import {
 } from 'doctors-service/entities';
 import {
   Coupon,
+  CouponConsultRules,
+  CouponGenericRules,
+  CouponUsageDetails,
   DiagnosticHotSellers,
   DiagnosticOrderLineItems,
   DiagnosticOrderPayments,
@@ -143,6 +146,9 @@ export const connect = async () => {
       name: 'patients-db',
       entities: [
         Coupon,
+        CouponConsultRules,
+        CouponGenericRules,
+        CouponUsageDetails,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,
