@@ -2,7 +2,7 @@ import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/C
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossPopup, CouponIcon, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -44,6 +44,7 @@ import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCa
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 
 const { width, height } = Dimensions.get('window');
 
@@ -354,6 +355,40 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       </View>
     );
   };
+
+  const onApplyCoupon = (value: string) => {
+    // TODO: call api to check coupon is valid
+    return new Promise((rs, rj) => {
+      setTimeout(() => {
+        value == '123456' ? rs(value) : rj(value);
+      }, 2000);
+    });
+  };
+
+  const [coupon, setCoupon] = useState('');
+
+  const renderApplyCoupon = () => {
+    return (
+      <ListCard
+        container={{
+          marginTop: 16,
+          borderRadius: 0,
+          marginHorizontal: 0,
+          shadowColor: 'transparent',
+        }}
+        leftIcon={<CouponIcon />}
+        rightIcon={<ArrowRight />}
+        title={!coupon ? 'Apply Coupon' : 'Coupon Applied'}
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.ApplyConsultCoupon, {
+            setCoupon: setCoupon,
+            onApplyCoupon: onApplyCoupon,
+          });
+        }}
+      />
+    );
+  };
+
   return (
     <View
       style={{
@@ -400,6 +435,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             style={{
               backgroundColor: '#f7f8f5',
               marginTop: 16,
+              // width: width - 40,
               width: width - 40,
               height: 'auto',
               maxHeight: height - 98,
@@ -444,7 +480,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                     scrollToSlots={scrollToSlots}
                     setshowOfflinePopup={setshowOfflinePopup}
                   />
-                  {renderDisclamer()}
                 </>
               ) : (
                 <ConsultPhysical
@@ -466,6 +501,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
+              {renderApplyCoupon()}
+              {selectedTab === tabs[0].title && renderDisclamer()}
               <View style={{ height: 70 }} />
             </ScrollView>
             {props.doctor && renderBottomButton()}
