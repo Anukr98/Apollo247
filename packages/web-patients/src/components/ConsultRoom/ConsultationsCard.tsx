@@ -210,7 +210,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
     switch (status) {
       case STATUS.PENDING:
-        return isConsultStarted ? 'CONTINUE CONSULT' : 'PREPARE FOR CONSULT';
+        return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
       case STATUS.COMPLETED:
         return 'CHAT WITH DOCTOR';
       default:
@@ -230,7 +230,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         case APPOINTMENT_STATE.AWAITING_RESCHEDULE:
           return 'PICK ANOTHER SLOT';
         case APPOINTMENT_STATE.RESCHEDULE:
-          return isConsultStarted ? 'CONTINUE CONSULT' : 'PREPARE FOR CONSULT';
+          return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
         default:
           return 'CHAT WITH DOCTOR';
       }
@@ -262,8 +262,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 : '';
             const specialization =
               appointmentDetails.doctorInfo &&
-              appointmentDetails.doctorInfo.specialty &&
-              !_isNull(appointmentDetails.doctorInfo.specialty.name)
+                appointmentDetails.doctorInfo.specialty &&
+                !_isNull(appointmentDetails.doctorInfo.specialty.name)
                 ? appointmentDetails.doctorInfo.specialty.name
                 : '';
             const currentTime = new Date().getTime();
@@ -279,7 +279,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
             var day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
             var day2 = moment(new Date());
             day1.diff(day2, 'days'); // 1
-
+            const comparingDays = () => {
+              return (
+                day1.diff(day2, 'days') == 0
+                  ? 'Today'
+                  : day1.diff(day2, 'days') +
+                  ' more ' +
+                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days')
+              )
+            }
             return (
               <Grid item sm={4} xs={12} key={index}>
                 <div className={classes.consultCard}>
@@ -297,7 +305,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       <div
                         className={`${classes.availability} ${
                           difference <= 15 && difference > 0 ? classes.availableNow : ''
-                        }`}
+                          }`}
                       >
                         {difference <= 15 && difference > 0
                           ? `Available in ${difference} mins`
@@ -322,8 +330,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                             <img src={require('images/ic_onlineconsult.svg')} alt="" />
                           ) : (
-                            <img src={require('images/ic_clinicvisit.svg')} alt="" />
-                          )}
+                              <img src={require('images/ic_clinicvisit.svg')} alt="" />
+                            )}
                         </span>
                       </div>
                       {/* <div className={classes.appointBooked}>
@@ -345,23 +353,23 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         } else {
                           isConsultStarted
                             ? (window.location.href = clientRoutes.chatRoom(
-                                appointmentId,
-                                doctorId
-                              ))
+                              appointmentId,
+                              doctorId
+                            ))
                             : addConsultToQueue({
-                                variables: {
+                              variables: {
+                                appointmentId,
+                              },
+                            })
+                              .then((res) => {
+                                window.location.href = clientRoutes.chatRoom(
                                   appointmentId,
-                                },
+                                  doctorId
+                                );
                               })
-                                .then((res) => {
-                                  window.location.href = clientRoutes.chatRoom(
-                                    appointmentId,
-                                    doctorId
-                                  );
-                                })
-                                .catch((e: ApolloError) => {
-                                  alert(e);
-                                });
+                              .catch((e: ApolloError) => {
+                                alert(e);
+                              });
                         }
                       }}
                     >
@@ -372,15 +380,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     {status === STATUS.COMPLETED ? (
                       <div className={classes.noteText}>
                         You can chat with the doctor for{' '}
-                        {day1.diff(day2, 'days') == 0
-                          ? 'Today'
-                          : day1.diff(day2, 'days') +
-                            ' more ' +
-                            (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
+                        {comparingDays()}
                       </div>
                     ) : (
-                      ''
-                    )}
+                        ''
+                      )}
                   </div>
                 </div>
               </Grid>
