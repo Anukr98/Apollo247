@@ -215,4 +215,15 @@ export enum ApiConstants {
   SAMPLE_DATE_EVENING_END = '2020-01-20T18:00:00',
   SAMPLE_DATE_NIGHT_START = '2020-01-20T18:00:01',
   SAMPLE_DATE_NIGHT_END = '2020-01-20T22:00:00',
+
+  //coupon related constants
+  INVALID_COUPON = 'Sorry, invalid coupon code.',
+  COUPON_EXPIRED = 'Sorry, offer has expired.',
+  COUPON_COUNT_PER_CUSTOMER_EXCEEDED = 'Sorry, this code has already been used under this campaign.',
+  COUPON_COUNT_USAGE_EXPIRED = 'Sorry, the limit for this coupon code has exceeded.',
+  COUPON_RESTRICTED_TO_SKU_OR_CATEGORY = 'Product(s) in cart are not applicable for this coupon.',
+  COUPON_FOR_FIRST_CUSTOMER_ONLY = 'This coupon is applicable for first time ordering customers only',
+  COUPON_WITH_BU_RESTRICTION = 'This coupon is applicable for {0} only',
+  LOWER_CART_LIMIT = 'Coupon applicable for Minimum order value Rs.{0} or more',
+  UPPER_CART_LIMIT = 'Coupon applicable for Maximum order value Rs.{0} or less',
 }
