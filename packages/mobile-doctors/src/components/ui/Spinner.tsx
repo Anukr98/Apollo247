@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, View, Platform, StyleProp, ViewStyle } from 'react-native';
+import { ActivityIndicator, View, StyleProp, ViewStyle } from 'react-native';
 
 export interface SpinnerProps {
   style?: StyleProp<ViewStyle>;
