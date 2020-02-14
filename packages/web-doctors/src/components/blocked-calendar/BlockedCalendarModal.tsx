@@ -571,18 +571,22 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         }
       });
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
-    const startTime = convertFrom24To12Format(
-      consultDurationDay && consultDurationDay.startTime ? consultDurationDay.startTime : ''
-    );
-    const endTime = convertFrom24To12Format(
-      consultDurationDay && consultDurationDay.endTime ? consultDurationDay.endTime : ''
-    );
+    const startTime =
+      consultDurationDay && consultDurationDay.startTime
+        ? convertFrom24To12Format(consultDurationDay && consultDurationDay.startTime)
+        : '';
+    const endTime =
+      consultDurationDay && consultDurationDay.endTime
+        ? convertFrom24To12Format(consultDurationDay && consultDurationDay.endTime)
+        : '';
     var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
-    return ` ${startTime} - ${endTime}  |  ${
-      consultDurationDay && consultDurationDay.consultMode
-        ? convertConsultMode(consultDurationDay.consultMode)
-        : ''
-    }`;
+    return startTime && endTime
+      ? ` ${startTime} - ${endTime}  |  ${
+          consultDurationDay && consultDurationDay.consultMode
+            ? convertConsultMode(consultDurationDay.consultMode)
+            : ''
+        }`
+      : 'No slots avialble for this date';
   };
 
   const convertConsultMode = (value: any) => {
@@ -591,7 +595,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     } else if (value === 'ONLINE') {
       return 'Online';
     } else {
-      'Both';
+      return 'Both';
     }
   };
 
@@ -1083,26 +1087,35 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                             {dateRange &&
                               dateRange.length > 0 &&
                               dateRange.map((item: any) => (
-                                <div className={classes.consultHoursRange}>
-                                  <div className={classes.formDate}>
-                                    {item
-                                      ? new Date(item).toLocaleDateString('en-AU', options)
-                                      : getFormattedDate(new Date())}{' '}
-                                    {/* {convertIntoDay(item)} */}
-                                  </div>
+                                <>
+                                  {convertTocunsultBlockStartEndTime(item) !==
+                                  'No slots avialble for this date' ? (
+                                    <div className={classes.consultHoursRange}>
+                                      <div className={classes.formDate}>
+                                        {item
+                                          ? new Date(item).toLocaleDateString('en-AU', options)
+                                          : getFormattedDate(new Date())}{' '}
+                                        {/* {convertIntoDay(item)} */}
+                                      </div>
 
-                                  <FormGroup>
-                                    <FormControlLabel
-                                      className={`${classes.formContainer} ${classes.blueRadio}`}
-                                      control={<Checkbox value="checkedA" />}
-                                      label={convertTocunsultBlockStartEndTime(item)}
-                                      onChange={() => {
-                                        listOfStartEnd(item);
-                                        setChecked(!checked);
-                                      }}
-                                    />
-                                  </FormGroup>
-                                </div>
+                                      <FormGroup>
+                                        <FormControlLabel
+                                          disabled={
+                                            convertTocunsultBlockStartEndTime(item) ===
+                                            'No slots avialble for this date'
+                                          }
+                                          className={`${classes.formContainer} ${classes.blueRadio}`}
+                                          control={<Checkbox value="checkedA" />}
+                                          label={convertTocunsultBlockStartEndTime(item)}
+                                          onChange={() => {
+                                            listOfStartEnd(item);
+                                            setChecked(!checked);
+                                          }}
+                                        />
+                                      </FormGroup>
+                                    </div>
+                                  ) : null}
+                                </>
                               ))}
                           </div>
                         )}
@@ -1363,12 +1376,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                           variant="contained"
                           className={classes.blockCalBtn}
                           onClick={() => {
-                            //2019-10-18 2019-10-18
-                            //console.log(start, end);
                             const startDate = parse(start, 'yyyy-MM-dd', new Date());
                             const endDate = parse(end, 'yyyy-MM-dd', new Date());
-                            //console.log(startDate, endDate);
-
                             if (durationSelected) {
                               if (new Date().getDate() === new Date(start).getDate()) {
                                 const currentHours = new Date().getHours();
@@ -1435,7 +1444,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               setIsPastTimeError(isPastTimeError);
                             };
                             const isUpdate = item && item.id != null;
-                            //console.log(addArgs);
                             if (isUpdate) {
                               const updateArgs = {
                                 ...addArgs,
