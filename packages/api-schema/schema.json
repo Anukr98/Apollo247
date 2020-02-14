@@ -2316,7 +2316,7 @@
             "description": null,
             "args": [
               {
-                "name": "appointmentId",
+                "name": "doctorId",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",
@@ -2330,7 +2330,7 @@
                 "defaultValue": null
               },
               {
-                "name": "Code",
+                "name": "code",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",
@@ -2338,6 +2338,20 @@
                   "ofType": {
                     "kind": "SCALAR",
                     "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "consultType",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "ENUM",
+                    "name": "AppointmentType",
                     "ofType": null
                   }
                 },
@@ -16508,6 +16522,35 @@
         "inputFields": null,
         "interfaces": [],
         "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "AppointmentType",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "ONLINE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PHYSICAL",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "BOTH",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
         "possibleTypes": null
       },
       {
