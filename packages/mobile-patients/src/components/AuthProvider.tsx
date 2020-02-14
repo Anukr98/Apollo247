@@ -1,4 +1,7 @@
-import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_CURRENT_PATIENTS,
+  GET_PATIENTS_MOBILE,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
@@ -17,6 +20,10 @@ import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  getPatientByMobileNumber,
+  getPatientByMobileNumberVariables,
+} from '../graphql/types/getPatientByMobileNumber';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -30,7 +37,7 @@ export interface AuthContextProps {
 
   currentPatientId: string | null;
   setCurrentPatientId: ((pid: string | null) => void) | null;
-  allPatients: ApolloQueryResult<GetCurrentPatients> | null;
+  allPatients: any | null;
 
   sendOtp: ((phoneNumber: string, forceResend?: boolean) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -42,6 +49,8 @@ export interface AuthContextProps {
 
   hasAuthToken: boolean;
   getPatientApiCall: (() => void) | null;
+  getPatientByPrism: (() => void) | null;
+  mobileAPICalled: boolean;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -61,6 +70,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   getPatientApiCall: null,
   allPatients: null,
+  getPatientByPrism: null,
+  mobileAPICalled: false,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -115,6 +126,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
+  const [mobileAPICalled, setMobileAPICalled] = useState<AuthContextProps['signInError']>(false);
 
   const auth = firebase.auth();
 
@@ -164,8 +176,6 @@ export const AuthProvider: React.FC = (props) => {
   const getFirebaseToken = () => {
     let authStateRegistered = false;
     console.log('authprovider');
-    let authCalled = false;
-
     auth.onAuthStateChanged(async (user) => {
       console.log('authprovider', authStateRegistered, user);
 
@@ -191,13 +201,7 @@ export const AuthProvider: React.FC = (props) => {
         setAuthToken(jwt);
         getNetStatus()
           .then((item) => {
-            // setTimeout(() => {
-            if (!authCalled) {
-              authCalled = true;
-              console.log('authCalled', authCalled);
-              item && getPatientApiCall();
-            }
-            // }, 500);
+            item && getPatientApiCall();
           })
           .catch((e) => {
             CommonBugFender('AuthProvider_getNetStatus', e);
@@ -208,26 +212,31 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const getPatientApiCall = async () => {
-    const versionInput = {
-      appVersion:
-        Platform.OS === 'ios'
-          ? AppConfig.Configuration.iOS_Version
-          : AppConfig.Configuration.Android_Version,
-      deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const input = {
+      mobileNumber: '+91' + storedPhoneNumber,
     };
-    console.log('getPatientApiCall', versionInput);
-
-    await apolloClient
-      .query<GetCurrentPatients, GetCurrentPatientsVariables>({
-        query: GET_CURRENT_PATIENTS,
-        variables: versionInput,
+    console.log('getPatientApiCall', input);
+    apolloClient
+      .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
+        query: GET_PATIENTS_MOBILE,
+        variables: input,
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
+        const profileData =
+          data.data.getPatientByMobileNumber && data.data.getPatientByMobileNumber.patients;
+        console.log('consoleofdata', profileData);
+
         setSignInError(false);
         console.log('getPatientApiCall', data);
         AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+        AsyncStorage.setItem('callByPrism', 'false');
         setAllPatients(data);
+        setMobileAPICalled(false);
+        if (profileData && profileData.length === 0) {
+          getPatientByPrism();
+        }
       })
       .catch(async (error) => {
         CommonBugFender('AuthProvider_getPatientApiCall', error);
@@ -236,6 +245,36 @@ export const AuthProvider: React.FC = (props) => {
         setAllPatients(item);
         setSignInError(false);
         console.log('getPatientApiCallerror', error);
+      });
+  };
+
+  const getPatientByPrism = async () => {
+    const versionInput = {
+      appVersion:
+        Platform.OS === 'ios'
+          ? AppConfig.Configuration.iOS_Version
+          : AppConfig.Configuration.Android_Version,
+      deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+    };
+    console.log('getPatientByPrism', versionInput);
+
+    await apolloClient
+      .query<GetCurrentPatients, GetCurrentPatientsVariables>({
+        query: GET_CURRENT_PATIENTS,
+        variables: versionInput,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        AsyncStorage.setItem('callByPrism', 'true');
+        AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+        setMobileAPICalled(true);
+        setSignInError(false);
+        console.log('getPatientByPrism', data);
+        setAllPatients(data);
+      })
+      .catch(async (error) => {
+        CommonBugFender('AuthProvider_getPatientByPrism', error);
+        console.log('getPatientByPrismerror', error);
       });
   };
 
@@ -260,6 +299,9 @@ export const AuthProvider: React.FC = (props) => {
 
             allPatients,
             getPatientApiCall,
+
+            getPatientByPrism,
+            mobileAPICalled,
           }}
         >
           {props.children}

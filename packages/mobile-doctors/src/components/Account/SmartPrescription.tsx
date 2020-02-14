@@ -91,10 +91,6 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f7f7',
-  },
   containerListStyle: {
     padding: 16,
     paddingTop: 12,
@@ -152,8 +148,7 @@ const styles = StyleSheet.create({
     elevation: 5,
 
     padding: 20,
-    flex: 1,
-    backgroundColor: '#f7f7f7',
+    ...theme.viewStyles.container,
   },
 });
 
@@ -815,7 +810,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <View style={theme.viewStyles.container}>
       {/* {isMedicine && ShowMedicine()} */}
       {isTest && showTestPopup()}
       {isAdvice && showAdvice()}
@@ -862,15 +857,13 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         />
       )}
 
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={theme.viewStyles.container}>
         <View>{showHeaderView()}</View>
-        <ScrollView bounces={false}>
-          <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7', margin: 20 }}>
-            {FavoriteMedicines()}
-            {FavoriteTests()}
-            {FavoriteAdvice()}
-            {/* {renderButtonsView()} */}
-          </SafeAreaView>
+        <ScrollView bounces={false} contentContainerStyle={{ padding: 20 }}>
+          {FavoriteMedicines()}
+          {FavoriteTests()}
+          {FavoriteAdvice()}
+          {/* {renderButtonsView()} */}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}

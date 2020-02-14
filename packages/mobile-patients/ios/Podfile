@@ -72,7 +72,6 @@ target 'ApolloPatient' do
   pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
   pod 'ReactNativePermissions', :path => '../node_modules/react-native-permissions'
-  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
@@ -81,5 +80,7 @@ target 'ApolloPatient' do
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
+
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
 
 end

@@ -42,7 +42,7 @@ export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) =
     );
   };
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <SafeAreaView style={theme.viewStyles.container}>
       {showHeaderView()}
       <View style={styles.fullview}>
         <View style={styles.mainview}>

@@ -22,6 +22,7 @@ import { ApolloError } from 'apollo-client';
 import { useMutation } from 'react-apollo-hooks';
 import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
 import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
+import moment, { Moment } from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -209,7 +210,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
     switch (status) {
       case STATUS.PENDING:
-        return isConsultStarted ? 'CONTINUE CONSULT' : 'PREPARE FOR CONSULT';
+        return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
+      case STATUS.COMPLETED:
+        return 'CHAT WITH DOCTOR';
       default:
         return 'CHAT WITH DOCTOR';
     }
@@ -225,9 +228,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         case APPOINTMENT_STATE.NEW:
           return getAppointmentStatus(status, isConsultStarted);
         case APPOINTMENT_STATE.AWAITING_RESCHEDULE:
-          return 'RESCHEDULE';
+          return 'PICK ANOTHER SLOT';
         case APPOINTMENT_STATE.RESCHEDULE:
-          return isConsultStarted ? 'CONTINUE CONSULT' : 'PREPARE FOR CONSULT';
+          return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
         default:
           return 'CHAT WITH DOCTOR';
       }
@@ -273,7 +276,16 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 : '';
             const isConsultStarted = appointmentDetails.isConsultStarted;
             const { appointmentState, status } = appointmentDetails;
-
+            var day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
+            var day2 = moment(new Date());
+            day1.diff(day2, 'days'); // 1
+            const comparingDays = () => {
+              return day1.diff(day2, 'days') == 0
+                ? 'Today'
+                : day1.diff(day2, 'days') +
+                    ' more ' +
+                    (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+            };
             return (
               <Grid item sm={4} xs={12} key={index}>
                 <div className={classes.consultCard}>
@@ -320,12 +332,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           )}
                         </span>
                       </div>
-                      <div className={classes.appointBooked}>
+                      {/* <div className={classes.appointBooked}>
                         <ul>
                           <li>Fever</li>
                           <li>Cough &amp; Cold</li>
                         </ul>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                   <div className={classes.cardBottomActons}>
@@ -363,7 +375,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         ? showAppointmentAction(appointmentState, status, isConsultStarted)
                         : 'SCHEDULE FOLLOWUP'}
                     </AphButton>
-                    <div className={classes.noteText}>You are entitled to 1 free follow-up!</div>
+                    {status === STATUS.COMPLETED ? (
+                      <div className={classes.noteText}>
+                        You can chat with the doctor for {comparingDays()}
+                      </div>
+                    ) : (
+                      ''
+                    )}
                   </div>
                 </div>
               </Grid>

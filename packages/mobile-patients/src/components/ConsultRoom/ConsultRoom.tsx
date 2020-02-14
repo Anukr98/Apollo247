@@ -262,10 +262,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
         const item = JSON.parse(retrievedItem);
 
-        const allPatients =
-          item && item.data && item.data.getCurrentPatients
-            ? item.data.getCurrentPatients.patients
-            : null;
+        const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+        let allPatients;
+
+        if (callByPrism === 'true') {
+          allPatients =
+            item && item.data && item.data.getCurrentPatients
+              ? item.data.getCurrentPatients.patients
+              : null;
+        } else {
+          allPatients =
+            item && item.data && item.data.getPatientByMobileNumber
+              ? item.data.getPatientByMobileNumber.patients
+              : null;
+        }
 
         const patientDetails = allPatients
           ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
@@ -349,10 +359,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
     const item = JSON.parse(retrievedItem);
 
-    const allPatients =
-      item && item.data && item.data.getCurrentPatients
-        ? item.data.getCurrentPatients.patients
-        : null;
+    const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+    let allPatients;
+
+    if (callByPrism === 'true') {
+      allPatients =
+        item && item.data && item.data.getCurrentPatients
+          ? item.data.getCurrentPatients.patients
+          : null;
+    } else {
+      allPatients =
+        item && item.data && item.data.getPatientByMobileNumber
+          ? item.data.getPatientByMobileNumber.patients
+          : null;
+    }
 
     const patientDetails = allPatients
       ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]

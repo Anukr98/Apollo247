@@ -75,6 +75,19 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    resendBtnDisabled: {
+      color: '#fc9916 !important',
+      opacity: 0.4,
+    },
+    resendActions: {
+      display: 'flex',
+      alignItems: 'center',
+      '& >span': {
+        paddingLeft: 10,
+        paddingTop: 10,
+        fontSize: 12,
+      },
+    },
   };
 });
 
@@ -193,26 +206,31 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
               </div>
             </FormHelperText>
           )}
-          <Button
-            variant="text"
-            disabled={isSendingOtp || disableResendOtpButton}
-            className={classes.resendBtn}
-            onClick={(e) => {
-              resendOtp(mobileNumberWithPrefix, customLoginId);
-              setOtp([]);
-              setSubmitCount(0);
-              setOtpStatusText(resentOTPMessage);
-              const firstInput = otpInputRefs[0].current;
-              if (firstInput) firstInput.focus();
-              setDisableResendOtpButton(true);
-              setDisableResendOtpButtonCounter(30);
-            }}
-          >
-            Resend OTP
-          </Button>{' '}
-          {disableResendOtpButton
-            ? `00:${String(disableResendOtpButtonCounter).padStart(2, '0')}`
-            : null}
+          <div className={classes.resendActions}>
+            <Button
+              variant="text"
+              disabled={isSendingOtp || disableResendOtpButton}
+              className={classes.resendBtn}
+              classes={{
+                disabled: classes.resendBtnDisabled,
+              }}
+              onClick={(e) => {
+                resendOtp(mobileNumberWithPrefix, customLoginId);
+                setOtp([]);
+                setSubmitCount(0);
+                setOtpStatusText(resentOTPMessage);
+                const firstInput = otpInputRefs[0].current;
+                if (firstInput) firstInput.focus();
+                setDisableResendOtpButton(true);
+                setDisableResendOtpButtonCounter(30);
+              }}
+            >
+              Resend OTP
+            </Button>
+            {disableResendOtpButton ? (
+              <span>{`00:${String(disableResendOtpButtonCounter).padStart(2, '0')}`}</span>
+            ) : null}
+          </div>
           <div className={classes.action}>
             <Fab
               type="submit"

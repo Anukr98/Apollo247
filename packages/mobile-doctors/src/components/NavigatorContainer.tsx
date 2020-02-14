@@ -73,7 +73,6 @@ export enum AppRoutes {
   MyAvailability = 'MyAvailability',
   BasicAccount = 'BasicAccount',
   MyFees = 'MyFees',
-  AddSymptons = 'AddSymptons',
   TransferConsult = 'TransferConsult',
   ReschduleConsult = 'ReschduleConsult',
   ShareConsult = 'ShareConsult',

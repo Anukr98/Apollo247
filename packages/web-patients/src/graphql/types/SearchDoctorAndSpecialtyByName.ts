@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
@@ -46,10 +46,20 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital[];
 }
 
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability {
+  __typename: "DoctorSlotAvailability";
+  doctorId: string | null;
+  onlineSlot: string | null;
+  physicalSlot: string | null;
+  referenceSlot: string | null;
+}
+
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties {
   __typename: "DoctorSpecialty";
   name: string;
   id: string;
+  image: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty {
@@ -63,10 +73,15 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   id: string;
   firstName: string;
   lastName: string;
-  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty | null;
+  displayName: string | null;
   experience: string | null;
-  photoUrl: string | null;
+  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty | null;
+  specialization: string | null;
   qualification: string | null;
+  city: string | null;
+  photoUrl: string | null;
+  thumbnailUrl: string | null;
+  doctorType: DoctorType;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_specialties {
@@ -130,12 +145,22 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital[];
 }
 
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctorsNextAvailability {
+  __typename: "DoctorSlotAvailability";
+  doctorId: string | null;
+  onlineSlot: string | null;
+  physicalSlot: string | null;
+  referenceSlot: string | null;
+}
+
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName {
   __typename: "SearchDoctorAndSpecialtyByNameResult";
   doctors: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null;
+  doctorsNextAvailability: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability | null)[] | null;
   specialties: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties | null)[] | null;
   possibleMatches: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches | null;
   otherDoctors: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors | null)[] | null;
+  otherDoctorsNextAvailability: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctorsNextAvailability | null)[] | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName {

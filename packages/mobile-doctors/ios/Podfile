@@ -60,4 +60,9 @@ target 'ApolloPatient' do
 
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
 
+  pod 'ReactNativeART', :path => '../node_modules/@react-native-community/art'
+
+
+  pod 'RNSVG', :path => '../node_modules/react-native-svg'
+
 end
