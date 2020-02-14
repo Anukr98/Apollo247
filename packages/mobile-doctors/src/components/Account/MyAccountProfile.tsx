@@ -483,7 +483,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
-      <View>{showHeaderView()}</View>
+      {showHeaderView()}
       <KeyboardAwareScrollView bounces={false}>
         <ScrollView bounces={false}>
           <SquareCardWithTitle title={strings.account.your_profile}>
@@ -492,16 +492,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}
               >
                 {profileData!.photoUrl ? (
-                  // <Image
-                  //   style={styles.imageview}
-                  //   source={{
-                  //     uri: profileData!.photoUrl,
-                  //   }}
-                  // />
-                  <Image
-                    style={styles.imageview}
-                    source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
-                  />
+                  <Image style={styles.imageview} source={{ uri: profileData!.photoUrl }} />
                 ) : (
                   <Image
                     style={styles.imageview}
@@ -518,14 +509,14 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 </Text>
                 <Text style={styles.drnametext}>
                   {formatSpecialityAndExperience(
-                    profileData!.specialty.name,
+                    profileData!.specialty!.name,
                     profileData!.experience || ''
                   )}
                 </Text>
                 <View style={styles.understatusline} />
               </View>
               {profileRow(strings.account.education, profileData!.qualification!)}
-              {profileRow(strings.account.speciality, profileData!.specialty.name!)}
+              {profileRow(strings.account.speciality, profileData!.specialty!.name!)}
               {profileRow(strings.account.services, profileData!.specialization || '')}
               {profileRow(
                 strings.account.awards,
@@ -555,7 +546,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                   letterSpacing: 0.06,
                   color: '#02475b',
                   marginLeft: 20,
-                  // marginBottom: 18,
                 }}
               >
                 {strings.account.secretay_login}

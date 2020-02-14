@@ -14,11 +14,11 @@ import {
   MakeTeamDoctorActiveVariables,
 } from '@aph/mobile-doctors/src/graphql/types/MakeTeamDoctorActive';
 import {
-  RemoveTeamDoctorFromStarTeam,
-  RemoveTeamDoctorFromStarTeamVariables,
+  removeTeamDoctorFromStarTeam,
+  removeTeamDoctorFromStarTeamVariables,
 } from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Platform, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
@@ -88,7 +88,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const client = useApolloClient();
   const [profileData, setProfileData] = useState(_profileData);
-  const starDoctors = _profileData.starTeam!;
   const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
   const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
 
@@ -136,7 +135,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
     setIsLoading(true);
     client
-      .mutate<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>({
+      .mutate<removeTeamDoctorFromStarTeam, removeTeamDoctorFromStarTeamVariables>({
         mutation: REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
         variables: { associatedDoctor: id, starDoctor: profileData.id },
         fetchPolicy: 'no-cache',
@@ -246,9 +245,8 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
           doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
             .associatedDoctor!.lastName || ''}`}
           experience={starDoctor!.associatedDoctor!.experience || ''}
-          specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
+          specialization={profileData.specialty!.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
           education={starDoctor!.associatedDoctor!.qualification!}
-          // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
           location={getFormattedLocation(starDoctor)}
         />
       );
@@ -275,7 +273,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
             margin: 20,
             marginTop: 0,
             borderRadius: 10,
-            //marginBottom: 0,
           }}
         >
           <View style={{ margin: 20 }}>
