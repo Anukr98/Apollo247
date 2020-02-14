@@ -12,18 +12,6 @@ import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsCompone
 
 const styles = StyleSheet.create({
   container: { alignItems: 'flex-start', justifyContent: 'center', paddingLeft: 20 },
-  gauge: {
-    position: 'absolute',
-    width: 100,
-    height: 160,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gaugeText: {
-    backgroundColor: 'transparent',
-    color: '#000',
-    fontSize: 24,
-  },
   mainView: {
     padding: 20,
   },
@@ -320,7 +308,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
     );
   };
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <View style={theme.viewStyles.container}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f4f5' }}>
         <ScrollView bounces={false}>
           {/* <KeyboardAwareScrollView

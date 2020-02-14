@@ -384,7 +384,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       {/* {isDropdownVisible ? renderDropdown() : null} */}
 
       {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
-      <View style={{ zIndex: -1, flex: 1, backgroundColor: '#f7f7f7' }}>
+      <View style={[{ zIndex: -1 }, theme.viewStyles.container]}>
         <View style={[styles.weekViewContainer, { zIndex: 0 }]}>
           <WeekView
             date={date}

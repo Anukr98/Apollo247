@@ -253,8 +253,8 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
     );
   };
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <View style={theme.viewStyles.container}>
+      <SafeAreaView style={theme.viewStyles.container}>
         <View>{visibleDownloadStatement && statmentPopup()}</View>
         <View>{showHeaderView()}</View>
 
