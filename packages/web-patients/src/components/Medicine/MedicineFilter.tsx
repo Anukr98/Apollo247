@@ -21,12 +21,12 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 20,
         boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
         width: '100%',
+        height: 'auto',
       },
     },
     filterSection: {
       padding: '20px 5px 0 10px',
       paddingTop: 15,
-      display: 'none',
       [theme.breakpoints.down('xs')]: {
         position: 'absolute',
         top: -52,
@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f0f1ec',
         width: '100%',
         padding: 0,
+        display: 'none',
       },
     },
     customScroll: {
@@ -41,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 10,
       paddingRight: 15,
       paddingBottom: 10,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         padding: '0 0 10px 0',
       },
     },
@@ -66,7 +67,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f8f5',
       padding: 10,
       marginTop: 5,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
@@ -137,10 +138,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 16,
       fontSize: 13,
       fontWeight: 500,
-      display: 'flex',
       alignItems: 'center',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       marginBottom: 5,
+      display: 'none',
       '& button': {
         boxShadow: 'none',
         padding: 0,
@@ -151,12 +152,12 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'center',
       },
     },
-    filterScroll:{
+    filterScroll: {
       height: 'calc(100vh - 330px) !important',
-      [theme.breakpoints.down(992)]:{
+      [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 370px) !important',
       },
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         height: 'calc(100vh - 155px) !important',
         marginBottom: 90,
       },
@@ -164,7 +165,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
     bottomActions: {
       padding: '10px 20px 20px 20px',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         position: 'fixed',
         bottom: 0,
         width: '100%',
@@ -284,7 +285,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         </AphButton>
       </div>
       <div className={`${classes.filterSection}`}>
-      <div className={classes.filterHeader}>
+        <div className={classes.filterHeader}>
           <AphButton>
             <img src={require('images/ic_cross.svg')} alt="" />
           </AphButton>
@@ -401,49 +402,48 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                 </span>
               )}
             </div>
-              <div className={classes.filterBox}>
-                <div className={classes.filterType}>Discount</div>
-                <div className={classes.boxContent}>
-                  <div className={classes.filterBy}>
-                    <AphTextField
-                      placeholder="0%"
-                      value={fromDiscount}
-                      onChange={(e) => setFromDiscount(e.target.value)}
-                    />{' '}
-                    <span>TO</span>{' '}
-                    <AphTextField
-                      placeholder="100%"
-                      value={toDiscount}
-                      onChange={(e) => setToDiscount(e.target.value)}
-                    />
-                  </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Discount</div>
+              <div className={classes.boxContent}>
+                <div className={classes.filterBy}>
+                  <AphTextField
+                    placeholder="0%"
+                    value={fromDiscount}
+                    onChange={(e) => setFromDiscount(e.target.value)}
+                  />{' '}
+                  <span>TO</span>{' '}
+                  <AphTextField
+                    placeholder="100%"
+                    value={toDiscount}
+                    onChange={(e) => setToDiscount(e.target.value)}
+                  />
                 </div>
               </div>
-              <div className={classes.filterBox}>
-                <div className={classes.filterType}>Price</div>
-                <div className={classes.boxContent}>
-                  <div className={classes.filterBy}>
-                    <AphTextField
-                      placeholder="RS.500"
-                      value={fromPrice}
-                      onChange={(e) => {
-                        setFromPrice(e.target.value);
-                      }}
-                    />{' '}
-                    <span>TO</span>{' '}
-                    <AphTextField
-                      placeholder="RS.3000"
-                      value={toPrice}
-                      onChange={(e) => {
-                        setToPrice(e.target.value);
-                      }}
-                    />
-                  </div>
+            </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Price</div>
+              <div className={classes.boxContent}>
+                <div className={classes.filterBy}>
+                  <AphTextField
+                    placeholder="RS.500"
+                    value={fromPrice}
+                    onChange={(e) => {
+                      setFromPrice(e.target.value);
+                    }}
+                  />{' '}
+                  <span>TO</span>{' '}
+                  <AphTextField
+                    placeholder="RS.3000"
+                    value={toPrice}
+                    onChange={(e) => {
+                      setToPrice(e.target.value);
+                    }}
+                  />
                 </div>
               </div>
+            </div>
           </div>
         </Scrollbars>
-
       </div>
       <div className={classes.bottomActions}>
         <AphButton

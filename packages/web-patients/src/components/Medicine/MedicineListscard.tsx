@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineStripWrap: {
       display: 'flex',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         display: 'block',
       },
     },
@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         paddingLeft: 45,
         paddingTop: 5,
       },
@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#02475b',
       fontWeight: 500,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         paddingBottom: 5,
         paddingRight: 24,
         flexGrow: 1,
@@ -86,9 +86,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 11,
       minWidth: 90,
       textAlign: 'center',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
-        borderRight:'none',
+        borderRight: 'none',
         flexGrow: 1,
         textAlign: 'right',
         paddingRight: 12,
@@ -102,7 +102,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingTop: 8,
       paddingBottom: 8,
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         position: 'absolute',
         right: 15,
         top: 8,
@@ -125,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 4,
       minWidth: 120,
       textAlign: 'center',
-      [theme.breakpoints.down('xs')]:{
+      [theme.breakpoints.down('xs')]: {
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',

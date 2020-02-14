@@ -245,13 +245,6 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   }
 
   const availabilityMarkup = (availableIn: number) => {
-    const availableSlots =
-      data &&
-      data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
-    const firstAvailableSLot = availableSlots && availableSlots[0];
-    const firstAvailableSLotTime = firstAvailableSLot && firstAvailableSLot.availableSlot;
     if (availableIn === 0) {
       return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
     } else if (availableIn > 0 && availableIn <= 15) {
@@ -264,13 +257,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       return <div className={`${classes.availability}`}>AVAILABLE IN {availableIn} MINS</div>;
     } else if (availableIn > 45 && availableIn <= 60) {
       return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
-    } else if (availableIn > 60 && firstAvailableSLotTime) {
-      const isToday = new Date(firstAvailableSLotTime).getDate() === new Date().getDate();
+    } else if (availableIn > 60) {
       return (
         <div className={`${classes.availability}`}>
-          {isToday
-            ? `TODAY ${format(new Date(firstAvailableSLotTime), 'h:mm a')}`
-            : ` ${format(new Date(firstAvailableSLotTime), 'dd-MMM-yyyy h:mm a')}`}
+          TODAY {format(new Date(availableSlot), 'h:mm a')}
         </div>
       );
     }

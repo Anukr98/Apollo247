@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
+import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -972,6 +973,9 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   totalAllocatedChats: number;
 
+  @Column({ default: 0 })
+  caseSheetNotSatisfactory: number;
+
   @Column()
   createdDate: Date;
 
@@ -1020,7 +1024,7 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   totalPhysicalConsultations: number;
 
-  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  @Column({ default: 0 })
   onTimeConsultations: number;
 
   @Column({ default: 0 })
@@ -1218,6 +1222,32 @@ export class AuditHistory extends BaseEntity {
 }
 
 //auditor history table end
+
+//CurrentAvailabilityStatus start
+@Entity()
+export class CurrentAvailabilityStatus extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  specialityId: string;
+
+  @Column({ nullable: true })
+  specialtyName: string;
+
+  @Column({ nullable: true })
+  totalCount: number;
+
+  @Column({ nullable: true })
+  onlineCount: number;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+//CurrentAvailabilityStatus end
 
 ///////////////////////////////////////////////////////////
 // RxPdf
