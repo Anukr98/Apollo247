@@ -13,12 +13,8 @@ import {
   MakeTeamDoctorActive,
   MakeTeamDoctorActiveVariables,
 } from '@aph/mobile-doctors/src/graphql/types/MakeTeamDoctorActive';
-import {
-  RemoveTeamDoctorFromStarTeam,
-  RemoveTeamDoctorFromStarTeamVariables,
-} from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Platform, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
@@ -26,6 +22,10 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import {
+  removeTeamDoctorFromStarTeam,
+  removeTeamDoctorFromStarTeamVariables,
+} from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -77,7 +77,7 @@ export interface StarDoctorsTeamProps {
 }
 
 export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
-  profileData: _profileData,
+  profileData,
   scrollViewRef,
   onReload,
 }) => {
@@ -87,10 +87,12 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const client = useApolloClient();
-  const [profileData, setProfileData] = useState(_profileData);
-  const starDoctors = _profileData.starTeam!;
-  const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
-  const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
+  const starDoctorsActive = profileData.starTeam
+    ? profileData.starTeam.filter((doctor) => doctor && doctor.isActive)
+    : [];
+  const starDoctorsInActive = profileData.starTeam
+    ? profileData.starTeam.filter((doctor) => doctor && !doctor.isActive)
+    : [];
 
   const onSelectStarDoctor = (searchText: boolean) => {
     setDropdownOpen(!isDropdownOpen);
@@ -111,12 +113,11 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
         variables: { associatedDoctor: id, starDoctor: profileData.id },
         fetchPolicy: 'no-cache',
       })
-      .then((_data) => {
+      .then(({ data }) => {
         setSelectedDoctor('Select Doctor');
         setIsLoading(false);
-        const result = _data.data!.makeTeamDoctorActive;
-        console.log('addDoctorToProgram', result);
-        if (result) {
+        console.log('addDoctorToProgram', data);
+        if (data && data.makeTeamDoctorActive) {
           onReload();
         }
       })
@@ -136,16 +137,15 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
     setIsLoading(true);
     client
-      .mutate<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>({
+      .mutate<removeTeamDoctorFromStarTeam, removeTeamDoctorFromStarTeamVariables>({
         mutation: REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
         variables: { associatedDoctor: id, starDoctor: profileData.id },
         fetchPolicy: 'no-cache',
       })
-      .then((_data) => {
+      .then(({ data }) => {
         setIsLoading(false);
-        const result = _data!.data!.removeTeamDoctorFromStarTeam;
-        console.log('removeDoctorFromProgram', result);
-        if (result) {
+        console.log('removeDoctorFromProgram', data);
+        if (data && data.removeTeamDoctorFromStarTeam) {
           onReload();
         }
       })
@@ -235,23 +235,26 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const renderStarDoctorCards = () => {
     return starDoctorsActive.map((starDoctor, i) => {
-      return (
-        <DoctorCard
-          onRemove={(id) => {
-            removeDoctorFromProgram(id);
-          }}
-          doctorId={starDoctor!.associatedDoctor!.id}
-          key={i}
-          image={starDoctor!.associatedDoctor!.photoUrl || ''}
-          doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
-            .associatedDoctor!.lastName || ''}`}
-          experience={starDoctor!.associatedDoctor!.experience || ''}
-          specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
-          education={starDoctor!.associatedDoctor!.qualification!}
-          // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-          location={getFormattedLocation(starDoctor)}
-        />
-      );
+      if (starDoctor && starDoctor.associatedDoctor)
+        return (
+          <DoctorCard
+            onRemove={(id) => {
+              removeDoctorFromProgram(id);
+            }}
+            doctorId={starDoctor.associatedDoctor.id}
+            key={i}
+            image={starDoctor.associatedDoctor.photoUrl || ''}
+            doctorName={`${starDoctor.associatedDoctor.firstName || ''} ${starDoctor
+              .associatedDoctor.lastName || ''}`}
+            experience={starDoctor.associatedDoctor.experience || ''}
+            specialization={
+              profileData.specialty ? profileData.specialty.name.toLocaleUpperCase() : ''
+            } //{(starDoctor.associatedDoctor.qualification || '').toUpperCase()}
+            education={starDoctor.associatedDoctor.qualification!}
+            // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
+            location={getFormattedLocation(starDoctor)}
+          />
+        );
     });
   };
 
