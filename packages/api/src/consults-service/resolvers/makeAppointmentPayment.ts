@@ -199,9 +199,7 @@ const sendPatientAcknowledgements = async (
   const apptTime = format(istDateTime, 'hh:mm');
   const getHours = istDateTime.getHours();
   const getMinutes = istDateTime.getMinutes();
-  // const addMinute = format(addMinutes(istDateTime, 15), 'hh:mm aa').toString();
   let subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', hospitalCity);
-  // const x = `${getHours}:${getMinutes}`;
   if (docDetails.doctorType == DoctorType.PAYROLL) {
     if (hospitalCity) {
       subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace(
