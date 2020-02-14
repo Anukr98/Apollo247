@@ -158,6 +158,12 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           }
         }
       }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+      }
       specialties {
         name
         id
@@ -167,13 +173,18 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           id
           firstName
           lastName
+          displayName
+          experience
           specialty {
             id
             name
           }
-          experience
-          photoUrl
+          specialization
           qualification
+          city
+          photoUrl
+          thumbnailUrl
+          doctorType
         }
         specialties {
           name
@@ -214,6 +225,24 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
             id
           }
         }
+      }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+      }
+      specialties {
+        id
+        name
+        image
+        userFriendlyNomenclature
+      }
+      otherDoctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
       }
     }
   }
