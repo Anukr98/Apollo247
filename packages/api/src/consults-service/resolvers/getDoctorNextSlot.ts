@@ -11,6 +11,7 @@ export const getNextAvailableSlotTypeDefs = gql`
     availableDate: Date!
     doctorIds: [ID!]!
     availableType: APPOINTMENT_TYPE
+    currentTimeInput: DateTime
   }
 
   type SlotAvailabilityResult {
@@ -46,6 +47,7 @@ type DoctorNextAvailabeSlotInput = {
   availableDate: Date;
   doctorIds: string[];
   availableType: APPOINTMENT_TYPE;
+  currentTimeInput: Date;
 };
 
 type DoctorNextAvailabeSlotInputArgs = {
@@ -62,7 +64,7 @@ const getDoctorNextAvailableSlot: Resolver<
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   //const weekDay = format(new Date(), 'EEEE').toUpperCase();
   const doctorAvailalbeSlots: SlotAvailability[] = [];
-  function slots(doctorId: string, availableType: APPOINTMENT_TYPE) {
+  function slots(doctorId: string, availableType: APPOINTMENT_TYPE, inputDate: Date) {
     return new Promise<SlotAvailability>(async (resolve) => {
       let availableSlot: string = '';
       let physicalAvailableSlot: string = '';
@@ -111,7 +113,8 @@ const getDoctorNextAvailableSlot: Resolver<
             doctorId,
             nextDate,
             doctorsDb,
-            'ONLINE'
+            'ONLINE',
+            inputDate
           );
           if (nextSlot != '' && nextSlot != undefined) {
             availableSlot = nextSlot;
@@ -130,7 +133,8 @@ const getDoctorNextAvailableSlot: Resolver<
             doctorId,
             nextDate,
             doctorsDb,
-            'PHYSICAL'
+            'PHYSICAL',
+            inputDate
           );
           if (nextSlot != '' && nextSlot != undefined) {
             physicalAvailableSlot = nextSlot;
@@ -151,12 +155,16 @@ const getDoctorNextAvailableSlot: Resolver<
     });
   }
   const promises: object[] = [];
+  let inputDate: Date;
   let availableType = APPOINTMENT_TYPE.BOTH;
   if (DoctorNextAvailableSlotInput.availableType) {
     availableType = DoctorNextAvailableSlotInput.availableType;
   }
+  if (DoctorNextAvailableSlotInput.currentTimeInput) {
+    inputDate = DoctorNextAvailableSlotInput.currentTimeInput;
+  }
   DoctorNextAvailableSlotInput.doctorIds.map(async (doctorId) => {
-    promises.push(slots(doctorId, availableType));
+    promises.push(slots(doctorId, availableType, inputDate));
   });
   await Promise.all(promises);
   return { doctorAvailalbeSlots };
