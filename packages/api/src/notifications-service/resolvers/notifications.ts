@@ -19,6 +19,7 @@ import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { sendNotificationSMS } from 'profiles-service/resolvers/login';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -1169,7 +1170,6 @@ export async function sendPatientRegistrationNotification(
   //get all the patient device tokens
   let patientDeviceTokens: string[] = [];
   patientDeviceTokens = await getPatientDeviceTokens(patient.mobileNumber, patientsDb);
-
   if (patientDeviceTokens.length == 0) return;
 
   //notification payload
@@ -1188,6 +1188,8 @@ export async function sendPatientRegistrationNotification(
       content: notificationBody,
     },
   };
+  //call sendNotificationSMS function to send sms
+  await sendNotificationSMS(patient.mobileNumber, notificationBody);
 
   //notification options
   const options = {
