@@ -5,13 +5,15 @@ import {
   ArrowStep2,
   ArrowStep3,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
-  Dimensions,
+  AsyncStorage,
   Image,
   ImageSourcePropType,
   ImageStyle,
+  Platform,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -19,16 +21,11 @@ import {
   TextStyle,
   TouchableOpacity,
   View,
-  AsyncStorage,
-  Platform,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
-import { NavigationScreenProps } from 'react-navigation';
-const { height } = Dimensions.get('window');
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
