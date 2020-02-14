@@ -15,7 +15,7 @@ import { DiscountType } from 'profiles-service/entities';
 export const validateConsultCouponTypeDefs = gql`
   type ValidateCodeResponse {
     validityStatus: Boolean!
-    revisedAmount: string!
+    revisedAmount: String!
   }
 
   extend type Query {
