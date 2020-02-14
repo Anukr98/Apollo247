@@ -247,6 +247,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   parentId: string | null;
   status: STATUS;
   caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
+  appointmentType: APPOINTMENT_TYPE;
 }
 
 export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile {
