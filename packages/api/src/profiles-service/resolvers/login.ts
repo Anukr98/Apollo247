@@ -374,7 +374,6 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
-  console.log('11111111111111111111111');
   return smsResponse;
 };
 export const loginResolvers = {
