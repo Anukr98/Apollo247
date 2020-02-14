@@ -1496,4 +1496,21 @@ export class AppointmentRepository extends Repository<Appointment> {
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getCount();
   }
+
+  getPatientAppointmentCountByConsultMode(patientId: string, appointmenType: APPOINTMENT_TYPE) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: new Date(),
+      })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.UNAVAILABLE_MEDMANTRA,
+        status4: STATUS.COMPLETED,
+      })
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getCount();
+  }
 }

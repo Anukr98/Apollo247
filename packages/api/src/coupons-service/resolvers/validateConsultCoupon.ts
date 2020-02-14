@@ -11,6 +11,7 @@ import { CouponGenericRulesRepository } from 'profiles-service/repositories/Coup
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
 import { DiscountType } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const validateConsultCouponTypeDefs = gql`
   enum AppointmentType {
@@ -34,6 +35,11 @@ export const validateConsultCouponTypeDefs = gql`
   }
 `;
 
+enum customerTypeInCoupons {
+  FIRST = 'FIRST',
+  RECURRING = 'RECURRING',
+}
+
 const validateConsultCoupon: Resolver<
   null,
   { code: string; doctorId: string; consultType: APPOINTMENT_TYPE },
@@ -42,7 +48,7 @@ const validateConsultCoupon: Resolver<
 > = async (parent, args, { mobileNumber, patientsDb, doctorsDb, consultsDb }) => {
   //check for patient request validity
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.findByMobileNumber(mobileNumber);
+  const patientData = await patientRepo.findDetailsByMobileNumber(mobileNumber);
   if (patientData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //get doctors Data
@@ -135,11 +141,47 @@ const validateConsultCoupon: Resolver<
 
   //TODO: total coupon count irrespective to customer
 
-  //TODO: customer type check
+  //customer type check
+  if (couponGenericRulesData.couponApplicableCustomerType) {
+    const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+    const appointmentsCount = await appointmentRepo.getPatientAppointmentCountByConsultMode(
+      patientData.id,
+      args.consultType
+    );
+    if (
+      couponGenericRulesData.couponApplicableCustomerType == customerTypeInCoupons.FIRST &&
+      appointmentsCount != 0
+    ) {
+      return {
+        validityStatus: false,
+        revisedAmount: doctorFees,
+        reasonForInvalidStatus: ApiConstants.COUPON_FOR_FIRST_CUSTOMER_ONLY.toString(),
+      };
+    }
+  }
 
-  //TODO: coupon start date check
+  //coupon start date check
+  const todayDate = new Date();
+  console.log(todayDate);
+  if (
+    couponGenericRulesData.couponStartDate &&
+    todayDate < couponGenericRulesData.couponStartDate
+  ) {
+    return {
+      validityStatus: false,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: ApiConstants.EARLY_COUPON.toString(),
+    };
+  }
 
-  //TODO: coupon end date check
+  // coupon end date check
+  if (couponGenericRulesData.couponEndDate && todayDate > couponGenericRulesData.couponEndDate) {
+    return {
+      validityStatus: false,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: ApiConstants.COUPON_EXPIRED.toString(),
+    };
+  }
 
   //discount amount calculation
   let revisedAmount = doctorFees;
