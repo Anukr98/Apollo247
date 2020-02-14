@@ -11,6 +11,7 @@ import { CouponGenericRulesRepository } from 'profiles-service/repositories/Coup
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
 import { DiscountType } from 'profiles-service/entities';
 
+//console
 export const validateConsultCouponTypeDefs = gql`
   enum AppointmentType {
     ONLINE
