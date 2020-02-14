@@ -95,9 +95,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [showHelpModel, setshowHelpModel] = useState(false);
-
   const profileData = props.navigation.getParam('ProfileData');
-  console.log('p', profileData);
   const client = useApolloClient();
 
   useEffect(() => {
@@ -131,6 +129,8 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   };
 
   const onAddBlockCalendar = (data) => {
+    console.log(data, 'dj');
+
     setblockedCalendar(data);
   };
 

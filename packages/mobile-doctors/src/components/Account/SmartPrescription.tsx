@@ -411,7 +411,6 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     return (
       <View>
         <Text style={styles.subheading}>{strings.smartPrescr.fav_med}</Text>
-
         <View style={styles.containerListStyle}>
           {medicineList!.map((item, i) => (
             <View key={i}>
@@ -707,8 +706,6 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   };
 
   const AddFavouriteTest = (searchTestVal: any, tempTestArray: string[]) => {
-    // console.log('Selected test:' + selTest);
-    // const AddingTest = tempTestArray.itemname.join(',');
     const AddingTest = tempTestArray!.map((ele: any) => ele.itemname).join(',');
     console.log('AddingTest---', AddingTest);
 
@@ -872,7 +869,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
             {FavoriteMedicines()}
             {FavoriteTests()}
             {FavoriteAdvice()}
-            {renderButtonsView()}
+            {/* {renderButtonsView()} */}
           </SafeAreaView>
         </ScrollView>
       </SafeAreaView>
