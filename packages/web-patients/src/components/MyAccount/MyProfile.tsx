@@ -176,26 +176,18 @@ export const MyProfile: React.FC = (props) => {
           <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 496px'}>
             <div className={classes.servicesSection}>
               <div className={classes.sectionGroup}>
-                <div className={classes.serviceType}>
+                <Link
+                  className={`${classes.serviceType} ${classes.textVCenter}`}
+                  to={clientRoutes.myAccount()}
+                >
                   <span className={classes.serviceImg}>
-                    <img src={require('images/img_apolloone.png')} alt="" />
+                    <img src={require('images/ic_manageprofile.svg')} alt="" />
                   </span>
-                  <div className={classes.apolloOneSection}>
-                    <div className={classes.apolloOneHeader}>
-                      <span className={classes.apolloPoints}>400 HC</span>
-                      <span className={classes.planType}>Silver</span>
-                    </div>
-                    <div className={classes.pointsSlider}>
-                      <div className={classes.sliderArrow}>
-                        <img src={require('images/ic_dropdown_blue_down.svg')} alt="" />
-                      </div>
-                      <AphLinearProgress color="primary" />
-                    </div>
-                    <div className={classes.readMore}>
-                      <Link to="#">Read More</Link>
-                    </div>
-                  </div>
-                </div>
+                  <span className={classes.linkText}>Manage Profiles</span>
+                  <span className={classes.rightArrow}>
+                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  </span>
+                </Link>
               </div>
               <div className={classes.sectionGroup}>
                 <Link
@@ -216,7 +208,7 @@ export const MyProfile: React.FC = (props) => {
                   <span className={classes.serviceImg}>
                     <img src={require('images/ic_invoice.svg')} alt="" />
                   </span>
-                  <span className={classes.linkText}>Invoices</span>
+                  <span className={classes.linkText}>Order Summary</span>
                   <span className={classes.rightArrow}>
                     <img src={require('images/ic_arrow_right.svg')} alt="" />
                   </span>
@@ -225,7 +217,7 @@ export const MyProfile: React.FC = (props) => {
               <div className={`${classes.sectionGroup} ${classes.lastGroup}`}>
                 <Link
                   className={`${classes.serviceType} ${classes.textVCenter}`}
-                  to={clientRoutes.myAccount()}
+                  to={clientRoutes.notificationSettings()}
                 >
                   <span className={classes.serviceImg}>
                     <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
