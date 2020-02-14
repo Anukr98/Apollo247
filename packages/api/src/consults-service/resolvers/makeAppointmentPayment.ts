@@ -23,6 +23,7 @@ import { addMilliseconds, format, addMinutes } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import _ from 'lodash';
 import { DoctorType } from 'doctors-service/entities';
+import { sendNotificationSMS } from 'profiles-service/resolvers/login';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -177,6 +178,7 @@ const sendPatientAcknowledgements = async (
   smsMessage = smsMessage.replace('at {4}', '');
   console.log(smsMessage, 'sms message');
   sendSMS(smsMessage);
+  sendNotificationSMS(patientDetails.mobileNumber, smsMessage);
   //SMS logic ends here
 
   //NOTIFICATION logic starts here
