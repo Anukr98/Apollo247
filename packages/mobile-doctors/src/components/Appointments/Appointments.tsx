@@ -157,7 +157,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     {
       variables: {
         startDate: startDate,
-        endDate: endDate, //'2019-09-13',
+        endDate: startDate, //'2019-09-13',
       },
       fetchPolicy: 'no-cache',
     }
