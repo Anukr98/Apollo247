@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, MenuItem, Popover } from '@material-ui/core';
+import { Theme, Typography, MenuItem, Popover, CircularProgress } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
@@ -233,26 +233,25 @@ export const Appointments: React.FC = (props) => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   // const currentDate = new Date().toISOString().substring(0, 10);
   const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isSigningIn } = useAuth();
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-
-  const { data, error } = useQueryWithSkip<GetPatientAppointments, GetPatientAppointmentsVariables>(
-    GET_PATIENT_APPOINTMENTS,
-    {
-      variables: {
-        patientAppointmentsInput: {
-          patientId:
-            (currentPatient && currentPatient.id) ||
-            (allCurrentPatients && allCurrentPatients[0].id) ||
-            '',
-          appointmentDate: currentDate,
-        },
+  const { data, loading, error } = useQueryWithSkip<
+    GetPatientAppointments,
+    GetPatientAppointmentsVariables
+  >(GET_PATIENT_APPOINTMENTS, {
+    variables: {
+      patientAppointmentsInput: {
+        patientId:
+          (currentPatient && currentPatient.id) ||
+          (allCurrentPatients && allCurrentPatients[0].id) ||
+          '',
+        appointmentDate: currentDate,
       },
-      fetchPolicy: 'no-cache',
-    }
-  );
+    },
+    fetchPolicy: 'no-cache',
+  });
 
   if (error) {
     return <div>Unable to load Consults...</div>;
@@ -279,22 +278,40 @@ export const Appointments: React.FC = (props) => {
   // });
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
-    const currentTime = new Date().getTime();
+    const currentDate = new Date();
+    const compareDate = currentDate.setDate(currentDate.getDate() - 6);
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    if (appointmentTime > currentTime) {
-      if (isToday(appointmentTime)) todaysConsultations++;
-
-      return appointmentDetails;
-    }
+    return compareDate < appointmentTime;
   });
 
   const pastAppointments = appointments.filter((appointmentDetails) => {
-    const currentTime = new Date().getTime();
+    const currentDate = new Date();
+    const compareDate = currentDate.setDate(currentDate.getDate() - 7);
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    if (appointmentTime <= currentTime) {
-      return appointmentDetails;
-    }
+    return compareDate > appointmentTime;
   });
+
+  const appointmentText = () => {
+    return appointments.filter((item) =>
+      moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
+    ).length > -1 && tabValue === 0
+      ? 'You have ' +
+          (appointments.filter((item) =>
+            moment(new Date(item.appointmentDateTime))
+              .add(6, 'days')
+              .startOf('day')
+              .isSameOrAfter(moment(new Date()).startOf('day'))
+          ).length || 'no') +
+          ' active appointment(s)!'
+      : 'You have ' +
+          (appointments.filter((item) =>
+            moment(new Date(item.appointmentDateTime))
+              .add(6, 'days')
+              .startOf('day')
+              .isBefore(moment(new Date()).startOf('day'))
+          ).length || 'no') +
+          ' past appointment(s)!';
+  };
 
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
@@ -343,17 +360,7 @@ export const Appointments: React.FC = (props) => {
             ) : (
               <Typography variant="h1">hello there!</Typography>
             )}
-
-            {availableAppointments.length === 0 ? (
-              <p>You have no consultations today :) Hope you are doing well?</p>
-            ) : todaysConsultations > 0 ? (
-              <p>
-                You have {availableAppointments.length}
-                {availableAppointments.length > 1 ? ' consultations' : ' consultation'} today!
-              </p>
-            ) : (
-              <p>You have no consultations today :)</p>
-            )}
+            <p>{appointmentText()}</p>
           </div>
           <div>
             <Tabs
@@ -386,6 +393,8 @@ export const Appointments: React.FC = (props) => {
               <TabContainer>
                 {availableAppointments && availableAppointments.length > 0 ? (
                   <ConsultationsCard appointments={availableAppointments} />
+                ) : loading || isSigningIn ? (
+                  <CircularProgress />
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>
@@ -414,7 +423,34 @@ export const Appointments: React.FC = (props) => {
             )}
             {tabValue === 1 && (
               <TabContainer>
-                {pastAppointments ? <ConsultationsCard appointments={pastAppointments} /> : null}
+                {pastAppointments && pastAppointments.length > 0 ? (
+                  <ConsultationsCard appointments={pastAppointments} />
+                ) : loading || isSigningIn ? (
+                  <CircularProgress />
+                ) : (
+                  <div className={classes.consultSection}>
+                    <div className={classes.noAppointments}>
+                      <div className={classes.leftGroup}>
+                        <h3>Want to book an appointment?</h3>
+                        <Route
+                          render={({ history }) => (
+                            <AphButton
+                              color="primary"
+                              onClick={() => {
+                                history.push(clientRoutes.doctorsLanding());
+                              }}
+                            >
+                              Book an Appointment
+                            </AphButton>
+                          )}
+                        />
+                      </div>
+                      <div className={classes.rightGroup}>
+                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </TabContainer>
             )}
           </div>

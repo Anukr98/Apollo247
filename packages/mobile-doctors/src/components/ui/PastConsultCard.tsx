@@ -1,6 +1,4 @@
-import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
 import { Audio, Video } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import React from 'react';
 import {
   Image,
@@ -15,7 +13,6 @@ import {
 } from 'react-native';
 import { theme } from '../../theme/theme';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
-import { TagCard } from '@aph/mobile-doctors/src/components/ui/TagCard';
 
 const styles = StyleSheet.create({
   containerStyle: {

@@ -121,14 +121,12 @@ import {
   NavigationScreenProps,
 } from 'react-navigation';
 
-const { height, width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   casesheetView: {
-    // height: screenHeight,
-    flex: 1,
     width: '100%',
-    backgroundColor: '#f7f7f7',
+    ...theme.viewStyles.container,
   },
   nameText: {
     color: '#02475b',
@@ -1367,9 +1365,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {caseSheetEdit && (
           <AddIconLabel
             label={strings.buttons.add_tests}
-            onPress={
-              () => setShowAddTestPopup(true) //props.navigation.push(AppRoutes.AddDiagnostics)
-            }
+            onPress={() => setShowAddTestPopup(true)}
             style={{ marginBottom: 19, marginLeft: 16, marginTop: 0 }}
           />
         )}
