@@ -238,12 +238,12 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         image
         userFriendlyNomenclature
       }
-        otherDoctorsNextAvailability {
-          doctorId
-          onlineSlot
-          physicalSlot
-          referenceSlot
-        }
+      otherDoctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+      }
     }
   }
 `;
