@@ -11,6 +11,7 @@ import axios from 'axios';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -25,8 +26,12 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
+        backgroundColor: '#f7f8f5',
         paddingBottom: 20,
+        position: 'absolute',
+        top: 0,
+        zIndex: 999,
+        width: '100%',
       },
     },
     breadcrumbs: {
@@ -44,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
-        zIndex: 2,
+        zIndex: 999,
         top: 0,
         width: '100%',
         borderBottom: 'none',
@@ -52,21 +57,54 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         paddingLeft: 20,
         paddingRight: 20,
+        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
+        textAlign: 'center',
       },
     },
     medicineDetailsGroup: {
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
-        padding: '20px 20px 20px 3px',
+        padding: '20px',
+      },
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 50,
+      },
+    },
+    medicineDetailsHeader: {
+      display: 'none',
+      background: '#fff',
+      padding: 20,
+      alignItems: 'center',
+      position: 'fixed',
+      top: 0,
+      width: '100%',
+      zIndex: 999,
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
       },
     },
     searchSection: {
       width: 'calc(100% - 328px)',
       padding: '0 10px 0 0',
+      backgroundColor: '#fff',
+      marginRight: 10,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingRight: 20,
-        paddingTop: 14,
+        padding: 0,
+      },
+    },
+    scrollResponsive: {
+      [theme.breakpoints.down(992)]: {
+        height: 'calc(100vh - 250px) !important',
+      },
+      [theme.breakpoints.down('xs')]: {
+        maxHeight: 'inherit !important',
+        height: 'auto !important',
+      },
+      '& > div': {
+        [theme.breakpoints.down('xs')]: {
+          maxHeight: 'inherit !important',
+        },
       },
     },
     backArrow: {
@@ -83,6 +121,9 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'center',
         backgroundColor: '#02475b',
       },
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 0,
+      },
       '& img': {
         verticalAlign: 'bottom',
       },
@@ -93,30 +134,57 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    detailsHeader: {
+      flex: 1,
+    },
     blackArrow: {
       verticalAlign: 'middle',
       [theme.breakpoints.up(1220)]: {
         display: 'none',
       },
     },
-    customScroll: {
-      padding: '0 7px 0 20px',
-    },
     productInformation: {
       backgroundColor: theme.palette.common.white,
       padding: 20,
       borderRadius: 5,
       display: 'flex',
+      [theme.breakpoints.down(992)]: {
+        display: 'block',
+        width: '100%',
+      },
+      [theme.breakpoints.down(768)]: {
+        display: 'flex',
+        padding: '20px 0 0 0',
+        backgroundColor: '#f7f8f5',
+      },
     },
     productDetails: {
       paddingLeft: 20,
       width: 'calc(100% - 290px)',
+      [theme.breakpoints.down(992)]: {
+        width: '100%',
+        paddingTop: 20,
+      },
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 0,
+        paddingLeft: 0,
+      },
       '& h2': {
         fontSize: 20,
         fontWeight: 600,
         color: '#02475b',
         margin: 0,
         paddingBottom: 10,
+      },
+    },
+    productBasicInfo: {
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 115,
+      },
+    },
+    productDetailed: {
+      [theme.breakpoints.down('xs')]: {
+        padding: '20px 0',
       },
     },
     productInfo: {
@@ -126,6 +194,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       '& p': {
         margin: '5px 0',
+      },
+      [theme.breakpoints.down('xs')]: {
+        borderTop: '0.5px solid rgba(2,71,91,0.3)',
+        margin: '0 20px',
+        padding: '20px 0',
       },
     },
     textInfo: {
@@ -148,14 +221,23 @@ const useStyles = makeStyles((theme: Theme) => {
       '& svg': {
         color: '#02475b',
       },
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+      },
+      '&:before': {
+        content: '""',
+        borderTop: '0.5px solid rgba(2,71,91,0.3)',
+        position: 'absolute',
+        left: 20,
+        right: 20,
+      },
     },
     tabRoot: {
       fontSize: 14,
       fontWeight: 500,
       textAlign: 'center',
       color: '#02475b',
-      padding: 0,
-      paddingBottom: 6,
+      padding: '10px 0',
       textTransform: 'none',
       opacity: 0.5,
       lineHeight: 'normal',
@@ -175,6 +257,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#0087ba',
       lineHeight: '22px',
+      [theme.breakpoints.down('xs')]: {
+        padding: '15px 20px',
+        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+      },
       '& p': {
         margin: '5px 0',
       },
@@ -188,6 +275,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& ul': {
         padding: '0 0 0 20px',
+      },
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        padding: 20,
       },
     },
     prescriptionBox: {
@@ -405,16 +496,21 @@ export const MedicineDetails: React.FC = (props) => {
                       />
                     </div>
                   </a>
-                  Product Detail
+                  <div className={classes.detailsHeader}>Product Detail</div>
                 </div>
                 {medicineDetails && (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
-                      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 215px'}>
-                        <div className={classes.customScroll}>
-                          <div className={classes.productInformation}>
-                            <MedicineImageGallery data={medicineDetails} />
-                            <div className={classes.productDetails}>
+                      <Scrollbars
+                        className={classes.scrollResponsive}
+                        autoHide={true}
+                        autoHeight
+                        autoHeightMax={'calc(100vh - 215px'}
+                      >
+                        <div className={classes.productInformation}>
+                          <MedicineImageGallery data={medicineDetails} />
+                          <div className={classes.productDetails}>
+                            <div className={classes.productBasicInfo}>
                               <h2>{medicineDetails.name}</h2>
                               <div className={classes.textInfo}>
                                 <label>Manufacturer</label>
@@ -442,39 +538,39 @@ export const MedicineDetails: React.FC = (props) => {
                                   </span>
                                 </div>
                               )}
-                              {medicinePharmacyDetails &&
-                              medicinePharmacyDetails.length > 0 &&
-                              medicinePharmacyDetails[0].Overview &&
-                              medicinePharmacyDetails[0].Overview.length > 0 ? (
-                                <>
-                                  <Tabs
-                                    value={tabValue}
-                                    variant="scrollable"
-                                    scrollButtons="auto"
-                                    classes={{
-                                      root: classes.tabsRoot,
-                                      indicator: classes.tabsIndicator,
-                                    }}
-                                    onChange={(e, newValue) => {
-                                      setTabValue(newValue);
-                                    }}
-                                  >
-                                    {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                                  </Tabs>
-                                  {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                                </>
-                              ) : medicineDetails.description ? (
-                                <div>
-                                  <div className={classes.productInfo}>Product Information</div>
-                                  <div className={classes.productDescription}>
-                                    {description &&
-                                      description.split('rn').map((data, index) => {
-                                        return <p key={index}>{data}</p>;
-                                      })}
-                                  </div>
-                                </div>
-                              ) : null}
                             </div>
+                            {medicinePharmacyDetails &&
+                            medicinePharmacyDetails.length > 0 &&
+                            medicinePharmacyDetails[0].Overview &&
+                            medicinePharmacyDetails[0].Overview.length > 0 ? (
+                              <>
+                                <Tabs
+                                  value={tabValue}
+                                  variant="scrollable"
+                                  scrollButtons="on"
+                                  classes={{
+                                    root: classes.tabsRoot,
+                                    indicator: classes.tabsIndicator,
+                                  }}
+                                  onChange={(e, newValue) => {
+                                    setTabValue(newValue);
+                                  }}
+                                >
+                                  {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                </Tabs>
+                                {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                              </>
+                            ) : medicineDetails.description ? (
+                              <div className={classes.productDetailed}>
+                                <div className={classes.productInfo}>Product Information</div>
+                                <div className={classes.productDescription}>
+                                  {description &&
+                                    description.split('rn').map((data, index) => {
+                                      return <p key={index}>{data}</p>;
+                                    })}
+                                </div>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       </Scrollbars>
@@ -487,6 +583,7 @@ export const MedicineDetails: React.FC = (props) => {
           </>
         )}
       </MedicinesCartContext.Consumer>
+      <NavigationBottom />
     </div>
   );
 };

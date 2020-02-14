@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -172,7 +173,7 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
             elevation: 5,
           }}
         >
-          <Text style={styles.dosage}>Dosage</Text>
+          <Text style={styles.dosage}>{strings.medicine.dosage}</Text>
           <View style={{ flexDirection: 'row', marginLeft: 16 }}>
             {count == 1 ? (
               <TouchableOpacity>
@@ -189,7 +190,8 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
             )}
 
             <Text style={styles.countText}>
-              {count} tablet{count > 1 ? 's' : ''}
+              {count} {strings.medicine.tablet}
+              {count > 1 ? 's' : ''}
             </Text>
             {count == 5 ? (
               <TouchableOpacity>
@@ -214,7 +216,7 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
               //marginBottom: 24,
             }}
           ></View>
-          <Text style={styles.dosage}>Time of the Day</Text>
+          <Text style={styles.dosage}>{strings.medicine.time_of_the_day}</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -242,7 +244,7 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
               );
             })}
           </View>
-          <Text style={styles.dosage}>To be taken</Text>
+          <Text style={styles.dosage}>{strings.medicine.tobe_taken}</Text>
           <View
             style={{
               flexDirection: 'row',
@@ -269,7 +271,7 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
               );
             })}
           </View>
-          <Text style={styles.dosage}>Duration of Consumption</Text>
+          <Text style={styles.dosage}>{strings.medicine.duration_of_consumption}</Text>
 
           {/* <TextInput
             style={styles.inputStyle}
@@ -294,9 +296,9 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
             onChangeText={(duration) => setDuration(duration)}
           />
 
-          <Text style={styles.dosage}>Instructions (if any)</Text>
+          <Text style={styles.dosage}>{strings.medicine.instruction_label}</Text>
           <TextInputComponent
-            placeholder="Enter instructions here.."
+            placeholder={strings.medicine.enter_instruction_here}
             inputStyle={styles.inputView}
             multiline={true}
             value={value}
@@ -306,18 +308,18 @@ export const MedicineAddScreen: React.FC<ProfileProps> = (props) => {
         </View>
         <View style={styles.footerButtonsContainer}>
           <Button
-            title="CANCEL"
+            title={strings.buttons.cancel}
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
             style={[styles.buttonsaveStyle, { marginRight: 16 }]}
             onPress={() => removeData()}
           />
           <Button
-            title="ADD MEDICINE "
+            title={strings.smartPrescr.add_medicine}
             style={styles.buttonendStyle}
             onPress={() => {
               if (count == 0 || duration == '') {
-                Alert.alert('Please select all fields');
+                Alert.alert(strings.medicine.please_select_feilds);
               } else {
                 let dosagefianl = '';
                 console.log({

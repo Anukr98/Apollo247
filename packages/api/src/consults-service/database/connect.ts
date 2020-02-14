@@ -19,6 +19,7 @@ import {
   PhrDocumentsSummary,
   JdDashboardSummary,
   AuditHistory,
+  CurrentAvailabilityStatus,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -46,6 +47,9 @@ import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 import {
   Coupon,
+  CouponConsultRules,
+  CouponGenericRules,
+  CouponUsageDetails,
   DiagnosticHotSellers,
   DiagnosticOrderLineItems,
   DiagnosticOrderPayments,
@@ -99,6 +103,7 @@ export const connect = async () => {
         PhrDocumentsSummary,
         JdDashboardSummary,
         AuditHistory,
+        CurrentAvailabilityStatus,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -145,6 +150,9 @@ export const connect = async () => {
       name: 'patients-db',
       entities: [
         Coupon,
+        CouponConsultRules,
+        CouponGenericRules,
+        CouponUsageDetails,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,

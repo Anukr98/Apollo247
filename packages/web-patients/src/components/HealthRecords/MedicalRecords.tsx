@@ -6,6 +6,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -14,17 +15,33 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 20,
       paddingLeft: 20,
       PaddingRight: 3,
-      display: 'flex',
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     leftSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
-      padding: '20px 5px',
+      padding: '0 0 20px 5px',
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        backgroundColor: '#f0f1ec',
+        padding: 0,
+        borderRadius: 0,
+      },
     },
     rightSection: {
       width: 'calc(100% - 328px)',
       paddingRight: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        display: 'none',
+        paddingRight: 0,
+      },
     },
     sectionHeader: {
       color: '#02475b',
@@ -39,11 +56,19 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       marginLeft: 20,
       marginRight: 15,
+      [theme.breakpoints.down('xs')]: {
+        margin: 0,
+        display: 'block',
+        padding: 0,
+      },
     },
     headerActions: {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: '10px 15px',
+      },
       '& button': {
         boxShadow: 'none',
         border: 'none',
@@ -56,6 +81,9 @@ const useStyles = makeStyles((theme: Theme) => {
     shareIcon: {
       marginLeft: 40,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+      },
       '& img': {
         verticalAlign: 'middle',
       },
@@ -63,6 +91,9 @@ const useStyles = makeStyles((theme: Theme) => {
     downloadIcon: {
       marginLeft: 40,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+      },
       '& img': {
         verticalAlign: 'middle',
       },
@@ -74,19 +105,25 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 15,
       marginRight: 15,
       marginBottom: 10,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginLeft: 0,
+        marginRight: 0,
+        marginBottom: 0,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
       '& button': {
         boxShadow: 'none',
         backgroundColor: 'transparent',
         borderRadius: 0,
+        paddingLeft: 10,
+        paddingRight: 10,
         fontSize: 12,
         fontWeight: 500,
         color: '#658f9b',
         textTransform: 'none',
-        padding: '0 0 12px 0',
         borderBottom: '5px solid #fff',
         minWidth: 'auto',
-        marginLeft: 8,
-        marginRight: 8,
       },
     },
     buttonActive: {
@@ -95,10 +132,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultationsList: {
       marginLeft: 13,
-      paddingRight: 15,
+      paddingRight: 20,
       borderLeft: '4px solid #0087ba',
       paddingLeft: 14,
       marginTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 15,
+      },
       '& >div:last-child >div': {
         position: 'relative',
         '&:before': {
@@ -109,6 +149,9 @@ const useStyles = makeStyles((theme: Theme) => {
           width: 4,
           height: '200%',
           backgroundColor: theme.palette.common.white,
+          [theme.breakpoints.down('xs')]: {
+            backgroundColor: '#f0f1ec',
+          },
         },
       },
     },
@@ -132,11 +175,18 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 15,
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+        paddingBottom: 10,
+      },
     },
     addReportActions: {
       paddingLeft: 15,
       paddingRight: 15,
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
     cbcDetails: {
       backgroundColor: theme.palette.common.white,
@@ -148,10 +198,17 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:before': {
         display: 'none',
       },
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
     },
     reportsDetails: {
       paddingLeft: 25,
       paddingRight: 25,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 5,
+        paddingRight: 5,
+      },
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -165,11 +222,48 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
     },
+    mobileOverlay: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        backgroundColor: '#f0f1ec',
+        zIndex: 991,
+      },
+    },
+    headerBackArrow: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        padding: 15,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
+      '& button': {
+        display: 'none',
+        boxShadow: 'none',
+        minWidth: 'auto',
+        MozBoxShadow: 'none',
+        padding: 0,
+        marginRight: 15,
+        '& img': {
+          verticalAlign: 'middle',
+        },
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+        },
+      },
+    },
   };
 });
 
 export const MedicalRecords: React.FC = (props) => {
   const classes = useStyles();
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -178,7 +272,17 @@ export const MedicalRecords: React.FC = (props) => {
           <AphButton>Online</AphButton>
           <AphButton>Physical</AphButton>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 336px)'}>
+        <Scrollbars
+          autoHide={true}
+          autoHeight
+          autoHeightMax={
+            isMediumScreen
+              ? 'calc(100vh - 240px)'
+              : isSmallScreen
+              ? 'calc(100vh - 230px)'
+              : 'calc(100vh - 320px)'
+          }
+        >
           <div className={classes.consultationsList}>
             <div className={classes.consultGroupHeader}>
               <div className={classes.circle}></div>
@@ -208,19 +312,32 @@ export const MedicalRecords: React.FC = (props) => {
           </AphButton>
         </div>
       </div>
-      <div className={classes.rightSection}>
+      <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
         <div className={classes.sectionHeader}>
-          <span>CBC Details</span>
+          <div className={classes.headerBackArrow}>
+            <AphButton>
+              <img src={require('images/ic_back.svg')} />
+            </AphButton>
+            <span>CBC Details</span>
+          </div>
           <div className={classes.headerActions}>
-            <div className={classes.shareIcon}>
-              <img src={require('images/ic_round-share.svg')} alt="" />
-            </div>
+            <AphButton>View Consult</AphButton>
             <div className={classes.downloadIcon}>
               <img src={require('images/ic_download.svg')} alt="" />
             </div>
           </div>
         </div>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 262px)'}>
+        <Scrollbars
+          autoHide={true}
+          autoHeight
+          autoHeightMax={
+            isMediumScreen
+              ? 'calc(100vh - 287px)'
+              : isSmallScreen
+              ? 'calc(100vh - 96px)'
+              : 'calc(100vh - 245px)'
+          }
+        >
           <div className={classes.medicalRecordsDetails}>
             <div className={classes.cbcDetails}>
               <div className={classes.reportsDetails}>

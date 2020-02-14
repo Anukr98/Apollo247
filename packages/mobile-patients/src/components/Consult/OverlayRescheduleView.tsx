@@ -184,7 +184,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
               DoctorName:
                 props.navigation.state.params!.data &&
                 props.navigation.state.params!.data.doctorInfo &&
-                props.navigation.state.params!.data.doctorInfo.firstName,
+                props.navigation.state.params!.data.doctorInfo.fullName,
             },
           }),
         ],

@@ -583,6 +583,7 @@ export const GET_CASESHEET = gql`
             instruction
           }
         }
+        appointmentType
       }
       juniorDoctorNotes
       juniorDoctorCaseSheet {
@@ -1062,6 +1063,42 @@ export const GET_BLOCKED_CALENDAR = gql`
         start
         end
       }
+    }
+  }
+`;
+
+export const SEND_CALL_NOTIFICATION = gql`
+  query SendCallNotification(
+    $appointmentId: String
+    $callType: APPT_CALL_TYPE
+    $doctorType: DOCTOR_CALL_TYPE
+  ) {
+    sendCallNotification(
+      appointmentId: $appointmentId
+      callType: $callType
+      doctorType: $doctorType
+    ) {
+      status
+      callDetails {
+        id
+      }
+    }
+  }
+`;
+
+export const END_CALL_NOTIFICATION = gql`
+  query EndCallNotification($appointmentCallId: String) {
+    endCallNotification(appointmentCallId: $appointmentCallId) {
+      status
+    }
+  }
+`;
+
+export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
+  mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
+    updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
+      success
+      blobName
     }
   }
 `;

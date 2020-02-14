@@ -312,4 +312,17 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       return 0;
     }
   }
+
+  getCasesheetNotSatisfactory(selDate: Date, doctorId: string) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return CaseSheet.count({
+      where: {
+        createdDoctorId: doctorId,
+        createdDate: Between(newStartDate, newEndDate),
+        symptoms: null,
+        status: CASESHEET_STATUS.COMPLETED,
+      },
+    });
+  }
 }

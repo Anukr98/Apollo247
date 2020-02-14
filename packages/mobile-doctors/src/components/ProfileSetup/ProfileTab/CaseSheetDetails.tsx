@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
-import { View, SafeAreaView, Text, ScrollView } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
+import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import moment from 'moment';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import {
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import { DoctorType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 export interface CaseSheetDetailsProps extends NavigationScreenProps {
   consultDetails: GetCaseSheet_getCaseSheet_pastAppointments;
@@ -28,6 +30,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const [showMP, setshowMP] = useState(false);
   const [showTP, setshowTP] = useState(false);
   const [showReferral, setshowReferral] = useState(false);
+  const [showHelpModel, setshowHelpModel] = useState(false);
 
   const consultDetails = props.navigation.getParam('consultDetails');
   const patientDetails = props.navigation.getParam('patientDetails');
@@ -36,17 +39,18 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const caseSheet = consultDetails.caseSheet.filter(
     (item: any) => item.doctorType !== DoctorType.JUNIOR
   );
+  const { doctorDetails } = useAuth();
 
   const renderHeader = () => {
     return (
       <Header
-        headerText="CONSULT ROOM"
+        headerText={strings.consult_room.consult_room}
         leftIcon="backArrow"
         onPressLeftIcon={() => props.navigation.goBack()}
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
@@ -57,22 +61,22 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
     // const data = consultDetails.caseSheet.filter(
     //   (item: any) => item.doctorType !== DoctorType.JUNIOR
     // );
-    const symptoms = caseSheet.length ? caseSheet[0].symptoms : null;
+    const symptoms = caseSheet.length > 0 ? caseSheet[0].symptoms : null;
     if (symptoms)
       return (
         <CollapseCard
-          heading="Symptoms"
+          heading={strings.case_sheet.symptoms}
           collapse={showCF}
           onPress={() => setshowCF(!showCF)}
           containerStyle={{ marginVertical: 10 }}
         >
-          {symptoms.map((item) => (
-            <View style={{ marginHorizontal: 16 }}>
+          {symptoms.map((item: any) => (
+            <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
               <Text style={theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE)}>
                 {item.symptom}
               </Text>
               <Text style={theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE)}>
-                {`Since: ${item.since}\nHow often: ${item.howOften}\nSeverity: ${item.severity}`}
+                {`${strings.common.since}: ${item.since}\n${strings.common.how_often}: ${item.howOften}\n ${strings.common.severity}: ${item.severity}`}
               </Text>
             </View>
           ))}
@@ -103,7 +107,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
 
       return (
         <CollapseCard
-          heading="Vitals"
+          heading={strings.case_sheet.vitals}
           collapse={showVital}
           onPress={() => setshowVital(!showVital)}
           containerStyle={{ marginVertical: 10 }}
@@ -170,7 +174,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
     ];
     return (
       <CollapseCard
-        heading="Patient’s Medical & Family History"
+        heading={strings.case_sheet.patients_medi_family_history}
         collapse={showMedicalDetails}
         onPress={() => setshowMedicalDetails(!showMedicalDetails)}
         containerStyle={{ marginVertical: 10 }}
@@ -186,7 +190,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
     if (caseSheet.length && caseSheet[0].notes)
       return (
         <CollapseCard
-          heading="Junior Doctor’s Notes"
+          heading={strings.case_sheet.jr_doctor_notes}
           collapse={showNotes}
           onPress={() => setshowNotes(!showNotes)}
           containerStyle={{ marginVertical: 10 }}
@@ -202,24 +206,25 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const renderDiagnosis = () => {
     return (
       <CollapseCard
-        heading="Diagnosis"
+        heading={strings.case_sheet.diagnosis}
         collapse={showDiagnosis}
         onPress={() => setshowDiagnosis(!showDiagnosis)}
         containerStyle={{ marginVertical: 10 }}
       >
         <View style={{ marginHorizontal: 16 }}>
-          {renderLabelDesc('Diagnosed Medical Condition')}
-          {caseSheet.length && (
+          {renderLabelDesc(strings.case_sheet.diagonsed_medical_condi)}
+          {caseSheet.length > 0 && (
             <View
               style={{ marginTop: 10, marginBottom: 20, flexDirection: 'row', flexWrap: 'wrap' }}
             >
-              {caseSheet[0].diagnosticPrescription &&
-                caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
-                  <CapsuleView
-                    diseaseName={itemname}
-                    containerStyle={{ marginRight: 12, marginBottom: 12 }}
-                  />
-                ))}
+              {caseSheet[0].diagnosticPrescription
+                ? caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
+                    <CapsuleView
+                      diseaseName={itemname}
+                      containerStyle={{ marginRight: 12, marginBottom: 12 }}
+                    />
+                  ))
+                : null}
             </View>
           )}
         </View>
@@ -229,14 +234,14 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const renderMP = () => {
     return (
       <CollapseCard
-        heading="Medicine Prescription"
+        heading={strings.case_sheet.medicine_prescription}
         collapse={showMP}
         onPress={() => setshowMP(!showMP)}
         containerStyle={{ marginVertical: 10 }}
       >
         <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
-          {renderLabelDesc('Medicines')}
-          {caseSheet.length &&
+          {renderLabelDesc(strings.common.medicines)}
+          {caseSheet.length > 0 &&
             caseSheet[0].medicinePrescription &&
             caseSheet[0].medicinePrescription.map((item: any) => (
               <View>
@@ -253,7 +258,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const renderTP = () => {
     return (
       <CollapseCard
-        heading="Test Prescription"
+        heading={strings.case_sheet.test_prescription}
         collapse={showTP}
         onPress={() => setshowTP(!showTP)}
         containerStyle={{ marginVertical: 10 }}
@@ -266,14 +271,14 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const renderReferral = () => {
     return (
       <CollapseCard
-        heading="Referral"
+        heading={strings.case_sheet.referral}
         collapse={showReferral}
         onPress={() => setshowReferral(!showReferral)}
         containerStyle={{ marginVertical: 10 }}
       >
         <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
           <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE) }}>
-            Pulmologist
+            {strings.case_sheet.pulmologist}
           </Text>
         </View>
       </CollapseCard>
@@ -296,9 +301,9 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
               marginHorizontal: 20,
               marginBottom: 4,
             }}
-          >{`Submitted by Dr. ${
-            consultDetails.doctorInfo ? consultDetails.doctorInfo.firstName : ''
-          } on ${moment(consultDetails.appointmentDateTime).format('DD/MM/YYYY')} at\n${moment(
+          >{`${strings.case_sheet.submitted_by} ${doctorDetails ? doctorDetails!.firstName : ''} ${
+            strings.case_sheet.on
+          } ${moment(consultDetails.appointmentDateTime).format('DD/MM/YYYY')} at\n${moment(
             consultDetails.appointmentDateTime
           ).format('hh.mm A')}`}</Text>
           <Text
@@ -308,7 +313,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
               marginBottom: 6,
             }}
           >
-            Appt ID: {consultDetails.id}
+            {strings.case_sheet.appt_id}: {consultDetails.id}
           </Text>
           {renderChiefComplaints()}
           {renderVitals()}
@@ -320,6 +325,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           {renderReferral()}
         </ScrollView>
       </SafeAreaView>
+      {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </View>
   );
 };

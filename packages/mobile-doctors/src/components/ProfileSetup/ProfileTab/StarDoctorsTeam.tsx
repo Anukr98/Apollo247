@@ -25,6 +25,7 @@ import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -89,9 +90,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   const [profileData, setProfileData] = useState(_profileData);
   const starDoctors = _profileData.starTeam!;
   const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
-  console.log('starDoctorsActive', starDoctorsActive);
   const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
-  console.log('starDoctorsInActive2', starDoctorsInActive);
 
   const onSelectStarDoctor = (searchText: boolean) => {
     setDropdownOpen(!isDropdownOpen);
@@ -128,7 +127,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
 
@@ -156,7 +155,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while removing Doctor', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
 
@@ -182,12 +181,12 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       <View style={styles.dropDownCardStyle}>
         {starDoctorsInActive!.map((_doctor, i, array) => {
           const doctor = _doctor!.associatedDoctor!;
-          const drName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
+          const drName = `${strings.common.dr} ${doctor.firstName} ${doctor.lastName}`;
           return (
             <TouchableOpacity
               onPress={() =>
                 onPressDoctorSearchListItem(
-                  `Dr. ${doctor.firstName} ${doctor.lastName}`,
+                  `${strings.common.dr} ${doctor.firstName} ${doctor.lastName}`,
                   _doctor!.associatedDoctor!.id
                 )
               }
@@ -262,7 +261,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
       <View style={{ flexDirection: 'row', margin: 20, marginTop: 7 }}>
         <Add />
         <TouchableOpacity onPress={() => setSelectDoctorVisible(!isSelectDoctorVisible)}>
-          <Text style={styles.addDoctorText}>ADD DOCTOR</Text>
+          <Text style={styles.addDoctorText}>{strings.buttons.add_doct}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -281,7 +280,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
           }}
         >
           <View style={{ margin: 20 }}>
-            <Text style={styles.inputTextStyle}>Add a doctor to your team</Text>
+            <Text style={styles.inputTextStyle}>{strings.account.add_doct_to_your_team}</Text>
             <TouchableOpacity onPress={() => onSelectStarDoctor(isDropdownOpen)}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text
@@ -316,7 +315,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
     <View>
       {isLoading ? <Loader fullScreen /> : null}
       <SquareCardWithTitle
-        title={`Your Star Doctors Team (${starDoctorsActive.length})`}
+        title={`${strings.account.your_star_doct_team} (${starDoctorsActive.length})`}
         containerStyle={{ marginTop: 20 }}
       >
         <View style={{ height: 16 }} />

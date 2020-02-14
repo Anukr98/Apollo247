@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f7f7',
   },
 });
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 export interface ProfileProps extends NavigationScreenProps {}
 
@@ -52,7 +53,7 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="ADD DIAGNOSTIC"
+        headerText={strings.consult.add_diagnostics}
         rightIcons={[
           {
             icon: <Cancel />,
@@ -154,7 +155,7 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
         const errorMessage = error && error.message;
         console.log('Error occured while searching for searchDiagnosis', errorMessage, error);
         setIsLoading(false);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
 
@@ -205,7 +206,7 @@ export const AddDiagnostics: React.FC<ProfileProps> = (props) => {
                 color: '#01475b',
                 paddingBottom: 4,
               }}
-              placeholder="Search Condition"
+              placeholder={strings.consult.search_condition}
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={doctorSearchText}
               onChange={(text) => filterDoctors(text.nativeEvent.text.replace(/\\/g, ''))}

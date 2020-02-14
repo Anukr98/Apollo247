@@ -33,6 +33,7 @@ import {
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { ShareConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult';
 import { ChatDoctor } from '@aph/mobile-doctors/src/components/ChatDoctor';
 import { Sample } from '@aph/mobile-doctors/src/components/Sample';
@@ -82,6 +83,7 @@ export enum AppRoutes {
   CaseSheetDetails = 'CaseSheetDetails',
   SmartPrescription = 'SmartPrescription',
   MyStats = 'MyStats',
+  RenderPdf = 'RenderPdf',
   PaymentHistory = 'PaymentHistory',
   BlockHomePage = 'BlockHomePage',
 }
@@ -205,6 +207,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyStats]: {
     screen: MyStats,
+  },
+  [AppRoutes.RenderPdf]: {
+    screen: RenderPdf,
   },
   [AppRoutes.PaymentHistory]: {
     screen: PaymentHistory,

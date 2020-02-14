@@ -8,6 +8,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const notifications = [
   {
@@ -104,7 +105,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="NOTIFICATIONS"
+        headerText={strings.appointments.notifications_title}
       />
     );
   };

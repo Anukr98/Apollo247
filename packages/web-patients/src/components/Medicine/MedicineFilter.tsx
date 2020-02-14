@@ -14,21 +14,26 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       width: 328,
       borderRadius: 5,
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
-        top: 46,
-        zIndex: 1,
         borderRadius: 0,
         paddingTop: 0,
-        width: '100%',
         paddingBottom: 20,
         boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        width: '100%',
+        height: 'auto',
       },
     },
     filterSection: {
       padding: '20px 5px 0 10px',
       paddingTop: 15,
       [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: -52,
+        zIndex: 999,
+        backgroundColor: '#f0f1ec',
+        width: '100%',
+        padding: 0,
         display: 'none',
       },
     },
@@ -37,6 +42,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 10,
       paddingRight: 15,
       paddingBottom: 10,
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 0 10px 0',
+      },
     },
     searchInput: {
       paddingLeft: 20,
@@ -59,6 +67,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f8f5',
       padding: 10,
       marginTop: 5,
+      [theme.breakpoints.down('xs')]: {
+        marginBottom: 10,
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     filterType: {
       color: '#02475b',
@@ -121,9 +133,45 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 10,
       },
     },
+    filterHeader: {
+      backgroundColor: '#fff',
+      padding: 16,
+      fontSize: 13,
+      fontWeight: 500,
+      alignItems: 'center',
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      marginBottom: 5,
+      display: 'none',
+      '& button': {
+        boxShadow: 'none',
+        padding: 0,
+        minWidth: 'auto',
+      },
+      '& >span': {
+        width: 'calc(100% - 48px)',
+        textAlign: 'center',
+      },
+    },
+    filterScroll: {
+      height: 'calc(100vh - 330px) !important',
+      [theme.breakpoints.down(992)]: {
+        height: 'calc(100vh - 370px) !important',
+      },
+      [theme.breakpoints.down('xs')]: {
+        height: 'calc(100vh - 155px) !important',
+        marginBottom: 90,
+      },
+    },
+
     bottomActions: {
-      padding: 20,
-      paddingTop: 10,
+      padding: '10px 20px 20px 20px',
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        bottom: 0,
+        width: '100%',
+        zIndex: 999,
+        display: 'none',
+      },
     },
   });
 });
@@ -237,7 +285,16 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         </AphButton>
       </div>
       <div className={`${classes.filterSection}`}>
-        <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 325px'}>
+        <div className={classes.filterHeader}>
+          <AphButton>
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </AphButton>
+          <span>FILTERS</span>
+          <AphButton>
+            <img src={require('images/ic_refresh.svg')} alt="" />
+          </AphButton>
+        </div>
+        <Scrollbars className={classes.filterScroll} autoHide={true}>
           <div className={classes.customScroll}>
             <div className={classes.filterBox}>
               {locationUrl && locationUrl.includes('search-medicines') && (
@@ -344,44 +401,44 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                   </div>
                 </span>
               )}
-              <div className={classes.filterBox}>
-                <div className={classes.filterType}>Discount</div>
-                <div className={classes.boxContent}>
-                  <div className={classes.filterBy}>
-                    <AphTextField
-                      placeholder="0%"
-                      value={fromDiscount}
-                      onChange={(e) => setFromDiscount(e.target.value)}
-                    />{' '}
-                    <span>TO</span>{' '}
-                    <AphTextField
-                      placeholder="100%"
-                      value={toDiscount}
-                      onChange={(e) => setToDiscount(e.target.value)}
-                    />
-                  </div>
+            </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Discount</div>
+              <div className={classes.boxContent}>
+                <div className={classes.filterBy}>
+                  <AphTextField
+                    placeholder="0%"
+                    value={fromDiscount}
+                    onChange={(e) => setFromDiscount(e.target.value)}
+                  />{' '}
+                  <span>TO</span>{' '}
+                  <AphTextField
+                    placeholder="100%"
+                    value={toDiscount}
+                    onChange={(e) => setToDiscount(e.target.value)}
+                  />
                 </div>
               </div>
-              <div className={classes.filterBox}>
-                <div className={classes.filterType}>Price</div>
-                <div className={classes.boxContent}>
-                  <div className={classes.filterBy}>
-                    <AphTextField
-                      placeholder="RS.500"
-                      value={fromPrice}
-                      onChange={(e) => {
-                        setFromPrice(e.target.value);
-                      }}
-                    />{' '}
-                    <span>TO</span>{' '}
-                    <AphTextField
-                      placeholder="RS.3000"
-                      value={toPrice}
-                      onChange={(e) => {
-                        setToPrice(e.target.value);
-                      }}
-                    />
-                  </div>
+            </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Price</div>
+              <div className={classes.boxContent}>
+                <div className={classes.filterBy}>
+                  <AphTextField
+                    placeholder="RS.500"
+                    value={fromPrice}
+                    onChange={(e) => {
+                      setFromPrice(e.target.value);
+                    }}
+                  />{' '}
+                  <span>TO</span>{' '}
+                  <AphTextField
+                    placeholder="RS.3000"
+                    value={toPrice}
+                    onChange={(e) => {
+                      setToPrice(e.target.value);
+                    }}
+                  />
                 </div>
               </div>
             </div>

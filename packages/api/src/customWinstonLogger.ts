@@ -128,6 +128,21 @@ winston.loggers.add('currentPatientsAPILogger', {
   ],
 });
 
+//coupon-service api logger
+winston.loggers.add('couponServiceLogger', {
+  format: combine(label({ label: 'couponServiceLogger' }), timestamp(), winstonFormat.json()),
+  transports: [
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.COUPONS_SERVICE_ACCESS_LOG_FILE,
+      level: 'info',
+    }),
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.COUPONS_SERVICE_ERROR_LOG_FILE,
+      level: 'error',
+    }),
+  ],
+});
+
 export const winstonLogger = winston;
 
 export const log = (

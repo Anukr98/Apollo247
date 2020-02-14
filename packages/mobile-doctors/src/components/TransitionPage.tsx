@@ -7,6 +7,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   buttonStyle: {
@@ -42,8 +43,8 @@ export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
       <View style={{ backgroundColor: colors.WHITE, flex: 1 }}>
         <Header />
         <ProfileTabHeader
-          title={`thank you, dr. ${doctorName.toLowerCase()} :)`}
-          description="Let’s go over now to see the Apollo24x7 portal and start consultations!"
+          title={`${strings.account.thanku_dr} ${doctorName.toLowerCase()} :)`}
+          description={strings.account.profile_tab_descr}
           activeTabIndex={0}
         />
         <Button
@@ -53,7 +54,7 @@ export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
               DoctorId: doctorId,
             })
           }
-          title="GET STARTED"
+          title={strings.buttons.get_started}
           titleTextStyle={styles.titleTextStyle}
           style={styles.buttonStyle}
         />
