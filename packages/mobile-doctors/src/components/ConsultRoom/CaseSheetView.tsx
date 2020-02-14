@@ -415,6 +415,8 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
     | (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
     | null
     | undefined;
+
+  caseSheet: GetCaseSheet_getCaseSheet | null | undefined;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -524,134 +526,89 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .catch((e) => {});
   };
-  const cerateCaseSheetSRDAPI = () => {
-    setLoading && setLoading(true);
-    client
-      .mutate({
-        mutation: CREATE_CASESHEET_FOR_SRD,
-        variables: {
-          appointmentId: AppId,
-        },
-      })
-      .then((data) => {
-        getCaseSheetAPI();
-      })
-      .catch(() => {
-        setLoading && setLoading(false);
-        showAphAlert &&
-          showAphAlert({
-            title: 'Alert!',
-            description: 'Error occured while creating Case Sheet. Please try again',
-          });
-      });
-  };
 
-  const getCaseSheetAPI = () => {
-    setLoading && setLoading(true);
-    client
-      .query<GetCaseSheet>({
-        query: GET_CASESHEET,
-        fetchPolicy: 'no-cache',
-        variables: { appointmentId: AppId },
-      })
-      .then((_data) => {
-        const caseSheet = g(_data, 'data', 'getCaseSheet');
-        setCaseSheetData(caseSheet || undefined);
-        setPastList(g(caseSheet, 'pastAppointments') || null);
-        setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
-        setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
-        setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
-        setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
-        setPatientDetails(g(caseSheet, 'patientDetails') || null);
-        setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
-        setTests(
-          (g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || [])
-            .map((i) => {
-              if (i) {
-                return { itemname: i.itemname || '', isSelected: true };
-              } else {
-                return { itemname: '', isSelected: false };
-              }
-            })
-            .filter((i) => i.isSelected)
-        );
-        setAddedAdvices(
-          (g(caseSheet, 'caseSheetDetails', 'otherInstructions') || [])
-            .map((i) => {
-              if (i) {
-                return { key: i.instruction || '', value: i.instruction || '' };
-              } else {
-                return { key: '', value: '' };
-              }
-            })
-            .filter((i) => i.value !== '')
-        );
-        setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
-        setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
-        setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
-        setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
-        setDiagnosticPrescription(
-          g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null
-        );
-        setMedicinePrescriptionData(
-          g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || null
-        );
-        setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
-          .map((i) => (i ? i.externalId || i.id : ''))
-          .filter((i) => i !== null || i !== '') as string[]);
-        setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
-        setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
-        setFollowUpConsultationType(
-          g(caseSheet, 'caseSheetDetails', 'followUpConsultType') || undefined
-        );
-        setDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || '');
+  const setData = () => {
+    const caseSheet = props.caseSheet;
+    setCaseSheetData(caseSheet || undefined);
+    setPastList(g(caseSheet, 'pastAppointments') || null);
+    setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
+    setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
+    setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
+    setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
+    setPatientDetails(g(caseSheet, 'patientDetails') || null);
+    setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
+    setTests(
+      (g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || [])
+        .map((i) => {
+          if (i) {
+            return { itemname: i.itemname || '', isSelected: true };
+          } else {
+            return { itemname: '', isSelected: false };
+          }
+        })
+        .filter((i) => i.isSelected)
+    );
+    setAddedAdvices(
+      (g(caseSheet, 'caseSheetDetails', 'otherInstructions') || [])
+        .map((i) => {
+          if (i) {
+            return { key: i.instruction || '', value: i.instruction || '' };
+          } else {
+            return { key: '', value: '' };
+          }
+        })
+        .filter((i) => i.value !== '')
+    );
+    setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
+    setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
+    setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
+    setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
+    setDiagnosticPrescription(g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null);
+    setMedicinePrescriptionData(g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || null);
+    setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+      .map((i) => (i ? i.externalId || i.id : ''))
+      .filter((i) => i !== null || i !== '') as string[]);
+    setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
+    setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
+    setFollowUpConsultationType(
+      g(caseSheet, 'caseSheetDetails', 'followUpConsultType') || undefined
+    );
+    setDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || '');
 
-        setDisplayId(
-          g(_data.data.getCaseSheet, 'caseSheetDetails', 'appointment', 'displayId') || ''
-        );
-        setPrescriptionPdf(
-          `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-            caseSheetData,
-            'caseSheetDetails',
-            'blobName'
-          )}`
-        );
-        try {
-          setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
-            null) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-          setDiagonsisList(g(
-            caseSheet,
-            'caseSheetDetails',
-            'diagnosis' || null
-          ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-          setDiagnosticPrescriptionDataList(g(
-            caseSheet,
-            'caseSheetDetails',
-            'diagnosticPrescription' || null
-          ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-          setMedicineList(g(
-            caseSheet,
-            'caseSheetDetails',
-            'medicinePrescription' || null
-          ) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
-        } catch (error) {
-          console.log({ error });
-        }
-        setLoading && setLoading(false);
-      })
-      .catch((e) => {
-        setLoading && setLoading(false);
-        const message = e.message ? e.message.split(':')[1].trim() : '';
-        if (message === 'NO_CASESHEET_EXIST') {
-          cerateCaseSheetSRDAPI();
-        }
-        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
-      });
+    setDisplayId(g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '');
+    setPrescriptionPdf(
+      `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+        caseSheetData,
+        'caseSheetDetails',
+        'blobName'
+      )}`
+    );
+    try {
+      setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
+        null) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+      setDiagonsisList(g(
+        caseSheet,
+        'caseSheetDetails',
+        'diagnosis' || null
+      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+      setDiagnosticPrescriptionDataList(g(
+        caseSheet,
+        'caseSheetDetails',
+        'diagnosticPrescription' || null
+      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+      setMedicineList(g(
+        caseSheet,
+        'caseSheetDetails',
+        'medicinePrescription' || null
+      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+    } catch (error) {
+      console.log({ error });
+    }
   };
 
   useEffect(() => {
-    getCaseSheetAPI();
-  }, []);
+    setData();
+  }, [props.caseSheet]);
 
   const startDate = moment(new Date()).format('YYYY-MM-DD');
 
