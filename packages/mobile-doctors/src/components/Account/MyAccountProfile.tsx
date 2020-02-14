@@ -42,11 +42,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: '#f7f7f7',
-  },
   buttonendStyle: {
     width: '45%',
     height: 40,
@@ -487,7 +482,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={theme.viewStyles.container}>
       <View>{showHeaderView()}</View>
       <KeyboardAwareScrollView bounces={false}>
         <ScrollView bounces={false}>

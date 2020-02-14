@@ -17,11 +17,6 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f7f7', //theme.colors.DEFAULT_BACKGROUND_COLOR,
-  },
-
   descriptionview: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',
@@ -175,7 +170,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
     );
   };
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={theme.viewStyles.container}>
       <View>{showHeaderView()}</View>
       <ScrollView bounces={false}>
         {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (
