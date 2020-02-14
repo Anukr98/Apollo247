@@ -583,6 +583,7 @@ export const GET_CASESHEET = gql`
             instruction
           }
         }
+        appointmentType
       }
       juniorDoctorNotes
       juniorDoctorCaseSheet {
