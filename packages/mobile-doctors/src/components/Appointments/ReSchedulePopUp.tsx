@@ -46,6 +46,8 @@ import {
   initiateRescheduleAppointmentVariables,
 } from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
 import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -216,6 +218,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           }
         })
         .catch((e) => {
+          CommonBugFender('Initiate_Reschdule_Appointment_ReschdulePopup', e);
           console.log('Error occured while searching for Initiate reschdule apppointment', e);
         })
         .finally(() => {
@@ -264,6 +267,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
       })
       .catch((e: string) => {
         props.loading && props.loading(false);
+        CommonBugFender('Get_Available_Slots_ReschdulePopup', e);
         console.log('Error occured', e);
       });
   };
@@ -293,6 +297,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
       })
       .catch((e: any) => {
         props.loading && props.loading(false);
+        CommonBugFender('Check_Avaialablity_ReschdulePopup', e);
         console.log('error', e);
       });
   };
@@ -303,12 +308,12 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
         <View style={{ ...theme.viewStyles.cardContainer, marginVertical: 20 }}>
           <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
             <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0) }}>
-              {'This appointment will be rescheduled for'}
+              {strings.appointments.appointment_will_reschedule}
             </Text>
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 1 }}>
                 <Text style={{ ...theme.viewStyles.text('S', 12, '#01475b', 0.6, 20, 0) }}>
-                  Date
+                  {strings.appointments.date}
                 </Text>
                 <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0) }}>
                   {NextAvailableSlot && moment(NextAvailableSlot).format('ddd, DD/MM/YYYY')}
@@ -316,7 +321,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ ...theme.viewStyles.text('S', 12, '#01475b', 0.6, 20, 0) }}>
-                  Time
+                  {strings.appointments.time}
                 </Text>
                 <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0) }}>
                   {NextAvailableSlot && moment(NextAvailableSlot).format('hh:mm a')}
@@ -332,7 +337,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
                 }}
               >
                 <Text style={{ ...theme.viewStyles.text('M', 14, '#fc9916', 1, 20, 0.06) }}>
-                  {'PICK ANOTHER SLOT'}
+                  {strings.appointments.pick_another_slot}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -341,7 +346,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
         <View style={{ ...theme.viewStyles.cardContainer, marginBottom: 20 }}>
           <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
             <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 20, 0) }}>
-              {'Why do you want to reschedule?'}
+              {strings.appointments.why_do_you_want_reschedule}
             </Text>
             <MaterialMenu
               onPress={(item) => {
@@ -387,7 +392,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
     return (
       <Button
         style={{ width: width / 2, alignSelf: 'center' }}
-        title={'RESCHEDULE CONSULT'}
+        title={strings.buttons.reschedule_consult}
         onPress={() => reschduleCall()}
       />
     );
@@ -442,7 +447,9 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
                           paddingTop: 16,
                         }}
                       >
-                        {`Appointment is not available in the ${selectedtiming.toLowerCase()} slot :(`}
+                        {`${
+                          strings.appointments.appointment_is_not_available
+                        } ${selectedtiming.toLowerCase()} ${strings.appointments.slot}`}
                       </Text>
                     );
                   }
@@ -482,7 +489,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Button
-          title={'GO BACK'}
+          title={strings.buttons.go_back}
           style={{ width: width / 2 - 65 }}
           variant={'white'}
           onPress={() => {
@@ -490,7 +497,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           }}
         />
         <Button
-          title={'DONE'}
+          title={strings.buttons.done}
           style={{ width: width / 2 - 45 }}
           onPress={() => {
             setDate(new Date(selectedTimeSlot));
@@ -524,7 +531,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
             ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, undefined, 0.5),
           }}
         >
-          {showSlot ? 'PICK A SLOT' : 'RESCHEDULE CONSULT'}
+          {showSlot ? strings.buttons.pcik_a_slot : strings.buttons.reschedule_consult}
         </Text>
       </View>
     );

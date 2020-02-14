@@ -1,6 +1,26 @@
 import moment from 'moment';
 import NetInfo from '@react-native-community/netinfo';
 import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
+
+export const getBuildEnvironment = () => {
+  switch (apiRoutes.graphql()) {
+    case 'https://aph.dev.api.popcornapps.com//graphql':
+      return 'DEV';
+    case 'https://aph.staging.api.popcornapps.com//graphql':
+      return 'QA';
+    case 'https://aph.uat.api.popcornapps.com//graphql':
+      return 'UAT';
+    case 'https://aph.vapt.api.popcornapps.com//graphql':
+      return 'VAPT';
+    case 'https://api.apollo247.com//graphql':
+      return 'PROD';
+    case 'https://asapi.apollo247.com//graphql':
+      return 'PRF';
+    default:
+      return '';
+  }
+};
 
 export const timeTo12HrFormat = (time: string) => {
   return moment(time).format('h:mm a');
@@ -122,6 +142,30 @@ export const medUsageType = (med: MEDICINE_UNIT) => {
 export const formatInt = (value: string) => {
   let number = value.indexOf('-') === value.length - 1 ? value : parseInt(value);
   return number || 0;
+};
+
+export const messageCodes = {
+  videoCallMsg: '^^callme`video^^',
+  audioCallMsg: '^^callme`audio^^',
+  acceptedCallMsg: '^^callme`accept^^',
+  startConsultMsg: '^^#startconsult',
+  stopConsultMsg: '^^#stopconsult',
+  typingMsg: '^^#typing',
+  endCallMsg: '^^callme`stop^^',
+  covertVideoMsg: '^^convert`video^^',
+  covertAudioMsg: '^^convert`audio^^',
+  rescheduleconsult: '^^#rescheduleconsult',
+  followupconsult: '^^#followupconsult',
+  consultPatientStartedMsg: '^^#PatientConsultStarted',
+  firstMessage: '^^#firstMessage',
+  secondMessage: '^^#secondMessage',
+  languageQue: '^^#languageQue',
+  jdThankyou: '^^#jdThankyou',
+  imageconsult: '^^#DocumentUpload',
+  stopConsultJr: '^^#stopconsultJr',
+  startConsultjr: '^^#startconsultJr',
+  callAbandonment: '^^#callAbandonment',
+  appointmentComplete: '^^#appointmentComplete',
 };
 
 export const formatFloating = (value: string) => {

@@ -33,6 +33,9 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -47,24 +50,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     elevation: 10,
     backgroundColor: 'white',
-  },
-  common: {
-    fontFamily: 'IBMPlexSans',
-    fontSize: 14,
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    letterSpacing: 0,
-    color: 'rgba(2, 71, 91, 0.6)',
-    marginLeft: 16,
-  },
-  commonview: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  selectText: {
-    marginLeft: 16,
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: '#00b38e',
   },
   showPopUp: {
     backgroundColor: 'rgba(0,0,0,0.2)',
@@ -131,7 +116,10 @@ export const Patients: React.FC<PatientsProps> = (props) => {
 
   const [SelectableValue, setSelectableValue] = useState(patientLogType.All);
   // const [patientLogSortData, setPatientLogSortData] = useState(patientLogSort.PATIENT_NAME_A_TO_Z);
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
+
   const client = useApolloClient();
+  const { doctorDetails } = useAuth();
 
   useEffect(() => {
     ShowAllTypeData(patientLogType.All, sortingList[0].key);
@@ -147,7 +135,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true),
           },
           {
             icon: <Notification />,
@@ -217,7 +205,10 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             marginLeft: 20,
             marginBottom: 2,
           }}
-        >{`hello dr. rao :)`}</Text>
+        >{`${strings.case_sheet.hello_dr} ${(doctorDetails
+          ? doctorDetails.firstName
+          : ''
+        ).toLowerCase()} :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),
@@ -226,7 +217,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             marginBottom: 14,
             lineHeight: 24,
           }}
-        >{`here are all your patients `}</Text>
+        >
+          {strings.case_sheet.here_are_all_patients}
+        </Text>
       </View>
     );
   };
@@ -288,9 +281,35 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           containerStyle={index === 0 ? { marginTop: 30 } : {}}
           doctorname={item.patientInfo!.firstName}
           icon={
-            <View style={{ marginRight: 12 }}>
-              <Chat />
-            </View>
+            moment(new Date(item.appointmentdatetime))
+              .add(6, 'days')
+              .startOf('day')
+              .isSameOrAfter(moment(new Date()).startOf('day')) ? (
+              <View style={{ marginRight: 12 }}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                      DoctorId: (doctorDetails && doctorDetails.id) || '',
+                      PatientId: item.patientid,
+                      PatientConsultTime: null,
+                      PatientInfoAll: item.patientInfo,
+                      AppId:
+                        (item.appointmentids &&
+                          item.appointmentids.length > 0 &&
+                          item.appointmentids[0]) ||
+                        '',
+                      Appintmentdatetime: item.appointmentdatetime, //getDateFormat(i.appointmentDateTime),
+                      // AppointmentStatus: i.status,
+                      // AppoinementData: i,
+                      activeTabIndex: 1,
+                    });
+                  }}
+                >
+                  <Chat />
+                </TouchableOpacity>
+              </View>
+            ) : null
           }
           consults={item.consultscount}
           lastconsult={moment(item.appointmentdatetime).format('DD/MM/YYYY')}
@@ -354,7 +373,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                       textAlign: 'center',
                     }}
                   >
-                    No Data
+                    {strings.common.no_data}
                   </Text>
                 </View>
               )}
@@ -404,7 +423,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                       0.54
                     )}
                   >
-                    SORT BY
+                    {strings.case_sheet.sort_by}
                   </Text>
                   <TouchableOpacity activeOpacity={1} onPress={() => setshowSorting(false)}>
                     <ClosePopup style={{ height: 24, width: 24 }} />
@@ -444,6 +463,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
         </View>
       )}
       {showSpinner && <Spinner />}
+      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
     </View>
   );
 };

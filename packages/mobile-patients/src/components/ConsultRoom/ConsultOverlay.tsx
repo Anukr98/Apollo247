@@ -103,6 +103,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
+        console.log(data, 'next');
+
         try {
           const nextSlot = data[0] ? data[0]!.availableSlot : '';
           if (!nextSlot && data[0]!.physicalAvailableSlot) {
@@ -149,7 +151,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
     };
-
+    console.log(appointmentInput, 'input');
     const price =
       VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
       Number(VirtualConsultationFee) > 0
@@ -233,6 +235,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               hospitalId: '',
               followUpParentId: props.appointmentId,
             };
+            console.log(input, 'input');
+            return;
+
             client
               .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
                 mutation: BOOK_FOLLOWUP_APPOINTMENT,

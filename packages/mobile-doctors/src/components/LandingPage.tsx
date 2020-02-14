@@ -9,6 +9,7 @@ import { Platform, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '././../theme/theme';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -104,9 +105,8 @@ export const LandingPage: React.FC<LandingPageProps> = (props) => {
           <SplashLogo style={styles.splashview} resizeMode="stretch" />
           <View style={{ margin: 20 }}>
             <Text style={styles.landingText}>
-              The best way to connect with your {'\n'}patients, grow your practice and {'\n'}enhance
-              your professional network; {'\n'}
-              <Text style={styles.landingText2}>anytime, anywhere :)</Text>
+              {strings.common.landing_descr}
+              <Text style={styles.landingText2}>{strings.common.anytime_anywhere}</Text>
             </Text>
           </View>
           <View style={{ marginTop: 15 }}>
@@ -114,7 +114,7 @@ export const LandingPage: React.FC<LandingPageProps> = (props) => {
           </View>
         </View>
         <Button
-          title="GET STARTED"
+          title={strings.buttons.get_started}
           titleTextStyle={styles.titleTextStyle}
           style={styles.buttonView}
           onPress={() => navigateToNextScreen()}

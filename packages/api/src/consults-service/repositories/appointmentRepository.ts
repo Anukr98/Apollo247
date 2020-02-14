@@ -31,6 +31,7 @@ import {
   subDays,
   subMinutes,
   addHours,
+  differenceInDays,
 } from 'date-fns';
 import { ConsultHours, ConsultMode, Doctor } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
@@ -634,7 +635,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     appointmentType: string
   ) {
     const weekDay = format(selectedDate, 'EEEE').toUpperCase();
-
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     let docConsultHrs: ConsultHours[];
     if (appointmentType == 'ONLINE') {
@@ -663,22 +663,43 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     //calculating doctor consult hours slot intervals
     if (docConsultHrs && docConsultHrs.length > 0) {
+      let rowCount = 0;
       docConsultHrs.map((docConsultHr) => {
         //get the slots of the day first
         let st = `${selectedDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-        const ed = `${selectedDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+        let ed = `${selectedDate.toDateString()} ${docConsultHr.endTime.toString()}`;
         let consultStartTime = new Date(st);
-        const consultEndTime = new Date(ed);
+        let consultEndTime = new Date(ed);
         //console.log(consultStartTime, consultEndTime);
         let previousDate: Date = selectedDate;
-        if (consultEndTime < consultStartTime) {
-          previousDate = addDays(selectedDate, -1);
-          st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          consultStartTime = new Date(st);
+        let nextDayFlag = 0;
+        if (rowCount > 0) {
+          //console.log(docConsultHrs[rowCount - 1].endTime, 'prev end time');
+          const nextDate = addDays(selectedDate, 1);
+          ed = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+          const td = `${nextDate.toDateString()} 18:30:00`;
+          console.log(td, 'td', ed, 'ed', new Date(ed) >= new Date(td), 'comp');
+          //if (docConsultHrs[rowCount - 1].endTime == '18:25:00') {
+          if (new Date(ed) >= new Date(td)) {
+            nextDayFlag = 1;
+            st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+            consultStartTime = new Date(st);
+            console.log(consultStartTime, 'next day consult start');
+            ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+            consultEndTime = new Date(ed);
+          }
+        }
+        console.log(consultStartTime, 'consultstarttime');
+        if (nextDayFlag == 0) {
+          if (consultEndTime < consultStartTime) {
+            previousDate = addDays(selectedDate, -1);
+            st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+            consultStartTime = new Date(st);
+            ed = `${selectedDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+          }
         }
         //const duration = Math.floor(60 / docConsultHr.consultDuration);
         const duration = parseFloat((60 / docConsultHr.consultDuration).toFixed(1));
-        console.log(duration, 'doctor duration');
         consultBuffer = docConsultHr.consultBuffer;
 
         let slotsCount =
@@ -692,6 +713,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         let startTime = new Date(previousDate.toDateString() + ' ' + dayStartTime);
         //console.log(slotsCount, 'slots count');
         //console.log(startTime, 'slot start time');
+        //console.log(consultStartTime, consultEndTime, 'consult time row wise');
         availableSlotsReturn = Array(slotsCount)
           .fill(0)
           .map(() => {
@@ -717,7 +739,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         if (lastMins < docConsultHr.consultDuration) {
           availableSlots.pop();
         }
-        console.log(availableSlotsReturn);
+        console.log(availableSlotsReturn, 'availableSlotsReturn');
+        rowCount++;
       });
 
       //removing appt booked slots
@@ -736,28 +759,31 @@ export class AppointmentRepository extends Repository<Appointment> {
           }
         });
       }
-
-      //get doctor blocked slots
-      const doctorBblockedSlots = await this.getDoctorBlockedSlots(
-        doctorId,
-        selectedDate,
-        doctorsDb,
-        availableSlots
-      );
-
-      //removing blocked slots
-      if (doctorBblockedSlots.length > 0) {
-        availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
+      if (availableSlots.length > 0) {
+        //get doctor blocked slots
+        const doctorBblockedSlots = await this.getDoctorBlockedSlots(
+          doctorId,
+          selectedDate,
+          doctorsDb,
+          availableSlots
+        );
+        //console.log(doctorBblockedSlots, 'doctorBblockedSlots');
+        //removing blocked slots
+        if (doctorBblockedSlots.length > 0) {
+          availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
+        }
       }
       let finalSlot = '';
       let foundFlag = 0;
 
       //getting the available slot
+      //const currentTime = new Date('2020-02-13T18:30');
+      const timeWithBuffer = addMinutes(new Date(), consultBuffer);
+      //const timeWithBuffer = addMinutes(currentTime, consultBuffer);
+      //console.log(timeWithBuffer, 'timeWithBuffer');
+      //console.log(availableSlots, 'slots final list');
       availableSlots.map((slot) => {
         const slotDate = new Date(slot);
-
-        const timeWithBuffer = addMinutes(new Date(), consultBuffer);
-
         if (slotDate >= timeWithBuffer && foundFlag == 0) {
           finalSlot = slot;
           foundFlag = 1;
@@ -1076,7 +1102,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .map(() => {
               const genBlockSlot =
                 format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'HH:mm') + ':00.000Z';
-              doctorBblockedSlots.push(genBlockSlot);
+              if (new Date(genBlockSlot) < blockedSlot.end) {
+                doctorBblockedSlots.push(genBlockSlot);
+              }
               if (firstSlot) {
                 firstSlot = false;
                 const prevSlot = subMinutes(slot, timeSlot[0].consultDuration); //addMinutes(slot, -5);
@@ -1099,6 +1127,35 @@ export class AppointmentRepository extends Repository<Appointment> {
       }
     }
     return doctorBblockedSlots;
+  }
+
+  async checkIfDayBlocked(doctorId: string, selectedDate: Date, doctorsDb: Connection) {
+    //if start time is b/w or end time is b/w - then return 1
+    //if start and end time both are b/w - then return -1
+    const bciRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+    const blockedSlots = await bciRepo.getBlockedSlots(selectedDate, doctorId);
+    const newStartDate = new Date(format(addDays(selectedDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selectedDate, 'yyyy-MM-dd') + 'T18:30');
+    //return multiple days(1),no. of days(days),wholeday blocked(1)
+    if (blockedSlots.length > 0) {
+      let blockedType = 0,
+        multipleDays = 0;
+      blockedSlots.forEach((slot) => {
+        const daysDiff = differenceInDays(slot.end, slot.start);
+        if (daysDiff >= 1) {
+          multipleDays = daysDiff;
+        }
+        if (slot.start <= newStartDate && slot.end >= newEndDate) {
+          //whole day blocked
+          blockedType = 1;
+        } else {
+          blockedType = -1;
+        }
+      });
+      return [multipleDays, blockedType];
+    } else {
+      return [-2, 0];
+    }
   }
 
   getAllAppointments(fromDate: Date, toDate: Date, limit: number) {

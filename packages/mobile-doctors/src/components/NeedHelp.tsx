@@ -1,7 +1,6 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -17,6 +16,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -151,8 +151,8 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
         <View style={styles.needHeight} />
         <OtpCard
           cardContainer={{ marginTop: 0, height: 300 }}
-          heading={string.login.needhelp}
-          description={string.login.callback}
+          heading={strings.login.needhelp}
+          description={strings.login.callback}
           onPress={() => props.navigation.goBack()}
         >
           <View
@@ -161,7 +161,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
             ]}
           >
-            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
+            <Text style={styles.inputTextStyle}>{strings.login.numberPrefix}</Text>
             <TextInput
               autoFocus
               style={styles.inputStyle}
@@ -172,7 +172,7 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
             />
           </View>
           <Button
-            title="CALL ME"
+            title={strings.buttons.call_me}
             titleTextStyle={styles.titleTextStyle}
             style={
               phoneNumber == '' || phoneNumberIsValid ? styles.buttonViewfull : styles.buttonView

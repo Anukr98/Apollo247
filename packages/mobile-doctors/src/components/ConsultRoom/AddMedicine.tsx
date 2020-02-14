@@ -17,6 +17,7 @@ import {
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -44,7 +45,7 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="ADD MEDICINE"
+        headerText={strings.smartPrescr.add_medicine}
         rightIcons={[
           {
             icon: <Cancel />,
@@ -120,7 +121,7 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     console.log({ errorResponse: e.response, error }); //remove this line later
-    Alert.alert('Error', error || 'Unknown error occurred.');
+    Alert.alert(strings.common.error, error || 'Unknown error occurred.');
   };
   const filterDoctors = (searchText: string) => {
     if (searchText != '' && !/^[A-Za-z .]+$/.test(searchText)) {
@@ -193,7 +194,7 @@ export const AddMedicine: React.FC<ProfileProps> = (props) => {
                 color: '#01475b',
                 paddingBottom: 4,
               }}
-              placeholder="Search Medicine"
+              placeholder={strings.consult.search_medicine}
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={doctorSearchText}
               onChange={(text) => filterDoctors(text.nativeEvent.text.replace(/\\/g, ''))}

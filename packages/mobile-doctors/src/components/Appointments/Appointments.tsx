@@ -3,6 +3,7 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
+  ApploLogo,
   Block,
   CalendarIcon,
   CalendarTodayIcon,
@@ -12,36 +13,25 @@ import {
   Notification,
   RoundIcon,
   Up,
-  ApploLogo,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
-import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorAppointments,
   GetDoctorAppointmentsVariables,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import {
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Alert,
-} from 'react-native';
-import { CalendarList, PeriodMarking } from 'react-native-calendars';
+import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CalendarList } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   noAppointmentsText: {
@@ -138,7 +128,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   useEffect(() => {
     console.log(doctorDetails, 'doctorDetailshi');
 
-    setDoctorName((doctorDetails && doctorDetails!.firstName) || '');
+    setDoctorName((doctorDetails && doctorDetails.firstName) || '');
     setDoctorId((doctorDetails && doctorDetails!.id) || '');
     // getLocalData()
     //   .then((data) => {
@@ -265,7 +255,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => setshowNeedHelp(true), //props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true),
           },
           {
             icon: <Notification />,
@@ -294,7 +284,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             marginLeft: 20,
             marginBottom: 2,
           }}
-        >{`hello dr. ${(doctorName || '').toLowerCase()} :)`}</Text>
+        >{`${strings.case_sheet.hello_dr} ${(doctorName || '').toLowerCase()} :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),
@@ -303,7 +293,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             marginBottom: 14,
             lineHeight: 24,
           }}
-        >{`here’s your schedule for ${
+        >{`${strings.appointments.here_your_schedule} ${
           moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
             ? 'today'
             : moment(date).format('MMM, DD')
@@ -342,7 +332,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           containerStyle={{ marginRight: 20, width: 200 }}
           options={[
             {
-              optionText: '  Block Calendar',
+              optionText: strings.appointments.block_Calendar,
               icon: <Block />,
               onPress: () => {
                 // setDropdownVisible(false);
@@ -351,7 +341,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
               },
             },
             {
-              optionText: '  Manage Calendar',
+              optionText: strings.appointments.manage_calendar,
               icon: <CalendarIcon />,
               onPress: () => {
                 setDropdownVisible(false);
@@ -376,7 +366,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           <NoCalenderData />
           <Text
             style={styles.noAppointmentsText}
-          >{`No consults scheduled ${getCurrentDaytext}!`}</Text>
+          >{`${strings.appointments.no_consults_scheduled} ${getCurrentDaytext}!`}</Text>
         </View>
       </ScrollView>
     );

@@ -199,13 +199,13 @@ const getCurrentPatients: Resolver<
       }
 
       homeLogger('PRISM_GET_USERS_API_CALL___END');
-      log(
-        'profileServiceLogger',
-        'API_CALL_RESPONSE',
-        'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
-        JSON.stringify(uhids),
-        ''
-      );
+      // log(
+      //   'profileServiceLogger',
+      //   'API_CALL_RESPONSE',
+      //   'getCurrentPatients()->prismGetUsersApiCall->API_CALL_RESPONSE',
+      //   JSON.stringify(uhids),
+      //   ''
+      // );
 
       console.log(uhids, 'uhid', isPrismWorking);
     } catch (e) {
@@ -247,7 +247,7 @@ const getCurrentPatients: Resolver<
     }
 
     //if prism is not working - process with 24x7 database
-    isPrismWorking = 0;
+    //isPrismWorking = 0;
     const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
     if (isPrismWorking == 0) {
       if (checkPatients == null || checkPatients.length == 0) {
@@ -266,19 +266,11 @@ const getCurrentPatients: Resolver<
         ];
       }
     }
-
     const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
     });
     console.log(updatePatients);
     homeLogger('CREATE_OR_RETURN_PATIENTS_END');
-
-    /*
-  checkPatients.map(async (patient) => {
-    if ((patient.uhid == '' || patient.uhid == null) && patient.firstName.trim() != '') {
-      await patientRepo.createNewUhid(patient.id);
-    }
-  });*/
 
     homeLogger('ASYNC_UPDATE_APP_VERSION_START');
     patients = await patientRepo.findByMobileNumber(mobileNumber);
@@ -298,7 +290,6 @@ const getCurrentPatients: Resolver<
         ''
       );
       const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
-      console.log('updatePatientProfiles', updatedProfiles);
       log(
         'profileServiceLogger',
         'DEBUG_LOG',
@@ -405,7 +396,6 @@ const getLoginPatients: Resolver<
 
   console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
@@ -464,7 +454,6 @@ const getLoginPatients: Resolver<
     }
   });*/
   const patients = await patientRepo.findByMobileNumber(mobileNumber);
-
   if (args.appVersion && args.deviceType) {
     const versionUpdateRecords = patients.map((patient) => {
       return args.deviceType === DEVICE_TYPE.ANDROID
@@ -480,7 +469,6 @@ const getLoginPatients: Resolver<
       ''
     );
     const updatedProfiles = patientRepo.updateProfiles(versionUpdateRecords);
-    console.log('updatePatientProfiles', updatedProfiles);
     log(
       'profileServiceLogger',
       'DEBUG_LOG',

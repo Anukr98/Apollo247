@@ -129,6 +129,9 @@ export enum ApiConstants {
   DOCTORS_SERVICE_ERROR_LOG_FILE = '/error-logs/doctors-service.log',
   CONSULTS_SERVICE_ACCESS_LOG_FILE = '/access-logs/consults-service.log',
   CONSULTS_SERVICE_ERROR_LOG_FILE = '/error-logs/consults-service.log',
+  COUPONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/coupons-service.log',
+  COUPONS_SERVICE_ERROR_LOG_FILE = '/error-logs/coupons-service.log',
+
   NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',

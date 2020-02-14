@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -52,7 +53,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="ADD CONDITION"
+        headerText={strings.consult.add_condition}
         rightIcons={[
           {
             icon: <Cancel />,
@@ -150,7 +151,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
         const errorMessage = error && error.message;
         console.log('Error occured while searching for searchDiagnosis', errorMessage, error);
         setIsLoading(false);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
 
@@ -201,7 +202,7 @@ export const AddCondition: React.FC<ProfileProps> = (props) => {
                 color: '#01475b',
                 paddingBottom: 4,
               }}
-              placeholder="Search Condition"
+              placeholder={strings.consult.search_condition}
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={doctorSearchText}
               onChange={(text) => filterDoctors(text.nativeEvent.text.replace(/\\/g, ''))}

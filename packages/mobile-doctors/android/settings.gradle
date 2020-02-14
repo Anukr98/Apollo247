@@ -1,4 +1,12 @@
 rootProject.name = 'ApolloPatient'
+include ':react-native-exception-handler'
+project(':react-native-exception-handler').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-exception-handler/android')
+include ':react-native-exit-app'
+project(':react-native-exit-app').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-exit-app/android')
+include ':rn-fetch-blob'
+project(':rn-fetch-blob').projectDir = new File(rootProject.projectDir, '../node_modules/rn-fetch-blob/android')
+include ':react-native-pdf'
+project(':react-native-pdf').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-pdf/android')
 include ':bugsnag-react-native'
 project(':bugsnag-react-native').projectDir = new File(rootProject.projectDir, '../node_modules/bugsnag-react-native/android')
 include ':react-native-image-crop-picker'

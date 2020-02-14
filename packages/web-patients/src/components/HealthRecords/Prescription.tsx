@@ -87,14 +87,14 @@ export const Prescription: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item sm={6}>
+          <Grid item xs={12} sm={6}>
             <div className={classes.cardTitle}>Sompraz-D Cap</div>
             <div className={classes.cardSection}>
               1 Tab
               <br />1 times a day (morning) for 7 days Before food
             </div>
           </Grid>
-          <Grid item sm={6}>
+          <Grid item xs={12} sm={6}>
             <div className={classes.cardTitle}>Redixin Plus Mouthwash</div>
             <div className={classes.cardSection}>
               Throat Gargles

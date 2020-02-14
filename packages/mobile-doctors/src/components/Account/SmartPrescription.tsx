@@ -1,11 +1,9 @@
 import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
+import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { ChipIconView } from '@aph/mobile-doctors/src/components/ui/ChipIconView';
-
 import { DropDown, Option } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
@@ -15,8 +13,9 @@ import {
   Edit,
   RoundIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { SmartPrescriptionCard } from '@aph/mobile-doctors/src/components/ui/SmartPrescriptionCard';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import {
   ADD_DOCTOR_FAVOURITE_ADVICE,
@@ -25,7 +24,6 @@ import {
   GET_DOCTOR_FAVOURITE_MEDICINE_LIST,
   GET_DOCTOR_FAVOURITE_TEST_LIST,
   SAVE_DOCTORS_FAVOURITE_MEDICINE,
-  SEARCH_DIAGNOSTIC,
   UPDATE_DOCTOR_FAVOURITE_ADVICE,
   UPDATE_DOCTOR_FAVOURITE_MEDICINE,
   UPDATE_DOCTOR_FAVOURITE_TEST,
@@ -59,11 +57,7 @@ import {
   SaveDoctorsFavouriteMedicine,
   SaveDoctorsFavouriteMedicineVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SaveDoctorsFavouriteMedicine';
-import {
-  searchDiagnostic,
-  searchDiagnosticVariables,
-  searchDiagnostic_searchDiagnostic,
-} from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
+import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
 import {
   UpdateDoctorFavouriteAdvice,
   UpdateDoctorFavouriteAdviceVariables,
@@ -76,13 +70,14 @@ import {
   UpdateDoctorFavouriteTest,
   UpdateDoctorFavouriteTestVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateDoctorFavouriteTest';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Keyboard,
@@ -93,9 +88,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
-import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -219,7 +211,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     console.log({ errorResponse: e.response, error }); //remove this line later
-    Alert.alert('Error', error || 'Unknown error occurred.');
+    Alert.alert(strings.common.error, error || 'Unknown error occurred.');
   };
 
   const capitalizeFirstLetter = (string: string) => {
@@ -229,6 +221,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const [searchmedicineList, setsearchmedicineList] = useState<MedicineProduct[]>([]);
   const [EditTestId, setEditTestId] = useState<string>('');
   const [EditTestName, setEditTestName] = useState<string>('');
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
 
   useEffect(() => {
     GetFavouriteMedicineList();
@@ -258,6 +251,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
       })
       .catch((e) => {
+        CommonBugFender('Get_Doctor_Favourite_Medicine_List_SmartPrescription', e);
         setLoading(false);
         console.log('error Medicine List', e);
       });
@@ -286,6 +280,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
       })
       .catch((e) => {
+        CommonBugFender('Get_Doctor_Favourite_Test_List_SmartPrescription', e);
         setLoading(false);
         console.log('Error occured while fetching Tests List', e);
       });
@@ -314,6 +309,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
       })
       .catch((e) => {
+        CommonBugFender('Get_Doctor_Favourite_Advice_List_SmartPrescription', e);
         setLoading(false);
         console.log('Error occured while fetching Advice List', e);
       });
@@ -372,10 +368,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setEditTestId('');
       })
       .catch((error) => {
+        CommonBugFender('Update_Doctor_Favourite_Test_SmartPrescription', e);
         console.log(error);
         setLoading(false);
         setEditTestId('');
-        Alert.alert('Error', 'Error occured while updating Test.');
+        Alert.alert(strings.common.error, strings.smartPrescr.update_test_error);
       });
   };
 
@@ -399,11 +396,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="SMART PRESCRIPTION"
+        headerText={strings.smartPrescr.smart_prescr_header}
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowNeedHelp(true),
           },
         ]}
       />
@@ -413,7 +410,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const FavoriteMedicines = () => {
     return (
       <View>
-        <Text style={styles.subheading}>Favorite Medicines</Text>
+        <Text style={styles.subheading}>{strings.smartPrescr.fav_med}</Text>
 
         <View style={styles.containerListStyle}>
           {medicineList!.map((item, i) => (
@@ -435,7 +432,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           ))}
 
           <AddIconLabel
-            label={'ADD MEDICINE'}
+            label={strings.smartPrescr.add_medicine}
             style={{ marginLeft: 0, marginTop: 9 }}
             onPress={() => {
               setDataMed(undefined);
@@ -451,7 +448,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const FavoriteTests = () => {
     return (
       <View>
-        <Text style={styles.subheading}>Favorite Tests</Text>
+        <Text style={styles.subheading}>{strings.smartPrescr.fav_test}</Text>
         <View style={styles.containerListStyle}>
           {testsList!.map((item, i) => (
             <View key={i}>
@@ -476,7 +473,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           ))}
 
           <AddIconLabel
-            label={' ADD TESTS'}
+            label={strings.smartPrescr.add_test}
             style={{ marginLeft: 0, marginTop: 9 }}
             onPress={() => setIsTest(true)}
           />
@@ -488,7 +485,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const FavoriteAdvice = () => {
     return (
       <View>
-        <Text style={styles.subheading}>Favorite Advice</Text>
+        <Text style={styles.subheading}>{strings.smartPrescr.fav_advice}</Text>
 
         <View style={styles.containerListStyle}>
           {adviceList!.map((item, i) => (
@@ -517,7 +514,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           ))}
 
           <AddIconLabel
-            label={' ADD ADVICE'}
+            label={strings.smartPrescr.add_advice}
             style={{ marginLeft: 0, marginTop: 9 }}
             onPress={() => {
               setfavAdviceId('');
@@ -550,13 +547,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setLoading(false);
+          CommonBugFender('Add_Doctor_Favourite_Advice_SmartPrescription', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
-          Alert.alert('Error', errorMessage);
+          Alert.alert(strings.common.error, errorMessage);
         });
     } else {
-      Alert.alert('Failed', 'Please add your advice.');
+      Alert.alert(strings.common.failed, strings.smartPrescr.pls_add_advice);
     }
   };
 
@@ -581,13 +579,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setLoading(false);
+          CommonBugFender('Update_Doctor_Favourite_Advice_SmartPrescription', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
-          Alert.alert('Error', errorMessage);
+          Alert.alert(strings.common.error, errorMessage);
         });
     } else {
-      Alert.alert('Failed', 'Please add your advice.');
+      Alert.alert(strings.common.failed, strings.smartPrescr.pls_add_advice);
     }
   };
 
@@ -616,8 +615,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       })
       .catch((e: any) => {
         setLoading(false);
+        CommonBugFender('Save_Doctor_Favourite_Medicine_SmartPrescription', e);
         console.log(e);
-        Alert.alert('Error', 'Error occured while adding favourite medicine.');
+        Alert.alert(strings.common.error, strings.smartPrescr.add_med_error);
         setsearchmedicineList([]);
 
         setIsAddMedicine(false);
@@ -644,19 +644,20 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       })
       .catch((e: any) => {
         setLoading(false);
+        CommonBugFender('Update_Doctor_Favourite_Medicine_SmartPrescription', e);
         console.log(e);
-        Alert.alert('Error', 'Error occured while updating favourite medicine.');
+        Alert.alert(strings.common.error, strings.smartPrescr.update_med_error);
       });
   };
   // -----------------------Buttons view------------
   const renderButtonsView = () => {
     return (
       <BottomButtons
-        whiteButtontitle="CANCEL"
+        whiteButtontitle={strings.buttons.cancel}
         cancelFun={() => {
           console.log('cancel');
         }}
-        yellowButtontitle="SAVE"
+        yellowButtontitle={strings.buttons.save}
         successFun={() => {
           console.log('successFun');
         }}
@@ -729,18 +730,19 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         })
         .catch((e) => {
           setLoading(false);
+          CommonBugFender('Add_Doctor_Favourite_Test_SmartPrescription', e);
           console.log('error', JSON.stringify(e.message));
           const errorMsg = JSON.stringify(e.message);
           if (errorMsg === 'Network error: Network request failed') {
-            Alert.alert('Error', 'Error occured while adding favourite test');
+            Alert.alert(strings.common.error, strings.smartPrescr.add_test_error);
             // setIsTest(!isTest);
           } else {
-            Alert.alert('Alert', 'Test already existed in favourite test list.');
+            Alert.alert(strings.common.alert, strings.smartPrescr.existed_test_error);
             // setIsTest(!isTest);
           }
         });
     } else {
-      Alert.alert('Alert', 'Please add test.');
+      Alert.alert(strings.common.alert, strings.smartPrescr.pls_add_test);
     }
   };
   const showTestPopup = () => {
@@ -773,7 +775,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           ...theme.viewStyles.cardContainer,
           zIndex: 1,
         }}
-        heading="FAVOURITE ADVICE"
+        heading={strings.smartPrescr.fav_advice.toUpperCase()}
         onClose={() => {
           setfavAdvice('');
           setIsAdvice(false);
@@ -782,7 +784,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       >
         <View style={styles.AphInnerView}>
           <TextInputComponent
-            placeholder="Type your favourite advice"
+            placeholder={strings.smartPrescr.fav_advice_placeholder}
             inputStyle={styles.inputArea}
             multiline={true}
             value={favAdvice}
@@ -791,14 +793,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           />
         </View>
         <BottomButtons
-          whiteButtontitle="CANCEL"
+          whiteButtontitle={strings.buttons.cancel}
           disabledOrange={!favAdvice}
           cancelFun={() => {
             setfavAdvice('');
             console.log('cancel');
             setIsAdvice(false);
           }}
-          yellowButtontitle="ADD ADVICE"
+          yellowButtontitle={strings.smartPrescr.add_advice}
           successFun={() => {
             if (favAdviceId != '') {
               console.log('UpdateAdvice');
@@ -875,6 +877,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}
+      {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
     </View>
   );
 };

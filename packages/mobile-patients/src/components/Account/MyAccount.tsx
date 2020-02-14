@@ -21,7 +21,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import { g, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -394,7 +394,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <TabHeader
         // hideHomeIcon={!(scrollOffset > 1)}
-        containerStyle={[containerStyle, { position: 'absolute', width: '100%' }]}
+        containerStyle={[
+          containerStyle,
+          { position: 'absolute', top: statusBarHeight(), width: '100%' },
+        ]}
         navigation={props.navigation}
       />
     );

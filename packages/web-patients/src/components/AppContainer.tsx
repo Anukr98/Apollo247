@@ -30,7 +30,7 @@ import { PHRLanding } from 'components/HealthRecords/PHRLanding';
 import { AddRecords } from 'components/HealthRecords/AddRecords';
 import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { StoragePoc } from 'components/StoragePoc';
-import { TrackJS } from 'trackjs';
+// import { TrackJS } from 'trackjs';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 import { MedicineDetails } from 'components/Medicine/MedicineDetails';
 import Scrollbars from 'react-custom-scrollbars';
@@ -106,6 +106,7 @@ const App: React.FC = () => {
             component={PrescriptionsLanding}
           />
           <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
+          <AuthRouted exact path={clientRoutes.appointmentSuccess()} component={Appointments} />
           <AuthRouted
             exact
             path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
@@ -129,10 +130,10 @@ const App: React.FC = () => {
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
-  TrackJS.install({
-    token: 'b85489445e5f4b48a0ffe851082f8e37',
-    application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
-  });
+  // TrackJS.install({
+  //   token: 'b85489445e5f4b48a0ffe851082f8e37',
+  //   application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
+  // });
 
   return (
     <BrowserRouter>

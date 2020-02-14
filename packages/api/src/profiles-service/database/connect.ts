@@ -23,6 +23,9 @@ import {
 } from 'doctors-service/entities';
 import {
   Coupon,
+  CouponConsultRules,
+  CouponGenericRules,
+  CouponUsageDetails,
   DiagnosticHotSellers,
   DiagnosticOrderLineItems,
   DiagnosticOrderPayments,
@@ -71,6 +74,7 @@ import {
   PhrDocumentsSummary,
   JdDashboardSummary,
   AuditHistory,
+  CurrentAvailabilityStatus,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -78,6 +82,9 @@ export const connect = async () => {
     {
       entities: [
         Coupon,
+        CouponConsultRules,
+        CouponGenericRules,
+        CouponUsageDetails,
         DiagnosticHotSellers,
         DiagnosticOrderLineItems,
         DiagnosticOrderPayments,
@@ -167,6 +174,7 @@ export const connect = async () => {
         PhrDocumentsSummary,
         JdDashboardSummary,
         AuditHistory,
+        CurrentAvailabilityStatus,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

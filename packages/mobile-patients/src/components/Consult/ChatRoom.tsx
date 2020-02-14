@@ -153,7 +153,7 @@ let timerId: any;
 let joinTimerId: any;
 let diffInHours: number;
 let callAbandonmentTimer: any;
-let callAbandonmentStoppedTimer: number = 200;
+let callAbandonmentStoppedTimer: number = 440;
 let messageSent: string;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
@@ -1149,8 +1149,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
             if (diffInMins < 15) {
               if (response.totalOccupancy >= 2) {
-                if (callAbandonmentStoppedTimer == 200) return;
-                if (callAbandonmentStoppedTimer < 200) {
+                if (callAbandonmentStoppedTimer == 440) return;
+                if (callAbandonmentStoppedTimer < 440) {
                   // console.log('calljoined');
                   APIForUpdateAppointmentData(true);
                 }
@@ -1205,7 +1205,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(440);
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
@@ -1226,7 +1226,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
 
       abondmentStarted = true;
-      startCallAbondmentTimer(200, true);
+      startCallAbondmentTimer(440, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1249,7 +1249,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
 
         abondmentStarted = true;
-        startCallAbondmentTimer(200, false);
+        startCallAbondmentTimer(440, false);
       } else {
         abondmentStarted = false;
       }
@@ -1275,8 +1275,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             NextAvailableSlot(appointmentData, 'Transfer', true);
           }
-          setCallAbundantCallTime(200);
-          callAbandonmentStoppedTimer = 200;
+          setCallAbundantCallTime(440);
+          callAbandonmentStoppedTimer = 440;
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
       }, 1000);
@@ -1289,8 +1289,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
     callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-    setCallAbundantCallTime(200);
-    callAbandonmentStoppedTimer = 200;
+    setCallAbundantCallTime(440);
+    callAbandonmentStoppedTimer = 440;
     abondmentStarted = false;
   };
 
@@ -2121,8 +2121,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Chat accept transfer clicked');
 
                     try {
-                      let datettimeval = rowData.transferInfo.transferDateTime;
-                      let transferdataid = rowData.transferInfo.transferId;
+                      const datettimeval = rowData.transferInfo.transferDateTime;
+                      const transferdataid = rowData.transferInfo.transferId;
 
                       const appointmentTransferInput: BookTransferAppointmentInput = {
                         patientId: patientId,

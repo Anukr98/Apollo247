@@ -10,6 +10,7 @@ import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -17,12 +18,24 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       width: 328,
       borderRadius: 5,
+      position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        backgroundColor: '#f7f8f5',
+        paddingBottom: 60,
+      },
     },
     medicineSection: {
       padding: '20px 5px 0 10px',
       paddingTop: 15,
+    },
+    scrollResponsive: {
+      height: 'calc(100vh - 375px) !important',
+      [theme.breakpoints.down(992)]: {
+        height: 'calc(100vh - 390px) !important',
+      },
       [theme.breakpoints.down('xs')]: {
-        display: 'none',
+        height: '100% !important',
       },
     },
     customScroll: {
@@ -30,6 +43,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 10,
       paddingRight: 15,
       paddingBottom: 10,
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 80,
+      },
     },
     sectionTitle: {
       fontSize: 12,
@@ -73,6 +89,10 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       position: 'relative',
       paddingRight: 40,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+      },
     },
     dropDownArrow: {
       position: 'absolute',
@@ -88,6 +108,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& input': {
         fontSize: 14,
         fontWeight: 500,
+      },
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
       },
     },
     deliveryTimeGroup: {
@@ -118,6 +142,14 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span:last-child': {
         fontWeight: 'bold',
         marginLeft: 'auto',
+      },
+    },
+    bottomGroupResponsive: {
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        bottom: 0,
+        width: '100%',
+        background: '#f7f8f5',
       },
     },
     priceGroup: {
@@ -333,12 +365,19 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       addCartItem && addCartItem(cartItem);
     }
   };
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const options = Array.from(Array(20), (_, x) => x);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 375px' }}>
+        <Scrollbars
+          className={classes.scrollResponsive}
+          autoHide={true}
+          renderView={(props) =>
+            isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
+          }
+        >
           <div className={classes.customScroll}>
             {substitutes && (
               <>
@@ -386,108 +425,118 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           </div>
         </Scrollbars>
       </div>
-      <div className={classes.priceGroup}>
-        <div className={classes.priceWrap}>
-          {data.is_in_stock ? (
-            <>
-              <div className={classes.leftGroup}>
-                <div className={classes.medicinePack}>
-                  <div>QTY :</div>
-                  <div className={classes.dropDown}>
-                    <AphCustomDropdown
-                      classes={{ selectMenu: classes.selectMenuItem }}
-                      value={medicineQty}
-                      onChange={(e: React.ChangeEvent<{ value: any }>) =>
-                        setMedicineQty(parseInt(e.target.value))
-                      }
-                    >
-                      {options.map((option, index) => (
-                        <MenuItem
-                          key={index}
-                          classes={{
-                            root: classes.menuRoot,
-                            selected: classes.menuSelected,
-                          }}
-                          value={option}
-                        >
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </AphCustomDropdown>
+      <div className={classes.bottomGroupResponsive}>
+        <div className={classes.priceGroup}>
+          <div className={classes.priceWrap}>
+            {data.is_in_stock ? (
+              <>
+                <div className={classes.leftGroup}>
+                  <div className={classes.medicinePack}>
+                    <div>QTY :</div>
+                    <div className={classes.dropDown}>
+                      <AphCustomDropdown
+                        classes={{ selectMenu: classes.selectMenuItem }}
+                        value={medicineQty}
+                        onChange={(e: React.ChangeEvent<{ value: any }>) =>
+                          setMedicineQty(parseInt(e.target.value))
+                        }
+                      >
+                        {options.map((option, index) => (
+                          <MenuItem
+                            key={index}
+                            classes={{
+                              root: classes.menuRoot,
+                              selected: classes.menuSelected,
+                            }}
+                            value={option}
+                          >
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </AphCustomDropdown>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            <div className={classes.medicineNoStock}>Out Of Stock</div>
-          )}
-          <div className={classes.medicinePrice}>
-            {data.special_price && <span className={classes.regularPrice}>(Rs. {data.price})</span>}
-            Rs. {data.special_price || data.price}
+              </>
+            ) : (
+              <div className={classes.medicineNoStock}>Out Of Stock</div>
+            )}
+            <div className={classes.medicinePrice}>
+              {data.special_price && (
+                <span className={classes.regularPrice}>(Rs. {data.price})</span>
+              )}
+              Rs. {data.special_price || data.price}
+            </div>
           </div>
         </div>
-      </div>
-      <div className={classes.bottomActions}>
-        {data.is_in_stock ? (
-          <>
+
+        <div className={classes.bottomActions}>
+          {data.is_in_stock ? (
+            <>
+              <AphButton
+                onClick={() => {
+                  const cartItem: MedicineCartItem = {
+                    description: data.description,
+                    id: data.id,
+                    image: data.image,
+                    is_in_stock: data.is_in_stock,
+                    is_prescription_required: data.is_prescription_required,
+                    name: data.name,
+                    price: data.price,
+                    sku: data.sku,
+                    special_price: data.special_price,
+                    small_image: data.small_image,
+                    status: data.status,
+                    thumbnail: data.thumbnail,
+                    type_id: data.type_id,
+                    mou: data.mou,
+                    quantity: medicineQty,
+                  };
+                  applyCartOperations(cartItem);
+                  window.location.href = clientRoutes.medicinesLandingViewCart();
+                }}
+              >
+                Add To Cart
+              </AphButton>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  const cartItem: MedicineCartItem = {
+                    description: data.description,
+                    id: data.id,
+                    image: data.image,
+                    is_in_stock: data.is_in_stock,
+                    is_prescription_required: data.is_prescription_required,
+                    name: data.name,
+                    price: data.price,
+                    sku: data.sku,
+                    special_price: data.special_price,
+                    small_image: data.small_image,
+                    status: data.status,
+                    thumbnail: data.thumbnail,
+                    type_id: data.type_id,
+                    mou: data.mou,
+                    quantity: medicineQty,
+                  };
+                  applyCartOperations(cartItem);
+                  window.location.href = clientRoutes.medicinesCart();
+                }}
+              >
+                Buy Now
+              </AphButton>
+            </>
+          ) : (
             <AphButton
-              onClick={() => {
-                const cartItem: MedicineCartItem = {
-                  description: data.description,
-                  id: data.id,
-                  image: data.image,
-                  is_in_stock: data.is_in_stock,
-                  is_prescription_required: data.is_prescription_required,
-                  name: data.name,
-                  price: data.price,
-                  sku: data.sku,
-                  special_price: data.special_price,
-                  small_image: data.small_image,
-                  status: data.status,
-                  thumbnail: data.thumbnail,
-                  type_id: data.type_id,
-                  mou: data.mou,
-                  quantity: medicineQty,
-                };
-                applyCartOperations(cartItem);
-                window.location.href = clientRoutes.medicinesLandingViewCart();
-              }}
+              fullWidth
+              className={classes.notifyBtn}
+              onClick={() => setIsPopoverOpen(true)}
             >
-              Add To Cart
+              Notify when in stock
             </AphButton>
-            <AphButton
-              color="primary"
-              onClick={() => {
-                const cartItem: MedicineCartItem = {
-                  description: data.description,
-                  id: data.id,
-                  image: data.image,
-                  is_in_stock: data.is_in_stock,
-                  is_prescription_required: data.is_prescription_required,
-                  name: data.name,
-                  price: data.price,
-                  sku: data.sku,
-                  special_price: data.special_price,
-                  small_image: data.small_image,
-                  status: data.status,
-                  thumbnail: data.thumbnail,
-                  type_id: data.type_id,
-                  mou: data.mou,
-                  quantity: medicineQty,
-                };
-                applyCartOperations(cartItem);
-                window.location.href = clientRoutes.medicinesCart();
-              }}
-            >
-              Buy Now
-            </AphButton>
-          </>
-        ) : (
-          <AphButton fullWidth className={classes.notifyBtn} onClick={() => setIsPopoverOpen(true)}>
-            Notify when in stock
-          </AphButton>
-        )}
+          )}
+        </div>
       </div>
+
       <Popover
         open={isPopoverOpen}
         anchorEl={notifyPopRef.current}

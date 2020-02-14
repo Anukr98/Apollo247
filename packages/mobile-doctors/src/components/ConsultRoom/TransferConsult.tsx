@@ -36,7 +36,7 @@ import {
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 //import { doctorDetails } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
@@ -222,7 +222,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="TRANSFER CONSULT"
+        headerText={strings.transfer_consult.transfer_consult}
         rightIcons={[
           {
             icon: <Cancel />,
@@ -352,7 +352,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while searching for Doctors', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
   const renderSuggestionCardDoctor = () => (
@@ -369,7 +369,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
               marginBottom: 8,
             }}
           >
-            Doctor
+            {strings.transfer_consult.doctor}
           </Text>
           {filteredStarDoctors!.map(
             (
@@ -421,7 +421,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
               marginBottom: 8,
             }}
           >
-            Speciality
+            {strings.account.speciality}
           </Text>
           {filterSpeciality!.map(
             (
@@ -489,7 +489,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           doctorId: doctorId,
           specialtyId: specialityId,
           doctorName: doctorvalue,
-          experience: experience + ' Yrs',
+          experience: experience + strings.transfer_consult.yrs,
           specilty: doctorSpeciality,
           hospitalDoctorId: hospitalId,
           transferId: _data!.data!.initiateTransferAppointment!.transferAppointment!.id,
@@ -518,7 +518,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           errorMessage,
           error
         );
-        Alert.alert('Error', errorMessage);
+        Alert.alert(strings.common.error, errorMessage);
       });
   };
   return (
@@ -526,7 +526,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
       <View style={styles.commonView}>{showHeaderView()}</View>
       <ScrollView bounces={false} style={styles.container}>
         <View style={styles.commonView}>
-          <Text style={styles.commonText}>Why do you want to transfer this consult?</Text>
+          <Text style={styles.commonText}>{strings.transfer_consult.transfer_this_consult}</Text>
           <View style={{ marginRight: 20, marginLeft: 20, marginBottom: 16 }}>
             <TouchableOpacity onPress={() => setDropdownOpen(!isDropdownOpen)}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -556,7 +556,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         {isDropdownOpen ? <View style={{ top: 0 }}>{renderDropdownCard()}</View> : null}
 
         <View style={[styles.commonView, { zIndex: -1 }]}>
-          <Text style={styles.commonText}>Whom do you want to transfer this consult to?</Text>
+          <Text style={styles.commonText}>{strings.transfer_consult.whom_you_want_transfer}</Text>
           <View style={{ marginRight: 20, marginLeft: 20, marginBottom: 16 }}>
             <TouchableOpacity onPress={() => setDropdownOpen(isDropdownOpen)}>
               <View style={{ flexDirection: 'row' }}>
@@ -565,7 +565,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
                 </View>
                 <TextInput
                   multiline={true}
-                  placeholder="Search for Doctor/Speciality"
+                  placeholder={strings.transfer_consult.search_for_doctor}
                   placeholderTextColor="rgba(2, 71, 91, 0.6)"
                   value={doctorvalue}
                   onChangeText={(doctorvalue) => setDoctorValue(doctorvalue)}
@@ -593,10 +593,10 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         {!doctorsCard ? null : <View style={{ marginTop: 0 }}>{renderSuggestionCardDoctor()}</View>}
         <View style={{ zIndex: -1 }}>
           <View style={[styles.commonView, { marginBottom: 32 }]}>
-            <Text style={styles.commonText}>Add a Note (optional)</Text>
+            <Text style={styles.commonText}>{strings.transfer_consult.add_note}</Text>
 
             <TextInputComponent
-              placeholder="Enter here…"
+              placeholder={strings.transfer_consult.enter_here}
               inputStyle={styles.inputView}
               multiline={true}
               value={value}
@@ -607,7 +607,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           {isLoading ? <Loader flex1 /> : null}
           <View style={{ marginBottom: 30 }}>
             <Button
-              title="TRANSFER CONSULT"
+              title={strings.transfer_consult.transfer_consult}
               titleTextStyle={styles.titleTextStyle}
               style={
                 value == '' && doctorvalue == '' && selectreason != 'Select a reason'

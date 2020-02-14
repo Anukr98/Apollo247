@@ -1,4 +1,3 @@
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
@@ -7,6 +6,7 @@ import {
   RoundIcon,
   Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
@@ -14,6 +14,7 @@ import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -101,6 +102,8 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
   console.log('p', profileData);
   const BankDetails = profileData!.packages![0];
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
+  const [showHelpModel, setshowHelpModel] = useState(false);
+
   const showHeaderView = () => {
     return (
       <Header
@@ -121,22 +124,24 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="FEES"
+        headerText={strings.account.fees.toUpperCase()}
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
     );
   };
-  const feeprofileRowBold = (title: Element, description: string) => {
+  const feeprofileRowBold = (title: JSX.Element, description: string) => {
     if (!description) return null;
     return (
       <View style={styles.commonView}>
         {title}
-        <Text style={styles.feeeducationtext}>Rs. {description}</Text>
+        <Text style={styles.feeeducationtext}>
+          {strings.common.rupees} {description}
+        </Text>
       </View>
     );
   };
@@ -163,7 +168,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
     return (
       <View style={styles.commonView}>
         <Text style={styles.feeeducationname}>
-          A/C Number: *********{title.toString().slice(-4)}
+          {strings.account.ac_num} {title.toString().slice(-4)}
         </Text>
         <Text style={styles.feeeducationtextname}>{description}</Text>
       </View>
@@ -184,7 +189,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
                 marginTop: 20,
               }}
             >
-              Consultation Fees
+              {strings.account.consultation_fees}
             </Text>
             <View
               style={{
@@ -205,17 +210,17 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
             >
               {feeprofileRowBold(
                 <Text>
-                  <Text style={styles.feeeducation}>What are your</Text>
-                  <Text style={styles.feeeducationbold}> online</Text>
-                  <Text style={styles.feeeducation}> consultation fees?</Text>
+                  <Text style={styles.feeeducation}>{strings.common.what_are_you}</Text>
+                  <Text style={styles.feeeducationbold}> {strings.common.online}</Text>
+                  <Text style={styles.feeeducation}>{strings.common.consult_fee}</Text>
                 </Text>,
                 profileData!.onlineConsultationFees
               )}
               {feeprofileRowBold(
                 <Text>
-                  <Text style={styles.feeeducation}>What are your</Text>
-                  <Text style={styles.feeeducationbold}> physical</Text>
-                  <Text style={styles.feeeducation}> consultation fees?</Text>
+                  <Text style={styles.feeeducation}>{strings.common.what_are_you}</Text>
+                  <Text style={styles.feeeducationbold}>{strings.common.physical}</Text>
+                  <Text style={styles.feeeducation}>{strings.common.consult_fee}</Text>
                 </Text>,
                 profileData!.physicalConsultationFees
               )}
@@ -223,12 +228,19 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
               {BankDetails != null ? (
                 <View>
                   {feeprofileRow(
-                    'What package do you offer your patients?',
-                    [BankDetails!.name, '@Rs. '.concat(BankDetails!.fees)].join(', ') || ''
+                    strings.account.what_pckg_offer_your_patients,
+                    [BankDetails!.name, strings.common.at_rs.concat(BankDetails!.fees)].join(
+                      ', '
+                    ) || ''
                   )}
                 </View>
               ) : (
-                <View>{feeprofileRow('What package do you offer your patients?', ' N/A')}</View>
+                <View>
+                  {feeprofileRow(
+                    strings.account.what_pckg_offer_your_patients,
+                    strings.common.not_applicable
+                  )}
+                </View>
               )}
             </View>
             <Text
@@ -240,7 +252,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
                 //marginTop: 20,
               }}
             >
-              Payment Details
+              {strings.account.payment_details}
             </Text>
             <View
               style={{
@@ -274,12 +286,15 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
                         {/* <View style={styles.separator}></View> */}
                         <View style={styles.understatusline} />
                         {feeprofileRowdetails(
-                          'Account Holder’s Name',
-                          `Dr. ${profileData.bankAccount![0]!.accountHolderName}`
+                          strings.account.ac_holder_name,
+                          `${strings.common.dr} ${profileData.bankAccount![0]!.accountHolderName}`
                         )}
-                        {feeprofileRowdetails('IFSC Code', profileData.bankAccount![0]!.IFSCcode)}
                         {feeprofileRowdetails(
-                          'Account Type',
+                          strings.account.ifsc_code,
+                          profileData.bankAccount![0]!.IFSCcode
+                        )}
+                        {feeprofileRowdetails(
+                          strings.account.ac_type,
                           profileData.bankAccount![0]!.accountType
                         )}
                       </>
@@ -305,18 +320,23 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
 
           <View style={{ marginLeft: 14 }}>
             <Text>
-              <Text style={styles.descriptionview}>Call</Text>
+              <Text style={styles.descriptionview}>{strings.common.call}</Text>
               <Text
-                style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 }}
+                style={{
+                  color: '#fc9916',
+                  ...theme.fonts.IBMPlexSansSemiBold(16),
+                  lineHeight: 22,
+                }}
               >
                 {' '}
-                1800 - 3455 - 3455{' '}
+                {strings.common.toll_free_num}{' '}
               </Text>
-              <Text style={styles.descriptionview}>to make any changes</Text>
+              <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
             </Text>
           </View>
         </View>
       </ScrollView>
+      {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </SafeAreaView>
   );
 };

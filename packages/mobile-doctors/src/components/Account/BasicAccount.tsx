@@ -10,7 +10,9 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -65,12 +67,14 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       getDoctorDetailsApi &&
         getDoctorDetailsApi()
           .then((res) => setLoading(false))
-          .catch((error) => setLoading(false));
+          .catch((error) => {
+            setLoading(false);
+            CommonBugFender('Get_Doctor_DetailsApi', error);
+          });
     }
   }, [doctorDetails]);
 
   const renderProfileData = (getDoctorDetails: any) => {
-    console.log('getDoctorDetails', getDoctorDetails!.firstName);
     if (!getDoctorDetails!.firstName) return null;
     return (
       <View>
@@ -82,13 +86,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             marginTop: 12,
           }}
         >
-          Dr. {getDoctorDetails!.firstName} {getDoctorDetails!.lastName}
+          {strings.common.dr} {getDoctorDetails!.firstName} {getDoctorDetails!.lastName}
         </Text>
       </View>
     );
   };
   const renderMciNumberData = (getDoctorDetails: any) => {
-    console.log('getDoctorDetails', getDoctorDetails!.registrationNumber);
     if (!getDoctorDetails!.registrationNumber) return null;
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
@@ -101,7 +104,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             marginBottom: 12,
           }}
         >
-          MCI Number : {getDoctorDetails!.registrationNumber}
+          {strings.account.mci_num} : {getDoctorDetails!.registrationNumber}
         </Text>
       </View>
     );
@@ -112,13 +115,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('MyStats ');
             props.navigation.navigate(AppRoutes.MyStats);
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <SmartPrescription />
-            <Text style={styles.headingText}>My Stats</Text>
+            <Text style={styles.headingText}>{strings.account.my_stats}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -132,13 +134,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('hi', data);
             props.navigation.navigate(AppRoutes.MyAccountProfile, { ProfileData: data });
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <Profile />
-            <Text style={styles.headingText}>My Profile</Text>
+            <Text style={styles.headingText}>{strings.account.my_profile}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -152,13 +153,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('hi', data);
             props.navigation.navigate(AppRoutes.MyAvailability, { ProfileData: data });
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <AvailabilityIcon />
-            <Text style={styles.headingText}>Availability</Text>
+            <Text style={styles.headingText}>{strings.account.availability}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -173,13 +173,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       <View style={[styles.cardContainer]}>
         <TouchableOpacity
           onPress={() => {
-            console.log('hi', data);
             props.navigation.navigate(AppRoutes.MyFees, { ProfileData: data });
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <FeeIcon />
-            <Text style={styles.headingText}>Fees</Text>
+            <Text style={styles.headingText}>{strings.account.fees}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -200,13 +199,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         </View> */}
         <TouchableOpacity
           onPress={() => {
-            console.log('smart prescr', data);
             props.navigation.navigate(AppRoutes.SmartPrescription, { ProfileData: data });
           }}
         >
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <SmartPrescription />
-            <Text style={styles.headingText}>Smart Prescription</Text>
+            <Text style={styles.headingText}>{strings.account.smart_prescr}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>
@@ -221,7 +219,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         <TouchableOpacity onPress={() => props.navigation.push(AppRoutes.MyAccount)}>
           <View style={{ flexDirection: 'row', marginBottom: 10, marginTop: 10, marginLeft: 20 }}>
             <Settings />
-            <Text style={styles.headingText}>Settings</Text>
+            <Text style={styles.headingText}>{strings.account.settings}</Text>
             <View style={{ alignItems: 'flex-end', position: 'absolute', right: 20 }}>
               <RightIcon />
             </View>

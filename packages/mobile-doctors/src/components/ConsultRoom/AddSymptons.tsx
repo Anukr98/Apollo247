@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, View, Alert } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { addSysmptonsList } from '@aph/mobile-doctors/src/components/ApiCall';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -85,7 +86,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="Add Symptom"
+        headerText={strings.consult.add_symptom}
       ></Header>
     );
   };
@@ -122,7 +123,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           borderRadius: 10,
         }}
       >
-        <Text style={styles.medicineText}>Symptom</Text>
+        <Text style={styles.medicineText}>{strings.consult.symptom}</Text>
         <TextInput
           style={{
             marginLeft: 16,
@@ -140,7 +141,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           value={symptons}
         />
         <View style={{ marginLeft: 40 }}>
-          <Text style={styles.medicineText}>Since?</Text>
+          <Text style={styles.medicineText}>{strings.consult.since}</Text>
           <TextInput
             style={{
               marginLeft: 16,
@@ -159,7 +160,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           />
         </View>
         <View style={{ marginLeft: 40 }}>
-          <Text style={styles.medicineText}>How often?</Text>
+          <Text style={styles.medicineText}>{strings.consult.how_often}</Text>
           <TextInput
             style={{
               marginLeft: 16,
@@ -178,7 +179,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
           />
         </View>
         <View style={{ marginLeft: 40 }}>
-          <Text style={styles.medicineText}>Severity?</Text>
+          <Text style={styles.medicineText}>{strings.consult.severity}</Text>
           <TextInput
             style={{
               marginLeft: 16,
@@ -199,14 +200,14 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
       </View>
       <View style={styles.footerButtonsContainer}>
         <Button
-          title="CANCEL"
+          title={strings.buttons.cancel}
           titleTextStyle={styles.buttonTextStyle}
           variant="white"
           style={[styles.buttonsaveStyle, { marginRight: 16 }]}
           onPress={() => props.navigation.pop()}
         />
         <Button
-          title="ADD SYMPTOM"
+          title={strings.buttons.add_symptom}
           style={styles.buttonendStyle}
           onPress={() => {
             if (
@@ -219,7 +220,7 @@ export const AddSymptons: React.FC<ProfileProps> = (props) => {
               severity == '' ||
               severity.trim() == ''
             ) {
-              Alert.alert('Please enter all fields');
+              Alert.alert(strings.alerts.enter_all);
             } else {
               addSysmptonsList({
                 __typename: 'SymptomList',

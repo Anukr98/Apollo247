@@ -4,12 +4,8 @@ import { AppointmentNotifications } from '@aph/mobile-doctors/src/components/App
 import { Appointments } from '@aph/mobile-doctors/src/components/Appointments/Appointments';
 import { CallRequestScreen } from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen';
 import { NeedHelpAppointment } from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment';
-import { AddCondition } from '@aph/mobile-doctors/src/components/ConsultRoom/AddCondition';
-import { AddDiagnostics } from '@aph/mobile-doctors/src/components/ConsultRoom/AddDiagnostics';
-import { AddMedicine } from '@aph/mobile-doctors/src/components/ConsultRoom/AddMedicine';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { ConsultRoomScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen';
-import { MedicineUpdate } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineUpdate';
 import { HelpScreen } from '@aph/mobile-doctors/src/components/HelpScreen';
 import { Inbox } from '@aph/mobile-doctors/src/components/Inbox';
 import { LandingPage } from '@aph/mobile-doctors/src/components/LandingPage';
@@ -29,7 +25,6 @@ import { TabBar } from '@aph/mobile-doctors/src/components/TabBar';
 import { TransitionPage } from '@aph/mobile-doctors/src/components/TransitionPage';
 import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAccount';
 import { MyFees } from '@aph/mobile-doctors/src/components/Account/MyFees';
-import { AddSymptons } from '@aph/mobile-doctors/src/components/ConsultRoom/AddSymptons';
 import { TransferConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/TransferConsult';
 import { ReschduleConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ReschduleConsult';
 import {
@@ -38,11 +33,11 @@ import {
   NavigationRouteConfig,
   StackNavigatorConfig,
 } from 'react-navigation';
+import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { ShareConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult';
 import { ChatDoctor } from '@aph/mobile-doctors/src/components/ChatDoctor';
 import { Sample } from '@aph/mobile-doctors/src/components/Sample';
 import { PatientDetailsPage } from '@aph/mobile-doctors/src/components/PatientDetailsPage';
-import { MedicineAddScreen } from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineAddScreen';
 import { CaseSheetDetails } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/CaseSheetDetails';
 import { SmartPrescription } from '@aph/mobile-doctors/src/components/Account/SmartPrescription';
 import { MyStats } from '@aph/mobile-doctors/src/components/Account/MyStats';
@@ -76,10 +71,6 @@ export enum AppRoutes {
   HelpScreen = 'HelpScreen',
   MyAccountProfile = 'MyAccountProfile',
   MyAvailability = 'MyAvailability',
-  AddCondition = 'AddCondition',
-  AddDiagnostics = 'AddDiagnostics',
-  AddMedicine = 'AddMedicine',
-  MedicineUpdate = 'MedicineUpdate',
   BasicAccount = 'BasicAccount',
   MyFees = 'MyFees',
   AddSymptons = 'AddSymptons',
@@ -89,10 +80,10 @@ export enum AppRoutes {
   ChatDoctor = 'ChatDoctor',
   Sample = 'Sample',
   PatientDetailsPage = 'PatientDetailsPage',
-  MedicineAddScreen = 'MedicineAddScreen',
   CaseSheetDetails = 'CaseSheetDetails',
   SmartPrescription = 'SmartPrescription',
   MyStats = 'MyStats',
+  RenderPdf = 'RenderPdf',
   PaymentHistory = 'PaymentHistory',
   BlockHomePage = 'BlockHomePage',
 }
@@ -183,26 +174,11 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.MyAvailability]: {
     screen: MyAvailability,
   },
-  [AppRoutes.AddCondition]: {
-    screen: AddCondition,
-  },
-  [AppRoutes.AddDiagnostics]: {
-    screen: AddDiagnostics,
-  },
-  [AppRoutes.AddMedicine]: {
-    screen: AddMedicine,
-  },
-  [AppRoutes.MedicineUpdate]: {
-    screen: MedicineUpdate,
-  },
   [AppRoutes.BasicAccount]: {
     screen: BasicAccount,
   },
   [AppRoutes.MyFees]: {
     screen: MyFees,
-  },
-  [AppRoutes.AddSymptons]: {
-    screen: AddSymptons,
   },
   [AppRoutes.TransferConsult]: {
     screen: TransferConsult,
@@ -222,9 +198,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.PatientDetailsPage]: {
     screen: PatientDetailsPage,
   },
-  [AppRoutes.MedicineAddScreen]: {
-    screen: MedicineAddScreen,
-  },
+
   [AppRoutes.CaseSheetDetails]: {
     screen: CaseSheetDetails,
   },
@@ -233,6 +207,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MyStats]: {
     screen: MyStats,
+  },
+  [AppRoutes.RenderPdf]: {
+    screen: RenderPdf,
   },
   [AppRoutes.PaymentHistory]: {
     screen: PaymentHistory,

@@ -1,28 +1,30 @@
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
+import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, RoundChatIcon, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { format } from 'date-fns';
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import {
+  GET_BLOCKED_CALENDAR,
+  REMOVE_BLOCKED_CALENDAR_ITEM,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetBlockedCalendar,
   GetBlockedCalendarVariables,
   GetBlockedCalendar_getBlockedCalendar_blockedCalendar,
 } from '@aph/mobile-doctors/src/graphql/types/GetBlockedCalendar';
-import {
-  GET_BLOCKED_CALENDAR,
-  REMOVE_BLOCKED_CALENDAR_ITEM,
-} from '@aph/mobile-doctors/src/graphql/profiles';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { format } from 'date-fns';
 import moment from 'moment';
-import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -92,6 +94,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
     GetBlockedCalendar_getBlockedCalendar_blockedCalendar[]
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [showHelpModel, setshowHelpModel] = useState(false);
 
   const profileData = props.navigation.getParam('ProfileData');
   console.log('p', profileData);
@@ -118,6 +121,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         }
       })
       .catch((e) => {
+        CommonBugFender('GET_BLOCKED_CALENDAR_Myavailability', e);
         console.log('Error occured while searching for Doctors', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
@@ -152,6 +156,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         index;
       })
       .catch((err) => {
+        CommonBugFender('REMOVE_BLOCKED_CALENDAR_ITEM_Myavailability', e);
         console.log(err, 'err REMOVE_BLOCKED_CALENDAR_ITEM');
         setshowSpinner(false);
       });
@@ -177,11 +182,11 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
             onPress: () => props.navigation.pop(),
           },
         ]}
-        headerText="AVAILABILITY"
+        headerText={strings.account.availability.toUpperCase()}
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
@@ -204,7 +209,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                   marginTop: 20,
                 }}
               >
-                Consultation Type
+                {strings.account.consultation_type}
               </Text>
               <View
                 style={{
@@ -223,9 +228,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                   elevation: 5,
                 }}
               >
-                <Text style={styles.consultDescText}>
-                  What type of consults will you be available for?
-                </Text>
+                <Text style={styles.consultDescText}>{strings.account.what_type_of_consult}</Text>
                 <Text
                   style={{
                     marginLeft: 20,
@@ -233,9 +236,10 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                     ...theme.fonts.IBMPlexSansMedium(16),
                     color: '#02475b',
                     marginBottom: 20,
+                    textTransform: 'capitalize',
                   }}
                 >
-                  Physical, Online
+                  {strings.common.physical}, {strings.common.online}
                 </Text>
               </View>
               <Text
@@ -245,7 +249,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                   marginLeft: 20,
                 }}
               >
-                Consultation Hours
+                {strings.account.consult_hours}
               </Text>
               <View style={{ marginLeft: 20, marginRight: 20 }}>
                 {profileData!.consultHours!.map((i, idx) => (
@@ -281,7 +285,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                 marginTop: 32,
               }}
             >
-              Blocked Calendar
+              {strings.account.blocked_calendar}
             </Text>
             {blockedCalendar.length ? (
               <View style={{ marginLeft: 20, marginRight: 20 }}>
@@ -307,7 +311,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                         style={styles.fixedSlotText}
                         onPress={() => onClickUnblock(item.id, index)}
                       >
-                        UNBLOCK
+                        {strings.account.unblock}
                       </Text>
                     </View>
                   </View>
@@ -320,7 +324,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                   onAddBlockCalendar: onAddBlockCalendar,
                 });
               }}
-              label={'ADD BLOCKED HOURS'}
+              label={strings.account.add_block_hours}
               style={{ marginTop: 32 }}
             />
           </View>
@@ -332,7 +336,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
 
             <View style={{ marginLeft: 14 }}>
               <Text>
-                <Text style={styles.descriptionview}>Call</Text>
+                <Text style={styles.descriptionview}>{strings.common.call}</Text>
                 <Text
                   style={{
                     color: '#fc9916',
@@ -341,15 +345,16 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                   }}
                 >
                   {' '}
-                  1800 - 3455 - 3455{' '}
+                  {strings.common.toll_free_num}{' '}
                 </Text>
-                <Text style={styles.descriptionview}>to make any changes</Text>
+                <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
               </Text>
             </View>
           </View>
         </ScrollView>
       </SafeAreaView>
       {showSpinner && <Spinner />}
+      {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </View>
   );
 };

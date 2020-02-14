@@ -87,7 +87,7 @@ export const PaymentInvoice: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item sm={6}>
+          <Grid item xs={12} sm={6}>
             <div className={classes.cardTitle}>Paid Rs. 299</div>
             <div className={classes.cardSection}>
               Debit Card

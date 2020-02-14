@@ -7,6 +7,8 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
@@ -78,8 +80,6 @@ export interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, onReload }) => {
-  console.log('p', profileData);
-
   const profileRow = (title: string, description: string) => {
     if (!description) return null;
     return (
@@ -91,7 +91,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
   };
 
   const formatSpecialityAndExperience = (speciality: string, experience: string) =>
-    `${(speciality || '').toUpperCase()}     |   ${experience}YRS`;
+    `${(speciality || '').toUpperCase()}     |   ${experience}${strings.common.yrs}`;
 
   const getFormattedLocation = () => {
     let location = '';
@@ -108,6 +108,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
         .filter(Boolean)
         .join(', ');
     } catch (e) {
+      CommonBugFender('Get_Formatted_Location_Profile', e);
       console.log(e);
     }
     return location;
@@ -115,7 +116,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
 
   return (
     <View style={styles.container}>
-      <SquareCardWithTitle title="Your Profile" containerStyle={{ marginTop: 0 }}>
+      <SquareCardWithTitle title={strings.account.your_profile} containerStyle={{ marginTop: 0 }}>
         <View style={styles.cardView}>
           <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
             {profileData!.photoUrl ? (
@@ -141,7 +142,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
           ) : null}
           <View style={styles.columnContainer}>
             <Text style={[styles.drname]} numberOfLines={1}>
-              {`Dr. ${profileData!.firstName} ${profileData!.lastName}`}
+              {`${strings.common.dr} ${profileData!.firstName} ${profileData!.lastName}`}
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
@@ -151,19 +152,19 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
             </Text>
             <View style={styles.understatusline} />
           </View>
-          {profileRow('Education', profileData!.qualification!)}
-          {profileRow('Speciality', profileData!.specialty!.name!)}
-          {profileRow('Services', profileData!.specialization || '')}
+          {profileRow(strings.account.education, profileData!.qualification!)}
+          {profileRow(strings.account.speciality, profileData!.specialty!.name!)}
+          {profileRow(strings.account.services, profileData!.specialization || '')}
           {profileRow(
-            'Awards',
+            strings.account.awards,
             (profileData!.awards || '')
               .replace('&amp;', '&')
               .replace(/<\/?[^>]+>/gi, '')
               .trim()
           )}
-          {profileRow('Speaks', (profileData!.languages || '').split(',').join(', '))}
-          {profileRow('MCI Number', profileData!.registrationNumber)}
-          {profileRow('In-person Consult Location', getFormattedLocation())}
+          {profileRow(strings.account.speaks, (profileData!.languages || '').split(',').join(', '))}
+          {profileRow(strings.account.mci_num, profileData!.registrationNumber)}
+          {profileRow(strings.account.in_person_consult_loc, getFormattedLocation())}
         </View>
       </SquareCardWithTitle>
       {profileData!.doctorType == 'STAR_APOLLO' ? (

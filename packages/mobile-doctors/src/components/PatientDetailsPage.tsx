@@ -17,10 +17,22 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { Image } from 'react-native-elements';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -97,7 +109,6 @@ export interface PatientsProps
 
 export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const client = useApolloClient();
-  console.log('Appointments', props.navigation.getParam('patientId'));
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
 
   const [familyValues, setFamilyValues] = useState<any>([]);
@@ -115,6 +126,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const todayYear = moment(new Date()).format('YYYY');
 
   useEffect(() => {
+    console.log(PatientInfo, 'PatientInfoData');
     client
       .query<GetCaseSheet>({
         query: GET_CASESHEET,
@@ -149,10 +161,10 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const renderFamilyDetails = () => {
     return (
       <View>
-        <Text style={styles.familyText}>Family History</Text>
+        <Text style={styles.familyText}>{strings.case_sheet.family_history}</Text>
         <View style={styles.familyInputView}>
           {familyValues.length == 0 ? (
-            <Text style={styles.symptomsText}>No Data</Text>
+            <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
           ) : (
             familyValues.map((showdata: any) => {
               return (
@@ -171,10 +183,10 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const renderAllergiesView = () => {
     return (
       <View>
-        <Text style={styles.familyText}>Allergies</Text>
+        <Text style={styles.familyText}>{strings.case_sheet.allergies}</Text>
         <View style={styles.AllergiesInputView}>
           {allergiesData == null || [] ? (
-            <Text style={styles.symptomsText}>No Data</Text>
+            <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
           ) : (
             <Text style={styles.symptomsText}>{allergiesData}</Text>
           )}
@@ -185,10 +197,10 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const renderLifeStylesHabits = () => {
     return (
       <View>
-        <Text style={styles.familyText}>Lifestyle & Habits</Text>
+        <Text style={styles.familyText}>{strings.case_sheet.lyfestyle_habits}</Text>
         <View style={styles.familyInputView}>
           {lifeStyleData.length == 0 ? (
-            <Text style={styles.symptomsText}>No Data</Text>
+            <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
           ) : (
             lifeStyleData.map((showdata: any) => {
               return (
@@ -367,17 +379,48 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   //   );
   // };
 
+  const renderPatientImage = () => {
+    return (
+      <View style={{ marginBottom: 20 }}>
+        <View style={{ top: 10, marginLeft: 20, position: 'absolute', zIndex: 2 }}>
+          <TouchableOpacity onPress={() => props.navigation.pop()}>
+            <BackArrow />
+          </TouchableOpacity>
+        </View>
+        {patientDetails && patientDetails.photoUrl ? (
+          <Image
+            source={{
+              uri: (patientDetails && patientDetails.photoUrl) || '',
+            }}
+            style={{ height: width, width: width }}
+            resizeMode={'contain'}
+            placeholderStyle={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+            PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+          />
+        ) : (
+          <PatientPlaceHolderImage
+            style={{
+              height: width,
+              width: width,
+              alignItems: 'center',
+              backgroundColor: 'transparent',
+            }}
+          />
+        )}
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[theme.viewStyles.container]}>
         <ScrollView bounces={false}>
-          <PatientPlaceHolderImage />
-
-          <View style={{ top: -150, marginLeft: 20 }}>
-            <TouchableOpacity onPress={() => props.navigation.pop()}>
-              <BackArrow />
-            </TouchableOpacity>
-          </View>
+          {renderPatientImage()}
           <View style={[styles.shadowview, { marginTop: -20 }]}>
             <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 20 }}>
               <View style={{ flex: 1 }}>
@@ -400,7 +443,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   marginBottom: 8,
                 }}
               >
-                UHID: {PatientInfo.uhid}
+                {strings.case_sheet.uhid}: {PatientInfo.uhid}
               </Text>
 
               {/* <View
@@ -541,7 +584,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 margin: 16,
               }}
             >
-              Past Consultations
+              {strings.case_sheet.past_consultations}
             </Text>
             <PastConsultCard
               data={pastList}

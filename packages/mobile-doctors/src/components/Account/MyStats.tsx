@@ -1,16 +1,11 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import {
-  BackArrow,
-  Down,
-  RoundChatIcon,
-  RoundIcon,
-  Up,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
-import { StyleSheet, View, Text } from 'react-native';
-import { NavigationScreenProps, ScrollView, SafeAreaView } from 'react-navigation';
+import { BackArrow, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import React, { useEffect, useState, useRef } from 'react';
+import { NavigationScreenProps, SafeAreaView, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({});
 // export interface MyStatsProps {}
@@ -23,6 +18,7 @@ export interface MyStatsProps extends NavigationScreenProps<{}> {
 
 export const MyStats: React.FC<MyStatsProps> = (props) => {
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
+  const [showHelpModel, setshowHelpModel] = useState(false);
 
   const showHeaderView = () => {
     return (
@@ -48,7 +44,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
         rightIcons={[
           {
             icon: <RoundIcon />,
-            onPress: () => props.navigation.push(AppRoutes.NeedHelpAppointment),
+            onPress: () => setshowHelpModel(true),
           },
         ]}
       />
@@ -79,6 +75,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
           </KeyboardAwareScrollView>
         </SafeAreaView>
       </ScrollView>
+      {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </View>
   );
 };

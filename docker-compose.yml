@@ -51,6 +51,7 @@ services:
       (! curl -s http://${PROFILES_SERVICE_HOST}:${PROFILES_SERVICE_PORT}/graphql) ||
       (! curl -s http://${DOCTORS_SERVICE_HOST}:${DOCTORS_SERVICE_PORT}/graphql) ||
       (! curl -s http://${CONSULTS_SERVICE_HOST}:${CONSULTS_SERVICE_PORT}/graphql) ||
+      (! curl -s http://${COUPONS_SERVICE_HOST}:${COUPONS_SERVICE_PORT}/graphql) ||
       (! curl -s http://${NOTIFICATIONS_SERVICE_HOST}:${NOTIFICATIONS_SERVICE_PORT}/graphql)
       ) > /dev/null;
       do echo waiting for services to start...; sleep 5;
@@ -67,6 +68,7 @@ services:
       - profiles-service
       - doctors-service
       - consults-service
+      - coupons-service
       - notifications-service
       - rabbitmq
       - storage
@@ -115,6 +117,18 @@ services:
     env_file: .env
     working_dir: /apollo-hospitals/packages/api
     command: bash -c "npm run start:consults-service"
+    volumes:
+      - ./:/apollo-hospitals:cached
+    depends_on:
+      - consults-db
+      - doctors-db
+      - profiles-db
+
+  coupons-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "npm run start:coupons-service"
     volumes:
       - ./:/apollo-hospitals:cached
     depends_on:
