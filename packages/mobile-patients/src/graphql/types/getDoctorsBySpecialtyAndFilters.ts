@@ -43,6 +43,7 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   firstName: string;
   lastName: string;
   displayName: string | null;
+  fullName: string | null;
   experience: string | null;
   city: string | null;
   photoUrl: string | null;

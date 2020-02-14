@@ -99,6 +99,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   salutation: Salutation | null;
   firstName: string;
   lastName: string;
+  fullName: string | null;
+  displayName: string | null;
   doctorType: DoctorType;
   qualification: string | null;
   mobileNumber: string;

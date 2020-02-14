@@ -170,7 +170,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       .then((data) => {
         setshowSpinner(false);
         props.navigation.navigate(AppRoutes.ConsultPayment, {
-          doctorName: `${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`,
+          doctorName: `${g(props.doctor, 'fullName')}`,
           appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
           price:
             tabs[0].title === selectedTab

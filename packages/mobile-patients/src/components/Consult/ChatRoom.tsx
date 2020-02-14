@@ -1395,7 +1395,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           const msgs = res.messages;
           console.log('msgs', msgs);
-         
+
           res.messages.forEach((element, index) => {
             let item = element.entry;
             if (item.prismId) {
@@ -1677,7 +1677,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { showAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
-   
+
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -3948,7 +3948,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   DoctorName:
                     props.navigation.state.params!.data &&
                     props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.firstName,
+                    props.navigation.state.params!.data.doctorInfo.fullName,
                 },
               }),
             ],
@@ -5434,106 +5434,105 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
-          
-            <View
-              style={{
-                width: width,
-                height: 66,
-                backgroundColor: 'white',
-                bottom: isIphoneX() ? 36 : 0,
-                top: isIphoneX() ? 2 : 0,
-              }}
-            >
-              <View style={{ flexDirection: 'row', width: width }}>
-                <TouchableOpacity
-                  activeOpacity={1}
+          <View
+            style={{
+              width: width,
+              height: 66,
+              backgroundColor: 'white',
+              bottom: isIphoneX() ? 36 : 0,
+              top: isIphoneX() ? 2 : 0,
+            }}
+          >
+            <View style={{ flexDirection: 'row', width: width }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={{
+                  width: 40,
+                  height: 40,
+                  marginTop: 9,
+                  marginLeft: 5,
+                }}
+                onPress={async () => {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                }}
+              >
+                <AddAttachmentIcon
+                  style={{ width: 24, height: 24, marginTop: 10, marginLeft: 14 }}
+                />
+              </TouchableOpacity>
+              <View>
+                <TextInput
+                  autoCorrect={false}
+                  placeholder="Type here…"
+                  multiline={true}
                   style={{
-                    width: 40,
+                    marginLeft: 16,
+                    marginTop: 5,
                     height: 40,
-                    marginTop: 9,
-                    marginLeft: 5,
+                    width: width - 120,
+                    ...theme.fonts.IBMPlexSansMedium(16),
                   }}
-                  onPress={async () => {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                    setDropdownVisible(!isDropdownVisible);
+                  value={messageText}
+                  blurOnSubmit={false}
+                  // returnKeyType="send"
+                  onChangeText={(value) => {
+                    setMessageText(value);
+                    setDropdownVisible(false);
                   }}
-                >
-                  <AddAttachmentIcon
-                    style={{ width: 24, height: 24, marginTop: 10, marginLeft: 14 }}
-                  />
-                </TouchableOpacity>
-                <View>
-                  <TextInput
-                    autoCorrect={false}
-                    placeholder="Type here…"
-                    multiline={true}
-                    style={{
-                      marginLeft: 16,
-                      marginTop: 5,
-                      height: 40,
-                      width: width - 120,
-                      ...theme.fonts.IBMPlexSansMedium(16),
-                    }}
-                    value={messageText}
-                    blurOnSubmit={false}
-                    // returnKeyType="send"
-                    onChangeText={(value) => {
-                      setMessageText(value);
-                      setDropdownVisible(false);
-                    }}
-                    onFocus={() => setDropdownVisible(false)}
-                    onSubmitEditing={() => {
-                      Keyboard.dismiss();
-                    }}
-                  />
-                  <View
-                    style={{
-                      marginLeft: 16,
-                      marginTop: 0,
-                      height: 2,
-                      width: width - 120,
-                      backgroundColor: '#00b38e',
-                    }}
-                  />
-                </View>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginTop: 10,
-                    marginLeft: 2,
-                  }}
-                  onPress={async () => {
-                    const textMessage = messageText.trim();
-                    console.log('ChatSend', textMessage);
-
-                    if (textMessage.length == 0) {
-                      Alert.alert('Apollo', 'Please write something to send message.');
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                      return;
-                    }
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                    send(textMessage);
-                  }}
-                >
-                  <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
-                </TouchableOpacity>
-              </View>
-              {displayChatQuestions && Platform.OS === 'ios' && (
-                <ChatQuestions
-                  onItemDone={(value: { k: string; v: string[] }) => {
-                    console.log('and', value);
-                    setAnswerData([value]);
-                  }}
-                  onDonePress={(values: { k: string; v: string[] }[]) => {
-                    setAnswerData(values);
-                    setDisplayChatQuestions(false);
+                  onFocus={() => setDropdownVisible(false)}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
                   }}
                 />
-              )}
+                <View
+                  style={{
+                    marginLeft: 16,
+                    marginTop: 0,
+                    height: 2,
+                    width: width - 120,
+                    backgroundColor: '#00b38e',
+                  }}
+                />
+              </View>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={{
+                  width: 40,
+                  height: 40,
+                  marginTop: 10,
+                  marginLeft: 2,
+                }}
+                onPress={async () => {
+                  const textMessage = messageText.trim();
+                  console.log('ChatSend', textMessage);
+
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                    return;
+                  }
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                  send(textMessage);
+                }}
+              >
+                <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+              </TouchableOpacity>
             </View>
+            {displayChatQuestions && Platform.OS === 'ios' && (
+              <ChatQuestions
+                onItemDone={(value: { k: string; v: string[] }) => {
+                  console.log('and', value);
+                  setAnswerData([value]);
+                }}
+                onDonePress={(values: { k: string; v: string[] }[]) => {
+                  setAnswerData(values);
+                  setDisplayChatQuestions(false);
+                }}
+              />
+            )}
+          </View>
         ) : (
           //  <KeyboardAvoidingView behavior="padding" enabled>
           <View
@@ -5923,7 +5922,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         title="We value your feedback! :)"
         description="How was your overall experience with the following consultation —"
         info={{
-          title: `Dr. ${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
+          title: `${g(appointmentData, 'doctorInfo', 'displayName') || ''}`,
           description: `Today, ${moment(appointmentData.appointmentDateTime).format('hh:mm A')}`,
           photoUrl: `${g(appointmentData, 'doctorInfo', 'photoUrl') || ''}`,
         }}
