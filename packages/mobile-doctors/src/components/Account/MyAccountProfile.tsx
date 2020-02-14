@@ -419,7 +419,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}
               >
                 {profileData!.photoUrl ? (
-
                   <Image style={styles.imageview} source={{ uri: profileData!.photoUrl }} />
                 ) : (
                   <Image
