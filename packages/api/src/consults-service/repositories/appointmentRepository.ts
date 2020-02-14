@@ -632,7 +632,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     doctorId: string,
     selectedDate: Date,
     doctorsDb: Connection,
-    appointmentType: string
+    appointmentType: string,
+    inputDate: Date
   ) {
     const weekDay = format(selectedDate, 'EEEE').toUpperCase();
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
@@ -777,11 +778,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       let foundFlag = 0;
 
       //getting the available slot
-      //const currentTime = new Date('2020-02-13T18:30');
-      const timeWithBuffer = addMinutes(new Date(), consultBuffer);
+      let timeWithBuffer: Date;
+      //const currentTime = new Date(inputDate);
+      if (inputDate) timeWithBuffer = addMinutes(inputDate, consultBuffer);
+      else timeWithBuffer = addMinutes(new Date(), consultBuffer);
       //const timeWithBuffer = addMinutes(currentTime, consultBuffer);
-      //console.log(timeWithBuffer, 'timeWithBuffer');
-      //console.log(availableSlots, 'slots final list');
+      console.log(timeWithBuffer, 'timeWithBuffer');
+      console.log(availableSlots, 'slots final list');
       availableSlots.map((slot) => {
         const slotDate = new Date(slot);
         if (slotDate >= timeWithBuffer && foundFlag == 0) {
