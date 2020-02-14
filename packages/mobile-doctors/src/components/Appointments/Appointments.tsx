@@ -157,7 +157,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     {
       variables: {
         startDate: startDate,
-        endDate: endDate, //'2019-09-13',
+        endDate: startDate, //'2019-09-13',
       },
       fetchPolicy: 'no-cache',
     }
@@ -384,7 +384,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       {/* {isDropdownVisible ? renderDropdown() : null} */}
 
       {/* <View style={isDropdownVisible ? {} : { zIndex: -1 }}> */}
-      <View style={{ zIndex: -1, flex: 1, backgroundColor: '#f7f7f7' }}>
+      <View style={[{ zIndex: -1 }, theme.viewStyles.container]}>
         <View style={[styles.weekViewContainer, { zIndex: 0 }]}>
           <WeekView
             date={date}

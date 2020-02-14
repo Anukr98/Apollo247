@@ -327,7 +327,8 @@ const initiateTransferAppointment: Resolver<
       TransferAppointmentInput.transferredDoctorId,
       nextDate,
       doctorsDb,
-      'ONLINE'
+      'ONLINE',
+      new Date()
     );
     if (nextSlot != '' && nextSlot != undefined) {
       slot = nextSlot;

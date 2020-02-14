@@ -94,6 +94,7 @@ type rowData = {
   salutation?: string | null;
   firstName?: string | null;
   lastName?: string | null;
+  fullName?: string | null;
   qualification?: string | null;
   mobileNumber?: string;
   experience?: string | null;
@@ -374,7 +375,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>
-                {rowData.salutation + '. ' + rowData.firstName + ' ' + rowData.lastName}
+                {rowData.salutation + '. ' + rowData.fullName}
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}

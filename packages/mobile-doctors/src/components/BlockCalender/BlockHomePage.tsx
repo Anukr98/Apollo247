@@ -679,12 +679,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: '#f7f7f7',
-        }}
-      >
+      <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View

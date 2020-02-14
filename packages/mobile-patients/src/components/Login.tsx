@@ -367,7 +367,6 @@ export const Login: React.FC<LoginProps> = (props) => {
               flex: 1,
               backgroundColor: 'white',
             }}
-            useWebKit={true}
             onLoadStart={() => {
               console.log('onLoadStart');
               setShowSpinner(true);

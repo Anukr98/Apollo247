@@ -234,7 +234,8 @@ export class DoctorRepository extends Repository<Doctor> {
               doctorId,
               nextDate,
               doctorsDb,
-              'ONLINE'
+              'ONLINE',
+              new Date()
             );
             if (nextSlot != '' && nextSlot != undefined) {
               onlineSlot = nextSlot;
@@ -268,7 +269,8 @@ export class DoctorRepository extends Repository<Doctor> {
               doctorId,
               nextDate,
               doctorsDb,
-              'PHYSICAL'
+              'PHYSICAL',
+              new Date()
             );
             if (nextSlot != '' && nextSlot != undefined) {
               physicalSlot = nextSlot;

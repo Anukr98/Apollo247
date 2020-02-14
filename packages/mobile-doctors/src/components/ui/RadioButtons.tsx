@@ -1,9 +1,7 @@
 import { Selected, UnSelected } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { ReactNode, useState } from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-
-const styles = StyleSheet.create({});
+import React from 'react';
+import { StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 export interface RadioButtonsProps {
   data: { label: string; key: string }[];

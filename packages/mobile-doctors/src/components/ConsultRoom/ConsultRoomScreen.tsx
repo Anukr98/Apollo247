@@ -1,5 +1,6 @@
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
+import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import {
@@ -17,6 +18,7 @@ import {
   DoctorPlaceholderImage,
   DotIcon,
   EndCallIcon,
+  FileBig,
   FrontCameraIcon,
   FullScreenIcon,
   Mascot,
@@ -28,19 +30,20 @@ import {
   RoundVideoIcon,
   UnMuteIcon,
   VideoOffIcon,
-  FileBig,
   VideoOnIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Image as ImageNative } from 'react-native-elements';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
+import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
   CREATEAPPOINTMENTSESSION,
+  CREATE_CASESHEET_FOR_SRD,
   END_APPOINTMENT_SESSION,
-  UPLOAD_CHAT_FILE,
-  SEND_CALL_NOTIFICATION,
   END_CALL_NOTIFICATION,
+  GET_CASESHEET,
+  SEND_CALL_NOTIFICATION,
+  UPLOAD_CHAT_FILE,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   CreateAppointmentSession,
@@ -51,14 +54,28 @@ import {
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
+import {
+  GetCaseSheet,
+  GetCaseSheet_getCaseSheet,
+} from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import {
+  APPT_CALL_TYPE,
+  DOCTOR_CALL_TYPE,
   REQUEST_ROLES,
   STATUS,
-  DOCTOR_CALL_TYPE,
-  APPT_CALL_TYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  SendCallNotification,
+  SendCallNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
@@ -86,22 +103,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image as ImageNative } from 'react-native-elements';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 import MaterialTabs from 'react-native-material-tabs';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
-import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import {
-  SendCallNotification,
-  SendCallNotificationVariables,
-} from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
-import {
-  EndCallNotification,
-  EndCallNotificationVariables,
-} from '@aph/mobile-doctors/src/graphql/types/EndCallNotification';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
-import { isIphoneX } from 'react-native-iphone-x-helper';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -210,6 +216,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
+  const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
   const [textinputStyles, setTextInputStyles] = useState<Object>({
     width: width,
     height: 66,
@@ -248,6 +255,51 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       flatListRef.current && flatListRef.current!.scrollToEnd();
     }, 1000);
   }, []);
+
+  const createCaseSheetSRDAPI = () => {
+    setShowLoading(true);
+    client
+      .mutate({
+        mutation: CREATE_CASESHEET_FOR_SRD,
+        variables: {
+          appointmentId: AppId,
+        },
+      })
+      .then((data) => {
+        getCaseSheetAPI();
+      })
+      .catch(() => {
+        setShowLoading(false);
+        showAphAlert &&
+          showAphAlert({
+            title: 'Alert!',
+            description: 'Error occured while creating Case Sheet. Please try again',
+          });
+      });
+  };
+
+  const getCaseSheetAPI = () => {
+    setShowLoading(true);
+    client
+      .query<GetCaseSheet>({
+        query: GET_CASESHEET,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: AppId },
+      })
+      .then((_data) => {
+        const caseSheet = g(_data, 'data', 'getCaseSheet');
+        setcaseSheet(caseSheet);
+        setShowLoading(false);
+      })
+      .catch((e) => {
+        setShowLoading(false);
+        const message = e.message ? e.message.split(':')[1].trim() : '';
+        if (message === 'NO_CASESHEET_EXIST') {
+          createCaseSheetSRDAPI();
+        }
+        console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
+      });
+  };
 
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
@@ -2690,6 +2742,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               favList={favList}
               favMed={favMed}
               favTest={favTest}
+              caseSheet={caseSheet}
             />
           ) : (
             <View

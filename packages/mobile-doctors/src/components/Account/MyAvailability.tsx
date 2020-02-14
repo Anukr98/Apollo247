@@ -27,10 +27,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f7f7', //theme.colors.DEFAULT_BACKGROUND_COLOR,
-  },
   consultDescText: {
     fontFamily: 'IBMPlexSans',
     fontSize: 14,
@@ -195,7 +191,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={theme.viewStyles.container}>
         <View>{showHeaderView()}</View>
         <ScrollView bounces={false}>
           {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (

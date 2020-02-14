@@ -1289,7 +1289,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               channel: channel,
               message: {
                 message: autoMessageStrings.secondMessage,
-                automatedText: `Sorry, but all the members in ’s team are busy right now.We will send you a notification as soon as they are available for collecting your details`,
+                automatedText: `Sorry, but all the members in  ${displayName}’s team are busy right now.We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
                 isTyping: true,
                 messageDate: new Date(),
@@ -1722,7 +1722,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             convertCall={() => convertCall()}
             videoCall={videoCall}
             audiocallmsg={audiocallmsg}
-            // setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
           />
         )}
         <div>
