@@ -175,6 +175,11 @@ export enum OTP_STATUS {
   BLOCKED = 'BLOCKED',
 }
 
+enum customerTypeInCoupons {
+  FIRST = 'FIRST',
+  RECURRING = 'RECURRING',
+}
+
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
@@ -999,11 +1004,6 @@ export class Coupon extends BaseEntity {
 }
 //Coupon ends
 
-enum customerTypeInCoupons {
-  FIRST = 'FIRST',
-  RECURRING = 'RECURRING',
-}
-
 //Consult Coupon Rules starts
 @Entity()
 export class CouponGenericRules extends BaseEntity {
@@ -1012,9 +1012,6 @@ export class CouponGenericRules extends BaseEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
-
-  @Column({ type: 'text', default: ConsultMode.BOTH })
-  couponApplicability: ConsultMode;
 
   @Column({ nullable: true })
   couponApplicableCustomerType: customerTypeInCoupons;
