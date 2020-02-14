@@ -2347,9 +2347,13 @@
                 "name": "consultType",
                 "description": null,
                 "type": {
-                  "kind": "ENUM",
-                  "name": "AppointmentType",
-                  "ofType": null
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "ENUM",
+                    "name": "AppointmentType",
+                    "ofType": null
+                  }
                 },
                 "defaultValue": null
               }

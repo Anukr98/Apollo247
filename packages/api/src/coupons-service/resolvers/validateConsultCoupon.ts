@@ -27,7 +27,7 @@ export const validateConsultCouponTypeDefs = gql`
     validateConsultCoupon(
       doctorId: ID!
       code: String!
-      consultType: AppointmentType
+      consultType: AppointmentType!
     ): ValidateCodeResponse
   }
 `;
