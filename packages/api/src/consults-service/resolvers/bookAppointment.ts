@@ -16,6 +16,8 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { CouponRepository } from 'profiles-service/repositories/couponRepository';
+import { discountCalculation } from 'helpers/couponCommonFunctions';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -82,8 +84,6 @@ export const bookAppointmentTypeDefs = gql`
     bookingSource: BOOKINGSOURCE
     deviceType: DEVICETYPE
     couponCode: String
-    actualAmount: Float
-    discountedAmount: Float
   }
 
   type BookAppointmentResult {
@@ -255,6 +255,28 @@ const bookAppointment: Resolver<
   );
   if (cancelledCount >= 3) {
     throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
+  }
+
+  //calculate coupon discount value
+  if (appointmentInput.couponCode) {
+    const couponRepo = patientsDb.getCustomRepository(CouponRepository);
+    const couponData = await couponRepo.findCouponByCode(appointmentInput.couponCode);
+    if (couponData == null) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
+
+    let doctorFees = 0;
+    if (appointmentInput.appointmentType === APPOINTMENT_TYPE.ONLINE)
+      doctorFees = <number>docDetails.onlineConsultationFees;
+    else doctorFees = <number>docDetails.physicalConsultationFees;
+    const couponGenericRulesData = couponData.couponGenericRule;
+
+    if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue) {
+      appointmentInput.actualAmount = doctorFees;
+      appointmentInput.discountedAmount = await discountCalculation(
+        doctorFees,
+        couponGenericRulesData.discountType,
+        couponGenericRulesData.discountValue
+      );
+    }
   }
 
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
