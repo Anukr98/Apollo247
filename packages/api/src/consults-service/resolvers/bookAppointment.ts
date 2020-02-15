@@ -81,6 +81,9 @@ export const bookAppointmentTypeDefs = gql`
     symptoms: String
     bookingSource: BOOKINGSOURCE
     deviceType: DEVICETYPE
+    couponCode: String
+    actualAmount: Float
+    discountedAmount: Float
   }
 
   type BookAppointmentResult {
@@ -105,6 +108,9 @@ type BookAppointmentInput = {
   symptoms?: string;
   bookingSource?: BOOKINGSOURCE;
   deviceType?: DEVICETYPE;
+  couponCode: string;
+  actualAmount: number;
+  discountedAmount: number;
 };
 
 type AppointmentBooking = {
