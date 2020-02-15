@@ -27,16 +27,7 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Alert,
-  Image,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Image, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -139,13 +130,6 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     marginLeft: 16,
   },
-  inputTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.INPUT_TEXT,
-    paddingRight: 6,
-    lineHeight: 28,
-    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
-  },
   inputStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
     width: '80%',
@@ -162,38 +146,10 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     paddingBottom: 0,
   },
-  inputView: {
-    borderBottomColor: theme.colors.INPUT_BORDER_FAILURE,
-    borderBottomWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '85%',
-    paddingBottom: 0,
-    marginRight: 0,
-    marginLeft: 20,
-  },
-  bottomDescription: {
-    lineHeight: 24,
-    color: '#890000', //theme.colors.INPUT_FAILURE_TEXT,
-    // opacity: 0.6,
-    paddingVertical: 10,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    marginLeft: 20,
-  },
-  bottomValidDescription: {
-    lineHeight: 24,
-    color: theme.colors.INPUT_SUCCESS_TEXT,
-    opacity: 0.6,
-    paddingVertical: 10,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    marginLeft: 20,
-  },
-
   descriptionview: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',
     lineHeight: 24,
-    //marginTop: 20,
   },
 });
 
@@ -214,22 +170,9 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showHelpModel, setshowHelpModel] = useState(false);
 
-  // useEffect(() => {
-  //   let value = profileData!.delegateNumber!;
-  //   // Remove all spaces
-  //   let mobile = value.replace(/ /g, '');
-
-  //   // If string starts with +, drop first 3 characters
-  //   if (value.slice(0, 1) == '+') {
-  //     mobile = mobile.substring(3);
-  //   }
-  //   console.log('mobile', mobile);
-  //   setPhoneNumber(mobile);
-  // });
   const delegateNumberUpdate = (phoneNumber: string) => {
     console.log('delegateNumberUpdate', phoneNumber);
     if (phoneNumber.length == 0) {
-      // Alert.alert('Please add Delegate Number');
       setIsLoading(true);
       client
         .mutate<RemoveDelegateNumber>({
@@ -314,7 +257,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
         profileData.doctorHospital[0].facility.state,
         profileData.doctorHospital[0].facility.country,
       ]
-        // .filter((data) => console.log('data', data))
+
         .filter(Boolean)
         .join(', ');
     } catch (e) {
@@ -346,17 +289,14 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   };
 
   const isPhoneNumberValid = (number: string) => {
-    const isValidNumber =
-      // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-      !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
     return isValidNumber;
   };
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
-      // if (number.length == 10) {
+
       setPhoneNumberIsValid(isPhoneNumberValid(number));
-      // }
     } else {
       return false;
     }
@@ -370,7 +310,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           marginLeft: 20,
           marginRight: 20,
           marginTop: 12,
-          //marginBottom: 32,
         }}
       >
         <View style={{ marginTop: 4 }}>
@@ -431,7 +370,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             { marginBottom: 16 },
           ]}
         >
-          {/* <Text style={styles.inputTextStyle}>{string.LocalStrings.numberPrefix}</Text> */}
           <TextInput
             style={styles.inputStyle}
             keyboardType="numeric"
@@ -441,17 +379,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             editable={true}
           />
         </View>
-        {/* <Text
-          style={
-            phoneNumber == '' || phoneNumberIsValid
-              ? styles.bottomValidDescription
-              : styles.bottomDescription
-          }
-        >
-          {phoneNumber == '' || phoneNumberIsValid
-            ? string.LocalStrings.otp_sent_to
-            : string.LocalStrings.wrong_number}
-        </Text> */}
       </View>
     );
   };
@@ -492,12 +419,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}
               >
                 {profileData!.photoUrl ? (
-                  // <Image
-                  //   style={styles.imageview}
-                  //   source={{
-                  //     uri: profileData!.photoUrl,
-                  //   }}
-                  // />
                   <Image
                     style={styles.imageview}
                     source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
@@ -518,14 +439,14 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 </Text>
                 <Text style={styles.drnametext}>
                   {formatSpecialityAndExperience(
-                    profileData!.specialty.name,
+                    profileData!.specialty!.name,
                     profileData!.experience || ''
                   )}
                 </Text>
                 <View style={styles.understatusline} />
               </View>
               {profileRow(strings.account.education, profileData!.qualification!)}
-              {profileRow(strings.account.speciality, profileData!.specialty.name!)}
+              {profileRow(strings.account.speciality, profileData!.specialty!.name)}
               {profileRow(strings.account.services, profileData!.specialization || '')}
               {profileRow(
                 strings.account.awards,
@@ -555,7 +476,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                   letterSpacing: 0.06,
                   color: '#02475b',
                   marginLeft: 20,
-                  // marginBottom: 18,
                 }}
               >
                 {strings.account.secretay_login}

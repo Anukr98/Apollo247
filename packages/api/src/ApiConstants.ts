@@ -104,6 +104,8 @@ export enum ApiConstants {
   PATIENT_HELP_FROM_NAME = 'Apollo24*7',
   PATIENT_HELP_SUBJECT = 'Issue raised by customer : {0} - {1}, {2}',
 
+  APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
+
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,raj@popcornapps.com',
 

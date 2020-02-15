@@ -3,7 +3,7 @@ import { BackArrow, DotIcon } from '@aph/mobile-doctors/src/components/ui/Icons'
 import { StyleSheet, View, Text } from 'react-native';
 import { NavigationScreenProps, ScrollView, SafeAreaView } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
@@ -75,7 +75,6 @@ export interface PaymentHistoryProps extends NavigationScreenProps<{}> {
 }
 
 export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
-  const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
   const [visibleDownloadStatement, setVisibleDownloadStatement] = useState<boolean>(false);
 
   type OptionsType = {
@@ -99,7 +98,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
     { key: 'Custom Dates', label: 'Custom Dates' },
   ];
 
-  const [selectedFrequency, setSelectedFrequency] = useState<any>();
+  const [selectedFrequency, setSelectedFrequency] = useState<string>();
   const showHeaderView = () => {
     return (
       <Header
