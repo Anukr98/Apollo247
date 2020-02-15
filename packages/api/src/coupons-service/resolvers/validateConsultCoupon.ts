@@ -7,10 +7,9 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
-import { DiscountType, CouponGenericRules, Patient } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { Connection } from 'typeorm';
+import { discountCalculation, genericRuleCheck } from 'helpers/couponCommonFunctions';
 
 export const validateConsultCouponTypeDefs = gql`
   enum AppointmentType {
@@ -39,78 +38,6 @@ enum customerTypeInCoupons {
   FIRST = 'FIRST',
   RECURRING = 'RECURRING',
 }
-
-export const genericRuleCheck = async (
-  couponGenericRulesData: CouponGenericRules,
-  amount: number
-) => {
-  //minimum cart value check
-  if (couponGenericRulesData.minimumCartValue && amount < couponGenericRulesData.minimumCartValue)
-    return {
-      validityStatus: false,
-      revisedAmount: amount,
-      reasonForInvalidStatus: ApiConstants.LOWER_CART_LIMIT.replace(
-        '{0}',
-        couponGenericRulesData.minimumCartValue.toString()
-      ).toString(),
-    };
-
-  //maximum cart value check
-  if (couponGenericRulesData.maximumCartValue && amount > couponGenericRulesData.maximumCartValue)
-    return {
-      validityStatus: false,
-      revisedAmount: amount,
-      reasonForInvalidStatus: ApiConstants.UPPER_CART_LIMIT.replace(
-        '{0}',
-        couponGenericRulesData.maximumCartValue.toString()
-      ).toString(),
-    };
-
-  //coupon start date check
-  const todayDate = new Date();
-  if (
-    couponGenericRulesData.couponStartDate &&
-    todayDate < couponGenericRulesData.couponStartDate
-  ) {
-    return {
-      validityStatus: false,
-      revisedAmount: amount,
-      reasonForInvalidStatus: ApiConstants.EARLY_COUPON.toString(),
-    };
-  }
-
-  // coupon end date check
-  if (couponGenericRulesData.couponEndDate && todayDate > couponGenericRulesData.couponEndDate) {
-    return {
-      validityStatus: false,
-      revisedAmount: amount,
-      reasonForInvalidStatus: ApiConstants.COUPON_EXPIRED.toString(),
-    };
-  }
-};
-
-export const discountCalculation = async (
-  actualAmount: number,
-  discountType: DiscountType,
-  discountValue: number
-) => {
-  let revisedAmount = actualAmount;
-  if (discountType === DiscountType.PERCENT) {
-    revisedAmount = actualAmount - (actualAmount * discountValue) / 100;
-  }
-  if (discountType === DiscountType.PRICEOFF) {
-    if (actualAmount > discountValue) {
-      revisedAmount = actualAmount - discountValue;
-    } else {
-      revisedAmount = 0;
-    }
-  }
-
-  if (discountType === DiscountType.FLATPRICE) {
-    revisedAmount = discountValue;
-  }
-  return revisedAmount;
-};
 
 const validateConsultCoupon: Resolver<
   null,
@@ -183,6 +110,7 @@ const validateConsultCoupon: Resolver<
       ).toString(),
     };
 
+  //call to check generic rule
   const genericRuleCheckResult = await genericRuleCheck(couponGenericRulesData, doctorFees);
   if (genericRuleCheckResult) return genericRuleCheckResult;
 
@@ -219,6 +147,7 @@ const validateConsultCoupon: Resolver<
         reasonForInvalidStatus: ApiConstants.COUPON_COUNT_PER_CUSTOMER_EXCEEDED.toString(),
       };
   }
+
   //total coupon count irrespective to customer
   if (couponGenericRulesData.couponReuseCount) {
     const customerUsageCount = await appointmentRepo.getAppointmentCountByCouponCode(args.code);
