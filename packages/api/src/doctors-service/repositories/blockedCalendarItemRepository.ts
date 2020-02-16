@@ -13,10 +13,17 @@ export class BlockedCalendarItemRepository extends Repository<BlockedCalendarIte
     const inputStartDate = format(addDays(slot, -1), 'yyyy-MM-dd');
     const currentStartDate = new Date(inputStartDate + 'T18:30');
     const currentEndDate = new Date(format(slot, 'yyyy-MM-dd').toString() + 'T18:29');
-    const secondStartDate = new Date(format(addDays(slot, 1), 'yyyy-MM-dd').toString() + 'T18:30');
-    const secondEndDate = new Date(format(addDays(slot, 2), 'yyyy-MM-dd').toString() + 'T18:29');
+    //const secondStartDate = new Date(format(addDays(slot, 1), 'yyyy-MM-dd').toString() + 'T18:30');
+    //const secondEndDate = new Date(format(addDays(slot, 2), 'yyyy-MM-dd').toString() + 'T18:29');
+    const secondStartDate = new Date(format(slot, 'yyyy-MM-dd').toString() + 'T18:30');
+    const secondEndDate = new Date(format(addDays(slot, 1), 'yyyy-MM-dd').toString() + 'T18:29');
     return this.find({
       where: [
+        {
+          doctorId,
+          start: MoreThan(currentStartDate),
+          end: LessThanOrEqual(currentEndDate),
+        },
         {
           doctorId,
           start: LessThanOrEqual(currentStartDate),
@@ -24,8 +31,8 @@ export class BlockedCalendarItemRepository extends Repository<BlockedCalendarIte
         },
         {
           doctorId,
-          start: LessThanOrEqual(secondStartDate),
-          end: MoreThanOrEqual(secondEndDate),
+          start: MoreThanOrEqual(secondStartDate),
+          end: LessThanOrEqual(secondEndDate),
         },
       ],
     });
