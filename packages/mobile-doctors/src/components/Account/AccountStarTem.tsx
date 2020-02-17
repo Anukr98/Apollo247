@@ -235,26 +235,24 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const renderStarDoctorCards = () => {
     return starDoctorsActive.map((starDoctor, i) => {
-      if (starDoctor && starDoctor.associatedDoctor)
-        return (
-          <DoctorCard
-            onRemove={(id) => {
-              removeDoctorFromProgram(id);
-            }}
-            doctorId={starDoctor.associatedDoctor.id}
-            key={i}
-            image={starDoctor.associatedDoctor.photoUrl || ''}
-            doctorName={`${starDoctor.associatedDoctor.firstName || ''} ${starDoctor
-              .associatedDoctor.lastName || ''}`}
-            experience={starDoctor.associatedDoctor.experience || ''}
-            specialization={
-              profileData.specialty ? profileData.specialty.name.toLocaleUpperCase() : ''
-            } //{(starDoctor.associatedDoctor.qualification || '').toUpperCase()}
-            education={starDoctor.associatedDoctor.qualification!}
-            // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
-            location={getFormattedLocation(starDoctor)}
-          />
-        );
+
+      return (
+        <DoctorCard
+          onRemove={(id) => {
+            removeDoctorFromProgram(id);
+          }}
+          doctorId={starDoctor!.associatedDoctor!.id}
+          key={i}
+          image={starDoctor!.associatedDoctor!.photoUrl || ''}
+          doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
+            .associatedDoctor!.lastName || ''}`}
+          experience={starDoctor!.associatedDoctor!.experience || ''}
+          specialization={profileData.specialty!.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
+          education={starDoctor!.associatedDoctor!.qualification!}
+          location={getFormattedLocation(starDoctor)}
+        />
+      );
+
     });
   };
 
@@ -278,7 +276,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
             margin: 20,
             marginTop: 0,
             borderRadius: 10,
-            //marginBottom: 0,
           }}
         >
           <View style={{ margin: 20 }}>
