@@ -149,8 +149,9 @@ export enum ApiConstants {
   FROM_NAME = 'Admin',
   PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
