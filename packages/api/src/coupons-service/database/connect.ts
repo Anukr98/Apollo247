@@ -73,6 +73,7 @@ import {
   PatientMedicalHistory,
   PatientNotificationSettings,
   SearchHistory,
+  RegistrationCodes,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -170,6 +171,7 @@ export const connect = async () => {
         PatientMedicalHistory,
         PatientNotificationSettings,
         SearchHistory,
+        RegistrationCodes,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

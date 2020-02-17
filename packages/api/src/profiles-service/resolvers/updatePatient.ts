@@ -10,6 +10,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
+import { RegistrationCodesRepository } from 'profiles-service/repositories/registrationCodesRepository';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -85,17 +86,26 @@ const updatePatient: Resolver<
   const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
   if (updatePatient) {
-    if (updatePatient.uhid == '' || updatePatient.uhid == null) {
-      await patientRepo.createNewUhid(updatePatient.id);
-    }
+    // if (updatePatient.uhid == '' || updatePatient.uhid == null) {
+    //   await patientRepo.createNewUhid(updatePatient.id);
+    // }
   }
   const patient = await patientRepo.findById(updatePatient.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  let regCode = '';
+  if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
+    const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
+    const getCode = await regCodeRepo.getCode();
+    regCode = getCode[0].registrationCode;
+    if (getCode.length > 0) {
+      await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+    }
+  }
 
   //send registration success notification here
-  sendPatientRegistrationNotification(patient, profilesDb);
+  sendPatientRegistrationNotification(patient, profilesDb, regCode);
 
   return { patient };
 };

@@ -1165,7 +1165,8 @@ export function logNotificationResponse(type: NotificationType, logData: Object)
 
 export async function sendPatientRegistrationNotification(
   patient: Patient,
-  patientsDb: Connection
+  patientsDb: Connection,
+  regCode: string
 ) {
   //get all the patient device tokens
   let patientDeviceTokens: string[] = [];
@@ -1188,8 +1189,12 @@ export async function sendPatientRegistrationNotification(
       content: notificationBody,
     },
   };
+  let smsContent = notificationBody;
+  if (regCode != '') {
+    smsContent = smsContent + 'Reg Code: ' + regCode;
+  }
   //call sendNotificationSMS function to send sms
-  await sendNotificationSMS(patient.mobileNumber, notificationBody);
+  await sendNotificationSMS(patient.mobileNumber, smsContent);
 
   //notification options
   const options = {
