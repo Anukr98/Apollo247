@@ -250,6 +250,8 @@ export interface DoctorAvailabilityInput {
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
+  availableType?: APPOINTMENT_TYPE | null;
+  currentTimeInput?: any | null;
 }
 
 export interface DownloadDocumentsInput {
