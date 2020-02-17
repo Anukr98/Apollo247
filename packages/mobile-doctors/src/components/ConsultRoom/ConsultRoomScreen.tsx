@@ -105,9 +105,9 @@ import {
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
 import { isIphoneX } from 'react-native-iphone-x-helper';
-import MaterialTabs from 'react-native-material-tabs';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: any;
@@ -182,6 +182,10 @@ export interface ConsultRoomScreenProps
 }
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
+  const tabsData = [
+    { title: strings.consult_room.case_sheet, key: '0' },
+    { title: strings.consult_room.chat, key: '1' },
+  ];
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
   const [hideView, setHideView] = useState(false);
@@ -198,7 +202,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.navigation.getParam('PatientId');
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
-  const [activeTabIndex, setActiveTabIndex] = useState(props.activeTabIndex || 0);
+  const [activeTabIndex, setActiveTabIndex] = useState(
+    props.activeTabIndex ? props.activeTabIndex.toString() : tabsData[0].title
+  );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
   const [messages, setMessages] = useState([]);
@@ -2700,27 +2706,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               : {},
           ]}
         >
-          <MaterialTabs
-            items={[strings.consult_room.case_sheet, strings.consult_room.chat]}
-            selectedIndex={activeTabIndex}
+          <TabsComponent
+            data={tabsData}
             onChange={(index) => setActiveTabIndex(index)}
-            barColor="#ffffff"
-            indicatorColor="#00b38e"
-            activeTextColor="#02475b"
-            inactiveTextColor={'#02475b'}
-            activeTextStyle={{
-              ...theme.fonts.IBMPlexSansBold(14),
-              color: '#02475b',
-            }}
-            uppercase={false}
-          ></MaterialTabs>
+            selectedTab={activeTabIndex}
+          />
         </View>
         <View
           style={{
             flex: 1,
           }}
         >
-          {activeTabIndex == 0 ? (
+          {activeTabIndex == tabsData[0].title ? (
             <CaseSheetView
               // disableConsultButton={!!PatientConsultTime}
               overlayDisplay={(component) => {
@@ -2796,7 +2793,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         storeInHistory: true,
       },
       (status, response) => {
-        setActiveTabIndex(0);
+        setActiveTabIndex(tabsData[0].title);
         setStartConsult(true);
         if (timediffInSec > 0) {
           startNoShow(timediffInSec, () => {
@@ -2899,7 +2896,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             ),
             onPress: () => {
               setHideView(!hideView);
-              setActiveTabIndex(1);
+              setActiveTabIndex(tabsData[1].title);
               {
                 startConsult ? setShowPopUp(true) : null;
               }
