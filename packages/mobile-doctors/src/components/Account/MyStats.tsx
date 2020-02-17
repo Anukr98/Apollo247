@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
     borderBottomColor: '#f0f4f5',
     borderBottomWidth: 1,
-    marginRight: 10,
+    // marginRight: 0,
     // opacity: 0.05,
     paddingTop: 6,
     paddingBottom: 6,
@@ -121,15 +121,10 @@ const styles = StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     lineHeight: 16,
     letterSpacing: 0.06,
-    // flex: 1,
-    //  flexWrap: 'wrap'
-    // flexShrink: 1
   },
 });
-// export interface MyStatsProps {}
 
 export interface MyStatsProps extends NavigationScreenProps<{}> {
-  //profileData: object;
   scrollViewRef: KeyboardAwareScrollView | null;
   onReload: () => void;
 }
@@ -176,10 +171,6 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
           style={{
             overflow: 'hidden',
             backgroundColor: theme.colors.WHITE,
-            // flexDirection: 'row',
-            // justifyContent: 'space-between',
-            // alignItems: 'center',
-            // backgroundColor: theme.colors.WHITE,
           }}
         >
           <TabsComponent
@@ -204,7 +195,6 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
         style={{
           paddingTop: 15,
           flexDirection: 'row',
-          // justifyContent: 'space-between',
         }}
       >
         <View>
@@ -229,7 +219,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
             strokeCap={'butt'}
           />
         </View>
-        <View style={{ marginLeft: 15, marginTop: 10 }}>
+        <View style={{ marginLeft: 15, marginTop: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
             <View
               style={[
@@ -239,14 +229,16 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
                 styles.circleStyle,
               ]}
             ></View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              <Text style={[styles.chartText, { flexWrap: 'wrap' }]}>32 Online Consults | </Text>
-              <Text style={[styles.chartText, { ...theme.fonts.IBMPlexSansBold(12) }]}>
-                Rs. 3000
+            <View style={{ flexDirection: 'row', flex: 1 }}>
+              <Text style={[styles.chartText, {}]}>
+                32 Online Consults |{' '}
+                <Text style={[styles.chartText, { ...theme.fonts.IBMPlexSansBold(12) }]}>
+                  Rs. 3000
+                </Text>
               </Text>
             </View>
           </View>
-          <View style={{ flexDirection: 'row', marginTop: 4 }}>
+          <View style={{ flexDirection: 'row', marginTop: 4, flex: 1 }}>
             <View
               style={[
                 {
@@ -255,10 +247,12 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
                 styles.circleStyle,
               ]}
             ></View>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.chartText}>28 Physical Consults | </Text>
-              <Text style={[styles.chartText, { ...theme.fonts.IBMPlexSansBold(12) }]}>
-                Rs. 1250
+            <View style={{ flexDirection: 'row', flex: 1 }}>
+              <Text style={styles.chartText}>
+                28 Physical Consults |
+                <Text style={[styles.chartText, { ...theme.fonts.IBMPlexSansBold(12) }]}>
+                  Rs. 1250
+                </Text>
               </Text>
             </View>
           </View>
@@ -269,80 +263,104 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
   };
   const GetFollowupCharts = () => {
     return (
-      <View style={styles.container}>
-        <View
-          style={{
-            paddingTop: 15,
-            flexDirection: 'row',
-            width: 150,
-            alignItems: 'flex-start',
-          }}
-        >
-          <Pie
-            radius={25}
-            innerRadius={15}
-            sections={[
-              {
-                percentage: 30,
-                color: '#02475b',
-              },
-              {
-                percentage: 70,
-                color: '#00b38e',
-              },
-            ]}
-            dividerSize={1}
-            strokeCap={'butt'}
-          />
-          <View style={{ marginLeft: 15, marginTop: 10 }}>
-            <View style={{ flexDirection: 'row' }}>
-              <View
-                style={[
-                  {
-                    backgroundColor: '#02475b',
-                  },
-                  styles.circleStyle,
-                ]}
-              ></View>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.chartText}>40 New Patients | </Text>
+      // <View style={styles.container}>
+      <View
+        style={{
+          paddingTop: 15,
+          flexDirection: 'row',
+
+          // width: 160,
+          //   alignItems: 'flex-start',
+          // backgroundColor: 'brown',
+        }}
+      >
+        <Pie
+          radius={25}
+          innerRadius={15}
+          sections={[
+            {
+              percentage: 30,
+              color: '#02475b',
+            },
+            {
+              percentage: 70,
+              color: '#00b38e',
+            },
+          ]}
+          dividerSize={1}
+          strokeCap={'butt'}
+        />
+        <View style={{ marginLeft: 15, marginTop: 10, flex: 1 }}>
+          <View style={{ flexDirection: 'row' }}>
+            <View
+              style={[
+                {
+                  backgroundColor: '#02475b',
+                },
+                styles.circleStyle,
+              ]}
+            ></View>
+            <View
+              style={{
+                flexDirection: 'row',
+                flex: 1,
+              }}
+            >
+              <Text style={styles.chartText}>
+                40 New Patients |{' '}
                 <Text style={[styles.chartText, { ...theme.fonts.IBMPlexSansBold(12) }]}>
                   Rs. 3000
                 </Text>
-              </View>
+              </Text>
             </View>
-            <View style={{ flexDirection: 'row', marginTop: 4 }}>
-              <View
-                style={[
-                  {
-                    backgroundColor: '#00b38e',
-                  },
-                  styles.circleStyle,
-                ]}
-              ></View>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.chartText}>20 Follow-up Patients | </Text>
-                <Text style={[styles.chartText, { ...theme.fonts.IBMPlexSansBold(12) }]}>
+          </View>
+          <View style={{ flexDirection: 'row', marginTop: 4 }}>
+            <View
+              style={[
+                {
+                  backgroundColor: '#00b38e',
+                },
+                styles.circleStyle,
+              ]}
+            ></View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                justifyContent: 'flex-start',
+              }}
+            >
+              <Text style={styles.chartText}>
+                20 Follow-up Patients |{' '}
+                <Text
+                  style={[
+                    styles.chartText,
+                    {
+                      ...theme.fonts.IBMPlexSansBold(12),
+                    },
+                  ]}
+                >
                   Rs. 1250
                 </Text>
-              </View>
+              </Text>
             </View>
           </View>
         </View>
       </View>
+      // </View>
     );
   };
 
   const GetPaymentData = () => {
     return (
-      <View style={styles.cardContainer}>
+      <View style={[styles.cardContainer, { padding: 12 }]}>
         <View style={{ alignItems: 'center', justifyContent: 'center' }}>
           <Text style={styles.priceStyle}>Rs. 5250</Text>
           <Text style={styles.revnueDescr}>Revenue to date for 60 patients</Text>
         </View>
         <View style={styles.boxView}>
           <View style={styles.chartView}>
-            <Text style={styles.chartHeadingText}>ONLINE vs PHYSICAL</Text>
+            <Text style={styles.chartHeadingText}>ONLINE vs PHYSICAL </Text>
             {GetOnlineCharts()}
           </View>
           <View style={styles.seperatorline}></View>
@@ -378,12 +396,6 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f4f5' }}>
         <ScrollView bounces={false}>
-          {/* <KeyboardAwareScrollView
-            style={{ flex: 1 }}
-            showsVerticalScrollIndicator={false}
-            ref={(ref) => (scrollViewRef.current = ref)}
-            bounces={false}
-          > */}
           {showHeaderView()}
           {GetTabs()}
 
@@ -432,7 +444,6 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
               </View>
             )}
           </View>
-          {/* </KeyboardAwareScrollView> */}
         </ScrollView>
       </SafeAreaView>
 

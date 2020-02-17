@@ -20,6 +20,11 @@ export enum Gender {
   OTHER = 'OTHER',
 }
 
+export enum REGISTRATION_CODES_STATUS {
+  SENT = 'SENT',
+  NOT_SENT = 'NOT_SENT',
+}
+
 export enum PATIENT_ADDRESS_TYPE {
   HOME = 'HOME',
   OFFICE = 'OFFICE',
@@ -601,6 +606,9 @@ export class Patient extends BaseEntity {
   )
   patientMedicalHistory: PatientMedicalHistory;
 
+  @OneToOne((type) => RegistrationCodes, (registrationCodes) => registrationCodes.patient)
+  registrationCodes: RegistrationCodes;
+
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
 
@@ -639,6 +647,40 @@ export class Patient extends BaseEntity {
   }
 }
 //patient Ends
+
+//patient reg codes starts
+@Entity()
+export class RegistrationCodes extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  registrationCode: string;
+
+  @Column({ default: REGISTRATION_CODES_STATUS.NOT_SENT })
+  codeStatus: REGISTRATION_CODES_STATUS;
+
+  @OneToOne((type) => Patient, (patient) => patient.registrationCodes)
+  @JoinColumn()
+  patient: Patient;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patient reg codes ends
 
 //searchHistory Starts
 @Entity()
@@ -1020,6 +1062,9 @@ export class CouponGenericRules extends BaseEntity {
   couponReuseCount: number;
 
   @Column({ nullable: true })
+  couponReuseCountPerCustomer: number;
+
+  @Column({ nullable: true })
   couponStartDate: Date;
 
   @Column({ nullable: true })
@@ -1086,37 +1131,6 @@ export class CouponConsultRules extends BaseEntity {
   }
 }
 //Consult Coupon Rules ends
-
-//Coupon usage details starts
-@Entity()
-export class CouponUsageDetails extends BaseEntity {
-  @Column({ nullable: true, type: 'uuid' })
-  couponId: string;
-
-  @Column({ nullable: true, type: 'uuid' })
-  consultId: string;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdDate: Date;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ nullable: true, type: 'uuid' })
-  orderId: string;
-
-  @Column({ nullable: true, type: 'uuid' })
-  patientId: string;
-
-  @Column({ nullable: true })
-  updatedDate: Date;
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
-}
-//coupon usage details ends
 
 //patientMedicalHistory starts
 @Entity()

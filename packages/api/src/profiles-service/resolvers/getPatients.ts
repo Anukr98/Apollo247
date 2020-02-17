@@ -137,7 +137,7 @@ const addNewProfile: Resolver<
   }
 
   //send registration success notification here
-  sendPatientRegistrationNotification(patient, profilesDb);
+  sendPatientRegistrationNotification(patient, profilesDb, '');
 
   return { patient };
 };

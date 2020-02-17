@@ -13,6 +13,8 @@ import { connect } from 'coupons-service/database/connect';
 
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
+import { GraphQLDate, GraphQLTime, GraphQLDateTime } from 'graphql-iso-date';
+import gql from 'graphql-tag';
 //import fetch from 'node-fetch';
 
 (async () => {
@@ -36,6 +38,18 @@ import { winstonLogger } from 'customWinstonLogger';
       return context;
     },
     schema: buildFederatedSchema([
+      {
+        typeDefs: gql`
+          scalar Date
+          scalar Time
+          scalar DateTime
+        `,
+        resolvers: {
+          Date: GraphQLDate,
+          Time: GraphQLTime,
+          DateTime: GraphQLDateTime,
+        },
+      },
       {
         typeDefs: validateConsultCouponTypeDefs,
         resolvers: validateConsultCouponResolvers,

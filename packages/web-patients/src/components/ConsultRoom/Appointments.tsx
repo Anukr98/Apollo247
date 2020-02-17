@@ -223,6 +223,11 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       top: 0,
     },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
   };
 });
 
@@ -389,12 +394,13 @@ export const Appointments: React.FC = (props) => {
                 label="Past"
               />
             </Tabs>
+
             {tabValue === 0 && (
               <TabContainer>
                 {availableAppointments && availableAppointments.length > 0 ? (
                   <ConsultationsCard appointments={availableAppointments} />
                 ) : loading || isSigningIn ? (
-                  <CircularProgress />
+                  <CircularProgress className={classes.loader} />
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>

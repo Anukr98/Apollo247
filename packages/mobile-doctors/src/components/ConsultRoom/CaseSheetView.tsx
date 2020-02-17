@@ -2425,6 +2425,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     Appintmentdatetimeconsultpage: string
   ) => {
     if (patientDetails) {
+      const age = moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true) || -1;
       return (
         <View>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -2435,9 +2436,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </Text>
             <View style={styles.line}></View>
             <Text style={styles.agetext}>
-              {Math.round(
-                moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true)
-              ).toString() || '-'}
+              {age > -1 ? Math.round(age).toString() : '-'}
               {patientDetails.gender ? `, ${patientDetails.gender.charAt(0)}` : ''}
               {patientDetails.patientAddress &&
               patientDetails.patientAddress[0] &&
