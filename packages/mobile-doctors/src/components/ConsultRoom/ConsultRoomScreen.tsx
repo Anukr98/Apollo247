@@ -1,40 +1,23 @@
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
+import { AudioCall } from '@aph/mobile-doctors/src/components/ConsultRoom/AudioCall';
 import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
+import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
+import { VideoCall } from '@aph/mobile-doctors/src/components/ConsultRoom/VideoCall';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import {
-  AddAttachmentIcon,
   BackArrow,
-  BackCameraIcon,
   Call,
-  ChatCallIcon,
-  ChatIcon,
-  ChatSend,
-  ChatWithNotification,
   ClosePopup,
   CrossPopup,
-  DoctorImage,
-  DoctorPlaceholderImage,
   DotIcon,
-  EndCallIcon,
-  FileBig,
-  FrontCameraIcon,
-  FullScreenIcon,
-  Mascot,
-  MissedCallIcon,
-  MuteIcon,
-  PatientPlaceHolderImage,
   RoundCallIcon,
-  RoundChatIcon,
   RoundVideoIcon,
-  UnMuteIcon,
-  VideoOffIcon,
-  VideoOnIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
   CREATEAPPOINTMENTSESSION,
@@ -72,7 +55,6 @@ import {
   SendCallNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
@@ -81,7 +63,6 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import Pubnub, { HereNowResponse } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -91,23 +72,17 @@ import {
   FlatList,
   Image,
   Keyboard,
-  KeyboardAvoidingView,
   KeyboardEvent,
-  Linking,
   Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Image as ImageNative } from 'react-native-elements';
-import { isIphoneX } from 'react-native-iphone-x-helper';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 
 const { height, width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -307,33 +282,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
       });
   };
-
-  const [talkStyles, setTalkStyles] = useState<object>({
-    flex: 1,
-    backgroundColor: 'black',
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    elevation: 1000,
-    zIndex: 100,
-  });
-  const [subscriberStyles, setSubscriberStyles] = useState<object>({
-    width,
-    height,
-    zIndex: 100,
-  });
-  const [publisherStyles, setPublisherStyles] = useState<object>({
-    position: 'absolute',
-    top: 44,
-    right: 20,
-    width: 112,
-    height: 148,
-    zIndex: 100,
-    elevation: 1000,
-    borderRadius: 30,
-  });
   const [audioCallStyles, setAudioCallStyles] = useState<object>({
     flex: 1,
     position: 'absolute',
@@ -398,21 +346,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setConvertVideo(false);
     setShowVideo(true);
     setIsCall(false);
-    // setTextInputStyles({
-    //   width: width,
-    //   height: 66,
-    //   backgroundColor: 'white',
-    //   top: 5,
-    //   bottom: -10,
-    // });
-    // setLinestyles({
-    //   marginLeft: 20,
-    //   marginRight: 64,
-    //   marginTop: -10,
-    //   height: 2,
-    //   backgroundColor: '#00b38e',
-    // });
-
     const text = {
       id: doctorId,
       message: messageCodes.endCallMsg,
@@ -916,1402 +849,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  let leftComponent = 0;
-  let rightComponent = 0;
-
-  const renderChatRow = (
-    rowData: {
-      id: string;
-      message: string;
-      duration: string;
-      automatedText?: string;
-    },
-    index: number
-  ) => {
-    if (
-      [
-        messageCodes.typingMsg,
-        messageCodes.endCallMsg,
-        messageCodes.audioCallMsg,
-        messageCodes.videoCallMsg,
-        messageCodes.acceptedCallMsg,
-        messageCodes.rescheduleconsult,
-        messageCodes.followupconsult,
-        messageCodes.appointmentComplete,
-        messageCodes.firstMessage,
-        messageCodes.secondMessage,
-        messageCodes.covertVideoMsg,
-        messageCodes.covertAudioMsg,
-        messageCodes.callAbandonment,
-        messageCodes.startConsultMsg,
-        messageCodes.stopConsultMsg,
-        messageCodes.jdThankyou,
-      ].includes(rowData.message)
-    ) {
-      return null;
-    }
-    if (rowData.id !== doctorId) {
-      leftComponent++;
-      rightComponent = 0;
-      return (
-        <View>
-          {leftComponent === 1 ? (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: width,
-                marginVertical: 8,
-              }}
-            />
-          ) : null}
-          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
-            <>
-              {rowData.duration === '00 : 00' ? (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 282,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-start',
-                    paddingVertical: 17,
-                  }}
-                >
-                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
-                  <View
-                    style={{
-                      marginLeft: 40,
-                      borderRadius: 10,
-                      height: 29,
-                      width: 244,
-                    }}
-                  >
-                    <View
-                      style={{
-                        backgroundColor: '#e50000',
-                        opacity: 0.04,
-                        width: 244,
-                        borderRadius: 10,
-                        height: 29,
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                      }}
-                    />
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        backgroundColor: 'transparent',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <MissedCallIcon
-                        style={{
-                          width: 16,
-                          height: 16,
-                          marginLeft: 16,
-                          marginTop: 3,
-                        }}
-                      />
-                      <Text
-                        style={{
-                          color: '#890000',
-                          marginLeft: 27,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(12),
-                          lineHeight: 24,
-                          letterSpacing: 0.04,
-                          marginTop: 2,
-                        }}
-                      >
-                        {rowData.message === 'Audio call ended'
-                          ? strings.consult_room.you_missed_voice_call
-                          : strings.consult_room.you_missed_video_call}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ) : (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 282,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-end',
-                  }}
-                >
-                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
-                  <View
-                    style={{
-                      borderRadius: 10,
-                      marginVertical: 2,
-                      alignSelf: 'flex-end',
-                      flexDirection: 'row',
-                      marginLeft: 40,
-                    }}
-                  >
-                    <ChatCallIcon />
-                    <View
-                      style={{
-                        marginLeft: 12,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: '#01475b',
-                          marginLeft: 0,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(14),
-                        }}
-                      >
-                        {rowData.message}
-                      </Text>
-                      <Text
-                        style={{
-                          color: '#01475b',
-                          marginTop: 2,
-                          marginLeft: 0,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(10),
-                        }}
-                      >
-                        {strings.consult_room.duration} - {rowData.duration}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )}
-            </>
-          ) : (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: 282,
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-start',
-              }}
-            >
-              {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
-
-              <View
-                style={{
-                  backgroundColor: rowData.message === messageCodes.imageconsult ? '' : 'white',
-                  marginLeft: 38,
-                  borderRadius: 10,
-                  // width: 244,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#0087ba',
-                    paddingHorizontal: 16,
-                    paddingVertical: 4,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.message === messageCodes.languageQue ||
-                  rowData.message === messageCodes.startConsultjr ||
-                  rowData.message === messageCodes.stopConsultJr
-                    ? rowData.automatedText
-                    : rowData.message === messageCodes.imageconsult
-                    ? renderImageView(rowData)
-                    : rowData.message}
-                </Text>
-
-                <Text
-                  style={{
-                    color: 'rgba(2,71,91,0.6)',
-                    paddingHorizontal: 16,
-                    paddingVertical: 4,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {rowData.message === messageCodes.imageconsult ? '' : convertChatTime(rowData)}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      );
-    } else {
-      leftComponent = 0;
-      rightComponent++;
-      return (
-        <View>
-          {rightComponent == 1 ? (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: width,
-                marginVertical: 8,
-              }}
-            />
-          ) : null}
-          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
-            <View
-              style={{
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-end',
-                flexDirection: 'row',
-              }}
-            >
-              <ChatCallIcon />
-              <View>
-                <Text
-                  style={{
-                    color: '#01475b',
-                    marginLeft: 12,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                  }}
-                >
-                  {rowData.message}
-                </Text>
-                <Text
-                  style={{
-                    color: '#01475b',
-                    marginTop: 2,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {strings.consult_room.duration} - {rowData.duration}
-                </Text>
-                <Text
-                  style={{
-                    color: '#01475b',
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {convertChatTime(rowData)}
-                </Text>
-              </View>
-            </View>
-          ) : (
-            <View
-              style={{
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-end',
-                flexDirection: 'row',
-              }}
-            >
-              {rowData.message === messageCodes.consultPatientStartedMsg
-                ? patientAutomatedMessage(rowData, index)
-                : rowData.message === messageCodes.firstMessage ||
-                  rowData.message === messageCodes.secondMessage
-                ? doctorAutomatedMessage(rowData, index)
-                : rowData.message === messageCodes.imageconsult
-                ? renderImageView(rowData)
-                : messageView(rowData, index)}
-            </View>
-          )}
-        </View>
-      );
-    }
-  };
-
-  const renderAutomatedText = (rowData: any, style = {}) => (
-    <View style={[styles.automatedTextView, style]}>
-      {rowData.automatedText ? (
-        <>
-          <Text style={styles.automatedLeftText}>{rowData.automatedText}</Text>
-          <Text style={styles.automatedRightText}>{convertChatTime(rowData)}</Text>
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              height: 4,
-              width: 20,
-            }}
-          />
-        </>
-      ) : null}
-    </View>
-  );
-
-  const patientAutomatedMessage = (rowData: any, index: number) => {
-    return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          borderRadius: 10,
-          marginVertical: 2,
-          alignSelf: 'flex-start',
-        }}
-      >
-        {leftComponent === 1 && (
-          <View style={styles.imageStyle}>
-            <Mascot style={styles.imageStyle} />
-          </View>
-        )}
-        {renderAutomatedText(rowData, { marginBottom: 4 })}
-      </View>
-    );
-  };
-
-  const doctorAutomatedMessage = (rowData: any, index: number) => {
-    return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          borderRadius: 10,
-          marginVertical: 2,
-          alignSelf: 'flex-start',
-        }}
-      >
-        {leftComponent === 1 && (
-          <View style={styles.imageStyle}>
-            <Mascot style={styles.imageStyle} />
-          </View>
-        )}
-        {renderAutomatedText(rowData, { marginBottom: 4, width: 244 })}
-      </View>
-    );
-  };
-
-  const messageView = (rowData: any, index: number) => {
-    const isMatched = rowData.url && rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
-    // const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
-    const onPress = () => {
-      if (isMatched) {
-        openPopUp(rowData);
-      }
-    };
-    return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          width: rowData.message !== null ? 282 : 0,
-          borderRadius: 10,
-          marginVertical: -2,
-          // alignSelf: 'flex-start',
-        }}
-      >
-        {leftComponent === 1 && (
-          <View style={styles.imageStyle}>
-            <DoctorPlaceholderImage style={styles.imageStyle} />
-          </View>
-        )}
-        <View>
-          {rowData.message === messageCodes.imageconsult ? (
-            renderCommonImageView(rowData, isMatched, onPress)
-          ) : rowData.message === '^^#startconsultJr' ? (
-            renderAutomatedText(rowData)
-          ) : rowData.message === '^^#startconsult' ? (
-            renderAutomatedText(rowData)
-          ) : rowData.message === messageCodes.stopConsultJr ? (
-            renderAutomatedText(rowData)
-          ) : (
-            <>
-              <View
-                style={{
-                  backgroundColor: 'white',
-                  marginLeft: 38,
-                  borderRadius: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#0087ba',
-                    paddingHorizontal: 16,
-                    paddingTop: 8,
-                    paddingBottom: 3,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.message}
-                </Text>
-                <Text
-                  style={{
-                    color: 'rgba(2,71,91,0.6)',
-                    paddingHorizontal: 16,
-                    paddingVertical: 4,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {convertChatTime(rowData)}
-                </Text>
-              </View>
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  height: 4,
-                  width: 20,
-                }}
-              />
-            </>
-          )}
-        </View>
-      </View>
-    );
-  };
-
-  const openPopUp = (rowData: any) => {
-    setLoading && setLoading(true);
-    if (rowData.url.match(/\.(pdf)$/)) {
-      if (rowData.prismId) {
-        getPrismUrls(client, rowData.id, rowData.prismId)
-          .then((data: any) => {
-            setUrl((data && data.urls[0]) || rowData.url);
-          })
-          .catch(() => {
-            setUrl(rowData.url);
-          })
-          .finally(() => {
-            setLoading && setLoading(false);
-            setShowPDF(true);
-          });
-      } else {
-        setUrl(rowData.url);
-        setLoading && setLoading(false);
-        setShowPDF(true);
-      }
-    } else if (rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) {
-      if (rowData.prismId) {
-        getPrismUrls(client, rowData.id, rowData.prismId)
-          .then((data: any) => {
-            setUrl((data && data.urls[0]) || rowData.url);
-          })
-          .catch(() => {
-            setUrl(rowData.url);
-          })
-          .finally(() => {
-            setLoading && setLoading(false);
-            setPatientImageshow(true);
-          });
-      } else {
-        setUrl(rowData.url);
-        setLoading && setLoading(false);
-        setPatientImageshow(true);
-      }
-    } else {
-      if (rowData.prismId) {
-        getPrismUrls(client, rowData.id, rowData.prismId)
-          .then((data: any) => {
-            Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
-              console.error('An error occurred', err)
-            );
-          })
-          .catch(() => {
-            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
-          })
-          .finally(() => {
-            setLoading && setLoading(false);
-            setPatientImageshow(true);
-          });
-      } else {
-        setLoading && setLoading(false);
-        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
-      }
-    }
-  };
-
-  const renderCommonImageView = (rowData: any, isMatched: boolean, onPress: () => void) => {
-    return (
-      <View>
-        <TouchableOpacity onPress={onPress} activeOpacity={1}>
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              width: 180,
-              height: 180,
-              borderRadius: 10,
-              marginVertical: 2,
-              flex: 1,
-              marginBottom: isMatched ? 4 : 0,
-              top: isMatched ? 5 : 0,
-            }}
-          >
-            {isMatched ? (
-              <ImageNative
-                placeholderStyle={{
-                  height: 180,
-                  width: '100%',
-                  alignItems: 'center',
-                  backgroundColor: 'transparent',
-                }}
-                PlaceholderContent={
-                  <Spinner
-                    style={{
-                      backgroundColor: 'transparent',
-                    }}
-                  />
-                }
-                source={{
-                  uri: rowData.url,
-                }}
-                style={{
-                  resizeMode: 'stretch',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                }}
-              />
-            ) : (
-              <FileBig
-                style={{
-                  resizeMode: 'stretch',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                }}
-              />
-            )}
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderImageView = (rowData: any) => {
-    const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
-    const onPress = () => {
-      if (isMatched) {
-        openPopUp(rowData);
-        setPatientImageshow(true);
-      } else {
-        openPopUp(rowData);
-        // setShowWeb(true);
-      }
-    };
-
-    return renderCommonImageView(rowData, isMatched, onPress);
-  };
-
-  const convertChatTime = (timeStamp: any) => {
-    let utcString;
-    if (timeStamp.messageDate) {
-      const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
-        moment(timeStamp.messageDate).format('YYYY-MM-DD')
-      );
-      if (dateValidate == 0) {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('h:mm A');
-      } else {
-        utcString = moment
-          .utc(timeStamp.messageDate)
-          .local()
-          .format('DD MMM, YYYY h:mm A');
-      }
-    }
-    return utcString ? utcString : '--';
-  };
-
-  const renderChatView = () => {
-    return (
-      <View
-        style={{
-          width: width,
-          height: !returnToCall ? heightList : heightList + 20,
-          marginTop: 0,
-          backgroundColor: '#f0f4f5',
-        }}
-      >
-        {messages.length != 0 ? (
-          <FlatList
-            ref={(ref) => (flatListRef.current = ref)}
-            contentContainerStyle={{
-              marginHorizontal: 20,
-              marginTop: 0,
-            }}
-            removeClippedSubviews={false}
-            bounces={false}
-            data={messages}
-            onEndReachedThreshold={0.5}
-            renderItem={({ item, index }) => renderChatRow(item, index)}
-            keyExtractor={(_, index) => index.toString()}
-            numColumns={1}
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="on-drag"
-          />
-        ) : (
-          <View
-            style={{
-              flexDirection: 'row',
-              margin: 20,
-            }}
-          >
-            <View
-              style={{
-                marginTop: 3,
-              }}
-            >
-              <RoundChatIcon />
-            </View>
-            <Text
-              style={{
-                marginLeft: 14,
-                color: '#0087ba',
-                ...theme.fonts.IBMPlexSansMedium(12),
-                marginRight: 20,
-                lineHeight: 16,
-              }}
-            >
-              {`${strings.consult_room.your_appnt_with} ${PatientInfoAll.firstName} ${
-                strings.consult_room.is_scheduled_to_start
-              } ${moment(Appintmentdatetime).format('hh.mm A')}`}
-            </Text>
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const renderMuteIcon = () => (
-    <TouchableOpacity onPress={() => setMute(!mute)}>
-      {mute === true ? <UnMuteIcon /> : <MuteIcon />}
-    </TouchableOpacity>
-  );
-
   const callMinutes = Math.floor(callTimer / 60);
   const callSeconds = callTimer - callMinutes * 60;
   const callTimerStarted = `${
     callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes
   } : ${callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds}`;
-  const AudioCall = () => {
-    return (
-      <View style={audioCallStyles}>
-        {!convertVideo && (
-          <PatientPlaceHolderImage
-            style={{
-              width: width,
-              height: height,
-            }}
-          />
-        )}
-        {!PipView && (
-          <>
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: width,
-                height: 24,
-                backgroundColor: 'black',
-                opacity: 0.6,
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1000,
-                elevation: 2000,
-              }}
-            >
-              <Text
-                style={{
-                  color: 'white',
-                  ...theme.fonts.IBMPlexSansSemiBold(10),
-                }}
-              >
-                {strings.consult_room.time_left}{' '}
-                {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                {seconds.toString().length < 2 ? '0' + seconds : seconds}
-              </Text>
-            </View>
-            <Text
-              style={{
-                position: 'absolute',
-                marginHorizontal: 20,
-                marginTop: 44,
-                width: width - 40,
-                color: 'white',
-                ...theme.fonts.IBMPlexSansSemiBold(20),
-                textAlign: 'center',
-              }}
-            >
-              {PatientInfoAll.firstName}
-            </Text>
-          </>
-        )}
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'black',
-            opacity: 0.6,
-          }}
-        />
-
-        <OTSession
-          apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
-          sessionId={sessionId}
-          token={token}
-          eventHandlers={sessionEventHandlers}
-          ref={otSessionRef}
-        >
-          <OTPublisher
-            // style={publisherStyles}
-            // properties={{
-            //   publishVideo: convertVideo ? true : false,
-            //   publishAudio: mute,
-            //   audioVolume: 100,
-            // }}
-            // eventHandlers={publisherEventHandlers}
-            style={
-              convertVideo
-                ? publisherStyles
-                : {
-                    position: 'absolute',
-                    top: 44,
-                    right: 20,
-                    width: 1,
-                    height: 1,
-                    zIndex: 1000,
-                  }
-            }
-            properties={{
-              cameraPosition: cameraPosition,
-              publishVideo: convertVideo,
-              publishAudio: mute,
-              audioVolume: 100,
-            }}
-            resolution={'352x288'}
-            eventHandlers={publisherEventHandlers}
-            onPublishStart={(event: any) => {
-              console.log('onPublishStart', event);
-            }}
-            onPublishStop={(event: any) => {
-              console.log('onPublishStop', event);
-            }}
-            onPublishError={(event: any) => {
-              console.log('onPublishError', event);
-            }}
-          />
-          <OTSubscriber
-            // style={subscriberStyles}
-            // subscribeToSelf={true}
-            // eventHandlers={subscriberEventHandlers}
-            // properties={{
-            //   subscribeToAudio: true,
-            //   subscribeToVideo: convertVideo ? true : false,
-            //   audioVolume: 100,
-            // }}
-            style={
-              convertVideo
-                ? subscriberStyles
-                : {
-                    width: 1,
-                    height: 1,
-                  }
-            }
-            eventHandlers={subscriberEventHandlers}
-            subscribeToSelf={true}
-            onSubscribeStart={(event: any) => {
-              console.log('Watching started', event);
-            }}
-            onSubscribeStop={(event: any) => {
-              console.log('onSubscribeStop', event);
-            }}
-            onSubscribeError={(event: any) => {
-              console.log('onSubscribeError', event);
-            }}
-            properties={{
-              subscribeToAudio: true,
-              subscribeToVideo: convertVideo,
-              audioVolume: 100,
-            }}
-          />
-        </OTSession>
-        <Text
-          style={{
-            position: 'absolute',
-            marginHorizontal: 20,
-            marginTop: 44,
-            width: width - 40,
-            color: 'white',
-            ...theme.fonts.IBMPlexSansSemiBold(20),
-            textAlign: 'center',
-          }}
-        >
-          {PatientInfoAll.firstName}
-        </Text>
-        <Text
-          style={{
-            position: 'absolute',
-            marginHorizontal: 20,
-            marginTop: 81,
-            width: width - 40,
-            color: 'white',
-            ...theme.fonts.IBMPlexSansSemiBold(12),
-            textAlign: 'center',
-            letterSpacing: 0.46,
-          }}
-        >
-          {callAccepted ? callTimerStarted : strings.consult_room.ringing}
-        </Text>
-        <View
-          style={{
-            position: 'absolute',
-            top: 44,
-            left: 20,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => {
-              setAudioCallStyles({
-                flex: 1,
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                height: 1,
-                width: 1,
-              });
-
-              setChatReceived(false);
-              setReturnToCall(true);
-              setPublisherStyles({
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: 1,
-                height: 1,
-                zIndex: 100,
-                elevation: 1000,
-                borderRadius: 30,
-              });
-            }}
-          >
-            {chatReceived ? (
-              <ChatWithNotification
-                style={{
-                  left: -20,
-                  top: -20,
-                }}
-              />
-            ) : (
-              <ChatIcon />
-            )}
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 16,
-            left: 58,
-            right: 58,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            width: width - 116,
-          }}
-        >
-          {/* <TouchableOpacity onPress={() => {}}>
-            <SpeakerOn style={{ width: 60, height: 60 }} />
-          </TouchableOpacity> */}
-          <TouchableOpacity
-            onPress={() => {
-              showVideo === true ? setShowVideo(false) : setShowVideo(true);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message:
-                      showVideo === true
-                        ? messageCodes.covertVideoMsg
-                        : messageCodes.covertAudioMsg,
-                  },
-                  channel: channel,
-                  storeInHistory: false,
-                },
-                (status, response) => {}
-              );
-            }}
-          >
-            {showVideo === true ? <VideoOnIcon /> : <VideoOffIcon />}
-          </TouchableOpacity>
-          {renderMuteIcon()}
-          <TouchableOpacity
-            onPress={() => {
-              setIsAudioCall(false);
-              setHideStatusBar(false);
-              stopTimer();
-              stopMissedCallTimer();
-              setChatReceived(false);
-              setConvertVideo(false);
-              setShowVideo(true);
-              endCallNotificationAPI(true);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: strings.consult_room.audio_call_ended,
-                    duration: callTimerStarted,
-                    id: doctorId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-          >
-            <EndCallIcon />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  const VideoCall = () => {
-    return (
-      <View style={talkStyles}>
-        {isCall && (
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-            }}
-          >
-            <OTSession
-              apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
-              sessionId={sessionId}
-              token={token}
-              eventHandlers={sessionEventHandlers}
-              ref={otSessionRef}
-              options={{
-                connectionEventsSuppressed: true, // default is false
-                androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
-                androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
-                useTextureViews: true, // Android only - default is false
-                isCamera2Capable: false, // Android only - default is false
-              }}
-            >
-              <OTSubscriber
-                // style={subscriberStyles}
-                // subscribeToSelf={true}
-                // eventHandlers={subscriberEventHandlers}
-                // properties={{
-                //   subscribeToAudio: true,
-                //   subscribeToVideo: true,
-                //   //audioVolume: 100,
-                // }}
-                style={subscriberStyles}
-                subscribeToSelf={true}
-                eventHandlers={subscriberEventHandlers}
-                onSubscribeStart={(event: any) => {
-                  console.log('Watching started', event);
-                }}
-                onSubscribeStop={(event: any) => {
-                  console.log('onSubscribeStop', event);
-                }}
-                onSubscribeError={(event: any) => {
-                  console.log('onSubscribeError', event);
-                }}
-                properties={{
-                  subscribeToAudio: true,
-                  subscribeToVideo: true,
-                  audioVolume: 100,
-                }}
-              />
-              <OTPublisher
-                style={publisherStyles}
-                properties={{
-                  cameraPosition: cameraPosition,
-                  publishVideo: showVideo,
-                  publishAudio: mute,
-                  audioVolume: 100,
-                }}
-                resolution={'352x288'}
-                eventHandlers={publisherEventHandlers}
-                onPublishStart={(event: any) => {
-                  console.log('onPublishStart', event);
-                }}
-                onPublishStop={(event: any) => {
-                  console.log('onPublishStop', event);
-                }}
-                onPublishError={(event: any) => {
-                  console.log('onPublishError', event);
-                }}
-                // style={{
-                //   position: 'absolute',
-                //   top: 44,
-                //   right: 20,
-                //   width: 112,
-                //   height: 148,
-                //   zIndex: 100,
-                //   elevation: 1000,
-                //   borderRadius: 30,
-                // }}
-                // properties={{
-                //   cameraPosition: cameraPosition,
-                //   publishVideo: showVideo,
-                //   publishAudio: mute,
-                //   //audioVolume: 100,
-                // }}
-                // eventHandlers={publisherEventHandlers}
-              />
-            </OTSession>
-            <Text
-              style={{
-                position: 'absolute',
-                marginHorizontal: 20,
-                marginTop: 44,
-                width: width - 40,
-                color: 'white',
-                ...theme.fonts.IBMPlexSansSemiBold(20),
-                textAlign: 'center',
-              }}
-            >
-              {PatientInfoAll.firstName}
-            </Text>
-            {!PipView && (
-              <>
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: width,
-                    height: 24,
-                    backgroundColor: 'black',
-                    opacity: 0.6,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000,
-                    elevation: 2000,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: 'white',
-                      ...theme.fonts.IBMPlexSansSemiBold(10),
-                    }}
-                  >
-                    {strings.consult_room.time_left}{' '}
-                    {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                    {seconds.toString().length < 2 ? '0' + seconds : seconds}
-                  </Text>
-                </View>
-                <Text
-                  style={{
-                    position: 'absolute',
-                    marginHorizontal: 20,
-                    marginTop: 44,
-                    width: width - 40,
-                    color: 'white',
-                    ...theme.fonts.IBMPlexSansSemiBold(20),
-                    textAlign: 'center',
-                  }}
-                >
-                  {PatientInfoAll.firstName}
-                </Text>
-              </>
-            )}
-            <Text
-              style={{
-                position: 'absolute',
-                marginHorizontal: 20,
-                marginTop: 81,
-                width: width - 40,
-                color: 'white',
-                ...theme.fonts.IBMPlexSansSemiBold(12),
-                textAlign: 'center',
-                letterSpacing: 0.46,
-                zIndex: 1000,
-              }}
-            >
-              {callAccepted
-                ? `${callMinutes.toString().length < 2 ? '0' + callMinutes : callMinutes} : ${
-                    callSeconds.toString().length < 2 ? '0' + callSeconds : callSeconds
-                  }`
-                : strings.consult_room.calling}
-            </Text>
-            {PipView && renderOnCallPipButtons()}
-            {!PipView && renderChatNotificationIcon()}
-            {!PipView && renderBottomButtons()}
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const renderOnCallPipButtons = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 16,
-          left: 16,
-          zIndex: 1000,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            setTalkStyles({
-              flex: 1,
-              backgroundColor: 'transparent',
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 100,
-              elevation: 2000,
-            });
-            setSubscriberStyles({
-              width,
-              height,
-            });
-            setPublisherStyles({
-              position: 'absolute',
-              top: 44,
-              right: 20,
-              width: 112,
-              height: 148,
-              zIndex: 1000,
-              elevation: 2000,
-              borderRadius: 30,
-            });
-            setPipView(false);
-            setChatReceived(false);
-          }}
-        >
-          <FullScreenIcon
-            style={{
-              width: 40,
-              height: 40,
-            }}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            setIsCall(false);
-            setChatReceived(false);
-            stopMissedCallTimer();
-            // setTextInputStyles({
-            //   width: width,
-            //   height: 66,
-            //   backgroundColor: 'white',
-            //   top: 20,
-            //   // bottom: -20,
-            // });
-            // setLinestyles({
-            //   marginLeft: 20,
-            //   marginRight: 64,
-            //   marginTop: 0,
-            //   height: 2,
-            //   backgroundColor: '#00b38e',
-            // });
-            endCallNotificationAPI(true);
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: strings.consult_room.video_call_ended,
-                  duration: callTimerStarted,
-                  id: doctorId,
-                  messageDate: new Date(),
-                },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-          }}
-        >
-          <EndCallIcon
-            style={{
-              width: 40,
-              height: 40,
-              marginLeft: 43,
-            }}
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderChatNotificationIcon = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          top: 44,
-          left: 20,
-          right: 0,
-          zIndex: 1000,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            setTalkStyles({
-              flex: 1,
-              backgroundColor: 'transparent',
-              position: 'absolute',
-              top: 88,
-              right: 20,
-              width: 155,
-              height: 205,
-            });
-
-            setSubscriberStyles({
-              width: 155,
-              height: 205,
-            });
-
-            setPublisherStyles({
-              position: 'absolute',
-              top: 1,
-              right: 1,
-              width: 1,
-              height: 1,
-              zIndex: 1000,
-              elevation: 2000,
-            });
-
-            setPipView(true);
-            setChatReceived(false);
-            // setTextInputStyles({
-            //   width: width,
-            //   height: 66,
-            //   backgroundColor: 'white',
-            //   top: 20,
-            //   // bottom: -20,
-            // });
-            // setLinestyles({
-            //   marginLeft: 20,
-            //   marginRight: 64,
-            //   marginTop: -10,
-            //   height: 2,
-            //   backgroundColor: '#00b38e',
-            // });
-          }}
-        >
-          {chatReceived ? (
-            <ChatWithNotification
-              style={{
-                left: -20,
-                top: -20,
-              }}
-            />
-          ) : (
-            <ChatIcon />
-          )}
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const renderBottomButtons = () => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 20,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}
-      >
-        <View
-          style={{
-            marginHorizontal: 30,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => {
-              cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
-            }}
-          >
-            {cameraPosition === 'front' ? <BackCameraIcon /> : <FrontCameraIcon />}
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              showVideo === true ? setShowVideo(false) : setShowVideo(true);
-            }}
-          >
-            {showVideo === true ? <VideoOnIcon /> : <VideoOffIcon />}
-          </TouchableOpacity>
-          {/* <TouchableOpacity
-            onPress={async () => {
-              // Pick multiple files
-              try {
-                const results = await DocumentPicker.pickMultiple({
-                  type: [DocumentPicker.types.images],
-                });
-                for (const res of results) {
-                  console.log(
-                    res.uri,
-                    res.type, // mime type
-                    res.name,
-                    res.size
-                  );
-                }
-              } catch (err) {
-                if (DocumentPicker.isCancel(err)) {
-                  // User cancelled the picker, exit any dialogs or menus and move on
-                } else {
-                  throw err;
-                }
-              }
-            }}
-          >
-            <AttachmentIcon style={{ height: 60, width: 60 }} />
-          </TouchableOpacity> */}
-          {renderMuteIcon()}
-          <TouchableOpacity
-            onPress={() => {
-              setIsCall(false);
-              stopTimer();
-              setHideStatusBar(false);
-              setChatReceived(false);
-              stopMissedCallTimer();
-              // setTextInputStyles({
-              //   width: width,
-              //   height: 66,
-              //   backgroundColor: 'white',
-              //   top: 5,
-              //   bottom: -10,
-              // });
-              // setLinestyles({
-              //   marginLeft: 20,
-              //   marginRight: 64,
-              //   marginTop: -10,
-              //   height: 2,
-              //   backgroundColor: '#00b38e',
-              // });
-              endCallNotificationAPI(true);
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: strings.consult_room.video_call_ended,
-                    duration: callTimerStarted,
-                    id: doctorId,
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-          >
-            <EndCallIcon />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
 
   const CallPopUp = () => {
     return (
@@ -2521,178 +1063,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const ReturnCallView = () => {
-    return (
-      <View
-        style={{
-          width: width,
-          height: 44,
-          backgroundColor: '#00b38e',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => {
-            setReturnToCall(false);
-            setChatReceived(false);
-            Keyboard.dismiss();
-            setAudioCallStyles({
-              flex: 1,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              elevation: 2000,
-            });
-          }}
-        >
-          <View
-            style={{
-              width: width,
-              height: 44,
-            }}
-          >
-            <Text
-              style={{
-                color: 'white',
-                marginLeft: 20,
-                ...theme.fonts.IBMPlexSansSemiBold(14),
-                textAlign: 'left',
-                height: 44,
-                marginTop: 13,
-              }}
-            >
-              {strings.consult_room.tap_to_return_call}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const ChatRoom = () => {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#fff',
-        }}
-      >
-        {renderChatView()}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-          enabled
-        >
-          <View
-            style={{
-              width: width,
-              height: 66,
-              backgroundColor: 'white',
-              bottom: isIphoneX() ? 36 : 0,
-              //top: isIphoneX() ? 24 : 0,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                width: width,
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 9,
-                  marginLeft: 5,
-                }}
-                onPress={async () => {
-                  setDropdownVisible(!isDropdownVisible);
-                }}
-              >
-                <AddAttachmentIcon
-                  style={{
-                    width: 24,
-                    height: 24,
-                    marginTop: 10,
-                    marginLeft: 14,
-                  }}
-                />
-              </TouchableOpacity>
-              <View>
-                <TextInput
-                  autoCorrect={false}
-                  placeholder={strings.smartPrescr.type_here}
-                  multiline={true}
-                  style={{
-                    marginLeft: 16,
-                    marginTop: 5,
-                    height: 40,
-                    width: width - 120,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                  }}
-                  value={messageText}
-                  blurOnSubmit={false}
-                  // returnKeyType="send"
-                  onChangeText={(value) => {
-                    setMessageText(value);
-                    setDropdownVisible(false);
-                  }}
-                  onFocus={() => setDropdownVisible(false)}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
-                />
-                <View
-                  style={{
-                    marginLeft: 16,
-                    marginTop: 0,
-                    height: 2,
-                    width: width - 120,
-                    backgroundColor: '#00b38e',
-                  }}
-                />
-              </View>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 10,
-                  marginLeft: 2,
-                }}
-                onPress={async () => {
-                  const textMessage = messageText.trim();
-                  console.log('ChatSend', textMessage);
-
-                  if (textMessage.length == 0) {
-                    Alert.alert(strings.common.apollo, strings.consult_room.Please_write_something);
-                    return;
-                  }
-
-                  send(textMessage);
-                }}
-              >
-                <ChatSend
-                  style={{
-                    marginTop: 8,
-                    marginLeft: 14,
-                  }}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-        {returnToCall && ReturnCallView()}
-        {}
-      </View>
-    );
-  };
-
   const renderTabPage = () => {
     return (
       <>
@@ -2749,7 +1119,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 width: '100%',
               }}
             >
-              {ChatRoom()}
+              {/* {ChatRoom()} */}
+              <ChatRoom
+                navigation={props.navigation}
+                messages={messages}
+                send={send}
+                setAudioCallStyles={setAudioCallStyles}
+                flatListRef={flatListRef}
+              />
             </View>
           )}
         </View>
@@ -3154,6 +1531,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       </View>
     );
   };
+
   return (
     <SafeAreaView
       style={{
@@ -3191,8 +1569,117 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {dropdownShow ? renderDropdown() : null}
       {!loading && renderTabPage()}
       {showPopUp && CallPopUp()}
-      {isAudioCall && AudioCall()}
-      {isCall && VideoCall()}
+      {isAudioCall && (
+        <AudioCall
+          convertVideo={convertVideo}
+          callTimerStarted={callTimerStarted}
+          audioCallStyles={audioCallStyles}
+          setAudioCallStyles={setAudioCallStyles}
+          cameraPosition={cameraPosition}
+          onVideoToggle={() => {
+            showVideo === true ? setShowVideo(false) : setShowVideo(true);
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message:
+                    showVideo === true ? messageCodes.covertVideoMsg : messageCodes.covertAudioMsg,
+                },
+                channel: channel,
+                storeInHistory: false,
+              },
+              (status, response) => {}
+            );
+          }}
+          onPressEndCall={() => {
+            setIsAudioCall(false);
+            setHideStatusBar(false);
+            stopTimer();
+            stopMissedCallTimer();
+            setChatReceived(false);
+            setConvertVideo(false);
+            setShowVideo(true);
+            endCallNotificationAPI(true);
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: strings.consult_room.audio_call_ended,
+                  duration: callTimerStarted,
+                  id: doctorId,
+                  messageDate: new Date(),
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+          }}
+        />
+      )}
+      {isCall && (
+        <VideoCall
+          navigation={props.navigation}
+          endCallNotificationAPI={endCallNotificationAPI}
+          setChatReceived={setChatReceived}
+          chatReceived={chatReceived}
+          callAccepted={callAccepted}
+          callMinutes={callMinutes}
+          callSeconds={callSeconds}
+          minutes={minutes}
+          seconds={seconds}
+          firstName={PatientInfoAll.firstName}
+          subscriberEventHandlers={subscriberEventHandlers}
+          sessionEventHandlers={sessionEventHandlers}
+          sessionId={sessionId}
+          token={token}
+          otSessionRef={otSessionRef}
+          publisherEventHandlers={publisherEventHandlers}
+          setPipView={setPipView}
+          onPressBottomEndCall={() => {
+            setIsCall(false);
+            stopTimer();
+            setHideStatusBar(false);
+            setChatReceived(false);
+            stopMissedCallTimer();
+            endCallNotificationAPI(true);
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: strings.consult_room.video_call_ended,
+                  duration: callTimerStarted,
+                  id: doctorId,
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+          }}
+          onPressEnd={() => {
+            // setIsCall(false);
+            stopTimer();
+            setHideStatusBar(false);
+            setChatReceived(false);
+            stopMissedCallTimer();
+            endCallNotificationAPI(true);
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message: strings.consult_room.video_call_ended,
+                  duration: callTimerStarted,
+                  id: doctorId,
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+          }}
+        />
+      )}
       {/* {showLoading && <Spinner />} */}
       {uploadPrescriptionPopup()}
       {patientImageshow && imageOpen()}
