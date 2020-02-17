@@ -157,7 +157,7 @@ export async function sendSMS(message: string) {
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
-  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
+  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
 
   const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
 
