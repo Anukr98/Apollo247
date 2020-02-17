@@ -85,6 +85,19 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam {
   associatedDoctor: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor | null;
 }
 
+export interface GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary {
+  __typename: "Secretary";
+  id: string;
+  isActive: boolean;
+  name: string;
+  mobileNumber: string;
+}
+
+export interface GetDoctorDetails_getDoctorDetails_doctorSecretary {
+  __typename: "DoctorSecretaryDetails";
+  secretary: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null;
+}
+
 export interface GetDoctorDetails_getDoctorDetails_bankAccount {
   __typename: "BankAccount";
   bankName: string;
@@ -128,6 +141,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;
   doctorHospital: GetDoctorDetails_getDoctorDetails_doctorHospital[];
   starTeam: (GetDoctorDetails_getDoctorDetails_starTeam | null)[] | null;
+  doctorSecretary: GetDoctorDetails_getDoctorDetails_doctorSecretary | null;
   bankAccount: (GetDoctorDetails_getDoctorDetails_bankAccount | null)[] | null;
 }
 

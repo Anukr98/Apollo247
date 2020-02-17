@@ -1062,6 +1062,9 @@ export class CouponGenericRules extends BaseEntity {
   couponReuseCount: number;
 
   @Column({ nullable: true })
+  couponReuseCountPerCustomer: number;
+
+  @Column({ nullable: true })
   couponStartDate: Date;
 
   @Column({ nullable: true })
@@ -1128,37 +1131,6 @@ export class CouponConsultRules extends BaseEntity {
   }
 }
 //Consult Coupon Rules ends
-
-//Coupon usage details starts
-@Entity()
-export class CouponUsageDetails extends BaseEntity {
-  @Column({ nullable: true, type: 'uuid' })
-  couponId: string;
-
-  @Column({ nullable: true, type: 'uuid' })
-  consultId: string;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdDate: Date;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ nullable: true, type: 'uuid' })
-  orderId: string;
-
-  @Column({ nullable: true, type: 'uuid' })
-  patientId: string;
-
-  @Column({ nullable: true })
-  updatedDate: Date;
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
-}
-//coupon usage details ends
 
 //patientMedicalHistory starts
 @Entity()
