@@ -1989,6 +1989,17 @@ export const GET_PATIENTS_MOBILE = gql`
         gender
         relation
         photoUrl
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
       }
     }
   }

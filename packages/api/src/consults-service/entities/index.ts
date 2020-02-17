@@ -95,6 +95,9 @@ export enum DEVICETYPE {
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
+  @Column({ nullable: true })
+  actualAmount: number;
+
   @Column({ nullable: true, default: 0 })
   apolloAppointmentId: number;
 
@@ -126,8 +129,14 @@ export class Appointment extends BaseEntity {
   @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
 
+  @Column({ nullable: true })
+  couponCode: string;
+
   @Column({ generated: 'increment' })
   displayId: number;
+
+  @Column({ nullable: true })
+  discountedAmount: number;
 
   @Column({ nullable: true })
   doctorCancelReason: string;

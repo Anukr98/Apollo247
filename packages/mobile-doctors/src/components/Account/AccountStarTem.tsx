@@ -13,10 +13,6 @@ import {
   MakeTeamDoctorActive,
   MakeTeamDoctorActiveVariables,
 } from '@aph/mobile-doctors/src/graphql/types/MakeTeamDoctorActive';
-import {
-  removeTeamDoctorFromStarTeam,
-  removeTeamDoctorFromStarTeamVariables,
-} from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -26,6 +22,10 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import {
+  removeTeamDoctorFromStarTeam,
+  removeTeamDoctorFromStarTeamVariables,
+} from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 
 const styles = StyleSheet.create({
   inputTextStyle: {
@@ -77,7 +77,7 @@ export interface StarDoctorsTeamProps {
 }
 
 export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
-  profileData: _profileData,
+  profileData,
   scrollViewRef,
   onReload,
 }) => {
@@ -87,9 +87,12 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const client = useApolloClient();
-  const [profileData, setProfileData] = useState(_profileData);
-  const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
-  const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
+  const starDoctorsActive = profileData.starTeam
+    ? profileData.starTeam.filter((doctor) => doctor && doctor.isActive)
+    : [];
+  const starDoctorsInActive = profileData.starTeam
+    ? profileData.starTeam.filter((doctor) => doctor && !doctor.isActive)
+    : [];
 
   const onSelectStarDoctor = (searchText: boolean) => {
     setDropdownOpen(!isDropdownOpen);
@@ -110,12 +113,11 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
         variables: { associatedDoctor: id, starDoctor: profileData.id },
         fetchPolicy: 'no-cache',
       })
-      .then((_data) => {
+      .then(({ data }) => {
         setSelectedDoctor('Select Doctor');
         setIsLoading(false);
-        const result = _data.data!.makeTeamDoctorActive;
-        console.log('addDoctorToProgram', result);
-        if (result) {
+        console.log('addDoctorToProgram', data);
+        if (data && data.makeTeamDoctorActive) {
           onReload();
         }
       })
@@ -140,11 +142,10 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
         variables: { associatedDoctor: id, starDoctor: profileData.id },
         fetchPolicy: 'no-cache',
       })
-      .then((_data) => {
+      .then(({ data }) => {
         setIsLoading(false);
-        const result = _data!.data!.removeTeamDoctorFromStarTeam;
-        console.log('removeDoctorFromProgram', result);
-        if (result) {
+        console.log('removeDoctorFromProgram', data);
+        if (data && data.removeTeamDoctorFromStarTeam) {
           onReload();
         }
       })
@@ -234,6 +235,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const renderStarDoctorCards = () => {
     return starDoctorsActive.map((starDoctor, i) => {
+
       return (
         <DoctorCard
           onRemove={(id) => {
@@ -250,6 +252,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
           location={getFormattedLocation(starDoctor)}
         />
       );
+
     });
   };
 
