@@ -132,6 +132,10 @@ export const Header: React.FC = (props) => {
   const { signOut, isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [mobileNumber, setMobileNumber] = React.useState('');
+  const [otp, setOtp] = React.useState('');
+
+  // console.log(mobileNumber, otp);
 
   return (
     <div className={classes.headerSticky}>
@@ -152,7 +156,7 @@ export const Header: React.FC = (props) => {
           )}
           <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
             <ProtectedWithLoginPopup>
-              {({ protectWithLoginPopup, isProtected }) => (
+              {({ protectWithLoginPopup }) => (
                 <div
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
                   onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
@@ -186,7 +190,15 @@ export const Header: React.FC = (props) => {
               <Popover
                 open={isLoginPopupVisible}
                 anchorEl={avatarRef.current}
-                onClose={() => (isSignedIn ? setIsLoginPopupVisible(false) : null)}
+                onClose={() => {
+                  const otpAfterCleaning = otp.replace(/,/g, '');
+                  if (
+                    mobileNumber.length === 0 ||
+                    (mobileNumber.length === 10 && otpAfterCleaning.length === 0)
+                  ) {
+                    setIsLoginPopupVisible(false);
+                  }
+                }}
                 anchorOrigin={{
                   vertical: 'top',
                   horizontal: 'right',
@@ -198,7 +210,12 @@ export const Header: React.FC = (props) => {
                 classes={{ paper: classes.topPopover }}
               >
                 <Paper className={classes.loginForm}>
-                  <SignIn />
+                  <SignIn
+                    setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
+                    setOtp={(otp: string) => setOtp(otp)}
+                    mobileNumber={mobileNumber}
+                    otp={otp}
+                  />
                 </Paper>
               </Popover>
             )}
