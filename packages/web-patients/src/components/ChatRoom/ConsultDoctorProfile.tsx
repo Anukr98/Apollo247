@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     doctorInfo: {
-      padding: '20px 5px 0 20px',
+      padding: '20px 5px 20px 20px',
     },
     doctorName: {
       fontSize: 20,
@@ -74,7 +74,7 @@ const useStyles = makeStyles((theme: Theme) => {
     specialits: {
       fontSize: 12,
       fontWeight: 600,
-      marginBottom: 30,
+      marginBottom: 15,
       color: '#0087ba',
       textTransform: 'uppercase',
       position: 'relative',
@@ -195,7 +195,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultDoctorInfoGroup: {
       borderBottom: 0,
-      paddingBottom: 0,
     },
     opacityMobile: {
       [theme.breakpoints.down('xs')]: {
@@ -207,6 +206,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomActions: {
       padding: 20,
+      paddingTop: 0,
       '& button': {
         color: '#fc9916',
         borderRadius: 10,
@@ -371,6 +371,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cancelPopover: {
       marginTop: -10,
+    },
+    doctorEducationInfo: {
+      marginBottom: 15,
     },
   };
 });
@@ -580,8 +583,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               {moreOrLessMessage}
             </div>
           </div>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(19vh'}>
-            <div className={showMore ? classes.hideMore : ''}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 465px)'}>
+            <div className={`${classes.doctorEducationInfo} ${showMore ? classes.hideMore : ''}`}>
               <div className={classes.doctorInfoGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
@@ -618,19 +621,15 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     <div className={classes.iconType}>
                       <img src={require('images/ic-rupee.svg')} alt="" />
                     </div>
-                    <div className={classes.details}>
-                      <div>Online Consultation</div>
-                      <div> Rs. {onlineConsultFees}</div>
-                    </div>
-                    <div className={classes.details}>
-                      <div>Clinic visit</div>
-                      <div> Rs. {physicalConsultationFees}</div>
-                    </div>
-                    <div className={classes.details}>
-                      <div>Online Consultation</div>
-                      <div> Rs. {onlineConsultFees}</div>
-                    </div>
-                    <div className={classes.doctorPrice}></div>
+                    <div className={classes.details}>Online Consultation</div>
+                    <div className={classes.doctorPrice}>Rs. {onlineConsultFees}</div>
+                  </div>
+                </div>
+                <div className={classes.consultGroup}>
+                  <div className={classes.infoRow}>
+                    <div className={classes.iconType}></div>
+                    <div className={classes.details}>Clinic visit</div>
+                    <div className={classes.doctorPrice}>Rs. {physicalConsultationFees}</div>
                   </div>
                 </div>
               </div>
@@ -663,26 +662,18 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                         : otherDateMarkup(appointmentTime)}
                     </div>
                   </div>
-                  {/* <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                  <div className={classes.iconType}>
-                    <img src={require("images/ic-language.svg")} alt="" />
+                  <div className={`${classes.infoRow}`}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic-location.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>
+                      {hospitalLocation}
+                      <br />
+                      {address1}
+                      <br />
+                      {`${address2} ${address3}`}
+                    </div>
                   </div>
-                  <div className={classes.details}>
-                    40 min average waiting time
-                  </div>
-                </div> */}
-                  {/* <div className={`${classes.infoRow}`}>
-                  <div className={classes.iconType}>
-                    <img src={require("images/ic-location.svg")} alt="" />
-                  </div>
-                  <div className={classes.details}>
-                    {hospitalLocation}
-                    <br />
-                    {address1}
-                    <br />
-                    {`${address2} ${address3}`}
-                  </div>
-                </div> */}
                 </div>
                 <div className={classes.consultGroup}>
                   <div className={`${classes.infoRow} ${classes.textCenter}`}>
@@ -698,29 +689,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                         <div>Clinic visit</div>
                         <div> Rs. {physicalConsultationFees}</div>
                       </div>
-                      <div className={classes.details}>
-                        <div>Amount Paid</div>
-                        <div> Rs. 788</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                    <div className={classes.iconType}>
-                      <img src={require('images/ic-rupee.svg')} alt="" />
-                    </div>
-                    <div className={classes.consultationDetails}>
-                      <div className={classes.details}>
-                        <div>Online Consultation</div>
-                        <div> Rs. {onlineConsultFees}</div>
-                      </div>
-                      <div className={classes.details}>
-                        <div>Clinic visit</div>
-                        <div> Rs. {physicalConsultationFees}</div>
-                      </div>
-                      <div className={classes.details}>
-                        <div>Amount Paid</div>
-                        <div> Rs. 788</div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -731,18 +699,19 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             ) : null}
           </Scrollbars>
         </div>
-        <div className={classes.bottomActions}>
-          {hasDoctorJoined ? (
+        {hasDoctorJoined ? (
+          <div className={classes.bottomActions}>
             <AphButton className={classes.joinBtn} fullWidth>
               Senior Doctor has joined!
             </AphButton>
-          ) : jrDoctorJoined ? (
+          </div>
+        ) : jrDoctorJoined ? (
+          <div className={classes.bottomActions}>
             <AphButton className={classes.joinBtn} fullWidth>
               Junior Doctor has joined!
             </AphButton>
-          ) : null}
-          {/* <AphButton fullWidth>Reschedule</AphButton> */}
-        </div>
+          </div>
+        ) : null}
       </div>
       <Popover
         open={showCancelPopup}

@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
 });
 
 export interface doctorCardProps {
-  doctorId: string;
+  doctorId?: string;
   inviteStatus?: INVITEDSTATUS;
   doctorName?: string;
   specialization?: string;
@@ -116,7 +116,7 @@ export interface doctorCardProps {
   time?: string;
   onPress?: TouchableOpacityProps['onPress'];
   isMenuOpen?: boolean;
-  onRemove: (id: string) => void;
+  onRemove?: (id: string) => void;
 }
 
 export const DoctorCard: React.FC<doctorCardProps> = (props) => {

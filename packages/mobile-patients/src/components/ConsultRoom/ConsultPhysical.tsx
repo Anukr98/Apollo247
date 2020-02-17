@@ -404,7 +404,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
                           paddingTop: 16,
                         }}
                       >
-                        {`Dr. ${
+                        {`${
                           props.doctor ? props.doctor!.fullName : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
