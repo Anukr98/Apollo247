@@ -218,6 +218,7 @@ export enum ApiConstants {
 
   //coupon related constants
   INVALID_COUPON = 'Sorry, invalid coupon code.',
+  EARLY_COUPON = 'Sorry, offer has not started.',
   COUPON_EXPIRED = 'Sorry, offer has expired.',
   COUPON_COUNT_PER_CUSTOMER_EXCEEDED = 'Sorry, this code has already been used under this campaign.',
   COUPON_COUNT_USAGE_EXPIRED = 'Sorry, the limit for this coupon code has exceeded.',
