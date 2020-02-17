@@ -94,9 +94,9 @@ const useStyles = makeStyles((theme: Theme) => {
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
-const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
+const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (props) => {
   const classes = useStyles();
-  const { mobileNumber } = props;
+  const { mobileNumber, setOtp: setOtpMain } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const initialOTPMessage = 'Type in the OTP sent to you, to authenticate';
   const resentOTPMessage = 'Type in the OTP that has been resent to you for authentication';
@@ -105,7 +105,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
 
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
   const [otp, setOtp] = useState<number[]>([]);
-  const placeRecaptchaAfterMe = useRef(null);
+  // const placeRecaptchaAfterMe = useRef(null);
 
   const [submitCount, setSubmitCount] = useState(0);
   // const [isIncorrectOtp, setIsIncorrectOtp] = useState<boolean>(false);
@@ -176,6 +176,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
                       }
                     }
                     setOtp(newOtp);
+                    setOtpMain(newOtp.length > 0 ? newOtp.toString() : '');
                   }}
                   onKeyDown={(e) => {
                     const backspaceWasPressed = e.key === 'Backspace';
@@ -259,13 +260,21 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   );
 };
 
-export const SignIn: React.FC = () => {
+interface signInProps {
+  setMobileNumber: (mobileNumber: string) => void;
+  setOtp: (otp: string) => void;
+  mobileNumber: string;
+  otp: string;
+}
+
+export const SignIn: React.FC<signInProps> = (props) => {
   const classes = useStyles();
 
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const placeRecaptchaAfterMe = useRef(null);
 
-  const { sendOtp, sendOtpError, isSendingOtp, customLoginId } = useAuth();
+  const { sendOtp, sendOtpError, isSendingOtp } = useAuth();
+  const { setMobileNumber, setOtp, mobileNumber, otp } = props;
 
   return (
     <div data-cypress="SignIn">
@@ -275,8 +284,11 @@ export const SignIn: React.FC = () => {
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
           sendOtp(mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
         }}
-        render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
-          if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
+        render={({ errors, values }: FormikProps<{ mobileNumber: string }>) => {
+          if (displayOtpInput)
+            return (
+              <OtpInput mobileNumber={values.mobileNumber} setOtp={(otp: string) => setOtp(otp)} />
+            );
           return (
             <div className={classes.loginFormWrap}>
               <Typography variant="h2">hi</Typography>
@@ -284,16 +296,19 @@ export const SignIn: React.FC = () => {
               <Form>
                 <Field
                   name="mobileNumber"
-                  validate={(val: string) =>
-                    isMobileNumberValid(val) ? undefined : 'This seems like a wrong number'
-                  }
+                  // validate={() => {
+                  //   isMobileNumberValid(mobileNumber)
+                  //     ? undefined
+                  //     : 'This seems like a wrong number';
+                  // }}
                   render={({ field }: FieldProps<{ mobileNumber: string }>) => {
-                    const finishedTyping = field.value.length === 10;
+                    // const finishedTyping = field.value.length === 10;
+                    // const showValidationError =
+                    //   !sendOtpError &&
+                    //   Boolean(errors.mobileNumber) &&
+                    //   (finishedTyping || Number(field.value[0]) < 6);
                     const showValidationError =
-                      dirty &&
-                      !sendOtpError &&
-                      Boolean(errors.mobileNumber) &&
-                      (finishedTyping || Number(field.value[0]) < 6);
+                      mobileNumber.length === 10 && !isMobileNumberValid(mobileNumber);
                     const showSendOtpError = sendOtpError;
                     return (
                       <FormControl fullWidth>
@@ -311,11 +326,15 @@ export const SignIn: React.FC = () => {
                           onKeyPress={(e) => {
                             if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                           }}
+                          onChange={(e) => {
+                            setMobileNumber(e.target.value);
+                          }}
                           startAdornment={
                             <InputAdornment className={classes.inputAdornment} position="start">
                               {mobileNumberPrefix}
                             </InputAdornment>
                           }
+                          value={mobileNumber}
                         />
                         <FormHelperText
                           component="div"
@@ -323,7 +342,7 @@ export const SignIn: React.FC = () => {
                           error={showValidationError || showSendOtpError}
                         >
                           {showValidationError
-                            ? errors.mobileNumber
+                            ? 'This seems like a wrong number'
                             : showSendOtpError
                             ? 'Error sending OTP'
                             : 'OTP will be sent to this number'}
@@ -337,7 +356,8 @@ export const SignIn: React.FC = () => {
                     type="submit"
                     color="primary"
                     aria-label="Sign in"
-                    disabled={Boolean(errors.mobileNumber) || !dirty}
+                    // disabled={Boolean(errors.mobileNumber) || !dirty}
+                    disabled={!isMobileNumberValid(mobileNumber)}
                   >
                     {isSendingOtp ? (
                       <AphCircularProgress color="inherit" />

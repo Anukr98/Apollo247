@@ -196,7 +196,7 @@ export const AuthProvider: React.FC = (props) => {
       setIsSigningIn(true);
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
-        console.log('res', res);
+        // console.log('res', res);
         if (!res) {
           setVerifyOtpError(true);
           setIsSigningIn(false);
