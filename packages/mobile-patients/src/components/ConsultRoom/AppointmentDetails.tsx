@@ -492,7 +492,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   #{data.displayId}
                 </Text>
                 <View style={styles.separatorStyle} />
-                <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.fullName}</Text>
+                <Text style={styles.doctorNameStyle}>{data.doctorInfo.fullName}</Text>
                 <Text style={styles.timeStyle}>{appointmentTime}</Text>
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Location</Text>

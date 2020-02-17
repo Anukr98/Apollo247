@@ -222,7 +222,7 @@ const sendPatientAcknowledgements = async (
   <html>
   <body>  
   <ol>
-  <li>New Appointment has been booked on Apollo 247 app with the following details </li>
+  <p>New Appointment has been booked on Apollo 247 app with the following details </p>
   <li>
   <ul>
   <li>Appointment No : <%- displayId %></li>

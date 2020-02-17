@@ -171,6 +171,12 @@ const cancelAppointment: Resolver<
     process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  const ccTriggerEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_APPT_CC_EMAILID_TRIGGER
+      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
     ccEmail: ccEmailIds.toString(),
     toEmail: toEmailId.toString(),
@@ -197,7 +203,7 @@ const cancelAppointment: Resolver<
     console.log('listOfEmails', listOfEmails);
     listOfEmails.forEach(async (adminemail) => {
       const adminEmailContent: EmailMessage = {
-        ccEmail: ccEmailIds.toString(),
+        ccEmail: ccTriggerEmailIds.toString(),
         toEmail: adminemail.toString(),
         subject: mailSubject.toString(),
         fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
