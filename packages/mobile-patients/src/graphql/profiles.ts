@@ -1309,8 +1309,18 @@ export const GET_COUPONS = gql`
 `;
 
 export const VALIDATE_CONSULT_COUPON = gql`
-  query ValidateConsultCoupon($doctorId: ID!, $code: String!, $consultType: AppointmentType!) {
-    validateConsultCoupon(doctorId: $doctorId, code: $code, consultType: $consultType) {
+  query ValidateConsultCoupon(
+    $doctorId: ID!
+    $code: String!
+    $consultType: AppointmentType!
+    $appointmentDateTimeInUTC: DateTime!
+  ) {
+    validateConsultCoupon(
+      doctorId: $doctorId
+      code: $code
+      consultType: $consultType
+      appointmentDateTimeInUTC: $appointmentDateTimeInUTC
+    ) {
       validityStatus
       revisedAmount
       reasonForInvalidStatus
