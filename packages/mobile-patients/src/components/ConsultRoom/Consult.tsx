@@ -1011,7 +1011,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       {showSchdulesView && (
         <BottomPopUp
           title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-          description={`Your appointment with Dr. ${props.navigation.getParam(
+          description={`Your appointment with ${props.navigation.getParam(
             'DoctorName'
           )} \nhas been rescheduled for — ${newAppointmentTime}\n\n${
             newRescheduleCount == 0

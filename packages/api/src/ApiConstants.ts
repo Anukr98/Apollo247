@@ -75,6 +75,7 @@ export enum ApiConstants {
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
+  PATIENT_REGISTRATION_CODE_BODY = 'Your registration code: ',
 
   //book appointment sucessfull
   BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
@@ -148,8 +149,9 @@ export enum ApiConstants {
   FROM_NAME = 'Admin',
   PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com,sumeeth.kumar@popcornapps.com,raj@popcornapps.com',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
