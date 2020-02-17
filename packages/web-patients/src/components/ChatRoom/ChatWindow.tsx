@@ -1711,9 +1711,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   setMessageText(event.currentTarget.value);
                 }}
               />
-              <AphButton
-                className={classes.chatSubmitBtn}
-              >
+              <AphButton className={classes.chatSubmitBtn}>
                 <img src={require('images/ic_add_circle.svg')} alt="" />
               </AphButton>
             </div>

@@ -621,18 +621,14 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     <div className={classes.iconType}>
                       <img src={require('images/ic-rupee.svg')} alt="" />
                     </div>
-                    <div className={classes.details}>
-                      Online Consultation
-                    </div>
+                    <div className={classes.details}>Online Consultation</div>
                     <div className={classes.doctorPrice}>Rs. {onlineConsultFees}</div>
                   </div>
                 </div>
                 <div className={classes.consultGroup}>
                   <div className={classes.infoRow}>
                     <div className={classes.iconType}></div>
-                    <div className={classes.details}>
-                      Clinic visit
-                    </div>
+                    <div className={classes.details}>Clinic visit</div>
                     <div className={classes.doctorPrice}>Rs. {physicalConsultationFees}</div>
                   </div>
                 </div>
@@ -666,18 +662,18 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                         : otherDateMarkup(appointmentTime)}
                     </div>
                   </div>
-                 <div className={`${classes.infoRow}`}>
-                  <div className={classes.iconType}>
-                    <img src={require("images/ic-location.svg")} alt="" />
+                  <div className={`${classes.infoRow}`}>
+                    <div className={classes.iconType}>
+                      <img src={require('images/ic-location.svg')} alt="" />
+                    </div>
+                    <div className={classes.details}>
+                      {hospitalLocation}
+                      <br />
+                      {address1}
+                      <br />
+                      {`${address2} ${address3}`}
+                    </div>
                   </div>
-                  <div className={classes.details}>
-                    {hospitalLocation}
-                    <br />
-                    {address1}
-                    <br />
-                    {`${address2} ${address3}`}
-                  </div>
-                </div>
                 </div>
                 <div className={classes.consultGroup}>
                   <div className={`${classes.infoRow} ${classes.textCenter}`}>
