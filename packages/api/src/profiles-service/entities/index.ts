@@ -20,7 +20,7 @@ export enum Gender {
   OTHER = 'OTHER',
 }
 
-export enum REG_CODES_STATUS {
+export enum REGISTRATION_CODES_STATUS {
   SENT = 'SENT',
   NOT_SENT = 'NOT_SENT',
 }
@@ -657,8 +657,8 @@ export class RegistrationCodes extends BaseEntity {
   @Column()
   registrationCode: string;
 
-  @Column({ default: REG_CODES_STATUS.NOT_SENT })
-  codeStatus: REG_CODES_STATUS;
+  @Column({ default: REGISTRATION_CODES_STATUS.NOT_SENT })
+  codeStatus: REGISTRATION_CODES_STATUS;
 
   @OneToOne((type) => Patient, (patient) => patient.registrationCodes)
   @JoinColumn()
