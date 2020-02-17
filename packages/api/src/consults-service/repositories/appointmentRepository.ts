@@ -1504,6 +1504,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
       .getCount();
   }
 
@@ -1514,6 +1518,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
       .getCount();
   }
 
@@ -1523,6 +1531,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         apptDate: new Date(),
       })
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
       .getCount();
   }
 }
