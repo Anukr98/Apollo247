@@ -352,6 +352,9 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'uppercase',
       },
     },
+    onActive: {
+      display: 'none',
+    },
     feedbackDetailed: {
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
@@ -686,7 +689,6 @@ export const ChatRoom: React.FC = (props) => {
       <div className={classes.headerActions}>
         <div
           onClick={() => {
-            nextAvailableSlot(params.doctorId, new Date());
             setIsFeedbackPopoverOpen(true);
           }}
         >
@@ -734,6 +736,7 @@ export const ChatRoom: React.FC = (props) => {
                 <div className={classes.feedbackImages}>
                   <div className={classes.feedWrapper}>
                     <img src={require('images/ic_poor.svg')} />
+                    <img className={classes.onActive} src={require('images/ic_poor_filled.svg')} />
                     <div>Poor</div>
                   </div>
                   <div className={classes.feedWrapper}>
