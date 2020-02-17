@@ -1,18 +1,9 @@
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import {
-  BackArrow,
-  Down,
-  RoundChatIcon,
-  RoundIcon,
-  Up,
-  DotIcon,
-  UnSelected,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { BackArrow, DotIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { StyleSheet, View, Text } from 'react-native';
 import { NavigationScreenProps, ScrollView, SafeAreaView } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
@@ -65,11 +56,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     opacity: 0.1,
   },
-  consultStyles: {
-    color: '#004053',
-    letterSpacing: -0.01,
-    ...theme.fonts.IBMPlexSans(8),
-  },
+
   nameStyles: {
     color: '#004053',
     letterSpacing: -0.01,
@@ -88,7 +75,6 @@ export interface PaymentHistoryProps extends NavigationScreenProps<{}> {
 }
 
 export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
-  const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
   const [visibleDownloadStatement, setVisibleDownloadStatement] = useState<boolean>(false);
 
   type OptionsType = {
@@ -112,7 +98,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
     { key: 'Custom Dates', label: 'Custom Dates' },
   ];
 
-  const [selectedFrequency, setSelectedFrequency] = useState<any>();
+  const [selectedFrequency, setSelectedFrequency] = useState<string>();
   const showHeaderView = () => {
     return (
       <Header
@@ -167,11 +153,6 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
             <Text style={styles.cunsultTextStyle}>Online Consult | New</Text>
           </View>
           <View style={styles.underline} />
-
-          {/* <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-            <Text style={styles.consultStyles}>Consult by </Text>
-            <Text style={styles.nameStyles}> Dr. Ajay Sharma</Text>
-          </View> */}
 
           <View style={{ flexDirection: 'row', flex: 1 }}>
             <View style={{ flexDirection: 'column', marginRight: 5 }}>

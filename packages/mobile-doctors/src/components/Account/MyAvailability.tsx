@@ -78,7 +78,7 @@ export interface ProfileProps
 }
 
 const get12HrsFormat = (timeString: string /* 12:30 */) => {
-  const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
+  const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i, 10));
   return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
 };
 
