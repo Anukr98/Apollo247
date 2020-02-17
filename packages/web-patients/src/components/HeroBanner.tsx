@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
-      }
+      },
     },
     bannerInfo: {
       padding: '0 20px 20px 20px',
@@ -146,7 +146,10 @@ export const HeroBanner: React.FC = () => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   return (
-    <div className={`${classes.heroBanner} ${isSignedIn ? classes.loginHeroBanner : ''}`} data-cypress="HeroBanner">
+    <div
+      className={`${classes.heroBanner} ${isSignedIn ? classes.loginHeroBanner : ''}`}
+      data-cypress="HeroBanner"
+    >
       <div className={`${classes.bannerImg} ${isSignedIn ? classes.loginbannerImg : ''}`}>
         <img className={classes.mobileImg} src={require('images/img_doctorimage.png')} alt="" />
         <img className={classes.desktopImg} src={require('images/banner-img.png')} alt="" />
