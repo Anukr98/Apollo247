@@ -160,8 +160,10 @@ const validateConsultCoupon: Resolver<
   }
 
   // Consult last applicable date check
-  const todayDate = new Date();
-  if (couponGenericRulesData.couponDueDate && todayDate > args.appointmentDateTimeInUTC) {
+  if (
+    couponGenericRulesData.couponDueDate &&
+    args.appointmentDateTimeInUTC > couponGenericRulesData.couponDueDate
+  ) {
     return {
       validityStatus: false,
       revisedAmount: doctorFees,
