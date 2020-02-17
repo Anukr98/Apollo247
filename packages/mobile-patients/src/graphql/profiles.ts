@@ -1308,6 +1308,16 @@ export const GET_COUPONS = gql`
   }
 `;
 
+export const VALIDATE_CONSULT_COUPON = gql`
+  query ValidateConsultCoupon($doctorId: ID!, $code: String!, $consultType: AppointmentType!) {
+    validateConsultCoupon(doctorId: $doctorId, code: $code, consultType: $consultType) {
+      validityStatus
+      revisedAmount
+      reasonForInvalidStatus
+    }
+  }
+`;
+
 export const GET_NOTIFICATION_SETTINGS = gql`
   query getPatientNotificationSettings($patient: ID!) {
     getPatientNotificationSettings(patient: $patient) {

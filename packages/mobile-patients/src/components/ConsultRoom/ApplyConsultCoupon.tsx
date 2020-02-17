@@ -40,16 +40,15 @@ const styles = StyleSheet.create({
 export interface ApplyConsultCouponProps
   extends NavigationScreenProps<{
     onApplyCoupon: (value: string) => Promise<void>;
-    setCoupon: (value: string) => Promise<void>;
     coupon: string;
   }> {}
 
 export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => {
   const onApplyCoupon = props.navigation.getParam('onApplyCoupon');
-  const setCoupon = props.navigation.getParam('setCoupon');
   const coupon = props.navigation.getParam('coupon');
-  const [couponText, setCouponText] = useState<string>('');
+  const [couponText, setCouponText] = useState<string>(coupon || '');
   const [isValidCoupon, setValidCoupon] = useState<boolean>(true);
+  const [couponInvalidReason, setCouponInvalidReason] = useState<string>('');
   const { setLoading } = useUIElements();
 
   const applyCoupon = (coupon: string) => {
@@ -57,12 +56,11 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     // calling the passed function from prev. screen to validate coupon
     onApplyCoupon(coupon)
       .then(() => {
-        // applying the coupon by using passed function from prev. screen
-        setCoupon(coupon);
         props.navigation.goBack();
       })
-      .catch(() => {
+      .catch((reason?: string) => {
         setValidCoupon(false);
+        setCouponInvalidReason(reason || '');
       })
       .finally(() => setLoading!(false));
   };
@@ -107,7 +105,9 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
           placeholder={'Enter coupon code'}
         />
         {!isValidCoupon && couponText.length > 0 ? (
-          <Text style={styles.inputValidationStyle}>{'Invalid Coupon Code'}</Text>
+          <Text style={styles.inputValidationStyle}>
+            {couponInvalidReason || 'Invalid Coupon Code'}
+          </Text>
         ) : null}
       </View>
     );
