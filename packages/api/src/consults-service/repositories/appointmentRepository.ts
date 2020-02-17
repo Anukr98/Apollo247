@@ -1496,4 +1496,33 @@ export class AppointmentRepository extends Repository<Appointment> {
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getCount();
   }
+
+  getPatientAppointmentCountByConsultMode(patientId: string, appointmenType: APPOINTMENT_TYPE) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: new Date(),
+      })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
+      .getCount();
+  }
+
+  getPatientAppointmentCountByCouponCode(patientId: string, couponCode: string) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: new Date(),
+      })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .getCount();
+  }
+
+  getAppointmentCountByCouponCode(couponCode: string) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: new Date(),
+      })
+      .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .getCount();
+  }
 }
