@@ -270,7 +270,7 @@ export class AppointmentDocuments extends BaseEntity {
 //AppointmentPayments starts
 @Entity()
 export class AppointmentPayments extends BaseEntity {
-  @Column('decimal', { precision: 5, scale: 2, nullable: true })
+  @Column('decimal', { precision: 8, scale: 2, nullable: true })
   amountPaid: number;
 
   @Column({ nullable: true })

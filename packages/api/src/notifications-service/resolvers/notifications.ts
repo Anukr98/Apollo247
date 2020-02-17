@@ -19,7 +19,6 @@ import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
-import { sendNotificationSMS } from 'profiles-service/resolvers/login';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -155,6 +154,27 @@ export async function sendSMS(message: string) {
   const smsResp = fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
 }
+
+export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
+  const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
+  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
+
+  const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
+
+  const apiUrl = `${apiUrlWithKey}${queryParams}`;
+
+  //logging api call data here
+  log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
+
+  const smsResponse = await fetch(apiUrl)
+    .then((res) => res.json())
+    .catch((error) => {
+      //logging error here
+      log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
+      throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
+    });
+  return smsResponse;
+};
 
 export async function sendCallsNotification(
   pushNotificationInput: PushNotificationInput,
@@ -1165,7 +1185,8 @@ export function logNotificationResponse(type: NotificationType, logData: Object)
 
 export async function sendPatientRegistrationNotification(
   patient: Patient,
-  patientsDb: Connection
+  patientsDb: Connection,
+  registrationCode: string
 ) {
   //get all the patient device tokens
   let patientDeviceTokens: string[] = [];
@@ -1188,8 +1209,12 @@ export async function sendPatientRegistrationNotification(
       content: notificationBody,
     },
   };
+  let smsContent = notificationBody;
+  if (registrationCode != '') {
+    smsContent = smsContent + ApiConstants.PATIENT_REGISTRATION_CODE_BODY + registrationCode;
+  }
   //call sendNotificationSMS function to send sms
-  await sendNotificationSMS(patient.mobileNumber, notificationBody);
+  await sendNotificationSMS(patient.mobileNumber, smsContent);
 
   //notification options
   const options = {
