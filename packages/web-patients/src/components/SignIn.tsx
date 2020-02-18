@@ -274,14 +274,14 @@ export const SignIn: React.FC<signInProps> = (props) => {
   const placeRecaptchaAfterMe = useRef(null);
 
   const { sendOtp, sendOtpError, isSendingOtp } = useAuth();
-  const { setMobileNumber, setOtp, mobileNumber, otp } = props;
+  const { setMobileNumber, setOtp, mobileNumber } = props;
 
   return (
     <div data-cypress="SignIn">
       <Formik
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
-          const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
+          const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
           sendOtp(mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
         }}
         render={({ errors, values }: FormikProps<{ mobileNumber: string }>) => {

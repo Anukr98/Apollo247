@@ -44,10 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     serviceInfo: {
-      paddingRight: 20,
-      [theme.breakpoints.up('sm')]: {
-        paddingRight: 50,
-      },
+      paddingRight: 0,
     },
     avatarBlock: {
       marginLeft: 'auto',

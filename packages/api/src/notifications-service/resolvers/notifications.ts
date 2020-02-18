@@ -158,11 +158,9 @@ export async function sendSMS(message: string) {
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
-
   const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
 
   const apiUrl = `${apiUrlWithKey}${queryParams}`;
-
   //logging api call data here
   log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
 
@@ -173,6 +171,8 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
+
+  console.log('smsResponse================', smsResponse);
   return smsResponse;
 };
 
@@ -481,6 +481,10 @@ export async function sendNotification(
     content = content.replace('{3}', apptDate.toString());
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = content;
+    console.log('mobileNumber===============', patientDetails.mobileNumber);
+    console.log('message==========================', notificationBody);
+    //send sms
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
     notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
@@ -902,6 +906,8 @@ export async function sendReminderNotification(
     };
   }
 
+  //send SMS notification
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -1191,8 +1197,6 @@ export async function sendPatientRegistrationNotification(
   //get all the patient device tokens
   let patientDeviceTokens: string[] = [];
   patientDeviceTokens = await getPatientDeviceTokens(patient.mobileNumber, patientsDb);
-  if (patientDeviceTokens.length == 0) return;
-
   //notification payload
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
   const notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
@@ -1215,6 +1219,7 @@ export async function sendPatientRegistrationNotification(
   }
   //call sendNotificationSMS function to send sms
   await sendNotificationSMS(patient.mobileNumber, smsContent);
+  if (patientDeviceTokens.length == 0) return;
 
   //notification options
   const options = {
@@ -1315,6 +1320,9 @@ export async function sendMedicineOrderStatusNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
 
+  //send SMS notification
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+
   //initialize firebaseadmin
   const admin = await getInitializedFirebaseAdmin();
 
@@ -1400,6 +1408,7 @@ export async function sendDiagnosticOrderStatusNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
 
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   //initialize firebaseadmin
   const admin = await getInitializedFirebaseAdmin();
 
@@ -1483,6 +1492,7 @@ const testPushNotification: Resolver<
 
   return notificationResponse;
 };
+
 export const getNotificationsResolvers = {
   Query: { sendPushNotification, testPushNotification },
 };
