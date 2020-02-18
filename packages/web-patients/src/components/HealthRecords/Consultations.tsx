@@ -317,6 +317,21 @@ export const Consultations: React.FC = (props) => {
     }
   }, [consultsData, currentPatient]);
 
+  useEffect(() => {
+    if (allConsultsData) {
+      let filteredConsults = allConsultsData;
+      if (filter === 'ONLINE' || filter === 'PHYSICAL') {
+        filteredConsults = allConsultsData.filter((consult) => {
+          if (consult && consult.patientId) {
+            return consult.appointmentType === filter;
+          }
+        });
+      }
+      setConsultsData(filteredConsults);
+      setActiveConsult(filteredConsults ? filteredConsults[0] : null);
+    }
+  }, [filter, allConsultsData]);
+
   if (loading) {
     return <LinearProgress />;
   }
@@ -337,7 +352,7 @@ export const Consultations: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.topFilters}>
-          <AphButton className={classes.buttonActive} onClick={() => setFilter('PRESCRIPTION')}>
+          <AphButton className={classes.buttonActive} onClick={() => setFilter('ALL')}>
             All Consults
           </AphButton>
           <AphButton onClick={() => setFilter('ONLINE')}>Online</AphButton>
@@ -382,11 +397,7 @@ export const Consultations: React.FC = (props) => {
       <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
-            <AphButton
-              onClick={() => {
-                console.log('onClick');
-              }}
-            >
+            <AphButton>
               <img src={require('images/ic_back.svg')} />
             </AphButton>
             <span>Prescription Details</span>
