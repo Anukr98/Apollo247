@@ -188,6 +188,9 @@ export class ConsultHours extends BaseEntity {
   @Column()
   weekDay: WeekDay;
 
+  @Column({ nullable: true })
+  actualDay: string;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
