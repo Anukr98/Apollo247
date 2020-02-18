@@ -75,6 +75,8 @@ import {
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
+  MEDICINE_TO_BE_TAKEN,
+  MEDICINE_TIMINGS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   modifyCaseSheet,
@@ -386,7 +388,7 @@ const styles = StyleSheet.create({
   },
 });
 
-interface dataPair {
+interface DataPair {
   key: string;
   value: string;
 }
@@ -426,12 +428,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [caseSheetData, setCaseSheetData] = useState<GetCaseSheet_getCaseSheet>();
   const [displayId, setDisplayId] = useState<string>('');
   const [doctorNotes, setDoctorNotes] = useState<string>('');
-  const [othervalue, setOthervalue] = useState<string>('');
+  // const [othervalue, setOthervalue] = useState<string>('');
   const [familyValues, setFamilyValues] = useState<
     (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
   >([]);
 
-  const [allergiesData, setAllergiesData] = useState<string | null>('');
+  // const [allergiesData, setAllergiesData] = useState<string | null>('');
   const [lifeStyleData, setLifeStyleData] = useState<
     (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
   >();
@@ -441,13 +443,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [vitalsShow, setVitalsShow] = useState(false);
   const [juniorshow, setJuniorShow] = useState(false);
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
-  const [otherInstructions, setOtherInstructions] = useState(false);
+  // const [otherInstructions, setOtherInstructions] = useState(false);
   const [patientHealthWallet, setPatientHealthWallet] = useState(false);
   const [showdiagonisticPrescription, setshowdiagonisticPrescription] = useState(false);
   const [medicinePrescription, setMedicinePrescription] = useState(false);
   const [adviceInstructions, setAdviceInstructions] = useState(false);
   const [followup, setFollowUp] = useState(false);
-  const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
+  // const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
   const [switchValue, setSwitchValue] = useState<boolean | null>(true);
 
   const [diagnosisView, setDiagnosisView] = useState(false);
@@ -458,15 +460,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [diagnosisData, setDiagnosisData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null
   >([]);
-  const [diagnosticPrescriptionData, setDiagnosticPrescription] = useState<
-    (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null
-  >(null);
-  const [otherInstructionsData, setOtherInstructionsData] = useState<any>([]);
+  // const [diagnosticPrescriptionData, setDiagnosticPrescription] = useState<
+  //   (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null
+  // >(null);
+  // const [otherInstructionsData, setOtherInstructionsData] = useState<any>([]);
   const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null
   >();
   const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
-  const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
+  // const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
   const [
     medicalHistory,
     setMedicalHistory,
@@ -479,18 +481,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   >([]);
 
   const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
-  const [consultationPayType, setConsultationPayType] = useState<'PAID' | 'FREE' | ''>('');
+  // This is dependent : 1728 // const [consultationPayType, setConsultationPayType] = useState<'PAID' | 'FREE' | ''>('');
   const [followupDays, setFollowupDays] = useState<number | string>();
   const [folloUpNotes, setFolloUpNotes] = useState<string>('');
 
-  const [addedAdvices, setAddedAdvices] = useState<dataPair[]>([]);
+  const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
   const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
   const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
 
   const { setCaseSheetEdit, caseSheetEdit } = useContext(CaseSheetContext);
 
-  let Delegate = '';
-  const { showAphAlert, hideAphAlert, setLoading, loading } = useUIElements();
+  const { showAphAlert, setLoading, loading } = useUIElements();
   const { doctorDetails } = useAuth();
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
@@ -526,7 +527,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     const caseSheet = props.caseSheet;
     setCaseSheetData(caseSheet || undefined);
     setPastList(g(caseSheet, 'pastAppointments') || null);
-    setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
+    // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
     setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
     setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
     setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
@@ -557,8 +558,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
     setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
     setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
-    setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
-    setDiagnosticPrescription(g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null);
+    // setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
+    // setDiagnosticPrescription(g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null);
     setMedicinePrescriptionData(g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || null);
     setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
       .map((i) => (i ? i.externalId || i.id : ''))
@@ -1169,10 +1170,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
 
   const setFamilyHistory = (text: string) => {
-    let eachMember = text.split('\n');
-    let famHist: GetCaseSheet_getCaseSheet_patientDetails_familyHistory[] = [];
+    const eachMember = text.split('\n');
+    const famHist: GetCaseSheet_getCaseSheet_patientDetails_familyHistory[] = [];
     eachMember.forEach((item) => {
-      let history = item.split(':');
+      const history = item.split(':');
       if (history.length > 1) {
         famHist.push({
           relation: history[0].trim(),
@@ -1272,7 +1273,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
   const renderJuniorDoctorNotes = () => {
-    if (Delegate) return null;
     return (
       <View>
         <CollapseCard
@@ -1370,10 +1370,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const renderMedicineDetails = (item: any) => {
+  const renderMedicineDetails = (
+    item:
+      | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+      | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+  ) => {
     const type = medUsageType(item.medicineUnit);
-    const unit =
-      item.medicineUnit === MEDICINE_UNIT.OTHERS ? 'other' : item.medicineUnit.toLowerCase();
+    const unit: string =
+      item.medicineUnit === MEDICINE_UNIT.OTHERS
+        ? 'other'
+        : (item.medicineUnit || '').toLowerCase();
     return (
       <Text
         style={{
@@ -1398,23 +1404,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   : ``
               }`
             : ''}
-          {item.medicineToBeTaken.length
-            ? item.medicineToBeTaken.map((i: any) => nameFormater(i).toLowerCase()).join(', ') + ' '
+          {item.medicineToBeTaken && item.medicineToBeTaken.length
+            ? item.medicineToBeTaken
+                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '').toLowerCase())
+                .join(', ') + ' '
             : ''}
-          {item.medicineTimings.length
+          {item.medicineTimings && item.medicineTimings.length
             ? 'in the ' +
               (item.medicineTimings.length > 1
                 ? item.medicineTimings
                     .slice(0, -1)
-                    .map((i: any) => nameFormater(i).toLowerCase())
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '').toLowerCase())
                     .join(', ') +
                   ' and ' +
                   nameFormater(
-                    item.medicineTimings[item.medicineTimings.length - 1]
+                    (item.medicineTimings &&
+                      item.medicineTimings[item.medicineTimings.length - 1]) ||
+                      ''
                   ).toLowerCase() +
                   ' '
-                : item.medicineTimings.map((i: any) => nameFormater(i).toLowerCase()).join(', ') +
-                  ' ')
+                : item.medicineTimings
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '').toLowerCase())
+                    .join(', ') + ' ')
             : ''}
           {'\n' + item.medicineInstructions}
         </Text>
@@ -1433,78 +1444,88 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderHeaderText(strings.common.medicines)}
           {medicinePrescriptionData == null || medicinePrescriptionData.length == 0
             ? renderInfoText(strings.case_sheet.no_medicine_Added)
-            : medicinePrescriptionData.map((showdata: any, i) => {
-                const isSelected =
-                  selectedMedicinesId.findIndex(
-                    (i) => i === (showdata.externalId || showdata.id)
-                  ) >= 0;
-                return (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      props.overlayDisplay(
-                        <AddMedicinePopUp
-                          data={showdata}
-                          onClose={() => props.overlayDisplay(null)}
-                          onAddnew={(data) => {
-                            console.log(medicinePrescriptionData, selectedMedicinesId);
+            : medicinePrescriptionData.map((showdata, i) => {
+                if (showdata) {
+                  const isSelected =
+                    selectedMedicinesId.findIndex(
+                      (i) => i === (showdata.externalId || showdata.id)
+                    ) >= 0;
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        props.overlayDisplay(
+                          <AddMedicinePopUp
+                            data={showdata}
+                            onClose={() => props.overlayDisplay(null)}
+                            onAddnew={(data) => {
+                              console.log(medicinePrescriptionData, selectedMedicinesId);
 
-                            setMedicinePrescriptionData([
-                              ...(medicinePrescriptionData.filter(
-                                (i: any) => (i.externalId || i.id) !== (data.externalId || data.id)
-                              ) || []),
-                              data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                            ]);
-                            setSelectedMedicinesId(
-                              [
-                                ...selectedMedicinesId.filter(
-                                  (i) => i !== (data.externalId || data.id)
-                                ),
-                                data.externalId || '',
-                              ].filter((i) => i !== '')
-                            );
-                          }}
-                        />
-                      );
-                    }}
-                  >
-                    <View
-                      style={[
-                        styles.dataCardsStyle,
-                        !isSelected ? { backgroundColor: theme.colors.WHITE } : {},
-                      ]}
+                              setMedicinePrescriptionData([
+                                ...(medicinePrescriptionData.filter(
+                                  (
+                                    i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                  ) =>
+                                    ((i || {}).externalId || (i || {}).id) !==
+                                    (data.externalId || data.id)
+                                ) || []),
+                                data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                              ]);
+                              setSelectedMedicinesId(
+                                [
+                                  ...selectedMedicinesId.filter(
+                                    (i) => i !== (data.externalId || data.id)
+                                  ),
+                                  data.externalId || '',
+                                ].filter((i) => i !== '')
+                              );
+                            }}
+                          />
+                        );
+                      }}
                     >
-                      {renderMedicineDetails(showdata)}
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        onPress={() => {
-                          if (!isSelected) {
-                            setSelectedMedicinesId([
-                              ...selectedMedicinesId,
-                              showdata.externalId || showdata.id,
-                            ]);
-                          } else {
-                            setSelectedMedicinesId([
-                              ...selectedMedicinesId.filter(
-                                (i) => i != (showdata.externalId || showdata.id)
-                              ),
-                            ]);
-                          }
-                        }}
+                      <View
+                        style={[
+                          styles.dataCardsStyle,
+                          !isSelected ? { backgroundColor: theme.colors.WHITE } : {},
+                        ]}
                       >
-                        {isSelected ? (
-                          <CheckboxSelected
-                            style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                          />
-                        ) : (
-                          <CheckboxUnSelected
-                            style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                          />
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  </TouchableOpacity>
-                );
+                        {renderMedicineDetails(showdata)}
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => {
+                            if (!isSelected) {
+                              setSelectedMedicinesId(
+                                [
+                                  ...selectedMedicinesId,
+                                  showdata.externalId || showdata.id || '',
+                                ].filter((i) => i !== '')
+                              );
+                            } else {
+                              setSelectedMedicinesId([
+                                ...selectedMedicinesId.filter(
+                                  (i) => i != (showdata.externalId || showdata.id)
+                                ),
+                              ]);
+                            }
+                          }}
+                        >
+                          {isSelected ? (
+                            <CheckboxSelected
+                              style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                            />
+                          ) : (
+                            <CheckboxUnSelected
+                              style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                } else {
+                  return null;
+                }
               })}
 
           {props.favMed
@@ -1520,20 +1541,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          console.log(
-                            selectedMedicinesId.findIndex((i) => i === med.externalId),
-                            medicinePrescriptionData &&
-                              medicinePrescriptionData.findIndex(
-                                (i: any) => i.id === med.externalId
-                              ),
-                            'tnei'
-                          );
                           const compareId = med.externalId || med.id;
                           if (selectedMedicinesId.findIndex((i) => i === compareId) < 0) {
                             if (
                               (medicinePrescriptionData &&
                                 medicinePrescriptionData.findIndex(
-                                  (i: any) => (i.externalId || i.id) === compareId
+                                  (
+                                    i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                  ) => ((i || {}).externalId || (i || {}).id) === compareId
                                 ) < 0) ||
                               medicinePrescriptionData === null ||
                               medicinePrescriptionData === undefined
@@ -1585,7 +1600,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       if (
                         (medicinePrescriptionData &&
                           medicinePrescriptionData.findIndex(
-                            (i: any) => (i.externalId || i.id) === data.externalId
+                            (
+                              i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                            ) => ((i || {}).externalId || (i || {}).id) === data.externalId
                           ) < 0) ||
                         medicinePrescriptionData === null ||
                         medicinePrescriptionData === undefined
@@ -1679,7 +1696,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         blurOnSubmit={false}
                         // returnKeyType="send"
                         onChangeText={(value) => {
-                          setFollowupDays(parseInt(value) || '');
+                          setFollowupDays(parseInt(value, 10) || '');
                         }}
                       />
                       <Text
@@ -1860,19 +1877,27 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             >
               {diagnosisData == null || diagnosisData.length == 0
                 ? renderInfoText(strings.common.no_data)
-                : diagnosisData.map((showdata: any, i) => {
-                    return (
-                      <DiagnosisCard
-                        diseaseName={showdata.name}
-                        onPressIcon={() =>
-                          setDiagnosisData(
-                            diagnosisData.filter((i: any) => i.name != showdata.name)
-                          )
-                        }
-                        icon={<DiagonisisRemove />}
-                      />
-                    );
-                  })}
+                : diagnosisData.map(
+                    (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null, i) => {
+                      if (showdata) {
+                        return (
+                          <DiagnosisCard
+                            diseaseName={showdata.name || ''}
+                            onPressIcon={() =>
+                              setDiagnosisData(
+                                diagnosisData.filter(
+                                  (
+                                    i: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null
+                                  ) => (i || {}).name != showdata.name
+                                )
+                              )
+                            }
+                            icon={<DiagonisisRemove />}
+                          />
+                        );
+                      }
+                    }
+                  )}
             </View>
             {caseSheetEdit && (
               <AddIconLabel
@@ -1884,7 +1909,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         props.overlayDisplay(null);
                       }}
                       onDone={(val) => {
-                        let newValues: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] = [];
+                        const newValues: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] = [];
                         val.forEach((item) => {
                           if (
                             diagnosisData &&
@@ -1909,125 +1934,125 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const removeInstrution = (item: string | null) => {
-    console.log('item', item);
-    const list = otherInstructionsData.filter(
-      (other: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions) =>
-        other.instruction != item
-    );
-    setOtherInstructionsData(list);
-  };
-  const renderOtherInstructionsView = () => {
-    return (
-      <View style={{ zIndex: -1 }}>
-        <CollapseCard
-          heading={strings.common.other_instructions}
-          collapse={otherInstructions}
-          onPress={() => setOtherInstructions(!otherInstructions)}
-        >
-          <Text style={[styles.familyText, { marginBottom: 12 }]}>
-            {strings.case_sheet.instructions_to_patient}
-          </Text>
-          {otherInstructionsData == null ? (
-            <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
-              {strings.common.no_data}
-            </Text>
-          ) : (
-            otherInstructionsData.map(
-              (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions, i: any) => {
-                return (
-                  <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
-                    <DiagnosicsCard
-                      diseaseName={showdata.instruction}
-                      icon={
-                        <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
-                          {<DiagonisisRemove />}
-                        </TouchableOpacity>
-                      }
-                    />
-                  </View>
-                );
-              }
-            )
-          )}
-          {otherInstructionsadd ? (
-            <View>
-              <Text style={[styles.familyText, { marginBottom: 12 }]}>
-                {strings.common.add_instructions}
-              </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: '#fff',
-                  borderWidth: 1,
-                  borderColor: '#30c1a3',
-                  borderRadius: 10,
-                  marginBottom: 16,
-                  marginLeft: 20,
-                  marginRight: 20,
-                }}
-              >
-                <TextInput
-                  style={{
-                    flex: 1,
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                    paddingLeft: 12,
-                    marginTop: 12,
-                    marginLeft: 0,
-                    color: '#01475b',
-                    marginBottom: 16,
-                  }}
-                  placeholder={strings.common.enter_instructions_here}
-                  underlineColorAndroid="transparent"
-                  multiline={true}
-                  placeholderTextColor="rgba(2, 71, 91, 0.4)"
-                  value={othervalue}
-                  maxLength={100}
-                  onChangeText={(othervalue) => setOthervalue(othervalue)}
-                />
-                <TouchableOpacity
-                  onPress={() => {
-                    if (othervalue == '' || othervalue.trim() == '') {
-                      Alert.alert(strings.alerts.please_add_other_instructions);
-                    } else if (
-                      otherInstructionsData.find((item: any) => item.instruction == othervalue)
-                    ) {
-                      Alert.alert(strings.alerts.instruction_already_added);
-                    } else {
-                      setOtherInstructionsData([
-                        ...otherInstructionsData,
-                        {
-                          instruction: othervalue,
-                        },
-                      ]);
+  // const removeInstrution = (item: string | null) => {
+  //   console.log('item', item);
+  //   const list = otherInstructionsData.filter(
+  //     (other: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions) =>
+  //       other.instruction != item
+  //   );
+  //   setOtherInstructionsData(list);
+  // };
+  // const renderOtherInstructionsView = () => {
+  //   return (
+  //     <View style={{ zIndex: -1 }}>
+  //       <CollapseCard
+  //         heading={strings.common.other_instructions}
+  //         collapse={otherInstructions}
+  //         onPress={() => setOtherInstructions(!otherInstructions)}
+  //       >
+  //         <Text style={[styles.familyText, { marginBottom: 12 }]}>
+  //           {strings.case_sheet.instructions_to_patient}
+  //         </Text>
+  //         {otherInstructionsData == null ? (
+  //           <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
+  //             {strings.common.no_data}
+  //           </Text>
+  //         ) : (
+  //           otherInstructionsData.map(
+  //             (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions, i: any) => {
+  //               return (
+  //                 <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 12 }}>
+  //                   <DiagnosicsCard
+  //                     diseaseName={showdata.instruction}
+  //                     icon={
+  //                       <TouchableOpacity onPress={() => removeInstrution(showdata.instruction)}>
+  //                         {<DiagonisisRemove />}
+  //                       </TouchableOpacity>
+  //                     }
+  //                   />
+  //                 </View>
+  //               );
+  //             }
+  //           )
+  //         )}
+  //         {otherInstructionsadd ? (
+  //           <View>
+  //             <Text style={[styles.familyText, { marginBottom: 12 }]}>
+  //               {strings.common.add_instructions}
+  //             </Text>
+  //             <View
+  //               style={{
+  //                 flexDirection: 'row',
+  //                 justifyContent: 'center',
+  //                 alignItems: 'center',
+  //                 backgroundColor: '#fff',
+  //                 borderWidth: 1,
+  //                 borderColor: '#30c1a3',
+  //                 borderRadius: 10,
+  //                 marginBottom: 16,
+  //                 marginLeft: 20,
+  //                 marginRight: 20,
+  //               }}
+  //             >
+  //               <TextInput
+  //                 style={{
+  //                   flex: 1,
+  //                   ...theme.fonts.IBMPlexSansMedium(14),
+  //                   paddingLeft: 12,
+  //                   marginTop: 12,
+  //                   marginLeft: 0,
+  //                   color: '#01475b',
+  //                   marginBottom: 16,
+  //                 }}
+  //                 placeholder={strings.common.enter_instructions_here}
+  //                 underlineColorAndroid="transparent"
+  //                 multiline={true}
+  //                 placeholderTextColor="rgba(2, 71, 91, 0.4)"
+  //                 value={othervalue}
+  //                 maxLength={100}
+  //                 onChangeText={(othervalue) => setOthervalue(othervalue)}
+  //               />
+  //               <TouchableOpacity
+  //                 onPress={() => {
+  //                   if (othervalue == '' || othervalue.trim() == '') {
+  //                     Alert.alert(strings.alerts.please_add_other_instructions);
+  //                   } else if (
+  //                     otherInstructionsData.find((item: any) => item.instruction == othervalue)
+  //                   ) {
+  //                     Alert.alert(strings.alerts.instruction_already_added);
+  //                   } else {
+  //                     setOtherInstructionsData([
+  //                       ...otherInstructionsData,
+  //                       {
+  //                         instruction: othervalue,
+  //                       },
+  //                     ]);
 
-                      setOtherInstructionsAdd(!otherInstructionsadd);
-                      setOthervalue('');
-                      renderOtherInstructionsView();
-                    }
-                  }}
-                >
-                  <View style={{ alignItems: 'flex-end', margin: 8 }}>
-                    <Green />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : (
-            caseSheetEdit && (
-              <AddIconLabel
-                label={strings.buttons.add_instructions}
-                onPress={() => setOtherInstructionsAdd(!otherInstructionsadd)}
-                style={{ marginLeft: 16, marginTop: 0, marginBottom: 19 }}
-              />
-            )
-          )}
-        </CollapseCard>
-      </View>
-    );
-  };
+  //                     setOtherInstructionsAdd(!otherInstructionsadd);
+  //                     setOthervalue('');
+  //                     // renderOtherInstructionsView();
+  //                   }
+  //                 }}
+  //               >
+  //                 <View style={{ alignItems: 'flex-end', margin: 8 }}>
+  //                   <Green />
+  //                 </View>
+  //               </TouchableOpacity>
+  //             </View>
+  //           </View>
+  //         ) : (
+  //           caseSheetEdit && (
+  //             <AddIconLabel
+  //               label={strings.buttons.add_instructions}
+  //               onPress={() => setOtherInstructionsAdd(!otherInstructionsadd)}
+  //               style={{ marginLeft: 16, marginTop: 0, marginBottom: 19 }}
+  //             />
+  //           )
+  //         )}
+  //       </CollapseCard>
+  //     </View>
+  //   );
+  // };
   const renderHeaderText = (header: string) => {
     return (
       <Text
@@ -2279,7 +2304,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const selectedAdviceAction = (advice: dataPair, action: 'a' | 'd') => {
+  const selectedAdviceAction = (advice: DataPair, action: 'a' | 'd') => {
     if (action === 'a') {
       if (
         addedAdvices.findIndex((item) => item.value.toLowerCase() === advice.value.toLowerCase()) <

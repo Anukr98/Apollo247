@@ -112,7 +112,7 @@ export const nameFormater = (name: string) => {
   return val[0].toUpperCase() + val.slice(1).toLowerCase();
 };
 
-export const medUsageType = (med: MEDICINE_UNIT) => {
+export const medUsageType = (med: MEDICINE_UNIT | null) => {
   switch (med) {
     case MEDICINE_UNIT.POWDER:
     case MEDICINE_UNIT.CREAM:
