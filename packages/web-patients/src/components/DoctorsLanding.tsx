@@ -179,6 +179,7 @@ export const DoctorsLanding: React.FC = (props) => {
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
+  const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isLargeScreen = useMediaQuery('(min-width:991px)');
 
@@ -247,12 +248,15 @@ export const DoctorsLanding: React.FC = (props) => {
               </div>
             </Link>
             Doctors / Specialities
-            {specialitySelected.length > 0 ? (
-              <AphButton className={classes.filterBtn}>
+            {specialitySelected.length > 0 && (
+              <AphButton
+                className={classes.filterBtn}
+                onClick={() => {
+                  setShowResponsiveFilter(true);
+                }}
+              >
                 <img src={require('images/ic_filter.svg')} alt="" />
               </AphButton>
-            ) : (
-              ''
             )}
           </div>
           <div className={classes.doctorListingSection}>
@@ -268,6 +272,10 @@ export const DoctorsLanding: React.FC = (props) => {
               manageFilter={(disableFilters) => {
                 setDisableFilters(disableFilters);
               }}
+              showResponsiveFilter={showResponsiveFilter}
+              setShowResponsiveFilter={(showResponsiveFilter: boolean) =>
+                setShowResponsiveFilter(showResponsiveFilter)
+              }
             />
             <div className={classes.searchSection}>
               {!loading ? (
