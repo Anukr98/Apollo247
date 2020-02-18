@@ -115,8 +115,8 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
           {prescriptions && prescriptions.length > 0
-            ? prescriptions.map((prescription: PrescriptionType) => (
-                <Grid item xs={12} sm={6}>
+            ? prescriptions.map((prescription: PrescriptionType, idx: number) => (
+                <Grid key={idx} item xs={12} sm={6}>
                   <div className={classes.cardTitle}>{prescription.medicineName}</div>
                   {prescription && (
                     <div className={classes.cardSection}>

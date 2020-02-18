@@ -352,11 +352,24 @@ export const Consultations: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.topFilters}>
-          <AphButton className={classes.buttonActive} onClick={() => setFilter('ALL')}>
+          <AphButton
+            className={filter === 'ALL' ? classes.buttonActive : undefined}
+            onClick={() => setFilter('ALL')}
+          >
             All Consults
           </AphButton>
-          <AphButton onClick={() => setFilter('ONLINE')}>Online</AphButton>
-          <AphButton onClick={() => setFilter('PHYSICAL')}>Physical</AphButton>
+          <AphButton
+            className={filter === 'ONLINE' ? classes.buttonActive : undefined}
+            onClick={() => setFilter('ONLINE')}
+          >
+            Online
+          </AphButton>
+          <AphButton
+            className={filter === 'PHYSICAL' ? classes.buttonActive : undefined}
+            onClick={() => setFilter('PHYSICAL')}
+          >
+            Physical
+          </AphButton>
         </div>
         <Scrollbars
           autoHide={true}

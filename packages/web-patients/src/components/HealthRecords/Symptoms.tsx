@@ -112,8 +112,8 @@ export const Symptoms: React.FC<SymptomProps> = (props) => {
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
           {symptoms.length > 0
-            ? symptoms.map((symptom: SymptomType) => (
-                <Grid item xs={12} sm={6}>
+            ? symptoms.map((symptom: SymptomType, idx: number) => (
+                <Grid key={idx} item xs={12} sm={6}>
                   <div className={classes.cardTitle}>{symptom.symptom}</div>
                   <div className={classes.cardSection}>
                     Since: {symptom.since}

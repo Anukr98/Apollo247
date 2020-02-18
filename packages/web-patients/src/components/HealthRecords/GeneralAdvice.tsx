@@ -119,13 +119,17 @@ export const GeneralAdvice: React.FC<GeneralAdviceProps> = (props) => {
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
           <Grid item sm={12}>
-            <div className={classes.cardSection}>
-              <ol>
-                {adviceList && adviceList.length > 0
-                  ? adviceList.map((advice: OtherInstructionType) => <li>{advice.instruction}</li>)
-                  : 'No Advice'}
-              </ol>
-            </div>
+            {adviceList && adviceList.length > 0 ? (
+              <div className={classes.cardSection}>
+                <ol>
+                  {adviceList.map((advice: OtherInstructionType) => (
+                    <li>{advice.instruction}</li>
+                  ))}
+                </ol>
+              </div>
+            ) : (
+              'No Advice'
+            )}
           </Grid>
         </Grid>
       </ExpansionPanelDetails>
