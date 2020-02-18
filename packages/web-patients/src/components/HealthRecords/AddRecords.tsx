@@ -13,6 +13,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -53,8 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
-        paddingLeft: 20,
-        paddingRight: 20,
+        padding: '15px 20px',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
@@ -219,9 +219,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     documentDetails: {
+      display: 'flex',
+      width: '100%',
       [theme.breakpoints.down('xs')]: {
-        display: 'flex',
-        width: '100%',
         borderBottom: '0.5px solid rgba(2,71,91,0.3)',
         paddingBottom: 10,
       },
@@ -340,12 +340,12 @@ export const AddRecords: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.addRecordsPage}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.welcome())}>
+            <Link to={clientRoutes.healthRecords()}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
-            </a>
+            </Link>
             <div className={classes.detailsHeader}>Add a Record</div>
           </div>
           <div className={classes.addRecordSection}>

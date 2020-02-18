@@ -12,6 +12,8 @@ import { FollowUp } from 'components/HealthRecords/FollowUp';
 import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
 import { PrescriptionPreview } from 'components/HealthRecords/PrescriptionPreview';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -227,13 +229,15 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    menuItemActive: { background: 'red' },
   };
 });
 
 export const Consultations: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const currentPath = window.location.pathname;
 
   return (
     <div className={classes.root}>
@@ -278,9 +282,11 @@ export const Consultations: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.addReportActions}>
-          <AphButton color="primary" fullWidth>
-            Add a Report
-          </AphButton>
+          <Link to={clientRoutes.addRecords()}>
+            <AphButton color="primary" fullWidth>
+              Add a Report
+            </AphButton>
+          </Link>
         </div>
       </div>
       <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>

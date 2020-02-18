@@ -121,6 +121,7 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
           <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
           <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
+          <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
         </Switch>
       </div>
     </Scrollbars>
