@@ -19,6 +19,9 @@ import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import ImageGallery from 'react-image-gallery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -251,6 +254,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const storageClient = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
+
 export const Consultations: React.FC = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
@@ -261,7 +269,7 @@ export const Consultations: React.FC = (props) => {
   const [error, setError] = useState<boolean>(false);
   const [consultsData, setConsultsData] = useState<any[] | null>(null);
   const [allConsultsData, setAllConsultsData] = useState<any[] | null>(null);
-  const [filter, setFilter] = useState<string>();
+  const [filter, setFilter] = useState<string>('ALL');
   const [activeConsult, setActiveConsult] = useState<any | null>(null);
 
   const fetchPastData = () => {
@@ -364,24 +372,40 @@ export const Consultations: React.FC = (props) => {
   };
   const currentPath = window.location.pathname;
 
+  const downloadPrescription = () => {
+    const filterCaseSheet =
+      activeConsult &&
+      activeConsult.caseSheet &&
+      activeConsult.caseSheet.find(
+        (caseSheet: CaseSheetType | null) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
+      );
+    const a = document.createElement('a');
+    if (filterCaseSheet && filterCaseSheet.blobName) {
+      a.href = storageClient.getBlobUrl(filterCaseSheet.blobName);
+    } else {
+      a.href = activeConsult && activeConsult.prescriptionImageUrl;
+    }
+    a.click();
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.topFilters}>
           <AphButton
-            className={filter === 'ALL' ? classes.buttonActive : undefined}
+            className={filter === 'ALL' ? classes.buttonActive : ''}
             onClick={() => setFilter('ALL')}
           >
             All Consults
           </AphButton>
           <AphButton
-            className={filter === 'ONLINE' ? classes.buttonActive : undefined}
+            className={filter === 'ONLINE' ? classes.buttonActive : ''}
             onClick={() => setFilter('ONLINE')}
           >
             Online
           </AphButton>
           <AphButton
-            className={filter === 'PHYSICAL' ? classes.buttonActive : undefined}
+            className={filter === 'PHYSICAL' ? classes.buttonActive : ''}
             onClick={() => setFilter('PHYSICAL')}
           >
             Physical
@@ -411,7 +435,11 @@ export const Consultations: React.FC = (props) => {
                           ? showDate(consult.appointmentDateTime)
                           : showDate(consult.quoteDateTime)}
                       </div>
-                      <DoctorConsultCard consult={consult} />
+                      <DoctorConsultCard
+                        consult={consult}
+                        isActiveCard={activeConsult === consult}
+                        downloadPrescription={downloadPrescription}
+                      />
                     </div>
                   )
               )}
@@ -433,7 +461,7 @@ export const Consultations: React.FC = (props) => {
           </div>
           <div className={classes.headerActions}>
             <AphButton>View Consult</AphButton>
-            <div className={classes.downloadIcon}>
+            <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
               <img src={require('images/ic_download.svg')} alt="" />
             </div>
           </div>
@@ -450,7 +478,7 @@ export const Consultations: React.FC = (props) => {
           }
         >
           <div className={classes.consultationDetails}>
-            {activeConsult && (
+            {activeConsult && activeConsult.patientId ? (
               <>
                 <Symptoms caseSheetList={activeConsult.caseSheet} />
                 <Prescription caseSheetList={activeConsult.caseSheet} />
@@ -460,6 +488,8 @@ export const Consultations: React.FC = (props) => {
                 {/* <PaymentInvoice />
                 <PrescriptionPreview /> */}
               </>
+            ) : (
+              activeConsult && <img src={activeConsult.prescriptionImageUrl} />
             )}
           </div>
         </Scrollbars>
