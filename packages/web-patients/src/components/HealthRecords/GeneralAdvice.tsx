@@ -7,6 +7,10 @@ import {
   ExpansionPanelDetails,
   Grid,
 } from '@material-ui/core';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_otherInstructions as OtherInstructionType,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -81,8 +85,29 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const GeneralAdvice: React.FC = (props) => {
-  const classes = useStyles();
+type GeneralAdviceProps = {
+  caseSheetList: (CaseSheetType | null)[] | null;
+};
+
+export const GeneralAdvice: React.FC<GeneralAdviceProps> = (props) => {
+  const classes = useStyles({});
+  const caseSheetList = props.caseSheetList;
+
+  const adviceList: OtherInstructionType[] = [];
+
+  caseSheetList &&
+    caseSheetList.length > 0 &&
+    caseSheetList.forEach(
+      (caseSheet: CaseSheetType | null) =>
+        caseSheet &&
+        caseSheet.doctorType !== 'JUNIOR' &&
+        caseSheet.otherInstructions &&
+        caseSheet.otherInstructions.length > 0 &&
+        caseSheet.otherInstructions.forEach(
+          (advice: OtherInstructionType | null) => advice && adviceList.push(advice)
+        )
+    );
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -94,14 +119,17 @@ export const GeneralAdvice: React.FC = (props) => {
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
           <Grid item sm={12}>
-            <div className={classes.cardSection}>
-              <ol>
-                <li>Take adequate rest</li>
-                <li>Take warm fluids / soft food, more frequently in amall quantities</li>
-                <li>Avoid cold / refrigerated food</li>
-                <li>Follow Prescription</li>
-              </ol>
-            </div>
+            {adviceList && adviceList.length > 0 ? (
+              <div className={classes.cardSection}>
+                <ol>
+                  {adviceList.map((advice: OtherInstructionType) => (
+                    <li>{advice.instruction}</li>
+                  ))}
+                </ol>
+              </div>
+            ) : (
+              'No Advice'
+            )}
           </Grid>
         </Grid>
       </ExpansionPanelDetails>

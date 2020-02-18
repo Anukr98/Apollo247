@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.CARD_BG,
     padding: 20,
     marginBottom: 10,
-    shadowColor: '#808080',
+    shadowColor: theme.colors.SHADOW_GRAY,
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -26,12 +26,12 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   descriptiontext: {
-    color: '#02475b',
+    color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansMedium(15),
     textAlign: 'left',
   },
   underline: {
-    borderBottomColor: '#02475b',
+    borderBottomColor: theme.colors.LIGHT_BLUE,
     borderBottomWidth: 1,
     marginTop: 10,
     marginBottom: 10,

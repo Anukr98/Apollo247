@@ -678,7 +678,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           //console.log(docConsultHrs[rowCount - 1].endTime, 'prev end time');
           const nextDate = addDays(selectedDate, 1);
           ed = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          const td = `${nextDate.toDateString()} 18:30:00`;
+          //const td = `${nextDate.toDateString()} 18:30:00`;
+          const td = `${nextDate.toDateString()} 00:00:00`;
           console.log(td, 'td', ed, 'ed', new Date(ed) >= new Date(td), 'comp');
           //if (docConsultHrs[rowCount - 1].endTime == '18:25:00') {
           if (new Date(ed) >= new Date(td)) {
@@ -1504,9 +1505,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
-      .andWhere('appointment.status not in(:status1,:status2)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_PENDING,
       })
       .getCount();
   }
@@ -1518,9 +1518,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
-      .andWhere('appointment.status not in(:status1,:status2)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_PENDING,
       })
       .getCount();
   }
@@ -1531,9 +1530,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         apptDate: new Date(),
       })
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
-      .andWhere('appointment.status not in(:status1,:status2)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_PENDING,
       })
       .getCount();
   }

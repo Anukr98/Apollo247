@@ -167,16 +167,19 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           followUp
           followUpAfterInDays
           followUpDate
+          followUpConsultType
           id
-
           medicinePrescription {
             medicineConsumptionDurationInDays
             medicineDosage
+            id
+            medicineConsumptionDurationUnit
+            medicineFormTypes
+            medicineFrequency
             medicineInstructions
+            medicineName
             medicineTimings
             medicineToBeTaken
-            medicineName
-            id
             medicineUnit
           }
           symptoms {
@@ -184,6 +187,9 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             since
             howOften
             severity
+          }
+          otherInstructions {
+            instruction
           }
         }
         displayId
@@ -278,6 +284,14 @@ export const ADD_CHAT_DOCUMENT = gql`
     addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
       id
       documentPath
+    }
+  }
+`;
+
+export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
+  query GetPatientFutureAppointmentCount($patientId: String) {
+    getPatientFutureAppointmentCount(patientId: $patientId) {
+      consultsCount
     }
   }
 `;

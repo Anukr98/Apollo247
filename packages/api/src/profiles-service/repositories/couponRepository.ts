@@ -13,6 +13,7 @@ export class CouponRepository extends Repository<Coupon> {
       order: {
         createdDate: 'DESC',
       },
+      relations: ['couponConsultRule', 'couponGenericRule'],
     }).catch((getCouponsError) => {
       throw new AphError(AphErrorMessages.GET_COUPONS_ERROR, undefined, {
         getCouponsError,
