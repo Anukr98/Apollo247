@@ -195,7 +195,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             paymentRefId: '',
             paymentStatus: 'TXN_SUCCESS',
             paymentDateTime: paymentDateTime,
-            responseCode: '', // Note: Send coupon code once coupon API is updated
+            responseCode: coupon,
             responseMessage: 'Coupon applied',
             bankTxnId: '',
             orderId: id,
@@ -204,7 +204,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log(JSON.stringify(data!.makeAppointmentPayment));
+        console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
         handleOrderSuccess(`${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`);
       })
       .catch((e) => {
@@ -252,7 +252,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     //   Number(VirtualConsultationFee) > 0
     //     ? VirtualConsultationFee
     //     : props.doctor!.onlineConsultationFees;
-    // console.log('\n\n\n\n\n\n\n\nprice', price, typeof price, '\n\n\n\n\n\n\n\n\n');
 
     client
       .mutate<bookAppointment>({
