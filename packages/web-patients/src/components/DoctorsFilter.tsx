@@ -217,7 +217,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setShowResponsiveFilter,
   } = props;
 
-  console.log(showResponsiveFilter, 'responsive filter is.....');
+  // console.log(showResponsiveFilter, 'responsive filter is.....');
 
   const filterCities = { Hyderabad: 'Hyderabad', Chennai: 'Chennai' };
   const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '15_99': '15+' };
