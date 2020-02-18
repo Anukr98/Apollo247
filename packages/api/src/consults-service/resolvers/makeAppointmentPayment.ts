@@ -166,19 +166,18 @@ const sendPatientAcknowledgements = async (
   }
 
   //SMS logic starts here
-  let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
-    '{0}',
-    patientDetails.firstName
-  );
-  smsMessage = smsMessage.replace('{1}', appointmentData.displayId.toString());
-  smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
+  //let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
+  //'{0}',
+  //patientDetails.firstName
+  //);
+  //smsMessage = smsMessage.replace('{1}', appointmentData.displayId.toString());
+  //smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
   const istDateTime = addMilliseconds(appointmentData.appointmentDateTime, 19800000);
-  const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-  smsMessage = smsMessage.replace('{3}', smsDate.toString());
-  smsMessage = smsMessage.replace('at {4}', '');
-  console.log(smsMessage, 'sms message');
-  sendSMS(smsMessage);
-  sendNotificationSMS(patientDetails.mobileNumber, smsMessage);
+  //const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
+  //smsMessage = smsMessage.replace('{3}', smsDate.toString());
+  //smsMessage = smsMessage.replace('at {4}', '');
+  //console.log(smsMessage, 'sms message');
+  //sendSMS(smsMessage);
   //SMS logic ends here
 
   //NOTIFICATION logic starts here

@@ -906,6 +906,8 @@ export async function sendReminderNotification(
     };
   }
 
+  //send SMS notification
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -1318,6 +1320,9 @@ export async function sendMedicineOrderStatusNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
 
+  //send SMS notification
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+
   //initialize firebaseadmin
   const admin = await getInitializedFirebaseAdmin();
 
@@ -1403,6 +1408,7 @@ export async function sendDiagnosticOrderStatusNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
 
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   //initialize firebaseadmin
   const admin = await getInitializedFirebaseAdmin();
 
