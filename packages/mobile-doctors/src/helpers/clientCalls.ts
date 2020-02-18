@@ -43,7 +43,7 @@ export const getPrismUrls = (
   patientId: string,
   fileIds: string[]
 ) => {
-  return new Promise((res, rej) => {
+  return new Promise<{ urls: string[] | null }>((res, rej) => {
     client
       .query<downloadDocuments>({
         query: DOWNLOAD_DOCUMENT,

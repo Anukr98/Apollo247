@@ -31,7 +31,6 @@ import {
   GreenRemove,
   InpersonIcon,
   InpersonWhiteIcon,
-  PatientPlaceHolderImage,
   PhysicalIcon,
   RoundCallIcon,
   RoundVideoIcon,
@@ -45,9 +44,7 @@ import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { CaseSheetContext } from '@aph/mobile-doctors/src/context/CaseSheetContext';
 import {
-  CREATE_CASESHEET_FOR_SRD,
   END_APPOINTMENT_SESSION,
-  GET_CASESHEET,
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from '@aph/mobile-doctors/src/graphql/profiles';
@@ -56,7 +53,6 @@ import {
   EndAppointmentSessionVariables,
 } from '@aph/mobile-doctors/src/graphql/types/EndAppointmentSession';
 import {
-  GetCaseSheet,
   GetCaseSheet_getCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
