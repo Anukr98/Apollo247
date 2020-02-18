@@ -1,5 +1,5 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { SplashLogo } from '@aph/mobile-doctors/src/components/SplashLogo';
+
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect } from 'react';
@@ -15,6 +15,7 @@ import {
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
+import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   mainView: {

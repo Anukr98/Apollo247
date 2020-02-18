@@ -27,6 +27,20 @@ export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => 
   <Image style={[getIconStyle(size), style]} {...props} />
 );
 
+export const SplashLogo: React.FC<Partial<ImageProps>> = (props) => (
+  <Image
+    style={{ width: 136.3, height: 100 }}
+    {...props}
+    source={require('@aph/mobile-doctors/src/images/apollo/apollo_logoo.png')}
+  />
+);
+export const LandingPageImage: React.FC<Partial<ImageProps>> = (props) => (
+  <Image
+    style={{ width: '100%', height: 'auto' }}
+    {...props}
+    source={require('@aph/mobile-doctors/src/images/apollo/illustration_mobile_consult_a_doctor.png')}
+  />
+);
 export const ArrowDisabled: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('../../images/icons/ic_arrow_disabled.png')} />
 );

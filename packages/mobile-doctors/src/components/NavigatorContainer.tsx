@@ -14,7 +14,6 @@ import { MyAccount } from '@aph/mobile-doctors/src/components/MyAccount';
 import { NeedHelp } from '@aph/mobile-doctors/src/components/NeedHelp';
 import { NeedHelpDonePage } from '@aph/mobile-doctors/src/components/NeedHelpDonePage';
 import { NotificationScreen } from '@aph/mobile-doctors/src/components/Notification/NotificationScreen';
-import { Onboarding } from '@aph/mobile-doctors/src/components/Onboarding';
 import { OnBoardingPage } from '@aph/mobile-doctors/src/components/OnBoardingPage';
 import { OTPVerification } from '@aph/mobile-doctors/src/components/OTPVerification';
 import { OTPVerificationApiCall } from '@aph/mobile-doctors/src/components/OTPVerificationApiCall';
@@ -45,7 +44,6 @@ import { PaymentHistory } from '@aph/mobile-doctors/src/components/Account/Payme
 import { BlockHomePage } from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage';
 
 export enum AppRoutes {
-  Onboarding = 'Onboarding',
   Login = 'Login',
   Appointments = 'Appointments',
   TabBar = 'TabBar',
@@ -90,12 +88,6 @@ export enum AppRoutes {
 export type AppRoute = keyof typeof AppRoutes;
 
 const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
-  [AppRoutes.Onboarding]: {
-    screen: Onboarding,
-    navigationOptions: {
-      header: null,
-    },
-  },
   [AppRoutes.TabBar]: {
     screen: TabBar,
     navigationOptions: {

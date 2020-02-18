@@ -1,6 +1,5 @@
-import { LandingPageImage } from '@aph/mobile-doctors/src/components/LandingPageImage';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { SplashLogo } from '@aph/mobile-doctors/src/components/SplashLogo';
+
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
@@ -10,6 +9,7 @@ import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '././../theme/theme';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { SplashLogo, LandingPageImage } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   mainView: {
