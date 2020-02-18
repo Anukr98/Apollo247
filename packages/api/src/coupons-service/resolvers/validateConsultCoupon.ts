@@ -224,7 +224,7 @@ const validateConsultCoupon: Resolver<
 
   //discount amount calculation
   let revisedAmount = doctorFees;
-  if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue) {
+  if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue >= 0) {
     revisedAmount = await discountCalculation(
       doctorFees,
       couponGenericRulesData.discountType,
