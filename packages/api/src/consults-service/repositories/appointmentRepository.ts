@@ -1500,9 +1500,6 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getPatientAppointmentCountByConsultMode(patientId: string, appointmenType: APPOINTMENT_TYPE) {
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime > :apptDate', {
-        apptDate: new Date(),
-      })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
       .andWhere('appointment.status not in(:status1)', {
@@ -1513,9 +1510,6 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getPatientAppointmentCountByCouponCode(patientId: string, couponCode: string) {
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime > :apptDate', {
-        apptDate: new Date(),
-      })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
       .andWhere('appointment.status not in(:status1)', {
@@ -1526,9 +1520,6 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getAppointmentCountByCouponCode(couponCode: string) {
     return this.createQueryBuilder('appointment')
-      .where('appointment.appointmentDateTime > :apptDate', {
-        apptDate: new Date(),
-      })
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
       .andWhere('appointment.status not in(:status1)', {
         status1: STATUS.PAYMENT_PENDING,
