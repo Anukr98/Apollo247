@@ -250,7 +250,6 @@ const getConsultCouponList: Resolver<
 
   const couponRepo = patientsDb.getCustomRepository(CouponRepository);
   const couponData = await couponRepo.getActiveCoupons();
-  console.log(couponData);
   return { coupons: couponData };
 };
 
