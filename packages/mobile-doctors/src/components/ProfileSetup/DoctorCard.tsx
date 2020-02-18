@@ -124,38 +124,39 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
 
   return (
     <View style={styles.doctorView}>
-      <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+      <TouchableOpacity activeOpacity={1} onPress={() => isMenuHidden && setisMenuHidden(false)}>
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-          <View style={{ flexDirection: 'row', marginBottom: 16 }}>
-            <View style={styles.imageView}>
-              <Image source={require('../../images/doctor/rahul.png')} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={styles.iconview}>
-                <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                  {strings.common.dr} {props.doctorName}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setisMenuHidden(!isMenuHidden)}
-                  style={{ flex: 0.2 }}
-                >
-                  <Image
-                    style={styles.imageremovestyles}
-                    source={require('../../images/icons/remove.png')}
-                  />
-                </TouchableOpacity>
+          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+              <View style={styles.imageView}>
+                <Image source={require('../../images/doctor/rahul.png')} />
               </View>
+              <View style={{ flex: 1 }}>
+                <View style={styles.iconview}>
+                  <Text style={styles.doctorNameStyles} numberOfLines={1}>
+                    {strings.common.dr} {props.doctorName}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setisMenuHidden(!isMenuHidden)}
+                    style={{ flex: 0.2 }}
+                  >
+                    <Image
+                      style={styles.imageremovestyles}
+                      source={require('../../images/icons/remove.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-              <Text style={styles.doctorSpecializationStyles}>
-                {props.specialization ? props.specialization + ' | ' : ''}
-                {props.experience} {strings.common.yrs}
-              </Text>
-              <Text style={styles.educationTextStyles}>{props.education}</Text>
-              <Text style={styles.doctorLocation}>{props.location}</Text>
+                <Text style={styles.doctorSpecializationStyles}>
+                  {props.specialization ? props.specialization + ' | ' : ''}
+                  {props.experience} {strings.common.yrs}
+                </Text>
+                <Text style={styles.educationTextStyles}>{props.education}</Text>
+                <Text style={styles.doctorLocation}>{props.location}</Text>
+              </View>
             </View>
           </View>
-        </View>
-        {/* {props.inviteStatus == INVITEDSTATUS.ACCEPTED ? (
+          {/* {props.inviteStatus == INVITEDSTATUS.ACCEPTED ? (
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row', marginBottom: 16 }}>
               <View style={styles.imageView}>
@@ -205,20 +206,21 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
             </View>
           </View>
         )} */}
-      </View>
-      {isMenuHidden ? (
-        <View style={styles.removebuttonview}>
-          <Button
-            onPress={() => {
-              setisMenuHidden(false);
-              props.onRemove(props.doctorId);
-            }}
-            title={strings.common.remove}
-            titleTextStyle={styles.titleTextStyle}
-            style={[styles.containerStyles]}
-          />
         </View>
-      ) : null}
+        {isMenuHidden ? (
+          <View style={styles.removebuttonview}>
+            <Button
+              onPress={() => {
+                setisMenuHidden(false);
+                props.onRemove(props.doctorId);
+              }}
+              title={strings.common.remove}
+              titleTextStyle={styles.titleTextStyle}
+              style={[styles.containerStyles]}
+            />
+          </View>
+        ) : null}
+      </TouchableOpacity>
     </View>
   );
 };

@@ -160,6 +160,10 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         endDate: startDate, //'2019-09-13',
       },
       fetchPolicy: 'no-cache',
+      pollInterval:
+        moment(date).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+          ? 30 * 1000
+          : undefined,
     }
   );
 

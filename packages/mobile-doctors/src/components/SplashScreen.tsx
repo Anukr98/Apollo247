@@ -125,7 +125,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       // await AsyncStorage.getItem('doctorDetails');
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
       setTimeout(() => {
-        console.log(firebaseUser, doctorDetails);
+        console.log(firebaseUser);
 
         // getLocalData()
         //   .then((localData) => {
@@ -133,7 +133,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('isLoggedIn', isLoggedIn, isOnboardingDone, isProfileFlowDone);
 
         if (isLoggedIn === 'true') {
-          getDoctorDetailsApi && getDoctorDetailsApi();
           if (isProfileFlowDone === 'true') {
             props.navigation.replace(AppRoutes.TabBar);
           } else {
@@ -153,7 +152,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       }, 2000);
     }
     fetchData();
-  }, [props.navigation, firebaseUser, doctorDetails]);
+  }, [props.navigation, firebaseUser]);
 
   return (
     <View style={styles.mainView}>
