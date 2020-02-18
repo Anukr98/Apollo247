@@ -1,37 +1,35 @@
 import { PastConsultCard } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/PastConsultCard';
-import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
   BackArrow,
   PastAppointmentIcon,
-  PatientPlaceHolderImage,
   UpComingIcon,
   UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetCaseSheet,
-  GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
+  Dimensions,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { Image } from 'react-native-elements';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { NavigationScreenProps } from 'react-navigation';
 
 const { height, width } = Dimensions.get('window');
 
@@ -110,7 +108,7 @@ export interface PatientsProps
 
 export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const client = useApolloClient();
-  const [patientHistoryshow, setpatientHistoryshow] = useState(false);
+  // const [patientHistoryshow, setpatientHistoryshow] = useState(false);
 
   const [familyValues, setFamilyValues] = useState<any>([]);
   const [lifeStyleData, setLifeStyleData] = useState<any>([]);

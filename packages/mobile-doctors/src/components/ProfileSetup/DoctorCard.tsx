@@ -1,5 +1,6 @@
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { InviteIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { useState } from 'react';
 import {
   Image,
@@ -13,8 +14,6 @@ import {
   View,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   doctorView: {

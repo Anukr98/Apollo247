@@ -91,7 +91,7 @@ export const ChipViewCard: React.FC<ChipViewCardProps> = (props) => {
               containerStyle,
               styles.containerSelected,
               containerSelectedStyle,
-              // buttonWidth ? { width: buttonWidth } : {},
+              buttonWidth ? { width: buttonWidth } : {},
             ]
           : [styles.container, containerStyle, styles.containerUnSelected, containerUnSelectedStyle]
       }

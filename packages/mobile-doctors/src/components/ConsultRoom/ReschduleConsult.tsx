@@ -1,35 +1,31 @@
-import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState, useEffect } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
-  Alert,
-} from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import Highlighter from 'react-native-highlight-words';
-import { Doctor, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { INITIATE_RESCHDULE_APPONITMENT } from '@aph/mobile-doctors/src/graphql/profiles';
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initiateRescheduleAppointment,
   initiateRescheduleAppointmentVariables,
 } from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
-import { INITIATE_RESCHDULE_APPONITMENT } from '@aph/mobile-doctors/src/graphql/profiles';
-import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { useApolloClient } from 'react-apollo-hooks';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import Pubnub from 'pubnub';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Highlighter from 'react-native-highlight-words';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const rescheduleconsult = '^^#rescheduleconsult';
 const config: Pubnub.PubnubConfig = {

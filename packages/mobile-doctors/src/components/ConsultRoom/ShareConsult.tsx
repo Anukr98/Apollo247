@@ -21,7 +21,7 @@ import {
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
-const { height, width } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {

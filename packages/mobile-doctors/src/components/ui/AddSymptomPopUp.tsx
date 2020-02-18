@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  Text,
-  TextInput,
-  TextInputBase,
-  Alert,
-  BackHandler,
-} from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
-import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useEffect, useState } from 'react';
+import {
+  BackHandler,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export interface AddSymptomPopUpProps {
   onClose: () => void;

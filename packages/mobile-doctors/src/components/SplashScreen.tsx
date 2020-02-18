@@ -1,21 +1,11 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-
-import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  Platform,
-  StyleSheet,
-  View,
-  Alert,
-  AsyncStorage,
-} from 'react-native';
+import { ActivityIndicator, AsyncStorage, Linking, Platform, StyleSheet, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
-import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -32,7 +22,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { firebaseUser, doctorDetails, getDoctorDetailsApi } = useAuth();
+  const { firebaseUser } = useAuth();
 
   const handleOpenURL = (url: string) => {
     console.log(url);

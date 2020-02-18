@@ -1,21 +1,18 @@
+import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAccount';
 import { Appointments } from '@aph/mobile-doctors/src/components/Appointments/Appointments';
-import { Inbox } from '@aph/mobile-doctors/src/components/Inbox';
-import { MyAccount } from '@aph/mobile-doctors/src/components/MyAccount';
 import { AppRoute } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Patients } from '@aph/mobile-doctors/src/components/Patients';
 import {
   ConsultationRoom,
-  InboxIcon,
-  MyHealth,
-  Person,
   ConsultationRoomFocused,
-  PersonFocused,
+  MyHealth,
   MyHealthFocused,
+  Person,
+  PersonFocused,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
-import { BasicAccount } from '@aph/mobile-doctors/src/components/Account/BasicAccount';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoom />,

@@ -221,7 +221,7 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const getDoctorDetailsApi = async () => {
-    return new Promise((resolve, reject) => {
+    return new Promise<boolean>((resolve, reject) => {
       apolloClient
         .query<GetDoctorDetails>({
           query: GET_DOCTOR_DETAILS,

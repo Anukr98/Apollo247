@@ -1,17 +1,15 @@
+import { DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import {
   StyleProp,
   StyleSheet,
   Text,
-  TextStyle,
-  View,
-  ViewStyle,
   TouchableOpacity,
   TouchableOpacityProps,
+  View,
+  ViewStyle,
 } from 'react-native';
-import { DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Icon } from 'react-native-vector-icons/Icon';
 
 const styles = StyleSheet.create({
   container: {
