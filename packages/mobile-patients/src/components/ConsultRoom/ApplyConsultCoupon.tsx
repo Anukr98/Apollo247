@@ -60,7 +60,11 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
       })
       .catch((reason?: string) => {
         setValidCoupon(false);
-        setCouponInvalidReason(reason || '');
+        setCouponInvalidReason(
+          typeof reason == 'string' && reason
+            ? reason
+            : 'Oops! seems like we are having an issue. Please try again.'
+        );
       })
       .finally(() => setLoading!(false));
   };

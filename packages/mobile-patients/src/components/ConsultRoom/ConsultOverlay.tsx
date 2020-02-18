@@ -92,7 +92,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
-  // const [counponused, setCounponused] = useState<string>('');
 
   const doctorFees = isConsultOnline
     ? props.doctor!.onlineConsultationFees
@@ -396,7 +395,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     );
   };
 
-  const validateAndApplyCoupon = (couponValue: string) => {
+  const validateAndApplyCoupon = (couponValue: string, isOnlineConsult: boolean) => {
     const timeSlot =
       tabs[0].title === selectedTab &&
       isConsultOnline &&
@@ -404,7 +403,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       0 < availableInMin!
         ? nextAvailableSlot
         : selectedTimeSlot;
-    console.log(timeSlot, 'validateAndApplyCoupon');
 
     return new Promise((res, rej) => {
       client
@@ -413,7 +411,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           variables: {
             doctorId: props.doctorId,
             code: couponValue,
-            consultType: isConsultOnline ? AppointmentType.ONLINE : AppointmentType.PHYSICAL,
+            consultType: isOnlineConsult ? AppointmentType.ONLINE : AppointmentType.PHYSICAL,
             appointmentDateTimeInUTC: timeSlot,
           },
           fetchPolicy: 'no-cache',
@@ -422,7 +420,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           console.log('v-alidateConsultCoupo-n');
           console.log(JSON.stringify(data!.validateConsultCoupon));
           console.log('\n\n\n\n\n\n\n');
-          // setCounponused(couponValue);
           if (g(data, 'validateConsultCoupon', 'validityStatus')) {
             const revisedAmount = g(data, 'validateConsultCoupon', 'revisedAmount')!;
             setCoupon(couponValue);
@@ -436,19 +433,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     });
   };
 
-  const updateCouponDiscountOnChangeTab = () => {
-    // this function will update coupon discount on change in consultation type
-    // if any error occurred we'll reset the values
-    if (!coupon) return;
-    validateAndApplyCoupon(coupon).catch(() => {
-      setCoupon('');
-      setDoctorDiscountedFees(0);
-      Alert.alert('Uh oh.. :(', 'This coupon is not valid for selected consultation type.');
-    });
+  const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
+    console.log('updateCouponDiscountOnChangeTab isOnlineConsult', isOnlineConsult);
+    // this function will reset coupon discount on change in consultation type
+    setCoupon('');
+    setDoctorDiscountedFees(0);
   };
 
   const onApplyCoupon = (value: string) => {
-    return validateAndApplyCoupon(value);
+    return validateAndApplyCoupon(value, isConsultOnline);
   };
 
   const renderApplyCoupon = () => {
@@ -465,6 +458,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         rightIcon={<ArrowRight />}
         title={!coupon ? 'Apply Coupon' : 'Coupon Applied'}
         onPress={() => {
+          if (!selectedTimeSlot) {
+            Alert.alert('Uh oh.. :(', 'Please select a slot to apply coupon.');
+            return;
+          }
           props.navigation.navigate(AppRoutes.ApplyConsultCoupon, {
             coupon: coupon,
             onApplyCoupon: onApplyCoupon,
@@ -576,7 +573,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 setselectedTab(_selectedTab);
                 setselectedTimeSlot('');
                 setisConsultOnline(_selectedTab === tabs[0].title);
-                updateCouponDiscountOnChangeTab();
+                updateCouponDiscountOnChangeTab(_selectedTab === tabs[0].title);
               }}
               selectedTab={selectedTab}
             />
