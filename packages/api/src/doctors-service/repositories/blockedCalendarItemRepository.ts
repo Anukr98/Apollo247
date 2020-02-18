@@ -21,18 +21,13 @@ export class BlockedCalendarItemRepository extends Repository<BlockedCalendarIte
       where: [
         {
           doctorId,
-          start: MoreThan(currentStartDate),
-          end: LessThanOrEqual(currentEndDate),
-        },
-        {
-          doctorId,
           start: LessThanOrEqual(currentStartDate),
           end: MoreThanOrEqual(currentEndDate),
         },
         {
           doctorId,
-          start: MoreThanOrEqual(secondStartDate),
-          end: LessThanOrEqual(secondEndDate),
+          start: LessThanOrEqual(secondStartDate),
+          end: MoreThanOrEqual(secondEndDate),
         },
       ],
     });
