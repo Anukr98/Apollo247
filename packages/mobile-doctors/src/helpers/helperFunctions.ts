@@ -273,6 +273,8 @@ export function g<
  * @param obj
  * @param props
  */
+/*eslint-disable */
 export function g(obj: any, ...props: string[]) {
   return obj && props.reduce((result, prop) => (result == null ? undefined : result[prop]), obj);
 }
+/*eslint-enable */
