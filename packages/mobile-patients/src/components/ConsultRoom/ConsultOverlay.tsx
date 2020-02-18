@@ -219,9 +219,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       .finally(() => setshowSpinner(false));
   };
 
-  const onSubmitBookAppointment = () => {
+  const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
     setshowSpinner(true);
+    // again check coupon is valid or not
+    if (coupon) {
+      try {
+        await validateAndApplyCoupon(coupon, isConsultOnline);
+      } catch (error) {
+        setCoupon('');
+        setDoctorDiscountedFees(0);
+        setshowSpinner(false);
+        Alert.alert(
+          'Uh oh.. :(',
+          typeof error == 'string' && error
+            ? error
+            : 'Oops! seems like we are having an issue with coupon code. Please try again.'
+        );
+        return;
+      }
+    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isConsultOnline &&
