@@ -16,13 +16,16 @@ import {
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Platform, StyleSheet, Text, View, Alert } from 'react-native';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   searchTestDropdown: {
     margin: 0,
     overflow: 'hidden',
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
     ...Platform.select({
       ios: {
         zIndex: 1,
@@ -37,13 +40,13 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     borderBottomColor: '#30c1a3',
     borderBottomWidth: 1,
-    color: '#01475b',
+    color: theme.colors.SHARP_BLUE,
     marginLeft: 0,
     marginRight: 0,
     marginBottom: 10,
   },
   tabTitle: {
-    color: '#01475b',
+    color: theme.colors.SHARP_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(13),
     textAlign: 'center',
   },
@@ -91,7 +94,23 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   const client = useApolloClient();
 
   const getTempTestArray = (Testitemname: any) => {
-    settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+    if (tempTestArray.length > 0) {
+      console.log('length is greater than  zero');
+      for (var i = 0; i < tempTestArray.length; i++) {
+        console.log('for loop');
+        if (tempTestArray[i] === Testitemname) {
+          Alert.alert(strings.common.alert, 'Test existed in the list.');
+          console.log('same test name');
+        } else {
+          console.log(' test name not same');
+          settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+        }
+      }
+    } else {
+      console.log('length is zero');
+      settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+    }
+    // settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
     console.log('temparr', '.....vlaue', tempTestArray, '//////');
   };
 
@@ -113,7 +132,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                   onPress: () => {
                     Keyboard.dismiss();
                     console.log('selval:', item!.itemname, i);
-                    getTempTestArray(item);
+                    getTempTestArray(item!.itemname);
                     setsearchTestVal(item!.itemname);
                     // isSearchTestListVisible;
                     setisSearchTestListVisible(!isSearchTestListVisible);
@@ -239,12 +258,13 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                       console.log('......tempTestArray:', tempTestArray);
                       return (
                         <ChipIconView
-                          title={item.itemname}
+                          title={item}
                           onPress={(e: any) => {
                             console.log('deleted');
                             settempTestArray(tempTestArray.slice(1));
                             setsearchTestVal('');
                             console.log('delete tempTestArray:', tempTestArray);
+                            setisSearchTestListVisible(false);
                           }}
                         />
                       );
