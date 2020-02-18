@@ -563,6 +563,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       },
       blueTextStyle: {
         ...theme.viewStyles.text('M', 16, '#01475b', 1, 24),
+        flex: 1,
+      },
+      blueRightTextStyle: {
+        ...theme.viewStyles.text('M', 16, '#01475b', 1, 24),
+        flex: 0.6,
+        textAlign: 'right',
       },
     });
 
@@ -574,16 +580,23 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       <View style={{ ...theme.viewStyles.card(16, 10, 10, theme.colors.CARD_BG) }}>
         <View style={localStyles.rowSpaceBetweenStyle}>
           <Text style={localStyles.blueTextStyle}>Subtotal</Text>
-          <Text style={localStyles.blueTextStyle}>Rs. {total}</Text>
+          <Text style={[localStyles.blueRightTextStyle]}>Rs. {total}</Text>
         </View>
         <View style={localStyles.rowSpaceBetweenStyle}>
           <Text style={localStyles.blueTextStyle}>{`Coupon (${coupon})`}</Text>
-          <Text style={localStyles.blueTextStyle}>- Rs. {couponDiscount}</Text>
+          <Text style={[localStyles.blueRightTextStyle]}>- Rs. {couponDiscount}</Text>
         </View>
         <Spearator style={{ marginTop: 16, marginBottom: 10 }} />
         <View style={localStyles.rowSpaceBetweenStyle}>
           <Text style={localStyles.blueTextStyle}>To Pay</Text>
-          <Text style={theme.viewStyles.text('B', 16, '#01475b', 1, 24)}>Rs. {amountToPay}</Text>
+          <Text
+            style={[
+              localStyles.blueRightTextStyle,
+              theme.viewStyles.text('B', 16, '#01475b', 1, 24),
+            ]}
+          >
+            Rs. {amountToPay}
+          </Text>
         </View>
       </View>
     );
