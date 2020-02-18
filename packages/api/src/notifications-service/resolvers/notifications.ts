@@ -1202,7 +1202,10 @@ export async function sendPatientRegistrationNotification(
   patientDeviceTokens = await getPatientDeviceTokens(patient.mobileNumber, patientsDb);
   //notification payload
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
-  const notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
+  let notificationBody: string = '';
+  notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
+  //notificationBody = notificationBody.replace('{1}', 'apollopatients://Consult');
+
   const payload = {
     notification: {
       title: notificationTitle,
