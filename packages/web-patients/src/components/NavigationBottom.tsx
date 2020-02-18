@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       position: 'fixed',
       width: '100%',
-      zIndex: 9999,
+      zIndex: 99,
       bottom: 0,
       height: 'auto',
       boxShadow: '0 -10px 30px 0 rgba(0, 0, 0, 0.6)',
@@ -110,6 +110,8 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="My Account"
+        component={Link}
+        to={clientRoutes.healthRecords()}
         icon={<img src={require('images/bottom-nav/ic_account.svg')} />}
         onClick={() => setIsDialogOpen(true)}
         classes={{

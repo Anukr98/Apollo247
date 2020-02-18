@@ -304,6 +304,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           onlineConsultationFees
           physicalConsultationFees
@@ -481,6 +482,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         firstName
         lastName
         displayName
+        fullName
         experience
         specialty {
           name
@@ -523,6 +525,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           specialty {
             name
@@ -565,6 +568,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         firstName
         lastName
         displayName
+        fullName
         experience
         specialty {
           name
@@ -619,6 +623,8 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       salutation
       firstName
       lastName
+      fullName
+      displayName
       doctorType
       qualification
       mobileNumber
@@ -703,6 +709,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         firstName
         lastName
         displayName
+        fullName
         experience
         city
         photoUrl
@@ -1318,6 +1325,26 @@ export const GET_COUPONS = gql`
   }
 `;
 
+export const VALIDATE_CONSULT_COUPON = gql`
+  query ValidateConsultCoupon(
+    $doctorId: ID!
+    $code: String!
+    $consultType: AppointmentType!
+    $appointmentDateTimeInUTC: DateTime!
+  ) {
+    validateConsultCoupon(
+      doctorId: $doctorId
+      code: $code
+      consultType: $consultType
+      appointmentDateTimeInUTC: $appointmentDateTimeInUTC
+    ) {
+      validityStatus
+      revisedAmount
+      reasonForInvalidStatus
+    }
+  }
+`;
+
 export const GET_NOTIFICATION_SETTINGS = gql`
   query getPatientNotificationSettings($patient: ID!) {
     getPatientNotificationSettings(patient: $patient) {
@@ -1602,6 +1629,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           city
           onlineConsultationFees
@@ -1734,6 +1762,7 @@ export const GET_APPOINTMENT_DATA = gql`
           firstName
           lastName
           displayName
+          fullName
           experience
           onlineConsultationFees
           physicalConsultationFees
@@ -1997,6 +2026,17 @@ export const GET_PATIENTS_MOBILE = gql`
         gender
         relation
         photoUrl
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
       }
     }
   }

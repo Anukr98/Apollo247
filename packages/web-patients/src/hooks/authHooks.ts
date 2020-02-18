@@ -13,6 +13,7 @@ export const useAuth = () => {
   const isVerifyingOtp = useAuthContext().isVerifyingOtp!;
 
   const sendOtp = useAuthContext().sendOtp!;
+  const resendOtp = useAuthContext().resendOtp!;
   const sendOtpError = useAuthContext().sendOtpError;
   const isSendingOtp = useAuthContext().isSendingOtp;
 
@@ -22,6 +23,7 @@ export const useAuth = () => {
   const signInError = useAuthContext().signInError;
   const isSignedIn = useAllCurrentPatients().allCurrentPatients != null;
   const signOut = useAuthContext().signOut!;
+  const customLoginId = useAuthContext().customLoginId;
 
   return {
     verifyOtp,
@@ -29,6 +31,7 @@ export const useAuth = () => {
     isVerifyingOtp,
 
     sendOtp,
+    resendOtp,
     sendOtpError,
     isSendingOtp,
 
@@ -38,6 +41,8 @@ export const useAuth = () => {
     signInError,
     isSignedIn,
     signOut,
+
+    customLoginId,
   };
 };
 

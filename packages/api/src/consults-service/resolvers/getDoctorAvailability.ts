@@ -38,11 +38,20 @@ const getDoctorAvailableSlots: Resolver<
   AvailabilityResult
 > = async (parent, { DoctorAvailabilityInput }, { doctorsDb, consultsDb }) => {
   const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
-  const weekDay = format(DoctorAvailabilityInput.availableDate, 'EEEE').toUpperCase();
-  const timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
+  let previousDate: Date = DoctorAvailabilityInput.availableDate;
+  previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
+  let weekDay = format(previousDate, 'EEEE').toUpperCase();
+  let timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
+  weekDay = format(DoctorAvailabilityInput.availableDate, 'EEEE').toUpperCase();
+  const timeSlotsNext = await consultHourRep.getConsultHours(
+    DoctorAvailabilityInput.doctorId,
+    weekDay
+  );
+  timeSlots = timeSlots.concat(timeSlotsNext);
   let availableSlots: string[] = [];
   //let availableSlotsReturn: string[] = [];
-  //console.log(timeSlots, 'time slots');
+  console.log(timeSlots, 'time slots');
+  let rowCount = 0;
   if (timeSlots && timeSlots.length > 0) {
     timeSlots.map((timeSlot) => {
       let st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
@@ -50,9 +59,8 @@ const getDoctorAvailableSlots: Resolver<
       let consultStartTime = new Date(st);
       const consultEndTime = new Date(ed);
       console.log('consults timings', consultStartTime, consultEndTime);
-      let previousDate: Date = DoctorAvailabilityInput.availableDate;
+
       if (consultEndTime < consultStartTime) {
-        previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
         consultStartTime = new Date(st);
       }
@@ -61,7 +69,7 @@ const getDoctorAvailableSlots: Resolver<
       //   duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
       // }
       const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
-      console.log(duration, 'doctor duration');
+      //console.log(duration, 'doctor duration');
       let slotsCount =
         (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
       if (slotsCount - Math.floor(slotsCount) == 0.5) {
@@ -72,6 +80,14 @@ const getDoctorAvailableSlots: Resolver<
       console.log(slotsCount, 'slot count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+      if (rowCount > 0) {
+        const nextDate = addDays(previousDate, 1);
+        const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
+        const td = `${nextDate.toDateString()} 00:00:00`;
+        if (new Date(ed) >= new Date(td)) {
+          startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+        }
+      }
       Array(slotsCount)
         .fill(0)
         .map(() => {
@@ -89,12 +105,12 @@ const getDoctorAvailableSlots: Resolver<
           const endStr = ':00.000Z';
           const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           const timeWithBuffer = addMinutes(new Date(), timeSlot.consultBuffer);
-          console.log(
-            new Date(generatedSlot),
-            new Date(),
-            new Date(generatedSlot) > timeWithBuffer,
-            ' dates comparision'
-          );
+          // console.log(
+          //   new Date(generatedSlot),
+          //   new Date(),
+          //   new Date(generatedSlot) > timeWithBuffer,
+          //   ' dates comparision'
+          // );
           if (new Date(generatedSlot) > timeWithBuffer) {
             availableSlots.push(generatedSlot);
           }
@@ -106,9 +122,10 @@ const getDoctorAvailableSlots: Resolver<
       if (lastMins < timeSlot.consultDuration) {
         availableSlots.pop();
       }
+      rowCount++;
     });
   }
-  console.log(availableSlots, 'availableSlots');
+  //console.log(availableSlots, 'availableSlots');
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const apptSlots = await appts.findByDateDoctorId(
     DoctorAvailabilityInput.doctorId,

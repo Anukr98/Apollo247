@@ -86,7 +86,7 @@ export const Symptoms: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item sm={6}>
+          <Grid item xs={12} sm={6}>
             <div className={classes.cardTitle}>Cold & Cough</div>
             <div className={classes.cardSection}>
               Since: Last 4 days
@@ -96,7 +96,7 @@ export const Symptoms: React.FC = (props) => {
               Severity: Moderate
             </div>
           </Grid>
-          <Grid item sm={6}>
+          <Grid item xs={12} sm={6}>
             <div className={classes.cardTitle}>Fever</div>
             <div className={classes.cardSection}>
               Since: Last 2 days
@@ -106,7 +106,7 @@ export const Symptoms: React.FC = (props) => {
               Severity: High
             </div>
           </Grid>
-          <Grid item sm={6}>
+          <Grid item xs={12} sm={6}>
             <div className={classes.cardTitle}>Nausea</div>
             <div className={classes.cardSection}>
               Since: Last 2 days

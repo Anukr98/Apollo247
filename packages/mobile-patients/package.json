@@ -55,7 +55,7 @@
     "@aph/shared-ui-components": "file:../shared-ui-components",
     "@aph/universal": "file:../universal",
     "@praktice/navigator-react-native-sdk": "0.0.2",
-    "@react-native-community/async-storage": "^1.6.1",
+    "@react-native-community/async-storage": "^1.7.1",
     "@react-native-community/geolocation": "^2.0.2",
     "@react-native-community/netinfo": "^5.3.2",
     "@types/pubnub": "^4.27.1",

@@ -37,6 +37,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   firstName: string;
   lastName: string;
   displayName: string | null;
+  fullName: string | null;
   experience: string | null;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
   specialization: string | null;
@@ -93,6 +94,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   firstName: string;
   lastName: string;
   displayName: string | null;
+  fullName: string | null;
   experience: string | null;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty | null;
   specialization: string | null;
@@ -156,6 +158,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   firstName: string;
   lastName: string;
   displayName: string | null;
+  fullName: string | null;
   experience: string | null;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty | null;
   specialization: string | null;

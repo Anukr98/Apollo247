@@ -75,36 +75,53 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    resendBtnDisabled: {
+      color: '#fc9916 !important',
+      opacity: 0.4,
+    },
+    resendActions: {
+      display: 'flex',
+      alignItems: 'center',
+      '& >span': {
+        paddingLeft: 10,
+        paddingTop: 10,
+        fontSize: 12,
+      },
+    },
   };
 });
 
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
-const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
+const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (props) => {
   const classes = useStyles();
-  const { mobileNumber } = props;
+  const { mobileNumber, setOtp: setOtpMain } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const initialOTPMessage = 'Type in the OTP sent to you, to authenticate';
   const resentOTPMessage = 'Type in the OTP that has been resent to you for authentication';
+  const blockedMessage = 'You entered an incorrect OTP 3 times. Please try again after some time';
   const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
 
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
   const [otp, setOtp] = useState<number[]>([]);
-  const placeRecaptchaAfterMe = useRef(null);
+  // const placeRecaptchaAfterMe = useRef(null);
 
   const [submitCount, setSubmitCount] = useState(0);
-  const [showTimer, setShowTimer] = useState(false);
-  const countDown = useRef(179);
-  const [timer, setTimer] = useState(179);
+  // const [isIncorrectOtp, setIsIncorrectOtp] = useState<boolean>(false);
+  // const [showTimer, setShowTimer] = useState(false);
+  // const [timer, setTimer] = useState(179);
+  const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
+  const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
 
   const {
-    sendOtp,
     isSendingOtp,
     verifyOtp,
     verifyOtpError,
     isVerifyingOtp,
     isSigningIn,
+    customLoginId,
+    resendOtp,
   } = useAuth();
 
   useEffect(() => {
@@ -117,178 +134,161 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (submitCount > 0) {
-      if (submitCount === 3) {
-        setShowTimer(true);
+    if (disableResendOtpButtonCounter >= 0) {
+      setTimeout(() => setDisableResendOtpButtonCounter(disableResendOtpButtonCounter - 1), 1000);
+    } else {
+      setDisableResendOtpButton(false);
+    }
+  }, [disableResendOtpButtonCounter]);
 
-        const intervalId = setInterval(() => {
-          countDown.current--;
-          setTimer(countDown.current);
-
-          if (countDown.current === 0) {
-            clearInterval(intervalId);
-            setSubmitCount(0);
-            setShowTimer(false);
-            countDown.current = 179;
-          }
-        }, 1000);
-      }
+  useEffect(() => {
+    if (submitCount === 3) {
+      setOtpStatusText(blockedMessage);
     }
   }, [submitCount]);
 
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">
-        {(isSigningIn ||
-          isVerifyingOtp ||
-          (!verifyOtpError && submitCount === 3) ||
-          submitCount != 3) &&
-          'great'}
-        {!(isSigningIn || isVerifyingOtp) && verifyOtpError && submitCount === 3 && 'oops!'}
+        {verifyOtpError && submitCount === 3 ? 'oops!' : 'great'}
       </Typography>
-      <p>
-        {(isSigningIn ||
-          isVerifyingOtp ||
-          (!verifyOtpError && submitCount === 3) ||
-          submitCount != 3) &&
-          otpStatusText}
-      </p>
-      <p>
-        {!(isSigningIn || isVerifyingOtp) &&
-          verifyOtpError &&
-          submitCount === 3 &&
-          'You entered an incorrect OTP 3 times'}
-      </p>
-      <form>
-        <Grid container spacing={1}>
-          {_times(numOtpDigits, (index) => (
-            <Grid item xs={2} key={index}>
-              <AphTextField
-                autoFocus={index === 0}
-                inputRef={otpInputRefs[index]}
-                value={_isNumber(otp[index]) ? otp[index] : ''}
-                inputProps={{ type: 'tel', maxLength: 1 }}
-                onChange={(e) => {
-                  const newOtp = [...otp];
-                  const num = parseInt(e.currentTarget.value, 10);
-                  if (isNaN(num)) {
-                    delete newOtp[index];
-                  } else {
-                    newOtp[index] = num;
-                    const nextInput = otpInputRefs[index + 1];
-                    if (nextInput && nextInput.current) {
-                      nextInput.current.focus();
+      <p>{otpStatusText}</p>
+      {verifyOtpError && submitCount === 3 ? null : (
+        <form>
+          <Grid container spacing={1}>
+            {_times(numOtpDigits, (index) => (
+              <Grid item xs={2} key={index}>
+                <AphTextField
+                  autoFocus={index === 0}
+                  inputRef={otpInputRefs[index]}
+                  value={_isNumber(otp[index]) ? otp[index] : ''}
+                  inputProps={{ type: 'tel', maxLength: 1 }}
+                  onChange={(e) => {
+                    const newOtp = [...otp];
+                    const num = parseInt(e.currentTarget.value, 10);
+                    if (isNaN(num)) {
+                      delete newOtp[index];
+                    } else {
+                      newOtp[index] = num;
+                      const nextInput = otpInputRefs[index + 1];
+                      if (nextInput && nextInput.current) {
+                        nextInput.current.focus();
+                      }
                     }
-                  }
-                  setOtp(newOtp);
-                }}
-                onKeyDown={(e) => {
-                  const backspaceWasPressed = e.key === 'Backspace';
-                  const currentInputIsEmpty = otp[index] == null;
-                  const focusPreviousInput = () => {
-                    const prevInput = otpInputRefs[index - 1];
-                    if (prevInput && prevInput.current) {
-                      prevInput.current.focus();
+                    setOtp(newOtp);
+                    setOtpMain(newOtp.length > 0 ? newOtp.toString() : '');
+                  }}
+                  onKeyDown={(e) => {
+                    const backspaceWasPressed = e.key === 'Backspace';
+                    const currentInputIsEmpty = otp[index] == null;
+                    const focusPreviousInput = () => {
+                      const prevInput = otpInputRefs[index - 1];
+                      if (prevInput && prevInput.current) {
+                        prevInput.current.focus();
+                      }
+                    };
+                    if (backspaceWasPressed && currentInputIsEmpty) {
+                      focusPreviousInput();
                     }
-                  };
-                  if (backspaceWasPressed && currentInputIsEmpty) {
-                    focusPreviousInput();
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+          {verifyOtpError && (
+            <FormHelperText
+              component="div"
+              className={classes.helpText}
+              error={verifyOtpError}
+              style={{ opacity: verifyOtpError ? 1.0 : 0 }}
+            >
+              <div>
+                {submitCount > 0 && ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
+              </div>
+            </FormHelperText>
+          )}
+          <div className={classes.resendActions}>
+            <Button
+              variant="text"
+              disabled={isSendingOtp || disableResendOtpButton}
+              className={classes.resendBtn}
+              classes={{
+                disabled: classes.resendBtnDisabled,
+              }}
+              onClick={(e) => {
+                resendOtp(mobileNumberWithPrefix, customLoginId);
+                setOtp([]);
+                setSubmitCount(0);
+                setOtpStatusText(resentOTPMessage);
+                const firstInput = otpInputRefs[0].current;
+                if (firstInput) firstInput.focus();
+                setDisableResendOtpButton(true);
+                setDisableResendOtpButtonCounter(30);
+              }}
+            >
+              Resend OTP
+            </Button>
+            {disableResendOtpButton ? (
+              <span>{`00:${String(disableResendOtpButtonCounter).padStart(2, '0')}`}</span>
+            ) : null}
+          </div>
+          <div className={classes.action}>
+            <Fab
+              type="submit"
+              color="primary"
+              disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
+              onClick={(e) => {
+                e.preventDefault();
+                verifyOtp(otp.join(''), customLoginId).then((authToken) => {
+                  if (!authToken) {
+                    setSubmitCount(submitCount + 1);
                   }
-                }}
-              />
-            </Grid>
-          ))}
-        </Grid>
-        {verifyOtpError && (
-          <FormHelperText
-            component="div"
-            className={classes.helpText}
-            error={verifyOtpError}
-            style={{ opacity: verifyOtpError ? 1.0 : 0 }}
-          >
-            <div>
-              {!(isSigningIn || isVerifyingOtp) &&
-                showTimer &&
-                'Try again after ' +
-                  Math.floor(timer / 60) +
-                  ':' +
-                  (timer % 60 <= 9 ? '0' + (timer % 60) : timer % 60)}
-            </div>
-            <div>
-              {!showTimer &&
-                submitCount === 2 &&
-                submitCount > 0 &&
-                ' Incorrect OTP, ' + (3 - submitCount) + ' attempt left'}
-              {!showTimer &&
-                submitCount === 1 &&
-                submitCount > 0 &&
-                ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
-            </div>
-          </FormHelperText>
-        )}
-        {showTimer ? (
-          ''
-        ) : (
-          <Button
-            variant="text"
-            disabled={isSendingOtp}
-            className={classes.resendBtn}
-            onClick={(e) => {
-              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-              setOtp([]);
-              setSubmitCount(0);
-              setOtpStatusText(resentOTPMessage);
-              const firstInput = otpInputRefs[0].current;
-              if (firstInput) firstInput.focus();
-            }}
-          >
-            Resend OTP
-          </Button>
-        )}
-        <div className={classes.action}>
-          <Fab
-            type="submit"
-            color="primary"
-            disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
-            onClick={(e) => {
-              e.preventDefault();
-              verifyOtp(otp.join(''));
-              setSubmitCount(submitCount + 1);
-            }}
-          >
-            {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
-              <AphCircularProgress color="inherit" />
-            ) : (
-              <img src={require('images/ic_arrow_forward.svg')} />
-            )}
-          </Fab>
-        </div>
-      </form>
-      <div ref={placeRecaptchaAfterMe} />
+                });
+              }}
+            >
+              {isSigningIn || isSendingOtp || isVerifyingOtp ? (
+                <AphCircularProgress color="inherit" />
+              ) : (
+                <img src={require('images/ic_arrow_forward.svg')} />
+              )}
+            </Fab>
+          </div>
+        </form>
+      )}
+      {/* <div ref={placeRecaptchaAfterMe} /> */}
     </div>
   );
 };
 
-export const SignIn: React.FC = (props) => {
+interface signInProps {
+  setMobileNumber: (mobileNumber: string) => void;
+  setOtp: (otp: string) => void;
+  mobileNumber: string;
+  otp: string;
+}
+
+export const SignIn: React.FC<signInProps> = (props) => {
   const classes = useStyles();
 
   const [displayOtpInput, setDisplayOtpInput] = useState<boolean>(false);
   const placeRecaptchaAfterMe = useRef(null);
 
   const { sendOtp, sendOtpError, isSendingOtp } = useAuth();
+  const { setMobileNumber, setOtp, mobileNumber } = props;
 
   return (
     <div data-cypress="SignIn">
       <Formik
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
-          const mobileNumberWithPrefix = `${mobileNumberPrefix}${values.mobileNumber}`;
-          sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current).then(() =>
-            setDisplayOtpInput(true)
-          );
+          const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
+          sendOtp(mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
         }}
-        render={({ touched, dirty, errors, values }: FormikProps<{ mobileNumber: string }>) => {
-          if (displayOtpInput) return <OtpInput mobileNumber={values.mobileNumber} />;
+        render={({ errors, values }: FormikProps<{ mobileNumber: string }>) => {
+          if (displayOtpInput)
+            return (
+              <OtpInput mobileNumber={values.mobileNumber} setOtp={(otp: string) => setOtp(otp)} />
+            );
           return (
             <div className={classes.loginFormWrap}>
               <Typography variant="h2">hi</Typography>
@@ -296,16 +296,19 @@ export const SignIn: React.FC = (props) => {
               <Form>
                 <Field
                   name="mobileNumber"
-                  validate={(val: string) =>
-                    isMobileNumberValid(val) ? undefined : 'This seems like a wrong number'
-                  }
+                  // validate={() => {
+                  //   isMobileNumberValid(mobileNumber)
+                  //     ? undefined
+                  //     : 'This seems like a wrong number';
+                  // }}
                   render={({ field }: FieldProps<{ mobileNumber: string }>) => {
-                    const finishedTyping = field.value.length === 10;
+                    // const finishedTyping = field.value.length === 10;
+                    // const showValidationError =
+                    //   !sendOtpError &&
+                    //   Boolean(errors.mobileNumber) &&
+                    //   (finishedTyping || Number(field.value[0]) < 6);
                     const showValidationError =
-                      dirty &&
-                      !sendOtpError &&
-                      Boolean(errors.mobileNumber) &&
-                      (finishedTyping || Number(field.value[0]) < 6);
+                      mobileNumber.length === 10 && !isMobileNumberValid(mobileNumber);
                     const showSendOtpError = sendOtpError;
                     return (
                       <FormControl fullWidth>
@@ -323,11 +326,15 @@ export const SignIn: React.FC = (props) => {
                           onKeyPress={(e) => {
                             if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                           }}
+                          onChange={(e) => {
+                            setMobileNumber(e.target.value);
+                          }}
                           startAdornment={
                             <InputAdornment className={classes.inputAdornment} position="start">
                               {mobileNumberPrefix}
                             </InputAdornment>
                           }
+                          value={mobileNumber}
                         />
                         <FormHelperText
                           component="div"
@@ -335,7 +342,7 @@ export const SignIn: React.FC = (props) => {
                           error={showValidationError || showSendOtpError}
                         >
                           {showValidationError
-                            ? errors.mobileNumber
+                            ? 'This seems like a wrong number'
                             : showSendOtpError
                             ? 'Error sending OTP'
                             : 'OTP will be sent to this number'}
@@ -349,7 +356,8 @@ export const SignIn: React.FC = (props) => {
                     type="submit"
                     color="primary"
                     aria-label="Sign in"
-                    disabled={Boolean(errors.mobileNumber) || !dirty}
+                    // disabled={Boolean(errors.mobileNumber) || !dirty}
+                    disabled={!isMobileNumberValid(mobileNumber)}
                   >
                     {isSendingOtp ? (
                       <AphCircularProgress color="inherit" />

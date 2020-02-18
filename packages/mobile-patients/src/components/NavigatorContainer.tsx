@@ -70,11 +70,13 @@ import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/T
 import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPayment';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
+import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
+  ApplyConsultCoupon = 'ApplyConsultCoupon',
   ConsultPayment = 'ConsultPayment',
   TabBar = 'TabBar',
   DoctorSearch = 'DoctorSearch',
@@ -176,6 +178,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
+  },
+  [AppRoutes.ApplyConsultCoupon]: {
+    screen: ApplyConsultCoupon,
   },
   [AppRoutes.ConsultPayment]: {
     screen: ConsultPayment,

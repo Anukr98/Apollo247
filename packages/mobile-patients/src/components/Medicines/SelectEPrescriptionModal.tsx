@@ -262,7 +262,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             uploadedUrl: getBlobUrl(
               (getCaseSheet(item!.caseSheet as any) || { blobName: '' }).blobName
             ),
-            doctorName: item!.doctorInfo ? `Dr. ${item!.doctorInfo.firstName}` : '',
+            doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: (
               (getCaseSheet(item!.caseSheet as any) || { medicinePrescription: [] })

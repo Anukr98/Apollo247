@@ -632,7 +632,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     doctorId: string,
     selectedDate: Date,
     doctorsDb: Connection,
-    appointmentType: string
+    appointmentType: string,
+    inputDate: Date
   ) {
     const weekDay = format(selectedDate, 'EEEE').toUpperCase();
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
@@ -677,7 +678,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           //console.log(docConsultHrs[rowCount - 1].endTime, 'prev end time');
           const nextDate = addDays(selectedDate, 1);
           ed = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          const td = `${nextDate.toDateString()} 18:30:00`;
+          //const td = `${nextDate.toDateString()} 18:30:00`;
+          const td = `${nextDate.toDateString()} 00:00:00`;
           console.log(td, 'td', ed, 'ed', new Date(ed) >= new Date(td), 'comp');
           //if (docConsultHrs[rowCount - 1].endTime == '18:25:00') {
           if (new Date(ed) >= new Date(td)) {
@@ -777,11 +779,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       let foundFlag = 0;
 
       //getting the available slot
-      //const currentTime = new Date('2020-02-13T18:30');
-      const timeWithBuffer = addMinutes(new Date(), consultBuffer);
+      let timeWithBuffer: Date;
+      //const currentTime = new Date(inputDate);
+      if (inputDate) timeWithBuffer = addMinutes(inputDate, consultBuffer);
+      else timeWithBuffer = addMinutes(new Date(), consultBuffer);
       //const timeWithBuffer = addMinutes(currentTime, consultBuffer);
-      //console.log(timeWithBuffer, 'timeWithBuffer');
-      //console.log(availableSlots, 'slots final list');
+      console.log(timeWithBuffer, 'timeWithBuffer');
+      console.log(availableSlots, 'slots final list');
       availableSlots.map((slot) => {
         const slotDate = new Date(slot);
         if (slotDate >= timeWithBuffer && foundFlag == 0) {
@@ -1491,6 +1495,47 @@ export class AppointmentRepository extends Repository<Appointment> {
         status4: STATUS.COMPLETED,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getCount();
+  }
+
+  getPatientAppointmentCountByConsultMode(patientId: string, appointmenType: APPOINTMENT_TYPE) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: new Date(),
+      })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
+      .getCount();
+  }
+
+  getPatientAppointmentCountByCouponCode(patientId: string, couponCode: string) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: new Date(),
+      })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
+      .getCount();
+  }
+
+  getAppointmentCountByCouponCode(couponCode: string) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :apptDate', {
+        apptDate: new Date(),
+      })
+      .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
       .getCount();
   }
 }

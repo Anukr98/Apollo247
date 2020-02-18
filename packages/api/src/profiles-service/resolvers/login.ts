@@ -30,10 +30,13 @@ export const loginTypeDefs = gql`
     loginId: String
     message: String
   }
-
+  type testSMSResult {
+    send: Boolean
+  }
   extend type Query {
     login(mobileNumber: String!, loginType: LOGIN_TYPE!): LoginResult!
     resendOtp(mobileNumber: String!, id: String!, loginType: LOGIN_TYPE!): LoginResult!
+    testSendSMS(mobileNumber: String!): testSMSResult!
   }
 `;
 
@@ -238,6 +241,33 @@ const resendOtp: Resolver<
     message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
   };
 };
+type testSMSResult = {
+  send: Boolean;
+};
+const testSendSMS: Resolver<
+  null,
+  { mobileNumber: string },
+  ProfilesServiceContext,
+  testSMSResult
+> = async (parent, args, { profilesDb }) => {
+  const { mobileNumber } = args;
+  //const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
+  const otp = generateOTP();
+
+  //call sms gateway service to send the OTP here
+  const smsResult = await testSMS(mobileNumber, otp);
+
+  console.log(smsResult.status, smsResult);
+  if (smsResult.status != 'OK') {
+    return {
+      send: false,
+    };
+  }
+
+  return {
+    send: true,
+  };
+};
 
 export const archiveOtpRecord = async (otpRecordId: string, profilesDb: Connection) => {
   const otpRepo = profilesDb.getCustomRepository(LoginOtpRepository);
@@ -300,10 +330,56 @@ const sendSMS = async (mobileNumber: string, otp: string) => {
   );
   return smsResponse;
 };
+const testSMS = async (mobileNumber: string, otp: string) => {
+  const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
+  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
 
+  //let message = ApiConstants.OTP_MESSAGE_TEXT.replace('{0}', otp);
+
+  //message = message.replace('{1}', ApiConstants.OTP_EXPIRATION_MINUTES.toString());
+  const message =
+    'Thanks for choosing Apollo24X7, Ravikiran :) Your appointment <Appointment  No.> with Dr. Strange is confirmed for <Appointment Date and Time> Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.';
+  const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
+
+  const apiUrl = `${apiUrlWithKey}${queryParams}`;
+
+  //logging api call data here
+  log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
+
+  const smsResponse = await fetch(apiUrl)
+    .then((res) => res.json())
+    .catch((error) => {
+      //logging error here
+      log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
+      throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
+    });
+
+  return smsResponse;
+};
+export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
+  const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
+  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
+
+  const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
+
+  const apiUrl = `${apiUrlWithKey}${queryParams}`;
+
+  //logging api call data here
+  log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
+
+  const smsResponse = await fetch(apiUrl)
+    .then((res) => res.json())
+    .catch((error) => {
+      //logging error here
+      log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
+      throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
+    });
+  return smsResponse;
+};
 export const loginResolvers = {
   Query: {
     login,
     resendOtp,
+    testSendSMS,
   },
 };

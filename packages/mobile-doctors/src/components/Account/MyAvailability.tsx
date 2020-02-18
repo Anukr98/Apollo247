@@ -27,10 +27,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f7f7', //theme.colors.DEFAULT_BACKGROUND_COLOR,
-  },
   consultDescText: {
     fontFamily: 'IBMPlexSans',
     fontSize: 14,
@@ -82,7 +78,7 @@ export interface ProfileProps
 }
 
 const get12HrsFormat = (timeString: string /* 12:30 */) => {
-  const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
+  const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i, 10));
   return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
 };
 
@@ -95,9 +91,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [showHelpModel, setshowHelpModel] = useState(false);
-
   const profileData = props.navigation.getParam('ProfileData');
-  console.log('p', profileData);
   const client = useApolloClient();
 
   useEffect(() => {
@@ -131,6 +125,8 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   };
 
   const onAddBlockCalendar = (data) => {
+    console.log(data, 'dj');
+
     setblockedCalendar(data);
   };
 
@@ -195,7 +191,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={theme.viewStyles.container}>
         <View>{showHeaderView()}</View>
         <ScrollView bounces={false}>
           {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (

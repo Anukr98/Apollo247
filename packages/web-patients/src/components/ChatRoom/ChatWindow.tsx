@@ -56,9 +56,6 @@ const client = new AphStorageClient(
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    acceptBtn: {
-      width: 'calc(35% - 5px) !important',
-    },
     audioVideoContainer: {
       paddingBottom: 0,
     },
@@ -74,27 +71,8 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.common.white,
       marginBottom: 5,
     },
-    borderSection: {
-      fontSize: 15,
-      fontWeight: 600,
-      paddingTop: 9,
-      paddingBottom: 9,
-      borderTop: '1px dashed rgba(255,255,255,0.5)',
-      borderBottom: '1px dashed rgba(255,255,255,0.5)',
-      marginTop: 10,
-    },
-    docterChat: {
-      display: 'block',
-      width: '100%',
-      textAlign: 'right',
-      margin: '5px 0 10px 0',
-    },
     boldTxt: {
       fontWeight: 700,
-    },
-    patientBubble: {
-      backgroundColor: theme.palette.common.white,
-      position: 'relative',
     },
     bubbleActions: {
       display: 'flex',
@@ -196,19 +174,8 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(65% - 5px) !important',
     },
     chatBub: {
-      backgroundColor: 'transparent',
       padding: '6px 16px',
       color: '#02475b',
-      fontWeight: theme.typography.fontWeightMedium,
-      display: 'inline-block',
-      borderRadius: 10,
-      boxShadow: 'none',
-      marginRight: 30,
-      textAlign: 'left',
-      fontSize: 16,
-      maxWidth: '40%',
-      wordBreak: 'break-all',
-      border: 'none',
     },
     chatBubble: {
       backgroundColor: theme.palette.common.white,
@@ -263,6 +230,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 0,
       minWidth: 'auto',
       padding: 0,
+      boxShadow: 'none',
     },
     chatWindowContainer: {
       position: 'relative',
@@ -329,6 +297,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 130,
       cursor: 'pointer',
       margin: '0 0 10px 40px',
+      '& img': {
+        maxWidth: '100%',
+      },
     },
     durattiocallMsg: {
       marginLeft: 40,
@@ -388,8 +359,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     doctorAvatar: {
       position: 'absolute',
-      // left: -40,
-      // bottom: 0,
     },
     petient: {
       color: '#fff',
@@ -407,14 +376,6 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorsChat: {
       display: 'flex',
       position: 'relative',
-      '& img': {
-        bottom: 0,
-        width: 100,
-        cursor: 'pointer',
-        height: 100,
-        overflow: 'hidden',
-        borderRadius: 10,
-      },
     },
     searchInput: {
       '& input': {
@@ -1289,7 +1250,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               channel: channel,
               message: {
                 message: autoMessageStrings.secondMessage,
-                automatedText: `Sorry, but all the members in ’s team are busy right now.We will send you a notification as soon as they are available for collecting your details`,
+                automatedText: `Sorry, but all the members in  ${displayName}’s team are busy right now.We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
                 isTyping: true,
                 messageDate: new Date(),
@@ -1722,102 +1683,37 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             convertCall={() => convertCall()}
             videoCall={videoCall}
             audiocallmsg={audiocallmsg}
-            // setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
           />
         )}
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 360px)'}>
+              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 352px)'}>
                 {messagessHtml}
                 <span id="scrollDiv"></span>
               </Scrollbars>
             </div>
           )}
           {(!showVideo || showVideoChat) && (
-            <div className={classes.chatFooterSection}>
-              <div>
-                <AphTextField
-                  autoFocus
-                  className={classes.inputWidth}
-                  inputProps={{ type: 'text' }}
-                  placeholder="Type here..."
-                  value={messageText}
-                  onKeyPress={(e) => {
-                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                      send();
-                    }
-                  }}
-                  onChange={(event) => {
-                    setMessageText(event.currentTarget.value);
-                  }}
-                />
-                <Button
-                  className={classes.chatSendBtn}
-                  variant="contained"
-                  component="label"
-                  disabled={fileUploading}
-                  onClick={() => {
-                    if (messageText.trim() !== '') {
-                      send();
-                    }
-                  }}
-                >
-                  <img src={require('images/ic_add_circle.svg')} alt="" />
-                  <input
-                    type="file"
-                    style={{ display: 'none' }}
-                    disabled={fileUploading}
-                    onChange={async (e) => {
-                      const fileNames = e.target.files;
-                      if (fileNames && fileNames.length > 0) {
-                        setFileUploading(true);
-                        const file = fileNames[0] || null;
-                        const fileExtension = file.name.split('.').pop();
-                        const fileSize = file.size;
-                        if (fileSize > 2000000) {
-                          setFileUploadErrorMessage(
-                            'Invalid File Size. File size must be less than 2MB'
-                          );
-                          setIsDialogOpen(true);
-                        } else if (
-                          fileExtension &&
-                          (fileExtension.toLowerCase() === 'png' ||
-                            fileExtension.toLowerCase() === 'jpg' ||
-                            fileExtension.toLowerCase() === 'jpeg')
-                        ) {
-                          if (file) {
-                            const aphBlob = await client
-                              .uploadBrowserFile({ file })
-                              .catch((error) => {
-                                console.log(error);
-                                throw error;
-                              });
-                            const url = client.getBlobUrl(aphBlob.name);
-                            const uploadObject = {
-                              id: doctorId,
-                              fileType: `image`,
-                              message: `^^#DocumentUpload`,
-                              url: url,
-                              isTyping: true,
-                              messageDate: new Date(),
-                              sentBy: REQUEST_ROLES.DOCTOR,
-                            };
-                            uploadfile(url);
-                            sendMsg(uploadObject, true);
-                            setFileUploading(false);
-                          }
-                        } else {
-                          setFileUploadErrorMessage(
-                            'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
-                          );
-                          setIsDialogOpen(true);
-                        }
-                      }
-                    }}
-                  />
-                </Button>
-              </div>
+            <div className={classes.chatWindowFooter}>
+              <AphTextField
+                autoFocus
+                className={classes.searchInput}
+                inputProps={{ type: 'text' }}
+                placeholder="Type here..."
+                value={messageText}
+                onKeyPress={(e) => {
+                  if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                    send();
+                  }
+                }}
+                onChange={(event) => {
+                  setMessageText(event.currentTarget.value);
+                }}
+              />
+              <AphButton className={classes.chatSubmitBtn}>
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+              </AphButton>
             </div>
           )}
         </div>

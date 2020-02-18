@@ -422,7 +422,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         uhid: '',
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
-                        referralCode: referral,
+                        referralCode: referral ? referral : null,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({

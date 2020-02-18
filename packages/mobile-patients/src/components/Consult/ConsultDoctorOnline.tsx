@@ -324,8 +324,8 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
                           paddingTop: 16,
                         }}
                       >
-                        {`Dr. ${
-                          props.doctor ? props.doctor.firstName : ''
+                        {`${
+                          props.doctor ? props.doctor.fullName : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );

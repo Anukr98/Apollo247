@@ -280,8 +280,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   <View style={{ flex: 1 }}>
                     <TouchableOpacity activeOpacity={1}>
                       <Text style={styles.doctorNameStyles}>
-                        Dr. {props.PastData!.doctorInfo && props.PastData!.doctorInfo.firstName} 
-                        {props.PastData!.doctorInfo && props.PastData!.doctorInfo.lastName}
+                        {props.PastData!.doctorInfo && props.PastData!.doctorInfo.fullName}
                       </Text>
                     </TouchableOpacity>
                     <View>

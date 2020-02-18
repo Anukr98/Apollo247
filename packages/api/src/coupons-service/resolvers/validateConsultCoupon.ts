@@ -4,65 +4,184 @@ import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { CouponRepository } from 'profiles-service/repositories/couponRepository';
-import { CouponConsultRulesRepository } from 'profiles-service/repositories/CouponConsultRulesRepository';
+import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { discountCalculation, genericRuleCheck } from 'helpers/couponCommonFunctions';
 
 export const validateConsultCouponTypeDefs = gql`
-  type Validcode {
-    validityStatus: Boolean
+  enum AppointmentType {
+    ONLINE
+    PHYSICAL
+    BOTH
+  }
+
+  type ValidateCodeResponse {
+    validityStatus: Boolean!
+    revisedAmount: String!
+    reasonForInvalidStatus: String!
   }
 
   extend type Query {
-    validateConsultCoupon(appointmentId: ID, code: String): Validcode
+    validateConsultCoupon(
+      doctorId: ID!
+      code: String!
+      consultType: AppointmentType!
+      appointmentDateTimeInUTC: DateTime!
+    ): ValidateCodeResponse
   }
 `;
 
+enum customerTypeInCoupons {
+  FIRST = 'FIRST',
+  RECURRING = 'RECURRING',
+}
+
 const validateConsultCoupon: Resolver<
   null,
-  { appointmentId: string; code: string },
+  { code: string; doctorId: string; consultType: APPOINTMENT_TYPE; appointmentDateTimeInUTC: Date },
   CouponServiceContext,
-  { validityStatus: boolean }
+  {
+    validityStatus: boolean;
+    revisedAmount: number;
+    reasonForInvalidStatus: string;
+  }
 > = async (parent, args, { mobileNumber, patientsDb, doctorsDb, consultsDb }) => {
   //check for patient request validity
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.findByMobileNumber(mobileNumber);
+  const patientData = await patientRepo.findDetailsByMobileNumber(mobileNumber);
   if (patientData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-
-  //check appointment validity
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentData = await appointmentRepo.findById(args.appointmentId);
-  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
   //get doctors Data
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepo.findById(appointmentData.doctorId);
+  const doctorData = await doctorRepo.findById(args.doctorId);
   if (doctorData == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+
+  //get Doctor fees
+  let doctorFees = 0;
+  if (args.consultType === APPOINTMENT_TYPE.ONLINE)
+    doctorFees = <number>doctorData.onlineConsultationFees;
+  else doctorFees = <number>doctorData.physicalConsultationFees;
 
   //get coupon by code
   const couponRepo = patientsDb.getCustomRepository(CouponRepository);
   const couponData = await couponRepo.findCouponByCode(args.code);
-  if (couponData == null) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
+  if (couponData == null)
+    return {
+      validityStatus: false,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: ApiConstants.INVALID_COUPON.toString(),
+    };
 
-  //get coupon related rule
-  const couponRuleRepo = patientsDb.getCustomRepository(CouponConsultRulesRepository);
-  const couponRulesData = await couponRuleRepo.findRuleById(couponData.couponConsultRule);
-  if (couponRulesData == null) throw new AphError(AphErrorMessages.INVALID_COUPON_CODE);
+  //get coupon related generic rule
+  const couponGenericRulesData = couponData.couponGenericRule;
+  if (couponGenericRulesData == null)
+    return {
+      validityStatus: false,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: ApiConstants.INVALID_COUPON.toString(),
+    };
+
+  //get coupon related consult rule
+  const couponRulesData = couponData.couponConsultRule;
+  if (couponRulesData == null)
+    return {
+      validityStatus: false,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: ApiConstants.INVALID_COUPON.toString(),
+    };
 
   //check for coupon applicability as per rules configured
-  let validityStatus = true;
-
   //consult mode check
   if (
     couponRulesData.couponApplicability &&
-    appointmentData.appointmentType.toString() !== couponRulesData.couponApplicability.toString()
+    (args.consultType.toString() != couponRulesData.couponApplicability.toString() &&
+      couponRulesData.couponApplicability.toString() != APPOINTMENT_TYPE.BOTH.toString() &&
+      args.consultType.toString() != APPOINTMENT_TYPE.BOTH.toString())
   )
-    validityStatus = false;
+    return {
+      validityStatus: false,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: ApiConstants.COUPON_WITH_BU_RESTRICTION.replace(
+        '{0}',
+        couponRulesData.couponApplicability
+      ).toString(),
+    };
 
-  //minimum cart value check
+  //call to check generic rule
+  const genericRuleCheckResult = await genericRuleCheck(couponGenericRulesData, doctorFees);
+  if (genericRuleCheckResult) return genericRuleCheckResult;
 
-  return { validityStatus };
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+
+  //customer type check
+  if (couponGenericRulesData.couponApplicableCustomerType) {
+    const appointmentsCount = await appointmentRepo.getPatientAppointmentCountByConsultMode(
+      patientData.id,
+      args.consultType
+    );
+    if (
+      couponGenericRulesData.couponApplicableCustomerType == customerTypeInCoupons.FIRST &&
+      appointmentsCount != 0
+    ) {
+      return {
+        validityStatus: false,
+        revisedAmount: doctorFees,
+        reasonForInvalidStatus: ApiConstants.COUPON_FOR_FIRST_CUSTOMER_ONLY.toString(),
+      };
+    }
+  }
+
+  // coupon count per customer check
+  if (couponGenericRulesData.couponReuseCountPerCustomer) {
+    const customerUsageCount = await appointmentRepo.getPatientAppointmentCountByCouponCode(
+      patientData.id,
+      args.code
+    );
+    if (customerUsageCount > couponGenericRulesData.couponReuseCountPerCustomer)
+      return {
+        validityStatus: false,
+        revisedAmount: doctorFees,
+        reasonForInvalidStatus: ApiConstants.COUPON_COUNT_PER_CUSTOMER_EXCEEDED.toString(),
+      };
+  }
+
+  //total coupon count irrespective to customer
+  if (couponGenericRulesData.couponReuseCount) {
+    const customerUsageCount = await appointmentRepo.getAppointmentCountByCouponCode(args.code);
+    if (customerUsageCount > couponGenericRulesData.couponReuseCount)
+      return {
+        validityStatus: false,
+        revisedAmount: doctorFees,
+        reasonForInvalidStatus: ApiConstants.COUPON_COUNT_USAGE_EXPIRED.toString(),
+      };
+  }
+
+  // Consult last applicable date check
+  if (
+    couponGenericRulesData.couponDueDate &&
+    args.appointmentDateTimeInUTC > couponGenericRulesData.couponDueDate
+  ) {
+    return {
+      validityStatus: false,
+      revisedAmount: doctorFees,
+      reasonForInvalidStatus: ApiConstants.COUPON_EXPIRED.toString(),
+    };
+  }
+
+  //discount amount calculation
+  let revisedAmount = doctorFees;
+  if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue) {
+    revisedAmount = await discountCalculation(
+      doctorFees,
+      couponGenericRulesData.discountType,
+      couponGenericRulesData.discountValue
+    );
+  }
+
+  return { validityStatus: true, revisedAmount: revisedAmount, reasonForInvalidStatus: '' };
 };
 
 export const validateConsultCouponResolvers = {
