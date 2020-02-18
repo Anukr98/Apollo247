@@ -217,10 +217,10 @@ const stackConfig: StackNavigatorConfig = {
   navigationOptions: {
     gesturesEnabled: false,
   },
-  transitionConfig: () => {
+  transitionConfig: (sceneProps) => {
     return {
       transitionSpec: {
-        // duration: 100,
+        duration: sceneProps.scene.route.routeName === 'TabBar' ? 0 : 100,
       },
     };
   },

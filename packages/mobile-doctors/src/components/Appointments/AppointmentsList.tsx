@@ -54,7 +54,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return props.newPatientsList.indexOf(id) > -1;
   };
   const { doctorDetails } = useAuth();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
 
   const getStatusCircle = (status: string, showNext: boolean) => {
     return showNext ? (
@@ -219,6 +219,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                         (i) => i && i.doctorType === DoctorType.JUNIOR && i.status === 'COMPLETED'
                       ) > -1
                     ) {
+                      setLoading && setLoading(true);
                       props.navigation.push(AppRoutes.ConsultRoomScreen, {
                         DoctorId: doctorId,
                         PatientId: patientId,
