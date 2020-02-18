@@ -10,6 +10,7 @@ import { APPOINTMENT_TYPE } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { discountCalculation, genericRuleCheck } from 'helpers/couponCommonFunctions';
+import { Coupon } from 'profiles-service/entities';
 
 export const validateConsultCouponTypeDefs = gql`
   enum AppointmentType {
@@ -18,10 +19,59 @@ export const validateConsultCouponTypeDefs = gql`
     BOTH
   }
 
+  enum CustomerType {
+    FIRST
+    RECURRING
+  }
+
+  enum DiscountType {
+    FLATPRICE
+    PERCENT
+    PRICEOFF
+  }
+
   type ValidateCodeResponse {
     validityStatus: Boolean!
     revisedAmount: String!
     reasonForInvalidStatus: String!
+  }
+
+  type CouponConsultRule {
+    couponApplicability: AppointmentType
+    createdDate: DateTime
+    id: ID
+    isActive: Boolean
+  }
+
+  type ConsultCoupon {
+    code: String
+    couponConsultRule: CouponConsultRule
+    couponGenericRule: CouponGenericRule
+    createdDate: DateTime
+    description: String
+    id: ID
+    isActive: Boolean
+  }
+
+  type CouponGenericRule {
+    couponApplicableCustomerType: CustomerType
+    couponDueDate: DateTime
+    couponEndDate: DateTime
+    couponReuseCount: Int
+    couponReuseCountPerCustomer: Int
+    couponStartDate: DateTime
+    createdDate: DateTime
+    discountType: DiscountType
+    discountValue: Float
+    id: ID
+    isActive: Boolean
+    maximumCartValue: Float
+    minimumCartValue: Float
+    numberOfCouponsNeeded: Int
+  }
+
+  type CouponList {
+    coupons: [ConsultCoupon]
   }
 
   extend type Query {
@@ -31,6 +81,7 @@ export const validateConsultCouponTypeDefs = gql`
       consultType: AppointmentType!
       appointmentDateTimeInUTC: DateTime!
     ): ValidateCodeResponse
+    getConsultCouponList: CouponList
   }
 `;
 
@@ -184,8 +235,27 @@ const validateConsultCoupon: Resolver<
   return { validityStatus: true, revisedAmount: revisedAmount, reasonForInvalidStatus: '' };
 };
 
+const getConsultCouponList: Resolver<
+  null,
+  {},
+  CouponServiceContext,
+  {
+    coupons: Coupon[];
+  }
+> = async (parent, args, { mobileNumber, patientsDb, doctorsDb, consultsDb }) => {
+  //check for patient request validity
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.findDetailsByMobileNumber(mobileNumber);
+  if (patientData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const couponRepo = patientsDb.getCustomRepository(CouponRepository);
+  const couponData = await couponRepo.getActiveCoupons();
+  return { coupons: couponData };
+};
+
 export const validateConsultCouponResolvers = {
   Query: {
     validateConsultCoupon,
+    getConsultCouponList,
   },
 };

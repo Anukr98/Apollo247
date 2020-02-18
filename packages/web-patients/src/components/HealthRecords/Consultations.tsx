@@ -12,12 +12,13 @@ import { FollowUp } from 'components/HealthRecords/FollowUp';
 import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
 import { PrescriptionPreview } from 'components/HealthRecords/PrescriptionPreview';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '../../graphql/profiles';
 import { getPatientPastConsultsAndPrescriptions } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -199,6 +200,19 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    addReport: {
+      borderRadius: 10,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#fcb716',
+      width: '100%',
+      textAlign: 'center',
+      color: '#fff',
+      padding: '9px 13px',
+      textTransform: 'uppercase',
+      fontSize: 13,
+      fontWeight: 'bold',
+      display: 'block',
+    },
     mobileOverlay: {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
@@ -233,6 +247,7 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    menuItemActive: { background: 'red' },
   };
 });
 
@@ -347,6 +362,7 @@ export const Consultations: React.FC = (props) => {
       <span>{moment(new Date(date)).format('DD MMM YYYY')}</span>
     );
   };
+  const currentPath = window.location.pathname;
 
   return (
     <div className={classes.root}>
@@ -402,9 +418,9 @@ export const Consultations: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.addReportActions}>
-          <AphButton color="primary" fullWidth>
+          <Link to={clientRoutes.addRecords()} className={classes.addReport}>
             Add a Report
-          </AphButton>
+          </Link>
         </div>
       </div>
       <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
