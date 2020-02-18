@@ -208,6 +208,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   showNext
                 )}
                 <CalendarCard
+                  photoUrl={i.patientInfo ? i.patientInfo.photoUrl || '' : ''}
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
                     console.log('appppp', appId, i);

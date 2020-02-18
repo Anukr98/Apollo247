@@ -5,6 +5,7 @@ import {
   PastAppointmentIcon,
   PatientPlaceHolderImage,
   UpComingIcon,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
@@ -403,12 +404,13 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
           />
         ) : (
-          <PatientPlaceHolderImage
+          <UserPlaceHolder
             style={{
-              height: width,
+              height: 150,
               width: width,
               alignItems: 'center',
-              backgroundColor: 'transparent',
+              backgroundColor: 'white',
+              resizeMode: 'contain',
             }}
           />
         )}

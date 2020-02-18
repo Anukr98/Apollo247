@@ -1,4 +1,4 @@
-import { Star } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Star, UserPlaceHolder } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { getPatientLog_getPatientLog_patientInfo } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 import React from 'react';
 import {
@@ -12,7 +12,9 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  ActivityIndicator,
 } from 'react-native';
+import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
@@ -80,6 +82,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     color: '#02475b',
   },
+  imageStyle: {
+    height: 58,
+    width: 58,
+    borderRadius: 29,
+  },
+  placeHolderLoading: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
 });
 
 export interface CalendarCardProps {
@@ -95,6 +106,7 @@ export interface CalendarCardProps {
   typeValue?: boolean;
   revenue?: string;
   onPress?: TouchableOpacityProps['onPress'];
+  photoUrl?: string;
 }
 
 export const PatientCard: React.FC<CalendarCardProps> = (props) => {
@@ -103,10 +115,18 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
       <View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={[styles.imageView, { marginTop: 15 }]}>
-            <Image
-              source={require('../../images/doctor/rahul.png')}
-              style={{ height: 58, width: 58 }}
-            />
+            {props.photoUrl ? (
+              <ImageNative
+                placeholderStyle={styles.placeHolderLoading}
+                PlaceholderContent={
+                  <ActivityIndicator animating={true} size="small" color="green" />
+                }
+                source={{ uri: props.photoUrl }}
+                style={styles.imageStyle}
+              />
+            ) : (
+              <UserPlaceHolder style={styles.imageStyle} />
+            )}
             {props.typeValue == true ? (
               <Star
                 style={{
