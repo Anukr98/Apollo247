@@ -1204,7 +1204,7 @@ export async function sendPatientRegistrationNotification(
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
   let notificationBody: string = '';
   notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
-  notificationBody = notificationBody.replace('{1}', 'apollopatients://Consult');
+  //notificationBody = notificationBody.replace('{1}', 'apollopatients://Consult');
 
   const payload = {
     notification: {

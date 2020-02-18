@@ -111,6 +111,7 @@ export type ConsultHoursData = {
   startTime: string;
   endTime: string;
   consultMode: ConsultMode;
+  actualDay: WeekDay;
 };
 ///////////////////////////////////////////////////////////
 // BlockedCalendarItem
@@ -189,7 +190,7 @@ export class ConsultHours extends BaseEntity {
   weekDay: WeekDay;
 
   @Column({ nullable: true })
-  actualDay: string;
+  actualDay: WeekDay;
 
   @BeforeUpdate()
   updateDateUpdate() {
