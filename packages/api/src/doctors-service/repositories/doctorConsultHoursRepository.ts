@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, In } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { ConsultHours, WeekDay } from 'doctors-service/entities';
 import { addMilliseconds, format } from 'date-fns';
 import { AphError } from 'AphError';
