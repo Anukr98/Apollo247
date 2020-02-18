@@ -8,6 +8,11 @@ import {
   Grid,
 } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription as PrescriptionType,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
+import { MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,8 +80,30 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Prescription: React.FC = (props) => {
-  const classes = useStyles();
+type PrescriptionProps = {
+  caseSheetList: (CaseSheetType | null)[] | null;
+};
+
+export const Prescription: React.FC<PrescriptionProps> = (props) => {
+  const classes = useStyles({});
+  const caseSheetList = props.caseSheetList;
+
+  const prescriptions: PrescriptionType[] = [];
+
+  caseSheetList &&
+    caseSheetList.length > 0 &&
+    caseSheetList.forEach(
+      (caseSheet: CaseSheetType | null) =>
+        caseSheet &&
+        caseSheet.doctorType !== 'JUNIOR' &&
+        caseSheet.medicinePrescription &&
+        caseSheet.medicinePrescription.length > 0 &&
+        caseSheet.medicinePrescription.forEach(
+          (prescription: PrescriptionType | null) =>
+            prescription && prescriptions.push(prescription)
+        )
+    );
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -87,21 +114,79 @@ export const Prescription: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <div className={classes.cardTitle}>Sompraz-D Cap</div>
-            <div className={classes.cardSection}>
-              1 Tab
-              <br />1 times a day (morning) for 7 days Before food
-            </div>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <div className={classes.cardTitle}>Redixin Plus Mouthwash</div>
-            <div className={classes.cardSection}>
-              Throat Gargles
-              <br />3 times a day (morning) for 5 days
-            </div>
-          </Grid>
+          {prescriptions && prescriptions.length > 0
+            ? prescriptions.map((prescription: PrescriptionType) => (
+                <Grid item xs={12} sm={6}>
+                  <div className={classes.cardTitle}>{prescription.medicineName}</div>
+                  {prescription && (
+                    <div className={classes.cardSection}>
+                      {prescription.medicineUnit && prescription.medicineFormTypes == 'OTHERS'
+                        ? 'Take ' +
+                          prescription.medicineDosage +
+                          ' ' +
+                          prescription.medicineUnit.toLowerCase() +
+                          ' (s)' +
+                          ' '
+                        : 'Apply ' + prescription &&
+                          prescription.medicineUnit &&
+                          prescription.medicineUnit.toLowerCase() + ' '}
+
+                      {prescription.medicineFrequency! &&
+                        prescription.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
+                          ' '}
+                      {prescription.medicineToBeTaken
+                        ? prescription.medicineToBeTaken
+                            .map(
+                              (item: MEDICINE_TO_BE_TAKEN | null) =>
+                                item &&
+                                item
+                                  .split('_')
+                                  .join(' ')
+                                  .toLowerCase()
+                            )
+                            .join(', ')
+                        : ''}
+                      {prescription.medicineTimings && prescription.medicineTimings.length > 0
+                        ? ' in the '
+                        : ''}
+                      {prescription.medicineTimings
+                        ? prescription.medicineTimings
+                            .map(
+                              (item: MEDICINE_TIMINGS | null) =>
+                                item &&
+                                item
+                                  .split('_')
+                                  .join(' ')
+                                  .toLowerCase()
+                            )
+                            .map(
+                              (val: string, idx: number, array: any) =>
+                                `${val}${
+                                  idx == array.length - 2
+                                    ? ' and '
+                                    : idx > array.length - 2
+                                    ? ''
+                                    : ', '
+                                }`
+                            )
+                        : ''}
+
+                      {prescription.medicineInstructions
+                        ? '\n' + prescription.medicineInstructions
+                        : ''}
+                      {prescription.medicineConsumptionDurationInDays == ''
+                        ? ''
+                        : prescription.medicineConsumptionDurationInDays &&
+                          prescription.medicineConsumptionDurationInDays === '1'
+                        ? ' for ' + prescription.medicineConsumptionDurationInDays! + ' day'
+                        : ' for ' + prescription.medicineConsumptionDurationInDays! + ' days'}
+                    </div>
+                  )}
+                </Grid>
+              ))
+            : 'No Prescription'}
         </Grid>
+
         <div className={classes.bottomActions}>
           <AphButton>Order Medicines</AphButton>
         </div>
