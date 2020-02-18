@@ -302,7 +302,6 @@ export const Consultations: React.FC = (props) => {
           setConsultsData(array);
           setAllConsultsData(array);
           setActiveConsult(array[0]);
-          // console.log(array);
         })
         .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));

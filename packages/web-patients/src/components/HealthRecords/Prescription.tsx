@@ -160,7 +160,9 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                                   .toLowerCase()
                             )
                             .map(
-                              (val: string, idx: number, array: any) =>
+                              (val: string | null, idx: number, array: (string | null)[]) =>
+                                val &&
+                                array &&
                                 `${val}${
                                   idx == array.length - 2
                                     ? ' and '
