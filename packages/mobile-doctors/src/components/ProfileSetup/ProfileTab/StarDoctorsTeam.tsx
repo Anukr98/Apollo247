@@ -15,8 +15,8 @@ import {
   MakeTeamDoctorActiveVariables,
 } from '@aph/mobile-doctors/src/graphql/types/MakeTeamDoctorActive';
 import {
-  RemoveTeamDoctorFromStarTeam,
-  RemoveTeamDoctorFromStarTeamVariables,
+  removeTeamDoctorFromStarTeam,
+  removeTeamDoctorFromStarTeamVariables,
 } from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
@@ -88,7 +88,6 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const client = useApolloClient();
   const [profileData, setProfileData] = useState(_profileData);
-  const starDoctors = _profileData.starTeam!;
   const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
   const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
 
@@ -136,7 +135,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
 
     setIsLoading(true);
     client
-      .mutate<RemoveTeamDoctorFromStarTeam, RemoveTeamDoctorFromStarTeamVariables>({
+      .mutate<removeTeamDoctorFromStarTeam, removeTeamDoctorFromStarTeamVariables>({
         mutation: REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
         variables: { associatedDoctor: id, starDoctor: profileData.id },
         fetchPolicy: 'no-cache',
@@ -247,7 +246,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
           doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
             .associatedDoctor!.lastName || ''}`}
           experience={starDoctor!.associatedDoctor!.experience || ''}
-          specialization={profileData.specialty.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
+          specialization={profileData.specialty!.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
           education={starDoctor!.associatedDoctor!.qualification!}
           // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
           location={getFormattedLocation(starDoctor)}

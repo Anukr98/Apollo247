@@ -17,6 +17,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -56,7 +57,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             CommonBugFender('Get_Doctor_DetailsApi', error);
           });
     }
-  }, [doctorDetails]);
+  }, [doctorDetails, getDoctorDetailsApi]);
 
   const arrayData = [
     {
@@ -97,7 +98,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     },
   ];
 
-  const renderProfileData = (getDoctorDetails: any) => {
+  const renderProfileData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails) => {
     if (!getDoctorDetails!.firstName) return null;
     return (
       <View>
@@ -114,7 +115,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       </View>
     );
   };
-  const renderMciNumberData = (getDoctorDetails: any) => {
+  const renderMciNumberData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails) => {
     if (!getDoctorDetails!.registrationNumber) return null;
     return (
       <View style={{ backgroundColor: '#ffffff' }}>

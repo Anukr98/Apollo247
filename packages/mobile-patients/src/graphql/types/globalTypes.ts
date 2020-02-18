@@ -367,6 +367,7 @@ export interface BookAppointmentInput {
   symptoms?: string | null;
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
+  couponCode?: string | null;
 }
 
 export interface BookFollowUpAppointmentInput {

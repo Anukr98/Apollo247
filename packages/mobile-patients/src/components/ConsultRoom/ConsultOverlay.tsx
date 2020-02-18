@@ -92,6 +92,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>(0);
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
+  // const [counponused, setCounponused] = useState<string>('');
 
   const doctorFees = isConsultOnline
     ? props.doctor!.onlineConsultationFees
@@ -172,6 +173,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       appointmentType:
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
+      couponCode: coupon ? coupon : null,
     };
     console.log(appointmentInput, 'input');
     // const price =
@@ -395,6 +397,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const validateAndApplyCoupon = (couponValue: string) => {
+    const timeSlot =
+      tabs[0].title === selectedTab &&
+      isConsultOnline &&
+      availableInMin! <= 60 &&
+      0 < availableInMin!
+        ? nextAvailableSlot
+        : selectedTimeSlot;
+    console.log(timeSlot, 'validateAndApplyCoupon');
+
     return new Promise((res, rej) => {
       client
         .mutate<ValidateConsultCoupon, ValidateConsultCouponVariables>({
@@ -403,6 +414,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             doctorId: props.doctorId,
             code: couponValue,
             consultType: isConsultOnline ? AppointmentType.ONLINE : AppointmentType.PHYSICAL,
+            appointmentDateTimeInUTC: timeSlot,
           },
           fetchPolicy: 'no-cache',
         })
@@ -410,6 +422,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           console.log('v-alidateConsultCoupo-n');
           console.log(JSON.stringify(data!.validateConsultCoupon));
           console.log('\n\n\n\n\n\n\n');
+          // setCounponused(couponValue);
           if (g(data, 'validateConsultCoupon', 'validityStatus')) {
             const revisedAmount = g(data, 'validateConsultCoupon', 'revisedAmount')!;
             setCoupon(couponValue);
