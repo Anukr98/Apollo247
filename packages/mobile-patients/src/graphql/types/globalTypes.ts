@@ -26,6 +26,12 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum AppointmentType {
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -361,6 +367,7 @@ export interface BookAppointmentInput {
   symptoms?: string | null;
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
+  couponCode?: string | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -451,6 +458,8 @@ export interface DoctorAvailabilityInput {
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
+  availableType?: APPOINTMENT_TYPE | null;
+  currentTimeInput?: any | null;
 }
 
 export interface DoctorPhysicalAvailabilityInput {
