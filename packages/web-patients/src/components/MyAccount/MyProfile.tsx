@@ -84,7 +84,9 @@ export const MyProfile: React.FC = (props) => {
           <div className={classes.servicesSection}>
             <div className={classes.sectionGroup}>
               <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.myAccount() ? classes.menuActive : ''}`}
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.myAccount() ? classes.menuActive : ''
+                }`}
                 to={clientRoutes.myAccount()}
               >
                 <span className={classes.serviceImg}>

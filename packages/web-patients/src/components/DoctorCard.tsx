@@ -240,8 +240,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <Avatar
           alt={doctorDetails.firstName || ''}
           src={
-            doctorDetails.thumbnailUrl && doctorDetails.thumbnailUrl !== '' ?
-              doctorDetails.thumbnailUrl : require('images/no_photo_icon_round.svg')
+            doctorDetails.thumbnailUrl && doctorDetails.thumbnailUrl !== ''
+              ? doctorDetails.thumbnailUrl
+              : require('images/no_photo_icon_round.svg')
           }
           className={classes.doctorAvatar}
         />
@@ -254,8 +255,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <LinearProgress />
             </div>
           ) : (
-              availabilityMarkup()
-            )}
+            availabilityMarkup()
+          )}
           <div className={classes.doctorName}>
             {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
               _toLower(doctorDetails.lastName)

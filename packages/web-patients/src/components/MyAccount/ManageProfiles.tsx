@@ -94,7 +94,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-
 export const ManageProfiles: React.FC = (props) => {
   const classes = useStyles({});
   const cancelAppointRef = useRef(null);
@@ -112,7 +111,9 @@ export const ManageProfiles: React.FC = (props) => {
             <div className={classes.profileGroup}>
               <div className={classes.userTopGroup}>
                 <div className={classes.userName}>Surj Gupta</div>
-                <div className={classes.rightGroup}><div className={classes.userInfo}>SELF | MALE | 31</div></div>
+                <div className={classes.rightGroup}>
+                  <div className={classes.userInfo}>SELF | MALE | 31</div>
+                </div>
               </div>
               <div className={classes.userBottomGroup}>
                 <div className={classes.userId}>UHID : APD2.0010783430</div>
@@ -127,7 +128,9 @@ export const ManageProfiles: React.FC = (props) => {
             <div className={classes.profileGroup}>
               <div className={classes.userTopGroup}>
                 <div className={classes.userName}>Preeti Gupta</div>
-                <div className={classes.rightGroup}><div className={classes.userInfo}>WIFE   |   FEMALE   |   29</div></div>
+                <div className={classes.rightGroup}>
+                  <div className={classes.userInfo}>WIFE | FEMALE | 29</div>
+                </div>
               </div>
               <div className={classes.userBottomGroup}>
                 <div className={classes.userId}>UHID : APD2.0010783430</div>
@@ -148,8 +151,9 @@ export const ManageProfiles: React.FC = (props) => {
           Add New Profile
           <div
             onClick={() => setIsDeletePopoverOpen(true)}
-            ref={cancelAppointRef}            
-            className={classes.moreIcon}>
+            ref={cancelAppointRef}
+            className={classes.moreIcon}
+          >
             <img src={require('images/ic_more.svg')} alt="" />
           </div>
         </AphDialogTitle>
@@ -168,9 +172,7 @@ export const ManageProfiles: React.FC = (props) => {
           horizontal: 'right',
         }}
       >
-        <AphButton className={classes.deleteBtn}>
-          Delete Profile
-        </AphButton>
+        <AphButton className={classes.deleteBtn}>Delete Profile</AphButton>
       </Popover>
     </div>
   );

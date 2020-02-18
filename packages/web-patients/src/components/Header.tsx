@@ -164,8 +164,11 @@ export const Header: React.FC = (props) => {
           {isSignedIn && (
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           )}
-          <div 
-            className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${currentPath === clientRoutes.myAccount() ? classes.userAccountActive : ''}`}>
+          <div
+            className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
+              currentPath === clientRoutes.myAccount() ? classes.userAccountActive : ''
+            }`}
+          >
             {isSignedIn ? (
               <Link
                 className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
@@ -182,7 +185,9 @@ export const Header: React.FC = (props) => {
                 {({ protectWithLoginPopup }) => (
                   <div
                     className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                    onClick={() => (isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup())}
+                    onClick={() =>
+                      isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                    }
                     ref={avatarRef}
                   >
                     {isSigningIn ? (

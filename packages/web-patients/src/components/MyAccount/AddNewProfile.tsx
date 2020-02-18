@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
         },
         '&:last-child': {
           marginLeft: 10,
-        },        
+        },
       },
     },
     customScrollBar: {
@@ -108,11 +108,11 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       overflow: 'hidden',
       '& img': {
-        maxWidth: '100%'
+        maxWidth: '100%',
       },
     },
     uploadInput: {
-      display: 'none'
+      display: 'none',
     },
     editBtn: {
       position: 'absolute',
@@ -153,27 +153,18 @@ export const AddNewProfile: React.FC = (props) => {
                     <img src={require('images/ic_account.svg')} />
                   </label>
                   <label className={classes.editBtn} htmlFor="upload-prifile-photo">
-                    <img src={require('images/ic-edit-white.svg')} />  
+                    <img src={require('images/ic-edit-white.svg')} />
                   </label>
                 </div>
-                <FormControl
-                  className={`${classes.formControl} ${classes.noMargin}`}
-                  fullWidth
-                >
+                <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
                   <AphTextField
                     label="Full Name"
                     placeholder="First Name"
                     inputProps={{ maxLength: 20 }}
                   />
                 </FormControl>
-                <FormControl
-                  className={`${classes.formControl}`}
-                  fullWidth
-                >
-                  <AphTextField
-                    placeholder="Last name"
-                    inputProps={{ maxLength: 20 }}
-                  />
+                <FormControl className={`${classes.formControl}`} fullWidth>
+                  <AphTextField placeholder="Last name" inputProps={{ maxLength: 20 }} />
                 </FormControl>
                 <FormControl className={classes.formControl} fullWidth>
                   <AphTextField
@@ -194,42 +185,22 @@ export const AddNewProfile: React.FC = (props) => {
                       </AphButton>
                     </Grid>
                     <Grid item xs={4} sm={4}>
-                      <AphButton
-                        color="secondary"
-                        className={`${classes.genderBtns}`}
-                      >
+                      <AphButton color="secondary" className={`${classes.genderBtns}`}>
                         Female
                       </AphButton>
                     </Grid>
                   </Grid>
                 </FormControl>
-                <FormControl
-                  className={`${classes.formControl} ${classes.relationMenu}`}
-                  fullWidth
-                >
+                <FormControl className={`${classes.formControl} ${classes.relationMenu}`} fullWidth>
                   <label>Relation</label>
                   <AphSelect>
-                    <MenuItem
-                      classes={{ selected: classes.menuSelected }}
-                    >
-                      Me
-                    </MenuItem>
-                    <MenuItem
-                      classes={{ selected: classes.menuSelected }}
-                    >
-                      Mother
-                    </MenuItem>
+                    <MenuItem classes={{ selected: classes.menuSelected }}>Me</MenuItem>
+                    <MenuItem classes={{ selected: classes.menuSelected }}>Mother</MenuItem>
                     ))}
                   </AphSelect>
                 </FormControl>
-                <FormControl
-                  className={`${classes.formControl} ${classes.noMargin}`}
-                  fullWidth
-                >
-                  <AphTextField
-                    label="Email Address (Optional)"
-                    placeholder="name@email.com"
-                  />
+                <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
+                  <AphTextField label="Email Address (Optional)" placeholder="name@email.com" />
                 </FormControl>
               </div>
             </div>
