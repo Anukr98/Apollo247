@@ -143,7 +143,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   const doctorId = doctorDetails.id;
-  console.log("props", doctorDetails);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorNextAvailableSlot,
@@ -256,8 +255,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <LinearProgress />
             </div>
           ) : (
-              availabilityMarkup()
-            )}
+            availabilityMarkup()
+          )}
           <div className={classes.doctorName}>
             {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
               _toLower(doctorDetails.lastName)
@@ -271,11 +270,21 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </span>
           </div>
           <div className={classes.doctorspecialty}>
-            <p>{doctorDetails && doctorDetails.specialty && doctorDetails.specialty.userFriendlyNomenclature}</p>
+            <p>
+              {doctorDetails &&
+                doctorDetails.specialty &&
+                doctorDetails.specialty.userFriendlyNomenclature}
+            </p>
           </div>
           <div className={classes.doctorDetails}>
             <p>{doctorDetails.qualification}</p>
-            {<p>{clinics && clinics.length > 0 ? clinics[0].facility.name + ',' + clinics[0].facility.city : ''}</p>}
+            {
+              <p>
+                {clinics && clinics.length > 0
+                  ? clinics[0].facility.name + ',' + clinics[0].facility.city
+                  : ''}
+              </p>
+            }
           </div>
         </div>
       </div>
@@ -318,6 +327,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <BookConsult doctorId={doctorDetails.id} setIsPopoverOpen={setIsPopoverOpen} />
       </Modal>
-    </div >
+    </div>
   );
 };
