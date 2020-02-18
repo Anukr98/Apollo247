@@ -140,7 +140,7 @@ export const medUsageType = (med: MEDICINE_UNIT) => {
 };
 
 export const formatInt = (value: string) => {
-  let number = value.indexOf('-') === value.length - 1 ? value : parseInt(value);
+  const number = value.indexOf('-') === value.length - 1 ? value : parseInt(value, 10);
   return number || 0;
 };
 
@@ -169,7 +169,7 @@ export const messageCodes = {
 };
 
 export const formatFloating = (value: string) => {
-  let number =
+  const number =
     value.indexOf('.') === value.length - 1 ||
     value.indexOf('0', value.length - 1) === value.length - 1 ||
     value.indexOf('-') === value.length - 1

@@ -120,16 +120,16 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [doctorName, setDoctorName] = useState<string>(
     (props.navigation.state.params && props.navigation.state.params.Firstname) || ''
   );
-  const [DoctorId, setDoctorId] = useState<string>(
-    (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
-  );
+  // const [DoctorId, setDoctorId] = useState<string>(
+  //   (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
+  // );
   const { doctorDetails } = useAuth();
 
   useEffect(() => {
     console.log(doctorDetails, 'doctorDetailshi');
 
     setDoctorName((doctorDetails && doctorDetails.firstName) || '');
-    setDoctorId((doctorDetails && doctorDetails!.id) || '');
+    // setDoctorId((doctorDetails && doctorDetails!.id) || '');
     // getLocalData()
     //   .then((data) => {
     //     console.log('data', data);
@@ -147,17 +147,14 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [showNeedHelp, setshowNeedHelp] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
-  const startDate = moment(date).format('YYYY-MM-DD');
-  const nextDate = new Date(date);
-  nextDate.setDate(nextDate.getDate() + 1);
-  const endDate = moment(nextDate).format('YYYY-MM-DD');
+  const recordsDate = moment(date).format('YYYY-MM-DD');
 
-  const { data, error, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
+  const { data, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
     GET_DOCTOR_APPOINTMENTS,
     {
       variables: {
-        startDate: startDate,
-        endDate: startDate, //'2019-09-13',
+        startDate: recordsDate,
+        endDate: recordsDate, //'2019-09-13',
       },
       fetchPolicy: 'no-cache',
       pollInterval:

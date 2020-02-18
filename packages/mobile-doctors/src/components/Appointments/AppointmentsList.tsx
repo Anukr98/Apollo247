@@ -1,18 +1,19 @@
 import { CalendarCard } from '@aph/mobile-doctors/src/components/Appointments/CalendarCard';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
-  MissedAppointmentIcon,
   NextAppointmentIcon,
   PastAppointmentIcon,
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import {
   APPOINTMENT_TYPE,
-  STATUS,
   DoctorType,
+  STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -23,9 +24,6 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
-import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -54,7 +52,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return props.newPatientsList.indexOf(id) > -1;
   };
   const { doctorDetails } = useAuth();
-  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, setLoading } = useUIElements();
 
   const getStatusCircle = (status: string, showNext: boolean) => {
     return showNext ? (
@@ -104,26 +102,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     );
   };
 
-  const getDateFormat = (_date: string /*"2019-08-08T20:30:00.000Z"*/) => {
-    console.log(
-      'getDateFormat',
-      moment
-        .utc(_date)
-        .local()
-        .format('HH:mm:ss')
-    );
-    const dateTime = _date.split('T');
-    const date = dateTime[0].split('-');
-    const time = dateTime[1].substring(0, 4).split(':');
-    return new Date(
-      parseInt(date[0]),
-      parseInt(date[1]) - 1,
-      parseInt(date[2]),
-      parseInt(time[0]),
-      parseInt(time[1])
-    );
-  };
-
   const getStatus = (
     appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   ): Appointments['timeslottype'] => {
@@ -134,12 +112,13 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     } else if (appointment.status == STATUS.COMPLETED) {
       return 'past';
     } else {
-      const appointemntTime = moment
-        .utc(appointment.appointmentDateTime)
-        .local()
-        .format('YYYY-MM-DD HH:mm:ss'); //getDateFormat(appointment.appointmentDateTime);
-      if (moment(appointemntTime).isBefore()) return 'next';
-      else return 'next';
+      return 'next';
+      // const appointemntTime = moment
+      //   .utc(appointment.appointmentDateTime)
+      //   .local()
+      //   .format('YYYY-MM-DD HH:mm:ss');
+      // if (moment(appointemntTime).isBefore()) return 'next';
+      // else return 'next';
     }
   };
 
@@ -147,7 +126,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     const aptmtDate = moment
       .utc(appointmentDateTime)
       .local()
-      .format('YYYY-MM-DD HH:mm:ss'); //getDateFormat(appointmentDateTime);
+      .format('YYYY-MM-DD HH:mm:ss');
     const slotStartTime = moment(aptmtDate).format('h:mm') || '';
     const slotEndTime =
       moment(aptmtDate)
@@ -226,7 +205,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                         PatientConsultTime: null,
                         PatientInfoAll: PatientInfo,
                         AppId: appId,
-                        Appintmentdatetime: i.appointmentDateTime, //getDateFormat(i.appointmentDateTime),
+                        Appintmentdatetime: i.appointmentDateTime,
                         AppointmentStatus: i.status,
                         AppoinementData: i,
                       });

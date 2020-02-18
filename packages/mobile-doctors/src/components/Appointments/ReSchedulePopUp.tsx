@@ -1,55 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  Platform,
-  Text,
-  StyleSheet,
-  Dimensions,
-  ScrollView,
-} from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
-import {
-  Remove,
-  DropdownGreen,
-  Morning,
-  MorningUnselected,
-  Afternoon,
-  AfternoonUnselected,
-  Evening,
-  EveningUnselected,
-  Night,
-  NightUnselected,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
-import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { MaterialMenu } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
-import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-doctors/src/components/ui/CalendarView';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 import {
-  timeTo12HrFormat,
-  getNetStatus,
-  divideSlots,
-} from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { getNextAvailableSlots } from '@aph/mobile-doctors/src/helpers/clientCalls';
-import { useApolloClient } from 'react-apollo-hooks';
-import moment from 'moment';
-import { getDoctorAvailableSlots } from '@aph/mobile-doctors/src/graphql/types/getDoctorAvailableSlots';
+  Afternoon,
+  AfternoonUnselected,
+  DropdownGreen,
+  Evening,
+  EveningUnselected,
+  Morning,
+  MorningUnselected,
+  Night,
+  NightUnselected,
+  Remove,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
+import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 import {
   GET_AVAILABLE_SLOTS,
   INITIATE_RESCHDULE_APPONITMENT,
 } from '@aph/mobile-doctors/src/graphql/profiles';
+import { getDoctorAvailableSlots } from '@aph/mobile-doctors/src/graphql/types/getDoctorAvailableSlots';
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initiateRescheduleAppointment,
   initiateRescheduleAppointmentVariables,
 } from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
-import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { getNextAvailableSlots } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { divideSlots, timeTo12HrFormat } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Dimensions,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
-const { height, width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -265,7 +259,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           }
         } catch {}
       })
-      .catch((e: string) => {
+      .catch((e) => {
         props.loading && props.loading(false);
         CommonBugFender('Get_Available_Slots_ReschdulePopup', e);
         console.log('Error occured', e);
@@ -295,7 +289,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           }
         } catch {}
       })
-      .catch((e: any) => {
+      .catch((e) => {
         props.loading && props.loading(false);
         CommonBugFender('Check_Avaialablity_ReschdulePopup', e);
         console.log('error', e);

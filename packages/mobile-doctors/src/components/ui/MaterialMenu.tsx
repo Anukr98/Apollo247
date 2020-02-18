@@ -2,13 +2,12 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import {
   ScrollView,
+  StyleProp,
   StyleSheet,
+  TextStyle,
   TouchableOpacity,
   View,
-  TextStyle,
-  StyleProp,
   ViewStyle,
-  Text,
 } from 'react-native';
 import Menu, { MenuItem } from 'react-native-material-menu';
 

@@ -1,10 +1,9 @@
 import { BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { SafeAreaView, Alert, View, Text, StyleSheet } from 'react-native';
-import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 const styles = StyleSheet.create({
   mainview: {

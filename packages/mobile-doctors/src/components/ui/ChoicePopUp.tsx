@@ -4,19 +4,18 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect } from 'react';
 import {
   BackHandler,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   StyleProp,
+  StyleSheet,
   Text,
   TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
-  StyleSheet,
 } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
-const { width, height } = Dimensions.get('window');
+// const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   popUPContainer: {

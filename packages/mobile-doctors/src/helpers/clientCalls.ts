@@ -58,8 +58,8 @@ export const getPrismUrls = (
       .then(({ data }) => {
         res({ urls: data.downloadDocuments.downloadPaths });
       })
-      .catch((e: any) => {
-        const error = JSON.parse(JSON.stringify(e));
+      .catch((e) => {
+        // const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
   });

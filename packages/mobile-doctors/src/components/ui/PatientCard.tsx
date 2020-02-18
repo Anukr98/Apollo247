@@ -1,8 +1,9 @@
 import { Star, UserPlaceHolder } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { getPatientLog_getPatientLog_patientInfo } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React from 'react';
 import {
-  Image,
+  ActivityIndicator,
   ImageSourcePropType,
   ImageStyle,
   StyleProp,
@@ -12,11 +13,9 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
-  ActivityIndicator,
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
