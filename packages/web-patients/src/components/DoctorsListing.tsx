@@ -250,7 +250,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }
 
   let doctorsList = [];
-  const specialistPluralTerm = data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
+  const specialistPluralTerm = data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm;
 
   const consultErrorMessage = () => {
     const selectedConsultName =
@@ -286,20 +286,19 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       selectedFilterOption === 'all'
         ? data.getDoctorsBySpecialtyAndFilters.doctors
         : _filter(data.getDoctorsBySpecialtyAndFilters.doctors, (doctors) => {
-          const consultMode =
-            doctors.consultHours &&
+            const consultMode =
+              doctors.consultHours &&
               doctors.consultHours.length > 0 &&
               doctors.consultHours[0] &&
               doctors.consultHours[0].consultMode
-              ? doctors.consultHours[0].consultMode
-              : '';
-          if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
-            return true;
-          }
-          return false;
-        });
+                ? doctors.consultHours[0].consultMode
+                : '';
+            if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
+              return true;
+            }
+            return false;
+          });
   }
-
 
   return (
     <div className={classes.root}>
@@ -340,8 +339,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 345px)'
               : isLargeScreen
-                ? 'calc(100vh - 280px)'
-                : 'calc(100vh - 170px)'
+              ? 'calc(100vh - 280px)'
+              : 'calc(100vh - 170px)'
           }
         >
           <div className={classes.searchList}>
@@ -388,8 +387,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           </div>
         </Scrollbars>
       ) : (
-          consultErrorMessage()
-        )}
+        consultErrorMessage()
+      )}
     </div>
   );
 };
