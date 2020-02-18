@@ -281,3 +281,11 @@ export const ADD_CHAT_DOCUMENT = gql`
     }
   }
 `;
+
+export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
+  query GetPatientFutureAppointmentCount($patientId: String) {
+    getPatientFutureAppointmentCount(patientId: $patientId) {
+      consultsCount
+    }
+  }
+`;
