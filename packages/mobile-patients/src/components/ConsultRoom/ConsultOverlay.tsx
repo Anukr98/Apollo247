@@ -2,7 +2,12 @@ import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/C
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CrossPopup, CouponIcon, ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossPopup,
+  CouponIcon,
+  ArrowRight,
+  GreenTickIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -455,7 +460,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           backgroundColor: theme.colors.CARD_BG,
         }}
         leftIcon={<CouponIcon />}
-        rightIcon={<ArrowRight />}
+        rightIcon={coupon ? <GreenTickIcon /> : <ArrowRight />}
         title={!coupon ? 'Apply Coupon' : 'Coupon Applied'}
         onPress={() => {
           if (!selectedTimeSlot) {
