@@ -195,6 +195,19 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    addReport: {
+      borderRadius: 10,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#fcb716',
+      width: '100%',
+      textAlign: 'center',
+      color: '#fff',
+      padding: '9px 13px',
+      textTransform: 'uppercase',
+      fontSize: 13,
+      fontWeight: 'bold',
+      display: 'block',
+    },
     mobileOverlay: {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
@@ -282,10 +295,8 @@ export const Consultations: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.addReportActions}>
-          <Link to={clientRoutes.addRecords()}>
-            <AphButton color="primary" fullWidth>
-              Add a Report
-            </AphButton>
+          <Link to={clientRoutes.addRecords()} className={classes.addReport}>
+            Add a Report
           </Link>
         </div>
       </div>
