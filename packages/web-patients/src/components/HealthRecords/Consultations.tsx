@@ -418,8 +418,8 @@ export const Consultations: React.FC = (props) => {
                 <Diagnosis caseSheetList={activeConsult.caseSheet} />
                 <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
                 <FollowUp caseSheetList={activeConsult.caseSheet} />
-                <PaymentInvoice />
-                <PrescriptionPreview />
+                {/* <PaymentInvoice />
+                <PrescriptionPreview /> */}
               </>
             )}
           </div>
