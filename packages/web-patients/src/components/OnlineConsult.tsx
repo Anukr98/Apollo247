@@ -508,7 +508,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         <div className={classes.bottomActions}>
           <AphButton
             color="primary"
-            disabled={disableSubmit || mutationLoading || isDialogOpen}
+            disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
             onClick={() => {
               setMutationLoading(true);
               paymentMutation({
@@ -558,7 +558,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 });
             }}
             className={
-              disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
+              disableSubmit || mutationLoading || isDialogOpen || !timeSelected
+                ? classes.buttonDisable
+                : ''
             }
           >
             {mutationLoading ? (

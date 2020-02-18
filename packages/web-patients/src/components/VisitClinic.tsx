@@ -442,7 +442,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       <div className={classes.bottomActions}>
         <AphButton
           color="primary"
-          disabled={disableSubmit || mutationLoading || isDialogOpen}
+          disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
           onClick={(e) => {
             setMutationLoading(true);
             paymentMutation({
@@ -480,7 +480,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 setMutationLoading(false);
               });
           }}
-          className={disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''}
+          className={
+            disableSubmit || mutationLoading || isDialogOpen || !timeSelected
+              ? classes.buttonDisable
+              : ''
+          }
         >
           {mutationLoading ? (
             <CircularProgress size={22} color="secondary" />
