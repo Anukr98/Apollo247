@@ -191,7 +191,7 @@ const validateConsultCoupon: Resolver<
       patientData.id,
       args.code
     );
-    if (customerUsageCount > couponGenericRulesData.couponReuseCountPerCustomer)
+    if (customerUsageCount >= couponGenericRulesData.couponReuseCountPerCustomer)
       return {
         validityStatus: false,
         revisedAmount: doctorFees,
@@ -202,7 +202,7 @@ const validateConsultCoupon: Resolver<
   //total coupon count irrespective to customer
   if (couponGenericRulesData.couponReuseCount) {
     const customerUsageCount = await appointmentRepo.getAppointmentCountByCouponCode(args.code);
-    if (customerUsageCount > couponGenericRulesData.couponReuseCount)
+    if (customerUsageCount >= couponGenericRulesData.couponReuseCount)
       return {
         validityStatus: false,
         revisedAmount: doctorFees,
