@@ -3191,7 +3191,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         />
       )}
       {dropdownShow ? renderDropdown() : null}
-      {renderTabPage()}
+      {!loading && renderTabPage()}
       {showPopUp && CallPopUp()}
       {isAudioCall && AudioCall()}
       {isCall && VideoCall()}

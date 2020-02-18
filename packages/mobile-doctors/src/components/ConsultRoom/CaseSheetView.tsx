@@ -38,6 +38,7 @@ import {
   Start,
   ToogleOff,
   ToogleOn,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
@@ -2511,12 +2512,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }
           />
         ) : (
-          <PatientPlaceHolderImage
+          <UserPlaceHolder
             style={{
-              height: width,
+              height: 150,
               width: width,
               alignItems: 'center',
-              backgroundColor: 'transparent',
+              backgroundColor: 'white',
+              resizeMode: 'contain',
             }}
           />
         )}

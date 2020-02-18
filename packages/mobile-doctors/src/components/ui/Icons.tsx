@@ -329,7 +329,13 @@ export const UpComingIcon: React.FC<IconProps> = (props) => (
 export const Call: React.FC<IconProps> = (props) => (
   <IconBase style={smResizeMode} {...props} source={require('../../images/icons/call.png')} />
 );
-
+export const UserPlaceHolder: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 100, width: 100 }}
+    {...props}
+    source={require('../../images/icons/user_placeholder.png')}
+  />
+);
 export const PatientPlaceHolderImage: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 178, width: '100%' }}
