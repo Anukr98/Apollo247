@@ -63,6 +63,13 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       letterSpacing: 0.25,
     },
+    doctorspecialty: {
+      fontSize: 10,
+      fontWeight: 600,
+      color: '#0087ba',
+      textTransform: 'uppercase',
+      letterSpacing: 0.25,
+    },
     doctorExp: {
       paddingLeft: 8,
       marginLeft: 5,
@@ -79,7 +86,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     doctorDetails: {
-      paddingTop: 10,
+      paddingTop: 0,
       fontSize: 10,
       fontWeight: 500,
       color: '#658f9b',
@@ -136,6 +143,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   const doctorId = doctorDetails.id;
+  console.log("props", doctorDetails);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorNextAvailableSlot,
@@ -233,9 +241,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <Avatar
           alt={doctorDetails.firstName || ''}
           src={
-            doctorDetails.photoUrl || '' !== ''
-              ? doctorDetails.photoUrl
-              : require('images/ic_placeholder.png')
+            doctorDetails.thumbnailUrl || '' !== ''
+              ? doctorDetails.thumbnailUrl
+              : require('images/no_photo_icon_round.svg')
           }
           className={classes.doctorAvatar}
         />
@@ -248,8 +256,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <LinearProgress />
             </div>
           ) : (
-            availabilityMarkup()
-          )}
+              availabilityMarkup()
+            )}
           <div className={classes.doctorName}>
             {`Dr. ${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
               _toLower(doctorDetails.lastName)
@@ -262,9 +270,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {doctorDetails && parseInt(doctorDetails.experience || '1', 10) > 1 ? 'YRS' : 'YEAR'}
             </span>
           </div>
+          <div className={classes.doctorspecialty}>
+            <p>{doctorDetails && doctorDetails.specialty && doctorDetails.specialty.userFriendlyNomenclature}</p>
+          </div>
           <div className={classes.doctorDetails}>
             <p>{doctorDetails.qualification}</p>
-            {<p>{clinics && clinics.length > 0 ? clinics[0].facility.name : ''}</p>}
+            {<p>{clinics && clinics.length > 0 ? clinics[0].facility.name + ',' + clinics[0].facility.city : ''}</p>}
           </div>
         </div>
       </div>
@@ -307,6 +318,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <BookConsult doctorId={doctorDetails.id} setIsPopoverOpen={setIsPopoverOpen} />
       </Modal>
-    </div>
+    </div >
   );
 };
