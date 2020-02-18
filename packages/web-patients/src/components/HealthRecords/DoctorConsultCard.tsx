@@ -7,6 +7,7 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms as SymptomType,
 } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import moment from 'moment';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -137,11 +138,18 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type ConsultCardProps = {
   consult: any;
+  isActiveCard: boolean;
+  downloadPrescription: () => void;
 };
+
+const client = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 
 export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
   const classes = useStyles({});
-  const { consult } = props;
+  const { consult, isActiveCard } = props;
   const symptoms: SymptomType[] = [];
 
   consult.caseSheet &&
@@ -156,8 +164,19 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
         )
     );
 
+  const prescriptionDownload = (caseSheetList: CaseSheetType[]) => {
+    const filterCaseSheet = caseSheetList.find(
+      (caseSheet: CaseSheetType | null) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
+    );
+    if (filterCaseSheet && filterCaseSheet.blobName) {
+      const a = document.createElement('a');
+      a.href = client.getBlobUrl(filterCaseSheet.blobName);
+      a.click();
+    }
+  };
+
   return (
-    <div className={`${classes.root}`}>
+    <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
       {consult && consult.patientId ? (
         <>
           <div className={classes.doctorInfoGroup}>
@@ -197,7 +216,7 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
                       : 'No Symptoms'}
                   </span>
                 }
-                <span>
+                <span onClick={() => prescriptionDownload(consult.caseSheet)}>
                   <img src={require('images/ic_prescription_blue.svg')} alt="" />
                 </span>
               </div>
