@@ -381,7 +381,7 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
-    console.log(notificationBody, 'patient canel notification');
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.CANCEL_APPT_BODY.replace('{0}', patientDetails.firstName);
@@ -389,6 +389,7 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
     notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
@@ -399,6 +400,7 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
     notificationTitle = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_TITLE;
     notificationBody = ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_BODY.replace(
@@ -409,6 +411,7 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     const transferRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
     const transferApptDetails = await transferRepo.getTransferDetails(
