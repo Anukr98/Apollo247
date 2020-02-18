@@ -124,6 +124,10 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
           }
         }
       }
+      specialty {
+        specialistSingularTerm
+        specialistPluralTerm
+      }
     }
   }
 `;

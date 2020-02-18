@@ -250,6 +250,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }
 
   let doctorsList = [];
+  const specialistPluralTerm = data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
 
   const consultErrorMessage = () => {
     const selectedConsultName =
@@ -258,7 +259,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       selectedFilterOption === 'online' ? 'Clinic Visit' : ' Online Consultation';
     const noConsultFoundError = `There is no ${specialityName} available for ${selectedConsultName}. Please try
     ${suggestedConsultName}`;
-    const noDoctorFoundError = `There is no ${specialityName} available to match your filters. Please try again with
+    const noDoctorFoundError = `There is no ${specialistPluralTerm} available to match your filters. Please try again with
     different filters.`;
 
     return (
@@ -285,32 +286,29 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       selectedFilterOption === 'all'
         ? data.getDoctorsBySpecialtyAndFilters.doctors
         : _filter(data.getDoctorsBySpecialtyAndFilters.doctors, (doctors) => {
-            const consultMode =
-              doctors.consultHours &&
+          const consultMode =
+            doctors.consultHours &&
               doctors.consultHours.length > 0 &&
               doctors.consultHours[0] &&
               doctors.consultHours[0].consultMode
-                ? doctors.consultHours[0].consultMode
-                : '';
-            if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
-              return true;
-            }
-            return false;
-          });
+              ? doctors.consultHours[0].consultMode
+              : '';
+          if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
+            return true;
+          }
+          return false;
+        });
   }
+
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
-          {doctorsList.length > 0 ? (
-            <div className={classes.headerTitle}>
-              {doctorsList.length > 0 ? <h2 className={classes.title}>Okay!</h2> : ''}
-              Here are our best {specialityName}
-            </div>
-          ) : (
-            ''
-          )}
+          <div className={classes.headerTitle}>
+            <h2 className={classes.title}>Okay!</h2>
+            Here are our best {specialistPluralTerm}
+          </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
               return (
@@ -342,8 +340,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 345px)'
               : isLargeScreen
-              ? 'calc(100vh - 280px)'
-              : 'calc(100vh - 170px)'
+                ? 'calc(100vh - 280px)'
+                : 'calc(100vh - 170px)'
           }
         >
           <div className={classes.searchList}>
@@ -390,8 +388,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           </div>
         </Scrollbars>
       ) : (
-        consultErrorMessage()
-      )}
+          consultErrorMessage()
+        )}
     </div>
   );
 };

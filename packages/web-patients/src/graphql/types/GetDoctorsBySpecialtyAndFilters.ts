@@ -58,9 +58,16 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   doctorHospital: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[];
 }
 
+export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty {
+  __typename: "DoctorSpecialty";
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+}
+
 export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters {
   __typename: "FilterDoctorsResult";
   doctors: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[] | null;
+  specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null;
 }
 
 export interface GetDoctorsBySpecialtyAndFilters {
