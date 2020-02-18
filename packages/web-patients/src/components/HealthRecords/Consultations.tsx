@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, LinearProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { DoctorConsultCard } from 'components/HealthRecords/DoctorConsultCard';
@@ -12,6 +12,11 @@ import { FollowUp } from 'components/HealthRecords/FollowUp';
 import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
 import { PrescriptionPreview } from 'components/HealthRecords/PrescriptionPreview';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '../../graphql/profiles';
+import { getPatientPastConsultsAndPrescriptions } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useApolloClient } from 'react-apollo-hooks';
+import moment from 'moment';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 
@@ -250,15 +255,137 @@ export const Consultations: React.FC = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [consultsData, setConsultsData] = useState<any[] | null>(null);
+  const [allConsultsData, setAllConsultsData] = useState<any[] | null>(null);
+  const [filter, setFilter] = useState<string>();
+  const [activeConsult, setActiveConsult] = useState<any | null>(null);
+
+  const fetchPastData = () => {
+    setLoading(true);
+    if (currentPatient) {
+      client
+        .query<getPatientPastConsultsAndPrescriptions>({
+          query: GET_PAST_CONSULTS_PRESCRIPTIONS,
+          fetchPolicy: 'no-cache',
+          variables: {
+            consultsAndOrdersInput: {
+              patient: currentPatient.id ? currentPatient.id : '',
+              filter: [],
+            },
+          },
+        })
+        .then((_data) => {
+          const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
+          const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
+          const consultsAndMedOrders: { [key: string]: any } = {};
+
+          consults.forEach((c) => {
+            consultsAndMedOrders[c!.bookingDate] = {
+              ...consultsAndMedOrders[c!.bookingDate],
+              ...c,
+            };
+          });
+
+          medOrders.forEach((c) => {
+            consultsAndMedOrders[c!.quoteDateTime] = {
+              ...consultsAndMedOrders[c!.quoteDateTime],
+              ...c,
+            };
+          });
+          const array = Object.keys(consultsAndMedOrders)
+            .map((i) => consultsAndMedOrders[i])
+            .sort(
+              (a: any, b: any) =>
+                moment(b.bookingDate || b.quoteDateTime)
+                  .toDate()
+                  .getTime() -
+                moment(a.bookingDate || a.quoteDateTime)
+                  .toDate()
+                  .getTime()
+            )
+            .filter(
+              (i) =>
+                (!i.patientId && (i.prescriptionImageUrl || i.prismPrescriptionFileId)) ||
+                i.patientId
+            );
+          setError(false);
+          setLoading(false);
+          setConsultsData(array);
+          setAllConsultsData(array);
+          setActiveConsult(array[0]);
+        })
+        .catch((e) => {
+          const error = JSON.parse(JSON.stringify(e));
+          setError(true);
+          setLoading(false);
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (!consultsData) {
+      fetchPastData();
+    }
+  }, [consultsData, currentPatient]);
+
+  useEffect(() => {
+    if (allConsultsData) {
+      let filteredConsults = allConsultsData;
+      if (filter === 'ONLINE' || filter === 'PHYSICAL') {
+        filteredConsults = allConsultsData.filter((consult) => {
+          if (consult && consult.patientId) {
+            return consult.appointmentType === filter;
+          }
+        });
+      }
+      setConsultsData(filteredConsults);
+      setActiveConsult(filteredConsults ? filteredConsults[0] : null);
+    }
+  }, [filter, allConsultsData]);
+
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Error occured while fetching Heath records...</div>;
+  }
+
+  const showDate = (date: string) => {
+    return moment(new Date()).format('DD/MM/YYYY') ===
+      moment(new Date(date)).format('DD/MM/YYYY') ? (
+      <span>Today , {moment(new Date(date)).format('DD MMM YYYY')}</span>
+    ) : (
+      <span>{moment(new Date(date)).format('DD MMM YYYY')}</span>
+    );
+  };
   const currentPath = window.location.pathname;
 
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.topFilters}>
-          <AphButton className={classes.buttonActive}>All Consults</AphButton>
-          <AphButton>Online</AphButton>
-          <AphButton>Physical</AphButton>
+          <AphButton
+            className={filter === 'ALL' ? classes.buttonActive : undefined}
+            onClick={() => setFilter('ALL')}
+          >
+            All Consults
+          </AphButton>
+          <AphButton
+            className={filter === 'ONLINE' ? classes.buttonActive : undefined}
+            onClick={() => setFilter('ONLINE')}
+          >
+            Online
+          </AphButton>
+          <AphButton
+            className={filter === 'PHYSICAL' ? classes.buttonActive : undefined}
+            onClick={() => setFilter('PHYSICAL')}
+          >
+            Physical
+          </AphButton>
         </div>
         <Scrollbars
           autoHide={true}
@@ -272,26 +399,22 @@ export const Consultations: React.FC = (props) => {
           }
         >
           <div className={classes.consultationsList}>
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 12 Aug 2019</span>
-            </div>
-            <DoctorConsultCard />
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 9 Aug 2019</span>
-            </div>
-            <DoctorConsultCard />
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 6 Aug 2019</span>
-            </div>
-            <DoctorConsultCard />
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 6 Aug 2019</span>
-            </div>
-            <DoctorConsultCard />
+            {consultsData &&
+              consultsData.length > 0 &&
+              consultsData.map(
+                (consult) =>
+                  consult && (
+                    <div onClick={() => setActiveConsult(consult)}>
+                      <div className={classes.consultGroupHeader}>
+                        <div className={classes.circle}></div>
+                        {consult.patientId
+                          ? showDate(consult.appointmentDateTime)
+                          : showDate(consult.quoteDateTime)}
+                      </div>
+                      <DoctorConsultCard consult={consult} />
+                    </div>
+                  )
+              )}
           </div>
         </Scrollbars>
         <div className={classes.addReportActions}>
@@ -303,11 +426,7 @@ export const Consultations: React.FC = (props) => {
       <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
-            <AphButton
-              onClick={() => {
-                console.log('onClick');
-              }}
-            >
+            <AphButton>
               <img src={require('images/ic_back.svg')} />
             </AphButton>
             <span>Prescription Details</span>
@@ -331,13 +450,17 @@ export const Consultations: React.FC = (props) => {
           }
         >
           <div className={classes.consultationDetails}>
-            <Symptoms />
-            <Prescription />
-            <Diagnosis />
-            <GeneralAdvice />
-            <FollowUp />
-            <PaymentInvoice />
-            <PrescriptionPreview />
+            {activeConsult && (
+              <>
+                <Symptoms caseSheetList={activeConsult.caseSheet} />
+                <Prescription caseSheetList={activeConsult.caseSheet} />
+                <Diagnosis caseSheetList={activeConsult.caseSheet} />
+                <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
+                <FollowUp caseSheetList={activeConsult.caseSheet} />
+                {/* <PaymentInvoice />
+                <PrescriptionPreview /> */}
+              </>
+            )}
           </div>
         </Scrollbars>
       </div>

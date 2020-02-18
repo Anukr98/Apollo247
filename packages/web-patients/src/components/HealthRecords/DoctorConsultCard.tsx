@@ -2,6 +2,11 @@ import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms as SymptomType,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -37,6 +42,27 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       color: '#01475b',
       fontWeight: 500,
+    },
+    dateField: {
+      display: 'flex',
+      alignItems: 'center',
+      paddingTop: 8,
+      paddingBottom: 8,
+      fontSize: 12,
+      fontWeight: 500,
+      lineHeight: 1.67,
+      letterSpacing: 0.04,
+      color: '#02475b',
+      '& span:first-child': {
+        opacity: 0.6,
+      },
+      '& span:last-child': {
+        marginLeft: 'auto',
+        '& img': {
+          verticalAlign: 'middle',
+          maxWidth: 20,
+        },
+      },
     },
     doctorService: {
       display: 'flex',
@@ -109,38 +135,120 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const DoctorConsultCard: React.FC = (props) => {
-  const classes = useStyles();
+type ConsultCardProps = {
+  consult: any;
+};
+
+export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
+  const classes = useStyles({});
+  const { consult } = props;
+  const symptoms: SymptomType[] = [];
+
+  consult.caseSheet &&
+    consult.caseSheet.forEach(
+      (caseSheet: CaseSheetType | null) =>
+        caseSheet &&
+        caseSheet.doctorType !== 'JUNIOR' &&
+        caseSheet.symptoms &&
+        caseSheet.symptoms.length > 0 &&
+        caseSheet.symptoms.forEach(
+          (symptom: SymptomType | null) => symptom && symptoms.push(symptom)
+        )
+    );
+
   return (
     <div className={`${classes.root}`}>
-      <div className={classes.doctorInfoGroup}>
-        <div className={classes.doctorImg}>
-          <Avatar
-            alt="Dr. Simran Rai"
-            src={require('images/doctordp_01.png')}
-            className={classes.avatar}
-          />
-        </div>
-        <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>Dr. Simran Rai</div>
-          <div className={classes.doctorService}>
-            <span>Follow-up to 20 Apr 2019</span>
-            <span>
-              <img src={require('images/ic_onlineconsult.svg')} alt="" />
-            </span>
+      {consult && consult.patientId ? (
+        <>
+          <div className={classes.doctorInfoGroup}>
+            <div className={classes.doctorImg}>
+              <Avatar
+                alt="Dr. Simran Rai"
+                src={require('images/doctordp_01.png')}
+                className={classes.avatar}
+              />
+            </div>
+            <div className={classes.doctorInfo}>
+              <div className={classes.doctorName}>
+                {consult.doctorInfo
+                  ? `Dr. ${consult.doctorInfo.firstName || ''} ${consult.doctorInfo.lastName || ''}`
+                  : ''}
+              </div>
+              <div className={classes.doctorService}>
+                {consult.isFollowUp ? (
+                  <span>Follow-up to {consult.followUpTo}</span>
+                ) : (
+                  <span>New Consult</span>
+                )}
+                <span>
+                  <img src={require('images/ic_onlineconsult.svg')} alt="" />
+                </span>
+              </div>
+              <div className={classes.doctorService}>
+                {
+                  <span>
+                    {symptoms && symptoms.length > 0
+                      ? symptoms.map((symptom: SymptomType, idx: number) => {
+                          if (idx !== 0) {
+                            return `, ${symptom.symptom} `;
+                          }
+                          return symptom.symptom;
+                        })
+                      : 'No Symptoms'}
+                  </span>
+                }
+                <span>
+                  <img src={require('images/ic_prescription_blue.svg')} alt="" />
+                </span>
+              </div>
+            </div>
           </div>
-          <div className={classes.doctorService}>
-            <span>Cold, Cough, Fever, Nausea</span>
-            <span>
-              <img src={require('images/ic_prescription_blue.svg')} alt="" />
-            </span>
+          {/* <div className={classes.bottomActions}> */}
+          {/* <AphButton>Book Follow-up</AphButton>
+            <AphButton>Order Meds & Tests</AphButton> */}
+          {/* </div> */}
+        </>
+      ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
+        <div className={classes.doctorInfoGroup}>
+          <div className={classes.doctorImg}>
+            <Avatar
+              alt="Dr. Simran Rai"
+              src={require('images/doctordp_01.png')}
+              className={classes.avatar}
+            />
+          </div>
+          <div className={classes.doctorInfo}>
+            <div className={classes.doctorName}>Prescription uploaded by Patient</div>
+            <div className={classes.dateField}>
+              <span>
+                {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-      <div className={classes.bottomActions}>
-        <AphButton>Book Follow-up</AphButton>
-        <AphButton>Order Meds & Tests</AphButton>
-      </div>
+      ) : (
+        <div className={classes.doctorInfoGroup}>
+          <div className={classes.doctorImg}>
+            <Avatar
+              alt="Dr. Simran Rai"
+              src={require('images/doctordp_01.png')}
+              className={classes.avatar}
+            />
+          </div>
+          <div className={classes.doctorInfo}>
+            <div className={classes.doctorName}>
+              {consult.medicineOrderLineItems.map((medicine: any) => (
+                <span>{medicine.medicineName}</span>
+              ))}
+            </div>
+            <div className={classes.dateField}>
+              <span>
+                {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
