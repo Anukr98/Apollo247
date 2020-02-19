@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
     formControl: {
       marginBottom: 25,
       width: '100%',
+      position: 'relative',
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -61,6 +62,54 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.main,
         marginTop: 20,
       },
+    },
+    referralCodeWrapper: {
+      backgroundColor: '#0087ba',
+      padding: 20,
+      paddingBottom: 0,
+      color: '#fff',
+      margin: '0 -20px',
+      display: 'flex',
+      alignItems: 'flex-start',
+    },
+    enterCode: {
+      width: '100%',
+      paddingLeft: 20,
+    },
+    inputField: {
+      marginTop: 8,
+      '& input': {
+        color: '#fff',
+        paddingRight: 35,
+      },
+      '& > div': {
+        borderColor: '#fff !important',
+        '&:before': {
+          borderBottom: '2px solid #fff !important',
+        },
+        '&:not(:focus)': {
+          '&:before': {
+            borderColor: '#fff !important',
+          },
+          '&:after': {
+            borderColor: '#fff !important',
+          },
+        },
+        '&:hover': {
+          borderColor: '#fff !important',
+          '&:before': {
+            borderBottom: '2px solid #fff !important',
+          },
+          '&:after': {
+            borderBottom: '2px solid #fff !important',
+          },
+        },
+      },
+    },
+    tickIcon: {
+      position: 'absolute',
+      right: 0,
+      top: 14,
     },
     actions: {
       padding: 20,
@@ -362,6 +411,23 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         </FormControl>
                       )}
                     />
+                    <div className={classes.referralCodeWrapper}>
+                      <img src={require('images/ic_gift.svg')} alt="" />
+                      <div className={classes.enterCode}>
+                        <div>Preeti Has Sent You A Referral Code!</div>
+                        <FormControl className={classes.formControl} fullWidth>
+                          <AphTextField
+                            className={classes.inputField}
+                            placeholder="Enter Referral Code"
+                          />
+                          <img
+                            className={classes.tickIcon}
+                            src={require('images/ic_check_white.svg')}
+                            alt=""
+                          />
+                        </FormControl>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
