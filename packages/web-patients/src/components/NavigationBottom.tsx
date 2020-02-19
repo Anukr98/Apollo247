@@ -111,7 +111,7 @@ export const NavigationBottom: React.FC = (props) => {
       <BottomNavigationAction
         label="My Account"
         component={Link}
-        to={clientRoutes.healthRecords()}
+        to={clientRoutes.myAccount()}
         icon={<img src={require('images/bottom-nav/ic_account.svg')} />}
         onClick={() => setIsDialogOpen(true)}
         classes={{
