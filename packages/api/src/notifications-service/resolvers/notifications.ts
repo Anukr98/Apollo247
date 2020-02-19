@@ -388,6 +388,12 @@ export async function sendNotification(
         : ' ' + ApiConstants.PATIENT_CANCEL_APPT_BODY_END;
     console.log('cancelApptSMS======================', cancelApptSMS);
     sendNotificationSMS(patientDetails.mobileNumber, cancelApptSMS ? cancelApptSMS : '');
+    //send sms to doctor
+    let doctorSMS = ApiConstants.DOCTOR_PATIENT_CANCEL_SMS.replace('{0}', doctorDetails.fullName);
+    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
+    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
+    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.CANCEL_APPT_BODY.replace('{0}', patientDetails.firstName);
@@ -537,6 +543,12 @@ export async function sendNotification(
     console.log('message==========================', notificationBody);
     //send sms
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
+    //send sms to doctor
+    let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace('{0}', doctorDetails.fullName);
+    doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
+    doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
+    doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
     notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
     notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
@@ -902,6 +914,20 @@ export async function sendReminderNotification(
         content: notificationBody,
       },
     };
+    //send doctor SMS starts
+    let doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    if (diffMins <= 1) {
+      doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_1_SMS.replace(
+        '{0}',
+        doctorDetails.fullName
+      );
+      doctorSMS = doctorSMS.replace('{1}', patientDetails.firstName);
+    }
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+    //send doctor sms ends
   } else if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
   ) {
