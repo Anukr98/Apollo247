@@ -56,6 +56,7 @@ export interface MedicineCartContextProps {
     | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
     | null;
   clearCartInfo: (() => void) | null;
+  addMultipleCartItems: ((items: MedicineCartItem[]) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -75,12 +76,14 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   deliveryAddresses: [],
   setDeliveryAddresses: null,
   clearCartInfo: null,
+  addMultipleCartItems: null,
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
   const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>(
     localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems') || '') : []
   );
+  const [isCartUpdated, setIsCartUpdated] = useState<boolean>(false);
 
   const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
     JSON.stringify(cartItems || {})
@@ -100,17 +103,22 @@ export const MedicinesCartProvider: React.FC = (props) => {
   >([]);
 
   useEffect(() => {
-    const items = JSON.stringify(cartItems);
-    localStorage.setItem('cartItems', items);
-    setItemsStr(items);
-  }, [cartItems]);
+    if (isCartUpdated) {
+      const items = JSON.stringify(cartItems);
+      localStorage.setItem('cartItems', items);
+      setItemsStr(items);
+      setIsCartUpdated(false);
+    }
+  }, [cartItems, isCartUpdated]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     setCartItems([...cartItems, itemToAdd]);
+    setIsCartUpdated(true);
   };
 
   const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
+    setIsCartUpdated(true);
   };
 
   const updateCartItem: MedicineCartContextProps['updateCartItem'] = (itemUpdates) => {
@@ -120,6 +128,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
       if (cartItems && itemUpdates && itemUpdates.quantity) {
         cartItems[foundIndex].quantity = cartItems[foundIndex].quantity + itemUpdates.quantity;
         setCartItems([...cartItems]);
+        setIsCartUpdated(true);
       }
     }
   };
@@ -130,8 +139,24 @@ export const MedicinesCartProvider: React.FC = (props) => {
       if (cartItems && itemUpdates && itemUpdates.quantity) {
         cartItems[foundIndex].quantity = itemUpdates.quantity;
         setCartItems([...cartItems]);
+        setIsCartUpdated(true);
       }
     }
+  };
+
+  const addMultipleCartItems: MedicineCartContextProps['addMultipleCartItems'] = (itemsToAdd) => {
+    const existingCartItems = cartItems;
+    const newCartItems = cartItems;
+    itemsToAdd.forEach((item: MedicineCartItem) => {
+      const foundIdx = existingCartItems.findIndex((existingItem) => existingItem.id === item.id);
+      if (foundIdx >= 0) {
+        newCartItems[foundIdx].quantity = newCartItems[foundIdx].quantity + item.quantity;
+      } else {
+        newCartItems.push(item);
+      }
+    });
+    setCartItems(newCartItems);
+    setIsCartUpdated(true);
   };
 
   const cartTotal: MedicineCartContextProps['cartTotal'] = cartItems.reduce(
@@ -166,6 +191,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         deliveryAddresses,
         setDeliveryAddresses,
         clearCartInfo,
+        addMultipleCartItems,
       }}
     >
       {props.children}
@@ -191,4 +217,5 @@ export const useShoppingCart = () => ({
   deliveryAddresses: useShoppingCartContext().deliveryAddresses,
   setDeliveryAddresses: useShoppingCartContext().setDeliveryAddresses,
   clearCartInfo: useShoppingCartContext().clearCartInfo,
+  addMultipleCartItems: useShoppingCartContext().addMultipleCartItems,
 });
