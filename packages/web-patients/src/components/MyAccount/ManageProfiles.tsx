@@ -5,6 +5,7 @@ import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -13,6 +14,11 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
       borderRadius: 5,
       padding: '20px 5px 0 5px',
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+      },
     },
     profileCard: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
@@ -23,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       marginBottom: 10,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+      },
     },
     profileImg: {
       marginRight: 16,
@@ -38,8 +47,10 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 96px)',
     },
     userTopGroup: {
-      display: 'flex',
-      alignItems: 'center',
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        alignItems: 'center',
+      },
     },
     userName: {
       fontSize: 18,
@@ -52,11 +63,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     userBottomGroup: {
-      display: 'flex',
-      alignItems: 'center',
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
       paddingTop: 6,
       marginTop: 6,
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        alignItems: 'center',
+      },
     },
     userId: {
       fontSize: 12,
@@ -91,6 +104,24 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 500,
     },
+    scrollBars1: {
+      maxHeight: 'calc(100vh - 265px) !important',
+      '& >div': {
+        maxHeight: 'calc(100vh - 265px) !important',
+      },
+    },
+    scrollBars: {
+      height: 'calc(100vh - 265px) !important',
+      [theme.breakpoints.down('xs')]: {
+        height: '100% !important',
+        '& >div:nth-child(2)': {
+          display: 'none',
+        },
+        '& >div:nth-child(3)': {
+          display: 'none',
+        },
+      },
+    },
   };
 });
 
@@ -99,10 +130,17 @@ export const ManageProfiles: React.FC = (props) => {
   const cancelAppointRef = useRef(null);
   const [isDeletePopoverOpen, setIsDeletePopoverOpen] = React.useState<boolean>(false);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   return (
     <div className={classes.root}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'100vh - 265px'}>
+      <Scrollbars
+        autoHide={true}
+        className={classes.scrollBars}
+        renderView={(props) =>
+          isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
+        }
+      >
         <div className={classes.customScroll}>
           <div className={classes.profileCard}>
             <div className={classes.profileImg}>

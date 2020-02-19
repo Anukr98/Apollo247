@@ -11,18 +11,36 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     userProfile: {
       width: '100%',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#f7f8f5',
+        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     profileServices: {
       paddingTop: 5,
       paddingRight: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 15,
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
     },
     servicesSection: {
       paddingRight: 15,
       paddingBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+        display: 'flex',
+        flexWrap: 'wrap',
+      },
     },
     sectionGroup: {
       marginBottom: 10,
       paddingLeft: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+        paddingRight: 5,
+      },
     },
     serviceType: {
       backgroundColor: '#fff',
@@ -112,7 +130,7 @@ export const MyProfile: React.FC = (props) => {
                 </span>
               </Link>
             </div>
-            <div className={classes.sectionGroup}>
+            {/* <div className={classes.sectionGroup}>
               <Link className={`${classes.serviceType} ${classes.textVCenter}`} to="#">
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_invoice.svg')} alt="" />
@@ -122,20 +140,17 @@ export const MyProfile: React.FC = (props) => {
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
               </Link>
-            </div>
+            </div> */}
             <div className={`${classes.sectionGroup} ${classes.lastGroup}`}>
-              <Link
-                className={`${classes.serviceType} ${classes.textVCenter}`}
-                to={clientRoutes.notificationSettings()}
-              >
+              <div className={`${classes.serviceType} ${classes.textVCenter}`}>
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
                 </span>
-                <span className={classes.linkText}>Notification Settings</span>
+                <span className={classes.linkText}>Logout</span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
-              </Link>
+              </div>
             </div>
           </div>
         </div>
