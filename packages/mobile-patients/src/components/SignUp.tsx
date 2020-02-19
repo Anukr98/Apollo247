@@ -41,6 +41,7 @@ import {
   Relation,
   Gender,
   UpdatePatientInput,
+  DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
@@ -50,6 +51,8 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { db } from '../strings/FirebaseConfig';
+import { AppConfig } from '../strings/AppConfig';
 
 const { height } = Dimensions.get('window');
 
@@ -406,6 +409,32 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       setVerifyingPhoneNumber(true);
                       const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                       console.log('signup currentPatient', currentPatient);
+
+                      try {
+                        const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+                        const versionInput = {
+                          appVersion:
+                            Platform.OS === 'ios'
+                              ? AppConfig.Configuration.iOS_Version
+                              : AppConfig.Configuration.Android_Version,
+                          deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+                        };
+                        db.ref('ApolloPatientsNewUser/')
+                          .push({
+                            mobileNumber: storedPhoneNumber,
+                            versionInput: versionInput,
+                            referralCode: referral ? referral : null,
+                            relation: 'false',
+                          })
+                          .then((data: any) => {
+                            //success callback
+                            console.log('getPatientByPrismdata ', data);
+                          })
+                          .catch((error: Error) => {
+                            //error callback
+                            console.log('getPatientByPrismerror ', error);
+                          });
+                      } catch (error) {}
 
                       const patientsDetails: UpdatePatientInput = {
                         id: currentPatient ? currentPatient.id : '',
