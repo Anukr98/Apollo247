@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const rescheduleconsult = '^^#rescheduleconsult';
 const config: Pubnub.PubnubConfig = {
@@ -47,16 +48,16 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
     borderBottomWidth: 2,
   },
-  inputView: {
-    height: 80,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#30c1a3',
-    color: '#01475b',
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 10,
-  },
+  // inputView: {
+  //   height: 80,
+  //   borderRadius: 10,
+  //   borderWidth: 2,
+  //   borderColor: '#30c1a3',
+  //   color: '#01475b',
+  //   marginLeft: 20,
+  //   marginRight: 20,
+  //   marginBottom: 10,
+  // },
   buttonView: {
     height: 40,
     borderRadius: 5,
@@ -211,17 +212,17 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
   const renderDropdownCard = () => (
     <View style={{ marginTop: 2 }}>
       <View style={styles.dropDownCardStyle}>
-        {sysmptonsList!.map((_doctor, i, array) => {
+        {sysmptonsList.map((_doctor, i, array) => {
           const drName = ` ${_doctor.firstName}`;
 
           return (
             <TouchableOpacity
-              onPress={() => onPressDoctorSearchListItem(` ${_doctor.firstName}`, _doctor!.id)}
+              onPress={() => onPressDoctorSearchListItem(` ${_doctor.firstName}`, _doctor.id)}
               style={{ marginHorizontal: 16 }}
               key={i}
             >
               {formatSuggestionsText(drName, '')}
-              {i < array!.length - 1 ? (
+              {i < array.length - 1 ? (
                 <View
                   style={{
                     marginTop: 8,
@@ -274,13 +275,24 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
       .then((_data) => {
         setIsLoading(false);
         console.log('data', _data);
-        const reschduleObject: any = {
+        const reschduleObject = {
           appointmentId: props.navigation.getParam('AppointmentId'),
-          transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
-            .rescheduledDateTime,
+          transferDateTime: g(
+            _data,
+            'data',
+            'initiateRescheduleAppointment',
+            'rescheduleAppointment',
+            'rescheduledDateTime'
+          ),
           doctorId: oldDoctorId,
-          reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
-          reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+          reschduleCount: g(_data, 'data', 'initiateRescheduleAppointment', 'rescheduleCount'),
+          reschduleId: g(
+            _data,
+            'data',
+            'initiateRescheduleAppointment',
+            'rescheduleAppointment',
+            'id'
+          ),
         };
         pubnub.publish(
           {

@@ -57,7 +57,6 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails,
@@ -71,12 +70,12 @@ import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineL
 import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
   APPOINTMENT_TYPE,
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
-  MEDICINE_TO_BE_TAKEN,
-  MEDICINE_TIMINGS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   modifyCaseSheet,
@@ -87,7 +86,6 @@ import {
   UpdatePatientPrescriptionSentStatusVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import {
   g,
   medUsageType,
@@ -176,9 +174,6 @@ const styles = StyleSheet.create({
   appdate: {
     ...theme.fonts.IBMPlexSansSemiBold(14),
     color: '#02475b',
-  },
-  contentContainer: {
-    // paddingVertical: 20,
   },
   underlineend: {
     borderStyle: 'solid',
@@ -417,7 +412,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
-  const PatientInfoData = props.navigation.getParam('PatientInfoAll');
+  // const PatientInfoData = props.navigation.getParam('PatientInfoAll');
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   const AppId = props.navigation.getParam('AppId');
   const stastus = props.navigation.getParam('AppointmentStatus');
@@ -2429,23 +2424,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const renderBasicProfileDetails = (
-    PatientInfoData: PatientInfoData,
-    displayId: string,
-    Appintmentdatetimeconsultpage: string
-  ) => {
+  const renderBasicProfileDetails = (displayId: string, Appintmentdatetimeconsultpage: string) => {
     return (
       <View style={{ backgroundColor: '#f7f7f7', paddingBottom: 11 }}>
-        {profileRow(PatientInfoData, displayId, Appintmentdatetimeconsultpage)}
+        {profileRow(displayId, Appintmentdatetimeconsultpage)}
       </View>
     );
   };
 
-  const profileRow = (
-    PatientInfoData: PatientInfoData,
-    displayId: string,
-    Appintmentdatetimeconsultpage: string
-  ) => {
+  const profileRow = (displayId: string, Appintmentdatetimeconsultpage: string) => {
     if (patientDetails) {
       const age = moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true) || -1;
       return (
@@ -2553,7 +2540,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         <ScrollView bounces={false} style={{ zIndex: 1 }}>
           <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
           {renderPatientImage()}
-          {renderBasicProfileDetails(PatientInfoData, displayId, Appintmentdatetimeconsultpage)}
+          {renderBasicProfileDetails(displayId, Appintmentdatetimeconsultpage)}
           {renderSymptonsView()}
           {renderVitals()}
           {renderPatientHistoryLifestyle()}

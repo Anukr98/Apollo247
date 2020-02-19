@@ -21,10 +21,10 @@ export const DeviceHelper = () => {
 };
 
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
+  const { doctorDetails } = useAuth();
   try {
-    const { doctorDetails } = useAuth();
     const storedPhoneNumber = doctorDetails && doctorDetails.mobileNumber;
-    bugsnag.notify(errorValue, function(report) {
+    bugsnag.notify(errorValue, (report) => {
       report.metadata = {
         stringName: {
           viewSource:

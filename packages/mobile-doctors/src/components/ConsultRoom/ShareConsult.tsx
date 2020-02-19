@@ -129,7 +129,7 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
       setData(_data);
       return;
     }
-    const newData = data!.filter((item) => {
+    const newData = data.filter((item) => {
       const itemData = `${item.name.toUpperCase()}`;
 
       const textData = searchText.toUpperCase();
@@ -140,10 +140,9 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
     setData(newData);
   };
   const renderDoctorsData = () => {
-    const [heightList, setHeightList] = useState<number>(height - 250);
     return (
-      <ScrollView bounces={false} style={{ height: heightList }}>
-        {data!.map((_doctor, i, array) => {
+      <ScrollView bounces={false} style={{ height: height - 250 }}>
+        {data.map((_doctor, i, array) => {
           return (
             <View
               style={{
@@ -178,7 +177,7 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setSelectedId(_doctor.id)}>
-                <View>{!(_doctor.id == selectedId) ? <UnSelected /> : <Selected />}</View>
+                <View>{_doctor.id !== selectedId ? <UnSelected /> : <Selected />}</View>
               </TouchableOpacity>
               {/* <TouchableOpacity
                   onPress={() => setPickData({ ...pickData!, [_doctor.id]: !pickData[_doctor.id] })}

@@ -5,7 +5,7 @@ import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 
-import { LoginVariables, Login } from '../graphql/types/Login';
+import { LoginVariables, Login, Login_login } from '../graphql/types/Login';
 import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
 
 import { LOGIN_TYPE } from '../graphql/types/globalTypes';
@@ -59,7 +59,7 @@ const tokenFailed = () => {
 };
 
 export const loginAPI = (mobileNumber: string) => {
-  return new Promise((res, rej) => {
+  return new Promise<Login_login>((res, rej) => {
     const inputData = {
       mobileNumber: mobileNumber,
       loginType: LOGIN_TYPE.DOCTOR,
