@@ -1,19 +1,17 @@
 import { PastConsultCard } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/PastConsultCard';
-import {
-  BackArrow,
-  PastAppointmentIcon,
-  UpComingIcon,
-  UserPlaceHolder,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { BackArrow, UserPlaceHolder } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails,
+  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
+  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { getPatientLog_getPatientLog_patientLog_patientInfo } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
@@ -31,7 +29,7 @@ import {
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 
-const { height, width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   shadowview: {
@@ -47,73 +45,77 @@ const styles = StyleSheet.create({
     // borderBottomLeftRadius: 10,
     // borderBottomRightRadius: 10,
   },
-  symptomsText: {
-    marginTop: 12,
-    marginLeft: 12,
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 16,
-  },
-  familyText: {
-    //marginTop: 12,
-    marginLeft: 16,
-    color: '#02475b',
-    opacity: 0.6,
-    ...theme.fonts.IBMPlexSansMedium(16),
-    letterSpacing: 0.03,
-    marginBottom: 12,
-  },
-  familyInputView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderStyle: 'solid',
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-  },
+  // symptomsText: {
+  //   marginTop: 12,
+  //   marginLeft: 12,
+  //   color: '#01475b',
+  //   ...theme.fonts.IBMPlexSansMedium(14),
+  //   marginBottom: 16,
+  // },
+  // familyText: {
+  //   //marginTop: 12,
+  //   marginLeft: 16,
+  //   color: '#02475b',
+  //   opacity: 0.6,
+  //   ...theme.fonts.IBMPlexSansMedium(16),
+  //   letterSpacing: 0.03,
+  //   marginBottom: 12,
+  // },
+  // familyInputView: {
+  //   flex: 1,
+  //   borderRadius: 10,
+  //   borderWidth: 1,
+  //   marginBottom: 16,
+  //   marginLeft: 16,
+  //   marginRight: 16,
+  //   backgroundColor: 'rgba(0, 0, 0, 0.02)',
+  //   borderStyle: 'solid',
+  //   borderColor: 'rgba(2, 71, 91, 0.15)',
+  // },
 
-  AllergiesInputView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    borderStyle: 'solid',
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-  },
-  leftTimeLineContainer: {
-    // marginBottom: -40,
-    marginRight: 0,
-    marginLeft: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verticalLine: {
-    flex: 1,
-    width: 2,
-    marginLeft: 0,
-  },
+  // AllergiesInputView: {
+  //   flex: 1,
+  //   borderRadius: 10,
+  //   borderWidth: 1,
+  //   backgroundColor: 'rgba(0, 0, 0, 0.02)',
+  //   borderStyle: 'solid',
+  //   borderColor: 'rgba(2, 71, 91, 0.15)',
+  //   marginBottom: 16,
+  //   marginLeft: 16,
+  //   marginRight: 16,
+  // },
+  // leftTimeLineContainer: {
+  //   // marginBottom: -40,
+  //   marginRight: 0,
+  //   marginLeft: 20,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
+  // verticalLine: {
+  //   flex: 1,
+  //   width: 2,
+  //   marginLeft: 0,
+  // },
 });
 export interface PatientsProps
   extends NavigationScreenProps<{
     patientId: string;
     ConsultsCount: string;
-    PatientInfo: any;
+    PatientInfo: getPatientLog_getPatientLog_patientLog_patientInfo | null;
   }> {}
 
 export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   const client = useApolloClient();
   // const [patientHistoryshow, setpatientHistoryshow] = useState(false);
 
-  const [familyValues, setFamilyValues] = useState<any>([]);
-  const [lifeStyleData, setLifeStyleData] = useState<any>([]);
+  // const [familyValues, setFamilyValues] = useState<
+  //   (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
+  // >([]);
+  // const [lifeStyleData, setLifeStyleData] = useState<
+  //   (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
+  // >([]);
   const [patientDetails, setPatientDetails] = useState<GetCaseSheet_getCaseSheet_patientDetails>();
-  const [allergiesData, setAllergiesData] = useState<string>('');
+  // const [allergiesData, setAllergiesData] = useState<string>('');
 
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [pastList, setPastList] = useState<
@@ -121,8 +123,8 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   >([]);
 
   const PatientInfo = props.navigation.getParam('PatientInfo');
-  const dateOfBirth = moment(PatientInfo.dateOfBirth).format('YYYY');
-  const todayYear = moment(new Date()).format('YYYY');
+  const age =
+    moment(new Date()).diff(patientDetails && patientDetails.dateOfBirth, 'years', true) || -1;
 
   useEffect(() => {
     console.log(PatientInfo, 'PatientInfoData');
@@ -132,19 +134,19 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: { appointmentId: props.navigation.getParam('patientId') },
       })
-      .then(({ data }) => {
+      .then((data) => {
         try {
-          const result = data.getCaseSheet;
+          const result = g(data, 'data', 'getCaseSheet');
           console.log(result, 'result');
 
           if (result) {
             if (result.patientDetails) {
               setPatientDetails(result.patientDetails);
-              setFamilyValues(result.patientDetails.familyHistory!);
-              setAllergiesData(result.patientDetails.allergies!);
-              setLifeStyleData(result.patientDetails.lifeStyle);
+              // setFamilyValues(result.patientDetails.familyHistory);
+              // setAllergiesData(result.patientDetails.allergies || '');
+              // setLifeStyleData(result.patientDetails.lifeStyle);
             }
-            setPastList(result.pastAppointments!);
+            setPastList(result.pastAppointments);
           }
           setshowSpinner(false);
         } catch (e) {
@@ -157,62 +159,66 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', error);
       });
   }, []);
-  const renderFamilyDetails = () => {
-    return (
-      <View>
-        <Text style={styles.familyText}>{strings.case_sheet.family_history}</Text>
-        <View style={styles.familyInputView}>
-          {familyValues.length == 0 ? (
-            <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
-          ) : (
-            familyValues.map((showdata: any) => {
-              return (
-                <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.symptomsText}>{showdata.relation}: </Text>
-                  <Text style={styles.symptomsText}>{showdata.description}</Text>
-                </View>
-              );
-            })
-          )}
-        </View>
-      </View>
-    );
-  };
+  // const renderFamilyDetails = () => {
+  //   return (
+  //     <View>
+  //       <Text style={styles.familyText}>{strings.case_sheet.family_history}</Text>
+  //       <View style={styles.familyInputView}>
+  //         {familyValues && familyValues.length == 0 ? (
+  //           <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
+  //         ) : (
+  //           familyValues &&
+  //           familyValues.map(
+  //             (showdata) =>
+  //               showdata && (
+  //                 <View style={{ flexDirection: 'row' }}>
+  //                   <Text style={styles.symptomsText}>{showdata.relation}: </Text>
+  //                   <Text style={styles.symptomsText}>{showdata.description}</Text>
+  //                 </View>
+  //               )
+  //           )
+  //         )}
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
-  const renderAllergiesView = () => {
-    return (
-      <View>
-        <Text style={styles.familyText}>{strings.case_sheet.allergies}</Text>
-        <View style={styles.AllergiesInputView}>
-          {allergiesData == null || [] ? (
-            <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
-          ) : (
-            <Text style={styles.symptomsText}>{allergiesData}</Text>
-          )}
-        </View>
-      </View>
-    );
-  };
-  const renderLifeStylesHabits = () => {
-    return (
-      <View>
-        <Text style={styles.familyText}>{strings.case_sheet.lyfestyle_habits}</Text>
-        <View style={styles.familyInputView}>
-          {lifeStyleData.length == 0 ? (
-            <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
-          ) : (
-            lifeStyleData.map((showdata: any) => {
-              return (
-                <View>
-                  <Text style={styles.symptomsText}>{showdata.description}</Text>
-                </View>
-              );
-            })
-          )}
-        </View>
-      </View>
-    );
-  };
+  // const renderAllergiesView = () => {
+  //   return (
+  //     <View>
+  //       <Text style={styles.familyText}>{strings.case_sheet.allergies}</Text>
+  //       <View style={styles.AllergiesInputView}>
+  //         {allergiesData == null || [] ? (
+  //           <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
+  //         ) : (
+  //           <Text style={styles.symptomsText}>{allergiesData}</Text>
+  //         )}
+  //       </View>
+  //     </View>
+  //   );
+  // };
+  // const renderLifeStylesHabits = () => {
+  //   return (
+  //     <View>
+  //       <Text style={styles.familyText}>{strings.case_sheet.lyfestyle_habits}</Text>
+  //       <View style={styles.familyInputView}>
+  //         {lifeStyleData && lifeStyleData.length == 0 ? (
+  //           <Text style={styles.symptomsText}>{strings.common.no_data}</Text>
+  //         ) : (
+  //           lifeStyleData &&
+  //           lifeStyleData.map(
+  //             (showdata) =>
+  //               showdata && (
+  //                 <View>
+  //                   <Text style={styles.symptomsText}>{showdata.description}</Text>
+  //                 </View>
+  //               )
+  //           )
+  //         )}
+  //       </View>
+  //     </View>
+  //   );
+  // };
   // const renderPatientHistoryLifestyle = () => {
   //   return (
   //     <View>
@@ -228,59 +234,61 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
   //     </View>
   //   );
   // };
-  const renderLeftTimeLineView = (
-    status: Appointments['timeslottype'],
-    showTop: boolean,
-    showBottom: boolean
-  ) => {
-    return (
-      <View style={styles.leftTimeLineContainer}>
-        <View
-          style={[
-            styles.verticalLine,
-            {
-              backgroundColor: showTop ? '#02475b' : '#ffffff',
-              //marginLeft: 15,
-            },
-          ]}
-        />
-        {getStatusCircle(status)}
-        <View
-          style={[
-            styles.verticalLine,
-            {
-              backgroundColor: showBottom ? '#02475b' : '#ffffff',
-              //marginLeft: 15,
-            },
-          ]}
-        />
-      </View>
-    );
-  };
-  const getStatusCircle = (status: Appointments['timeslottype']) =>
-    status == 'past' ? (
-      <PastAppointmentIcon />
-    ) : status == 'missed' ? (
-      <View
-        style={{
-          width: 12,
-          height: 12,
-          borderRadius: 12 / 2,
-          backgroundColor: '#02475b',
-        }}
-      ></View>
-    ) : status == 'next' ? (
-      <View
-        style={{
-          width: 12,
-          height: 12,
-          borderRadius: 12 / 2,
-          backgroundColor: '#02475b',
-        }}
-      ></View>
-    ) : (
-      <UpComingIcon />
-    );
+  // const renderLeftTimeLineView = (
+  //   status: Appointments['timeslottype'],
+  //   showTop: boolean,
+  //   showBottom: boolean
+  // ) => {
+  //   return (
+  //     <View style={styles.leftTimeLineContainer}>
+  //       <View
+  //         style={[
+  //           styles.verticalLine,
+  //           {
+  //             backgroundColor: showTop ? '#02475b' : '#ffffff',
+  //             //marginLeft: 15,
+  //           },
+  //         ]}
+  //       />
+  //       {getStatusCircle(status)}
+  //       <View
+  //         style={[
+  //           styles.verticalLine,
+  //           {
+  //             backgroundColor: showBottom ? '#02475b' : '#ffffff',
+  //             //marginLeft: 15,
+  //           },
+  //         ]}
+  //       />
+  //     </View>
+  //   );
+  // };
+
+  // const getStatusCircle = (status: Appointments['timeslottype']) =>
+  //   status == 'past' ? (
+  //     <PastAppointmentIcon />
+  //   ) : status == 'missed' ? (
+  //     <View
+  //       style={{
+  //         width: 12,
+  //         height: 12,
+  //         borderRadius: 12 / 2,
+  //         backgroundColor: '#02475b',
+  //       }}
+  //     ></View>
+  //   ) : status == 'next' ? (
+  //     <View
+  //       style={{
+  //         width: 12,
+  //         height: 12,
+  //         borderRadius: 12 / 2,
+  //         backgroundColor: '#02475b',
+  //       }}
+  //     ></View>
+  //   ) : (
+  //     <UpComingIcon />
+  //   );
+
   // const renderPastAppData = (apmnt: any) => {
   //   return (
   //     <View>
@@ -432,7 +440,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                     marginRight: 15,
                   }}
                 >
-                  {PatientInfo.firstName}
+                  {PatientInfo && PatientInfo.firstName}
                 </Text>
               </View>
               <Text
@@ -443,7 +451,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   marginBottom: 8,
                 }}
               >
-                {strings.case_sheet.uhid}: {PatientInfo.uhid}
+                {strings.case_sheet.uhid}: {PatientInfo && PatientInfo.uhid}
               </Text>
 
               {/* <View
@@ -473,9 +481,9 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 marginLeft: 20,
               }}
             >
-              {todayYear - dateOfBirth}
-              {PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
-              {PatientInfo.addressList && PatientInfo.addressList.length > 0
+              {age > -1 ? Math.round(age).toString() : '-'}
+              {PatientInfo && PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
+              {PatientInfo && PatientInfo.addressList && PatientInfo.addressList.length > 0
                 ? `, ${PatientInfo.addressList[0].city}`
                 : ''}
             </Text>
