@@ -4,7 +4,7 @@ export enum ApiConstants {
   //appointment reschedule initiated
   RESCHEDULE_INITIATION_TITLE = 'Appointment Reschedule Initiation',
   //RESCHEDULE_INITIATION_BODY = 'Hi {0}, we’re really sorry to keep you waiting. {1} will not be able to make it for this appointment. We request you to reschedule.',
-  RESCHEDULE_INITIATION_BODY = 'Hi {0}! Dr. {1} has requested you to reschedule due to an emergency. Please choose the next most suitable slot.',
+  RESCHEDULE_INITIATION_BODY = 'Hi {0}! Dr. {1} has requested you to reschedule due to an emergency. Please choose the next most suitable slot. Reschedule Now',
 
   PATIENT_NO_SHOW_RESCHEDULE_TITLE = 'Appointment Reschedule Initiation',
   PATIENT_NO_SHOW_RESCHEDULE_BODY = 'Hi {0}, as you were unable to attend your consultation appointment on time with Dr. {1}, Please reschedule it. We request you to be on time for your rescheduled consultation.',
@@ -71,15 +71,15 @@ export enum ApiConstants {
 
   PATIENT_CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   PATIENT_CANCEL_APPT_BODY = 'Hi {0}! As per your request, your appointment {1} with Dr. {2} scheduled for {3} has been cancelled.',
-
+  PATIENT_CANCEL_APPT_BODY_END = 'to book a new appointment with our top Apollo doctors.',
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
-  PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now! {1}",
+  PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now! Click here {1}",
   PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} & get your FREE Gift @Apollo Pharmacy retail store. T&C Apply',
 
   //book appointment sucessfull
   BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
-  BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
+  BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
 
   //physical book appointment sucessfull
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
