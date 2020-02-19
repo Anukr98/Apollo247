@@ -5,6 +5,7 @@ import React from 'react';
 import { MyProfile } from 'components/MyAccount/MyProfile';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { ManageProfiles } from 'components/MyAccount/ManageProfiles';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -109,11 +110,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     leftSection: {
       width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     rightSection: {
       width: 'calc(100% - 328px)',
       paddingRight: 15,
       paddingTop: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingTop: 0,
+        paddingRight: 0,
+      },
     },
   };
 });
@@ -138,6 +147,7 @@ export const MyAccount: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };
