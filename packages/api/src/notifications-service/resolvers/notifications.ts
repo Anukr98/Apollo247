@@ -478,16 +478,35 @@ export async function sendNotification(
     );
   } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
     let content = ApiConstants.BOOK_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+    let smsLink = ApiConstants.BOOK_APPOINTMENT_BODY_WITH_CLICK.replace(
+      '{0}',
+      patientDetails.firstName
+    );
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       content = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY.replace(
         '{0}',
         patientDetails.firstName
       );
+      smsLink = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY_WITH_CLICK.replace(
+        '{0}',
+        patientDetails.firstName
+      );
+
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
         const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
         const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
         if (facilityDets) {
           content = content.replace(
+            '{4}',
+            facilityDets.name +
+              ' ' +
+              facilityDets.streetLine1 +
+              ' ' +
+              facilityDets.city +
+              ' ' +
+              facilityDets.state
+          );
+          smsLink = content.replace(
             '{4}',
             facilityDets.name +
               ' ' +
@@ -503,10 +522,14 @@ export async function sendNotification(
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     content = content.replace('{3}', apptDate.toString());
-    const smsLink =
-      content + ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
+
+    smsLink = smsLink.replace('{1}', appointment.displayId.toString());
+    smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    smsLink = smsLink.replace('{3}', apptDate.toString());
+    smsLink = smsLink.replace(
+      '{5}',
+      process.env.SMS_LINK_BOOK_APOINTMENT ? process.env.SMS_LINK_BOOK_APOINTMENT : ''
+    );
 
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = content;
@@ -1232,10 +1255,8 @@ export async function sendPatientRegistrationNotification(
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
   let notificationBody: string = '';
   notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
-  notificationBody = notificationBody.replace(
-    '{1}',
-    process.env.SMS_LINK ? process.env.SMS_LINK : ''
-  );
+  let smsContent =
+    notificationBody + 'Click here ' + process.env.SMS_LINK ? process.env.SMS_LINK : '';
 
   const payload = {
     notification: {
@@ -1250,13 +1271,13 @@ export async function sendPatientRegistrationNotification(
       content: notificationBody,
     },
   };
-  let smsContent = notificationBody;
+  //let smsContent = notificationBody;
   if (registrationCode != '') {
     smsContent = ApiConstants.PATIENT_REGISTRATION_CODE_BODY.replace('{0}', patient.firstName);
     smsContent = smsContent.replace('{1}', registrationCode);
   }
   //call sendNotificationSMS function to send sms
-  await sendNotificationSMS(patient.mobileNumber, smsContent);
+  await sendNotificationSMS(patient.mobileNumber, smsContent ? smsContent : '');
   if (patientDeviceTokens.length == 0) return;
 
   //notification options
