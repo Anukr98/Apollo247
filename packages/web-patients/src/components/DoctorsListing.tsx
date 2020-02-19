@@ -348,7 +348,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
               {_map(doctorsList, (doctorDetails) => {
                 return (
                   <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
-                    <DoctorCard doctorDetails={doctorDetails} key={_uniqueId('dcListing_')} />
+                    <DoctorCard
+                      doctorDetails={doctorDetails}
+                      key={_uniqueId('dcListing_')}
+                      nextAvailability=""
+                    />
                   </Grid>
                 );
               })}

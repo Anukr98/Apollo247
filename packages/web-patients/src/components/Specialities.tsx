@@ -10,12 +10,12 @@ import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 import { Mutation } from 'react-apollo';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -106,6 +106,7 @@ export interface SpecialitiesProps {
   speciality: (specialitySelected: string) => void;
   disableFilter: (disableFilters: boolean) => void;
   subHeading: string;
+  filteredSpecialties?: any;
 }
 
 export const Specialities: React.FC<SpecialitiesProps> = (props) => {
