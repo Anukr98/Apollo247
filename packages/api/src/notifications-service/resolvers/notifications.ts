@@ -412,9 +412,9 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     const smsLink =
-      notificationBody + ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
+      notificationBody + ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
         ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
+        : '' + ;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
