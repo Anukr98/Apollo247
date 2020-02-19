@@ -106,7 +106,7 @@ const updatePatient: Resolver<
 
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
   console.log(getPatientList, 'getPatientList for count');
-  if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
+  if (updatePatient.relation == Relation.ME || getPatientList.length == 1 || regCode != '') {
     //send registration success notification here
     sendPatientRegistrationNotification(patient, profilesDb, regCode);
   }
