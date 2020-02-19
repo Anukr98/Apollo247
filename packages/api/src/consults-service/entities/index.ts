@@ -95,7 +95,7 @@ export enum DEVICETYPE {
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
-  @Column({ nullable: true })
+  @Column({ type: 'float8', nullable: true })
   actualAmount: number;
 
   @Column({ nullable: true, default: 0 })
@@ -135,7 +135,7 @@ export class Appointment extends BaseEntity {
   @Column({ generated: 'increment' })
   displayId: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'float8', nullable: true })
   discountedAmount: number;
 
   @Column({ nullable: true })

@@ -171,7 +171,7 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
             {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
               return (
                 <Grid item sm={6} key={_uniqueId('doctor_')}>
-                  <DoctorCard doctorDetails={doctorDetails} />
+                  <DoctorCard doctorDetails={doctorDetails} nextAvailability="" />
                 </Grid>
               );
             })}
@@ -183,6 +183,7 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
           speciality={speciality}
           disableFilter={disableFilter}
           subHeading="Possible Specialities"
+          // filteredSpecialties={[]}
         />
       </>
     );

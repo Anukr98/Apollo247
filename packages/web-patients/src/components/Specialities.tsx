@@ -10,12 +10,12 @@ import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 import { Mutation } from 'react-apollo';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+// import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -106,6 +106,7 @@ export interface SpecialitiesProps {
   speciality: (specialitySelected: string) => void;
   disableFilter: (disableFilters: boolean) => void;
   subHeading: string;
+  // filteredSpecialties?: any;
 }
 
 export const Specialities: React.FC<SpecialitiesProps> = (props) => {
@@ -154,6 +155,12 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
           <div className={classes.searchList}>
             <Grid container spacing={2}>
               {_map(filterSpecialites, (specialityDetails) => {
+                const specialityName = specialityDetails && specialityDetails.name;
+                const specialitySingular =
+                  specialityDetails && specialityDetails.specialistSingularTerm;
+                const specialityPlural =
+                  specialityDetails && specialityDetails.specialistPluralTerm;
+                const title = `${specialityName}_${specialitySingular}_${specialityPlural}`;
                 return (
                   <Mutation<SaveSearch, SaveSearchVariables>
                     mutation={SAVE_PATIENT_SEARCH}
@@ -164,12 +171,6 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                         patient: currentPatient ? currentPatient.id : '',
                       },
                     }}
-                    onCompleted={(data) => {
-                      // console.log(data);
-                    }}
-                    onError={(error) => {
-                      // console.log(error);
-                    }}
                     key={_uniqueId('special_')}
                   >
                     {(mutation) => (
@@ -179,7 +180,7 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                         sm={6}
                         md={4}
                         lg={3}
-                        title={specialityDetails.name || ''}
+                        title={title}
                         onClick={(e) => {
                           mutation();
                           speciality(e.currentTarget.title);

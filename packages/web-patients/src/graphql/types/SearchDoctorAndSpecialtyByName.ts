@@ -87,6 +87,16 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   doctorType: DoctorType;
 }
 
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctorsNextAvailability {
+  __typename: "DoctorSlotAvailability";
+  doctorId: string | null;
+  onlineSlot: string | null;
+  physicalSlot: string | null;
+  referenceSlot: string | null;
+  currentDateTime: any | null;
+  availableInMinutes: number | null;
+}
+
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_specialties {
   __typename: "DoctorSpecialty";
   name: string;
@@ -97,6 +107,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches {
   __typename: "PossibleSearchMatches";
   doctors: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors | null)[] | null;
+  doctorsNextAvailability: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctorsNextAvailability | null)[] | null;
   specialties: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_specialties | null)[] | null;
 }
 

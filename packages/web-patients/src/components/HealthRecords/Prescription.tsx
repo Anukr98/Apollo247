@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -6,13 +6,21 @@ import {
   ExpansionPanelSummary,
   ExpansionPanelDetails,
   Grid,
+  CircularProgress,
 } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription as PrescriptionType,
 } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
-import { MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from '../../graphql/types/globalTypes';
+import {
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+  MEDICINE_UNIT,
+} from '../../graphql/types/globalTypes';
+import { clientRoutes } from 'helpers/clientRoutes';
+import axios from 'axios';
+import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -84,12 +92,23 @@ type PrescriptionProps = {
   caseSheetList: (CaseSheetType | null)[] | null;
 };
 
+const apiDetails = {
+  url: `${
+    process.env.NODE_ENV === 'production'
+      ? process.env.PHARMACY_MED_PROD_URL
+      : process.env.PHARMACY_MED_UAT_URL
+  }/popcsrchpdp_api.php`,
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+};
+
+const cartMedicines: MedicineCartItem[] = [];
+
 export const Prescription: React.FC<PrescriptionProps> = (props) => {
   const classes = useStyles({});
   const caseSheetList = props.caseSheetList;
+  const [mutationLoading, setMutationLoading] = useState<boolean>(false);
 
   const prescriptions: PrescriptionType[] = [];
-
   caseSheetList &&
     caseSheetList.length > 0 &&
     caseSheetList.forEach(
@@ -104,6 +123,79 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
         )
     );
 
+  const { addMultipleCartItems } = useShoppingCart();
+
+  const getMedicineDetails = async (sku: string, medPrescription: PrescriptionType) => {
+    await axios
+      .post(
+        apiDetails.url,
+        { params: sku },
+        {
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
+        }
+      )
+      .then(({ data }) => {
+        if (data && data.productdp[0]) {
+          const index = cartMedicines.findIndex(
+            (item: MedicineCartItem) => item.id === data.productdp[0].id
+          );
+          const _qty =
+            medPrescription.medicineUnit == MEDICINE_UNIT.CAPSULE ||
+            medPrescription.medicineUnit == MEDICINE_UNIT.TABLET
+              ? ((medPrescription.medicineTimings || []).length || 1) *
+                parseInt(medPrescription.medicineConsumptionDurationInDays || '1') *
+                (medPrescription.medicineToBeTaken!.length || 1) *
+                parseFloat(medPrescription.medicineDosage! || '1')
+              : 1;
+          const qty = Math.ceil(_qty / parseInt(data.productdp[0].mou || '1'));
+          if (index === -1) {
+            const cartItem: MedicineCartItem = {
+              description: data.productdp[0].description,
+              id: data.productdp[0].id,
+              image: data.productdp[0].image,
+              is_in_stock: data.productdp[0].is_in_stock,
+              is_prescription_required: data.productdp[0].is_prescription_required,
+              name: data.productdp[0].name,
+              price: data.productdp[0].price,
+              sku: data.productdp[0].sku,
+              special_price: data.productdp[0].special_price,
+              small_image: data.productdp[0].small_image,
+              status: data.productdp[0].status,
+              thumbnail: data.productdp[0].thumbnail,
+              type_id: data.productdp[0].type_id,
+              mou: data.productdp[0].mou,
+              quantity: qty,
+            };
+            cartMedicines.push(cartItem);
+          }
+        }
+        return cartMedicines;
+      })
+      .catch((e) => {
+        setMutationLoading(false);
+      });
+  };
+
+  const onAddToCart = async () => {
+    setMutationLoading(true);
+    const medPrescriptionList =
+      prescriptions &&
+      prescriptions.filter((prescription) => prescription.id && prescription.id.length > 0);
+    await Promise.all(
+      medPrescriptionList.map(async (medPrescription) => {
+        medPrescription.id && (await getMedicineDetails(medPrescription.id, medPrescription));
+      })
+    );
+    if (cartMedicines && cartMedicines.length > 0 && addMultipleCartItems) {
+      addMultipleCartItems(cartMedicines);
+    }
+
+    setTimeout(() => {
+      window.location.href = clientRoutes.medicinesCart();
+    }, 5000);
+  };
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -188,10 +280,23 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
               ))
             : 'No Prescription'}
         </Grid>
-
-        <div className={classes.bottomActions}>
-          <AphButton>Order Medicines</AphButton>
-        </div>
+        {prescriptions && prescriptions.length > 0 && (
+          <div className={classes.bottomActions}>
+            <AphButton
+              onClick={() => {
+                onAddToCart();
+              }}
+            >
+              {mutationLoading ? (
+                <>
+                  <CircularProgress /> Adding to Cart
+                </>
+              ) : (
+                'Order Medicines'
+              )}
+            </AphButton>
+          </div>
+        )}
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );
