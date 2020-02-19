@@ -146,7 +146,7 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
   const renderWeekCalendar = () => {
     return (
       <WeekViewCalendar
-        ref={(ref: any) => {
+        ref={(ref) => {
           weekViewRef.current = ref;
         }}
         date={calendarDate}

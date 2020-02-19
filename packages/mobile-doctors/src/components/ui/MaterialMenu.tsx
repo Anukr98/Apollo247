@@ -40,6 +40,11 @@ export type OptionsObject = {
   value: string | number;
 };
 
+interface MenuRefType {
+  hide: () => void;
+  show: () => void;
+}
+
 export interface MaterialMenuProps {
   onPress: (arg0: OptionsObject) => void;
   options: OptionsObject[];
@@ -55,14 +60,14 @@ export interface MaterialMenuProps {
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
-  const menuRef = React.useRef<any>(null);
+  const menuRef = React.useRef<MenuRefType | null>(null);
 
   const hideMenu = () => {
-    menuRef.current.hide();
+    menuRef && menuRef.current && menuRef.current.hide();
   };
 
   const showMenu = () => {
-    menuRef.current.show();
+    menuRef && menuRef.current && menuRef.current.show();
   };
   const defOption: OptionsObject[] = props.defaultOptions ? props.defaultOptions : [];
   let optionsObject: OptionsObject[] = props.options ? props.options : [];

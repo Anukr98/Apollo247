@@ -16,8 +16,9 @@ import {
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, Platform, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   searchTestDropdown: {
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
 export interface AddTestPopupProps {
   searchTestVal?: string;
   onClose: () => void;
-  onPressDone: (searchTestVal: string, tempTestArray: string[]) => void;
+  onPressDone: (searchTestVal: string, tempTestArray: searchDiagnostic_searchDiagnostic[]) => void;
   data?:
     | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
     | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription;
@@ -84,15 +85,17 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
 
   const [isSearchTestListVisible, setisSearchTestListVisible] = useState<boolean>(false);
 
-  const [tempTestArray, settempTestArray] = useState<string[]>([]);
+  const [tempTestArray, settempTestArray] = useState<searchDiagnostic_searchDiagnostic[]>([]);
   const tabsData = [{ title: 'ADD BLOOD TEST' }, { title: 'SCANS & HEALTH CHECK' }];
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
 
   const client = useApolloClient();
 
-  const getTempTestArray = (Testitemname: any) => {
-    settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
-    console.log('temparr', '.....vlaue', tempTestArray, '//////');
+  const getTempTestArray = (Testitemname: searchDiagnostic_searchDiagnostic | null) => {
+    if (Testitemname) {
+      settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+      console.log('temparr', '.....vlaue', tempTestArray, '//////');
+    }
   };
 
   const GetSearchResultOfTests = () => {
@@ -106,19 +109,17 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
               justifyContent: 'space-between',
             }}
             containerStyle={{ height: 200 }}
-            options={istestsSearchList!.map(
-              (item: any, i) =>
+            options={istestsSearchList.map(
+              (item, i) =>
                 ({
                   optionText: item!.itemname,
                   onPress: () => {
                     Keyboard.dismiss();
-                    console.log('selval:', item!.itemname, i);
                     getTempTestArray(item);
-                    setsearchTestVal(item!.itemname);
+                    setsearchTestVal(g(item, 'itemname') || '');
                     // isSearchTestListVisible;
                     setisSearchTestListVisible(!isSearchTestListVisible);
                   },
-
                   icon: <AddPlus />,
                 } as Option)
             )}
@@ -230,26 +231,32 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                     autoCorrect={true}
                   />
                 </View>
-                <View style={{ top: -38, bottom: 0, marginLeft: -20 }}>
-                  {isSearchTestListVisible && GetSearchResultOfTests()}
-                </View>
-                <View style={{ marginRight: 20 }}>
-                  {tempTestArray &&
-                    tempTestArray!.map((item: any, index: any) => {
-                      console.log('......tempTestArray:', tempTestArray);
-                      return (
-                        <ChipIconView
-                          title={item.itemname}
-                          onPress={(e: any) => {
-                            console.log('deleted');
-                            settempTestArray(tempTestArray.slice(1));
-                            setsearchTestVal('');
-                            console.log('delete tempTestArray:', tempTestArray);
-                          }}
-                        />
-                      );
-                    })}
-                </View>
+                {loading ? (
+                  <ActivityIndicator animating={true} size="small" color="green" />
+                ) : (
+                  <>
+                    <View style={{ top: -38, bottom: 0, marginLeft: -20 }}>
+                      {isSearchTestListVisible && GetSearchResultOfTests()}
+                    </View>
+                    <View style={{ marginRight: 20 }}>
+                      {tempTestArray &&
+                        tempTestArray.map((item, index) => {
+                          console.log('......tempTestArray:', tempTestArray);
+                          return (
+                            <ChipIconView
+                              title={item.itemname || ''}
+                              onPress={(e: any) => {
+                                console.log('deleted');
+                                settempTestArray(tempTestArray.slice(1));
+                                setsearchTestVal('');
+                                console.log('delete tempTestArray:', tempTestArray);
+                              }}
+                            />
+                          );
+                        })}
+                    </View>
+                  </>
+                )}
               </View>
               <View style={{ backgroundColor: '#ffffff' }}>
                 <View style={styles.doneButtonStyle}>

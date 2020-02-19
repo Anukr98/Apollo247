@@ -42,7 +42,6 @@ import {
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { CaseSheetContext } from '@aph/mobile-doctors/src/context/CaseSheetContext';
 import {
   END_APPOINTMENT_SESSION,
   MODIFY_CASESHEET,
@@ -96,7 +95,7 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -483,8 +482,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
   const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
   const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
-
-  const { setCaseSheetEdit, caseSheetEdit } = useContext(CaseSheetContext);
+  const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
 
   const { showAphAlert, setLoading, loading } = useUIElements();
   const { doctorDetails } = useAuth();
@@ -2412,12 +2410,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         }}
         onPressDone={(searchTestVal, tempTestArray) => {
           const newData = tempTestArray.length
-            ? tempTestArray.map((ele: any) => {
-                return { itemname: ele.itemname, isSelected: true };
+            ? tempTestArray.map((ele) => {
+                return { itemname: ele.itemname || '', isSelected: true };
               })
             : [{ itemname: searchTestVal, isSelected: true }];
 
-          setTests([...tests, ...newData]);
+          setTests([...tests, ...newData.filter((i) => i.itemname !== '')]);
           setShowAddTestPopup(!ShowAddTestPopup);
         }}
       />

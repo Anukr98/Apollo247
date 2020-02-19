@@ -63,13 +63,13 @@ export const ChipIconView: React.FC<ChipIconViewProps> = (props) => {
   const {
     title,
     // isChecked,
-    onChange,
+    // onChange,
     containerStyle,
-    containerUnSelectedStyle,
+    // containerUnSelectedStyle,
     containerSelectedStyle,
-    textStyle,
+    // textStyle,
     textSelectedStyle,
-    buttonWidth,
+    // buttonWidth,
     // iconsPress,
   } = props;
   return (

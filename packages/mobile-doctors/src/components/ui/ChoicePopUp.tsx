@@ -40,14 +40,6 @@ const styles = StyleSheet.create({
     marginRight: 0,
     marginBottom: 8,
   },
-  headerIconStyle: {
-    backgroundColor: 'white',
-    height: 28,
-    width: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 14,
-  },
   mainContainer: {
     ...theme.viewStyles.cardContainer,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
