@@ -386,7 +386,7 @@ export async function sendNotification(
       notificationBody + ' ' + 'Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
         ? process.env.SMS_LINK_BOOK_APOINTMENT
         : ' ' + ApiConstants.PATIENT_CANCEL_APPT_BODY_END;
-
+    console.log('cancelApptSMS======================', cancelApptSMS);
     sendNotificationSMS(patientDetails.mobileNumber, cancelApptSMS ? cancelApptSMS : '');
   } else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
