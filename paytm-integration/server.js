@@ -9,6 +9,7 @@ const stripTags = require('striptags');
 const crypto = require('crypto');
 const azure = require('azure-sb');
 const fs = require('fs');
+const deeplink = require('node-deeplink');
 require('dotenv').config();
 
 app.use(
@@ -31,6 +32,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
+
+app.get(
+  '/deeplink',
+  deeplink({
+    fallback: 'https://apollo247.com',
+    android_package_name: 'com.apollo.patientapp',
+  })
+);
 
 app.get('/invokeNoShowReminder', (req, res) => {
   const requestJSON = {
