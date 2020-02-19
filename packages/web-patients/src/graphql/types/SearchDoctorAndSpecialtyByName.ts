@@ -12,6 +12,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   __typename: "DoctorSpecialties";
   id: string;
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility {
@@ -42,6 +43,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;
+  thumbnailUrl: string | null;
   qualification: string | null;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital[];
 }
@@ -58,14 +60,15 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_s
   __typename: "DoctorSpecialty";
   name: string;
   id: string;
-  image: string | null;
   userFriendlyNomenclature: string | null;
+  image: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty {
   __typename: "DoctorSpecialties";
   id: string;
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors {
@@ -88,6 +91,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   __typename: "DoctorSpecialty";
   name: string;
   id: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches {
@@ -99,6 +103,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_consultHours {
@@ -140,6 +145,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   id: string;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty | null;
   photoUrl: string | null;
+  thumbnailUrl: string | null;
   qualification: string | null;
   consultHours: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_consultHours | null)[] | null;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital[];

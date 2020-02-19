@@ -45,7 +45,10 @@ const getDoctorPhysicalAvailableSlots: Resolver<
 > = async (parent, { DoctorPhysicalAvailabilityInput }, { doctorsDb, consultsDb }) => {
   const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
   let previousDate: Date = DoctorPhysicalAvailabilityInput.availableDate;
+  let prevDaySlots = 0;
   previousDate = addDays(DoctorPhysicalAvailabilityInput.availableDate, -1);
+  const checkStart = `${previousDate.toDateString()} 18:30:00`;
+  const checkEnd = `${DoctorPhysicalAvailabilityInput.availableDate.toDateString()} 18:30:00`;
   let weekDay = format(previousDate, 'EEEE').toUpperCase();
   let timeSlots = await consultHourRep.getConsultHours(
     DoctorPhysicalAvailabilityInput.doctorId,
@@ -56,6 +59,9 @@ const getDoctorPhysicalAvailableSlots: Resolver<
     DoctorPhysicalAvailabilityInput.doctorId,
     weekDay
   );
+  if (timeSlots.length > 0) {
+    prevDaySlots = 1;
+  }
   timeSlots = timeSlots.concat(timeSlotsNext);
   let availableSlots: string[] = [];
   let availableSlotsReturn: string[] = [];
@@ -84,6 +90,9 @@ const getDoctorPhysicalAvailableSlots: Resolver<
       console.log(slotsCount, 'slot count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+      if (prevDaySlots == 0) {
+        startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+      }
       if (rowCount > 0) {
         const nextDate = addDays(previousDate, 1);
         const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
@@ -109,14 +118,19 @@ const getDoctorPhysicalAvailableSlots: Resolver<
           const endStr = ':00.000Z';
           const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           const timeWithBuffer = addMinutes(new Date(), timeSlot.consultBuffer);
-          console.log(
-            new Date(generatedSlot),
-            new Date(),
-            new Date(generatedSlot) > timeWithBuffer,
-            ' dates comparision'
-          );
+          // console.log(
+          //   new Date(generatedSlot),
+          //   new Date(),
+          //   new Date(generatedSlot) > timeWithBuffer,
+          //   ' dates comparision'
+          // );
           if (new Date(generatedSlot) > timeWithBuffer) {
-            availableSlots.push(generatedSlot);
+            if (
+              new Date(generatedSlot) >= new Date(checkStart) &&
+              new Date(generatedSlot) < new Date(checkEnd)
+            ) {
+              availableSlots.push(generatedSlot);
+            }
           }
           return generatedSlot;
         });

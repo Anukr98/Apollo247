@@ -271,7 +271,12 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     client
       .mutate<UpdateDoctorFavouriteTest, UpdateDoctorFavouriteTestVariables>({
         mutation: UPDATE_DOCTOR_FAVOURITE_TEST,
-        variables: { id: updateTestId, itemname: AddingTest ? AddingTest : updateTestName },
+        variables: {
+          id: updateTestId,
+          itemname: AddingTest
+            ? AddingTest.replace(/\s+/g, ' ')
+            : updateTestName.replace(/\s+/g, ' '),
+        },
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
@@ -442,7 +447,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       client
         .mutate<AddDoctorFavouriteAdvice, AddDoctorFavouriteAdviceVariables>({
           mutation: ADD_DOCTOR_FAVOURITE_ADVICE,
-          variables: { instruction: favAdvice },
+          variables: { instruction: favAdvice.replace(/\s+/g, ' ') },
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
@@ -473,7 +478,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       client
         .mutate<UpdateDoctorFavouriteAdvice, UpdateDoctorFavouriteAdviceVariables>({
           mutation: UPDATE_DOCTOR_FAVOURITE_ADVICE,
-          variables: { id: id, instruction: updatedAdvice },
+          variables: { id: id, instruction: updatedAdvice.replace(/\s+/g, ' ') },
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
@@ -592,7 +597,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
           mutation: ADD_DOCTOR_FAVOURITE_TEST,
           variables: {
-            itemname: AddingTest ? AddingTest : searchTestVal,
+            itemname: AddingTest
+              ? AddingTest.replace(/\s+/g, ' ')
+              : searchTestVal.replace(/\s+/g, ' '),
           },
         })
         .then((_data) => {

@@ -250,6 +250,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }
 
   let doctorsList = [];
+  const specialistPluralTerm = data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm;
 
   const consultErrorMessage = () => {
     const selectedConsultName =
@@ -258,7 +259,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       selectedFilterOption === 'online' ? 'Clinic Visit' : ' Online Consultation';
     const noConsultFoundError = `There is no ${specialityName} available for ${selectedConsultName}. Please try
     ${suggestedConsultName}`;
-    const noDoctorFoundError = `There is no ${specialityName} available to match your filters. Please try again with
+    const noDoctorFoundError = `There is no ${specialistPluralTerm} available to match your filters. Please try again with
     different filters.`;
 
     return (
@@ -303,14 +304,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
-          {doctorsList.length > 0 ? (
-            <div className={classes.headerTitle}>
-              {doctorsList.length > 0 ? <h2 className={classes.title}>Okay!</h2> : ''}
-              Here are our best {specialityName}
-            </div>
-          ) : (
-            ''
-          )}
+          <div className={classes.headerTitle}>
+            <h2 className={classes.title}>Okay!</h2>
+            Here are our best {specialistPluralTerm}
+          </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
               return (

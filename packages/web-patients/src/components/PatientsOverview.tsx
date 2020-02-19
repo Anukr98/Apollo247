@@ -1,6 +1,16 @@
 import React from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_PATIENT_FUTURE_APPOINTMENT_COUNT } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import {
+  GetPatientFutureAppointmentCountVariables,
+  GetPatientFutureAppointmentCount,
+} from 'graphql/types/GetPatientFutureAppointmentCount';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -44,27 +54,50 @@ const useStyles = makeStyles((theme: Theme) => {
 export const PatientsOverview: React.FC = () => {
   const classes = useStyles();
 
+  const { currentPatient } = useAllCurrentPatients();
+
+  const { data, loading, error } = useQueryWithSkip<
+    GetPatientFutureAppointmentCount,
+    GetPatientFutureAppointmentCountVariables
+  >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT, {
+    variables: { patientId: currentPatient ? currentPatient.id : '' },
+    fetchPolicy: 'no-cache',
+  });
+
+  const activeAppointments =
+    data &&
+    data.getPatientFutureAppointmentCount &&
+    data.getPatientFutureAppointmentCount.consultsCount
+      ? data.getPatientFutureAppointmentCount.consultsCount
+      : 0;
+
   return (
     <div className={classes.root}>
       <Grid spacing={2} container>
         <Grid item xs={12} sm={6}>
-          <div className={classes.card}>
-            <div className={classes.totalConsults}>3</div>
-            <span>Upcoming Appointments</span>
-            <span className={classes.rightArrow}>
-              <img src={require('images/ic_arrow_right.svg')} />
-            </span>
-          </div>
+          <Link to={clientRoutes.appointments()}>
+            <div className={classes.card}>
+              <div className={classes.totalConsults}>
+                {loading ? <CircularProgress size={10} /> : activeAppointments}
+              </div>
+              <span>Upcoming Appointments</span>
+              <span className={classes.rightArrow}>
+                <img src={require('images/ic_arrow_right.svg')} />
+              </span>
+            </div>
+          </Link>
         </Grid>
-        <Grid item xs={12} sm={6}>
+        {/* <Grid item xs={12} sm={6}>
           <div className={classes.card}>
-            <div className={classes.totalConsults}>6</div>
+            <div className={classes.totalConsults}>
+              {loading ? <CircularProgress size={10} /> : activeAppointments}
+            </div>
             <span>Active Orders</span>
             <span className={classes.rightArrow}>
               <img src={require('images/ic_arrow_right.svg')} />
             </span>
           </div>
-        </Grid>
+        </Grid> */}
       </Grid>
     </div>
   );

@@ -124,6 +124,10 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
           }
         }
       }
+      specialty {
+        specialistSingularTerm
+        specialistPluralTerm
+      }
     }
   }
 `;
@@ -138,9 +142,11 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         specialty {
           id
           name
+          userFriendlyNomenclature
         }
         experience
         photoUrl
+        thumbnailUrl
         qualification
         doctorHospital {
           facility {
@@ -167,6 +173,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
       specialties {
         name
         id
+        userFriendlyNomenclature
       }
       possibleMatches {
         doctors {
@@ -178,6 +185,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           specialty {
             id
             name
+            userFriendlyNomenclature
           }
           specialization
           qualification
@@ -189,6 +197,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         specialties {
           name
           id
+          userFriendlyNomenclature
         }
       }
       otherDoctors {
@@ -198,8 +207,10 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         id
         specialty {
           name
+          userFriendlyNomenclature
         }
         photoUrl
+        thumbnailUrl
         qualification
         consultHours {
           consultMode

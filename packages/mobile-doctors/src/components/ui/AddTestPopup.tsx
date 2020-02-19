@@ -13,17 +13,20 @@ import {
   searchDiagnosticVariables,
   searchDiagnostic_searchDiagnostic,
 } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Keyboard, Platform, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { ActivityIndicator, Alert, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
 
 const styles = StyleSheet.create({
   searchTestDropdown: {
     margin: 0,
     overflow: 'hidden',
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
     ...Platform.select({
       ios: {
         zIndex: 1,
@@ -38,13 +41,13 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     borderBottomColor: '#30c1a3',
     borderBottomWidth: 1,
-    color: '#01475b',
+    color: theme.colors.SHARP_BLUE,
     marginLeft: 0,
     marginRight: 0,
     marginBottom: 10,
   },
   tabTitle: {
-    color: '#01475b',
+    color: theme.colors.SHARP_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(13),
     textAlign: 'center',
   },
@@ -93,9 +96,25 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
 
   const getTempTestArray = (Testitemname: searchDiagnostic_searchDiagnostic | null) => {
     if (Testitemname) {
-      settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
-      console.log('temparr', '.....vlaue', tempTestArray, '//////');
+      if (tempTestArray.length > 0) {
+        console.log('length is greater than  zero');
+        for (var i = 0; i < tempTestArray.length; i++) {
+          console.log('for loop');
+          if (tempTestArray[i] === Testitemname) {
+            Alert.alert(strings.common.alert, 'Test existed in the list.');
+            console.log('same test name');
+          } else {
+            console.log(' test name not same');
+            settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+          }
+        }
+      } else {
+        console.log('length is zero');
+        settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+      }
     }
+    // settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+    console.log('temparr', '.....vlaue', tempTestArray, '//////');
   };
 
   const GetSearchResultOfTests = () => {
