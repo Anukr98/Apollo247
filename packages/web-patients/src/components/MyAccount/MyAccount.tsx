@@ -2,10 +2,10 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { MyProfile } from 'components/MyAccount/MyProfile';
-import { AddressBook } from 'components/MyAccount/AddressBook';
 import { useCurrentPatient } from 'hooks/authHooks';
+import { ManageProfiles } from 'components/MyAccount/ManageProfiles';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,13 +110,19 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     leftSection: {
       width: 328,
-      borderRadius: 5,
-      backgroundColor: theme.palette.common.white,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     rightSection: {
       width: 'calc(100% - 328px)',
-      paddingLeft: 10,
-      paddingRight: 5,
+      paddingRight: 15,
+      paddingTop: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingTop: 0,
+        paddingRight: 0,
+      },
     },
   };
 });
@@ -131,25 +137,17 @@ export const MyAccount: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.myAccountPage}>
-          <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.welcome())}>
-              <div className={classes.backArrow}>
-                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
-            </a>
-            My Account
-          </div>
           <div className={classes.myAccountSection}>
             <div className={classes.leftSection}>
               <MyProfile />
             </div>
             <div className={classes.rightSection}>
-              <AddressBook patientId={patient.id} />
+              <ManageProfiles />
             </div>
           </div>
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };
