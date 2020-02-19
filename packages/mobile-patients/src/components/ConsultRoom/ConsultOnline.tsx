@@ -412,7 +412,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               CommonLogEvent(AppRoutes.DoctorDetails, 'Schedule For Later clicked');
               fetchSlots();
               setselectedCTA(onlineCTA[1]);
-              props.setisConsultOnline(false);
+              // props.setisConsultOnline(false);
               props.scrollToSlots && props.scrollToSlots();
               // props.setselectedTimeSlot('');
             }}
