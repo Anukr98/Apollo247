@@ -576,16 +576,21 @@ export class AppointmentRepository extends Repository<Appointment> {
     let prevDaySlots = 0;
     previousDate = addDays(appointmentDate, -1);
     const checkStart = `${previousDate.toDateString()} 18:30:00`;
-    const checkEnd = `${appointmentDate.toDateString()} 18:30:00`;
+
     //console.log(checkStart, checkEnd, 'check start end');
     let weekDay = format(previousDate, 'EEEE').toUpperCase();
     let timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
     weekDay = format(appointmentDate, 'EEEE').toUpperCase();
-    const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+    let timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+    timeSlots = timeSlots.concat(timeSlotsNext);
+    weekDay = format(addDays(appointmentDate, 1), 'EEEE').toUpperCase();
+    timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+    timeSlots = timeSlots.concat(timeSlotsNext);
     if (timeSlots.length > 0) {
       prevDaySlots = 1;
     }
-    timeSlots = timeSlots.concat(timeSlotsNext);
+    const checkEnd = `${addDays(appointmentDate, 1).toDateString()} 18:30:00`;
+    //timeSlots = timeSlots.concat(timeSlotsNext);
     enum CONSULTFLAG {
       OUTOFCONSULTHOURS = 'OUTOFCONSULTHOURS',
       OUTOFBUFFERTIME = 'OUTOFBUFFERTIME',
