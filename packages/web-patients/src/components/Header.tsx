@@ -140,9 +140,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { signOut, isSigningIn, isSignedIn } = useAuth();
+  const { isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
@@ -166,7 +165,9 @@ export const Header: React.FC = (props) => {
           )}
           <div
             className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
-              currentPath === clientRoutes.myAccount() ? classes.userAccountActive : ''
+              currentPath === clientRoutes.myAccount() || currentPath === clientRoutes.addressBook()
+                ? classes.userAccountActive
+                : ''
             }`}
           >
             {isSignedIn ? (
@@ -200,21 +201,7 @@ export const Header: React.FC = (props) => {
               </ProtectedWithLoginPopup>
             )}
             {isSignedIn ? (
-              <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-                <DialogContent>
-                  <div className={classes.logoutModal}>
-                    <h3>Are you sure. You want to logout from Apollo 24x7 ?</h3>
-                    <div className={classes.bottomActions}>
-                      <AphButton color="secondary" onClick={() => setIsDialogOpen(false)} autoFocus>
-                        Cancel
-                      </AphButton>
-                      <AphButton color="primary" onClick={() => signOut()}>
-                        Sign out
-                      </AphButton>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              ''
             ) : (
               <Popover
                 open={isLoginPopupVisible}
