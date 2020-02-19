@@ -86,9 +86,9 @@ const updatePatient: Resolver<
   const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
   if (updatePatient) {
-    // if (updatePatient.uhid == '' || updatePatient.uhid == null) {
-    //   await patientRepo.createNewUhid(updatePatient.id);
-    // }
+    if (updatePatient.uhid == '' || updatePatient.uhid == null) {
+      await patientRepo.createNewUhid(updatePatient.id);
+    }
   }
   const patient = await patientRepo.findById(updatePatient.id);
   if (!patient || patient == null) {
@@ -104,8 +104,11 @@ const updatePatient: Resolver<
     }
   }
 
-  //send registration success notification here
-  sendPatientRegistrationNotification(patient, profilesDb, regCode);
+  const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
+  if (getPatientList.length == 1) {
+    //send registration success notification here
+    sendPatientRegistrationNotification(patient, profilesDb, regCode);
+  }
 
   return { patient };
 };
