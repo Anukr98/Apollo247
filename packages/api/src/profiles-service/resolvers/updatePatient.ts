@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Patient } from 'profiles-service/entities';
+import { Patient, Relation } from 'profiles-service/entities';
 import { BaseEntity } from 'typeorm';
 import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -106,7 +106,7 @@ const updatePatient: Resolver<
 
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
   console.log(getPatientList, 'getPatientList for count');
-  if (getPatientList.length <= 1) {
+  if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
     //send registration success notification here
     sendPatientRegistrationNotification(patient, profilesDb, regCode);
   }
