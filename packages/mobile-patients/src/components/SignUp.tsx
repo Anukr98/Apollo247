@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
   buttonViewStyle: {
     width: '30%',
     backgroundColor: 'white',
+    marginRight: 20,
   },
   selectedButtonViewStyle: {
     backgroundColor: theme.colors.APP_GREEN,
@@ -319,7 +320,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           <TextInputComponent label={'Gender'} noInput={true} />
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10 }}>
             {GenderOptions.map((option) => (
               <Button
                 key={option.name}
