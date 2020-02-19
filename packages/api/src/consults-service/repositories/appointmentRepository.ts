@@ -571,26 +571,30 @@ export class AppointmentRepository extends Repository<Appointment> {
     doctorId: string,
     doctorsDb: Connection
   ) {
+    const checkActStart = `${appointmentDate.toDateString()} 18:30:00`;
+    const checkActEnd = `${appointmentDate.toDateString()} 23:59:00`;
+    let actualDate = new Date(appointmentDate.toDateString());
+    if (appointmentDate >= new Date(checkActStart) && appointmentDate <= new Date(checkActEnd)) {
+      actualDate = addDays(actualDate, 1);
+    }
+
     const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     let previousDate: Date = appointmentDate;
     let prevDaySlots = 0;
-    previousDate = addDays(appointmentDate, -1);
+    previousDate = addDays(actualDate, -1);
     const checkStart = `${previousDate.toDateString()} 18:30:00`;
-
-    //console.log(checkStart, checkEnd, 'check start end');
     let weekDay = format(previousDate, 'EEEE').toUpperCase();
     let timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
-    weekDay = format(appointmentDate, 'EEEE').toUpperCase();
-    let timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+
+    weekDay = format(actualDate, 'EEEE').toUpperCase();
+    const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
     timeSlots = timeSlots.concat(timeSlotsNext);
-    weekDay = format(addDays(appointmentDate, 1), 'EEEE').toUpperCase();
-    timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
-    timeSlots = timeSlots.concat(timeSlotsNext);
+
     if (timeSlots.length > 0) {
       prevDaySlots = 1;
     }
-    const checkEnd = `${addDays(appointmentDate, 1).toDateString()} 18:30:00`;
-    //timeSlots = timeSlots.concat(timeSlotsNext);
+    const checkEnd = `${actualDate.toDateString()} 18:30:00`;
+
     enum CONSULTFLAG {
       OUTOFCONSULTHOURS = 'OUTOFCONSULTHOURS',
       OUTOFBUFFERTIME = 'OUTOFBUFFERTIME',
@@ -655,7 +659,9 @@ export class AppointmentRepository extends Repository<Appointment> {
                 new Date(generatedSlot) >= new Date(checkStart) &&
                 new Date(generatedSlot) < new Date(checkEnd)
               ) {
-                availableSlots.push(generatedSlot);
+                if (!availableSlots.includes(generatedSlot)) {
+                  availableSlots.push(generatedSlot);
+                }
               }
             }
             return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
@@ -674,7 +680,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCMinutes()
         .toString()
         .padStart(2, '0')}:00.000Z`;
+      console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
+      console.log(checkStart, checkEnd, 'check start end');
       if (availableSlots.indexOf(sl) >= 0) {
         consultFlag = CONSULTFLAG.INCONSULTHOURS;
       }
@@ -893,7 +901,9 @@ export class AppointmentRepository extends Repository<Appointment> {
                 new Date(generatedSlot) >= new Date(checkStart) &&
                 new Date(generatedSlot) < new Date(checkEnd)
               ) {
-                availableSlots.push(generatedSlot);
+                if (!availableSlots.includes(generatedSlot)) {
+                  availableSlots.push(generatedSlot);
+                }
               }
             }
             return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
