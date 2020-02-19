@@ -19,6 +19,17 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.up('sm')]: {
+        marginBottom: 0,
+        borderRadius: 0,
+        boxShadow: 'none',
+        paddingLeft: 0,
+        paddingRight: 0,
+        borderBottom: '0.5px solid rgba(2,71,91,0.2)',
+      },
+      '&:last-child': {
+        borderBottom: 'none',
+      },
     },
     toggleButton: {
       marginLeft: 'auto',
