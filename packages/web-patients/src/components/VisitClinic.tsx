@@ -49,6 +49,9 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 0,
       },
     },
+    infoNotes: {
+      minHeight: 'auto',
+    },
     actions: {
       paddingTop: 5,
       paddingBottom: 4,
@@ -364,6 +367,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
         <div className={classes.customScrollBar}>
+          <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
+            Please note that after booking, you will need to download the Apollo 247 app to continue
+            with your consultation.
+          </p>
           <Grid container spacing={2}>
             <Grid item sm={6} xs={12}>
               <div className={classes.consultGroup}>
@@ -437,6 +444,15 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               </div>
             </Grid>
           </Grid>
+          <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
+            I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
+            the same. I am voluntarily availing of the services provided on this platform. I am
+            fully aware that I will not be undergoing a physical examination by a physician prior to
+            a physician recommending medical tests and/or treatment and/or the prescribing of OTC
+            drugs. I am also aware that the consultation on 24x7 Application does not preclude my
+            rights to visit a physician and opt for a physical examination at any point in time and
+            I am free at any time during the consultation to request for the same.
+          </p>
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
