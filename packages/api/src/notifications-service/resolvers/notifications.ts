@@ -909,8 +909,6 @@ export async function sendReminderNotification(
     };
   }
 
-  //send SMS notification
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -980,7 +978,11 @@ export async function sendReminderNotification(
     });
 
   console.log(notificationResponse, 'notificationResponse');
+  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15)
+    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
 
+  //send SMS notification
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   return notificationResponse;
 }
 
@@ -1221,7 +1223,8 @@ export async function sendPatientRegistrationNotification(
   };
   let smsContent = notificationBody;
   if (registrationCode != '') {
-    smsContent = smsContent + ApiConstants.PATIENT_REGISTRATION_CODE_BODY + registrationCode;
+    smsContent = ApiConstants.PATIENT_REGISTRATION_CODE_BODY.replace('{0}', patient.firstName);
+    smsContent = smsContent.replace('{1}', registrationCode);
   }
   //call sendNotificationSMS function to send sms
   await sendNotificationSMS(patient.mobileNumber, smsContent);

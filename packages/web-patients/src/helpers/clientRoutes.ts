@@ -21,7 +21,7 @@ export const clientRoutes = {
   medicinesCart: () => '/medicines-cart',
   testsCart: () => '/tests-cart',
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
-  myAccount: () => '/profile',
+  myAccount: () => '/my-account',
   notificationSettings: () => '/settings',
   addRecords: () => '/add-records',
   yourOrders: () => '/orders',
@@ -30,6 +30,7 @@ export const clientRoutes = {
   searchByMedicine: (searchMedicineType: string, searchText: string) =>
     `/${searchMedicineType}/${searchText}`,
   medicineDetails: (sku: string) => `/medicine-details/${sku}`,
+  addressBook: () => '/address-book',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

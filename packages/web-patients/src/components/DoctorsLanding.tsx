@@ -19,6 +19,11 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { Link } from 'react-router-dom';
 import { AphButton } from '@aph/web-ui-components';
+import {
+  SearchDoctorAndSpecialtyByNameVariables,
+  SearchDoctorAndSpecialtyByName,
+} from 'graphql/types/SearchDoctorAndSpecialtyByName';
+import _find from 'lodash/find';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -183,19 +188,23 @@ export const DoctorsLanding: React.FC = (props) => {
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isLargeScreen = useMediaQuery('(min-width:991px)');
 
-  let showError = false,
-    matchingDoctorsFound = 0,
-    matchingSpecialitesFound = matchingSpecialities;
+  let showError = false;
+  //   matchingDoctorsFound = 0,
+  //   matchingSpecialitesFound = matchingSpecialities;
 
-  let derivedSpecialites = [];
-  let derivedSpecialityId = '';
-  let otherDoctorsFound = 0;
+  // let derivedSpecialites = [];
+  // let derivedSpecialityId = '';
+  // let otherDoctorsFound = 0;
+  // let doctorsNextAvailability = [];
+  // let otherDoctorsNextAvailability = [];
+  // let specialitiesList = [];
 
   useEffect(() => {
     if (specialitySelected.length > 0) {
+      const specialityName = specialitySelected.split('_');
       setFilterOptions({
-        searchKeyword: specialitySelected,
-        specialtyName: specialitySelected, // this is used to disable filter if specialty selected and changed.
+        searchKeyword: specialityName[0],
+        specialtyName: specialityName[0], // this is used to disable filter if specialty selected and changed.
         cityName: [],
         experience: [],
         availability: [],
@@ -208,7 +217,10 @@ export const DoctorsLanding: React.FC = (props) => {
     }
   }, [specialitySelected]);
 
-  const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
+  const { data, loading } = useQueryWithSkip<
+    SearchDoctorAndSpecialtyByName,
+    SearchDoctorAndSpecialtyByNameVariables
+  >(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
     variables: {
       searchText: filterOptions.searchKeyword,
       patientId: currentPatient ? currentPatient.id : '',
@@ -216,15 +228,86 @@ export const DoctorsLanding: React.FC = (props) => {
     fetchPolicy: 'no-cache',
   });
 
+  const specialityNames = specialitySelected.length > 0 ? specialitySelected.split('_') : '';
+
+  // console.log(specialityNames, '----------------------');
+
+  /*
   if (data && data.SearchDoctorAndSpecialtyByName) {
-    matchingDoctorsFound = data.SearchDoctorAndSpecialtyByName.doctors.length;
+    // matchingDoctorsFound = data.SearchDoctorAndSpecialtyByName.doctors.length;
     otherDoctorsFound = data.SearchDoctorAndSpecialtyByName.otherDoctors
       ? data.SearchDoctorAndSpecialtyByName.otherDoctors.length
       : 0;
     matchingSpecialitesFound = data.SearchDoctorAndSpecialtyByName.specialties.length;
     derivedSpecialites = data.SearchDoctorAndSpecialtyByName.specialties;
     derivedSpecialityId = derivedSpecialites.length > 0 ? derivedSpecialites[0].id : '';
+    doctorsNextAvailability = data.SearchDoctorAndSpecialtyByName.doctorsNextAvailability;
+    otherDoctorsNextAvailability = data.SearchDoctorAndSpecialtyByName.otherDoctorsNextAvailability;
+  }*/
+
+  const matchingDoctorsFound =
+    data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.doctors
+      ? data.SearchDoctorAndSpecialtyByName.doctors.length
+      : 0;
+  const matchingDoctorsList =
+    data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.doctors
+      ? data.SearchDoctorAndSpecialtyByName.doctors
+      : [];
+  const otherDoctorsFound =
+    data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.otherDoctors
+      ? data.SearchDoctorAndSpecialtyByName.otherDoctors.length
+      : 0;
+  const matchingSpecialitesFound =
+    data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.specialties
+      ? data.SearchDoctorAndSpecialtyByName.specialties.length
+      : 0;
+  const derivedSpecialites =
+    data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.specialties
+      ? data.SearchDoctorAndSpecialtyByName.specialties
+      : [];
+  let derivedSpecialityId = '';
+  if (derivedSpecialites && derivedSpecialites.length > 0) {
+    const derivedSpeciality = derivedSpecialites[0];
+    derivedSpecialityId = derivedSpeciality && derivedSpeciality.id ? derivedSpeciality.id : '';
   }
+  // console.log(derivedSpecialites, 'dervied specialities.....');
+  // const derivedSpecialityId = '';
+  // derivedSpecialites.length > 0 && derivedSpecialites[0] && derivedSpecialites[0].id
+  //   ? derivedSpecialites[0].id
+  //   : '';
+  const doctorsNextAvailability =
+    data &&
+    data.SearchDoctorAndSpecialtyByName &&
+    data.SearchDoctorAndSpecialtyByName.doctorsNextAvailability
+      ? data.SearchDoctorAndSpecialtyByName.doctorsNextAvailability
+      : [];
+  const otherDoctors =
+    data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.otherDoctors
+      ? data.SearchDoctorAndSpecialtyByName.otherDoctors
+      : [];
+  const otherDoctorsNextAvailability =
+    data &&
+    data.SearchDoctorAndSpecialtyByName &&
+    data.SearchDoctorAndSpecialtyByName.otherDoctorsNextAvailability
+      ? data.SearchDoctorAndSpecialtyByName.otherDoctorsNextAvailability
+      : [];
+  const possibleMatches =
+    data &&
+    data.SearchDoctorAndSpecialtyByName &&
+    data.SearchDoctorAndSpecialtyByName.possibleMatches &&
+    data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+      ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+      : [];
+  const possibleMatchesNextAvailability =
+    data &&
+    data.SearchDoctorAndSpecialtyByName &&
+    data.SearchDoctorAndSpecialtyByName.possibleMatches &&
+    data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors &&
+    data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
+      ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
+      : [];
+
+  // console.log(filteredSpecialties);
 
   if (
     !loading &&
@@ -282,8 +365,18 @@ export const DoctorsLanding: React.FC = (props) => {
                 specialitySelected.length > 0 ? (
                   <DoctorsListing
                     filter={filterOptions}
-                    specialityName={specialitySelected}
+                    specialityName={specialityNames[0]}
                     specialityId={derivedSpecialityId}
+                    specialitySingular={
+                      specialityNames[1] && specialityNames[1] !== ''
+                        ? specialityNames[1]
+                        : specialityNames[0]
+                    }
+                    specialityPlural={
+                      specialityNames[2] && specialityNames[2] !== ''
+                        ? specialityNames[2]
+                        : specialityNames[0]
+                    }
                   />
                 ) : (
                   <Scrollbars
@@ -328,23 +421,39 @@ export const DoctorsLanding: React.FC = (props) => {
                               </div>
                               <div className={classes.searchList}>
                                 <Grid spacing={2} container>
-                                  {_map(
-                                    data.SearchDoctorAndSpecialtyByName.doctors,
-                                    (doctorDetails) => {
-                                      return (
-                                        <Grid
-                                          item
-                                          xs={12}
-                                          sm={12}
-                                          md={12}
-                                          lg={6}
-                                          key={_uniqueId('doctor_')}
-                                        >
-                                          <DoctorCard doctorDetails={doctorDetails} />
-                                        </Grid>
-                                      );
-                                    }
-                                  )}
+                                  {_map(matchingDoctorsList, (doctorDetails) => {
+                                    const nextAvailability = _find(
+                                      doctorsNextAvailability,
+                                      (availability) => {
+                                        const availabilityDoctorId =
+                                          availability && availability.doctorId
+                                            ? availability.doctorId
+                                            : '';
+                                        const currentDoctorId =
+                                          doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                                        return availabilityDoctorId === currentDoctorId;
+                                      }
+                                    );
+                                    const nextAvailabilityTime =
+                                      nextAvailability && nextAvailability.onlineSlot
+                                        ? nextAvailability.onlineSlot
+                                        : null;
+                                    return (
+                                      <Grid
+                                        item
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        key={_uniqueId('doctor_')}
+                                      >
+                                        <DoctorCard
+                                          doctorDetails={doctorDetails}
+                                          nextAvailability={nextAvailabilityTime}
+                                        />
+                                      </Grid>
+                                    );
+                                  })}
                                 </Grid>
                               </div>
                             </>
@@ -363,23 +472,39 @@ export const DoctorsLanding: React.FC = (props) => {
                               </div>
                               <div className={classes.searchList}>
                                 <Grid spacing={2} container>
-                                  {_map(
-                                    data.SearchDoctorAndSpecialtyByName.otherDoctors,
-                                    (doctorDetails) => {
-                                      return (
-                                        <Grid
-                                          item
-                                          xs={12}
-                                          sm={12}
-                                          md={12}
-                                          lg={6}
-                                          key={_uniqueId('doctor_')}
-                                        >
-                                          <DoctorCard doctorDetails={doctorDetails} />
-                                        </Grid>
-                                      );
-                                    }
-                                  )}
+                                  {_map(otherDoctors, (doctorDetails) => {
+                                    const nextAvailability = _find(
+                                      otherDoctorsNextAvailability,
+                                      (availability) => {
+                                        const availabilityDoctorId =
+                                          availability && availability.doctorId
+                                            ? availability.doctorId
+                                            : '';
+                                        const currentDoctorId =
+                                          doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                                        return availabilityDoctorId === currentDoctorId;
+                                      }
+                                    );
+                                    const nextAvailabilityTime =
+                                      nextAvailability && nextAvailability.onlineSlot
+                                        ? nextAvailability.onlineSlot
+                                        : null;
+                                    return (
+                                      <Grid
+                                        item
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        key={_uniqueId('doctor_')}
+                                      >
+                                        <DoctorCard
+                                          doctorDetails={doctorDetails}
+                                          nextAvailability={nextAvailabilityTime}
+                                        />
+                                      </Grid>
+                                    );
+                                  })}
                                 </Grid>
                               </div>
                             </>
@@ -400,45 +525,57 @@ export const DoctorsLanding: React.FC = (props) => {
                                   ? 'Matching Specialities'
                                   : 'Specialities'
                               }
+                              // filteredSpecialties={derivedSpecialites}
                             />
                           )}
                         </>
                       ) : (
                         <>
-                          {data &&
-                          data.SearchDoctorAndSpecialtyByName &&
-                          data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors ? (
+                          {possibleMatches.length > 0 ? (
                             <>
                               <div className={classes.sectionHeader}>
                                 <span>Possible Doctors</span>
                                 <span className={classes.count}>
-                                  {data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
-                                    .length > 0
-                                    ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.length
-                                        .toString()
-                                        .padStart(2, '0')
+                                  {possibleMatches.length > 0
+                                    ? possibleMatches.length.toString().padStart(2, '0')
                                     : '0'}
                                 </span>
                               </div>
                               <div className={classes.searchList}>
                                 <Grid spacing={2} container>
-                                  {_map(
-                                    data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors,
-                                    (doctorDetails) => {
-                                      return (
-                                        <Grid
-                                          item
-                                          xs={12}
-                                          sm={12}
-                                          md={12}
-                                          lg={6}
-                                          key={_uniqueId('doctor_')}
-                                        >
-                                          <DoctorCard doctorDetails={doctorDetails} />
-                                        </Grid>
-                                      );
-                                    }
-                                  )}
+                                  {_map(possibleMatches, (doctorDetails) => {
+                                    const nextAvailability = _find(
+                                      possibleMatchesNextAvailability,
+                                      (availability) => {
+                                        const availabilityDoctorId =
+                                          availability && availability.doctorId
+                                            ? availability.doctorId
+                                            : '';
+                                        const currentDoctorId =
+                                          doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                                        return availabilityDoctorId === currentDoctorId;
+                                      }
+                                    );
+                                    const nextAvailabilityTime =
+                                      nextAvailability && nextAvailability.onlineSlot
+                                        ? nextAvailability.onlineSlot
+                                        : null;
+                                    return (
+                                      <Grid
+                                        item
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        key={_uniqueId('doctor_')}
+                                      >
+                                        <DoctorCard
+                                          doctorDetails={doctorDetails}
+                                          nextAvailability={nextAvailabilityTime}
+                                        />
+                                      </Grid>
+                                    );
+                                  })}
                                 </Grid>
                               </div>
                             </>
@@ -446,6 +583,7 @@ export const DoctorsLanding: React.FC = (props) => {
 
                           {data &&
                           data.SearchDoctorAndSpecialtyByName &&
+                          data.SearchDoctorAndSpecialtyByName.possibleMatches &&
                           data.SearchDoctorAndSpecialtyByName.possibleMatches.specialties ? (
                             <>
                               <div className={classes.sectionHeader}>
@@ -471,6 +609,7 @@ export const DoctorsLanding: React.FC = (props) => {
                                   setDisableFilters(disableFilters);
                                 }}
                                 subHeading=""
+                                // filteredSpecialties={[]}
                               />
                             </>
                           ) : null}

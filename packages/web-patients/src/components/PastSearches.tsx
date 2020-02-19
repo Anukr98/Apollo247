@@ -125,9 +125,10 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
       </div>
     );
   }
-  if (error) {
-    return <></>;
-  }
+
+  // if (error) {
+  //   return <></>;
+  // }
 
   return data && data.getPatientPastSearches && data.getPatientPastSearches.length > 0 ? (
     <div className={classes.root}>
@@ -144,7 +145,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                       src={(searchDetails && searchDetails.image) || ''}
                       className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
                     />
-                    {searchDetails && `Dr. ${_startCase(_toLower(searchDetails.name || ''))}`}
+                    {searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
                   </div>
                 </Link>
               </Grid>

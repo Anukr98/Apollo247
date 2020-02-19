@@ -238,9 +238,9 @@ const bookAppointment: Resolver<
     doctorsDb
   );
 
-  if (checkHours === CONSULTFLAG.OUTOFBUFFERTIME) {
-    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
-  }
+  // if (checkHours === CONSULTFLAG.OUTOFBUFFERTIME) {
+  //   throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  // }
 
   if (checkHours === CONSULTFLAG.OUTOFCONSULTHOURS) {
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
