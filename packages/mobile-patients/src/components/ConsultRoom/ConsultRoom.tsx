@@ -803,7 +803,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       {renderBottomTabBar()}
       {showPopUp && (
         <BottomPopUp
-          title={string.home.welcome_popup.title}
+          title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
           description={string.home.welcome_popup.description}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
