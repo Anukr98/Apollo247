@@ -10,6 +10,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { AppLocations } from './AppLocations';
@@ -23,9 +24,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '0 20px 0 20px',
+      padding: '0 0 0 20px',
       [theme.breakpoints.down('xs')]: {
-        padding: '0 20px 0 20px',
+        padding: '0 0 0 20px',
       },
       [theme.breakpoints.down(900)]: {
         paddingRight: 0,
@@ -65,15 +66,25 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccount: {
-      marginLeft: 20,
+      padding: 20,
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.between('sm', 'md')]: {
-        marginLeft: 10,
-      },
       [theme.breakpoints.down(990)]: {
         display: 'none',
+      },
+    },
+    userAccountActive: {
+      backgroundColor: '#f7f8f5',
+      '&:after': {
+        position: 'absolute',
+        content: '""',
+        bottom: 0,
+        left: 0,
+        height: 5,
+        width: '100%',
+        backgroundColor: '#00b38e',
       },
     },
     userAccountLogin: {
@@ -134,8 +145,7 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
-
-  // console.log(mobileNumber, otp);
+  const currentPath = window.location.pathname;
 
   return (
     <div className={classes.headerSticky}>
@@ -154,22 +164,41 @@ export const Header: React.FC = (props) => {
           {isSignedIn && (
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           )}
-          <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
-            <ProtectedWithLoginPopup>
-              {({ protectWithLoginPopup }) => (
-                <div
-                  className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
-                  ref={avatarRef}
-                >
-                  {isSigningIn ? (
-                    <CircularProgress />
-                  ) : (
-                    <img src={require('images/ic_account.svg')} />
-                  )}
-                </div>
-              )}
-            </ProtectedWithLoginPopup>
+          <div
+            className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
+              currentPath === clientRoutes.myAccount() ? classes.userAccountActive : ''
+            }`}
+          >
+            {isSignedIn ? (
+              <Link
+                className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                to={clientRoutes.myAccount()}
+              >
+                {isSigningIn ? (
+                  <CircularProgress />
+                ) : (
+                  <img src={require('images/ic_account.svg')} />
+                )}
+              </Link>
+            ) : (
+              <ProtectedWithLoginPopup>
+                {({ protectWithLoginPopup }) => (
+                  <div
+                    className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                    onClick={() =>
+                      isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                    }
+                    ref={avatarRef}
+                  >
+                    {isSigningIn ? (
+                      <CircularProgress />
+                    ) : (
+                      <img src={require('images/ic_account.svg')} />
+                    )}
+                  </div>
+                )}
+              </ProtectedWithLoginPopup>
+            )}
             {isSignedIn ? (
               <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
                 <DialogContent>
