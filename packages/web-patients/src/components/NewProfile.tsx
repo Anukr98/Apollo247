@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
     formControl: {
       marginBottom: 25,
       width: '100%',
+      position: 'relative',
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -77,7 +78,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     inputField: {
       marginTop: 8,
-      position: 'relative',
       '& input': {
         color: '#fff',
         paddingRight: 35,
