@@ -414,7 +414,7 @@ export async function sendNotification(
     const smsLink =
       notificationBody + ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
         ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '' + ;
+        : '';
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
