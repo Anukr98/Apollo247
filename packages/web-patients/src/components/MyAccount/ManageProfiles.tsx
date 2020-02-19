@@ -104,12 +104,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 500,
     },
-    scrollBars1: {
-      maxHeight: 'calc(100vh - 265px) !important',
-      '& >div': {
-        maxHeight: 'calc(100vh - 265px) !important',
-      },
-    },
     scrollBars: {
       height: 'calc(100vh - 265px) !important',
       [theme.breakpoints.down('xs')]: {

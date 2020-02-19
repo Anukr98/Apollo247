@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress, InputAdornment } from '@material-ui/core';
+import { Theme, CircularProgress, InputAdornment, Grid } from '@material-ui/core';
 import React, { useState } from 'react';
 import { AphTextField, AphButton, AphInput } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
@@ -45,29 +45,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 5,
       },
     },
-    menuPopover: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
-      '& ul': {
-        padding: '10px 20px',
-        '& li': {
-          fontSize: 16,
-          fontWeight: 500,
-          color: '#01475b',
-          minHeight: 'auto',
-          paddingLeft: 0,
-          paddingRight: 0,
-          borderBottom: '1px solid rgba(1,71,91,0.2)',
-          textTransform: 'capitalize',
-          '&:last-child': {
-            borderBottom: 'none',
-          },
-        },
-      },
-    },
-    menuSelected: {
-      backgroundColor: 'transparent !important',
-      color: '#00b38e !important',
-    },
     dialogContent: {
       paddingTop: 10,
     },
@@ -93,6 +70,26 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#01475b',
       },
+    },
+    btnGroup: {
+      paddingTop: 7,
+      '& button': {
+        width: '100%',
+        color: '#00b38e',
+        backgroundColor: theme.palette.common.white,
+        fontSize: 16,
+        fontWeight: 500,
+      },
+    },
+    btnActive: {
+      backgroundColor: '#00b38e !important',
+      color: '#fff !important',
+    },
+    genderBtns: {
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      padding: '7px 13px 7px 13px',
+      textTransform: 'none',
+      borderRadius: 10,
     },
   };
 });
@@ -177,6 +174,32 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 </div>
                 <div className={classes.formGroup}>
                   <AphTextField label="Area / Locality" placeholder="Enter area / locality name" />
+                </div>
+                <div className={classes.formGroup}>
+                  <label>Address Type</label>
+                  <Grid container spacing={1} className={classes.btnGroup}>
+                    <Grid item xs={4} sm={4}>
+                      <AphButton color="secondary" className={`${classes.genderBtns}`}>
+                        Home
+                      </AphButton>
+                    </Grid>
+                    <Grid item xs={4} sm={4}>
+                      <AphButton color="secondary" className={`${classes.genderBtns}`}>
+                        Office
+                      </AphButton>
+                    </Grid>
+                    <Grid item xs={4} sm={4}>
+                      <AphButton
+                        color="secondary"
+                        className={`${classes.genderBtns}  ${classes.btnActive}`}
+                      >
+                        Other
+                      </AphButton>
+                    </Grid>
+                  </Grid>
+                </div>
+                <div className={classes.formGroup}>
+                  <AphTextField placeholder="Enter Address Type" />
                 </div>
               </div>
             </div>
