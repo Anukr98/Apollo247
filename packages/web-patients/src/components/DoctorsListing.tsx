@@ -10,17 +10,15 @@ import _compact from 'lodash/compact';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
-
-import Popover from '@material-ui/core/Popover';
-import { MascotWithMessage } from 'components/MascotWithMessage';
+// import Popover from '@material-ui/core/Popover';
+// import { MascotWithMessage } from 'components/MascotWithMessage';
 import { format, addDays } from 'date-fns';
-
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 import { ConsultMode } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Scrollbars from 'react-custom-scrollbars';
+import _find from 'lodash/find';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -160,6 +158,8 @@ interface DoctorsListingProps {
   filter: SearchObject;
   specialityName: string;
   specialityId: string;
+  specialitySingular: string;
+  specialityPlural: string;
 }
 
 const convertAvailabilityToDate = (availability: String[]) => {
@@ -174,7 +174,7 @@ const convertAvailabilityToDate = (availability: String[]) => {
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
-  const { filter, specialityName, specialityId } = props;
+  const { filter, specialityName, specialityId, specialityPlural, specialitySingular } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const { currentPatient } = useAllCurrentPatients();
 
@@ -184,9 +184,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     PHYSICAL: 'Clinic Visit',
   };
 
-  const [show20SecPopup, setShow20SecPopup] = useState<boolean>(false);
-  const [show40SecPopup, setShow40SecPopup] = useState<boolean>(false);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  // const [show20SecPopup, setShow20SecPopup] = useState<boolean>(false);
+  // const [show40SecPopup, setShow40SecPopup] = useState<boolean>(false);
+  // const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isLargeScreen = useMediaQuery('(min-width:991px)');
   const mascotRef = useRef(null);
@@ -232,25 +232,37 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         : '',
   };
 
-  const { data, loading, error } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
+  const { data, loading } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
     variables: { filterInput: apiVairables },
     fetchPolicy: 'no-cache',
   });
 
-  if (loading) {
-    return (
-      <div className={classes.circlularProgress}>
-        <CircularProgress />
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div>Error....</div>;
-  }
+  if (loading)
+    <div className={classes.circlularProgress}>
+      <CircularProgress />
+    </div>;
 
   let doctorsList = [];
-  const specialistPluralTerm = data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm;
+
+  // const specialistPluralTerm =
+  //   data &&
+  //   data.getDoctorsBySpecialtyAndFilters &&
+  //   data.getDoctorsBySpecialtyAndFilters.specialty &&
+  //   data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
+  //     ? data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
+  //     : '';
+  const doctorsNextAvailability =
+    data &&
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+      ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+      : [];
+  const doctorsAvailability =
+    data &&
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+      ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+      : [];
 
   const consultErrorMessage = () => {
     const selectedConsultName =
@@ -259,7 +271,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       selectedFilterOption === 'online' ? 'Clinic Visit' : ' Online Consultation';
     const noConsultFoundError = `There is no ${specialityName} available for ${selectedConsultName}. Please try
     ${suggestedConsultName}`;
-    const noDoctorFoundError = `There is no ${specialistPluralTerm} available to match your filters. Please try again with
+    const noDoctorFoundError = `There is no ${specialityPlural} available to match your filters. Please try again with
     different filters.`;
 
     return (
@@ -267,7 +279,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         <Grid item xs={8} sm={6} md={6} key={_uniqueId('consultGrid_')}>
           <div className={classes.noDataCard}>
             <h2>Uh oh! :(</h2>
-            {data && data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
+            {data &&
+            data.getDoctorsBySpecialtyAndFilters &&
+            data.getDoctorsBySpecialtyAndFilters.doctors &&
+            data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
               ? noConsultFoundError
               : noDoctorFoundError}
           </div>
@@ -300,13 +315,15 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           });
   }
 
+  // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
+
   return (
     <div className={classes.root}>
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
           <div className={classes.headerTitle}>
             <h2 className={classes.title}>Okay!</h2>
-            Here are our best {specialistPluralTerm}
+            Here are our best {specialityPlural}
           </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
@@ -346,18 +363,73 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           <div className={classes.searchList}>
             <Grid container spacing={2}>
               {_map(doctorsList, (doctorDetails) => {
+                let availableMode = '';
+                let nextAvailabilityString = '';
+                const nextAvailability = _find(doctorsNextAvailability, (availability) => {
+                  const availabilityDoctorId =
+                    availability && availability.doctorId ? availability.doctorId : '';
+                  const currentDoctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                  return availabilityDoctorId === currentDoctorId;
+                });
+                const availableModes = _find(doctorsAvailability, (availability) => {
+                  const availabilityDoctorId =
+                    availability && availability.doctorId ? availability.doctorId : '';
+                  const currentDoctorId = doctorDetails && doctorDetails.id ? doctorDetails.id : '';
+                  return availabilityDoctorId === currentDoctorId;
+                });
+                if (
+                  availableModes &&
+                  availableModes.availableModes &&
+                  availableModes.availableModes.length > 0
+                ) {
+                  availableMode = availableModes.availableModes[0];
+                } else {
+                  availableMode = 'ONLINE';
+                }
+                if (availableMode === 'ONLINE' || availableMode === 'BOTH') {
+                  nextAvailabilityString = nextAvailability && nextAvailability.onlineSlot;
+                } else if (availableMode === 'PHYSICAL') {
+                  nextAvailabilityString = nextAvailability && nextAvailability.physicalSlot;
+                }
+
+                // nextAvailabilityString =
+                //   availableMode === 'ONLINE'
+                //     ? nextAvailability && nextAvailability.onlineSlot
+                //       ? nextAvailability.onlineSlot
+                //       : ''
+                //     : '';
+                // const availableMode =
+                // console.log(nextAvailability, 'next availability....');
                 return (
                   <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('consultGrid_')}>
                     <DoctorCard
                       doctorDetails={doctorDetails}
                       key={_uniqueId('dcListing_')}
-                      nextAvailability=""
+                      nextAvailability={nextAvailabilityString}
                     />
                   </Grid>
                 );
               })}
             </Grid>
-            <Popover
+          </div>
+        </Scrollbars>
+      ) : (
+        <>
+          {!loading ? (
+            consultErrorMessage()
+          ) : (
+            <div className={classes.circlularProgress}>
+              <CircularProgress />
+            </div>
+          )}{' '}
+        </>
+      )}
+    </div>
+  );
+};
+
+{
+  /* <Popover
               open={isPopoverOpen}
               onClose={(e, reason) => {
                 // console.log('hello', e, reason);
@@ -387,12 +459,5 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
                   closeMascot={() => setIsPopoverOpen(false)}
                 />
               ) : null}
-            </Popover>
-          </div>
-        </Scrollbars>
-      ) : (
-        consultErrorMessage()
-      )}
-    </div>
-  );
-};
+            </Popover> */
+}

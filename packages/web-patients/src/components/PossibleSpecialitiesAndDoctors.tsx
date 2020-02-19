@@ -183,7 +183,7 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
           speciality={speciality}
           disableFilter={disableFilter}
           subHeading="Possible Specialities"
-          filteredSpecialties={[]}
+          // filteredSpecialties={[]}
         />
       </>
     );

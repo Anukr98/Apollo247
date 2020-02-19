@@ -49,8 +49,9 @@ export enum DEVICETYPE {
 }
 
 export enum DiscountType {
-  AMOUNT = "AMOUNT",
+  FLATPRICE = "FLATPRICE",
   PERCENT = "PERCENT",
+  PRICEOFF = "PRICEOFF",
 }
 
 export enum DoctorType {

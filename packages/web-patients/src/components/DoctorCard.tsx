@@ -3,14 +3,14 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Avatar, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from 'graphql/types/GetDoctorNextAvailableSlot';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { format } from 'date-fns';
-import LinearProgress from '@material-ui/core/LinearProgress';
+// import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+// import {
+//   GetDoctorNextAvailableSlot,
+//   GetDoctorNextAvailableSlotVariables,
+// } from 'graphql/types/GetDoctorNextAvailableSlot';
+// import { useQueryWithSkip } from 'hooks/apolloHooks';
+// import { format, differenceInMinutes } from 'date-fns';
+// import LinearProgress from '@material-ui/core/LinearProgress';
 import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -143,17 +143,20 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
-  let differenceInMinutes = 0;
-  if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime =
-      nextAvailability &&
-      moment
-        .utc(nextAvailability)
-        .local()
-        .toDate();
-    const currentTime = moment();
-    const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
-  }
+
+  // console.log(nextAvailability, 'in doctor card....');
+
+  // let differenceInMinutes = 0;
+  // if (nextAvailability && nextAvailability.length > 0) {
+  //   const nextAvailabilityTime =
+  //     nextAvailability &&
+  //     moment
+  //       .utc(nextAvailability)
+  //       .local()
+  //       .toDate();
+  //   const currentTime = moment();
+  //   const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+  // }
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetDoctorNextAvailableSlot,
@@ -204,6 +207,40 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   //   });
   // }
 
+  const getDiffInMinutes = () => {
+    if (nextAvailability && nextAvailability.length > 0) {
+      const nextAvailabilityTime =
+        nextAvailability &&
+        moment
+          .utc(nextAvailability)
+          .local()
+          .toDate();
+
+      const currentTime = moment(new Date());
+      const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+      return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+    } else {
+      return 0;
+    }
+  };
+
+  const getDiffInHours = () => {
+    if (nextAvailability && nextAvailability.length > 0) {
+      const nextAvailabilityTime =
+        nextAvailability &&
+        moment
+          .utc(nextAvailability)
+          .local()
+          .toDate();
+
+      const currentTime = moment(new Date());
+      const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
+      return Math.round(differenceInHours) + 1;
+    } else {
+      return 0;
+    }
+  };
+
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       const nextAvailabilityTime =
@@ -212,8 +249,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           .utc(nextAvailability)
           .local()
           .toDate();
-      const currentTime = moment();
-      const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+
+      const differenceInMinutes = getDiffInMinutes();
 
       if (differenceInMinutes === 0) {
         return (
@@ -225,24 +262,20 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             AVAILABLE IN {differenceInMinutes} MINS
           </div>
         );
-      } else if (differenceInMinutes > 15 && differenceInMinutes <= 45) {
+      } else if (differenceInMinutes > 15 && differenceInMinutes <= 60) {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
         );
-      } else if (differenceInMinutes > 45 && differenceInMinutes <= 60) {
-        return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
+        // } else if (differenceInMinutes > 45 && differenceInMinutes <= 60) {
+        //   return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
       } else if (differenceInMinutes > 60) {
         return (
-          <div className={`${classes.availability}`}>
-            {moment(nextAvailabilityTime).format('DD-MM-YYYY hh:mm a')}
-          </div>
+          <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
         );
       }
     } else {
       return null;
     }
-
-    // console.log(differenceInMinutes, 'diff........');
   };
 
   // as per the MVP, we have only one clinic or hospital.
@@ -257,6 +290,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   });
 
   // console.log(clinics);
+
+  console.log(getDiffInMinutes(), '----------------');
 
   return (
     <div className={classes.root}>
@@ -339,7 +374,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             className={classes.bottomAction}
           >
             <AphButton fullWidth color="primary" className={classes.button}>
-              {differenceInMinutes >= 0 && differenceInMinutes <= 15
+              {getDiffInMinutes() > 0 && getDiffInMinutes() <= 60
                 ? 'CONSULT NOW'
                 : 'BOOK APPOINTMENT'}
             </AphButton>
