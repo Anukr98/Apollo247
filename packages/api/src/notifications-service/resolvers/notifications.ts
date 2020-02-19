@@ -909,11 +909,6 @@ export async function sendReminderNotification(
     };
   }
 
-  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15)
-    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
-
-  //send SMS notification
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -983,7 +978,11 @@ export async function sendReminderNotification(
     });
 
   console.log(notificationResponse, 'notificationResponse');
+  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15)
+    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
 
+  //send SMS notification
+  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   return notificationResponse;
 }
 
