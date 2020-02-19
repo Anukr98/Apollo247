@@ -15,6 +15,7 @@ import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 export interface CaseSheetDetailsProps extends NavigationScreenProps {
   consultDetails: GetCaseSheet_getCaseSheet_pastAppointments;
@@ -32,12 +33,14 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   const [showReferral, setshowReferral] = useState(false);
   const [showHelpModel, setshowHelpModel] = useState(false);
 
-  const consultDetails = props.navigation.getParam('consultDetails');
+  const consultDetails: GetCaseSheet_getCaseSheet_pastAppointments = props.navigation.getParam(
+    'consultDetails'
+  );
   const patientDetails = props.navigation.getParam('patientDetails');
   const { patientMedicalHistory } = patientDetails;
 
-  const caseSheet = consultDetails.caseSheet.filter(
-    (item: any) => item.doctorType !== DoctorType.JUNIOR
+  const caseSheet = (g(consultDetails, 'caseSheet') || []).filter(
+    (item) => item.doctorType !== DoctorType.JUNIOR
   );
   const { doctorDetails } = useAuth();
 
@@ -70,16 +73,19 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           onPress={() => setshowCF(!showCF)}
           containerStyle={{ marginVertical: 10 }}
         >
-          {symptoms.map((item: any) => (
-            <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-              <Text style={theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE)}>
-                {item.symptom}
-              </Text>
-              <Text style={theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE)}>
-                {`${strings.common.since}: ${item.since}\n${strings.common.how_often}: ${item.howOften}\n ${strings.common.severity}: ${item.severity}`}
-              </Text>
-            </View>
-          ))}
+          {symptoms.map(
+            (item) =>
+              item && (
+                <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
+                  <Text style={theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE)}>
+                    {item.symptom}
+                  </Text>
+                  <Text style={theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE)}>
+                    {`${strings.common.since}: ${item.since}\n${strings.common.how_often}: ${item.howOften}\n ${strings.common.severity}: ${item.severity}`}
+                  </Text>
+                </View>
+              )
+          )}
         </CollapseCard>
       );
   };
@@ -218,12 +224,15 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
               style={{ marginTop: 10, marginBottom: 20, flexDirection: 'row', flexWrap: 'wrap' }}
             >
               {caseSheet[0].diagnosticPrescription
-                ? caseSheet[0].diagnosticPrescription.map(({ itemname }) => (
-                    <CapsuleView
-                      diseaseName={itemname}
-                      containerStyle={{ marginRight: 12, marginBottom: 12 }}
-                    />
-                  ))
+                ? caseSheet[0].diagnosticPrescription.map(
+                    (item) =>
+                      item && (
+                        <CapsuleView
+                          diseaseName={item.itemname || ''}
+                          containerStyle={{ marginRight: 12, marginBottom: 12 }}
+                        />
+                      )
+                  )
                 : null}
             </View>
           )}
@@ -243,13 +252,16 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           {renderLabelDesc(strings.common.medicines)}
           {caseSheet.length > 0 &&
             caseSheet[0].medicinePrescription &&
-            caseSheet[0].medicinePrescription.map((item: any) => (
-              <View>
-                <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>
-                  {item.medicineName}
-                </Text>
-              </View>
-            ))}
+            caseSheet[0].medicinePrescription.map(
+              (item) =>
+                item && (
+                  <View>
+                    <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>
+                      {item.medicineName}
+                    </Text>
+                  </View>
+                )
+            )}
         </View>
       </CollapseCard>
     );

@@ -1,6 +1,9 @@
 import ApolloClient from 'apollo-client';
-import { GetDoctorNextAvailableSlot } from '../graphql/types/GetDoctorNextAvailableSlot';
-import { NEXT_AVAILABLE_SLOT, DOWNLOAD_DOCUMENT } from '../graphql/profiles';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
+} from '@aph/mobile-doctors/src/graphql/types/GetDoctorNextAvailableSlot';
+import { NEXT_AVAILABLE_SLOT, DOWNLOAD_DOCUMENT } from '@aph/mobile-doctors/src/graphql/profiles';
 import { downloadDocuments } from '@aph/mobile-doctors/src/graphql/types/downloadDocuments';
 
 export const getNextAvailableSlots = (
@@ -8,7 +11,9 @@ export const getNextAvailableSlots = (
   doctorIds: (string | null)[] | (string | undefined)[] | string[],
   todayDate: string
 ) => {
-  return new Promise((res, rej) => {
+  return new Promise<{
+    data: (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[];
+  }>((res, rej) => {
     client
       .query<GetDoctorNextAvailableSlot>({
         query: NEXT_AVAILABLE_SLOT,

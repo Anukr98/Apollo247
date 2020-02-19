@@ -143,7 +143,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
-  const [isDropdownVisible, setDropdownVisible] = useState(false);
+  // const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [showNeedHelp, setshowNeedHelp] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
@@ -318,7 +318,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <DotIcon />,
             onPress: () => {
-              setDropdownVisible(true);
+              // setDropdownVisible(true);
             },
           },
         ]}
@@ -326,33 +326,33 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     );
   };
 
-  const renderDropdown = () => {
-    return (
-      <View style={styles.menuDropdown}>
-        <DropDown
-          containerStyle={{ marginRight: 20, width: 200 }}
-          options={[
-            {
-              optionText: strings.appointments.block_Calendar,
-              icon: <Block />,
-              onPress: () => {
-                // setDropdownVisible(false);
-                setDropdownVisible(!isDropdownVisible);
-                props.navigation.push(AppRoutes.BlockHomePage);
-              },
-            },
-            {
-              optionText: strings.appointments.manage_calendar,
-              icon: <CalendarIcon />,
-              onPress: () => {
-                setDropdownVisible(false);
-              },
-            },
-          ]}
-        />
-      </View>
-    );
-  };
+  // const renderDropdown = () => {
+  //   return (
+  //     <View style={styles.menuDropdown}>
+  //       <DropDown
+  //         containerStyle={{ marginRight: 20, width: 200 }}
+  //         options={[
+  //           {
+  //             optionText: strings.appointments.block_Calendar,
+  //             icon: <Block />,
+  //             onPress: () => {
+  //               // setDropdownVisible(false);
+  //               setDropdownVisible(!isDropdownVisible);
+  //               props.navigation.push(AppRoutes.BlockHomePage);
+  //             },
+  //           },
+  //           {
+  //             optionText: strings.appointments.manage_calendar,
+  //             icon: <CalendarIcon />,
+  //             onPress: () => {
+  //               setDropdownVisible(false);
+  //             },
+  //           },
+  //         ]}
+  //       />
+  //     </View>
+  //   );
+  // };
 
   const renderNoConsultsView = () => {
     const now = new Date();

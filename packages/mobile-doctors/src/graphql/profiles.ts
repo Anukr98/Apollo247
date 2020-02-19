@@ -590,6 +590,7 @@ export const GET_CASESHEET = gql`
           otherInstructions {
             instruction
           }
+          notes
         }
         appointmentType
       }

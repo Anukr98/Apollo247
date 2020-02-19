@@ -7,7 +7,7 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import RNExitApp from 'react-native-exit-app';
 
-const reporter = (error: string, type: 'JS' | 'Native') => {
+const reporter = (error: Error, type: 'JS' | 'Native') => {
   // Logic for reporting to devs
   console.log(error, type);
   if (getBuildEnvironment() == 'PROD') {
@@ -27,7 +27,7 @@ const reporter = (error: string, type: 'JS' | 'Native') => {
   }
 };
 
-const errorHandler = (e: any, isFatal: boolean) => {
+const errorHandler = (e: Error, isFatal: boolean) => {
   if (isFatal) {
     reporter(e, 'JS');
     Alert.alert(

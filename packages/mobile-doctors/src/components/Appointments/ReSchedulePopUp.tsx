@@ -94,7 +94,13 @@ export interface ReSchedulePopUpProps {
   appointmentId: string;
   date: string;
   loading: (val: boolean) => void;
-  onDone: (reschduleObject: any) => void;
+  onDone: (reschduleObject: {
+    appointmentId: string;
+    transferDateTime: any;
+    doctorId: string;
+    reschduleCount: React.ReactText;
+    reschduleId: string;
+  }) => void;
 }
 
 export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
@@ -197,7 +203,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
         })
         .then(({ data }) => {
           if (data) {
-            const reschduleObject: any = {
+            const reschduleObject = {
               appointmentId: props.appointmentId,
               transferDateTime: data.initiateRescheduleAppointment.rescheduleAppointment
                 ? data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime
@@ -270,18 +276,13 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
     props.loading && props.loading(true);
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, [props.doctorId], todayDate)
-      .then(({ data }: any) => {
+      .then(({ data }) => {
         try {
           props.loading && props.loading(false);
           if (data[0] && data[0].availableSlot && availableInMin === 0) {
             const nextSlot = data[0].availableSlot;
-            let timeDiff: number = 0;
-            const today: Date = new Date();
             const date2: Date = new Date(nextSlot);
-            if (date2 && today) {
-              timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
-            }
-            setavailableInMin(timeDiff);
+            setavailableInMin(Math.ceil(moment(new Date()).diff(moment(date2), 'minute', true)));
             setNextAvailableSlot(nextSlot);
             setDate(date2);
             setselectedTimeSlot(nextSlot);

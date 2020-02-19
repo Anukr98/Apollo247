@@ -38,13 +38,13 @@ const styles = StyleSheet.create({
     color: theme.colors.SEARCH_DOCTOR_NAME,
     flex: 0.9,
   },
-  invitetext: {
-    ...theme.fonts.IBMPlexSansMedium(15),
-    color: '#ff748e',
-    marginBottom: 16,
-    marginLeft: 8,
-    marginTop: 2,
-  },
+  // invitetext: {
+  //   ...theme.fonts.IBMPlexSansMedium(15),
+  //   color: '#ff748e',
+  //   marginBottom: 16,
+  //   marginLeft: 8,
+  //   marginTop: 2,
+  // },
   imageremovestyles: {
     height: 24,
     width: 24,
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface doctorCardProps {
+export interface DoctorCardProps {
   doctorId?: string;
   inviteStatus?: INVITEDSTATUS;
   doctorName?: string;
@@ -118,7 +118,7 @@ export interface doctorCardProps {
   onRemove?: (id: string) => void;
 }
 
-export const DoctorCard: React.FC<doctorCardProps> = (props) => {
+export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isMenuHidden, setisMenuHidden] = useState<boolean>(false);
 
   return (
