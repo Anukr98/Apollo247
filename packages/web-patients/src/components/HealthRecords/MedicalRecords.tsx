@@ -341,7 +341,7 @@ export const MedicalRecords: React.FC = (props) => {
       });
   };
 
-  const sordByDate = (array: { type: string; data: any }[]) => {
+  const sortByDate = (array: { type: string; data: any }[]) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
       let date1 = new Date(
         data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
@@ -378,7 +378,7 @@ export const MedicalRecords: React.FC = (props) => {
         hospitalizations.forEach((item) => {
           mergeArray.push({ type: 'hospital', data: item });
         });
-      const sortedData = sordByDate(mergeArray);
+      const sortedData = sortByDate(mergeArray);
       setAllCombinedData(sortedData);
       setActiveData(sortedData[0]);
       // setFilteredData(sortedData);
