@@ -3,6 +3,7 @@ import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { consultHoursRepository } from 'doctors-service/repositories/consultHoursRepository';
 import {
   SdDashboardSummary,
   FeedbackDashboardSummary,
@@ -10,7 +11,7 @@ import {
   DoctorFeeSummary,
   TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
-import { ConsultMode } from 'doctors-service/entities';
+import { ConsultMode, WeekDay, Doctor } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -18,6 +19,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import {
   SdDashboardSummaryRepository,
   CurrentAvailStatusRepository,
+  UtilizationCapacityRepository,
 } from 'consults-service/repositories/sdDashboardSummaryRepository';
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
@@ -28,6 +30,7 @@ import { LoginHistoryRepository } from 'doctors-service/repositories/loginSessio
 import _isEmpty from 'lodash/isEmpty';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
+import { subMilliseconds } from 'date-fns';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -56,12 +59,25 @@ export const sdDashboardSummaryTypeDefs = gql`
   type updateSpecialtyCountResult {
     updated: Boolean
   }
+  type updateUtilizationCapacityResult{
+    updated: Boolean
+  }
+  enum WeekDay {
+    SUNDAY
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY 
+    SATURDAY
+  }
   extend type Mutation {
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
+    updateUtilizationCapacity(specialityId:String, weekDay:WeekDay): updateUtilizationCapacityResult
   }
 
   extend type Query {
@@ -100,6 +116,9 @@ type FeedbackCounts = {
 type updateSpecialtyCountResult = {
   updated: Boolean;
 };
+type updateUtilizationCapacityResult = {
+  updated: Boolean;
+}
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
   apptRepo: consultsDb.getCustomRepository(AppointmentRepository),
   patRepo: patientsDb.getCustomRepository(PatientRepository),
@@ -113,6 +132,8 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   loginSessionRepo: doctorsDb.getCustomRepository(LoginHistoryRepository),
   DoctorSpecialtyRepo: doctorsDb.getCustomRepository(DoctorSpecialtyRepository),
   CurrentAvailStatusRepo: consultsDb.getCustomRepository(CurrentAvailStatusRepository),
+  UtilizationCapacityRepo: consultsDb.getCustomRepository(UtilizationCapacityRepository),
+  consultHoursRepo: doctorsDb.getCustomRepository(consultHoursRepository),
 });
 
 const updateConsultRating: Resolver<
@@ -204,6 +225,11 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         'BOTH'
       );
+      const totalConsultationTime = await dashboardRepo.getTotalConsultationTime(
+        args.summaryDate,
+        doctor.id,
+        1
+      );
       const virtaulConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,
         args.summaryDate,
@@ -244,7 +270,6 @@ const updateSdSummary: Resolver<
         '1'
       );
       const callDuration = await dashboardRepo.getOnTimeConsultations(doctor.id, args.summaryDate);
-
       const casesheetPrepTime = await dashboardRepo.getCasesheetPrepTime(
         doctor.id,
         args.summaryDate
@@ -281,6 +306,7 @@ const updateSdSummary: Resolver<
         onTimeConsultations: callDuration,
         casesheetPrepTime,
         within15Consultations,
+        totalConsultationTime,
         adminIds,
         loggedInHours,
         awayHours,
@@ -353,7 +379,7 @@ const getopenTokFileUrl: Resolver<
 };
 const updateSpecialtyCount: Resolver<
   null,
-  { specialityId: string },
+  { specialityId: string, weekDay: string },
   DoctorsServiceContext,
   updateSpecialtyCountResult
 > = async (parent, args, context) => {
@@ -375,6 +401,34 @@ const updateSpecialtyCount: Resolver<
   //send response
   return { updated: true };
 };
+const updateUtilizationCapacity: Resolver<
+  null,
+  { specialityId: string, weekDay: WeekDay },
+  DoctorsServiceContext,
+  updateUtilizationCapacityResult
+> = async (parent, args, context) => {
+  const { apptRepo, docRepo, DoctorSpecialtyRepo, UtilizationCapacityRepo, consultHoursRepo, dashboardRepo } = getRepos(context);
+  const DoctorSpeciality = await DoctorSpecialtyRepo.findById(args.specialityId);
+  if (!DoctorSpeciality) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
+  const Doctors = await docRepo.getSpecialityDoctors(args.specialityId);
+  if (!Doctors) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
+  const doctorIds = Doctors.map((doctor) => {
+    return doctor.id
+  });
+  const totalSlots = await consultHoursRepo.getConsultHours(
+    doctorIds,
+    args.weekDay,
+  );
+  const appointments = await apptRepo.getBookedSlots(doctorIds);
+  const utilizationCapacity = await UtilizationCapacityRepo.updateUtilization(
+    args.specialityId,
+    DoctorSpeciality.name,
+    totalSlots,
+    appointments,
+
+  );
+  return { updated: true };
+};
 export const sdDashboardSummaryResolvers = {
   Mutation: {
     updateSdSummary,
@@ -382,8 +436,8 @@ export const sdDashboardSummaryResolvers = {
     updatePhrDocSummary,
     updateConsultRating,
     updateSpecialtyCount,
+    updateUtilizationCapacity,
   },
-
   Query: {
     getopenTokFileUrl,
   },

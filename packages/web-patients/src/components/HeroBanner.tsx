@@ -63,6 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         maxWidth: '100%',
+        verticalAlign: 'middle',
       },
     },
     menuSelected: {
@@ -117,23 +118,22 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
-    mobileImg: {
-      display: 'none',
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-      },
-    },
-    desktopImg: {
-      display: 'none',
-      [theme.breakpoints.up('sm')]: {
-        display: 'block',
-      },
-    },
     loginHeroBanner: {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
     },
     loginbannerImg: {
       bottom: 0,
+    },
+    desktopBanner: {
+      display: 'none',
+      [theme.breakpoints.up('sm')]: {
+        display: 'block',
+      },
+    },
+    mobileBanner: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
     },
   };
 });
@@ -151,8 +151,12 @@ export const HeroBanner: React.FC = () => {
       data-cypress="HeroBanner"
     >
       <div className={`${classes.bannerImg} ${isSignedIn ? classes.loginbannerImg : ''}`}>
-        <img className={classes.mobileImg} src={require('images/img_doctorimage.png')} alt="" />
-        <img className={classes.desktopImg} src={require('images/banner-img.png')} alt="" />
+        <img
+          className={classes.mobileBanner}
+          src={require('images/img_doctors_xxhdpi.png')}
+          alt=""
+        />
+        <img className={classes.desktopBanner} src={require('images/img-doctors@2x.png')} alt="" />
       </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (

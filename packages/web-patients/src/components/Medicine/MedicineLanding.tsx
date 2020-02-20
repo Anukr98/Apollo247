@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(990)]: {
+      [theme.breakpoints.up(900)]: {
         marginBottom: 20,
       },
     },

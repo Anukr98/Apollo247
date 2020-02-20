@@ -74,8 +74,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ToplineReport: React.FC = (props) => {
-  const classes = useStyles();
+type ToplineReportProps = {
+  activeData: any;
+};
+
+export const ToplineReport: React.FC<ToplineReportProps> = (props) => {
+  const classes = useStyles({});
+  const { data } = props.activeData;
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -88,14 +93,9 @@ export const ToplineReport: React.FC = (props) => {
         <Grid container spacing={2}>
           <Grid item sm={12}>
             <div className={classes.cardSection}>
-              <strong>RBC:</strong> Predominantly normocytic normochromic
-              <br />
-              <strong>RBCs:</strong> Few microcytic hypochromic RBCs are also noted. No nRBCs or
-              haemoparasites seen
-              <br />
-              <strong>Platelets:</strong> Moderate thrombocytopenia noted
-              <br />
-              <strong>WBC:</strong> Within normal limits. No atypical WBCs/blasts seen
+              {(data.observations && data.observations) ||
+                (data.additionalNotes && data.additionalNotes) ||
+                (data.healthCheckSummary && data.healthCheckSummary)}
             </div>
           </Grid>
         </Grid>

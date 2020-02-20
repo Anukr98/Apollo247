@@ -23,7 +23,10 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingLeft: 10,
           paddingRight: 10,
         },
-        [theme.breakpoints.down(990)]: {
+        [theme.breakpoints.down(900)]: {
+          display: 'none',
+        },
+        '&:nth-child(3)': {
           display: 'none',
         },
       },
@@ -42,12 +45,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     notificationBtn: {
+      display: 'none',
+      // display: 'inline-block',
       padding: '33px 20px 31px 20px',
       fontSize: 13,
       fontWeight: 600,
       color: theme.palette.secondary.dark,
       textTransform: 'uppercase',
-      display: 'inline-block',
       cursor: 'pointer',
       [theme.breakpoints.down('xs')]: {
         padding: '26px 20px 24px 20px',
