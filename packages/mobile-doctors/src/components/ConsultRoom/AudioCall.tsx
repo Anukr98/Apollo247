@@ -12,7 +12,7 @@ import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import React, { useState } from 'react';
+import React, { useState, RefObject, Dispatch, SetStateAction } from 'react';
 import { Dimensions, StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -21,8 +21,6 @@ const { height, width } = Dimensions.get('window');
 export interface AudioCallProps extends NavigationScreenProps {
   chatReceived: boolean;
   callAccepted: boolean;
-  callMinutes: number;
-  callSeconds: number;
   sessionId: string;
   token: string;
   minutes: number;
@@ -31,33 +29,41 @@ export interface AudioCallProps extends NavigationScreenProps {
   PipView: boolean;
   convertVideo: boolean;
   callTimerStarted: string;
-  cameraPosition: string;
   setChatReceived: (arg0: boolean) => void;
   audioCallStyles: StyleProp<ViewStyle>;
-  onPressEndCall: () => {};
-  sessionEventHandlers: () => {};
-  otSessionRef: () => {};
-  subscriberEventHandlers: () => {};
-  publisherEventHandlers: () => {};
-  setAudioCallStyles: (arg0: {}) => {};
-  setReturnToCall: (arg0: boolean) => {};
-  onVideoToggle: () => {};
+  onPressEndCall: () => void;
+  onVideoToggle: () => void;
+  showVideo: boolean;
+  setAudioCallStyles: Dispatch<SetStateAction<object>>;
+  setReturnToCall: Dispatch<SetStateAction<boolean>>;
+  sessionEventHandlers: {
+    error: (error: string) => void;
+    connectionCreated: (event: string) => void;
+    connectionDestroyed: (event: string) => void;
+    sessionConnected: (event: string) => void;
+    sessionDisconnected: (event: string) => void;
+    sessionReconnected: (event: string) => void;
+    sessionReconnecting: (event: string) => void;
+    signal: (event: string) => void;
+  };
+  otSessionRef: RefObject<unknown>;
+  subscriberEventHandlers: {
+    error: (error: string) => void;
+    connected: (event: string) => void;
+    disconnected: (event: string) => void;
+  };
+  publisherEventHandlers: {
+    streamCreated: (event: string) => void;
+    streamDestroyed: (event: string) => void;
+  };
+  cameraPosition: string;
+  setCameraPosition: Dispatch<SetStateAction<string>>;
 }
 export const AudioCall: React.FC<AudioCallProps> = (props) => {
-  const [showVideo, setShowVideo] = useState<boolean>(true);
+  // const [showVideo, setShowVideo] = useState<boolean>(true);
   //   const [cameraPosition, setCameraPosition] = useState<string>('front');
   const [mute, setMute] = useState<boolean>(true);
-  const [talkStyles, setTalkStyles] = useState<object>({
-    flex: 1,
-    backgroundColor: 'black',
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    elevation: 1000,
-    zIndex: 100,
-  });
+
   const [subscriberStyles, setSubscriberStyles] = useState<object>({
     width,
     height,
@@ -176,7 +182,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
           }
           properties={{
             cameraPosition: props.cameraPosition,
-            publishVideo: convertVideo ? true : false,
+            publishVideo: convertVideo,
             publishAudio: mute,
             audioVolume: 100,
           }}
@@ -306,7 +312,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
             <SpeakerOn style={{ width: 60, height: 60 }} />
           </TouchableOpacity> */}
         <TouchableOpacity onPress={props.onVideoToggle}>
-          {showVideo === true ? <VideoOnIcon /> : <VideoOffIcon />}
+          {props.showVideo === true ? <VideoOnIcon /> : <VideoOffIcon />}
         </TouchableOpacity>
         {renderMuteIcon()}
         <TouchableOpacity onPress={props.onPressEndCall}>

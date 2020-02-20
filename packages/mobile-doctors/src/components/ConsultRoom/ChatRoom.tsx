@@ -16,7 +16,7 @@ import { messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Dispatch, SetStateAction } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -39,21 +39,6 @@ import { NavigationScreenProps } from 'react-navigation';
 const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  mainview: {
-    backgroundColor: '#ffffff',
-    height: 50,
-  },
-  shadowview: {
-    shadowOffset: {
-      height: 1,
-      width: 0,
-    },
-    shadowColor: '#000000',
-    shadowRadius: 2,
-    shadowOpacity: 0.2,
-    elevation: 10,
-    backgroundColor: 'white',
-  },
   imageStyle: {
     width: 32,
     height: 32,
@@ -80,80 +65,31 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 });
-
-let connectionCount = 0;
-let timer = 900;
-let intervalId: any;
-let stoppedTimer: number;
-let timerId: any;
-let joinTimerNoShow: any;
-let missedCallTimer: any;
-
-export interface ChatRoomProps extends NavigationScreenProps {}
+export interface ChatRoomProps extends NavigationScreenProps {
+  returnToCall: boolean;
+  setReturnToCall: Dispatch<SetStateAction<boolean>>;
+  setChatReceived: Dispatch<SetStateAction<boolean>>;
+  messages: never[];
+  send: (messageText: any) => void;
+  setAudioCallStyles: Dispatch<React.SetStateAction<object>>;
+  flatListRef: React.MutableRefObject<FlatList<never> | null | undefined>;
+  setShowPDF: Dispatch<SetStateAction<boolean>>;
+  setPatientImageshow: Dispatch<SetStateAction<boolean>>;
+  setUrl: Dispatch<SetStateAction<string>>;
+}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
-  const [hideView, setHideView] = useState(false);
-  const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
+  const { setLoading } = useUIElements();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
-  const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-  const [showLoading, setShowLoading] = useState<boolean>(false);
-  const appointmentData = props.navigation.getParam('AppoinementData');
-  const [dropdownShow, setDropdownShow] = useState(false);
-  const channel = props.navigation.getParam('AppId');
+
   const doctorId = props.navigation.getParam('DoctorId');
-  const patientId = props.navigation.getParam('PatientId');
-  const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
-  const otSessionRef = React.createRef();
-  //   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
-  const [returnToCall, setReturnToCall] = useState<boolean>(false);
-  const [showPDF, setShowPDF] = useState<boolean>(false);
-  const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
-  const [showweb, setShowWeb] = useState<boolean>(false);
-  const [url, setUrl] = useState('');
 
-  const [talkStyles, setTalkStyles] = useState<object>({
-    flex: 1,
-    backgroundColor: 'black',
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    elevation: 1000,
-    zIndex: 100,
-  });
-  const [subscriberStyles, setSubscriberStyles] = useState<object>({
-    width,
-    height,
-    zIndex: 100,
-  });
-  const [publisherStyles, setPublisherStyles] = useState<object>({
-    position: 'absolute',
-    top: 44,
-    right: 20,
-    width: 112,
-    height: 148,
-    zIndex: 100,
-    elevation: 1000,
-    borderRadius: 30,
-  });
-  const [audioCallStyles, setAudioCallStyles] = useState<object>({
-    flex: 1,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    elevation: 10000,
-  });
   const { messages } = props;
 
   const keyboardDidShow = (e: KeyboardEvent) => {
@@ -168,7 +104,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     // callAbandonmentCall();
     setTimeout(() => {
-      flatListRef.current && flatListRef.current!.scrollToEnd();
+      flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -181,7 +117,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     console.log(messages, 'props.messages');
     setTimeout(() => {
-      flatListRef.current! && flatListRef.current!.scrollToEnd();
+      flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   }, [messages]);
 
@@ -191,37 +127,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (rowData.prismId) {
         getPrismUrls(client, rowData.id, rowData.prismId)
           .then((data: any) => {
-            setUrl((data && data.urls[0]) || rowData.url);
+            props.setUrl((data && data.urls[0]) || rowData.url);
           })
           .catch(() => {
-            setUrl(rowData.url);
+            props.setUrl(rowData.url);
           })
           .finally(() => {
             setLoading && setLoading(false);
-            setShowPDF(true);
+            props.setShowPDF(true);
           });
       } else {
-        setUrl(rowData.url);
+        props.setUrl(rowData.url);
         setLoading && setLoading(false);
-        setShowPDF(true);
+        props.setShowPDF(true);
       }
     } else if (rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) {
       if (rowData.prismId) {
         getPrismUrls(client, rowData.id, rowData.prismId)
           .then((data: any) => {
-            setUrl((data && data.urls[0]) || rowData.url);
+            props.setUrl((data && data.urls[0]) || rowData.url);
           })
           .catch(() => {
-            setUrl(rowData.url);
+            props.setUrl(rowData.url);
           })
           .finally(() => {
             setLoading && setLoading(false);
-            setPatientImageshow(true);
+            props.setPatientImageshow(true);
           });
       } else {
-        setUrl(rowData.url);
+        props.setUrl(rowData.url);
         setLoading && setLoading(false);
-        setPatientImageshow(true);
+        props.setPatientImageshow(true);
       }
     } else {
       if (rowData.prismId) {
@@ -236,7 +172,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
           .finally(() => {
             setLoading && setLoading(false);
-            setPatientImageshow(true);
+            props.setPatientImageshow(true);
           });
       } else {
         setLoading && setLoading(false);
@@ -327,7 +263,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const onPress = () => {
       if (isMatched) {
         openPopUp(rowData);
-        setPatientImageshow(true);
+        props.setPatientImageshow(true);
       } else {
         openPopUp(rowData);
         // setShowWeb(true);
@@ -782,7 +718,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           width: width,
-          height: returnToCall == false ? heightList : heightList + 20,
+          height: !props.returnToCall ? heightList : heightList + 20,
           marginTop: 0,
           backgroundColor: '#f0f4f5',
         }}
@@ -851,8 +787,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       >
         <TouchableOpacity
           onPress={() => {
-            setReturnToCall(false);
-            setChatReceived(false);
+            props.setReturnToCall(false);
+            props.setChatReceived(false);
             Keyboard.dismiss();
             props.setAudioCallStyles({
               flex: 1,
@@ -1003,7 +939,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         </View>
       </KeyboardAvoidingView>
-      {returnToCall && ReturnCallView()}
+      {props.returnToCall && ReturnCallView()}
     </View>
   );
 };

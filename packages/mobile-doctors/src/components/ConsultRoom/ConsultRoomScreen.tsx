@@ -153,6 +153,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const patientId = props.navigation.getParam('PatientId');
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
   const [activeTabIndex, setActiveTabIndex] = useState(
+    // tabsData[0].title
     props.activeTabIndex ? props.activeTabIndex.toString() : tabsData[0].title
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
@@ -668,7 +669,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         } else {
           addMessages(message);
           setTimeout(() => {
-            flatListRef.current! && flatListRef.current!.scrollToEnd();
+            flatListRef.current && flatListRef.current.scrollToEnd();
           }, 500);
         }
       },
@@ -729,7 +730,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('true chat icon');
       }
       setTimeout(() => {
-        flatListRef.current! && flatListRef.current!.scrollToEnd();
+        flatListRef.current && flatListRef.current.scrollToEnd();
       }, 200);
     };
     const keyboardDidShow = (e: KeyboardEvent) => {
@@ -1096,11 +1097,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             >
               {/* {ChatRoom()} */}
               <ChatRoom
+                returnToCall={returnToCall}
+                setReturnToCall={setReturnToCall}
+                setChatReceived={setChatReceived}
                 navigation={props.navigation}
                 messages={messages}
                 send={send}
                 setAudioCallStyles={setAudioCallStyles}
                 flatListRef={flatListRef}
+                setShowPDF={setShowPDF}
+                setPatientImageshow={setPatientImageshow}
+                setUrl={setUrl}
               />
             </View>
           )}
@@ -1546,11 +1553,28 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {showPopUp && CallPopUp()}
       {isAudioCall && (
         <AudioCall
+          minutes={minutes}
+          seconds={seconds}
           convertVideo={convertVideo}
           callTimerStarted={callTimerStarted}
           audioCallStyles={audioCallStyles}
           setAudioCallStyles={setAudioCallStyles}
           cameraPosition={cameraPosition}
+          setCameraPosition={setCameraPosition}
+          // PipView={PipView}
+          firstName={PatientInfoAll.firstName}
+          chatReceived={chatReceived}
+          callAccepted={callAccepted}
+          setChatReceived={setChatReceived}
+          setReturnToCall={setReturnToCall}
+          showVideo={showVideo}
+          otSessionRef={otSessionRef}
+          sessionId={sessionId}
+          token={token}
+          subscriberEventHandlers={subscriberEventHandlers}
+          publisherEventHandlers={publisherEventHandlers}
+          sessionEventHandlers={sessionEventHandlers}
+          navigation={props.navigation}
           onVideoToggle={() => {
             showVideo === true ? setShowVideo(false) : setShowVideo(true);
             pubnub.publish(
@@ -1595,7 +1619,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       {isCall && (
         <VideoCall
           navigation={props.navigation}
-          endCallNotificationAPI={endCallNotificationAPI}
           setChatReceived={setChatReceived}
           chatReceived={chatReceived}
           callAccepted={callAccepted}
@@ -1610,7 +1633,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           token={token}
           otSessionRef={otSessionRef}
           publisherEventHandlers={publisherEventHandlers}
-          setPipView={setPipView}
+          cameraPosition={cameraPosition}
+          setCameraPosition={setCameraPosition}
           onPressBottomEndCall={() => {
             setIsCall(false);
             stopTimer();

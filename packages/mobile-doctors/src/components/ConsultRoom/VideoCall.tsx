@@ -14,7 +14,7 @@ import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import React, { useState } from 'react';
+import React, { useState, RefObject, Dispatch, SetStateAction } from 'react';
 import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -30,21 +30,37 @@ export interface VideoCallProps extends NavigationScreenProps {
   minutes: number;
   seconds: number;
   firstName: string;
-  PipView: boolean;
   setChatReceived: (arg0: boolean) => void;
-  onPressEnd: () => {};
-  onPressBottomEndCall: () => {};
-  sessionEventHandlers: () => {};
-  otSessionRef: () => {};
-  subscriberEventHandlers: () => {};
-  publisherEventHandlers: () => {};
-  setPipView: (arg0: boolean) => {};
+  onPressEnd: () => void;
+  onPressBottomEndCall: () => void;
+  sessionEventHandlers: {
+    error: (error: string) => void;
+    connectionCreated: (event: string) => void;
+    connectionDestroyed: (event: string) => void;
+    sessionConnected: (event: string) => void;
+    sessionDisconnected: (event: string) => void;
+    sessionReconnected: (event: string) => void;
+    sessionReconnecting: (event: string) => void;
+    signal: (event: string) => void;
+  };
+  otSessionRef: RefObject<unknown>;
+  subscriberEventHandlers: {
+    error: (error: string) => void;
+    connected: (event: string) => void;
+    disconnected: (event: string) => void;
+  };
+  publisherEventHandlers: {
+    streamCreated: (event: string) => void;
+    streamDestroyed: (event: string) => void;
+  };
   cameraPosition: string;
-  setCameraPosition: (arg0: string) => {};
+  setCameraPosition: Dispatch<SetStateAction<string>>;
 }
 export const VideoCall: React.FC<VideoCallProps> = (props) => {
   const [showVideo, setShowVideo] = useState<boolean>(true);
   const [mute, setMute] = useState<boolean>(true);
+  const [PipView, setPipView] = useState<boolean>(false);
+
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -72,7 +88,8 @@ export const VideoCall: React.FC<VideoCallProps> = (props) => {
     borderRadius: 30,
   });
 
-  const { PipView } = props;
+  console.log(PipView, 'PipView');
+
   const renderOnCallPipButtons = () => {
     return (
       <View
@@ -112,7 +129,7 @@ export const VideoCall: React.FC<VideoCallProps> = (props) => {
               elevation: 2000,
               borderRadius: 30,
             });
-            props.setPipView(false);
+            setPipView(false);
             props.setChatReceived(false);
           }}
         >
@@ -174,7 +191,7 @@ export const VideoCall: React.FC<VideoCallProps> = (props) => {
               elevation: 2000,
             });
 
-            props.setPipView(true);
+            setPipView(true);
             props.setChatReceived(false);
           }}
         >
