@@ -20,11 +20,11 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { ConsultMode } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { ConsultMode, BlockMultipleItems } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   ConvertDateToWeekDay,
   ConvertDateTimeToUtc,
@@ -36,6 +36,7 @@ import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { AddBlockedCalendarItemVariables } from '@aph/mobile-doctors/src/graphql/types/AddBlockedCalendarItem';
 
 const { width } = Dimensions.get('window');
 
@@ -185,8 +186,9 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
       res.data &&
       (res.data.addBlockedCalendarItem || res.data.blockMultipleCalendarItems) &&
       props.navigation.state.params.onAddBlockCalendar(
-        res.data.addBlockedCalendarItem.blockedCalendar ||
-          res.data.blockMultipleCalendarItems.blockedCalendar
+        (res.data.addBlockedCalendarItem && res.data.addBlockedCalendarItem.blockedCalendar) ||
+          (res.data.blockMultipleCalendarItems &&
+            res.data.blockMultipleCalendarItems.blockedCalendar)
       );
     props.navigation.goBack();
   };
@@ -194,26 +196,32 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   const SaveBlockCalendar = () => {
     setshowSpinner(true);
     const date = startDate ? startDate.toISOString() : '';
-    let variables = {
+    let variables: any = {
       doctorId: doctorDetails ? doctorDetails.id : '',
     };
     if (selectedBlockOption === blockOptions[0].key) {
-      let endDateTime;
-      if (selectedDay === daysArray[0].key && startDate) {
-        endDateTime = moment(date.split('T')[0] + '23:59:00', 'YYYY-MM-DDHH:mm:ss').toISOString();
-      } else {
-        endDateTime = endDate
-          ? moment(
-              endDate.toISOString().split('T')[0] + '12:59:00',
-              'YYYY-MM-DDhh:mm:ss'
-            ).toISOString()
-          : //moment(endDate.toISOString().split('T')[0] + ' 23:59', 'YYYY-MM-DD HH:MM').toISOString()
-            '';
-      }
+      // let endDateTime;
+      // if (selectedDay === daysArray[0].key && startDate) {
+      //   endDateTime = moment(date.split('T')[0] + '23:59:00', 'YYYY-MM-DDHH:mm:ss').toISOString();
+      // } else {
+      //   endDateTime = endDate
+      //     ? moment(
+      //         endDate.toISOString().split('T')[0] + '12:59:00',
+      //         'YYYY-MM-DDhh:mm:ss'
+      //       ).toISOString()
+      //     : //moment(endDate.toISOString().split('T')[0] + ' 23:59', 'YYYY-MM-DD HH:MM').toISOString()
+      //       '';
+      // }
       variables = {
         ...variables,
-        start: date,
-        end: endDateTime, // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
+        start: moment(startDate)
+          .startOf('day')
+          .toISOString(),
+        end: moment(startDate)
+          .startOf('day')
+          .add(23, 'h')
+          .add(59, 'm')
+          .toISOString(), // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
         reason: selectedReason.key,
       };
       console.log(variables, 'variables');
@@ -242,7 +250,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           itemDetails: selectedConsultations,
         };
       } else {
-        let consults: any[] = [];
+        let consults: ({ start: string; end: string } | undefined | null)[] = [];
         if (daysArray[0].key === selectedDay && startDate) {
           const date = FormatDateToString(startDate);
 
@@ -253,11 +261,12 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
               moment(item.end).format('HH:mm:ss'),
               'moment(item.start)'
             );
-
-            return {
-              start: ConvertDateTimeToUtc(date, moment(item.start).format('HH:mm:ss')),
-              end: ConvertDateTimeToUtc(date, moment(item.end).format('HH:mm:ss')),
-            };
+            if (item.start && item.end) {
+              return {
+                start: item.start.toISOString(),
+                end: item.end.toISOString(),
+              };
+            }
           });
         } else if (daysArray[1].key === selectedDay && startDate && endDate) {
           AllDates.forEach((date) => {
@@ -395,6 +404,9 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    checkIsValid(customTime);
+  }, [customTime]);
   const checkIsValid = (customTime: { start: Date | undefined; end: Date | undefined }[]) => {
     const minutesOfDay = (m: Date) => {
       return m.getMinutes() + m.getHours() * 60;
@@ -414,6 +426,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   };
 
   const renderBlockOptions = () => {
+    console.log(customTime, 'vmdfio');
+
     return (
       <View>
         <Text
@@ -430,9 +444,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           setselectedItem={setselectedBlockOption}
           containerStyle={{ marginTop: 8 }}
           // horizontal
-          disabled={
-            (daysArray[0].key === selectedDay ? startDate : startDate && endDate) ? false : true
-          }
+          disabled={!(daysArray[0].key === selectedDay ? startDate : startDate && endDate)}
         >
           {selectedBlockOption === blockOptions[0].key ? (
             <View style={{ marginLeft: 32 }}>
@@ -497,23 +509,20 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                         placeholderStyle={{ fontSize: 20 }}
                         placeholderViewStyle={{ borderBottomWidth: 2 }}
                         onChangeDate={(time) => {
-                          console.log(time);
-                          const newArray = JSON.parse(JSON.stringify(customTime));
-                          newArray[index] = { start: time, end: item.end };
-                          setcustomTime(newArray);
-                          // if (time && item.end) {
-                          checkIsValid(newArray);
-                          // }
+                          setcustomTime([
+                            ...customTime.filter((i) => i !== item),
+                            { start: time, end: item.end },
+                          ]);
                         }}
                         mode={'time'}
                         showCalendarIcon={false}
                         minimumDate={
-                          item.start &&
-                          FormatDateToString(item.start) === FormatDateToString(new Date())
+                          moment(startDate).format('DDMMYYYY') ===
+                          moment(new Date()).format('DDMMYYYY')
                             ? new Date()
                             : undefined
                         }
-                        maximumDate={item.end ? item.end : undefined}
+                        maximumDate={item.end}
                       />
                     </View>
                     <View
@@ -535,15 +544,12 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                         containerStyle={{ marginTop: 10 }}
                         placeholderStyle={{ fontSize: 20 }}
                         placeholderViewStyle={{ borderBottomWidth: 2 }}
-                        minimumDate={item.start ? item.start : undefined}
+                        minimumDate={item.start}
                         onChangeDate={(time) => {
-                          console.log(time);
-                          const newArray = JSON.parse(JSON.stringify(customTime));
-                          newArray[index] = { start: item.start, end: time };
-                          setcustomTime(newArray);
-                          // if (time && item.start) {
-                          checkIsValid(newArray);
-                          // }
+                          setcustomTime([
+                            ...customTime.filter((i) => i !== item),
+                            { start: item.start, end: time },
+                          ]);
                         }}
                         mode={'time'}
                         showCalendarIcon={false}
@@ -566,9 +572,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                 opacity={isValidTime ? 1 : 0.5}
                 onPress={() => {
                   if (isValidTime) {
-                    const timeArray = JSON.parse(JSON.stringify(customTime));
-                    timeArray.push({ start: undefined, end: undefined });
-                    setcustomTime(timeArray);
+                    setcustomTime([...customTime, { start: undefined, end: undefined }]);
                   }
                 }}
                 label={strings.block_homepage.add_another_slot}
@@ -698,16 +702,17 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
             style={{ flex: 1, marginHorizontal: 71 }}
             onPress={SaveBlockCalendar}
             disabled={
-              (daysArray[0].key === selectedDay ? startDate : startDate && endDate) &&
-              (blockOptions[0].key === selectedBlockOption ||
-                (blockOptions[1].key === selectedBlockOption
-                  ? selectedConsultations.length > 0
-                  : blockOptions[2].key === selectedBlockOption &&
-                    customTime.filter((item) => item.start === undefined || item.end === undefined)
-                      .length === 0 &&
-                    isValidTime))
-                ? false
-                : true
+              !(
+                (daysArray[0].key === selectedDay ? startDate : startDate && endDate) &&
+                (blockOptions[0].key === selectedBlockOption ||
+                  (blockOptions[1].key === selectedBlockOption
+                    ? selectedConsultations.length > 0
+                    : blockOptions[2].key === selectedBlockOption &&
+                      customTime.filter(
+                        (item) => item.start === undefined || item.end === undefined
+                      ).length === 0 &&
+                      isValidTime))
+              )
             }
           />
         </StickyBottomComponent>
