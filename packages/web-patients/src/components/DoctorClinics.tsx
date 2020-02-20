@@ -40,7 +40,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       lineHeight: 1.67,
       color: '#02475b',
-      // borderBottom: '0.5px solid rgba(2,71,91,0.2)',
       paddingBottom: 0,
       borderbottom: 'none',
     },
@@ -146,7 +145,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
 
     const consultationHours =
       doctorDetails.getDoctorDetailsById.consultHours &&
-      doctorDetails.getDoctorDetailsById.consultHours.length > 0
+        doctorDetails.getDoctorDetailsById.consultHours.length > 0
         ? doctorDetails.getDoctorDetailsById.consultHours
         : [];
 

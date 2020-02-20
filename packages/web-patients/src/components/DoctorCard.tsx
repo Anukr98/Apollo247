@@ -144,68 +144,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
 
-  // console.log(nextAvailability, 'in doctor card....');
-
-  // let differenceInMinutes = 0;
-  // if (nextAvailability && nextAvailability.length > 0) {
-  //   const nextAvailabilityTime =
-  //     nextAvailability &&
-  //     moment
-  //       .utc(nextAvailability)
-  //       .local()
-  //       .toDate();
-  //   const currentTime = moment();
-  //   const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
-  // }
-
-  // const { data, loading, error } = useQueryWithSkip<
-  //   GetDoctorNextAvailableSlot,
-  //   GetDoctorNextAvailableSlotVariables
-  // >(GET_DOCTOR_NEXT_AVAILABILITY, {
-  //   variables: {
-  //     DoctorNextAvailableSlotInput: {
-  //       doctorIds: [doctorId],
-  //       availableDate: format(new Date(), 'yyyy-MM-dd'),
-  //     },
-  //   },
-  //   fetchPolicy: 'no-cache',
-  // });
-
-  // if (error) {
-  //   alert(error);
-  // }
-
-  // // console.log('doctor details.....', data);
-
-  // let availableSlot = 0,
-  //   differenceInMinutes = 0;
-
-  const clinics: any = []; // this should not be any type. we should remove in stabilization sprint.
-
-  // it must be always one record or we return only first record.
-  // if (
-  //   data &&
-  //   data.getDoctorNextAvailableSlot &&
-  //   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-  // ) {
-  //   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
-  //     if (availability && availability.availableSlot !== '') {
-  //       // const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-  //       // const slotTimeStamp =
-  //       //   getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
-  //       //   const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-  //       const slotTimeStamp = new Date(availability.availableSlot).getTime();
-  //       const currentTime = new Date(new Date().toISOString()).getTime();
-  //       if (slotTimeStamp > currentTime) {
-  //         availableSlot = slotTimeStamp;
-  //         const difference = slotTimeStamp - currentTime;
-  //         differenceInMinutes = Math.round(difference / 60000);
-  //       }
-  //     } else {
-  //       differenceInMinutes = -1;
-  //     }
-  //   });
-  // }
+  const clinics: any = [];
 
   const getDiffInMinutes = () => {
     if (nextAvailability && nextAvailability.length > 0) {
@@ -213,7 +152,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         nextAvailability &&
         moment
           .utc(nextAvailability)
-          .local()
           .toDate();
 
       const currentTime = moment(new Date());
@@ -230,7 +168,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         nextAvailability &&
         moment
           .utc(nextAvailability)
-          .local()
           .toDate();
 
       const currentTime = moment(new Date());
@@ -246,7 +183,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         nextAvailability &&
         moment
           .utc(nextAvailability)
-          .local()
           .toDate();
 
       const currentTime = moment(new Date());
@@ -258,15 +194,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime =
-        nextAvailability &&
-        moment
-          .utc(nextAvailability)
-          .local()
-          .toDate();
-
       const differenceInMinutes = getDiffInMinutes();
-
       if (differenceInMinutes === 0) {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
@@ -336,8 +264,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             {doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                  _toLower(doctorDetails.lastName)
-                )}`}
+                _toLower(doctorDetails.lastName)
+              )}`}
           </div>
           <div className={classes.doctorType}>
             {doctorDetails.specialty ? doctorDetails.specialty.name : null}
@@ -407,3 +335,66 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     </div>
   );
 };
+
+ // console.log(nextAvailability, 'in doctor card....');
+
+  // let differenceInMinutes = 0;
+  // if (nextAvailability && nextAvailability.length > 0) {
+  //   const nextAvailabilityTime =
+  //     nextAvailability &&
+  //     moment
+  //       .utc(nextAvailability)
+  //       .local()
+  //       .toDate();
+  //   const currentTime = moment();
+  //   const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+  // }
+
+  // const { data, loading, error } = useQueryWithSkip<
+  //   GetDoctorNextAvailableSlot,
+  //   GetDoctorNextAvailableSlotVariables
+  // >(GET_DOCTOR_NEXT_AVAILABILITY, {
+  //   variables: {
+  //     DoctorNextAvailableSlotInput: {
+  //       doctorIds: [doctorId],
+  //       availableDate: format(new Date(), 'yyyy-MM-dd'),
+  //     },
+  //   },
+  //   fetchPolicy: 'no-cache',
+  // });
+
+  // if (error) {
+  //   alert(error);
+  // }
+
+  // // console.log('doctor details.....', data);
+
+  // let availableSlot = 0,
+  //   differenceInMinutes = 0;
+
+  // this should not be any type. we should remove in stabilization sprint.
+
+  // it must be always one record or we return only first record.
+  // if (
+  //   data &&
+  //   data.getDoctorNextAvailableSlot &&
+  //   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+  // ) {
+  //   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
+  //     if (availability && availability.availableSlot !== '') {
+  //       // const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
+  //       // const slotTimeStamp =
+  //       //   getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
+  //       //   const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
+  //       const slotTimeStamp = new Date(availability.availableSlot).getTime();
+  //       const currentTime = new Date(new Date().toISOString()).getTime();
+  //       if (slotTimeStamp > currentTime) {
+  //         availableSlot = slotTimeStamp;
+  //         const difference = slotTimeStamp - currentTime;
+  //         differenceInMinutes = Math.round(difference / 60000);
+  //       }
+  //     } else {
+  //       differenceInMinutes = -1;
+  //     }
+  //   });
+  // }
