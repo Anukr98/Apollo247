@@ -295,3 +295,44 @@ export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
     }
   }
 `;
+
+export const ADD_PROFILE = gql`
+  mutation AddNewProfile($PatientProfileInput: PatientProfileInput!) {
+    addNewProfile(patientProfileInput: $PatientProfileInput) {
+      patient {
+        id
+        uhid
+        mobileNumber
+        firstName
+        lastName
+        emailAddress
+        gender
+      }
+    }
+  }
+`;
+
+export const EDIT_PROFILE = gql`
+  mutation EditProfile($editProfileInput: EditProfileInput!) {
+    editProfile(editProfileInput: $editProfileInput) {
+      patient {
+        id
+        photoUrl
+        firstName
+        lastName
+        relation
+        gender
+        dateOfBirth
+        emailAddress
+      }
+    }
+  }
+`;
+
+export const DELETE_PROFILE = gql`
+  mutation DeleteProfile($patientId: String) {
+    deleteProfile(patientId: $patientId) {
+      status
+    }
+  }
+`;

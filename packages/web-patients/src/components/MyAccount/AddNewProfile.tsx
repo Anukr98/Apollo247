@@ -1,9 +1,18 @@
 import { Theme, FormControl, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
 import Grid from '@material-ui/core/Grid';
+import { Gender, Relation } from 'graphql/types/globalTypes';
+import { useMutation } from 'react-apollo-hooks';
+import { ADD_PROFILE, EDIT_PROFILE } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import _find from 'lodash/find';
+import moment from 'moment';
+import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/dist/aphValidators';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,11 +138,145 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    showMessage: {
+      opacity: 1.0,
+    },
+    hideMessage: {
+      opacity: 0,
+    },
   };
 });
 
-export const AddNewProfile: React.FC = (props) => {
+interface AddNewProfileProps {
+  closeHandler: (popOpen: boolean) => void;
+  selectedPatientId: string;
+  successHandler: (isPopoverOpen: boolean) => void;
+  isProfileDelete: boolean;
+}
+
+export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const classes = useStyles();
+  const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
+
+  const [mutationLoading, setMutationLoading] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [dob, setDob] = useState('');
+  const [genderSelected, setGenderSelected] = useState('');
+  const [relation, setRelation] = useState('');
+  const [emailAddress, setEmailAddress] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+
+  const [isFirstNameValid, setIsFirstNameValid] = useState(true);
+  const [isLastNameValid, setIsLastNameValid] = useState(true);
+  const [isRelationValid, setIsRelationValid] = useState(true);
+  const [isGenderValid, setIsGenderValid] = useState(true);
+  const [isValidDob, setIsValidDob] = useState(true);
+  const [isEmailAddressValid, setIsEmailAddressValid] = useState(true);
+
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+
+  // console.log(currentPatient, 'current patient......');
+
+  const orderedGenders = [Gender.MALE, Gender.FEMALE];
+  const orderedRelations = [
+    Relation.BROTHER,
+    Relation.COUSIN,
+    Relation.DAUGHTER,
+    Relation.FATHER,
+    Relation.GRANDDAUGHTER,
+    Relation.GRANDFATHER,
+    Relation.GRANDMOTHER,
+    Relation.GRANDSON,
+    Relation.HUSBAND,
+    Relation.ME,
+    Relation.MOTHER,
+    Relation.OTHER,
+    Relation.SISTER,
+    Relation.SON,
+    Relation.WIFE,
+  ];
+
+  const addProfileMutation = useMutation(ADD_PROFILE);
+  const editProfileMutation = useMutation(EDIT_PROFILE);
+
+  useEffect(() => {
+    if (selectedPatientId.length > 0) {
+      const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
+        return currentPatientDetails.id === selectedPatientId;
+      });
+      if (selectedPatientDetails) {
+        setRelation(
+          selectedPatientDetails && selectedPatientDetails.relation
+            ? selectedPatientDetails.relation
+            : ''
+        );
+        setGenderSelected(
+          selectedPatientDetails && selectedPatientDetails.gender
+            ? selectedPatientDetails.gender
+            : ''
+        );
+        setFirstName(
+          selectedPatientDetails && selectedPatientDetails.firstName
+            ? selectedPatientDetails.firstName
+            : ''
+        );
+        setLastName(
+          selectedPatientDetails && selectedPatientDetails.lastName
+            ? selectedPatientDetails.lastName
+            : ''
+        );
+        setDob(
+          selectedPatientDetails && selectedPatientDetails.dateOfBirth
+            ? moment(selectedPatientDetails.dateOfBirth).format('DD/MM/YYYY')
+            : ''
+        );
+        setEmailAddress(
+          selectedPatientDetails && selectedPatientDetails.emailAddress
+            ? selectedPatientDetails.emailAddress
+            : ''
+        );
+        setPhotoUrl(
+          selectedPatientDetails && selectedPatientDetails.photoUrl
+            ? selectedPatientDetails.photoUrl
+            : require('images/ic_account.svg')
+        );
+      }
+      console.log(selectedPatientDetails, 'patient details.....');
+    }
+  }, [allCurrentPatients, selectedPatientId]);
+
+  const disableSubmitButton =
+    (firstName.length > 0 &&
+      lastName.length > 0 &&
+      dob.length > 0 &&
+      genderSelected.length > 0 &&
+      relation.length > 0 &&
+      (emailAddress !== '' ? emailAddress.length > 0 : true) &&
+      (isFirstNameValid &&
+        isLastNameValid &&
+        isRelationValid &&
+        isGenderValid &&
+        isValidDob &&
+        (emailAddress !== '' ? isEmailAddressValid : true))) ||
+    isProfileDelete;
+
+  // console.log(
+  //   'disable button',
+  //   disableSubmitButton,
+  //   firstName,
+  //   lastName,
+  //   dob,
+  //   genderSelected,
+  //   relation,
+  //   emailAddress,
+  //   firstName.length > 0 &&
+  //     lastName.length > 0 &&
+  //     dob.length > 0 &&
+  //     genderSelected.length > 0 &&
+  //     relation.length > 0 &&
+  //     (emailAddress !== '' ? emailAddress.length > 0 : true)
+  // );
 
   return (
     <div className={classes.root}>
@@ -150,7 +293,7 @@ export const AddNewProfile: React.FC = (props) => {
                     type="file"
                   />
                   <label className={classes.profileCircle} htmlFor="upload-prifile-photo">
-                    <img src={require('images/ic_account.svg')} />
+                    <img src={photoUrl} />
                   </label>
                   <label className={classes.editBtn} htmlFor="upload-prifile-photo">
                     <img src={require('images/ic-edit-white.svg')} />
@@ -161,54 +304,197 @@ export const AddNewProfile: React.FC = (props) => {
                     label="Full Name"
                     placeholder="First Name"
                     inputProps={{ maxLength: 20 }}
+                    value={firstName}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setIsFirstNameValid(isNameValid(e.target.value));
+                    }}
+                    error={!isFirstNameValid}
                   />
+                  {!isFirstNameValid ? (
+                    <FormHelperText
+                      className={!isFirstNameValid ? classes.showMessage : classes.hideMessage}
+                      component="div"
+                      error={true}
+                    >
+                      Invalid first name
+                    </FormHelperText>
+                  ) : null}
                 </FormControl>
                 <FormControl className={`${classes.formControl}`} fullWidth>
-                  <AphTextField placeholder="Last name" inputProps={{ maxLength: 20 }} />
+                  <AphTextField
+                    placeholder="Last name"
+                    inputProps={{ maxLength: 20 }}
+                    value={lastName}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setIsLastNameValid(isNameValid(e.target.value));
+                    }}
+                    error={!isLastNameValid}
+                  />
+                  {!isLastNameValid ? (
+                    <FormHelperText
+                      className={!isLastNameValid ? classes.showMessage : classes.hideMessage}
+                      component="div"
+                      error={true}
+                    >
+                      Invalid last name
+                    </FormHelperText>
+                  ) : null}
                 </FormControl>
                 <FormControl className={classes.formControl} fullWidth>
                   <AphTextField
                     label="Date Of Birth"
                     placeholder="dd/mm/yyyy"
                     inputProps={{ type: 'text', maxLength: 10 }}
+                    value={dob}
+                    onChange={(e) => {
+                      setDob(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      setIsValidDob(isDobValid(e.target.value));
+                    }}
                   />
+                  {!isValidDob ? (
+                    <FormHelperText
+                      className={!isValidDob ? classes.showMessage : classes.hideMessage}
+                      component="div"
+                      error={true}
+                    >
+                      Invalid date of birth
+                    </FormHelperText>
+                  ) : null}
                 </FormControl>
                 <FormControl className={classes.formControl}>
                   <label>Gender</label>
                   <Grid container spacing={2} className={classes.btnGroup}>
-                    <Grid item xs={4} sm={4}>
-                      <AphButton
-                        color="secondary"
-                        className={`${classes.genderBtns} ${classes.btnActive}`}
-                      >
-                        Male
-                      </AphButton>
-                    </Grid>
-                    <Grid item xs={4} sm={4}>
-                      <AphButton color="secondary" className={`${classes.genderBtns}`}>
-                        Female
-                      </AphButton>
-                    </Grid>
+                    {orderedGenders.map((gender) => {
+                      return (
+                        <Grid item xs={4} sm={4}>
+                          <AphButton
+                            color="secondary"
+                            className={`${classes.genderBtns} ${
+                              gender === genderSelected ? classes.btnActive : ''
+                            }`}
+                            value={genderSelected}
+                            onClick={() => {
+                              setGenderSelected(gender as Gender);
+                            }}
+                          >
+                            {gender}
+                          </AphButton>
+                        </Grid>
+                      );
+                    })}
                   </Grid>
                 </FormControl>
                 <FormControl className={`${classes.formControl} ${classes.relationMenu}`} fullWidth>
                   <label>Relation</label>
-                  <AphSelect>
-                    <MenuItem classes={{ selected: classes.menuSelected }}>Me</MenuItem>
-                    <MenuItem classes={{ selected: classes.menuSelected }}>Mother</MenuItem>
-                    ))}
+                  <AphSelect
+                    onChange={(e) => {
+                      setRelation(e.target.value as Relation);
+                    }}
+                    value={relation}
+                  >
+                    {orderedRelations.map((relation) => {
+                      return (
+                        <MenuItem classes={{ selected: classes.menuSelected }} value={relation}>
+                          {relation}
+                        </MenuItem>
+                      );
+                    })}
                   </AphSelect>
                 </FormControl>
                 <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
-                  <AphTextField label="Email Address (Optional)" placeholder="name@email.com" />
+                  <AphTextField
+                    label="Email Address (Optional)"
+                    placeholder="name@email.com"
+                    value={emailAddress}
+                    onChange={(e) => {
+                      setEmailAddress(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value !== '') {
+                        setIsEmailAddressValid(isEmailValid(e.target.value));
+                      }
+                    }}
+                  />
+                  {emailAddress !== '' && !isEmailAddressValid ? (
+                    <FormHelperText
+                      className={!isEmailAddressValid ? classes.showMessage : classes.hideMessage}
+                      component="div"
+                      error={true}
+                    >
+                      Invalid email id
+                    </FormHelperText>
+                  ) : null}
                 </FormControl>
               </div>
             </div>
           </Scrollbars>
         </div>
         <div className={classes.dialogActions}>
-          <AphButton>Cancel</AphButton>
-          <AphButton color="primary">Save</AphButton>
+          <AphButton onClick={() => closeHandler(false)} disabled={isProfileDelete}>
+            Cancel
+          </AphButton>
+          <AphButton
+            color="primary"
+            onClick={() => {
+              setMutationLoading(true);
+              const userObject = {
+                firstName: firstName,
+                lastName: lastName,
+                dateOfBirth: moment(dob, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                gender: genderSelected,
+                relation: relation,
+                emailAddress: emailAddress,
+                photoUrl: '',
+                id: selectedPatientId,
+                mobileNumber:
+                  currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : '',
+              };
+              if (selectedPatientId.length > 0) {
+                delete userObject.mobileNumber;
+                userObject.id = selectedPatientId;
+                editProfileMutation({
+                  variables: {
+                    editProfileInput: { ...userObject },
+                  },
+                })
+                  .then(() => {
+                    closeHandler(false);
+                    successHandler(true);
+                  })
+                  .catch((e) => {
+                    setMutationLoading(false);
+                    console.log(e, 'error state....');
+                  });
+              } else {
+                delete userObject.id;
+                addProfileMutation({
+                  variables: {
+                    PatientProfileInput: { ...userObject },
+                  },
+                })
+                  .then((response) => {
+                    closeHandler(false);
+                    successHandler(true);
+                    // console.log(response);
+                  })
+                  .catch((e) => {
+                    setMutationLoading(false);
+                    // console.log(e, 'error state....');
+                  });
+              }
+            }}
+            disabled={!disableSubmitButton}
+          >
+            {mutationLoading ? <CircularProgress size={20} /> : 'Save'}
+          </AphButton>
         </div>
       </div>
     </div>
