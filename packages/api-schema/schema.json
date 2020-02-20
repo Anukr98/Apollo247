@@ -19979,6 +19979,39 @@
             "deprecationReason": null
           },
           {
+            "name": "updateUtilizationCapacity",
+            "description": null,
+            "args": [
+              {
+                "name": "specialityId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "weekDay",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "WeekDay",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "updateUtilizationCapacityResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updateJdSummary",
             "description": null,
             "args": [
@@ -29157,6 +29190,29 @@
       {
         "kind": "OBJECT",
         "name": "updateSpecialtyCountResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "updated",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "updateUtilizationCapacityResult",
         "description": null,
         "fields": [
           {
