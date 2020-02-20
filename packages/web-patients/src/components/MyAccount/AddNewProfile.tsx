@@ -471,7 +471,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   })
                   .catch((e) => {
                     setMutationLoading(false);
-                    console.log(e, 'error state....');
+                    alert('An error occurred while updating profile.');
                   });
               } else {
                 delete userObject.id;
@@ -487,7 +487,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   })
                   .catch((e) => {
                     setMutationLoading(false);
-                    // console.log(e, 'error state....');
+                    alert('An error occurred while creating profile.');
                   });
               }
             }}

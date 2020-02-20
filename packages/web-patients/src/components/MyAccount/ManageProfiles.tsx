@@ -292,6 +292,7 @@ export const ManageProfiles: React.FC = (props) => {
               })
               .catch(() => {
                 setIsProfileDelete(false);
+                alert('An error occurred while deleting profile.');
               });
           }}
         >
