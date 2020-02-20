@@ -226,9 +226,8 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
     },
     loader: {
-      margin: '20px auto',
       textAlign: 'center',
-      display: 'block',
+      padding: '20px 0',
     },
     messageBox: {
       padding: '10px 20px 25px 20px',
@@ -455,7 +454,7 @@ export const Appointments: React.FC = (props) => {
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
-                label="Active"
+                label="Upcoming"
               />
               <Tab
                 classes={{
@@ -471,7 +470,9 @@ export const Appointments: React.FC = (props) => {
                 {availableAppointments && availableAppointments.length > 0 ? (
                   <ConsultationsCard appointments={availableAppointments} />
                 ) : loading || isSigningIn ? (
-                  <CircularProgress className={classes.loader} />
+                  <div className={classes.loader}>
+                    <CircularProgress />
+                  </div>
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>
@@ -503,7 +504,9 @@ export const Appointments: React.FC = (props) => {
                 {pastAppointments && pastAppointments.length > 0 ? (
                   <ConsultationsCard appointments={pastAppointments} />
                 ) : loading || isSigningIn ? (
-                  <CircularProgress />
+                  <div className={classes.loader}>
+                    <CircularProgress />
+                  </div>
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>
