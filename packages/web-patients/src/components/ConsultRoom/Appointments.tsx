@@ -225,7 +225,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       top: 0,
     },
-    loader: { 
+    loader: {
       textAlign: 'center',
       padding: '20px 0',
     },
@@ -470,7 +470,9 @@ export const Appointments: React.FC = (props) => {
                 {availableAppointments && availableAppointments.length > 0 ? (
                   <ConsultationsCard appointments={availableAppointments} />
                 ) : loading || isSigningIn ? (
-                  <div className={classes.loader}><CircularProgress /></div>
+                  <div className={classes.loader}>
+                    <CircularProgress />
+                  </div>
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>
@@ -502,7 +504,9 @@ export const Appointments: React.FC = (props) => {
                 {pastAppointments && pastAppointments.length > 0 ? (
                   <ConsultationsCard appointments={pastAppointments} />
                 ) : loading || isSigningIn ? (
-                  <div className={classes.loader}><CircularProgress /></div>
+                  <div className={classes.loader}>
+                    <CircularProgress />
+                  </div>
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>

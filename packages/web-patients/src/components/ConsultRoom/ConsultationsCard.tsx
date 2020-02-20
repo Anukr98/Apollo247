@@ -418,11 +418,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         <AphDialogTitle>Scheduled Appointment</AphDialogTitle>
         <div className={classes.messageBox}>
           <p>
-            You have an online consultation scheduled with Dr. Simran Rai for February 19, 2020 at 4:35 PM. 
+            You have an online consultation scheduled with Dr. Simran Rai for February 19, 2020 at
+            4:35 PM.
           </p>
-          <p>
-            Kindly visit the app to continue with the consultation or to make any changes.
-          </p>
+          <p>Kindly visit the app to continue with the consultation or to make any changes.</p>
           <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
             Download Apollo247 App
           </a>
@@ -435,9 +434,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           <p className={classes.textCenter}>
             Kindly visit the app to access your appointment details.
           </p>
-          <p className={classes.textCenter}>
-            Download the app by clicking below.
-          </p>
+          <p className={classes.textCenter}>Download the app by clicking below.</p>
           <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
             Download Apollo247 App
           </a>
