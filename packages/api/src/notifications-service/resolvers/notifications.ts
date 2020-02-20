@@ -929,6 +929,7 @@ export async function sendReminderNotification(
       );
       doctorSMS = doctorSMS.replace('{1}', patientDetails.firstName);
     }
+    console.log('doctorSMS=======================', doctorSMS);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
   } else if (
@@ -1058,7 +1059,12 @@ export async function sendReminderNotification(
   console.log(notificationResponse, 'notificationResponse');
   if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15)
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
-
+  if (
+    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
+  ) {
+    const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
+    notificationBody = notificationBody + ' Click here ' + smsLink;
+  }
   //send SMS notification
   sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   return notificationResponse;
