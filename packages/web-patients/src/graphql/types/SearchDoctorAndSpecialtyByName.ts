@@ -40,6 +40,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   id: string;
   firstName: string;
   lastName: string;
+  fullName: string | null;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;

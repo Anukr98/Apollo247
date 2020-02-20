@@ -12,6 +12,7 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   __typename: "DoctorSpecialties";
   id: string;
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours {
@@ -38,6 +39,7 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   streetLine2: string | null;
   streetLine3: string | null;
   id: string;
+  imageUrl: string | null;
 }
 
 export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital {

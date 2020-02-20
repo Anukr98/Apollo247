@@ -27,6 +27,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
   latitude: string | null;
   longitude: string | null;
   id: string;
+  imageUrl: string | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
@@ -71,6 +72,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital_facili
   streetLine2: string | null;
   streetLine3: string | null;
   id: string;
+  imageUrl: string | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital {
@@ -95,6 +97,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   salutation: Salutation | null;
   firstName: string;
   lastName: string;
+  fullName: string | null;
   mobileNumber: string;
   experience: string | null;
   specialization: string | null;

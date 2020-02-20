@@ -240,7 +240,22 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       return 0;
     }
   };
+  const getDiffInDays = () => {
+    if (nextAvailability && nextAvailability.length > 0) {
+      const nextAvailabilityTime =
+        nextAvailability &&
+        moment
+          .utc(nextAvailability)
+          .local()
+          .toDate();
 
+      const currentTime = moment(new Date());
+      const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
+      return Math.round(differenceInDays) + 1;
+    } else {
+      return 0;
+    }
+  };
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
       const nextAvailabilityTime =
@@ -266,11 +281,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
         );
-        // } else if (differenceInMinutes > 45 && differenceInMinutes <= 60) {
-        //   return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
-      } else if (differenceInMinutes > 60) {
+      } else if (differenceInMinutes >= 60 && differenceInMinutes < 1380) {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
+        );
+      }
+      else if (differenceInMinutes >= 1380) {
+        return (
+          <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInDays()} Days</div>
         );
       }
     } else {
@@ -290,8 +308,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   });
 
   // console.log(clinics);
-
-  console.log(getDiffInMinutes(), '----------------');
 
   return (
     <div className={classes.root}>
@@ -320,7 +336,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {availabilityMarkup()}
           {/* )} */}
           <div className={classes.doctorName}>
-            {`${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+            {doctorDetails.fullName ? doctorDetails.fullName : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
               _toLower(doctorDetails.lastName)
             )}`}
           </div>
