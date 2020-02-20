@@ -166,6 +166,23 @@ export enum MEDICINE_UNIT {
   TABLET = "TABLET",
 }
 
+export enum MedicalRecordType {
+  CONSULTATION = "CONSULTATION",
+  EHR = "EHR",
+  OPERATIVE_REPORT = "OPERATIVE_REPORT",
+  PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
+  PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
+  PRESCRIPTION = "PRESCRIPTION",
+  TEST_REPORT = "TEST_REPORT",
+}
+
+export enum MedicalTestUnit {
+  GM = "GM",
+  GM_SLASH_DL = "GM_SLASH_DL",
+  NONE = "NONE",
+  _PERCENT_ = "_PERCENT_",
+}
+
 export enum PATIENT_ADDRESS_TYPE {
   HOME = "HOME",
   OFFICE = "OFFICE",
@@ -293,6 +310,11 @@ export interface DoctorPhysicalAvailabilityInput {
   availableDate: any;
   doctorId: string;
   facilityId: string;
+}
+
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
 }
 
 export interface FilterDoctorInput {
