@@ -148,12 +148,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const getDiffInMinutes = () => {
     if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime =
-        nextAvailability &&
-        moment
-          .utc(nextAvailability)
-          .toDate();
-
+      const nextAvailabilityTime = nextAvailability && moment(nextAvailability)
       const currentTime = moment(new Date());
       const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
       return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
@@ -164,12 +159,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const getDiffInHours = () => {
     if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime =
-        nextAvailability &&
-        moment
-          .utc(nextAvailability)
-          .toDate();
-
+      const nextAvailabilityTime = nextAvailability && moment(nextAvailability)
       const currentTime = moment(new Date());
       const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
       return Math.round(differenceInHours) + 1;
@@ -179,12 +169,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
   const getDiffInDays = () => {
     if (nextAvailability && nextAvailability.length > 0) {
-      const nextAvailabilityTime =
-        nextAvailability &&
-        moment
-          .utc(nextAvailability)
-          .toDate();
-
+      const nextAvailabilityTime = nextAvailability && moment(nextAvailability)
       const currentTime = moment(new Date());
       const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
       return Math.round(differenceInDays) + 1;

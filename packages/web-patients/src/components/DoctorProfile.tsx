@@ -261,9 +261,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       ) {
         const nextAvailabilityTime =
           firstAvailableSLot.availableSlot &&
-          moment
-            .utc(firstAvailableSLot.availableSlot)
-            .toDate();
+          moment(firstAvailableSLot.availableSlot)
         const currentTime = moment(new Date());
         const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
         return differenceInMinutes + 1;
@@ -281,9 +279,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       if (physicalAvailableSlot && physicalAvailableSlot.physicalAvailableSlot !== '') {
         const nextAvailabilityTime =
           physicalAvailableSlot.physicalAvailableSlot &&
-          moment
-            .utc(physicalAvailableSlot.physicalAvailableSlot)
-            .toDate();
+          moment(physicalAvailableSlot.physicalAvailableSlot)
         const currentTime = moment(new Date());
         const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
         return differenceInMinutes + 1;
@@ -304,9 +300,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       if (firstAvailableSLot && firstAvailableSLot.availableSlot !== '') {
         const nextAvailabilityTime =
           firstAvailableSLot.availableSlot &&
-          moment
-            .utc(firstAvailableSLot.availableSlot)
-            .toDate();
+          moment(firstAvailableSLot.availableSlot)
         const currentTime = moment(new Date());
         const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
         return Math.round(differenceInHours) + 1;
@@ -325,9 +319,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       if (physicalAvailableSlot && physicalAvailableSlot.physicalAvailableSlot !== '') {
         const nextAvailabilityTime =
           physicalAvailableSlot.physicalAvailableSlot &&
-          moment
-            .utc(physicalAvailableSlot.physicalAvailableSlot)
-            .toDate();
+          moment(physicalAvailableSlot.physicalAvailableSlot)
         const currentTime = moment(new Date());
         const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
         return Math.round(differenceInHours) + 1;
@@ -349,9 +341,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       if (firstAvailableSLot && firstAvailableSLot.availableSlot !== '') {
         const nextAvailabilityTime =
           firstAvailableSLot.availableSlot &&
-          moment
-            .utc(firstAvailableSLot.availableSlot)
-            .toDate();
+          moment(firstAvailableSLot.availableSlot)
         const currentTime = moment(new Date());
         const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
         return Math.round(differenceInDays) + 1;
@@ -370,9 +360,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       if (physicalAvailableSlot && physicalAvailableSlot.physicalAvailableSlot !== '') {
         const nextAvailabilityTime =
           physicalAvailableSlot.physicalAvailableSlot &&
-          moment
-            .utc(physicalAvailableSlot.physicalAvailableSlot)
-            .toDate();
+          moment(physicalAvailableSlot.physicalAvailableSlot)
         const currentTime = moment(new Date());
         const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
         return Math.round(differenceInDays) + 1;
