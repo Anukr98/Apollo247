@@ -1284,9 +1284,8 @@ export async function sendPatientRegistrationNotification(
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
   let notificationBody: string = '';
   notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
-  let smsContent =
-    notificationBody + 'Click here ' + process.env.SMS_LINK ? process.env.SMS_LINK : '';
-
+  let smsContent = process.env.SMS_LINK ? ' Click here ' + process.env.SMS_LINK : '';
+  smsContent = notificationBody + smsContent;
   const payload = {
     notification: {
       title: notificationTitle,
