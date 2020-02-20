@@ -311,7 +311,7 @@ export const ManageProfiles: React.FC = (props) => {
         classes={{ paper: classes.bottomPopover }}
       >
         <MascotWithMessage
-          messageTitle="Success"
+          messageTitle=""
           message={
             updatingPatientId.length > 0
               ? isProfileDelete
