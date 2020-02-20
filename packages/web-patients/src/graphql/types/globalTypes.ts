@@ -317,6 +317,17 @@ export interface DownloadDocumentsInput {
   patientId: string;
 }
 
+export interface EditProfileInput {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: any;
+  gender: Gender;
+  relation: Relation;
+  emailAddress: string;
+  photoUrl: string;
+  id: string;
+}
+
 export interface FilterDoctorInput {
   patientId?: string | null;
   specialty?: string | null;
@@ -425,6 +436,17 @@ export interface PatientConsultsAndOrdersInput {
   filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
   offset?: number | null;
   limit?: number | null;
+}
+
+export interface PatientProfileInput {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: any;
+  gender: Gender;
+  relation: Relation;
+  emailAddress: string;
+  photoUrl: string;
+  mobileNumber: string;
 }
 
 export interface Range {

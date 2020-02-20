@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar, Switch } from '@material-ui/core';
 import React, { useState } from 'react';
-import Scrollbars from 'react-custom-scrollbars';
+import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import {
   GetPatientAppointments,
   GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
@@ -93,6 +93,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span:last-child': {
         marginLeft: 'auto',
         cursor: 'pointer',
+        display: 'none',
       },
     },
     appointBooked: {
@@ -159,6 +160,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       marginTop: 10,
       textAlign: 'right',
+      display: 'none',
       '& button': {
         border: 'none',
         backgroundColor: 'transparent',
@@ -172,6 +174,29 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       opacity: 0.6,
+    },
+    messageBox: {
+      padding: '10px 20px 25px 20px',
+      '& p': {
+        fontSize: 14,
+        color: '#01475b',
+        fontWeight: 500,
+        lineHeight: '18px',
+      },
+    },
+    appDownloadBtn: {
+      backgroundColor: '#fcb716',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 5,
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+      padding: '9px 24px',
+      display: 'block',
+      textAlign: 'center',
+    },
+    textCenter: {
+      textAlign: 'center',
     },
   };
 });
@@ -193,6 +218,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   };
 
   const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
+  const [isScheduledAppPopoverOpen, setIsScheduledAppPopoverOpen] = React.useState<boolean>(false);
+  const [isAppDetailsPopoverOpen, setIsAppDetailsPopoverOpen] = React.useState<boolean>(true);
 
   const shouldRefreshComponent = (diff: number) => {
     const id = setInterval(() => {
@@ -288,7 +315,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
             };
             return (
               <Grid item sm={4} xs={12} key={index}>
-                <div className={classes.consultCard}>
+                <div
+                  className={classes.consultCard}
+                  onClick={() => setIsScheduledAppPopoverOpen(true)}
+                >
                   <div className={classes.consultCardWrap}>
                     <div className={classes.startDoctor}>
                       <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
@@ -332,12 +362,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           )}
                         </span>
                       </div>
-                      {/* <div className={classes.appointBooked}>
-                        <ul>
-                          <li>Fever</li>
-                          <li>Cough &amp; Cold</li>
-                        </ul>
-                      </div> */}
                     </div>
                   </div>
                   <div className={classes.cardBottomActons}>
@@ -389,6 +413,33 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           })}
         </Grid>
       </div>
+      <AphDialog open={isScheduledAppPopoverOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsScheduledAppPopoverOpen(false)} />
+        <AphDialogTitle>Scheduled Appointment</AphDialogTitle>
+        <div className={classes.messageBox}>
+          <p>
+            You have an online consultation scheduled with Dr. Simran Rai for February 19, 2020 at
+            4:35 PM.
+          </p>
+          <p>Kindly visit the app to continue with the consultation or to make any changes.</p>
+          <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
+            Download Apollo247 App
+          </a>
+        </div>
+      </AphDialog>
+      <AphDialog open={isAppDetailsPopoverOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsAppDetailsPopoverOpen(false)} />
+        <AphDialogTitle>Appointment Details</AphDialogTitle>
+        <div className={classes.messageBox}>
+          <p className={classes.textCenter}>
+            Kindly visit the app to access your appointment details.
+          </p>
+          <p className={classes.textCenter}>Download the app by clicking below.</p>
+          <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
+            Download Apollo247 App
+          </a>
+        </div>
+      </AphDialog>
     </div>
   );
 };
