@@ -12,6 +12,8 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
+import { AphButton } from '@aph/web-ui-components';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,6 +77,38 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
       },
+    },
+    downloadApollo: {
+      backgroundColor: '#fff',
+      padding: '35px 0',
+      textAlign: 'center',
+      marginTop: 8,
+      borderRadius: 5,
+      fontSize: 18,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
+    },
+    downloadInfo: {
+      marginBottom: 17,
+      '& div': {
+        marginBottom: 10,
+      },
+      '& span': {
+        fontWeight: 'bold',
+      },
+    },
+    downloadLink: {
+      fontSize: 18,
+      textTransform: 'capitalize',
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      fontWeight: 'bold',
+      padding: '9px 13px',
+      display: 'inline-block',
+      minWidth: 262,
     },
     infoRow: {
       display: 'flex',
@@ -381,6 +415,20 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               )}
             </div>
           </div>
+        </div>
+        <div className={classes.downloadApollo}>
+          <div className={classes.downloadInfo}>
+            <div>To enjoy enhanced</div>
+            <span>consultation experience</span>
+          </div>
+          <a
+            href="https://play.google.com/"
+            target="_blank"
+            color="primary"
+            className={classes.downloadLink}
+          >
+            Download Apollo247 App
+          </a>
         </div>
       </div>
     );

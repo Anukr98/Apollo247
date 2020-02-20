@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Patient } from 'profiles-service/entities';
+import { Patient, Relation } from 'profiles-service/entities';
 import { BaseEntity } from 'typeorm';
 import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -86,9 +86,9 @@ const updatePatient: Resolver<
   const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
   if (updatePatient) {
-    // if (updatePatient.uhid == '' || updatePatient.uhid == null) {
-    //   await patientRepo.createNewUhid(updatePatient.id);
-    // }
+    if (updatePatient.uhid == '' || updatePatient.uhid == null) {
+      await patientRepo.createNewUhid(updatePatient.id);
+    }
   }
   const patient = await patientRepo.findById(updatePatient.id);
   if (!patient || patient == null) {
@@ -104,8 +104,12 @@ const updatePatient: Resolver<
     }
   }
 
-  //send registration success notification here
-  sendPatientRegistrationNotification(patient, profilesDb, regCode);
+  const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
+  console.log(getPatientList, 'getPatientList for count');
+  if (updatePatient.relation == Relation.ME || getPatientList.length == 1 || regCode != '') {
+    //send registration success notification here
+    sendPatientRegistrationNotification(patient, profilesDb, regCode);
+  }
 
   return { patient };
 };

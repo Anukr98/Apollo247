@@ -128,6 +128,18 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         specialistSingularTerm
         specialistPluralTerm
       }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+        currentDateTime
+        availableInMinutes
+      }
+      doctorsAvailability {
+        doctorId
+        availableModes
+      }
     }
   }
 `;
@@ -193,6 +205,14 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           photoUrl
           thumbnailUrl
           doctorType
+        }
+        doctorsNextAvailability {
+          doctorId
+          onlineSlot
+          physicalSlot
+          referenceSlot
+          currentDateTime
+          availableInMinutes
         }
         specialties {
           name

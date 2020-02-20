@@ -43,6 +43,7 @@ const getDoctorAvailableSlots: Resolver<
   previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
   const checkStart = `${previousDate.toDateString()} 18:30:00`;
   const checkEnd = `${DoctorAvailabilityInput.availableDate.toDateString()} 18:30:00`;
+  console.log(checkStart, checkEnd, 'check start end');
   let weekDay = format(previousDate, 'EEEE').toUpperCase();
   let timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
   weekDay = format(DoctorAvailabilityInput.availableDate, 'EEEE').toUpperCase();
@@ -93,7 +94,7 @@ const getDoctorAvailableSlots: Resolver<
         const nextDate = addDays(previousDate, 1);
         const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
         const td = `${nextDate.toDateString()} 00:00:00`;
-        if (new Date(ed) >= new Date(td)) {
+        if (new Date(ed) >= new Date(td) && timeSlot.weekDay != timeSlots[rowCount - 1].weekDay) {
           startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
         }
       }
@@ -125,7 +126,9 @@ const getDoctorAvailableSlots: Resolver<
               new Date(generatedSlot) >= new Date(checkStart) &&
               new Date(generatedSlot) < new Date(checkEnd)
             ) {
-              availableSlots.push(generatedSlot);
+              if (!availableSlots.includes(generatedSlot)) {
+                availableSlots.push(generatedSlot);
+              }
             }
           }
           return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;

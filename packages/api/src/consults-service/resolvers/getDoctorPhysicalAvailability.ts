@@ -97,7 +97,7 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         const nextDate = addDays(previousDate, 1);
         const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
         const td = `${nextDate.toDateString()} 00:00:00`;
-        if (new Date(ed) >= new Date(td)) {
+        if (new Date(ed) >= new Date(td) && timeSlot.weekDay != timeSlots[rowCount - 1].weekDay) {
           startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
         }
       }
@@ -129,7 +129,9 @@ const getDoctorPhysicalAvailableSlots: Resolver<
               new Date(generatedSlot) >= new Date(checkStart) &&
               new Date(generatedSlot) < new Date(checkEnd)
             ) {
-              availableSlots.push(generatedSlot);
+              if (!availableSlots.includes(generatedSlot)) {
+                availableSlots.push(generatedSlot);
+              }
             }
           }
           return generatedSlot;

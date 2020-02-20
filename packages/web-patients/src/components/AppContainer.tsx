@@ -33,6 +33,7 @@ import { StoragePoc } from 'components/StoragePoc';
 // import { TrackJS } from 'trackjs';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 import { MedicineDetails } from 'components/Medicine/MedicineDetails';
+import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -113,6 +114,7 @@ const App: React.FC = () => {
             component={ChatRoom}
           />
           <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
+          <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
           <AuthRouted
             exact
             path={clientRoutes.notificationSettings()}
