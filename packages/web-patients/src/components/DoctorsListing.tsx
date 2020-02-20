@@ -175,6 +175,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const { filter, specialityName, specialityId, specialityPlural, specialitySingular } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const { currentPatient } = useAllCurrentPatients();
+  const [tabValue, setTabValue] = useState('All Consults');
 
   const consultOptions = {
     all: 'All Consults',
@@ -264,13 +265,22 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const consultErrorMessage = () => {
     const selectedConsultName =
-      selectedFilterOption === 'online' ? 'Online Consultation' : ' Clinic Visit';
+      selectedFilterOption === 'online' ? 'Online Consultation' : 'Physical Consult';
+
     const suggestedConsultName =
       selectedFilterOption === 'online' ? 'Clinic Visit' : ' Online Consultation';
+
     const noConsultFoundError = `There is no ${specialityName} available for ${selectedConsultName}. Please try
     ${suggestedConsultName}`;
-    const noDoctorFoundError = `There is no ${specialityPlural} available to match your filters. Please try again with
+
+    const noDoctorFoundError = `There is no ${specialitySingular} available to match your filters. Please try again with
     different filters.`;
+
+    const suggestedClinicName =
+      selectedFilterOption === 'Clinic Visit' ? 'Clinic Visit' : 'Online Consultation';
+
+    const noDoctorFoundClinicError = `There is no ${specialitySingular} available for ${selectedConsultName}. Please you try
+    ${suggestedClinicName}.`;
 
     return (
       <Grid container spacing={2} justify="center">
@@ -282,6 +292,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             data.getDoctorsBySpecialtyAndFilters.doctors &&
             data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
               ? noConsultFoundError
+              : tabValue == 'Clinic Visit'
+              ? noDoctorFoundClinicError
               : noDoctorFoundError}
           </div>
         </Grid>
@@ -334,6 +346,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
                   }
                   onClick={(e) => {
                     setSelectedFilterOption(e.currentTarget.value);
+                    setTabValue(consultName);
                   }}
                   value={consultType}
                   key={_uniqueId('cbutton_')}
