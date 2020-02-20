@@ -103,9 +103,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [coupon, setCoupon] = useState('');
 
-  const doctorFees = isConsultOnline
-    ? props.doctor!.onlineConsultationFees
-    : props.doctor!.physicalConsultationFees;
+  const doctorFees =
+    tabs[0].title === selectedTab
+      ? props.doctor!.onlineConsultationFees
+      : props.doctor!.physicalConsultationFees;
 
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const scrollViewRef = React.useRef<any>(null);
@@ -510,7 +511,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           variables: {
             doctorId: props.doctorId,
             code: couponValue,
-            consultType: isOnlineConsult ? AppointmentType.ONLINE : AppointmentType.PHYSICAL,
+            consultType:
+              tabs[0].title === selectedTab ? AppointmentType.ONLINE : AppointmentType.PHYSICAL,
             appointmentDateTimeInUTC: timeSlot,
           },
           fetchPolicy: 'no-cache',
