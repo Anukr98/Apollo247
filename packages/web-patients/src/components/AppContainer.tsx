@@ -45,12 +45,12 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 75,
       },
-      [theme.breakpoints.down(990)]: {
+      [theme.breakpoints.down(900)]: {
         paddingBottom: 60,
       },
     },
     appNotSignedIn: {
-      [theme.breakpoints.down(990)]: {
+      [theme.breakpoints.down(900)]: {
         paddingBottom: 0,
       },
     },
