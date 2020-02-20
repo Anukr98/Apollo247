@@ -945,7 +945,7 @@ export class JdDashboardSummary extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   loggedInHours: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   awayHours: number;
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
