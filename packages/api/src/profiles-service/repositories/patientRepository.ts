@@ -56,6 +56,33 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
+  async findByMobileNumberLogin(mobileNumber: string) {
+    const patientList = await this.find({
+      where: { mobileNumber, isActive: true },
+    });
+    console.log('patient list count', patientList.length);
+    if (patientList.length > 1) {
+      patientList.map((patient) => {
+        if (patient.firstName == '' || patient.uhid == '') {
+          console.log(patient.id, 'blank card');
+          this.update(patient.id, { isActive: false });
+        }
+      });
+    }
+    return this.find({
+      where: { mobileNumber, isActive: true },
+      relations: [
+        'lifeStyle',
+        'healthVault',
+        'familyHistory',
+        'patientAddress',
+        'patientDeviceTokens',
+        'patientNotificationSettings',
+        'patientMedicalHistory',
+      ],
+    });
+  }
+
   findDetailsByMobileNumber(mobileNumber: string) {
     return this.findOne({
       where: { mobileNumber, isActive: true },
