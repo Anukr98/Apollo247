@@ -929,7 +929,7 @@ export async function sendReminderNotification(
       );
       doctorSMS = doctorSMS.replace('{1}', patientDetails.firstName);
     }
-    console.log('doctorSMS=============', doctorSMS);
+    console.log('doctorSMS=======================', doctorSMS);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
   } else if (
