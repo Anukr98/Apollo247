@@ -20,6 +20,7 @@ import {
   JdDashboardSummary,
   AuditHistory,
   CurrentAvailabilityStatus,
+  utilizationCapacity,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -101,6 +102,7 @@ export const connect = async () => {
         JdDashboardSummary,
         AuditHistory,
         CurrentAvailabilityStatus,
+        utilizationCapacity,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

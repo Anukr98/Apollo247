@@ -934,7 +934,7 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   jdsUtilization: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   loggedInHours: number;
 
   @Column({ default: 0 })
@@ -1068,6 +1068,9 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   awayHours: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  totalConsultationTime: number;
 
   @Column()
   createdDate: Date;
@@ -1247,6 +1250,31 @@ export class CurrentAvailabilityStatus extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 }
+
+@Entity()
+export class utilizationCapacity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  specialityId: string;
+
+  @Column({ nullable: true })
+  specialtyName: string;
+
+  @Column({ nullable: true })
+  slotsBooked: number;
+
+  @Column({ nullable: true })
+  doctorSlots: number;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
 //CurrentAvailabilityStatus end
 
 ///////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
+import { getPatientMedicalRecordsResolvers } from 'profiles-service/resolvers/getPatientMedicalRecords';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -80,7 +81,18 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
     });
   }
-
+  async getAppointmentsByDoctorIds(doctorId: string) {
+    const appointmentData = await this.find({
+      where: {
+        doctorId: doctorId
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      })
+    })
+    return appointmentData;
+  }
   checkPatientCancelledHistory(patientId: string, doctorId: string) {
     const newStartDate = new Date(format(addDays(new Date(), -9), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30');
@@ -159,7 +171,23 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .getMany();
   }
-
+  async getBookedSlots(doctorIds: string[]) {
+    const appointmentDate = new Date();
+    //const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const inputStartDate = format(appointmentDate, 'yyyy-MM-dd');
+    const inputEndDate = format(addDays(appointmentDate, +1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const fromDate = new Date(inputStartDate + 'T18:30');
+    const toDate = new Date(inputEndDate + 'T18:29');
+    const appointments = await this.find({
+      where: [{
+        doctorId: In(doctorIds),
+        appointmentDateTime: Between(fromDate, toDate),
+        status: Not('PAYMENT_PENDING')
+      }]
+    });
+    return appointments.length;
+  }
   saveAppointment(appointmentAttrs: Partial<Appointment>) {
     return this.create(appointmentAttrs)
       .save()
@@ -751,9 +779,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -805,9 +833,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${nextSlot
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}`;
   }
 
   getAlignedSlot(curDate: Date) {
@@ -1025,9 +1053,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1085,9 +1113,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
