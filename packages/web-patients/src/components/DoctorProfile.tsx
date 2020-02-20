@@ -12,6 +12,7 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,6 +76,30 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
       },
+    },
+    downloadApollo: {
+      backgroundColor: '#fff',
+      padding: '35px 0',
+      textAlign: 'center',
+      marginTop: 8,
+      borderRadius: 5,
+      fontSize: 18,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
+    },
+    downloadInfo: {
+      marginBottom: 17,
+      '& div': {
+        marginBottom: 10,
+      },
+      '& span': {
+        fontWeight: 'bold',
+      },
+    },
+    downloadButton: {
+      fontSize: 18,
+      textTransform: 'capitalize',
     },
     infoRow: {
       display: 'flex',
@@ -381,6 +406,15 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               )}
             </div>
           </div>
+        </div>
+        <div className={classes.downloadApollo}>
+          <div className={classes.downloadInfo}>
+            <div>To enjoy enhanced</div>
+            <span>consultation experience</span>
+          </div>
+          <AphButton color="primary" className={classes.downloadButton}>
+            Download Apollo247 App
+          </AphButton>
         </div>
       </div>
     );
