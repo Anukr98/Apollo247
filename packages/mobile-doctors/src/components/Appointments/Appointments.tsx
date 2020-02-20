@@ -120,16 +120,16 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [doctorName, setDoctorName] = useState<string>(
     (props.navigation.state.params && props.navigation.state.params.Firstname) || ''
   );
-  const [DoctorId, setDoctorId] = useState<string>(
-    (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
-  );
+  // const [DoctorId, setDoctorId] = useState<string>(
+  //   (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
+  // );
   const { doctorDetails } = useAuth();
 
   useEffect(() => {
     console.log(doctorDetails, 'doctorDetailshi');
 
     setDoctorName((doctorDetails && doctorDetails.firstName) || '');
-    setDoctorId((doctorDetails && doctorDetails!.id) || '');
+    // setDoctorId((doctorDetails && doctorDetails!.id) || '');
     // getLocalData()
     //   .then((data) => {
     //     console.log('data', data);
@@ -143,23 +143,24 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
-  const [isDropdownVisible, setDropdownVisible] = useState(false);
+  // const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [showNeedHelp, setshowNeedHelp] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
 
-  const startDate = moment(date).format('YYYY-MM-DD');
-  const nextDate = new Date(date);
-  nextDate.setDate(nextDate.getDate() + 1);
-  const endDate = moment(nextDate).format('YYYY-MM-DD');
+  const recordsDate = moment(date).format('YYYY-MM-DD');
 
-  const { data, error, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
+  const { data, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
     GET_DOCTOR_APPOINTMENTS,
     {
       variables: {
-        startDate: startDate,
-        endDate: startDate, //'2019-09-13',
+        startDate: recordsDate,
+        endDate: recordsDate, //'2019-09-13',
       },
       fetchPolicy: 'no-cache',
+      pollInterval:
+        moment(date).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+          ? 30 * 1000
+          : undefined,
     }
   );
 
@@ -317,7 +318,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <DotIcon />,
             onPress: () => {
-              setDropdownVisible(true);
+              // setDropdownVisible(true);
             },
           },
         ]}
@@ -325,33 +326,33 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     );
   };
 
-  const renderDropdown = () => {
-    return (
-      <View style={styles.menuDropdown}>
-        <DropDown
-          containerStyle={{ marginRight: 20, width: 200 }}
-          options={[
-            {
-              optionText: strings.appointments.block_Calendar,
-              icon: <Block />,
-              onPress: () => {
-                // setDropdownVisible(false);
-                setDropdownVisible(!isDropdownVisible);
-                props.navigation.push(AppRoutes.BlockHomePage);
-              },
-            },
-            {
-              optionText: strings.appointments.manage_calendar,
-              icon: <CalendarIcon />,
-              onPress: () => {
-                setDropdownVisible(false);
-              },
-            },
-          ]}
-        />
-      </View>
-    );
-  };
+  // const renderDropdown = () => {
+  //   return (
+  //     <View style={styles.menuDropdown}>
+  //       <DropDown
+  //         containerStyle={{ marginRight: 20, width: 200 }}
+  //         options={[
+  //           {
+  //             optionText: strings.appointments.block_Calendar,
+  //             icon: <Block />,
+  //             onPress: () => {
+  //               // setDropdownVisible(false);
+  //               setDropdownVisible(!isDropdownVisible);
+  //               props.navigation.push(AppRoutes.BlockHomePage);
+  //             },
+  //           },
+  //           {
+  //             optionText: strings.appointments.manage_calendar,
+  //             icon: <CalendarIcon />,
+  //             onPress: () => {
+  //               setDropdownVisible(false);
+  //             },
+  //           },
+  //         ]}
+  //       />
+  //     </View>
+  //   );
+  // };
 
   const renderNoConsultsView = () => {
     const now = new Date();

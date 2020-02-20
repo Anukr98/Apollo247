@@ -1,22 +1,20 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { useAuth } from '../hooks/authHooks';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -124,14 +122,14 @@ export interface NeedHelpProps extends NavigationScreenProps {}
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber =
     // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-    !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+    /^[6-9]{1}\d{0,9}$/.test(number);
   return isValidNumber;
 };
 
 export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
+  // const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
@@ -178,15 +176,15 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
               phoneNumber == '' || phoneNumberIsValid ? styles.buttonViewfull : styles.buttonView
             }
             onPress={() => props.navigation.push(AppRoutes.NeedHelpDonePage)}
-            disabled={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
+            disabled={!(phoneNumberIsValid && phoneNumber.length === 10)}
           />
         </OtpCard>
       </SafeAreaView>
-      {verifyingPhoneNumber ? (
+      {/* {verifyingPhoneNumber ? (
         <View style={styles.needhelpview}>
           <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
         </View>
-      ) : null}
+      ) : null} */}
     </View>
   );
 };

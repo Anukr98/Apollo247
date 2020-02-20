@@ -278,6 +278,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
       item &&
       item.appointmentids && (
         <PatientCard
+          photoUrl={item.patientInfo ? item.patientInfo.photoUrl || '' : ''}
           containerStyle={index === 0 ? { marginTop: 30 } : {}}
           doctorname={item.patientInfo!.firstName}
           icon={

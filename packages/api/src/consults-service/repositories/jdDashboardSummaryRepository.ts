@@ -300,7 +300,6 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
-    //console.log(caseSheetRows, 'caseSheetRows');
     if (caseSheetRows[0].totalrows > 0) {
       const totalDurationInMins = parseFloat((caseSheetRows[0].totalduration / 60).toFixed(2));
       if (needAvg == 0) {

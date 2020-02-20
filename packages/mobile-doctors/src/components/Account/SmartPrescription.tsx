@@ -74,6 +74,7 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
 
 const styles = StyleSheet.create({
   containerListStyle: {
@@ -256,11 +257,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const updateFavouriteTest = (
     updateTestId: string,
     updateTestName: string,
-    tempTestArray: string[]
+    tempTestArray: searchDiagnostic_searchDiagnostic[]
   ) => {
     console.log('updateTestId-----', updateTestId, 'updateTestName-----', updateTestName);
     // tempTestArray.push(tempTestArray);
-    const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
+    const AddingTest = tempTestArray
+      .map((ele) => ele.itemname)
+      .filter((i) => i !== '')
+      .join(',');
     console.log('AddingTest---', AddingTest);
 
     setLoading(true);
@@ -577,8 +581,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   //   );
   // };
 
-  const AddFavouriteTest = (searchTestVal: string, tempTestArray: string[]) => {
-    const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
+  const AddFavouriteTest = (
+    searchTestVal: string,
+    tempTestArray: searchDiagnostic_searchDiagnostic[]
+  ) => {
+    const AddingTest = tempTestArray
+      .map((ele) => ele.itemname)
+      .filter((i) => i !== '')
+      .join(',');
     console.log('AddingTest---', AddingTest);
 
     if (searchTestVal != '') {
@@ -593,8 +603,8 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           },
         })
         .then((_data) => {
-          setLoading(false),
-            console.log('Added Favourite test', _data.data!.addDoctorFavouriteTest);
+          setLoading(false);
+          console.log('Added Favourite test', _data.data!.addDoctorFavouriteTest);
           GetFavouriteTestList();
           setisSearchTestListVisible(!isSearchTestListVisible);
           setIsTest(!isTest);

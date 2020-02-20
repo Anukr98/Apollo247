@@ -1,17 +1,8 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { SplashLogo } from '@aph/mobile-doctors/src/components/SplashLogo';
-import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  Platform,
-  StyleSheet,
-  View,
-  Alert,
-  AsyncStorage,
-} from 'react-native';
+import { ActivityIndicator, AsyncStorage, Linking, Platform, StyleSheet, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
@@ -31,7 +22,7 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { firebaseUser, doctorDetails, getDoctorDetailsApi } = useAuth();
+  const { firebaseUser } = useAuth();
 
   const handleOpenURL = (url: string) => {
     console.log(url);
@@ -125,7 +116,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       // await AsyncStorage.getItem('doctorDetails');
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
       setTimeout(() => {
-        console.log(firebaseUser, doctorDetails);
+        console.log(firebaseUser);
 
         // getLocalData()
         //   .then((localData) => {
@@ -133,7 +124,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('isLoggedIn', isLoggedIn, isOnboardingDone, isProfileFlowDone);
 
         if (isLoggedIn === 'true') {
-          getDoctorDetailsApi && getDoctorDetailsApi();
           if (isProfileFlowDone === 'true') {
             props.navigation.replace(AppRoutes.TabBar);
           } else {
@@ -153,7 +143,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       }, 2000);
     }
     fetchData();
-  }, [props.navigation, firebaseUser, doctorDetails]);
+  }, [props.navigation, firebaseUser]);
 
   return (
     <View style={styles.mainView}>

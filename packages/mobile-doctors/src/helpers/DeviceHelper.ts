@@ -1,11 +1,10 @@
 'use strict';
 
-import { Dimensions, Platform, AsyncStorage } from 'react-native';
-import { Client } from 'bugsnag-react-native';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { DOCTOR_DEVICE_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import { Client } from 'bugsnag-react-native';
+import { Dimensions, Platform } from 'react-native';
 
 const bugsnag = new Client();
 const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
@@ -24,7 +23,8 @@ export const DeviceHelper = () => {
 export const CommonBugFender = async (stringName: string, errorValue: Error) => {
   const { doctorDetails } = useAuth();
   try {
-    bugsnag.notify(errorValue, function(report) {
+    const storedPhoneNumber = doctorDetails && doctorDetails.mobileNumber;
+    bugsnag.notify(errorValue, (report) => {
       report.metadata = {
         stringName: {
           viewSource:
@@ -32,7 +32,7 @@ export const CommonBugFender = async (stringName: string, errorValue: Error) => 
               ? DOCTOR_DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
               : DOCTOR_DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
           errorValue: errorValue as any,
-          phoneNumber: (doctorDetails!.mobileNumber as unknown) || null,
+          phoneNumber: storedPhoneNumber as string,
         },
       };
     });

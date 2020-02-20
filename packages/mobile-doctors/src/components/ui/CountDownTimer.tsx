@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, TextStyle, StyleProp } from 'react-native';
+import { StyleProp, Text, TextStyle } from 'react-native';
 
 interface CountDownTimerTypes {
   style?: StyleProp<TextStyle>;

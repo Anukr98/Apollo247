@@ -1,13 +1,12 @@
-import { ApploLogo, BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,
   StyleSheet,
+  Text,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
   ViewStyle,
-  Text,
 } from 'react-native';
 import { theme } from '../../theme/theme';
 

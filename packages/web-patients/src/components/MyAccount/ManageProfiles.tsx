@@ -125,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     scrollBars: {
-      height: 'calc(100vh - 265px) !important',
+      height: 'calc(100vh - 255px) !important',
       [theme.breakpoints.down('xs')]: {
         height: '100% !important',
         '& >div:nth-child(2)': {

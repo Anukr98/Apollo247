@@ -129,7 +129,9 @@ const getDoctorPhysicalAvailableSlots: Resolver<
               new Date(generatedSlot) >= new Date(checkStart) &&
               new Date(generatedSlot) < new Date(checkEnd)
             ) {
-              availableSlots.push(generatedSlot);
+              if (!availableSlots.includes(generatedSlot)) {
+                availableSlots.push(generatedSlot);
+              }
             }
           }
           return generatedSlot;

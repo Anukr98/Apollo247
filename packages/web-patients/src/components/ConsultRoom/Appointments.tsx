@@ -1,13 +1,15 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, MenuItem, Popover, CircularProgress } from '@material-ui/core';
+import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
+import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
+``;
 import {
   GetPatientAppointments,
   GetPatientAppointmentsVariables,
@@ -224,9 +226,76 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
     },
     loader: {
-      margin: '20px auto',
       textAlign: 'center',
+      padding: '20px 0',
+    },
+    messageBox: {
+      padding: '10px 20px 25px 20px',
+      '& p': {
+        fontSize: 14,
+        color: '#01475b',
+        fontWeight: 500,
+        lineHeight: '18px',
+      },
+    },
+    appDownloadBtn: {
+      backgroundColor: '#fcb716',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      borderRadius: 5,
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+      padding: '9px 24px',
       display: 'block',
+      textAlign: 'center',
+    },
+    confirmedDialog: {
+      '& >div:nth-child(3)': {
+        '& >div': {
+          maxWidth: 385,
+        },
+      },
+    },
+    borderText: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      paddingTop: 12,
+      marginTop: 12,
+    },
+    doctorDetails: {
+      boxShadow: '0 0px 5px 0 rgba(0, 0, 0, 0.3)',
+      borderRadius: 10,
+      border: 'solid 1px #979797',
+      padding: 16,
+      display: 'flex',
+      alignItems: 'center',
+    },
+    doctorInfo: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    doctorText: {
+      padding: 0,
+    },
+    drName: {
+      fontSize: 14,
+      color: '#01475b',
+      fontWeight: 500,
+    },
+    specality: {
+      fontSize: 10,
+      color: '#01475b',
+      fontWeight: 500,
+    },
+    appLogo: {
+      marginLeft: 'auto',
+      '& img': {
+        maxWidth: 70,
+      },
+    },
+    bigAvatar: {
+      width: 66,
+      height: 66,
+      marginRight: 10,
     },
   };
 });
@@ -242,6 +311,7 @@ export const Appointments: React.FC = (props) => {
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,
     GetPatientAppointmentsVariables
@@ -384,7 +454,7 @@ export const Appointments: React.FC = (props) => {
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
-                label="Active"
+                label="Upcoming"
               />
               <Tab
                 classes={{
@@ -400,7 +470,9 @@ export const Appointments: React.FC = (props) => {
                 {availableAppointments && availableAppointments.length > 0 ? (
                   <ConsultationsCard appointments={availableAppointments} />
                 ) : loading || isSigningIn ? (
-                  <CircularProgress className={classes.loader} />
+                  <div className={classes.loader}>
+                    <CircularProgress />
+                  </div>
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>
@@ -432,7 +504,9 @@ export const Appointments: React.FC = (props) => {
                 {pastAppointments && pastAppointments.length > 0 ? (
                   <ConsultationsCard appointments={pastAppointments} />
                 ) : loading || isSigningIn ? (
-                  <CircularProgress />
+                  <div className={classes.loader}>
+                    <CircularProgress />
+                  </div>
                 ) : (
                   <div className={classes.consultSection}>
                     <div className={classes.noAppointments}>
@@ -462,6 +536,34 @@ export const Appointments: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
+        <AphDialogClose onClick={() => setIsConfirmedPopoverOpen(false)} />
+        <AphDialogTitle>Confirmed</AphDialogTitle>
+        <div className={classes.messageBox}>
+          <div className={classes.doctorDetails}>
+            <div className={classes.doctorInfo}>
+              <Avatar alt="" src={require('images/dp_03.png')} className={classes.bigAvatar} />
+              <div className={classes.doctorText}>
+                <div className={classes.drName}>Dr. Simran Rai</div>
+                <div className={classes.specality}>General Physician</div>
+              </div>
+            </div>
+            <div className={classes.appLogo}>
+              <img src={require('images/ic_logo.png')} />
+            </div>
+          </div>
+          <p>
+            Your consultation with Dr. Simran Rai is confirmed. Thank you for choosing Apollo 247.
+          </p>
+          <p className={classes.borderText}>
+            We shared your details with Dr. Simran’s team. Please download the app to continue with
+            the consultation.
+          </p>
+          <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
+            Download Apollo247 App
+          </a>
+        </div>
+      </AphDialog>
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}

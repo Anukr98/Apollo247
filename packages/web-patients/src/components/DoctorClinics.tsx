@@ -40,8 +40,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       lineHeight: 1.67,
       color: '#02475b',
-      borderBottom: '0.5px solid rgba(2,71,91,0.2)',
-      paddingBottom: 10,
+      paddingBottom: 0,
+      borderbottom: 'none',
     },
     availableTimings: {
       paddingTop: 10,
@@ -59,6 +59,11 @@ const useStyles = makeStyles((theme: Theme) => {
       '& span:last-child': {
         marginLeft: 'auto',
       },
+    },
+    cityText: {
+      paddingBottom: 0,
+      fontSize: 12,
+      fontWeight: 500,
     },
     sectionHeader: {
       color: theme.palette.secondary.dark,
@@ -150,9 +155,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
       <>
         <div className={classes.sectionGroup}>
           <div className={classes.sectionHeader}>
-            <span>{`Dr. ${firstName}'s Clinic (${
-              clinics.length < 10 ? `0${clinics.length}` : clinics.length
-            })`}</span>
+            <span>{`Dr. ${firstName}'s`} location for physical visits</span>
           </div>
           <Grid className={classes.gridContainer} container spacing={2}>
             {_map(clinics, (clinicDetails) => {
@@ -160,7 +163,11 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                 <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>
                   <div className={classes.root} key={_uniqueId('clinic_')}>
                     <div className={classes.clinicImg}>
-                      <img src="https://via.placeholder.com/328x100" />
+                      <img
+                        src={
+                          clinicDetails.facility.imageUrl || 'https://via.placeholder.com/328x138'
+                        }
+                      />
                     </div>
                     <div className={classes.clinicInfo}>
                       <div className={classes.address}>
@@ -176,47 +183,12 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                           ? clinicDetails.facility.streetLine3
                           : ''}
                       </div>
-                      <div className={classes.availableTimings}>
-                        {_map(consultationHours, (consultationDetails: ConsultHours) => {
-                          const startTimeUtc = new Date(
-                            new Date(
-                              `${format(new Date(), 'yyyy-MM-dd')} ${
-                                consultationDetails.startTime
-                              }:00`
-                            ).toISOString()
-                          ).getTime();
-
-                          const endTimeUtc = new Date(
-                            new Date(
-                              `${format(new Date(), 'yyyy-MM-dd')} ${
-                                consultationDetails.endTime
-                              }:00`
-                            ).toISOString()
-                          ).getTime();
-
-                          const localTimeOffset = new Date().getTimezoneOffset() * 60000;
-
-                          const startTimeStamp = new Date(startTimeUtc - localTimeOffset).getTime();
-                          const startTime = format(startTimeStamp, 'h:mm a');
-                          const endTimeStamp = new Date(endTimeUtc - localTimeOffset).getTime();
-                          const endTime = format(endTimeStamp, 'h:mm a');
-
-                          return consultationDetails.consultMode === 'PHYSICAL' ||
-                            consultationDetails.consultMode === 'BOTH' ? (
-                            <div className={classes.timingsRow} key={_uniqueId('ava_')}>
-                              <span>
-                                {(consultationDetails && consultationDetails.weekDay) || ''}
-                              </span>
-                              <span>
-                                {startTime ? startTime : ''}
-                                &nbsp;-&nbsp;
-                                {endTime ? endTime : ''}
-                              </span>
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
                     </div>
+                  </div>
+                  <div className={classes.cityText}>
+                    {clinicDetails && clinicDetails.facility.city
+                      ? clinicDetails.facility.city
+                      : ''}
                   </div>
                 </Grid>
               );

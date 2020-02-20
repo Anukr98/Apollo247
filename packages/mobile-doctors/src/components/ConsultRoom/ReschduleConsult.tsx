@@ -1,35 +1,32 @@
-import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Cancel, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
-import React, { useState, useEffect } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
-  Alert,
-} from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import Highlighter from 'react-native-highlight-words';
-import { Doctor, DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
+import { INITIATE_RESCHDULE_APPONITMENT } from '@aph/mobile-doctors/src/graphql/profiles';
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initiateRescheduleAppointment,
   initiateRescheduleAppointmentVariables,
 } from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
-import { INITIATE_RESCHDULE_APPONITMENT } from '@aph/mobile-doctors/src/graphql/profiles';
-import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { useApolloClient } from 'react-apollo-hooks';
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import Pubnub from 'pubnub';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Highlighter from 'react-native-highlight-words';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const rescheduleconsult = '^^#rescheduleconsult';
 const config: Pubnub.PubnubConfig = {
@@ -51,16 +48,16 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
     borderBottomWidth: 2,
   },
-  inputView: {
-    height: 80,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#30c1a3',
-    color: '#01475b',
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 10,
-  },
+  // inputView: {
+  //   height: 80,
+  //   borderRadius: 10,
+  //   borderWidth: 2,
+  //   borderColor: '#30c1a3',
+  //   color: '#01475b',
+  //   marginLeft: 20,
+  //   marginRight: 20,
+  //   marginBottom: 10,
+  // },
   buttonView: {
     height: 40,
     borderRadius: 5,
@@ -215,17 +212,17 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
   const renderDropdownCard = () => (
     <View style={{ marginTop: 2 }}>
       <View style={styles.dropDownCardStyle}>
-        {sysmptonsList!.map((_doctor, i, array) => {
+        {sysmptonsList.map((_doctor, i, array) => {
           const drName = ` ${_doctor.firstName}`;
 
           return (
             <TouchableOpacity
-              onPress={() => onPressDoctorSearchListItem(` ${_doctor.firstName}`, _doctor!.id)}
+              onPress={() => onPressDoctorSearchListItem(` ${_doctor.firstName}`, _doctor.id)}
               style={{ marginHorizontal: 16 }}
               key={i}
             >
               {formatSuggestionsText(drName, '')}
-              {i < array!.length - 1 ? (
+              {i < array.length - 1 ? (
                 <View
                   style={{
                     marginTop: 8,
@@ -278,13 +275,24 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
       .then((_data) => {
         setIsLoading(false);
         console.log('data', _data);
-        const reschduleObject: any = {
+        const reschduleObject = {
           appointmentId: props.navigation.getParam('AppointmentId'),
-          transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
-            .rescheduledDateTime,
+          transferDateTime: g(
+            _data,
+            'data',
+            'initiateRescheduleAppointment',
+            'rescheduleAppointment',
+            'rescheduledDateTime'
+          ),
           doctorId: oldDoctorId,
-          reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
-          reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+          reschduleCount: g(_data, 'data', 'initiateRescheduleAppointment', 'rescheduleCount'),
+          reschduleId: g(
+            _data,
+            'data',
+            'initiateRescheduleAppointment',
+            'rescheduleAppointment',
+            'id'
+          ),
         };
         pubnub.publish(
           {

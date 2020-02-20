@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
 export interface LoginProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+  const isValidNumber = /^[6-9]{1}\d{0,9}$/.test(number);
   return isValidNumber;
 };
 
@@ -185,7 +185,7 @@ export const Login: React.FC<LoginProps> = (props) => {
     getNetStatus().then(async (status) => {
       if (status) {
         if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
-          null;
+          return;
         } else {
           const isBlocked = await _getTimerData();
           if (isBlocked) {
@@ -197,7 +197,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             setShowSpinner(true);
 
             loginAPI('+91' + phoneNumber)
-              .then((confirmResult: any) => {
+              .then((confirmResult) => {
                 console.log(confirmResult, 'confirmResult');
                 setShowSpinner(false);
                 console.log('confirmResult login', confirmResult);
@@ -286,7 +286,7 @@ export const Login: React.FC<LoginProps> = (props) => {
             )
           }
           onClickButton={onClickOkay}
-          disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
+          disableButton={!(phoneNumberIsValid && phoneNumber.length === 10)}
         >
           <View
             style={[

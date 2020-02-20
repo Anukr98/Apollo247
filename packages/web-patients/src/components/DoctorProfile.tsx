@@ -12,6 +12,8 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
+import { AphButton } from '@aph/web-ui-components';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,6 +77,38 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginBottom: 10,
       },
+    },
+    downloadApollo: {
+      backgroundColor: '#fff',
+      padding: '35px 0',
+      textAlign: 'center',
+      marginTop: 8,
+      borderRadius: 5,
+      fontSize: 18,
+      [theme.breakpoints.down('xs')]: {
+        borderRadius: 0,
+      },
+    },
+    downloadInfo: {
+      marginBottom: 17,
+      '& div': {
+        marginBottom: 10,
+      },
+      '& span': {
+        fontWeight: 'bold',
+      },
+    },
+    downloadLink: {
+      fontSize: 18,
+      textTransform: 'capitalize',
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      fontWeight: 'bold',
+      padding: '9px 13px',
+      display: 'inline-block',
+      minWidth: 262,
     },
     infoRow: {
       display: 'flex',
@@ -187,10 +221,6 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles({});
   const { doctorDetails } = props;
 
-  let availableSlot = 0,
-    availableIn = 0,
-    physicalAvailableIn = 0;
-
   const doctorId =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.id
@@ -213,58 +243,206 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     return <LinearProgress />;
   }
 
-  // it must be always one record or we return only first record.
-  if (
-    data &&
-    data.getDoctorNextAvailableSlot &&
-    data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-  ) {
-    const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
-    const currentTime = new Date(new Date().toISOString()).getTime();
-    const firstAvailableSLot = availableSlots[0];
-    if (firstAvailableSLot) {
-      if (firstAvailableSLot.availableSlot !== '') {
-        const slotTime = new Date(firstAvailableSLot.availableSlot).getTime();
-        if (slotTime > currentTime) {
-          const difference = slotTime - currentTime;
-          availableIn = Math.round(difference / 60000);
-        }
-      } else {
-        availableIn = -1;
-      }
-      const physicalAvailableSlotTime = new Date(
-        firstAvailableSLot.physicalAvailableSlot
-      ).getTime();
-      if (physicalAvailableSlotTime > currentTime) {
-        const difference = physicalAvailableSlotTime - currentTime;
-        physicalAvailableIn = Math.round(difference / 60000);
-      } else {
-        physicalAvailableIn = -1;
-      }
-    }
-  }
+  // ----------------timeDifferenceMinutes-----------------
 
-  const availabilityMarkup = (availableIn: number) => {
-    if (availableIn === 0) {
-      return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
-    } else if (availableIn > 0 && availableIn <= 15) {
-      return (
-        <div className={`${classes.availability} ${classes.availableNow}`}>
-          AVAILABLE IN {availableIn} MINS
-        </div>
-      );
-    } else if (availableIn > 15 && availableIn <= 45) {
-      return <div className={`${classes.availability}`}>AVAILABLE IN {availableIn} MINS</div>;
-    } else if (availableIn > 45 && availableIn <= 60) {
-      return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
-    } else if (availableIn > 60) {
-      return (
-        <div className={`${classes.availability}`}>
-          TODAY {format(new Date(availableSlot), 'h:mm a')}
-        </div>
-      );
+  const timeDifferenceMinutes = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+      let firstAvailableSLot = availableSlots[0];
+      if (
+        firstAvailableSLot &&
+        firstAvailableSLot.availableSlot !== '' &&
+        firstAvailableSLot.availableSlot.length > 0
+      ) {
+        const nextAvailabilityTime =
+          firstAvailableSLot.availableSlot && moment(firstAvailableSLot.availableSlot);
+        const currentTime = moment(new Date());
+        const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+        return differenceInMinutes + 1;
+      }
     }
   };
+  const timeDifferenceMinutesPhysical = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const physicalAvailableSlotTime = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+      let physicalAvailableSlot = physicalAvailableSlotTime[0];
+      if (physicalAvailableSlot && physicalAvailableSlot.physicalAvailableSlot !== '') {
+        const nextAvailabilityTime =
+          physicalAvailableSlot.physicalAvailableSlot &&
+          moment(physicalAvailableSlot.physicalAvailableSlot);
+        const currentTime = moment(new Date());
+        const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+        return differenceInMinutes + 1;
+      }
+    }
+  };
+  // --------------------differenceInHours----------------------
+
+  const differenceInHours = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+      let firstAvailableSLot = availableSlots[0];
+
+      if (firstAvailableSLot && firstAvailableSLot.availableSlot !== '') {
+        const nextAvailabilityTime =
+          firstAvailableSLot.availableSlot && moment(firstAvailableSLot.availableSlot);
+        const currentTime = moment(new Date());
+        const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
+        return Math.round(differenceInHours) + 1;
+      }
+    }
+  };
+  const differenceInHoursPhysical = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const physicalAvailableSlotTime = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+      let physicalAvailableSlot = physicalAvailableSlotTime[0];
+
+      if (physicalAvailableSlot && physicalAvailableSlot.physicalAvailableSlot !== '') {
+        const nextAvailabilityTime =
+          physicalAvailableSlot.physicalAvailableSlot &&
+          moment(physicalAvailableSlot.physicalAvailableSlot);
+        const currentTime = moment(new Date());
+        const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
+        return Math.round(differenceInHours) + 1;
+      }
+    }
+  };
+
+  // ------------------------differenceInDays--------------------
+
+  const differenceInDays = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+      let firstAvailableSLot = availableSlots[0];
+
+      if (firstAvailableSLot && firstAvailableSLot.availableSlot !== '') {
+        const nextAvailabilityTime =
+          firstAvailableSLot.availableSlot && moment(firstAvailableSLot.availableSlot);
+        const currentTime = moment(new Date());
+        const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
+        return Math.round(differenceInDays) + 1;
+      }
+    }
+  };
+  const differenceInDaysPhysical = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const physicalAvailableSlotTime = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+      let physicalAvailableSlot = physicalAvailableSlotTime[0];
+
+      if (physicalAvailableSlot && physicalAvailableSlot.physicalAvailableSlot !== '') {
+        const nextAvailabilityTime =
+          physicalAvailableSlot.physicalAvailableSlot &&
+          moment(physicalAvailableSlot.physicalAvailableSlot);
+        const currentTime = moment(new Date());
+        const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
+        return Math.round(differenceInDays) + 1;
+      }
+    }
+  };
+
+  // ------------------------availabilityMarkupOnline/Physical------------------------
+
+  const availabilityMarkupOnline = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const differenceInMinutes = timeDifferenceMinutes();
+
+      if (differenceInMinutes === 0) {
+        return (
+          <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes > 0 && differenceInMinutes <= 15) {
+        return (
+          <div className={`${classes.availability} ${classes.availableNow}`}>
+            AVAILABLE IN {differenceInMinutes} MINS
+          </div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes > 15 && differenceInMinutes <= 60) {
+        return (
+          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes >= 60 && differenceInMinutes < 1380) {
+        return (
+          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInHours()} HOURS</div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes >= 1380) {
+        return (
+          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInDays()} DAYS</div>
+        );
+      }
+    } else {
+      return null;
+    }
+  };
+
+  const availabilityMarkupPhysical = () => {
+    if (
+      data &&
+      data.getDoctorNextAvailableSlot &&
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
+      const differenceInMinutes = timeDifferenceMinutesPhysical();
+
+      if (differenceInMinutes === 0) {
+        return (
+          <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes > 0 && differenceInMinutes <= 15) {
+        return (
+          <div className={`${classes.availability} ${classes.availableNow}`}>
+            AVAILABLE IN {differenceInMinutes} MINS
+          </div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes > 15 && differenceInMinutes <= 60) {
+        return (
+          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes >= 60 && differenceInMinutes < 1380) {
+        return (
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {differenceInHoursPhysical()} HOURS
+          </div>
+        );
+      } else if (differenceInMinutes && differenceInMinutes >= 1380) {
+        return (
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {differenceInDaysPhysical()} DAYS
+          </div>
+        );
+      }
+    } else {
+      return null;
+    }
+  };
+
+  // ----------------------------------------------------------------------------
 
   if (doctorDetails && doctorDetails.getDoctorDetailsById) {
     let hospitalLocation = '';
@@ -280,6 +458,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       awards,
       experience,
       firstName,
+      fullName,
       languages,
       lastName,
       onlineConsultationFees,
@@ -291,7 +470,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
     _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
       if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
-        hospitalLocation = hospitalDetails.facility.name;
+        hospitalLocation = hospitalDetails.facility.name + ',' + hospitalDetails.facility.city;
       }
     });
 
@@ -305,9 +484,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             />
           </div>
           <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>
-              Dr. {firstName}&nbsp;{lastName}
-            </div>
+            <div className={classes.doctorName}>{fullName}</div>
             <div className={classes.specialits}>
               {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
               <div className={classes.shareIcon}>
@@ -359,28 +536,40 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   <div className={classes.details}>
                     Online Consultation
                     <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
-                    {availabilityMarkup(availableIn)}
+                    {availabilityMarkupOnline()}
                   </div>
                   <div className={classes.doctorPrice}>Rs.{onlineConsultationFees}</div>
                 </div>
               </div>
-              {isStarDoctor && (
-                <div className={classes.consultGroup}>
-                  <div className={classes.infoRow}>
-                    <div className={`${classes.iconType} ${classes.noIcon}`}>
-                      <img src={require('images/ic-rupee.svg')} alt="" />
-                    </div>
-                    <div className={classes.details}>
-                      Clinic Visit
-                      <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
-                      {availabilityMarkup(physicalAvailableIn)}
-                    </div>
-                    <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
+              <div className={classes.consultGroup}>
+                <div className={classes.infoRow}>
+                  <div className={`${classes.iconType} ${classes.noIcon}`}>
+                    <img src={require('images/ic-rupee.svg')} alt="" />
                   </div>
+                  <div className={classes.details}>
+                    Clinic Visit
+                    <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
+                    {availabilityMarkupPhysical()}
+                  </div>
+                  <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
+        </div>
+        <div className={classes.downloadApollo}>
+          <div className={classes.downloadInfo}>
+            <div>To enjoy enhanced</div>
+            <span>consultation experience</span>
+          </div>
+          <a
+            href="https://play.google.com/"
+            target="_blank"
+            color="primary"
+            className={classes.downloadLink}
+          >
+            Download Apollo247 App
+          </a>
         </div>
       </div>
     );
@@ -388,3 +577,56 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     return <div>Invalid doctor id</div>;
   }
 };
+
+// it must be always one record or we return only first record.
+// if (
+//   data &&
+//   data.getDoctorNextAvailableSlot &&
+//   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+// ) {
+//   const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
+//   const currentTime = new Date(new Date().toISOString()).getTime();
+//   const firstAvailableSLot = availableSlots[0];
+//   if (firstAvailableSLot) {
+//     if (firstAvailableSLot.availableSlot !== '') {
+//       const slotTime = new Date(firstAvailableSLot.availableSlot).getTime();
+//       if (slotTime > currentTime) {
+//         const difference = slotTime - currentTime;
+//         availableIn = Math.round(difference / 60000);
+//       }
+//     } else {
+//       availableIn = -1;
+//     }
+//     const physicalAvailableSlotTime = new Date(
+//       firstAvailableSLot.physicalAvailableSlot
+//     ).getTime();
+//     if (physicalAvailableSlotTime > currentTime) {
+//       const difference = physicalAvailableSlotTime - currentTime;
+//       physicalAvailableIn = Math.round(difference / 60000);
+//     } else {
+//       physicalAvailableIn = -1;
+//     }
+//   }
+// }
+
+// const availabilityMarkup = (availableIn: number) => {
+//   if (availableIn === 0) {
+//     return <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>;
+//   } else if (availableIn > 0 && availableIn <= 15) {
+//     return (
+//       <div className={`${classes.availability} ${classes.availableNow}`}>
+//         AVAILABLE IN {availableIn} MINS
+//       </div>
+//     );
+//   } else if (availableIn > 15 && availableIn <= 45) {
+//     return <div className={`${classes.availability}`}>AVAILABLE IN {availableIn} MINS</div>;
+//   } else if (availableIn > 45 && availableIn <= 60) {
+//     return <div className={`${classes.availability}`}>AVAILABLE IN 1 HOUR</div>;
+//   } else if (availableIn > 60) {
+//     return (
+//       <div className={`${classes.availability}`}>
+//         TODAY {format(new Date(availableSlot), 'h:mm a')}
+//       </div>
+//     );
+//   }
+// };

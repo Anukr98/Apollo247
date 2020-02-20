@@ -312,6 +312,35 @@ export const ADD_PROFILE = gql`
   }
 `;
 
+export const GET_MEDICAL_RECORD = gql`
+  query getPatientMedicalRecords($patientId: ID!) {
+    getPatientMedicalRecords(patientId: $patientId) {
+      medicalRecords {
+        id
+        testName
+        testDate
+        recordType
+        referringDoctor
+        observations
+        additionalNotes
+        sourceName
+        documentURLs
+        prismFileIds
+        issuingDoctor
+        location
+        medicalRecordParameters {
+          id
+          parameterName
+          unit
+          result
+          minimum
+          maximum
+        }
+      }
+    }
+  }
+`;
+
 export const EDIT_PROFILE = gql`
   mutation EditProfile($editProfileInput: EditProfileInput!) {
     editProfile(editProfileInput: $editProfileInput) {
@@ -329,10 +358,68 @@ export const EDIT_PROFILE = gql`
   }
 `;
 
+export const GET_MEDICAL_PRISM_RECORD = gql`
+  query getPatientPrismMedicalRecords($patientId: ID!) {
+    getPatientPrismMedicalRecords(patientId: $patientId) {
+      labTests {
+        id
+        labTestName
+        labTestSource
+        labTestDate
+        labTestReferredBy
+        additionalNotes
+        testResultPrismFileIds
+        observation
+        labTestResultParameters {
+          parameterName
+          unit
+          result
+          range
+          setOutOfRange
+          setResultDate
+          setUnit
+          setParameterName
+          setRange
+          setResult
+        }
+        departmentName
+        signingDocName
+      }
+      healthChecks {
+        id
+        healthCheckName
+        healthCheckDate
+        healthCheckPrismFileIds
+        healthCheckSummary
+        source
+        appointmentDate
+        followupDate
+      }
+      hospitalizations {
+        id
+        diagnosisNotes
+        dateOfDischarge
+        dateOfHospitalization
+        dateOfNextVisit
+        hospitalizationPrismFileIds
+        source
+      }
+    }
+  }
+`;
+
 export const DELETE_PROFILE = gql`
   mutation DeleteProfile($patientId: String) {
     deleteProfile(patientId: $patientId) {
       status
+    }
+  }
+`;
+
+export const DOWNLOAD_DOCUMENT = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
     }
   }
 `;

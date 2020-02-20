@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
 });
 
 export interface SmartPrescriptionCardProps {
-  title?: any;
+  title?: string | null;
   rightIcon?: React.ReactNode;
   onPressTitle?: TouchableOpacityProps['onPress'];
   onPressrightIcon?: TouchableOpacityProps['onPress'];
@@ -38,7 +38,7 @@ export const SmartPrescriptionCard: React.FC<SmartPrescriptionCardProps> = (prop
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View style={{ flex: 0.9 }}>
           <TouchableOpacity activeOpacity={1} onPress={props.onPressTitle}>
-            <Text style={styles.titleStyle}>{title}</Text>
+            <Text style={styles.titleStyle}>{title || ''}</Text>
           </TouchableOpacity>
         </View>
         <View style={{ alignItems: 'flex-end' }}>

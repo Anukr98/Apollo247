@@ -1,34 +1,34 @@
-import { StarDoctorsTeam } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam';
-import { Star, Add, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { Image, StyleSheet, Text, View, TouchableOpacity, Platform, Alert } from 'react-native';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
-import Highlighter from 'react-native-highlight-words';
-import { useApolloClient } from 'react-apollo-hooks';
+import { StarDoctorsTeam } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam';
+import { Down, Star, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
+import {
+  ADD_SECRETARY,
+  GET_SECRETARY_LIST,
+  REMOVE_SECRETARY,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  addSecretary,
+  addSecretaryVariables,
+} from '@aph/mobile-doctors/src/graphql/types/addSecretary';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import {
   getSecretaryList,
   getSecretaryList_getSecretaryList,
 } from '@aph/mobile-doctors/src/graphql/types/getSecretaryList';
 import {
-  GET_SECRETARY_LIST,
-  ADD_SECRETARY,
-  REMOVE_SECRETARY,
-} from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  addSecretaryVariables,
-  addSecretary,
-} from '@aph/mobile-doctors/src/graphql/types/addSecretary';
-import {
   removeSecretary,
   removeSecretaryVariables,
 } from '@aph/mobile-doctors/src/graphql/types/removeSecretary';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Alert, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Highlighter from 'react-native-highlight-words';
+import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const styles = StyleSheet.create({
   container: {

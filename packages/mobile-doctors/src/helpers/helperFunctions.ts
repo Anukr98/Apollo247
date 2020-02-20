@@ -112,7 +112,7 @@ export const nameFormater = (name: string) => {
   return val[0].toUpperCase() + val.slice(1).toLowerCase();
 };
 
-export const medUsageType = (med: MEDICINE_UNIT) => {
+export const medUsageType = (med: MEDICINE_UNIT | null) => {
   switch (med) {
     case MEDICINE_UNIT.POWDER:
     case MEDICINE_UNIT.CREAM:
@@ -140,7 +140,7 @@ export const medUsageType = (med: MEDICINE_UNIT) => {
 };
 
 export const formatInt = (value: string) => {
-  let number = value.indexOf('-') === value.length - 1 ? value : parseInt(value);
+  const number = value.indexOf('-') === value.length - 1 ? value : parseInt(value, 10);
   return number || 0;
 };
 
@@ -169,7 +169,7 @@ export const messageCodes = {
 };
 
 export const formatFloating = (value: string) => {
-  let number =
+  const number =
     value.indexOf('.') === value.length - 1 ||
     value.indexOf('0', value.length - 1) === value.length - 1 ||
     value.indexOf('-') === value.length - 1
@@ -273,6 +273,8 @@ export function g<
  * @param obj
  * @param props
  */
+/*eslint-disable */
 export function g(obj: any, ...props: string[]) {
   return obj && props.reduce((result, prop) => (result == null ? undefined : result[prop]), obj);
 }
+/*eslint-enable */

@@ -16,7 +16,10 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { GetCaseSheet_getCaseSheet_pastAppointments } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import {
+  GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails,
+} from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -34,7 +37,7 @@ const styles = StyleSheet.create({
 
 export interface PastConsultCardProps extends NavigationScreenProps {
   data: (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null;
-  patientDetails: {};
+  patientDetails: GetCaseSheet_getCaseSheet_patientDetails | undefined;
 }
 
 export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
@@ -140,8 +143,8 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                 >
                   {renderLeftTimeLineView(
                     i.appointmentDateTime,
-                    index == 0 ? false : true,
-                    index == array.length - 1 ? false : true
+                    index !== 0,
+                    index !== array.length - 1
                   )}
                   <TouchableOpacity
                     style={{

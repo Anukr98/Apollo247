@@ -8,6 +8,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       salutation
       firstName
       lastName
+      fullName
       mobileNumber
       experience
       specialization
@@ -46,6 +47,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
               latitude
               longitude
               id
+              imageUrl
             }
           }
         }
@@ -70,6 +72,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           streetLine2
           streetLine3
           id
+          imageUrl
         }
       }
       consultHours {
@@ -95,6 +98,7 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         specialty {
           id
           name
+          userFriendlyNomenclature
         }
         experience
         photoUrl
@@ -121,6 +125,7 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
             streetLine2
             streetLine3
             id
+            imageUrl
           }
         }
       }
@@ -151,6 +156,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         id
         firstName
         lastName
+        fullName
         specialty {
           id
           name
