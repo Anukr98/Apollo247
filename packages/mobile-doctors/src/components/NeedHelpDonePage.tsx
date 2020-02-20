@@ -1,11 +1,9 @@
 import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
-import { string } from '@aph/mobile-doctors/src/strings/string';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {

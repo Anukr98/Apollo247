@@ -34,10 +34,11 @@ import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
-const isMobileNumberValid = (n: string) => true;
+// const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -85,13 +86,13 @@ export interface ProfileSetupProps extends NavigationScreenProps {}
 export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [modelvisible, setmodelvisible] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState<string>('');
-  const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
+  // const [phoneNumber, setPhoneNumber] = useState<string>('');
+  // const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
   const {
-    setDoctorDetails: setDoctorDetailsToContext,
+    // setDoctorDetails: setDoctorDetailsToContext,
     doctorDetails,
     getDoctorDetailsApi,
   } = useAuth();
@@ -162,10 +163,12 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                   SaveDoctorDeviceTokenInput: input,
                 },
               })
-              .then((data: any) => {
+              .then((data) => {
                 AsyncStorage.setItem(
                   'deviceToken',
-                  JSON.stringify(data.data.saveDoctorDeviceToken.deviceToken.deviceToken)
+                  JSON.stringify(
+                    g(data, 'data', 'saveDoctorDeviceToken', 'deviceToken', 'deviceToken')
+                  )
                 );
               })
               .catch((e: string) => {
@@ -330,26 +333,26 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
       </View>
     );
   };
-  const moveNextPage = () => {
-    setmodelvisible(false);
-    props.navigation.push(AppRoutes.NeedHelpDonePage);
-  };
-  const validateAndSetPhoneNumber = (number: string) => {
-    if (/^\d+$/.test(number) || number == '') {
-      setPhoneNumber(number);
-      // if (number.length == 10) {
-      setPhoneNumberIsValid(isPhoneNumberValid(number));
-      // }
-    } else {
-      return false;
-    }
-  };
-  const isPhoneNumberValid = (number: string) => {
-    const isValidNumber =
-      // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-      !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
-    return isValidNumber;
-  };
+  // const moveNextPage = () => {
+  //   setmodelvisible(false);
+  //   props.navigation.push(AppRoutes.NeedHelpDonePage);
+  // };
+  // const validateAndSetPhoneNumber = (number: string) => {
+  //   if (/^\d+$/.test(number) || number == '') {
+  //     setPhoneNumber(number);
+  //     // if (number.length == 10) {
+  //     setPhoneNumberIsValid(isPhoneNumberValid(number));
+  //     // }
+  //   } else {
+  //     return false;
+  //   }
+  // };
+  // const isPhoneNumberValid = (number: string) => {
+  //   const isValidNumber =
+  //     // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
+  //     !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+  //   return isValidNumber;
+  // };
 
   const renderNeedHelpModal = () => {
     return modelvisible ? (

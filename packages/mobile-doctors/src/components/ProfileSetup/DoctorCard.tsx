@@ -1,5 +1,6 @@
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { InviteIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { useState } from 'react';
 import {
   Image,
@@ -13,8 +14,6 @@ import {
   View,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -39,13 +38,13 @@ const styles = StyleSheet.create({
     color: theme.colors.SEARCH_DOCTOR_NAME,
     flex: 0.9,
   },
-  invitetext: {
-    ...theme.fonts.IBMPlexSansMedium(15),
-    color: '#ff748e',
-    marginBottom: 16,
-    marginLeft: 8,
-    marginTop: 2,
-  },
+  // invitetext: {
+  //   ...theme.fonts.IBMPlexSansMedium(15),
+  //   color: '#ff748e',
+  //   marginBottom: 16,
+  //   marginLeft: 8,
+  //   marginTop: 2,
+  // },
   imageremovestyles: {
     height: 24,
     width: 24,
@@ -102,7 +101,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface doctorCardProps {
+export interface DoctorCardProps {
   doctorId?: string;
   inviteStatus?: INVITEDSTATUS;
   doctorName?: string;
@@ -119,43 +118,44 @@ export interface doctorCardProps {
   onRemove?: (id: string) => void;
 }
 
-export const DoctorCard: React.FC<doctorCardProps> = (props) => {
+export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isMenuHidden, setisMenuHidden] = useState<boolean>(false);
 
   return (
     <View style={styles.doctorView}>
-      <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+      <TouchableOpacity activeOpacity={1} onPress={() => isMenuHidden && setisMenuHidden(false)}>
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-          <View style={{ flexDirection: 'row', marginBottom: 16 }}>
-            <View style={styles.imageView}>
-              <Image source={require('../../images/doctor/rahul.png')} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={styles.iconview}>
-                <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                  {strings.common.dr} {props.doctorName}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setisMenuHidden(!isMenuHidden)}
-                  style={{ flex: 0.2 }}
-                >
-                  <Image
-                    style={styles.imageremovestyles}
-                    source={require('../../images/icons/remove.png')}
-                  />
-                </TouchableOpacity>
+          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+              <View style={styles.imageView}>
+                <Image source={require('../../images/doctor/rahul.png')} />
               </View>
+              <View style={{ flex: 1 }}>
+                <View style={styles.iconview}>
+                  <Text style={styles.doctorNameStyles} numberOfLines={1}>
+                    {strings.common.dr} {props.doctorName}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setisMenuHidden(!isMenuHidden)}
+                    style={{ flex: 0.2 }}
+                  >
+                    <Image
+                      style={styles.imageremovestyles}
+                      source={require('../../images/icons/remove.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-              <Text style={styles.doctorSpecializationStyles}>
-                {props.specialization ? props.specialization + ' | ' : ''}
-                {props.experience} {strings.common.yrs}
-              </Text>
-              <Text style={styles.educationTextStyles}>{props.education}</Text>
-              <Text style={styles.doctorLocation}>{props.location}</Text>
+                <Text style={styles.doctorSpecializationStyles}>
+                  {props.specialization ? props.specialization + ' | ' : ''}
+                  {props.experience} {strings.common.yrs}
+                </Text>
+                <Text style={styles.educationTextStyles}>{props.education}</Text>
+                <Text style={styles.doctorLocation}>{props.location}</Text>
+              </View>
             </View>
           </View>
-        </View>
-        {/* {props.inviteStatus == INVITEDSTATUS.ACCEPTED ? (
+          {/* {props.inviteStatus == INVITEDSTATUS.ACCEPTED ? (
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row', marginBottom: 16 }}>
               <View style={styles.imageView}>
@@ -205,20 +205,21 @@ export const DoctorCard: React.FC<doctorCardProps> = (props) => {
             </View>
           </View>
         )} */}
-      </View>
-      {isMenuHidden ? (
-        <View style={styles.removebuttonview}>
-          <Button
-            onPress={() => {
-              setisMenuHidden(false);
-              props.onRemove(props.doctorId);
-            }}
-            title={strings.common.remove}
-            titleTextStyle={styles.titleTextStyle}
-            style={[styles.containerStyles]}
-          />
         </View>
-      ) : null}
+        {isMenuHidden ? (
+          <View style={styles.removebuttonview}>
+            <Button
+              onPress={() => {
+                setisMenuHidden(false);
+                props.onRemove(props.doctorId);
+              }}
+              title={strings.common.remove}
+              titleTextStyle={styles.titleTextStyle}
+              style={[styles.containerStyles]}
+            />
+          </View>
+        ) : null}
+      </TouchableOpacity>
     </View>
   );
 };

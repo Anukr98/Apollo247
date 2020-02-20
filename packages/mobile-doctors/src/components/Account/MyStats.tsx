@@ -11,11 +11,11 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    // paddingLeft: 20,
-  },
+  // container: {
+  //   alignItems: 'flex-start',
+  //   justifyContent: 'center',
+  //   paddingLeft: 20,
+  // },
   mainView: {
     padding: 20,
   },

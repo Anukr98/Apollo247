@@ -1,16 +1,14 @@
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import React from 'react';
 import {
   StyleProp,
   StyleSheet,
-  Text,
-  TouchableOpacity,
-  ViewStyle,
-  TouchableOpacityProps,
   TextStyle,
+  TouchableOpacityProps,
   View,
+  ViewStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 
 const styles = StyleSheet.create({
   buttonTextStyle: {

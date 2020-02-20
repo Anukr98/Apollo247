@@ -106,7 +106,7 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const downloadPDF = () => {
-    let dirs = RNFetchBlob.fs.dirs;
+    const dirs = RNFetchBlob.fs.dirs;
     console.log('avilable dir', dirs.DownloadDir + '/' + title, 'title', title);
     const downloadPath =
       Platform.OS === 'ios'
