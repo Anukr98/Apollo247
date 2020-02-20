@@ -6,8 +6,9 @@ import { CouponRepository } from 'profiles-service/repositories/couponRepository
 
 export const getCouponsTypeDefs = gql`
   enum DiscountType {
+    FLATPRICE
     PERCENT
-    AMOUNT
+    PRICEOFF
   }
 
   type Coupon {

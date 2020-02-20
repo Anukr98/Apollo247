@@ -11,6 +11,10 @@ const useStyles = makeStyles((theme: Theme) => {
       border: '1px solid #f7f8f5',
       marginBottom: 28,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     doctorInfoGroup: {
       display: 'flex',
@@ -72,16 +76,22 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicalCard: React.FC = (props) => {
-  const classes = useStyles();
+type MedicalCardProps = {
+  name: string;
+  isActiveCard: boolean;
+};
+
+export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
+  const classes = useStyles({});
+
   return (
-    <div className={`${classes.root} ${classes.activeCard}`}>
+    <div className={`${classes.root} ${props.isActiveCard ? classes.activeCard : ''}`}>
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>CBC</div>
-          <div className={classes.doctorService}>
+          <div className={classes.doctorName}>{props.name}</div>
+          {/* <div className={classes.doctorService}>
             <span>Apollo Sugar Clinic, Hyderabad</span>
-          </div>
+          </div> */}
         </div>
         <div className={classes.moreIcon}>
           <img src={require('images/ic_more.svg')} alt="" />

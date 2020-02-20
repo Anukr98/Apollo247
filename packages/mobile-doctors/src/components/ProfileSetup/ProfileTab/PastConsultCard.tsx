@@ -5,9 +5,10 @@ import {
   NextAppointmentIcon,
   PastAppointmentIcon,
   UpComingIcon,
+  Video,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
-import { STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { STATUS, APPOINTMENT_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
@@ -15,6 +16,10 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import {
+  GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails,
+} from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 
 const styles = StyleSheet.create({
   leftTimeLineContainer: {
@@ -31,8 +36,8 @@ const styles = StyleSheet.create({
 });
 
 export interface PastConsultCardProps extends NavigationScreenProps {
-  data: [];
-  patientDetails: {};
+  data: (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null;
+  patientDetails: GetCaseSheet_getCaseSheet_patientDetails | undefined;
 }
 
 export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
@@ -62,7 +67,15 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
             },
           ]}
         />
-        {getStatusCircle(status)}
+        <View
+          style={{
+            height: 12,
+            width: 12,
+            borderRadius: 6,
+            margin: 2,
+            backgroundColor: theme.colors.SHARP_BLUE,
+          }}
+        />
         <View
           style={[
             styles.verticalLine,
@@ -112,63 +125,65 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
       <View
         style={{
           flex: 1,
+          paddingBottom: 20,
         }}
       >
-        {props.data.map((i, index, array) => {
-          return (
-            <>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  // justifyContent: 'center',
-                  // alignItems: 'center',
-                }}
-              >
-                {renderLeftTimeLineView(
-                  i.appointmentDateTime,
-                  index == 0 ? false : true,
-                  index == array.length - 1 ? false : true
-                )}
-                <TouchableOpacity
+        {props.data &&
+          props.data.length > 0 &&
+          props.data.map(
+            (i, index, array) =>
+              i && (
+                <View
                   style={{
-                    flexDirection: 'row',
-                    borderRadius: 10,
-                    backgroundColor: theme.colors.WHITE,
-                    height: 50,
-                    alignItems: 'center',
-                    paddingRight: 10,
-                    paddingLeft: 18,
-                    marginVertical: 4.5,
-                    marginRight: 20,
                     flex: 1,
-                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    // justifyContent: 'center',
+                    // alignItems: 'center',
                   }}
-                  onPress={() =>
-                    props.navigation.navigate(AppRoutes.CaseSheetDetails, {
-                      consultDetails: i,
-                      patientDetails: props.patientDetails,
-                    })
-                  }
                 >
-                  <Text
+                  {renderLeftTimeLineView(
+                    i.appointmentDateTime,
+                    index !== 0,
+                    index !== array.length - 1
+                  )}
+                  <TouchableOpacity
                     style={{
-                      ...theme.viewStyles.text('M', 12, theme.colors.darkBlueColor(0.6), 1, 12),
+                      flexDirection: 'row',
+                      borderRadius: 10,
+                      backgroundColor: theme.colors.WHITE,
+                      height: 50,
+                      alignItems: 'center',
+                      paddingRight: 10,
+                      paddingLeft: 18,
+                      marginVertical: 4.5,
+                      marginRight: 20,
+                      flex: 1,
+                      justifyContent: 'space-between',
                     }}
+                    onPress={() =>
+                      props.navigation.navigate(AppRoutes.CaseSheetDetails, {
+                        consultDetails: i,
+                        patientDetails: props.patientDetails,
+                      })
+                    }
                   >
-                    {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
-                  </Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ marginRight: 24 }}>
-                      <Audio />
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('M', 12, theme.colors.darkBlueColor(0.6), 1, 12),
+                      }}
+                    >
+                      {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
+                    </Text>
+                    <View style={{ flexDirection: 'row' }}>
+                      <View style={{ marginRight: 24 }}>
+                        {i.appointmentType === APPOINTMENT_TYPE.ONLINE ? <Audio /> : <Video />}
+                      </View>
+                      <ArrowRight />
                     </View>
-                    <ArrowRight />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </>
-          );
-        })}
+                  </TouchableOpacity>
+                </View>
+              )
+          )}
       </View>
     </ScrollView>
   );

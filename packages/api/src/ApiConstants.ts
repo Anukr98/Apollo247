@@ -28,6 +28,9 @@ export enum ApiConstants {
   PHYSICAL_APPOINTMENT_REMINDER_60_BODY = 'Hi {0}! Dr. {1} will see you in an hour. Please come down to {2}.',
   PHYSICAL_APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're ready for your appointment.",
 
+  DOCTOR_APPOINTMENT_REMINDER_15_SMS = 'Appointment Reminder: Your appointment with {0} will start in 15 mins. Please be available online and prepared, accordingly.',
+  DOCTOR_APPOINTMENT_REMINDER_1_SMS = "Hi Dr. {0}! It's time to see {1}. Hope you're online and ready for your appointment.",
+
   //appointment casesheet reminder 15
   APPOINTMENT_CASESHEET_REMINDER_15_TITLE = 'Appointment reminder',
   APPOINTMENT_CASESHEET_REMINDER_15_BODY = 'Hi {0}! We noticed you have not filled in your medical details yet. This is necessary for your consultation to begin.',
@@ -71,18 +74,21 @@ export enum ApiConstants {
 
   PATIENT_CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   PATIENT_CANCEL_APPT_BODY = 'Hi {0}! As per your request, your appointment {1} with Dr. {2} scheduled for {3} has been cancelled.',
-
+  PATIENT_CANCEL_APPT_BODY_END = 'to book a new appointment with our top Apollo doctors.',
+  DOCTOR_PATIENT_CANCEL_SMS = 'Hi Dr. {0}! Your appointment {1} with {2} scheduled for {3} has unfortunately been cancelled. Please make note.',
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
+  PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} and get your FREE Gift @Apollo Pharmacy retail store. Terms and Conditions Apply',
 
   //book appointment sucessfull
   BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
   BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
-
+  BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   //physical book appointment sucessfull
+  PHYSICAL_BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
-
+  DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi Dr. {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
   DIAGNOSTIC_ORDER_SUCCESS_BODY = "Congratulations {0}! We've booked your test successfully.",
 
@@ -103,6 +109,8 @@ export enum ApiConstants {
   PATIENT_HELP_FROM_EMAILID = 'info@pepisandbox.com',
   PATIENT_HELP_FROM_NAME = 'Apollo24*7',
   PATIENT_HELP_SUBJECT = 'Issue raised by customer : {0} - {1}, {2}',
+
+  APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,raj@popcornapps.com',
@@ -129,6 +137,9 @@ export enum ApiConstants {
   DOCTORS_SERVICE_ERROR_LOG_FILE = '/error-logs/doctors-service.log',
   CONSULTS_SERVICE_ACCESS_LOG_FILE = '/access-logs/consults-service.log',
   CONSULTS_SERVICE_ERROR_LOG_FILE = '/error-logs/consults-service.log',
+  COUPONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/coupons-service.log',
+  COUPONS_SERVICE_ERROR_LOG_FILE = '/error-logs/coupons-service.log',
+
   NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
   KALEYRA_OPT_API_LOG_FILE = '/kaleyra-logs/sms-response.log',
@@ -143,8 +154,9 @@ export enum ApiConstants {
   FROM_NAME = 'Admin',
   PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com,sumeeth.kumar@popcornapps.com,raj@popcornapps.com',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
@@ -210,4 +222,16 @@ export enum ApiConstants {
   SAMPLE_DATE_EVENING_END = '2020-01-20T18:00:00',
   SAMPLE_DATE_NIGHT_START = '2020-01-20T18:00:01',
   SAMPLE_DATE_NIGHT_END = '2020-01-20T22:00:00',
+
+  //coupon related constants
+  INVALID_COUPON = 'Sorry, invalid coupon code.',
+  EARLY_COUPON = 'Sorry, offer has not started.',
+  COUPON_EXPIRED = 'Sorry, offer has expired.',
+  COUPON_COUNT_PER_CUSTOMER_EXCEEDED = 'Sorry, this code has already been used under this campaign.',
+  COUPON_COUNT_USAGE_EXPIRED = 'Sorry, the limit for this coupon code has exceeded.',
+  COUPON_RESTRICTED_TO_SKU_OR_CATEGORY = 'Product(s) in cart are not applicable for this coupon.',
+  COUPON_FOR_FIRST_CUSTOMER_ONLY = 'This coupon is applicable for first time ordering customers only',
+  COUPON_WITH_BU_RESTRICTION = 'This coupon is applicable for {0} only',
+  LOWER_CART_LIMIT = 'Coupon applicable for Minimum order value Rs.{0} or more',
+  UPPER_CART_LIMIT = 'Coupon applicable for Maximum order value Rs.{0} or less',
 }

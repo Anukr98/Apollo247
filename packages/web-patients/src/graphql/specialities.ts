@@ -6,6 +6,10 @@ export const GET_ALL_SPECIALITIES = gql`
       id
       name
       image
+      specialistSingularTerm
+      specialistPluralTerm
+      userFriendlyNomenclature
+      displayOrder
     }
   }
 `;

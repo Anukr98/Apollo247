@@ -7,6 +7,10 @@ import {
   ExpansionPanelDetails,
   Grid,
 } from '@material-ui/core';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms as SymptomType,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -74,8 +78,29 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Symptoms: React.FC = (props) => {
-  const classes = useStyles();
+type SymptomProps = {
+  caseSheetList: (CaseSheetType | null)[] | null;
+};
+
+export const Symptoms: React.FC<SymptomProps> = (props) => {
+  const classes = useStyles({});
+  const caseSheetList = props.caseSheetList;
+
+  const symptoms: SymptomType[] = [];
+
+  caseSheetList &&
+    caseSheetList.length > 0 &&
+    caseSheetList.forEach(
+      (caseSheet: CaseSheetType | null) =>
+        caseSheet &&
+        caseSheet.doctorType !== 'JUNIOR' &&
+        caseSheet.symptoms &&
+        caseSheet.symptoms.length > 0 &&
+        caseSheet.symptoms.forEach(
+          (symptom: SymptomType | null) => symptom && symptoms.push(symptom)
+        )
+    );
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -86,36 +111,20 @@ export const Symptoms: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item sm={6}>
-            <div className={classes.cardTitle}>Cold & Cough</div>
-            <div className={classes.cardSection}>
-              Since: Last 4 days
-              <br />
-              How Often: Throughout the day
-              <br />
-              Severity: Moderate
-            </div>
-          </Grid>
-          <Grid item sm={6}>
-            <div className={classes.cardTitle}>Fever</div>
-            <div className={classes.cardSection}>
-              Since: Last 2 days
-              <br />
-              How Often: In the evening
-              <br />
-              Severity: High
-            </div>
-          </Grid>
-          <Grid item sm={6}>
-            <div className={classes.cardTitle}>Nausea</div>
-            <div className={classes.cardSection}>
-              Since: Last 2 days
-              <br />
-              How Often: In the evening
-              <br />
-              Severity: High
-            </div>
-          </Grid>
+          {symptoms.length > 0
+            ? symptoms.map((symptom: SymptomType, idx: number) => (
+                <Grid key={idx} item xs={12} sm={6}>
+                  <div className={classes.cardTitle}>{symptom.symptom}</div>
+                  <div className={classes.cardSection}>
+                    Since: {symptom.since}
+                    <br />
+                    How Often: {symptom.howOften}
+                    <br />
+                    Severity: {symptom.severity}
+                  </div>
+                </Grid>
+              ))
+            : 'No Symptoms'}
         </Grid>
       </ExpansionPanelDetails>
     </ExpansionPanel>

@@ -12,7 +12,6 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
-import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -96,6 +95,9 @@ export enum DEVICETYPE {
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
+  @Column({ type: 'float8', nullable: true })
+  actualAmount: number;
+
   @Column({ nullable: true, default: 0 })
   apolloAppointmentId: number;
 
@@ -127,8 +129,14 @@ export class Appointment extends BaseEntity {
   @OneToMany((type) => CaseSheet, (caseSheet) => caseSheet.appointment)
   caseSheet: CaseSheet[];
 
+  @Column({ nullable: true })
+  couponCode: string;
+
   @Column({ generated: 'increment' })
   displayId: number;
+
+  @Column({ type: 'float8', nullable: true })
+  discountedAmount: number;
 
   @Column({ nullable: true })
   doctorCancelReason: string;
@@ -262,7 +270,7 @@ export class AppointmentDocuments extends BaseEntity {
 //AppointmentPayments starts
 @Entity()
 export class AppointmentPayments extends BaseEntity {
-  @Column('decimal', { precision: 5, scale: 2, nullable: true })
+  @Column('decimal', { precision: 8, scale: 2, nullable: true })
   amountPaid: number;
 
   @Column({ nullable: true })
@@ -937,7 +945,7 @@ export class JdDashboardSummary extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   loggedInHours: number;
 
-  @Column({ default: 0 })
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
   awayHours: number;
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })

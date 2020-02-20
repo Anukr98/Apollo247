@@ -58,9 +58,34 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   doctorHospital: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[];
 }
 
+export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty {
+  __typename: "DoctorSpecialty";
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+}
+
+export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability {
+  __typename: "DoctorSlotAvailability";
+  doctorId: string | null;
+  onlineSlot: string | null;
+  physicalSlot: string | null;
+  referenceSlot: string | null;
+  currentDateTime: any | null;
+  availableInMinutes: number | null;
+}
+
+export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability {
+  __typename: "DoctorConsultModeAvailability";
+  doctorId: string | null;
+  availableModes: (ConsultMode | null)[] | null;
+}
+
 export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters {
   __typename: "FilterDoctorsResult";
   doctors: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[] | null;
+  specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null;
+  doctorsNextAvailability: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[] | null;
+  doctorsAvailability: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[] | null;
 }
 
 export interface GetDoctorsBySpecialtyAndFilters {

@@ -6,15 +6,12 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
   View,
   ViewStyle,
-  TouchableOpacity,
-  TouchableHighlightProps,
-  TouchableOpacityProps,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { Star } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { type } from 'os';
 
 const styles = StyleSheet.create({
   containerStyle: {

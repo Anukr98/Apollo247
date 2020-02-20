@@ -37,6 +37,7 @@ import {
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 //import { doctorDetails } from '@aph/mobile-doctors/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
@@ -97,7 +98,8 @@ const styles = StyleSheet.create({
     color: theme.colors.BUTTON_TEXT,
   },
   dropDownCardStyle: {
-    marginTop: Platform.OS == 'android' ? -35 : -35,
+    // marginTop: Platform.OS == 'android' ? -35 : -35,
+    marginTop: -35,
     marginBottom: 26,
     paddingTop: 16,
     paddingBottom: 15,
@@ -269,10 +271,10 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
   const renderDropdownCard = () => (
     <View style={{ marginTop: 2 }}>
       <View style={styles.dropDownCardStyle}>
-        {sysmptonsList!.map((_doctor, i, array) => {
+        {sysmptonsList.map((_doctor, i, array) => {
           //const doctor = _doctor!.associatedDoctor!;
 
-          const drName = ` ${_doctor.firstName!}`;
+          const drName = ` ${_doctor.firstName}`;
 
           return (
             <TouchableOpacity
@@ -281,7 +283,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
               key={i}
             >
               {formatSuggestionsText(drName, '')}
-              {i < array!.length - 1 ? (
+              {i < array.length - 1 ? (
                 <View
                   style={{
                     marginTop: 8,
@@ -386,18 +388,18 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
                     onPressDoctorSearchListItemDoctor(
                       _doctor!.firstName + _doctor!.lastName,
                       _doctor!.id,
-                      _doctor!.specialty.name,
+                      g(_doctor, 'specialty', 'name') || '',
                       _doctor!.experience,
                       _doctor!.photoUrl,
                       _doctor!.doctorHospital[0].facility.id,
-                      _doctor!.specialty.id
+                      g(_doctor, 'specialty', 'id') || ''
                     )
                   }
                   style={{ marginHorizontal: 16 }}
                   key={i}
                 >
                   {formatSuggestionsText(drName, '')}
-                  {i < array!.length - 1 ? (
+                  {i < array.length - 1 ? (
                     <View
                       style={{
                         marginTop: 8,
@@ -440,7 +442,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
                   key={i}
                 >
                   {formatSuggestionsText(drName, '')}
-                  {i < array!.length - 1 ? (
+                  {i < array.length - 1 ? (
                     <View
                       style={{
                         marginTop: 8,
@@ -482,9 +484,9 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
       .then((_data) => {
         setIsLoading(false);
         console.log('data', _data);
-        const transferObject: any = {
+        const transferObject = {
           appointmentId: props.navigation.getParam('AppointmentId'),
-          transferDateTime: _data!.data!.initiateTransferAppointment!.doctorNextSlot,
+          transferDateTime: g(_data, 'data', 'initiateTransferAppointment', 'doctorNextSlot'),
           photoUrl: photourl,
           doctorId: doctorId,
           specialtyId: specialityId,
@@ -492,7 +494,7 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           experience: experience + strings.transfer_consult.yrs,
           specilty: doctorSpeciality,
           hospitalDoctorId: hospitalId,
-          transferId: _data!.data!.initiateTransferAppointment!.transferAppointment!.id,
+          transferId: g(_data, 'data', 'initiateTransferAppointment', 'transferAppointment', 'id'),
         };
         pubnub.publish(
           {

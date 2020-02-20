@@ -44,30 +44,42 @@ const getDoctorPhysicalAvailableSlots: Resolver<
   PhysicalAvailabilityResult
 > = async (parent, { DoctorPhysicalAvailabilityInput }, { doctorsDb, consultsDb }) => {
   const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
-  const weekDay = format(DoctorPhysicalAvailabilityInput.availableDate, 'EEEE').toUpperCase();
-  const timeSlots = await consultHourRep.getPhysicalConsultHours(
+  let previousDate: Date = DoctorPhysicalAvailabilityInput.availableDate;
+  let prevDaySlots = 0;
+  previousDate = addDays(DoctorPhysicalAvailabilityInput.availableDate, -1);
+  const checkStart = `${previousDate.toDateString()} 18:30:00`;
+  const checkEnd = `${DoctorPhysicalAvailabilityInput.availableDate.toDateString()} 18:30:00`;
+  let weekDay = format(previousDate, 'EEEE').toUpperCase();
+  let timeSlots = await consultHourRep.getConsultHours(
     DoctorPhysicalAvailabilityInput.doctorId,
-    weekDay,
-    DoctorPhysicalAvailabilityInput.facilityId
+    weekDay
   );
+  weekDay = format(DoctorPhysicalAvailabilityInput.availableDate, 'EEEE').toUpperCase();
+  const timeSlotsNext = await consultHourRep.getConsultHours(
+    DoctorPhysicalAvailabilityInput.doctorId,
+    weekDay
+  );
+  if (timeSlots.length > 0) {
+    prevDaySlots = 1;
+  }
+  timeSlots = timeSlots.concat(timeSlotsNext);
   let availableSlots: string[] = [];
   let availableSlotsReturn: string[] = [];
+  let rowCount = 0;
   if (timeSlots && timeSlots.length > 0) {
     timeSlots.map((timeSlot) => {
       let st = `${DoctorPhysicalAvailabilityInput.availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
       const ed = `${DoctorPhysicalAvailabilityInput.availableDate.toDateString()} ${timeSlot.endTime.toString()}`;
       let consultStartTime = new Date(st);
       const consultEndTime = new Date(ed);
-      let previousDate: Date = DoctorPhysicalAvailabilityInput.availableDate;
       if (consultEndTime < consultStartTime) {
-        previousDate = addDays(DoctorPhysicalAvailabilityInput.availableDate, -1);
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
         consultStartTime = new Date(st);
       }
       //console.log(consultStartTime, consultEndTime, 'conslt hours');
       //const duration = Math.floor(60 / timeSlot.consultDuration);
       const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
-      console.log(duration, 'doctor duration');
+      //console.log(duration, 'doctor duration');
       let slotsCount =
         (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
       if (slotsCount - Math.floor(slotsCount) == 0.5) {
@@ -78,6 +90,17 @@ const getDoctorPhysicalAvailableSlots: Resolver<
       console.log(slotsCount, 'slot count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+      if (prevDaySlots == 0) {
+        startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+      }
+      if (rowCount > 0) {
+        const nextDate = addDays(previousDate, 1);
+        const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
+        const td = `${nextDate.toDateString()} 00:00:00`;
+        if (new Date(ed) >= new Date(td) && timeSlot.weekDay != timeSlots[rowCount - 1].weekDay) {
+          startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+        }
+      }
       availableSlotsReturn = Array(slotsCount)
         .fill(0)
         .map(() => {
@@ -95,14 +118,21 @@ const getDoctorPhysicalAvailableSlots: Resolver<
           const endStr = ':00.000Z';
           const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           const timeWithBuffer = addMinutes(new Date(), timeSlot.consultBuffer);
-          console.log(
-            new Date(generatedSlot),
-            new Date(),
-            new Date(generatedSlot) > timeWithBuffer,
-            ' dates comparision'
-          );
+          // console.log(
+          //   new Date(generatedSlot),
+          //   new Date(),
+          //   new Date(generatedSlot) > timeWithBuffer,
+          //   ' dates comparision'
+          // );
           if (new Date(generatedSlot) > timeWithBuffer) {
-            availableSlots.push(generatedSlot);
+            if (
+              new Date(generatedSlot) >= new Date(checkStart) &&
+              new Date(generatedSlot) < new Date(checkEnd)
+            ) {
+              if (!availableSlots.includes(generatedSlot)) {
+                availableSlots.push(generatedSlot);
+              }
+            }
           }
           return generatedSlot;
         });
@@ -112,6 +142,7 @@ const getDoctorPhysicalAvailableSlots: Resolver<
       if (lastMins < timeSlot.consultDuration) {
         availableSlots.pop();
       }
+      rowCount++;
     });
   }
   console.log(availableSlotsReturn, 'return slots');

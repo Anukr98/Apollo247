@@ -6,33 +6,28 @@ import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
+import { OurServices } from 'components/OurServices';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     heroBanner: {
-      borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
-      padding: 40,
-      paddingTop: 46,
       position: 'relative',
-      [theme.breakpoints.up('lg')]: {
+      [theme.breakpoints.up('sm')]: {
         display: 'flex',
-      },
-      [theme.breakpoints.down('xs')]: {
-        padding: '40px 20px',
-      },
-      [theme.breakpoints.between('sm', 'md')]: {
-        paddingTop: 60,
-        borderRadius: 0,
       },
     },
     bannerInfo: {
-      position: 'relative',
-      zIndex: 1,
-      [theme.breakpoints.up('lg')]: {
-        width: '50%',
+      padding: '0 20px 20px 20px',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginTop: -45,
+      },
+      [theme.breakpoints.up('sm')]: {
+        width: 400,
+        padding: 40,
       },
       '& p': {
         fontSize: 17,
@@ -41,9 +36,6 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.main,
         marginTop: 16,
         marginBottom: 20,
-        [theme.breakpoints.between('sm', 'md')]: {
-          paddingRight: 400,
-        },
       },
       '& h1': {
         display: 'flex',
@@ -59,30 +51,19 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerImg: {
-      position: 'absolute',
-      [theme.breakpoints.up('lg')]: {
-        right: 32,
-        top: 30,
-      },
-      [theme.breakpoints.between('sm', 'md')]: {
-        width: 400,
-        right: 32,
-        top: 90,
-      },
       [theme.breakpoints.down('xs')]: {
-        right: 20,
-        bottom: -175,
+        marginTop: -40,
+      },
+      [theme.breakpoints.up('sm')]: {
+        textAlign: 'right',
+        width: 'calc(100% - 400px)',
+        position: 'absolute',
+        right: 0,
+        bottom: -5,
       },
       '& img': {
         maxWidth: '100%',
-        [theme.breakpoints.down('xs')]: {
-          maxWidth: 281,
-        },
-      },
-    },
-    button: {
-      [theme.breakpoints.up('sm')]: {
-        minWidth: 200,
+        verticalAlign: 'middle',
       },
     },
     menuSelected: {
@@ -120,6 +101,40 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    callEmergency: {
+      backgroundColor: '#d13135',
+      padding: '0px 10px',
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: 600,
+      borderRadius: 10,
+      display: 'flex',
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    callImg: {
+      marginLeft: 'auto',
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    loginHeroBanner: {
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+    },
+    loginbannerImg: {
+      bottom: 0,
+    },
+    desktopBanner: {
+      display: 'none',
+      [theme.breakpoints.up('sm')]: {
+        display: 'block',
+      },
+    },
+    mobileBanner: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -127,14 +142,26 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const HeroBanner: React.FC = () => {
   const classes = useStyles();
+  const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   return (
-    <div className={classes.heroBanner} data-cypress="HeroBanner">
+    <div
+      className={`${classes.heroBanner} ${isSignedIn ? classes.loginHeroBanner : ''}`}
+      data-cypress="HeroBanner"
+    >
+      <div className={`${classes.bannerImg} ${isSignedIn ? classes.loginbannerImg : ''}`}>
+        <img
+          className={classes.mobileBanner}
+          src={require('images/img_doctors_xxhdpi.png')}
+          alt=""
+        />
+        <img className={classes.desktopBanner} src={require('images/img-doctors@2x.png')} alt="" />
+      </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
           <Typography variant="h1">
-            <span>hello</span>
+            <span>hi</span>
             <AphSelect
               value={currentPatient.id}
               onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
@@ -166,23 +193,14 @@ export const HeroBanner: React.FC = () => {
         ) : (
           <Typography variant="h1">hello there!</Typography>
         )}
-
-        <p>Not feeling well today? Don’t worry. We will help you find the right doctor :)</p>
-        <ProtectedWithLoginPopup>
-          {({ protectWithLoginPopup }) => (
-            <AphButton
-              variant="contained"
-              color="primary"
-              className={classes.button}
-              onClick={() => protectWithLoginPopup()}
-            >
-              Consult a doctor
-            </AphButton>
-          )}
-        </ProtectedWithLoginPopup>
-      </div>
-      <div className={classes.bannerImg}>
-        <img src={require('images/ic_doctor.svg')} alt="" />
+        <p>How can we help you today? :)</p>
+        <OurServices />
+        <div className={classes.callEmergency}>
+          <span>Call 1066 in emergency</span>
+          <span className={classes.callImg}>
+            <img src={require('images/ic-emergency.svg')} alt="" />
+          </span>
+        </div>
       </div>
     </div>
   );

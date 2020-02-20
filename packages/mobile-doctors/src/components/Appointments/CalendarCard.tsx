@@ -1,9 +1,12 @@
 import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
-import { Audio, Video } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { Audio, UserPlaceHolder, Video } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { TagCard } from '@aph/mobile-doctors/src/components/ui/TagCard';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import React from 'react';
 import {
-  Image,
+  ActivityIndicator,
   ImageSourcePropType,
   ImageStyle,
   StyleProp,
@@ -13,10 +16,8 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
-import { colors } from '@aph/mobile-doctors/src/theme/colors';
-import { TagCard } from '@aph/mobile-doctors/src/components/ui/TagCard';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -63,6 +64,15 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
+  imageStyle: {
+    height: 44,
+    width: 44,
+    borderRadius: 22,
+  },
+  placeHolderLoading: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
 });
 
 export interface CalendarCardProps {
@@ -92,6 +102,7 @@ export interface CalendarCardProps {
   appintmentdatetime: string;
   appointmentStatus: string;
   showNext?: boolean;
+  photoUrl?: string;
 }
 
 export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
@@ -182,10 +193,18 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
         {renderNewTag()}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={styles.imageView}>
-            <Image
-              source={require('../../images/doctor/rahul.png')}
-              style={{ height: 44, width: 44 }}
-            />
+            {props.photoUrl ? (
+              <ImageNative
+                placeholderStyle={styles.placeHolderLoading}
+                PlaceholderContent={
+                  <ActivityIndicator animating={true} size="small" color="green" />
+                }
+                source={{ uri: props.photoUrl }}
+                style={styles.imageStyle}
+              />
+            ) : (
+              <UserPlaceHolder style={styles.imageStyle} />
+            )}
           </View>
           <View style={{ flex: 1, justifyContent: 'center' }}>
             <View style={styles.iconview}>

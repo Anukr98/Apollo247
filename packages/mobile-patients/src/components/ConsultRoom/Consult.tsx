@@ -573,9 +573,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        {item.doctorInfo
-                          ? `${item.doctorInfo.salutation}. ${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
-                          : ''}
+                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text
@@ -1013,7 +1011,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       {showSchdulesView && (
         <BottomPopUp
           title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-          description={`Your appointment with Dr. ${props.navigation.getParam(
+          description={`Your appointment with ${props.navigation.getParam(
             'DoctorName'
           )} \nhas been rescheduled for — ${newAppointmentTime}\n\n${
             newRescheduleCount == 0

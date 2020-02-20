@@ -85,6 +85,14 @@ export const GET_DOCTOR_DETAILS = gql`
           }
         }
       }
+      doctorSecretary {
+        secretary {
+          id
+          isActive
+          name
+          mobileNumber
+        }
+      }
       bankAccount {
         bankName
         accountType
@@ -582,7 +590,9 @@ export const GET_CASESHEET = gql`
           otherInstructions {
             instruction
           }
+          notes
         }
+        appointmentType
       }
       juniorDoctorNotes
       juniorDoctorCaseSheet {
@@ -1098,6 +1108,35 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
       blobName
+    }
+  }
+`;
+
+export const GET_SECRETARY_LIST = gql`
+  query getSecretaryList {
+    getSecretaryList {
+      id
+      name
+      mobileNumber
+      isActive
+    }
+  }
+`;
+
+export const ADD_SECRETARY = gql`
+  mutation addSecretary($secretaryId: ID!) {
+    addSecretary(secretaryId: $secretaryId) {
+      secretary {
+        id
+        name
+      }
+    }
+  }
+`;
+export const REMOVE_SECRETARY = gql`
+  mutation removeSecretary($secretaryId: ID!) {
+    removeSecretary(secretaryId: $secretaryId) {
+      id
     }
   }
 `;

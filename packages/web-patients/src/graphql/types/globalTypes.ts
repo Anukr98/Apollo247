@@ -49,8 +49,9 @@ export enum DEVICETYPE {
 }
 
 export enum DiscountType {
-  AMOUNT = "AMOUNT",
+  FLATPRICE = "FLATPRICE",
   PERCENT = "PERCENT",
+  PRICEOFF = "PRICEOFF",
 }
 
 export enum DoctorType {
@@ -71,9 +72,29 @@ export enum LOGIN_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum MEDICINE_CONSUMPTION_DURATION {
+  DAYS = "DAYS",
+  MONTHS = "MONTHS",
+  WEEKS = "WEEKS",
+}
+
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = "HOME_DELIVERY",
   STORE_PICKUP = "STORE_PICKUP",
+}
+
+export enum MEDICINE_FORM_TYPES {
+  GEL_LOTION_OINTMENT = "GEL_LOTION_OINTMENT",
+  OTHERS = "OTHERS",
+}
+
+export enum MEDICINE_FREQUENCY {
+  AS_NEEDED = "AS_NEEDED",
+  FIVE_TIMES_A_DAY = "FIVE_TIMES_A_DAY",
+  FOUR_TIMES_A_DAY = "FOUR_TIMES_A_DAY",
+  ONCE_A_DAY = "ONCE_A_DAY",
+  THRICE_A_DAY = "THRICE_A_DAY",
+  TWICE_A_DAY = "TWICE_A_DAY",
 }
 
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -143,6 +164,23 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+}
+
+export enum MedicalRecordType {
+  CONSULTATION = "CONSULTATION",
+  EHR = "EHR",
+  OPERATIVE_REPORT = "OPERATIVE_REPORT",
+  PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
+  PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
+  PRESCRIPTION = "PRESCRIPTION",
+  TEST_REPORT = "TEST_REPORT",
+}
+
+export enum MedicalTestUnit {
+  GM = "GM",
+  GM_SLASH_DL = "GM_SLASH_DL",
+  NONE = "NONE",
+  _PERCENT_ = "_PERCENT_",
 }
 
 export enum PATIENT_ADDRESS_TYPE {
@@ -236,6 +274,7 @@ export interface BookAppointmentInput {
   symptoms?: string | null;
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
+  couponCode?: string | null;
 }
 
 export interface BookRescheduleAppointmentInput {
@@ -263,12 +302,19 @@ export interface DoctorAvailabilityInput {
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
+  availableType?: APPOINTMENT_TYPE | null;
+  currentTimeInput?: any | null;
 }
 
 export interface DoctorPhysicalAvailabilityInput {
   availableDate: any;
   doctorId: string;
   facilityId: string;
+}
+
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
 }
 
 export interface FilterDoctorInput {

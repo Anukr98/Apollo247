@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { ScrollView } from 'react-navigation';

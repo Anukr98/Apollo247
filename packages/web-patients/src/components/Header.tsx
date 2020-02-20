@@ -10,6 +10,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { AppLocations } from './AppLocations';
@@ -23,9 +24,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '0 20px 0 20px',
+      padding: '0 0 0 20px',
       [theme.breakpoints.down('xs')]: {
-        padding: '0 20px 0 20px',
+        padding: '0 0 0 20px',
       },
       [theme.breakpoints.down(900)]: {
         paddingRight: 0,
@@ -65,22 +66,30 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccount: {
-      marginLeft: 20,
+      padding: 20,
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.between('sm', 'md')]: {
-        marginLeft: 10,
-      },
-      [theme.breakpoints.down(990)]: {
+      [theme.breakpoints.down(900)]: {
         display: 'none',
       },
     },
-    userAccountLogin: {
-      marginLeft: 'auto',
-      [theme.breakpoints.down(990)]: {
-        display: 'block',
+    userAccountActive: {
+      backgroundColor: '#f7f8f5',
+      '&:after': {
+        position: 'absolute',
+        content: '""',
+        bottom: 0,
+        left: 0,
+        height: 5,
+        width: '100%',
+        backgroundColor: '#00b38e',
       },
+    },
+    userAccountLogin: {
+      display: 'flex',
+      alignItems: 'center',
     },
     userCircle: {
       display: 'flex',
@@ -123,15 +132,53 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 15,
       },
     },
+    headerRightGroup: {
+      marginLeft: 'auto',
+      display: 'flex',
+      alignItems: 'center',
+    },
+    appLogin: {
+      marginLeft: 0,
+    },
+    appDownloadBtn: {
+      paddingLeft: 20,
+      paddingRight: 20,
+      textAlign: 'center',
+      '& a': {
+        backgroundColor: '#fcb716',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        borderRadius: 5,
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 'bold',
+        padding: '4px 12px',
+        display: 'block',
+      },
+    },
+    preAppLogin: {
+      paddingRight: 0,
+    },
+    loginLinks: {
+      color: '#02475b',
+      fontSize: 13,
+      fontWeight: 'bold',
+      paddingRight: 10,
+      cursor: 'pointer',
+      [theme.breakpoints.down(520)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { signOut, isSigningIn, isSignedIn } = useAuth();
+  const { isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [mobileNumber, setMobileNumber] = React.useState('');
+  const [otp, setOtp] = React.useState('');
+  const currentPath = window.location.pathname;
 
   return (
     <div className={classes.headerSticky}>
@@ -150,58 +197,96 @@ export const Header: React.FC = (props) => {
           {isSignedIn && (
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           )}
-          <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
-            <ProtectedWithLoginPopup>
-              {({ protectWithLoginPopup, isProtected }) => (
-                <div
+          <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
+            <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
+              <a href="https://play.google.com/" target="_blank">
+                Download Apollo247 App
+              </a>
+            </div>
+            <div
+              className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
+                currentPath === clientRoutes.myAccount() ||
+                currentPath === clientRoutes.addressBook()
+                  ? classes.userAccountActive
+                  : ''
+              }`}
+            >
+              {isSignedIn ? (
+                <Link
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  onClick={() => (isSignedIn ? setIsDialogOpen(true) : protectWithLoginPopup())}
-                  ref={avatarRef}
+                  to={clientRoutes.myAccount()}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
                   ) : (
                     <img src={require('images/ic_account.svg')} />
                   )}
-                </div>
+                </Link>
+              ) : (
+                <ProtectedWithLoginPopup>
+                  {({ protectWithLoginPopup }) => (
+                    <>
+                      <div
+                        onClick={() =>
+                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                        }
+                        className={classes.loginLinks}
+                      >
+                        Login/SignUp
+                      </div>
+                      <div
+                        className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                        onClick={() =>
+                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                        }
+                        ref={avatarRef}
+                      >
+                        {isSigningIn ? (
+                          <CircularProgress />
+                        ) : (
+                          <img src={require('images/ic_account.svg')} />
+                        )}
+                      </div>
+                    </>
+                  )}
+                </ProtectedWithLoginPopup>
               )}
-            </ProtectedWithLoginPopup>
-            {isSignedIn ? (
-              <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-                <DialogContent>
-                  <div className={classes.logoutModal}>
-                    <h3>You are successfully Logged in with Apollo 24x7</h3>
-                    <div className={classes.bottomActions}>
-                      <AphButton color="secondary" onClick={() => setIsDialogOpen(false)} autoFocus>
-                        Cancel
-                      </AphButton>
-                      <AphButton color="primary" onClick={() => signOut()}>
-                        Sign out
-                      </AphButton>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ) : (
-              <Popover
-                open={isLoginPopupVisible}
-                anchorEl={avatarRef.current}
-                onClose={() => (isSignedIn ? setIsLoginPopupVisible(false) : null)}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                classes={{ paper: classes.topPopover }}
-              >
-                <Paper className={classes.loginForm}>
-                  <SignIn />
-                </Paper>
-              </Popover>
-            )}
+              {isSignedIn ? (
+                ''
+              ) : (
+                <Popover
+                  open={isLoginPopupVisible}
+                  anchorEl={avatarRef.current}
+                  onClose={() => {
+                    const otpAfterCleaning = otp.replace(/,/g, '');
+                    if (
+                      mobileNumber.length === 0 ||
+                      (mobileNumber.length === 10 && otpAfterCleaning.length === 0)
+                    ) {
+                      setIsLoginPopupVisible(false);
+                    }
+                  }}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  classes={{ paper: classes.topPopover }}
+                >
+                  <Paper className={classes.loginForm}>
+                    <SignIn
+                      setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
+                      setOtp={(otp: string) => setOtp(otp)}
+                      mobileNumber={mobileNumber}
+                      otp={otp}
+                    />
+                  </Paper>
+                </Popover>
+              )}
+            </div>
           </div>
         </header>
       </div>

@@ -124,6 +124,22 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
           }
         }
       }
+      specialty {
+        specialistSingularTerm
+        specialistPluralTerm
+      }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+        currentDateTime
+        availableInMinutes
+      }
+      doctorsAvailability {
+        doctorId
+        availableModes
+      }
     }
   }
 `;
@@ -138,9 +154,11 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         specialty {
           id
           name
+          userFriendlyNomenclature
         }
         experience
         photoUrl
+        thumbnailUrl
         qualification
         doctorHospital {
           facility {
@@ -158,26 +176,48 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
           }
         }
       }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+      }
       specialties {
         name
         id
+        userFriendlyNomenclature
       }
       possibleMatches {
         doctors {
           id
           firstName
           lastName
+          displayName
+          experience
           specialty {
             id
             name
+            userFriendlyNomenclature
           }
-          experience
-          photoUrl
+          specialization
           qualification
+          city
+          photoUrl
+          thumbnailUrl
+          doctorType
+        }
+        doctorsNextAvailability {
+          doctorId
+          onlineSlot
+          physicalSlot
+          referenceSlot
+          currentDateTime
+          availableInMinutes
         }
         specialties {
           name
           id
+          userFriendlyNomenclature
         }
       }
       otherDoctors {
@@ -187,8 +227,10 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         id
         specialty {
           name
+          userFriendlyNomenclature
         }
         photoUrl
+        thumbnailUrl
         qualification
         consultHours {
           consultMode
@@ -214,6 +256,24 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
             id
           }
         }
+      }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+      }
+      specialties {
+        id
+        name
+        image
+        userFriendlyNomenclature
+      }
+      otherDoctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
       }
     }
   }

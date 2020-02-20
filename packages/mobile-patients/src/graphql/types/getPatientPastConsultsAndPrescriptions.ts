@@ -68,6 +68,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   firstName: string;
   lastName: string;
   displayName: string | null;
+  fullName: string | null;
   experience: string | null;
   city: string | null;
   onlineConsultationFees: string;

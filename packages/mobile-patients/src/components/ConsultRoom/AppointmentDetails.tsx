@@ -340,7 +340,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   DoctorName:
                     props.navigation.state.params!.data &&
                     props.navigation.state.params!.data.doctorInfo &&
-                    props.navigation.state.params!.data.doctorInfo.firstName,
+                    props.navigation.state.params!.data.doctorInfo.fullName,
                 },
               }),
             ],
@@ -492,7 +492,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   #{data.displayId}
                 </Text>
                 <View style={styles.separatorStyle} />
-                <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
+                <Text style={styles.doctorNameStyle}>{data.doctorInfo.fullName}</Text>
                 <Text style={styles.timeStyle}>{appointmentTime}</Text>
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Location</Text>

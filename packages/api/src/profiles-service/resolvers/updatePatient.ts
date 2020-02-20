@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Patient } from 'profiles-service/entities';
+import { Patient, Relation } from 'profiles-service/entities';
 import { BaseEntity } from 'typeorm';
 import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -10,6 +10,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
+import { RegistrationCodesRepository } from 'profiles-service/repositories/registrationCodesRepository';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -93,9 +94,22 @@ const updatePatient: Resolver<
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  let regCode = '';
+  if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
+    const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
+    const getCode = await regCodeRepo.getCode();
+    regCode = getCode[0].registrationCode;
+    if (getCode.length > 0) {
+      await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+    }
+  }
 
-  //send registration success notification here
-  sendPatientRegistrationNotification(patient, profilesDb);
+  const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
+  console.log(getPatientList, 'getPatientList for count');
+  if (updatePatient.relation == Relation.ME || getPatientList.length == 1 || regCode != '') {
+    //send registration success notification here
+    sendPatientRegistrationNotification(patient, profilesDb, regCode);
+  }
 
   return { patient };
 };

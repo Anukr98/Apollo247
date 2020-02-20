@@ -167,16 +167,19 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           followUp
           followUpAfterInDays
           followUpDate
+          followUpConsultType
           id
-
           medicinePrescription {
             medicineConsumptionDurationInDays
             medicineDosage
+            id
+            medicineConsumptionDurationUnit
+            medicineFormTypes
+            medicineFrequency
             medicineInstructions
+            medicineName
             medicineTimings
             medicineToBeTaken
-            medicineName
-            id
             medicineUnit
           }
           symptoms {
@@ -184,6 +187,9 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             since
             howOften
             severity
+          }
+          otherInstructions {
+            instruction
           }
         }
         displayId
@@ -278,6 +284,101 @@ export const ADD_CHAT_DOCUMENT = gql`
     addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
       id
       documentPath
+    }
+  }
+`;
+
+export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
+  query GetPatientFutureAppointmentCount($patientId: String) {
+    getPatientFutureAppointmentCount(patientId: $patientId) {
+      consultsCount
+    }
+  }
+`;
+
+export const GET_MEDICAL_RECORD = gql`
+  query getPatientMedicalRecords($patientId: ID!) {
+    getPatientMedicalRecords(patientId: $patientId) {
+      medicalRecords {
+        id
+        testName
+        testDate
+        recordType
+        referringDoctor
+        observations
+        additionalNotes
+        sourceName
+        documentURLs
+        prismFileIds
+        issuingDoctor
+        location
+        medicalRecordParameters {
+          id
+          parameterName
+          unit
+          result
+          minimum
+          maximum
+        }
+      }
+    }
+  }
+`;
+
+export const GET_MEDICAL_PRISM_RECORD = gql`
+  query getPatientPrismMedicalRecords($patientId: ID!) {
+    getPatientPrismMedicalRecords(patientId: $patientId) {
+      labTests {
+        id
+        labTestName
+        labTestSource
+        labTestDate
+        labTestReferredBy
+        additionalNotes
+        testResultPrismFileIds
+        observation
+        labTestResultParameters {
+          parameterName
+          unit
+          result
+          range
+          setOutOfRange
+          setResultDate
+          setUnit
+          setParameterName
+          setRange
+          setResult
+        }
+        departmentName
+        signingDocName
+      }
+      healthChecks {
+        id
+        healthCheckName
+        healthCheckDate
+        healthCheckPrismFileIds
+        healthCheckSummary
+        source
+        appointmentDate
+        followupDate
+      }
+      hospitalizations {
+        id
+        diagnosisNotes
+        dateOfDischarge
+        dateOfHospitalization
+        dateOfNextVisit
+        hospitalizationPrismFileIds
+        source
+      }
+    }
+  }
+`;
+
+export const DOWNLOAD_DOCUMENT = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
     }
   }
 `;

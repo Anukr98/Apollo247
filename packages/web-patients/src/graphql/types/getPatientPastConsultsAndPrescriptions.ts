@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_UNIT, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
+import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_CONSUMPTION_DURATION, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, MEDICINE_UNIT, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPastConsultsAndPrescriptions
@@ -22,11 +22,14 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   __typename: "MedicinePrescription";
   medicineConsumptionDurationInDays: string | null;
   medicineDosage: string | null;
+  id: string | null;
+  medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  medicineFormTypes: MEDICINE_FORM_TYPES | null;
+  medicineFrequency: MEDICINE_FREQUENCY | null;
   medicineInstructions: string | null;
+  medicineName: string | null;
   medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
   medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
-  medicineName: string | null;
-  id: string | null;
   medicineUnit: MEDICINE_UNIT | null;
 }
 
@@ -36,6 +39,11 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   since: string | null;
   howOften: string | null;
   severity: string | null;
+}
+
+export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_otherInstructions {
+  __typename: "OtherInstructions";
+  instruction: string | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet {
@@ -50,9 +58,11 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;
+  followUpConsultType: APPOINTMENT_TYPE | null;
   id: string | null;
   medicinePrescription: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription | null)[] | null;
   symptoms: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms | null)[] | null;
+  otherInstructions: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_otherInstructions | null)[] | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_specialty {

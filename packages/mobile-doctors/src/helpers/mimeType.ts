@@ -29,6 +29,6 @@ const extname = function(path: string) {
 };
 
 export const mimeType = (file: string) => {
-  let t = types.find((item) => item.extensions.includes(extname(file)));
+  const t = types.find((item) => item.extensions.includes(extname(file)));
   return (t && t.mime) || '*/*';
 };

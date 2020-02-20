@@ -30,9 +30,10 @@ import { PHRLanding } from 'components/HealthRecords/PHRLanding';
 import { AddRecords } from 'components/HealthRecords/AddRecords';
 import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { StoragePoc } from 'components/StoragePoc';
-import { TrackJS } from 'trackjs';
+// import { TrackJS } from 'trackjs';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 import { MedicineDetails } from 'components/Medicine/MedicineDetails';
+import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -44,12 +45,12 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 75,
       },
-      [theme.breakpoints.down(990)]: {
+      [theme.breakpoints.down(900)]: {
         paddingBottom: 60,
       },
     },
     appNotSignedIn: {
-      [theme.breakpoints.down(990)]: {
+      [theme.breakpoints.down(900)]: {
         paddingBottom: 0,
       },
     },
@@ -113,6 +114,7 @@ const App: React.FC = () => {
             component={ChatRoom}
           />
           <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
+          <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
           <AuthRouted
             exact
             path={clientRoutes.notificationSettings()}
@@ -130,10 +132,10 @@ const App: React.FC = () => {
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
-  TrackJS.install({
-    token: 'b85489445e5f4b48a0ffe851082f8e37',
-    application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
-  });
+  // TrackJS.install({
+  //   token: 'b85489445e5f4b48a0ffe851082f8e37',
+  //   application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
+  // });
 
   return (
     <BrowserRouter>

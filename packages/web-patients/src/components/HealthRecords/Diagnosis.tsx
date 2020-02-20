@@ -6,6 +6,10 @@ import {
   ExpansionPanelSummary,
   ExpansionPanelDetails,
 } from '@material-ui/core';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription as DiagnosisType,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -73,8 +77,30 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Diagnosis: React.FC = (props) => {
-  const classes = useStyles();
+type DiagnosisProps = {
+  caseSheetList: (CaseSheetType | null)[] | null;
+};
+
+export const Diagnosis: React.FC<DiagnosisProps> = (props) => {
+  const classes = useStyles({});
+  const caseSheetList = props.caseSheetList;
+
+  const diagnosticPrescriptions: DiagnosisType[] = [];
+
+  caseSheetList &&
+    caseSheetList.length > 0 &&
+    caseSheetList.forEach(
+      (caseSheet: CaseSheetType | null) =>
+        caseSheet &&
+        caseSheet.doctorType !== 'JUNIOR' &&
+        caseSheet.diagnosticPrescription &&
+        caseSheet.diagnosticPrescription.length > 0 &&
+        caseSheet.diagnosticPrescription.forEach(
+          (diagnosticPrescription: DiagnosisType | null) =>
+            diagnosticPrescription && diagnosticPrescriptions.push(diagnosticPrescription)
+        )
+    );
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -84,7 +110,11 @@ export const Diagnosis: React.FC = (props) => {
         Diagnosis
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
-        <div className={classes.cardTitle}>Acute Pharyngitis (unspecified)</div>
+        {diagnosticPrescriptions && diagnosticPrescriptions.length > 0
+          ? diagnosticPrescriptions.map((prescription: DiagnosisType) => (
+              <div className={classes.cardTitle}>{prescription.itemname}</div>
+            ))
+          : 'No diagnosis'}
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );

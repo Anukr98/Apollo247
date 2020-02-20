@@ -1,34 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions,
-  Text,
-  TextInput,
-  ActivityIndicator,
-  BackHandler,
-} from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
-import { Remove, AddPlus, DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { useApolloClient } from 'react-apollo-hooks';
+import { AddPlus, DiagonisisRemove, Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SEARCH_DIAGNOSIS } from '@aph/mobile-doctors/src/graphql/profiles';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import {
   searchDiagnosis,
   searchDiagnosisVariables,
   searchDiagnosis_searchDiagnosis,
 } from '@aph/mobile-doctors/src/graphql/types/searchDiagnosis';
-import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
-import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
-import { GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  ActivityIndicator,
+  BackHandler,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export interface AddConditionPopUpProps {
   onClose: () => void;

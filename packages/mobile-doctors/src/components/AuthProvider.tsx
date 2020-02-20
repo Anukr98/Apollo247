@@ -1,3 +1,4 @@
+import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
@@ -9,16 +10,16 @@ import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import firebase, { RNFirebase } from 'react-native-firebase';
-import fetch from 'node-fetch';
-import { GET_DOCTOR_DETAILS } from '@aph/mobile-doctors/src/graphql/profiles';
 
+/*eslint-disable */
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
+/*eslint-enable */
 
 export interface AuthContextProps {
   analytics: RNFirebase.Analytics | null;
@@ -221,7 +222,7 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   const getDoctorDetailsApi = async () => {
-    return new Promise((resolve, reject) => {
+    return new Promise<boolean>((resolve, reject) => {
       apolloClient
         .query<GetDoctorDetails>({
           query: GET_DOCTOR_DETAILS,

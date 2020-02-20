@@ -26,6 +26,11 @@ cd packages/api
 npm run start:doctors-service || exit 2
 cd -
 
+echo -e "\nbuilding coupons-service..."
+cd packages/api
+npm run start:coupons-service || exit 2
+cd -
+
 echo -e "\nbuilding consults-service..."
 cd packages/api
 npm run start:consults-service || exit 2

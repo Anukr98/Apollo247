@@ -8,6 +8,7 @@ import {
   Grid,
 } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,8 +76,20 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const FollowUp: React.FC = (props) => {
-  const classes = useStyles();
+type FollowUpProps = {
+  caseSheetList: (CaseSheetType | null)[] | null;
+};
+
+export const FollowUp: React.FC<FollowUpProps> = (props) => {
+  const classes = useStyles({});
+  const caseSheetList = props.caseSheetList;
+  const followUpConsultDetails =
+    caseSheetList &&
+    caseSheetList.length > 0 &&
+    caseSheetList.find(
+      (caseSheet: CaseSheetType | null) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
+    );
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -87,14 +100,24 @@ export const FollowUp: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item sm={6}>
-            <div className={classes.cardTitle}>Online Consult / Clinic Visit</div>
-            <div className={classes.cardSection}>Recommended after 5 days</div>
+          <Grid item xs={12} sm={6}>
+            {followUpConsultDetails && followUpConsultDetails.followUp ? (
+              <>
+                <div className={classes.cardTitle}>
+                  {followUpConsultDetails.followUpConsultType}
+                </div>
+                <div className={classes.cardSection}>
+                  Recommended after {followUpConsultDetails.followUpAfterInDays} days
+                </div>
+              </>
+            ) : (
+              'No FollowUp'
+            )}
           </Grid>
         </Grid>
-        <div className={classes.bottomActions}>
+        {/* <div className={classes.bottomActions}>
           <AphButton>Book Follow-Up</AphButton>
-        </div>
+        </div> */}
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );

@@ -3,7 +3,6 @@ const green = '#00b38e';
 const red = '#e50000';
 const darkRed = '#890000';
 const app_light_blue = '#02475b';
-const app_sharp_Blue = '#01475b';
 const sky_blue = '#0087ba';
 const APP_Sherpa_Blue = '#01475b';
 const shadowGray = '#808080';
@@ -45,7 +44,7 @@ const Common = {
   WHITE: whiteColor(),
   BLACK: blackColor(),
   TRANSPARENT: 'transparent',
-  DEFAULT_BACKGROUND_COLOR: '#f0f4f5',
+  DEFAULT_BACKGROUND_COLOR: '#f7f7f7',
   INPUT_CURSOR_COLOR: green,
   APP_GREEN: green,
   APP_YELLOW: orange,

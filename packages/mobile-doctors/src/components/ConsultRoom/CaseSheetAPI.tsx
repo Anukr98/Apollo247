@@ -1,4 +1,4 @@
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useQuery } from 'react-apollo-hooks';
 import { GetDoctorFavouriteAdviceList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteAdviceList';
 import {
   GET_DOCTOR_FAVOURITE_ADVICE_LIST,
@@ -9,17 +9,6 @@ import { GetDoctorFavouriteMedicineList } from '@aph/mobile-doctors/src/graphql/
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { GetDoctorFavouriteTestList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 
-// const { data, loading, error } = useQuery<
-//   getPatientPastConsultsAndPrescriptions,
-//   getPatientPastConsultsAndPrescriptionsVariables
-// >(GET_PAST_CONSULTS_PRESCRIPTIONS, {
-//   variables: {
-//     consultsAndOrdersInput: {
-//       patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-//     },
-//   },
-//   fetchPolicy: 'no-cache',
-// });
 export const CaseSheetAPI = () => {
   const { data: favList, loading: favlistLoading, error: favListError } = useQuery<
     GetDoctorFavouriteAdviceList

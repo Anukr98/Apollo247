@@ -1,14 +1,14 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import {
   Great,
   GreatSelected,
   Okay,
   OkaySelected,
-  PlaceHolderDoctor,
   Poor,
   PoorSelected,
   TopIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import {
   StyleProp,
@@ -19,7 +19,6 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -144,11 +143,11 @@ export const RatingCard: React.FC<CardProps> = (props) => {
       </Text>
       <View style={styles.iconView}>
         {Object.keys(feedback).map((key, i, array) => {
-          const { cardIcon, cardName, cardSelectedIcon } = feedback[parseInt(key)];
+          const { cardIcon, cardName, cardSelectedIcon } = feedback[parseInt(key, 10)];
           return (
             <View>
-              <TouchableOpacity onPress={() => setSelectedId(parseInt(key))}>
-                {!(parseInt(key) == selectedId) ? cardIcon : cardSelectedIcon}
+              <TouchableOpacity onPress={() => setSelectedId(parseInt(key, 10))}>
+                {parseInt(key, 10) !== selectedId ? cardIcon : cardSelectedIcon}
               </TouchableOpacity>
               <Text style={styles.commonText}>{cardName}</Text>
             </View>

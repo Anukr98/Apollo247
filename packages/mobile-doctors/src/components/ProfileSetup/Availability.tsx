@@ -1,12 +1,12 @@
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
-import { format } from 'date-fns';
 import { AddPlus, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { format } from 'date-fns';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 
 const styles = StyleSheet.create({
   container: {
@@ -45,7 +45,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
   console.log(profileData, 'profileData');
 
   const get12HrsFormat = (timeString: string /* 12:30 */) => {
-    const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i));
+    const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i, 10));
     return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
   };
 
@@ -54,7 +54,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
 
   return (
     <View style={styles.container}>
-      {profileData!.delegateNumber ? (
+      {profileData.delegateNumber ? (
         <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 0 }}>
           <Text style={styles.consultDescText}>{strings.account.what_type_of_consult}</Text>
           <Text
@@ -100,7 +100,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         title={strings.account.consult_hours}
         containerStyle={{ marginTop: 16, paddingBottom: 16 }}
       >
-        {profileData!.consultHours!.map((i, idx) => (
+        {profileData.consultHours!.map((i, idx) => (
           <ConsultationHoursCard
             days={i!.weekDay}
             timing={fromatConsultationHours(i!.startTime, i!.endTime)}

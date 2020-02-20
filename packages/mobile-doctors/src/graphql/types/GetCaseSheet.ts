@@ -234,6 +234,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   followUp: boolean | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription | null)[] | null;
   otherInstructions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions | null)[] | null;
+  notes: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
@@ -247,6 +248,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   parentId: string | null;
   status: STATUS;
   caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
+  appointmentType: APPOINTMENT_TYPE;
 }
 
 export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile {

@@ -1,13 +1,10 @@
-import { MedicineProduct } from '@aph/mobile-doctors/src/components/ApiCall';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
-import { DropDown, Option } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
-  AddPlus,
   ArrowRight,
   BackArrow,
   Edit,
@@ -57,7 +54,6 @@ import {
   SaveDoctorsFavouriteMedicine,
   SaveDoctorsFavouriteMedicineVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SaveDoctorsFavouriteMedicine';
-import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
 import {
   UpdateDoctorFavouriteAdvice,
   UpdateDoctorFavouriteAdviceVariables,
@@ -74,27 +70,13 @@ import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Alert,
-  Dimensions,
-  Keyboard,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
 
-const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f7f7',
-  },
   containerListStyle: {
     padding: 16,
     paddingTop: 12,
@@ -128,19 +110,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     marginBottom: 10,
   },
-  searchTestDropdown: {
-    margin: 0,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        zIndex: 1,
-      },
-      android: {
-        elevation: 12,
-        zIndex: 2,
-      },
-    }),
-  },
+
   AphInnerView: {
     shadowColor: '#66000000',
     shadowOffset: {
@@ -152,8 +122,7 @@ const styles = StyleSheet.create({
     elevation: 5,
 
     padding: 20,
-    flex: 1,
-    backgroundColor: '#f7f7f7',
+    ...theme.viewStyles.container,
   },
 });
 
@@ -162,15 +131,9 @@ export interface ProfileProps extends NavigationScreenProps {
 }
 
 export const SmartPrescription: React.FC<ProfileProps> = (props) => {
-  // const tabsData = [{ title: 'ADD BLOOD TEST' }, { title: 'SCANS & HEALTH CHECK' }];
-  // const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
-
-  const [isMedicine, setIsMedicine] = useState<boolean>(false);
   const [isAddMedicine, setIsAddMedicine] = useState<boolean>(false);
   const [isAdvice, setIsAdvice] = useState<boolean>(false);
   const [isTest, setIsTest] = useState<boolean>(false);
-
-  const [searchMedicine, setSearchMedicine] = useState<string>('');
 
   const [dataMed, setDataMed] = useState<
     GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
@@ -188,39 +151,15 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const [medicineList, setmedicineList] = useState<
     (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
   >([]);
-  const [istestsSearchList, settestsSearchList] = useState<
-    (searchDiagnostic_searchDiagnostic | null)[] | null
-  >([]);
 
   const [favAdviceId, setfavAdviceId] = useState<string>('');
   const [favAdviceInstruction, setfavAdviceInstruction] = useState<string>('');
   const [searchTestVal, setsearchTestVal] = useState<string>('');
   const [isSearchTestListVisible, setisSearchTestListVisible] = useState<boolean>(false);
-  const [medicineType, setmedicineType] = useState<string>('');
-  const [forDays, setforDays] = useState<string>('');
-  // const [editableMedicine, seteditableMedicine] = useState<[] | undefined>([]);
-  const [searchMedicineData, setsearchMedicineData] = useState<any>([]);
 
   const client = useApolloClient();
 
-  const [medicineInstruction, setmedicineInstruction] = useState<string>('');
-
-  const [tempTestArray, settempTestArray] = useState<string[]>([]);
-  const tempTestArr: any = [];
-
-  const showGenericALert = (e: { response: AxiosResponse }) => {
-    const error = e && e.response && e.response.data.message;
-    console.log({ errorResponse: e.response, error }); //remove this line later
-    Alert.alert(strings.common.error, error || 'Unknown error occurred.');
-  };
-
-  const capitalizeFirstLetter = (string: string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  const [searchmedicineList, setsearchmedicineList] = useState<MedicineProduct[]>([]);
   const [EditTestId, setEditTestId] = useState<string>('');
-  const [EditTestName, setEditTestName] = useState<string>('');
   const [showNeedHelp, setshowNeedHelp] = useState(false);
 
   useEffect(() => {
@@ -245,7 +184,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           const tempmedicineList = _data.data.getDoctorFavouriteMedicineList!.medicineList;
 
           console.log('MedicineList', tempmedicineList);
-          setsearchMedicineData(tempmedicineList);
+
           setmedicineList(tempmedicineList);
         }
         setLoading(false);
@@ -315,50 +254,29 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       });
   };
 
-  // const GetSearchDiagnostics = (search_value: string) => {
-  //   console.log(search_value);
-  //   if (search_value.length >= 1) {
-  //     setLoading(true);
-  //     client
-  //       .query<searchDiagnostic, searchDiagnosticVariables>({
-  //         query: SEARCH_DIAGNOSTIC,
-  //         variables: { searchString: search_value },
-  //         fetchPolicy: 'no-cache',
-  //       })
-  //       .then((_data) => {
-  //         if (_data && _data.data && _data.data.searchDiagnostic) {
-  //           const searchTestResp = _data.data.searchDiagnostic;
-  //           console.log('SearchResults :', searchTestResp);
-  //           // getSearchListOptions(searchTestResp);
-  //           settestsSearchList(searchTestResp);
-  //         }
-
-  //         setLoading(false);
-  //       })
-  //       .catch((e) => {
-  //         setLoading(false);
-  //         console.log('Error occured while fetching Diagnostic results.');
-  //       });
-  //   } else {
-  //     settestsSearchList([]);
-  //   }
-  // };
-
   const updateFavouriteTest = (
-    updateTestId: any,
+    updateTestId: string,
     updateTestName: string,
-    tempTestArray: string[]
+    tempTestArray: searchDiagnostic_searchDiagnostic[]
   ) => {
     console.log('updateTestId-----', updateTestId, 'updateTestName-----', updateTestName);
     // tempTestArray.push(tempTestArray);
-    const AddingTest = tempTestArray!.map((ele: any) => ele.itemname).join(',');
+    const AddingTest = tempTestArray
+      .map((ele) => ele.itemname)
+      .filter((i) => i !== '')
+      .join(',');
     console.log('AddingTest---', AddingTest);
 
     setLoading(true);
     client
       .mutate<UpdateDoctorFavouriteTest, UpdateDoctorFavouriteTestVariables>({
         mutation: UPDATE_DOCTOR_FAVOURITE_TEST,
-        variables: { id: updateTestId, itemname: AddingTest ? AddingTest : updateTestName },
+        variables: {
+          id: updateTestId,
+          itemname: AddingTest
+            ? AddingTest.replace(/\s+/g, ' ')
+            : updateTestName.replace(/\s+/g, ' '),
+        },
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
@@ -411,7 +329,6 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     return (
       <View>
         <Text style={styles.subheading}>{strings.smartPrescr.fav_med}</Text>
-
         <View style={styles.containerListStyle}>
           {medicineList!.map((item, i) => (
             <View key={i}>
@@ -437,7 +354,6 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
             onPress={() => {
               setDataMed(undefined);
               setIsAddMedicine(true);
-              setSearchMedicine('');
             }}
           />
         </View>
@@ -455,17 +371,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
               <SmartPrescriptionCard
                 title={item!.itemname}
                 onPressTitle={() => {
-                  // setIsMedicine(true);
                   setIsTest(true);
                   setsearchTestVal(item!.itemname || '');
                   setEditTestId(item!.id || '');
-                  setEditTestName(item!.itemname || '');
                 }}
                 onPressrightIcon={() => {
                   setIsTest(true);
                   setsearchTestVal(item!.itemname || '');
                   setEditTestId(item!.id || '');
-                  setEditTestName(item!.itemname || '');
                 }}
                 rightIcon={<ArrowRight />}
               />
@@ -534,7 +447,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       client
         .mutate<AddDoctorFavouriteAdvice, AddDoctorFavouriteAdviceVariables>({
           mutation: ADD_DOCTOR_FAVOURITE_ADVICE,
-          variables: { instruction: favAdvice },
+          variables: { instruction: favAdvice.replace(/\s+/g, ' ') },
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
@@ -558,14 +471,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     }
   };
 
-  const UpdateAdvice = (id: any, updatedAdvice: string) => {
+  const UpdateAdvice = (id: string, updatedAdvice: string) => {
     console.log('update advice :', updatedAdvice);
     if (updatedAdvice.length != 0) {
       setLoading(true);
       client
         .mutate<UpdateDoctorFavouriteAdvice, UpdateDoctorFavouriteAdviceVariables>({
           mutation: UPDATE_DOCTOR_FAVOURITE_ADVICE,
-          variables: { id: id, instruction: updatedAdvice },
+          variables: { id: id, instruction: updatedAdvice.replace(/\s+/g, ' ') },
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
@@ -608,17 +521,16 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
         const resp = _data.data;
         console.log('Updated...:', resp);
-        setsearchmedicineList([]);
+
         GetFavouriteMedicineList();
 
         setIsAddMedicine(false);
       })
-      .catch((e: any) => {
+      .catch((e: string) => {
         setLoading(false);
         CommonBugFender('Save_Doctor_Favourite_Medicine_SmartPrescription', e);
         console.log(e);
         Alert.alert(strings.common.error, strings.smartPrescr.add_med_error);
-        setsearchmedicineList([]);
 
         setIsAddMedicine(false);
       });
@@ -642,7 +554,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         console.log('Updated...:', resp);
         GetFavouriteMedicineList();
       })
-      .catch((e: any) => {
+      .catch((e: string) => {
         setLoading(false);
         CommonBugFender('Update_Doctor_Favourite_Medicine_SmartPrescription', e);
         console.log(e);
@@ -650,66 +562,33 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       });
   };
   // -----------------------Buttons view------------
-  const renderButtonsView = () => {
-    return (
-      <BottomButtons
-        whiteButtontitle={strings.buttons.cancel}
-        cancelFun={() => {
-          console.log('cancel');
-        }}
-        yellowButtontitle={strings.buttons.save}
-        successFun={() => {
-          console.log('successFun');
-        }}
-        viewStyles={{
-          backgroundColor: '#f7f7f7',
-          marginTop: 10,
-        }}
-      />
-    );
-  };
+  // const renderButtonsView = () => {
+  //   return (
+  //     <BottomButtons
+  //       whiteButtontitle={strings.buttons.cancel}
+  //       cancelFun={() => {
+  //         console.log('cancel');
+  //       }}
+  //       yellowButtontitle={strings.buttons.save}
+  //       successFun={() => {
+  //         console.log('successFun');
+  //       }}
+  //       viewStyles={{
+  //         backgroundColor: '#f7f7f7',
+  //         marginTop: 10,
+  //       }}
+  //     />
+  //   );
+  // };
 
-  const GetSearchResultOfTests = () => {
-    return (
-      istestsSearchList &&
-      istestsSearchList.length != 0 && (
-        <View style={styles.searchTestDropdown}>
-          <DropDown
-            viewStyles={{
-              flexDirection: 'row-reverse',
-              justifyContent: 'space-between',
-            }}
-            options={istestsSearchList!.map(
-              (item: any, i) =>
-                ({
-                  optionText: item!.itemname,
-                  onPress: () => {
-                    Keyboard.dismiss();
-                    console.log('selval:', item!.itemname, i);
-                    getTempTestArray(item);
-                    setsearchTestVal(item!.itemname);
-                    // isSearchTestListVisible;
-                    setisSearchTestListVisible(!isSearchTestListVisible);
-                  },
-
-                  icon: <AddPlus />,
-                } as Option)
-            )}
-          />
-        </View>
-      )
-    );
-  };
-
-  const getTempTestArray = (Testitemname: any) => {
-    settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
-    console.log('temparr', '.....vlaue', tempTestArray, '//////', tempTestArr);
-  };
-
-  const AddFavouriteTest = (searchTestVal: any, tempTestArray: string[]) => {
-    // console.log('Selected test:' + selTest);
-    // const AddingTest = tempTestArray.itemname.join(',');
-    const AddingTest = tempTestArray!.map((ele: any) => ele.itemname).join(',');
+  const AddFavouriteTest = (
+    searchTestVal: string,
+    tempTestArray: searchDiagnostic_searchDiagnostic[]
+  ) => {
+    const AddingTest = tempTestArray
+      .map((ele) => ele.itemname)
+      .filter((i) => i !== '')
+      .join(',');
     console.log('AddingTest---', AddingTest);
 
     if (searchTestVal != '') {
@@ -718,12 +597,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
           mutation: ADD_DOCTOR_FAVOURITE_TEST,
           variables: {
-            itemname: AddingTest ? AddingTest : searchTestVal,
+            itemname: AddingTest
+              ? AddingTest.replace(/\s+/g, ' ')
+              : searchTestVal.replace(/\s+/g, ' '),
           },
         })
         .then((_data) => {
-          setLoading(false),
-            console.log('Added Favourite test', _data.data!.addDoctorFavouriteTest);
+          setLoading(false);
+          console.log('Added Favourite test', _data.data!.addDoctorFavouriteTest);
           GetFavouriteTestList();
           setisSearchTestListVisible(!isSearchTestListVisible);
           setIsTest(!isTest);
@@ -735,10 +616,8 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           const errorMsg = JSON.stringify(e.message);
           if (errorMsg === 'Network error: Network request failed') {
             Alert.alert(strings.common.error, strings.smartPrescr.add_test_error);
-            // setIsTest(!isTest);
           } else {
             Alert.alert(strings.common.alert, strings.smartPrescr.existed_test_error);
-            // setIsTest(!isTest);
           }
         });
     } else {
@@ -768,7 +647,6 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
   const showAdvice = () => {
     console.log('favAdvice:', favAdviceId, favAdviceInstruction);
-
     return (
       <AphOverlay
         headingViewStyle={{
@@ -816,10 +694,8 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       </AphOverlay>
     );
   };
-
   return (
-    <View style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
-      {/* {isMedicine && ShowMedicine()} */}
+    <View style={theme.viewStyles.container}>
       {isTest && showTestPopup()}
       {isAdvice && showAdvice()}
       {isAddMedicine && (
@@ -864,16 +740,13 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           }}
         />
       )}
-
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={theme.viewStyles.container}>
         <View>{showHeaderView()}</View>
-        <ScrollView bounces={false}>
-          <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7', margin: 20 }}>
-            {FavoriteMedicines()}
-            {FavoriteTests()}
-            {FavoriteAdvice()}
-            {renderButtonsView()}
-          </SafeAreaView>
+        <ScrollView bounces={false} contentContainerStyle={{ padding: 20 }}>
+          {FavoriteMedicines()}
+          {FavoriteTests()}
+          {FavoriteAdvice()}
+          {/* {renderButtonsView()} */}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}

@@ -44,6 +44,11 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
       },
     },
+    filterSectionOpen: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+    },
     customScroll: {
       width: '100%',
       paddingLeft: 10,
@@ -193,6 +198,8 @@ export interface DoctorsFilterProps {
   showNormal: (showNormal: boolean) => void;
   emptySpeciality: (specialitySelected: string) => void;
   manageFilter: (disableFilters: boolean) => void;
+  showResponsiveFilter: boolean;
+  setShowResponsiveFilter: (showResponsiveFilter: boolean) => void;
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
@@ -206,7 +213,11 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     showNormal,
     emptySpeciality,
     manageFilter,
+    showResponsiveFilter,
+    setShowResponsiveFilter,
   } = props;
+
+  // console.log(showResponsiveFilter, 'responsive filter is.....');
 
   const filterCities = { Hyderabad: 'Hyderabad', Chennai: 'Chennai' };
   const filterExperiences = { '0_5': '0-5', '6_10': '6-10', '11_15': '11-15', '15_99': '15+' };
@@ -234,7 +245,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
 
   const prevDateSelected = usePrevious(dateSelected);
   const selectedSpecialtyName = existingFilters.specialtyName;
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const filterOptions = {
@@ -309,16 +320,25 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         ''
       )}
       <div
-        className={`${classes.filterSection} ${
-          disableFilters ? classes.filterSectionDisabled : ''
-        }`}
+        className={` ${showResponsiveFilter ? classes.filterSectionOpen : ''} ${
+          classes.filterSection
+        } ${disableFilters ? classes.filterSectionDisabled : ''}`}
       >
         <div className={classes.filterHeader}>
-          <AphButton>
+          <AphButton
+            onClick={() => {
+              setShowResponsiveFilter(false);
+            }}
+          >
             <img src={require('images/ic_cross.svg')} alt="" />
           </AphButton>
           <span>FILTERS</span>
-          <AphButton>
+          <AphButton
+            onClick={() => {
+              emptyFilters(true);
+              setShowResponsiveFilter(false);
+            }}
+          >
             <img src={require('images/ic_refresh.svg')} alt="" />
           </AphButton>
         </div>

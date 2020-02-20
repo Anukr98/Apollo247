@@ -175,6 +175,6 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
       </Paper>
     );
   } else {
-    return null;
+    return <LinearProgress />;
   }
 };

@@ -47,7 +47,7 @@ import { isIphoneX } from 'react-native-iphone-x-helper';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   chipContainerStyle: {

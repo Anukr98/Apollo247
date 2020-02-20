@@ -15,12 +15,15 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
 
-import { sendSMS } from 'notifications-service/resolvers/notifications';
+//import { sendSMS } from 'notifications-service/resolvers/notifications';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addMinutes } from 'date-fns';
+import { addMilliseconds, format } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import _ from 'lodash';
+import { DoctorType } from 'doctors-service/entities';
+//import { sendNotificationSMS } from 'profiles-service/resolvers/login';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -95,12 +98,24 @@ const makeAppointmentPayment: Resolver<
   AppointmentPaymentResult
 > = async (parent, { paymentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const processingAppointment = await apptsRepo.findByOrderIdAndStatus(
-    paymentInput.orderId,
-    STATUS.PAYMENT_PENDING
-  );
-  if (!processingAppointment) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  let processingAppointment;
+  if (paymentInput.amountPaid == 0 || paymentInput.amountPaid == 0.0) {
+    processingAppointment = await apptsRepo.findByIdAndStatus(
+      paymentInput.orderId,
+      STATUS.PAYMENT_PENDING
+    );
+
+    if (!processingAppointment) {
+      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+    }
+  } else {
+    processingAppointment = await apptsRepo.findByOrderIdAndStatus(
+      paymentInput.orderId,
+      STATUS.PAYMENT_PENDING
+    );
+    if (!processingAppointment) {
+      throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+    }
   }
 
   //insert payment details
@@ -151,18 +166,18 @@ const sendPatientAcknowledgements = async (
   }
 
   //SMS logic starts here
-  let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
-    '{0}',
-    patientDetails.firstName
-  );
-  smsMessage = smsMessage.replace('{1}', appointmentData.displayId.toString());
-  smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
+  //let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
+  //'{0}',
+  //patientDetails.firstName
+  //);
+  //smsMessage = smsMessage.replace('{1}', appointmentData.displayId.toString());
+  //smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
   const istDateTime = addMilliseconds(appointmentData.appointmentDateTime, 19800000);
-  const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
-  smsMessage = smsMessage.replace('{3}', smsDate.toString());
-  smsMessage = smsMessage.replace('at {4}', '');
-  console.log(smsMessage, 'sms message');
-  sendSMS(smsMessage);
+  //const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
+  //smsMessage = smsMessage.replace('{3}', smsDate.toString());
+  //smsMessage = smsMessage.replace('at {4}', '');
+  //console.log(smsMessage, 'sms message');
+  //sendSMS(smsMessage);
   //SMS logic ends here
 
   //NOTIFICATION logic starts here
@@ -179,44 +194,72 @@ const sendPatientAcknowledgements = async (
   console.log(notificationResult, 'book appt notification');
   // NOTIFICATION logic ends here
 
-  //EMAIL logic starts here
   const hospitalCity = docDetails.doctorHospital[0].facility.city;
+  let displayHospitalCity;
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
   const apptTime = format(istDateTime, 'hh:mm');
-  const mailSubject =
-    'New Appointment for ' +
-    hospitalCity +
-    ' Hosp Doctor – ' +
-    apptDate +
-    ', ' +
-    apptTime +
-    'hrs, Dr. ' +
-    docDetails.firstName +
-    ' ' +
-    docDetails.lastName;
-  let mailContent =
-    'New Appointment has been booked on Apollo 247 app with the following details:-';
-  mailContent +=
-    'Appointment No :-' +
-    appointmentData.displayId.toString() +
-    '<br>Patient Name :-' +
-    patientDetails.firstName +
-    '<br>Mobile Number :-' +
-    patientDetails.mobileNumber +
-    '<br>Doctor Name :-' +
-    docDetails.firstName +
-    ' ' +
-    docDetails.lastName +
-    '<br>Doctor Location (ATHS/Hyd Hosp/Chennai Hosp) :-' +
-    hospitalCity +
-    '<br>Appointment Date :-' +
-    format(istDateTime, 'dd/MM/yyyy') +
-    '<br>Appointment Slot :-' +
-    format(istDateTime, 'hh:mm aa') +
-    ' - ' +
-    format(addMinutes(istDateTime, 15), 'hh:mm aa') +
-    '<br>Mode of Consult :-' +
-    appointmentData.appointmentType;
+  const getHours = istDateTime.getHours();
+  const getMinutes = istDateTime.getMinutes();
+  let subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', hospitalCity);
+  if (docDetails.doctorType == DoctorType.PAYROLL) {
+    if (hospitalCity) {
+      subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace(
+        '{0}',
+        'ATHS' + '&nbsp' + hospitalCity
+      );
+      displayHospitalCity = 'ATHS' + '&nbsp' + hospitalCity;
+    } else {
+      subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', 'ATHS');
+      displayHospitalCity = hospitalCity;
+    }
+  } else if (docDetails.doctorType == DoctorType.APOLLO) {
+    subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', hospitalCity);
+    displayHospitalCity = hospitalCity;
+  }
+
+  const mailTemplate = _.template(`
+  <html>
+  <body>  
+  <ol>
+  <p>New Appointment has been booked on Apollo 247 app with the following details </p>
+  <li>
+  <ul>
+  <li>Appointment No : <%- displayId %></li>
+  <li>Patient Name : <%- firstName %></li>
+  <li>Mobile Number : <%- mobileNumber %></li>
+  <li>Doctor Name : <%- docfirstName +' '+ doclastName %></li>
+  <li>Doctor Location : <%- hospitalcity %></li>
+  <li>Appointment Date : <%- apptDate %></li>
+  <li>Appointment Slot : <%- getHours +':'+ getMinutes %></li>
+  <li>Mode of Consult : <%- appointmentType %> </li>
+  </ul>
+  </li>
+  </ol>
+  </body>
+  </html>
+  `);
+  const mailContent = mailTemplate({
+    displayId: appointmentData.displayId.toString(),
+    firstName: patientDetails.firstName,
+    mobileNumber: patientDetails.mobileNumber,
+    docfirstName: docDetails.firstName,
+    doclastName: docDetails.lastName,
+    hospitalcity: displayHospitalCity,
+    appointmentType: appointmentData.appointmentType,
+    apptDate,
+    getHours,
+    getMinutes,
+  });
+
+  subjectLine = subjectLine.replace('{1}', apptDate);
+  subjectLine = subjectLine.replace('{2}', apptTime);
+  subjectLine = subjectLine.replace('{3}', docDetails.firstName);
+  subjectLine = subjectLine.replace('{4}', docDetails.lastName);
+
+  const subject =
+    process.env.NODE_ENV == 'production'
+      ? subjectLine
+      : subjectLine + ' from ' + process.env.NODE_ENV;
 
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
@@ -226,12 +269,12 @@ const sendPatientAcknowledgements = async (
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
-    ccEmail: ccEmailIds.toString(),
-    toEmail: toEmailId.toString(),
-    subject: mailSubject,
-    fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-    fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-    messageContent: mailContent,
+    ccEmail: <string>ccEmailIds.toString(),
+    toEmail: <string>toEmailId.toString(),
+    subject: subject,
+    fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
+    fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
+    messageContent: <string>mailContent,
   };
   sendMail(emailContent);
   //EMAIL logic ends here

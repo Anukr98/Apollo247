@@ -2,11 +2,10 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import React from 'react';
-import { Alert, View, AsyncStorage } from 'react-native';
-import { NavigationScreenProps, StackActions } from 'react-navigation';
-import { NavigationActions } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import React from 'react';
+import { Alert, View } from 'react-native';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 

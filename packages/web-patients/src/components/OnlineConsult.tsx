@@ -50,8 +50,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f8f5',
       padding: 16,
-      marginTop: 10,
-      marginBottom: 10,
       display: 'inline-block',
       width: '100%',
       fontSize: 14,
@@ -63,6 +61,12 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         marginTop: 0,
       },
+    },
+    consultNowInfo: {
+      backgroundColor: '#fff',
+      margin: '18px -16px 0 -16px !important',
+      textAlign: 'center',
+      padding: '5px 16px',
     },
     actions: {
       paddingTop: 5,
@@ -111,7 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 6,
     },
     customScrollBar: {
-      paddingTop: 10,
+      paddingTop: 20,
       paddingLeft: 20,
       paddingRight: 20,
     },
@@ -221,6 +225,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   let slotAvailableNext = '';
   let autoSlot = '';
 
+  // console.log('-------', autoSlot);
+
   const doctorName =
     doctorDetails &&
     doctorDetails.getDoctorDetailsById &&
@@ -259,7 +265,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
   const prevDateSelected = usePrevious(dateSelected);
-  let isToday = false;
 
   useEffect(() => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');
@@ -282,6 +287,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
+
+  // console.log(availableSlotsData);
 
   // get doctor next availability.
   const { data: nextAvailableSlot, loading: nextAvailableSlotLoading } = useQueryWithSkip<
@@ -310,8 +317,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   }
 
   let differenceInMinutes = 0;
-  let differenceInHours = 0;
-  let firstAvailableSlots = '';
 
   // it must be always one record or we return only first record.
   if (
@@ -329,20 +334,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
         // const currentTime = new Date(new Date().toISOString()).getTime();
         const slotTime = new Date(availability.availableSlot).getTime();
-        firstAvailableSlots = availability.availableSlot;
-        if (new Date(availability.availableSlot).getDate() === new Date().getDate()) {
-          isToday = true;
-        } else {
-          isToday = false;
-        }
         const currentTime = new Date(new Date().toISOString()).getTime();
         if (slotTime > currentTime) {
           const difference = slotTime - currentTime;
           const slotArray = availability.availableSlot.split('T');
-          const diffAsDate = new Date(difference);
-          differenceInHours = diffAsDate.getUTCHours(); // hours
-          differenceInMinutes = diffAsDate.getUTCMinutes(); // minutes
-          // differenceInMinutes = Math.round(difference / 60000);
+          differenceInMinutes = Math.round(difference / 60000);
           slotAvailableNext = slotArray[1].substr(0, 5);
           autoSlot = availability.availableSlot;
         }
@@ -351,6 +347,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       }
     });
   }
+
+  // console.log('diff in minutes.....', differenceInMinutes);
 
   const availableSlots =
     (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
@@ -373,6 +371,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   });
 
   const consultNowAvailable = differenceInMinutes > 0 && differenceInMinutes <= 15;
+
+  // console.log(consultNowAvailable, 'consult now available.....');
+  // console.log(slotAvailableNext, consultNow, timeSelected);
+  // console.log(slotAvailableNext, '..................................timeselected', timeSelected);
+
   let disableSubmit =
     (morningSlots.length === 0 &&
       afternoonSlots.length === 0 &&
@@ -388,20 +391,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         <div className={classes.customScrollBar}>
           {!props.isRescheduleConsult && (
             <div className={classes.consultGroup}>
-              {differenceInMinutes > 0 && isToday ? (
+              {differenceInMinutes > 0 ? (
                 <p>
-                  {`Dr. ${doctorName} is available in`}{' '}
-                  {differenceInHours > 0 && `${differenceInHours} hours`}{' '}
-                  {` ${differenceInMinutes} mins! Would you like to
-                  consult now or schedule for later?`}
-                </p>
-              ) : (
-                <p>
-                  {`Dr. ${doctorName} is available on`}{' '}
-                  {format(new Date(firstAvailableSlots), 'dd MMM , h:mm a')}! Would you like to
+                  Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
                   consult now or schedule for later?
                 </p>
-              )}
+              ) : null}
               <div className={classes.actions}>
                 <AphButton
                   onClick={(e) => {
@@ -434,56 +429,80 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   Schedule For Later
                 </AphButton>
               </div>
+              {showCalendar || scheduleLater || !consultNowAvailable ? (
+                ''
+              ) : (
+                <p className={classes.consultNowInfo}>
+                  Please note that after booking, you will need to download the Apollo 247 app to
+                  continue with your consultation.
+                </p>
+              )}
             </div>
           )}
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
-            <Grid container spacing={2}>
-              <Grid item sm={6} xs={12}>
-                <div
-                  className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
-                    showCalendar || scheduleLater || !consultNowAvailable
-                      ? classes.showCalendar
-                      : ''
-                  }`}
-                  ref={calendarRef}
-                >
-                  <AphCalendar
-                    getDate={(dateSelected: string) => setDateSelected(dateSelected)}
-                    selectedDate={new Date(apiDateFormat)}
-                  />
-                </div>
-              </Grid>
-              <Grid item sm={6} xs={12}>
-                {morningSlots.length > 0 ||
-                afternoonSlots.length > 0 ||
-                eveningSlots.length > 0 ||
-                lateNightSlots.length > 0 ? (
+            <>
+              <p className={classes.consultGroup}>
+                Please note that after booking, you will need to download the Apollo 247 app to
+                continue with your consultation.
+              </p>
+
+              <Grid container spacing={2}>
+                <Grid item sm={6} xs={12}>
                   <div
-                    className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                    className={`${classes.consultGroup} ${classes.scheduleCalendar} ${
                       showCalendar || scheduleLater || !consultNowAvailable
-                        ? classes.showTimeSlot
+                        ? classes.showCalendar
                         : ''
                     }`}
+                    ref={calendarRef}
                   >
-                    <DayTimeSlots
-                      morningSlots={morningSlots}
-                      afternoonSlots={afternoonSlots}
-                      eveningSlots={eveningSlots}
-                      latenightSlots={lateNightSlots}
-                      doctorName={doctorName}
-                      timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                    <AphCalendar
+                      getDate={(dateSelected: string) => setDateSelected(dateSelected)}
+                      selectedDate={new Date(apiDateFormat)}
                     />
                   </div>
-                ) : (
-                  <div className={classes.consultGroup}>
-                    <div className={classes.noSlotsAvailable}>
-                      Oops! No slots available with Dr. {doctorName} :(
+                </Grid>
+                <Grid item sm={6} xs={12}>
+                  {morningSlots.length > 0 ||
+                  afternoonSlots.length > 0 ||
+                  eveningSlots.length > 0 ||
+                  lateNightSlots.length > 0 ? (
+                    <div
+                      className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                        showCalendar || scheduleLater || !consultNowAvailable
+                          ? classes.showTimeSlot
+                          : ''
+                      }`}
+                    >
+                      <DayTimeSlots
+                        morningSlots={morningSlots}
+                        afternoonSlots={afternoonSlots}
+                        eveningSlots={eveningSlots}
+                        latenightSlots={lateNightSlots}
+                        doctorName={doctorName}
+                        timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                      />
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className={classes.consultGroup}>
+                      <div className={classes.noSlotsAvailable}>
+                        Oops! No slots available with Dr. {doctorName} :(
+                      </div>
+                    </div>
+                  )}
+                </Grid>
               </Grid>
-            </Grid>
+            </>
           )}
+          <p className={classes.consultGroup}>
+            I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
+            the same. I am voluntarily availing of the services provided on this platform. I am
+            fully aware that I will not be undergoing a physical examination by a physician prior to
+            a physician recommending medical tests and/or treatment and/or the prescribing of OTC
+            drugs. I am also aware that the consultation on 24x7 Application does not preclude my
+            rights to visit a physician and opt for a physical examination at any point in time and
+            I am free at any time during the consultation to request for the same.
+          </p>
         </div>
       </Scrollbars>
       {props.isRescheduleConsult ? (
@@ -517,7 +536,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         <div className={classes.bottomActions}>
           <AphButton
             color="primary"
-            disabled={disableSubmit || mutationLoading || isDialogOpen}
+            disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
             onClick={() => {
               setMutationLoading(true);
               paymentMutation({
@@ -567,7 +586,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 });
             }}
             className={
-              disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
+              disableSubmit || mutationLoading || isDialogOpen || !timeSelected
+                ? classes.buttonDisable
+                : ''
             }
           >
             {mutationLoading ? (

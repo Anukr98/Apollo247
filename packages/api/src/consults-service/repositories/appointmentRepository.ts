@@ -599,6 +599,133 @@ export class AppointmentRepository extends Repository<Appointment> {
     doctorId: string,
     doctorsDb: Connection
   ) {
+    const checkActStart = `${appointmentDate.toDateString()} 18:30:00`;
+    const checkActEnd = `${appointmentDate.toDateString()} 23:59:00`;
+    let actualDate = new Date(appointmentDate.toDateString());
+    if (appointmentDate >= new Date(checkActStart) && appointmentDate <= new Date(checkActEnd)) {
+      actualDate = addDays(actualDate, 1);
+    }
+
+    const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    let previousDate: Date = appointmentDate;
+    let prevDaySlots = 0;
+    previousDate = addDays(actualDate, -1);
+    const checkStart = `${previousDate.toDateString()} 18:30:00`;
+    let weekDay = format(previousDate, 'EEEE').toUpperCase();
+    let timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
+
+    weekDay = format(actualDate, 'EEEE').toUpperCase();
+    const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+    timeSlots = timeSlots.concat(timeSlotsNext);
+
+    if (timeSlots.length > 0) {
+      prevDaySlots = 1;
+    }
+    const checkEnd = `${actualDate.toDateString()} 18:30:00`;
+
+    enum CONSULTFLAG {
+      OUTOFCONSULTHOURS = 'OUTOFCONSULTHOURS',
+      OUTOFBUFFERTIME = 'OUTOFBUFFERTIME',
+      INCONSULTHOURS = 'INCONSULTHOURS',
+    }
+    const availableSlots: string[] = [];
+    console.log(timeSlots, 'time slots');
+    let rowCount = 0;
+    let consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
+    if (timeSlots && timeSlots.length > 0) {
+      timeSlots.map((timeSlot) => {
+        let st = `${appointmentDate.toDateString()} ${timeSlot.startTime.toString()}`;
+        const ed = `${appointmentDate.toDateString()} ${timeSlot.endTime.toString()}`;
+        let consultStartTime = new Date(st);
+        const consultEndTime = new Date(ed);
+
+        if (consultEndTime < consultStartTime) {
+          st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
+          consultStartTime = new Date(st);
+        }
+        const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
+        //console.log(duration, 'doctor duration');
+        let slotsCount =
+          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
+        if (slotsCount - Math.floor(slotsCount) == 0.5) {
+          slotsCount = Math.ceil(slotsCount);
+        } else {
+          slotsCount = Math.floor(slotsCount);
+        }
+        const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
+        let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+        if (prevDaySlots == 0) {
+          startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+        }
+        if (rowCount > 0) {
+          const nextDate = addDays(previousDate, 1);
+          const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
+          const td = `${nextDate.toDateString()} 00:00:00`;
+          if (new Date(ed) >= new Date(td) && timeSlot.weekDay != timeSlots[rowCount - 1].weekDay) {
+            startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+          }
+        }
+        Array(slotsCount)
+          .fill(0)
+          .map(() => {
+            const stTime = startTime;
+            startTime = addMinutes(startTime, timeSlot.consultDuration);
+            const stTimeHours = stTime
+              .getUTCHours()
+              .toString()
+              .padStart(2, '0');
+            const stTimeMins = stTime
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0');
+            const startDateStr = format(stTime, 'yyyy-MM-dd');
+            const endStr = ':00.000Z';
+            const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
+            const timeWithBuffer = addMinutes(new Date(), timeSlot.consultBuffer);
+            if (new Date(generatedSlot) > timeWithBuffer) {
+              if (
+                new Date(generatedSlot) >= new Date(checkStart) &&
+                new Date(generatedSlot) < new Date(checkEnd)
+              ) {
+                if (!availableSlots.includes(generatedSlot)) {
+                  availableSlots.push(generatedSlot);
+                }
+              }
+            }
+            return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
+          });
+        const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
+        const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
+        if (lastMins < timeSlot.consultDuration) {
+          availableSlots.pop();
+        }
+        rowCount++;
+      });
+      const sl = `${format(appointmentDate, 'yyyy-MM-dd')}T${appointmentDate
+        .getUTCHours()
+        .toString()
+        .padStart(2, '0')}:${appointmentDate
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
+      console.log(availableSlots, 'availableSlots final list');
+      console.log(availableSlots.indexOf(sl), 'indexof');
+      console.log(checkStart, checkEnd, 'check start end');
+      if (availableSlots.indexOf(sl) >= 0) {
+        consultFlag = CONSULTFLAG.INCONSULTHOURS;
+      }
+      return consultFlag;
+    } else {
+      return CONSULTFLAG.OUTOFCONSULTHOURS;
+    }
+  }
+
+  async checkWithinConsultHoursBkp(
+    appointmentDate: Date,
+    appointmentType: string,
+    doctorId: string,
+    doctorsDb: Connection
+  ) {
     const givenApptDate = format(appointmentDate, 'yyyy-MM-dd');
     const checkStart = new Date(givenApptDate + 'T18:30');
     const checkEnd = new Date(givenApptDate + 'T23:59');
@@ -660,9 +787,15 @@ export class AppointmentRepository extends Repository<Appointment> {
     doctorId: string,
     selectedDate: Date,
     doctorsDb: Connection,
-    appointmentType: string
+    appointmentType: string,
+    inputDate: Date
   ) {
-    const weekDay = format(selectedDate, 'EEEE').toUpperCase();
+    let previousDate: Date = selectedDate;
+    let prevDaySlots = 0;
+    previousDate = addDays(selectedDate, -1);
+    const checkStart = `${previousDate.toDateString()} 18:30:00`;
+    const checkEnd = `${selectedDate.toDateString()} 18:30:00`;
+    let weekDay = format(previousDate, 'EEEE').toUpperCase();
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     let docConsultHrs: ConsultHours[];
     if (appointmentType == 'ONLINE') {
@@ -670,6 +803,17 @@ export class AppointmentRepository extends Repository<Appointment> {
     } else {
       docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
     }
+    weekDay = format(selectedDate, 'EEEE').toUpperCase();
+    let timeSlotsNext;
+    if (appointmentType == 'ONLINE') {
+      timeSlotsNext = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    } else {
+      timeSlotsNext = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
+    }
+    if (docConsultHrs.length > 0) {
+      prevDaySlots = 1;
+    }
+    docConsultHrs = docConsultHrs.concat(timeSlotsNext);
 
     let availableSlots: string[] = [];
     let availableSlotsReturn: string[] = [];
@@ -695,17 +839,22 @@ export class AppointmentRepository extends Repository<Appointment> {
       docConsultHrs.map((docConsultHr) => {
         //get the slots of the day first
         let st = `${selectedDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-        let ed = `${selectedDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+        const ed = `${selectedDate.toDateString()} ${docConsultHr.endTime.toString()}`;
         let consultStartTime = new Date(st);
-        let consultEndTime = new Date(ed);
+        const consultEndTime = new Date(ed);
+        if (consultEndTime < consultStartTime) {
+          st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+          consultStartTime = new Date(st);
+        }
         //console.log(consultStartTime, consultEndTime);
-        let previousDate: Date = selectedDate;
+        /*let previousDate: Date = selectedDate;
         let nextDayFlag = 0;
         if (rowCount > 0) {
           //console.log(docConsultHrs[rowCount - 1].endTime, 'prev end time');
           const nextDate = addDays(selectedDate, 1);
           ed = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          const td = `${nextDate.toDateString()} 18:30:00`;
+          //const td = `${nextDate.toDateString()} 18:30:00`;
+          const td = `${nextDate.toDateString()} 00:00:00`;
           console.log(td, 'td', ed, 'ed', new Date(ed) >= new Date(td), 'comp');
           //if (docConsultHrs[rowCount - 1].endTime == '18:25:00') {
           if (new Date(ed) >= new Date(td)) {
@@ -725,7 +874,7 @@ export class AppointmentRepository extends Repository<Appointment> {
             consultStartTime = new Date(st);
             ed = `${selectedDate.toDateString()} ${docConsultHr.endTime.toString()}`;
           }
-        }
+        }*/
         //const duration = Math.floor(60 / docConsultHr.consultDuration);
         const duration = parseFloat((60 / docConsultHr.consultDuration).toFixed(1));
         consultBuffer = docConsultHr.consultBuffer;
@@ -737,11 +886,27 @@ export class AppointmentRepository extends Repository<Appointment> {
         } else {
           slotsCount = Math.floor(slotsCount);
         }
-        const dayStartTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
-        let startTime = new Date(previousDate.toDateString() + ' ' + dayStartTime);
+        //const dayStartTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
+        //let startTime = new Date(previousDate.toDateString() + ' ' + dayStartTime);
         //console.log(slotsCount, 'slots count');
         //console.log(startTime, 'slot start time');
         //console.log(consultStartTime, consultEndTime, 'consult time row wise');
+        const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
+        let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+        if (prevDaySlots == 0) {
+          startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+        }
+        if (rowCount > 0) {
+          const nextDate = addDays(previousDate, 1);
+          const ed = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+          const td = `${nextDate.toDateString()} 00:00:00`;
+          if (
+            new Date(ed) >= new Date(td) &&
+            docConsultHr.weekDay != docConsultHrs[rowCount - 1].weekDay
+          ) {
+            startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+          }
+        }
         availableSlotsReturn = Array(slotsCount)
           .fill(0)
           .map(() => {
@@ -758,7 +923,17 @@ export class AppointmentRepository extends Repository<Appointment> {
             const startDateStr = format(stTime, 'yyyy-MM-dd');
             const endStr = ':00.000Z';
             const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
-            availableSlots.push(generatedSlot);
+            const timeWithBuffer = addMinutes(new Date(), docConsultHr.consultBuffer);
+            if (new Date(generatedSlot) > timeWithBuffer) {
+              if (
+                new Date(generatedSlot) >= new Date(checkStart) &&
+                new Date(generatedSlot) < new Date(checkEnd)
+              ) {
+                if (!availableSlots.includes(generatedSlot)) {
+                  availableSlots.push(generatedSlot);
+                }
+              }
+            }
             return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           });
         const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
@@ -805,11 +980,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       let foundFlag = 0;
 
       //getting the available slot
-      //const currentTime = new Date('2020-02-13T18:30');
-      const timeWithBuffer = addMinutes(new Date(), consultBuffer);
+      let timeWithBuffer: Date;
+      //const currentTime = new Date(inputDate);
+      if (inputDate) timeWithBuffer = addMinutes(inputDate, consultBuffer);
+      else timeWithBuffer = addMinutes(new Date(), consultBuffer);
       //const timeWithBuffer = addMinutes(currentTime, consultBuffer);
-      //console.log(timeWithBuffer, 'timeWithBuffer');
-      //console.log(availableSlots, 'slots final list');
+      console.log(timeWithBuffer, 'timeWithBuffer');
+      console.log(availableSlots, 'slots final list');
       availableSlots.map((slot) => {
         const slotDate = new Date(slot);
         if (slotDate >= timeWithBuffer && foundFlag == 0) {
@@ -1519,6 +1696,35 @@ export class AppointmentRepository extends Repository<Appointment> {
         status4: STATUS.COMPLETED,
       })
       .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getCount();
+  }
+
+  getPatientAppointmentCountByConsultMode(patientId: string, appointmenType: APPOINTMENT_TYPE) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_PENDING,
+      })
+      .getCount();
+  }
+
+  getPatientAppointmentCountByCouponCode(patientId: string, couponCode: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_PENDING,
+      })
+      .getCount();
+  }
+
+  getAppointmentCountByCouponCode(couponCode: string) {
+    return this.createQueryBuilder('appointment')
+      .andWhere('appointment.couponCode = :couponCode', { couponCode })
+      .andWhere('appointment.status not in(:status1)', {
+        status1: STATUS.PAYMENT_PENDING,
+      })
       .getCount();
   }
 }

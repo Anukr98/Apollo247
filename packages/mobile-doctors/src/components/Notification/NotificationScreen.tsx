@@ -42,18 +42,18 @@ const notifications = [
   },
 ];
 const styles = StyleSheet.create({
-  mainview: {
-    backgroundColor: '#ffffff',
-    height: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  notificationText: {
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    color: '#01475b',
-    textAlign: 'center',
-  },
+  // mainview: {
+  //   backgroundColor: '#ffffff',
+  //   height: 60,
+  //   flexDirection: 'row',
+  //   justifyContent: 'space-between',
+  //   alignItems: 'center',
+  // },
+  // notificationText: {
+  //   ...theme.fonts.IBMPlexSansSemiBold(13),
+  //   color: '#01475b',
+  //   textAlign: 'center',
+  // },
   dataView: {
     flexDirection: 'row',
     marginTop: 10,
