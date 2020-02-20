@@ -245,7 +245,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
 
   const prevDateSelected = usePrevious(dateSelected);
   const selectedSpecialtyName = existingFilters.specialtyName;
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const filterOptions = {

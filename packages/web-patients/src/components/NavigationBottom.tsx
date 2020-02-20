@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 0,
       height: 'auto',
       boxShadow: '0 -10px 30px 0 rgba(0, 0, 0, 0.6)',
-      [theme.breakpoints.up(991)]: {
+      [theme.breakpoints.up(901)]: {
         display: 'none',
       },
       '& button': {
@@ -26,7 +26,6 @@ const useStyles = makeStyles((theme: Theme) => {
     labelRoot: {
       width: '100%',
       minWidth: 'auto',
-      padding: 0,
     },
     iconLabel: {
       fontSize: 10,
@@ -55,6 +54,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         marginLeft: 15,
       },
+    },
+    hieLink: {
+      display: 'none',
     },
   };
 });
@@ -90,6 +92,7 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Medicines"
+        className={classes.hieLink}
         component={Link}
         to={clientRoutes.medicines()}
         icon={<img src={require('images/bottom-nav/ic_medicines.svg')} />}
@@ -101,6 +104,7 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Tests"
+        className={classes.hieLink}
         icon={<img src={require('images/bottom-nav/ic_tests.svg')} />}
         classes={{
           root: classes.labelRoot,
