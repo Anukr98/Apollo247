@@ -167,7 +167,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(520)]: {
         display: 'none',
       },
-    }
+    },
   };
 });
 
@@ -199,11 +199,14 @@ export const Header: React.FC = (props) => {
           )}
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-              <a href="https://play.google.com/" target="_blank">Download Apollo247 App</a>
+              <a href="https://play.google.com/" target="_blank">
+                Download Apollo247 App
+              </a>
             </div>
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
-                currentPath === clientRoutes.myAccount() || currentPath === clientRoutes.addressBook()
+                currentPath === clientRoutes.myAccount() ||
+                currentPath === clientRoutes.addressBook()
                   ? classes.userAccountActive
                   : ''
               }`}
