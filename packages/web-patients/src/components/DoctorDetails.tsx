@@ -182,7 +182,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 20,
       top: 12,
       minWidth: 200,
-      [theme.breakpoints.down(990)]: {
+      [theme.breakpoints.down(900)]: {
         display: 'none',
       },
     },
@@ -191,7 +191,7 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 20,
       textAlign: 'center',
       width: '100%',
-      [theme.breakpoints.up(991)]: {
+      [theme.breakpoints.up(901)]: {
         display: 'none',
       },
       '& button': {
@@ -212,7 +212,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
   const { currentPatient } = useAllCurrentPatients();
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const currentUserId = currentPatient && currentPatient.id;

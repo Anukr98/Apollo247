@@ -7,6 +7,7 @@ import {
   ExpansionPanelDetails,
   Grid,
 } from '@material-ui/core';
+import { MedicalTestUnit } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -91,8 +92,26 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const DetailedFindings: React.FC = (props) => {
-  const classes = useStyles();
+type DetailedFindingsProps = {
+  activeData: any;
+};
+
+export const MedicalTest = [
+  { value: 'gm', key: MedicalTestUnit.GM },
+  {
+    value: 'gm/dl',
+    key: MedicalTestUnit.GM_SLASH_DL,
+  },
+  {
+    value: '%', //replaceStringWithChar(MedicalTestUnit._PERCENT_),
+    key: MedicalTestUnit._PERCENT_,
+  },
+];
+
+export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
+  const classes = useStyles({});
+  const { data } = props.activeData;
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -103,110 +122,44 @@ export const DetailedFindings: React.FC = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={12}>
-            <div className={classes.cardTitle}>Lymphocytes</div>
-            <div className={classes.cardSection}>
-              <Grid container spacing={2}>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Result</label>
-                    <div className={`${classes.result} ${classes.resultError}`}>15</div>
+          {data &&
+            (
+              (data.medicalRecordParameters && data.medicalRecordParameters) ||
+              (data.labTestResultParameters && data.labTestResultParameters)
+            ).map((detail: any) => {
+              const unit = MedicalTest.find((item) => item.key === detail.unit);
+              return (
+                <Grid item xs={12} sm={12}>
+                  <div className={classes.cardTitle}>{detail.parameterName}</div>
+                  <div className={classes.cardSection}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6} sm={3}>
+                        <div className={classes.resultGroup}>
+                          <label>Result</label>
+                          <div className={`${classes.result} ${classes.resultError}`}>
+                            {detail.result}
+                          </div>
+                        </div>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <div className={classes.resultGroup}>
+                          <label>Units</label>
+                          <div className={classes.result}>{unit ? unit.value : detail.unit}</div>
+                        </div>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <div className={classes.resultGroup}>
+                          <label>Normal Range</label>
+                          <div className={`${classes.result}`}>
+                            {detail.minimum} - {detail.maximum}
+                          </div>
+                        </div>
+                      </Grid>
+                    </Grid>
                   </div>
                 </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Units</label>
-                    <div className={classes.result}>%</div>
-                  </div>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Normal Range</label>
-                    <div className={`${classes.result}`}>20 - 40</div>
-                  </div>
-                </Grid>
-              </Grid>
-            </div>
-          </Grid>
-          <Grid item xs={12} sm={12}>
-            <div className={classes.cardTitle}>
-              Haemoglobin (Optical Light Scatter / Cyanmethaemoglobin)
-            </div>
-            <div className={classes.cardSection}>
-              <Grid container spacing={2}>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Result</label>
-                    <div className={`${classes.result}`}>11.4</div>
-                  </div>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Units</label>
-                    <div className={classes.result}>gm/dl</div>
-                  </div>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Normal Range</label>
-                    <div className={`${classes.result}`}>13.0 - 18.0</div>
-                  </div>
-                </Grid>
-              </Grid>
-            </div>
-          </Grid>
-          <Grid item xs={12} sm={12}>
-            <div className={classes.cardTitle}>Lymphocytes</div>
-            <div className={classes.cardSection}>
-              <Grid container spacing={2}>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Result</label>
-                    <div className={`${classes.result} ${classes.resultError}`}>15</div>
-                  </div>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Units</label>
-                    <div className={classes.result}>%</div>
-                  </div>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Normal Range</label>
-                    <div className={`${classes.result}`}>20 - 40</div>
-                  </div>
-                </Grid>
-              </Grid>
-            </div>
-          </Grid>
-          <Grid item xs={12} sm={12}>
-            <div className={classes.cardTitle}>
-              Haemoglobin (Optical Light Scatter / Cyanmethaemoglobin)
-            </div>
-            <div className={classes.cardSection}>
-              <Grid container spacing={2}>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Result</label>
-                    <div className={`${classes.result}`}>11.4</div>
-                  </div>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Units</label>
-                    <div className={classes.result}>gm/dl</div>
-                  </div>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <div className={classes.resultGroup}>
-                    <label>Normal Range</label>
-                    <div className={`${classes.result}`}>13.0 - 18.0</div>
-                  </div>
-                </Grid>
-              </Grid>
-            </div>
-          </Grid>
+              );
+            })}
         </Grid>
       </ExpansionPanelDetails>
     </ExpansionPanel>

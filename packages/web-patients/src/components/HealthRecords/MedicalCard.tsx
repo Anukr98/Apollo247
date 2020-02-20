@@ -76,17 +76,22 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicalCard: React.FC = (props) => {
-  const classes = useStyles();
+type MedicalCardProps = {
+  name: string;
+  isActiveCard: boolean;
+};
+
+export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
+  const classes = useStyles({});
 
   return (
-    <div className={`${classes.root}`}>
+    <div className={`${classes.root} ${props.isActiveCard ? classes.activeCard : ''}`}>
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>CBC</div>
-          <div className={classes.doctorService}>
+          <div className={classes.doctorName}>{props.name}</div>
+          {/* <div className={classes.doctorService}>
             <span>Apollo Sugar Clinic, Hyderabad</span>
-          </div>
+          </div> */}
         </div>
         <div className={classes.moreIcon}>
           <img src={require('images/ic_more.svg')} alt="" />
