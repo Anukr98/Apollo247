@@ -1613,6 +1613,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             medicineName
             id
             medicineUnit
+            medicineConsumptionDurationUnit
           }
           symptoms {
             symptom

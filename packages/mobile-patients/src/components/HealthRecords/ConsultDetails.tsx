@@ -46,7 +46,10 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -436,6 +439,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       (item) => item!.id
     );
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
+    const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION) => {
+      return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+        ? 30
+        : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+        ? 7
+        : 1;
+    };
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
@@ -450,11 +460,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
             medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
               ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
-                parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1') *
+                parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1', 10) *
+                getDaysCount(medPrescription[index]!.medicineConsumptionDurationUnit!) *
                 (medPrescription[index]!.medicineToBeTaken!.length || 1) *
                 parseFloat(medPrescription[index]!.medicineDosage! || '1')
               : 1;
-          const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
+          const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1', 10));
 
           return {
             id: medicineDetails!.sku!,
@@ -526,6 +537,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         console.log({ e });
         handleGraphQlError(e);
       });
+  };
+
+  const getFormattedUnit = (unit: MEDICINE_CONSUMPTION_DURATION | null) => {
+    return (unit || '').toLowerCase().replace('s', '(s)');
   };
 
   const renderPrescriptions = () => {
@@ -602,8 +617,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                             ? ''
                             : item!.medicineConsumptionDurationInDays! &&
                               item!.medicineConsumptionDurationInDays!.length == 1
-                            ? ' for ' + item!.medicineConsumptionDurationInDays! + ' day'
-                            : ' for ' + item!.medicineConsumptionDurationInDays! + ' days'}
+                            ? ' for ' +
+                              item!.medicineConsumptionDurationInDays! +
+                              ' ' +
+                              getFormattedUnit(item!.medicineConsumptionDurationUnit)
+                            : ' for ' +
+                              item!.medicineConsumptionDurationInDays! +
+                              ' ' +
+                              getFormattedUnit(item!.medicineConsumptionDurationUnit)}
                         </Text>
                       </View>
                     );

@@ -37,7 +37,10 @@ import {
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import RNFetchBlob from 'rn-fetch-blob';
-import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -389,6 +392,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
                               item!.blobName!
                             );
+                            const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION) => {
+                              return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+                                ? 30
+                                : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+                                ? 7
+                                : 1;
+                            };
 
                             console.log('diagnosticPrescription', {
                               a: item.diagnosticPrescription,
@@ -423,9 +433,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
                                       ? ((medPrescription[index]!.medicineTimings || []).length ||
                                           1) *
+                                        getDaysCount(
+                                          medPrescription[index]!.medicineConsumptionDurationUnit!
+                                        ) *
                                         parseInt(
                                           medPrescription[index]!
-                                            .medicineConsumptionDurationInDays || '1'
+                                            .medicineConsumptionDurationInDays || '1',
+                                          10
                                         )
                                       : 1;
                                   const qty = Math.ceil(
