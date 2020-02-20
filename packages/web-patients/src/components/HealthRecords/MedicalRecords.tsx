@@ -261,7 +261,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicalRecords: React.FC = (props) => {
   const classes = useStyles();
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   return (

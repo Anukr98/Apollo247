@@ -24,8 +24,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         marginTop: -45,
-        position: 'relative',
-        zIndex: 1,
       },
       [theme.breakpoints.up('sm')]: {
         width: 400,
@@ -54,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bannerImg: {
       [theme.breakpoints.down('xs')]: {
-        marginTop: -50,
+        marginTop: -40,
       },
       [theme.breakpoints.up('sm')]: {
         textAlign: 'right',

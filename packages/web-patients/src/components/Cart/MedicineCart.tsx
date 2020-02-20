@@ -432,7 +432,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up(768)]: {
         maxHeight: 'calc(100vh - 208px)',
       },
-      [theme.breakpoints.up(990)]: {
+      [theme.breakpoints.up(900)]: {
         maxHeight: 'calc(100vh - 148px)',
       },
       [theme.breakpoints.down('xs')]: {
@@ -449,7 +449,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up(768)]: {
         height: 'calc(100vh - 299px) !important',
       },
-      [theme.breakpoints.up(990)]: {
+      [theme.breakpoints.up(900)]: {
         height: 'calc(100vh - 239px) !important',
       },
       [theme.breakpoints.down('xs')]: {
