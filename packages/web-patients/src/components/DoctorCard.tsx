@@ -285,11 +285,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInHours()} HOURS</div>
         );
-      }
-      else if (differenceInMinutes >= 1380) {
-        return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInDays()} Days</div>
-        );
+      } else if (differenceInMinutes >= 1380) {
+        return <div className={`${classes.availability}`}>AVAILABLE IN {getDiffInDays()} Days</div>;
       }
     } else {
       return null;
@@ -336,9 +333,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {availabilityMarkup()}
           {/* )} */}
           <div className={classes.doctorName}>
-            {doctorDetails.fullName ? doctorDetails.fullName : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-              _toLower(doctorDetails.lastName)
-            )}`}
+            {doctorDetails.fullName
+              ? doctorDetails.fullName
+              : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+                  _toLower(doctorDetails.lastName)
+                )}`}
           </div>
           <div className={classes.doctorType}>
             {doctorDetails.specialty ? doctorDetails.specialty.name : null}

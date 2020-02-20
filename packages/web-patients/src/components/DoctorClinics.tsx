@@ -146,7 +146,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
 
     const consultationHours =
       doctorDetails.getDoctorDetailsById.consultHours &&
-        doctorDetails.getDoctorDetailsById.consultHours.length > 0
+      doctorDetails.getDoctorDetailsById.consultHours.length > 0
         ? doctorDetails.getDoctorDetailsById.consultHours
         : [];
 
@@ -165,7 +165,10 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                   <div className={classes.root} key={_uniqueId('clinic_')}>
                     <div className={classes.clinicImg}>
                       <img
-                        src={clinicDetails.facility.imageUrl || 'https://via.placeholder.com/328x138'} />
+                        src={
+                          clinicDetails.facility.imageUrl || 'https://via.placeholder.com/328x138'
+                        }
+                      />
                     </div>
                     <div className={classes.clinicInfo}>
                       <div className={classes.address}>

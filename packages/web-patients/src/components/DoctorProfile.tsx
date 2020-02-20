@@ -303,13 +303,18 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   // ----------------timeDifferenceMinutes-----------------
 
   const timeDifferenceMinutes = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
       let firstAvailableSLot = availableSlots[0];
-      if (firstAvailableSLot && firstAvailableSLot.availableSlot !== ''
-        && firstAvailableSLot.availableSlot.length > 0) {
+      if (
+        firstAvailableSLot &&
+        firstAvailableSLot.availableSlot !== '' &&
+        firstAvailableSLot.availableSlot.length > 0
+      ) {
         const nextAvailabilityTime =
           firstAvailableSLot.availableSlot &&
           moment
@@ -320,12 +325,14 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
         return differenceInMinutes + 1;
       }
-    };
-  }
+    }
+  };
   const timeDifferenceMinutesPhysical = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const physicalAvailableSlotTime = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
       let physicalAvailableSlot = physicalAvailableSlotTime[0];
       if (physicalAvailableSlot && physicalAvailableSlot.physicalAvailableSlot !== '') {
@@ -339,15 +346,16 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
         return differenceInMinutes + 1;
       }
-    };
-  }
+    }
+  };
   // --------------------differenceInHours----------------------
 
   const differenceInHours = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
-
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
       let firstAvailableSLot = availableSlots[0];
 
@@ -362,13 +370,14 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
         return Math.round(differenceInHours) + 1;
       }
-    };
-  }
+    }
+  };
   const differenceInHoursPhysical = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
-
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const physicalAvailableSlotTime = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
       let physicalAvailableSlot = physicalAvailableSlotTime[0];
 
@@ -383,16 +392,17 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
         return Math.round(differenceInHours) + 1;
       }
-    };
-  }
+    }
+  };
 
   // ------------------------differenceInDays--------------------
 
   const differenceInDays = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
-
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const availableSlots = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
       let firstAvailableSLot = availableSlots[0];
 
@@ -407,13 +417,14 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
         return Math.round(differenceInDays) + 1;
       }
-    };
-  }
+    }
+  };
   const differenceInDaysPhysical = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
-
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const physicalAvailableSlotTime = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots;
       let physicalAvailableSlot = physicalAvailableSlotTime[0];
 
@@ -428,16 +439,17 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         const differenceInDays = currentTime.diff(nextAvailabilityTime, 'days') * -1;
         return Math.round(differenceInDays) + 1;
       }
-    };
-  }
+    }
+  };
 
   // ------------------------availabilityMarkupOnline/Physical------------------------
 
   const availabilityMarkupOnline = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
-
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const differenceInMinutes = timeDifferenceMinutes();
 
       if (differenceInMinutes === 0) {
@@ -454,11 +466,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
         );
-      }
-      else if (differenceInMinutes && differenceInMinutes >= 60 && differenceInMinutes < 1380) {
+      } else if (differenceInMinutes && differenceInMinutes >= 60 && differenceInMinutes < 1380) {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {differenceInHours()} HOURS</div>
-        )
+        );
       } else if (differenceInMinutes && differenceInMinutes >= 1380) {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {differenceInDays()} DAYS</div>
@@ -470,10 +481,11 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   };
 
   const availabilityMarkupPhysical = () => {
-    if (data &&
+    if (
+      data &&
       data.getDoctorNextAvailableSlot &&
-      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots) {
-
+      data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    ) {
       const differenceInMinutes = timeDifferenceMinutesPhysical();
 
       if (differenceInMinutes === 0) {
@@ -490,14 +502,17 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         return (
           <div className={`${classes.availability}`}>AVAILABLE IN {differenceInMinutes} MINS</div>
         );
-      }
-      else if (differenceInMinutes && differenceInMinutes >= 60 && differenceInMinutes < 1380) {
+      } else if (differenceInMinutes && differenceInMinutes >= 60 && differenceInMinutes < 1380) {
         return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInHoursPhysical()} HOURS</div>
-        )
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {differenceInHoursPhysical()} HOURS
+          </div>
+        );
       } else if (differenceInMinutes && differenceInMinutes >= 1380) {
         return (
-          <div className={`${classes.availability}`}>AVAILABLE IN {differenceInDaysPhysical()} DAYS</div>
+          <div className={`${classes.availability}`}>
+            AVAILABLE IN {differenceInDaysPhysical()} DAYS
+          </div>
         );
       }
     } else {
@@ -547,9 +562,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             />
           </div>
           <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>
-              {fullName}
-            </div>
+            <div className={classes.doctorName}>{fullName}</div>
             <div className={classes.specialits}>
               {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
               <div className={classes.shareIcon}>
@@ -565,8 +578,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   {education && education.includes(';') ? (
                     education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
                   ) : (
-                      <div>{education}</div>
-                    )}
+                    <div>{education}</div>
+                  )}
                 </div>
               </div>
               <div className={classes.infoRow}>
@@ -613,7 +626,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   </div>
                   <div className={classes.details}>
                     Clinic Visit
-                      <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
+                    <div className={classes.doctorPriceIn}>Rs.{physicalConsultationFees}</div>
                     {availabilityMarkupPhysical()}
                   </div>
                   <div className={classes.doctorPrice}>Rs.{physicalConsultationFees}</div>
