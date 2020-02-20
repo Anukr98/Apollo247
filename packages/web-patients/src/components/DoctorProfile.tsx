@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,9 +98,17 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'bold',
       },
     },
-    downloadButton: {
+    downloadLink: {
       fontSize: 18,
       textTransform: 'capitalize',
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      fontWeight: 'bold',
+      padding: '9px 13px',
+      display: 'inline-block',
+      minWidth: 262,
     },
     infoRow: {
       display: 'flex',
@@ -412,9 +421,14 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <div>To enjoy enhanced</div>
             <span>consultation experience</span>
           </div>
-          <AphButton color="primary" className={classes.downloadButton}>
+          <a
+            href="https://play.google.com/"
+            target="_blank"
+            color="primary"
+            className={classes.downloadLink}
+          >
             Download Apollo247 App
-          </AphButton>
+          </a>
         </div>
       </div>
     );
