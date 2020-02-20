@@ -2,13 +2,14 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import {
   AvailabilityIcon,
   FeeIcon,
-  PatientPlaceHolderImage,
   Profile,
   RightIcon,
   Settings,
   SmartPrescription,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
@@ -17,7 +18,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -38,6 +38,12 @@ const styles = StyleSheet.create({
     color: theme.colors.CARD_HEADER,
     ...theme.fonts.IBMPlexSansMedium(15),
     marginLeft: 20,
+  },
+  imageStyle: {
+    height: 178,
+    width: '100%',
+    resizeMode: 'center',
+    backgroundColor: theme.colors.WHITE,
   },
 });
 export interface MyAccountProps extends NavigationScreenProps {}
@@ -99,7 +105,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   ];
 
   const renderProfileData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails) => {
-    if (!getDoctorDetails!.firstName) return null;
+    if (!getDoctorDetails.firstName) return null;
     return (
       <View>
         <Text
@@ -110,13 +116,13 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             marginTop: 12,
           }}
         >
-          {strings.common.dr} {getDoctorDetails!.firstName} {getDoctorDetails!.lastName}
+          {strings.common.dr} {getDoctorDetails.firstName} {getDoctorDetails.lastName}
         </Text>
       </View>
     );
   };
   const renderMciNumberData = (getDoctorDetails: GetDoctorDetails_getDoctorDetails) => {
-    if (!getDoctorDetails!.registrationNumber) return null;
+    if (!getDoctorDetails.registrationNumber) return null;
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
         <Text
@@ -128,7 +134,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             marginBottom: 12,
           }}
         >
-          {strings.account.mci_num} : {getDoctorDetails!.registrationNumber}
+          {strings.account.mci_num} : {getDoctorDetails.registrationNumber}
         </Text>
       </View>
     );
@@ -181,15 +187,15 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
             ) : (
               !!doctorDetails && (
                 <>
-                  {doctorDetails!.photoUrl ? (
+                  {doctorDetails.photoUrl ? (
                     <Image
-                      style={{ height: 178, width: '100%' }}
+                      style={styles.imageStyle}
                       source={{
-                        uri: doctorDetails!.photoUrl,
+                        uri: doctorDetails.photoUrl,
                       }}
                     />
                   ) : (
-                    <PatientPlaceHolderImage />
+                    <UserPlaceHolder style={styles.imageStyle} />
                   )}
                   <View
                     style={{
