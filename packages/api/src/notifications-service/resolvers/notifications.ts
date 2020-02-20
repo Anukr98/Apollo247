@@ -382,10 +382,14 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
-    const cancelApptSMS =
-      notificationBody + ' ' + 'Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : ' ' + ApiConstants.PATIENT_CANCEL_APPT_BODY_END;
+    let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here' +
+        process.env.SMS_LINK_BOOK_APOINTMENT +
+        ' ' +
+        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+      : '';
+    cancelApptSMS = notificationBody + cancelApptSMS;
+
     console.log('cancelApptSMS======================', cancelApptSMS);
     sendNotificationSMS(patientDetails.mobileNumber, cancelApptSMS ? cancelApptSMS : '');
     //send sms to doctor
@@ -401,10 +405,10 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const smsLink =
-      notificationBody + ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
+    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
@@ -417,10 +421,10 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const smsLink =
-      notificationBody + ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
+    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
@@ -433,11 +437,10 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const smsLink =
-      notificationBody + ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
-
+    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     const transferRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
