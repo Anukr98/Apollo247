@@ -121,6 +121,30 @@ const useStyles = makeStyles((theme: Theme) => {
     menuItemHide: {
       display: 'none',
     },
+    menuPopover: {
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
+      '& ul': {
+        padding: '10px 20px',
+        maxHeight: '65vh',
+        '& li': {
+          fontSize: 16,
+          fontWeight: 500,
+          color: '#01475b',
+          minHeight: 'auto',
+          paddingLeft: 0,
+          paddingRight: 0,
+          borderBottom: '1px solid rgba(1,71,91,0.2)',
+          textTransform: 'capitalize',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+          '&:first-child': {
+            borderBottom: 'none',
+            padding: 0,
+          },
+        },
+      },
+    },
   });
 });
 
@@ -187,6 +211,17 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
           native={false}
           displayEmpty={true}
           renderValue={(value) => `${value}`}
+          MenuProps={{
+            classes: { paper: classes.menuPopover },
+            anchorOrigin: {
+              vertical: 'center',
+              horizontal: 'right',
+            },
+            transformOrigin: {
+              vertical: 'center',
+              horizontal: 'right',
+            },
+          }}
         >
           <MenuItem value={selectedRelation} disabled></MenuItem>
           {orderedRelations.map((relationOption) => (
