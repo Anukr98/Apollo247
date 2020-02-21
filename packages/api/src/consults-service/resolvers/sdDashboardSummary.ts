@@ -59,7 +59,7 @@ export const sdDashboardSummaryTypeDefs = gql`
   type updateSpecialtyCountResult {
     updated: Boolean
   }
-  type updateUtilizationCapacityResult{
+  type updateUtilizationCapacityResult {
     updated: Boolean
   }
   enum WeekDay {
@@ -68,7 +68,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     TUESDAY
     WEDNESDAY
     THURSDAY
-    FRIDAY 
+    FRIDAY
     SATURDAY
   }
   extend type Mutation {
@@ -77,7 +77,10 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
-    updateUtilizationCapacity(specialityId:String, weekDay:WeekDay): updateUtilizationCapacityResult
+    updateUtilizationCapacity(
+      specialityId: String
+      weekDay: WeekDay
+    ): updateUtilizationCapacityResult
   }
 
   extend type Query {
@@ -118,7 +121,7 @@ type updateSpecialtyCountResult = {
 };
 type updateUtilizationCapacityResult = {
   updated: Boolean;
-}
+};
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
   apptRepo: consultsDb.getCustomRepository(AppointmentRepository),
   patRepo: patientsDb.getCustomRepository(PatientRepository),
@@ -379,7 +382,7 @@ const getopenTokFileUrl: Resolver<
 };
 const updateSpecialtyCount: Resolver<
   null,
-  { specialityId: string, weekDay: string },
+  { specialityId: string; weekDay: string },
   DoctorsServiceContext,
   updateSpecialtyCountResult
 > = async (parent, args, context) => {
@@ -403,29 +406,32 @@ const updateSpecialtyCount: Resolver<
 };
 const updateUtilizationCapacity: Resolver<
   null,
-  { specialityId: string, weekDay: WeekDay },
+  { specialityId: string; weekDay: WeekDay },
   DoctorsServiceContext,
   updateUtilizationCapacityResult
 > = async (parent, args, context) => {
-  const { apptRepo, docRepo, DoctorSpecialtyRepo, UtilizationCapacityRepo, consultHoursRepo, dashboardRepo } = getRepos(context);
+  const {
+    apptRepo,
+    docRepo,
+    DoctorSpecialtyRepo,
+    UtilizationCapacityRepo,
+    consultHoursRepo,
+    dashboardRepo,
+  } = getRepos(context);
   const DoctorSpeciality = await DoctorSpecialtyRepo.findById(args.specialityId);
   if (!DoctorSpeciality) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
   const Doctors = await docRepo.getSpecialityDoctors(args.specialityId);
   if (!Doctors) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
   const doctorIds = Doctors.map((doctor) => {
-    return doctor.id
+    return doctor.id;
   });
-  const totalSlots = await consultHoursRepo.getConsultHours(
-    doctorIds,
-    args.weekDay,
-  );
+  const totalSlots = await consultHoursRepo.getConsultHours(doctorIds, args.weekDay);
   const appointments = await apptRepo.getBookedSlots(doctorIds);
   const utilizationCapacity = await UtilizationCapacityRepo.updateUtilization(
     args.specialityId,
     DoctorSpeciality.name,
     totalSlots,
-    appointments,
-
+    appointments
   );
   return { updated: true };
 };
