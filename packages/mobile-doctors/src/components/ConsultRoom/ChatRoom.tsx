@@ -75,10 +75,12 @@ export interface ChatRoomProps extends NavigationScreenProps {
   flatListRef: React.MutableRefObject<FlatList<never> | null | undefined>;
   setShowPDF: Dispatch<SetStateAction<boolean>>;
   setPatientImageshow: Dispatch<SetStateAction<boolean>>;
+  isDropdownVisible: boolean;
+  setDropdownVisible: Dispatch<SetStateAction<boolean>>;
   setUrl: Dispatch<SetStateAction<string>>;
 }
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
-  const [isDropdownVisible, setDropdownVisible] = useState(false);
+  // const [isDropdownVisible, setDropdownVisible] = useState(false);
   const client = useApolloClient();
   const { setLoading } = useUIElements();
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
@@ -202,6 +204,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderCommonImageView = (rowData: any, isMatched: boolean, onPress: () => void) => {
+    console.log(rowData.url, 'rowData.url', isMatched);
+
     return (
       <View>
         <TouchableOpacity onPress={onPress} activeOpacity={1}>
@@ -599,23 +603,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   // width: 244,
                 }}
               >
-                <Text
-                  style={{
-                    color: '#0087ba',
-                    paddingHorizontal: 16,
-                    paddingVertical: 4,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.message === messageCodes.languageQue ||
-                  rowData.message === messageCodes.startConsultjr ||
-                  rowData.message === messageCodes.stopConsultJr
-                    ? rowData.automatedText
-                    : rowData.message === messageCodes.imageconsult
-                    ? renderImageView(rowData)
-                    : rowData.message}
-                </Text>
+                {rowData.message === messageCodes.imageconsult ? (
+                  renderImageView(rowData)
+                ) : (
+                  <Text
+                    style={{
+                      color: '#0087ba',
+                      paddingHorizontal: 16,
+                      paddingVertical: 4,
+                      ...theme.fonts.IBMPlexSansMedium(16),
+                      textAlign: 'left',
+                    }}
+                  >
+                    {rowData.message === messageCodes.languageQue ||
+                    rowData.message === messageCodes.startConsultjr ||
+                    rowData.message === messageCodes.stopConsultJr
+                      ? rowData.automatedText
+                      : // : rowData.message === messageCodes.imageconsult
+                        // ? renderImageView(rowData)
+                        rowData.message}
+                  </Text>
+                )}
 
                 <Text
                   style={{
@@ -862,7 +870,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginLeft: 5,
               }}
               onPress={async () => {
-                setDropdownVisible(!isDropdownVisible);
+                props.setDropdownVisible(!props.isDropdownVisible);
               }}
             >
               <AddAttachmentIcon
@@ -891,9 +899,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 // returnKeyType="send"
                 onChangeText={(value) => {
                   setMessageText(value);
-                  setDropdownVisible(false);
+                  props.setDropdownVisible(false);
                 }}
-                onFocus={() => setDropdownVisible(false)}
+                onFocus={() => props.setDropdownVisible(false)}
                 onSubmitEditing={() => {
                   Keyboard.dismiss();
                 }}

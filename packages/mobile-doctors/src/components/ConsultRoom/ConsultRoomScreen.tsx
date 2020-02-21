@@ -174,6 +174,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [startConsult, setStartConsult] = useState<boolean>(false);
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
   const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
+  const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
+
   // const [textinputStyles, setTextInputStyles] = useState<Object>({
   //   width: width,
   //   height: 66,
@@ -1047,7 +1049,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             styles.shadowview,
             showPopUp
               ? {
-                  elevation: 1000,
+                  // elevation: 1000,
                 }
               : {},
           ]}
@@ -1087,6 +1089,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               favMed={favMed}
               favTest={favTest}
               caseSheet={caseSheet}
+              caseSheetEdit={caseSheetEdit}
             />
           ) : (
             <View
@@ -1108,6 +1111,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 setShowPDF={setShowPDF}
                 setPatientImageshow={setPatientImageshow}
                 setUrl={setUrl}
+                isDropdownVisible={isDropdownVisible}
+                setDropdownVisible={setDropdownVisible}
               />
             </View>
           )}
@@ -1128,6 +1133,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
       })
       .then((_data: any) => {
+        setCaseSheetEdit(true);
         console.log('createsession', _data);
         console.log('sessionid', _data.data.createAppointmentSession.sessionId);
         console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
@@ -1360,7 +1366,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 item.fileType == 'pdf' ||
                 item.fileType == 'png'
               ) {
-                setLoading && setLoading(true);
+                // setLoading && setLoading(true);
                 client
                   .mutate<uploadChatDocument>({
                     mutation: UPLOAD_CHAT_FILE,
@@ -1373,7 +1379,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   })
                   .then((data) => {
                     console.log('upload data', data);
-                    setLoading && setLoading(false);
+                    // setLoading && setLoading(false);
                     const text = {
                       id: doctorId,
                       message: messageCodes.imageconsult,

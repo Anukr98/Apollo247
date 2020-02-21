@@ -116,6 +116,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 
 const { width } = Dimensions.get('window');
 
@@ -194,21 +195,21 @@ const styles = StyleSheet.create({
   },
 
   buttonStyle: {
-    width: '50%',
-    flex: 1,
-
-    marginBottom: 20,
-    shadowOffset: {
-      height: 2,
-      width: 0,
-    },
-    shadowColor: '#000000',
-    shadowRadius: 2,
-    shadowOpacity: 0.2,
-    elevation: 2,
-    justifyContent: 'center',
-    alignSelf: 'center',
-    alignItems: 'center',
+    // width: '100%',
+    // flex: 1,
+    // marginHorizontal: 80,
+    // marginBottom: 20,
+    // shadowOffset: {
+    //   height: 2,
+    //   width: 0,
+    // },
+    // shadowColor: '#000000',
+    // shadowRadius: 2,
+    // shadowOpacity: 0.2,
+    // elevation: 2,
+    // justifyContent: 'center',
+    // alignSelf: 'center',
+    // alignItems: 'center',
   },
   buttonendStyle: {
     width: '45%',
@@ -242,8 +243,8 @@ const styles = StyleSheet.create({
   footerButtonsContainer: {
     // zIndex: -1,
     justifyContent: 'center',
-    paddingTop: 20,
-    paddingBottom: 20,
+    // paddingTop: 20,
+    // paddingBottom: 20,
     marginLeft: 10,
     marginRight: 10,
     marginHorizontal: 20,
@@ -253,15 +254,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerButtonsContainersave: {
-    zIndex: -1,
-    justifyContent: 'center',
-    paddingTop: 20,
-    paddingBottom: 20,
-    marginHorizontal: 20,
-    flexDirection: 'row',
-    width: '50%',
-    alignSelf: 'center',
-    alignItems: 'center',
+    flex: 1,
+
+    // justifyContent: 'center',
+    // paddingTop: 20,
+    // paddingBottom: 20,
+    marginHorizontal: 60,
+    // flexDirection: 'row',
+    // width: '100%',
+    // alignSelf: 'center',
+    // alignItems: 'center',
   },
   inputView: {
     borderWidth: 2,
@@ -408,6 +410,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
     | undefined;
 
   caseSheet: GetCaseSheet_getCaseSheet | null | undefined;
+  caseSheetEdit: boolean;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -482,7 +485,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
   const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
   const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
-  const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
 
   const { showAphAlert, setLoading, loading } = useUIElements();
   const { doctorDetails } = useAuth();
@@ -491,6 +493,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const client = useApolloClient();
 
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
+  const { caseSheetEdit } = props;
 
   const sendToPatientAction = () => {
     client
@@ -901,41 +904,68 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderButtonsView = () => {
     //console.log({ Appintmentdatetimeconsultpage });
     return (
-      <View style={{ backgroundColor: '#f0f4f5' }}>
-        {!showButtons ? (
-          <View style={styles.footerButtonsContainersave}>
-            <Button
-              title={strings.buttons.start_consult}
-              disabled={!enableConsultButton}
-              buttonIcon={<Start />}
-              onPress={() => {
-                setCaseSheetEdit(true);
-                setShowButtons(true);
-                props.onStartConsult();
-              }}
-              style={styles.buttonStyle}
-            />
-          </View>
-        ) : (
-          <View style={styles.footerButtonsContainer}>
-            <Button
-              onPress={() => saveDetails()}
-              title={strings.buttons.save}
-              titleTextStyle={styles.buttonTextStyle}
-              variant="white"
-              style={[styles.buttonsaveStyle, { marginRight: 16 }]}
-            />
-            <Button
-              title={strings.buttons.end_consult}
-              buttonIcon={<End />}
-              onPress={() => {
-                endConsult();
-              }}
-              style={styles.buttonendStyle}
-            />
-          </View>
-        )}
-      </View>
+      <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
+        <View style={{}}>
+          {!showButtons ? (
+            <View style={styles.footerButtonsContainersave}>
+              <Button
+                title={strings.buttons.start_consult}
+                disabled={!enableConsultButton}
+                buttonIcon={<Start />}
+                onPress={() => {
+                  setShowButtons(true);
+                  props.onStartConsult();
+                }}
+              />
+            </View>
+          ) : (
+            <View style={styles.footerButtonsContainer}>
+              <Button
+                onPress={() => saveDetails()}
+                title={strings.buttons.save}
+                titleTextStyle={styles.buttonTextStyle}
+                variant="white"
+                style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+              />
+              <Button
+                title={strings.buttons.end_consult}
+                buttonIcon={<End />}
+                onPress={() => {
+                  endConsult();
+                }}
+                style={styles.buttonendStyle}
+              />
+            </View>
+          )}
+        </View>
+      </StickyBottomComponent>
+    );
+  };
+
+  const renderCompletedButtons = () => {
+    return (
+      <StickyBottomComponent
+        style={{
+          backgroundColor: '#f0f4f5',
+        }}
+      >
+        <View style={styles.footerButtonsContainer}>
+          <Button
+            // onPress={() => saveDetails()}
+            title={'EDIT CASE SHEET'}
+            titleTextStyle={styles.buttonTextStyle}
+            variant="white"
+            style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+          />
+          <Button
+            title={'SEND TO PATIENT'}
+            onPress={() => {
+              // sendToPatientAction();
+            }}
+            style={styles.buttonendStyle}
+          />
+        </View>
+      </StickyBottomComponent>
     );
   };
 
@@ -2572,15 +2602,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </View>
             {/* {loading ? <Loader flex1 /> : null} */}
             {/* {renderButtonsView()} */}
-            {moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
-            stastus == 'IN_PROGRESS'
-              ? renderButtonsView()
-              : null}
           </View>
           {showPopUp && CallPopUp()}
           {ShowAddTestPopup && renderAddTestPopup()}
+          <View style={{ height: 80 }} />
         </ScrollView>
       </KeyboardAwareScrollView>
+      {stastus == STATUS.COMPLETED
+        ? renderCompletedButtons()
+        : moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
+          stastus == 'IN_PROGRESS'
+        ? renderButtonsView()
+        : null}
     </View>
   );
 };
