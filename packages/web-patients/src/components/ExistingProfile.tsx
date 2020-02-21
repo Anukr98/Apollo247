@@ -230,7 +230,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">
       <div className={classes.mascotIcon}>
-        <img src={require('images/ic_mascot.png')} alt="" />
+        <img src={require('images/ic-mascot.png')} alt="" />
       </div>
       <div className={classes.customScrollBar}>
         <div className={classes.signinGroup}>
