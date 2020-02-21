@@ -13,7 +13,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import { AppLocations } from './AppLocations';
+import { LocationSearch } from './LocationSearch';
 import { LocationProvider } from 'components/LocationProvider';
 import { MedicinesCartProvider, MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
@@ -192,7 +192,7 @@ export const Header: React.FC = (props) => {
           </div>
           {isSignedIn && (
             <LocationProvider>
-              <AppLocations />
+              <LocationSearch />
             </LocationProvider>
           )}
           {isSignedIn && (
