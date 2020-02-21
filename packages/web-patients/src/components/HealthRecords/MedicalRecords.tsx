@@ -8,6 +8,9 @@ import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
+
 import {
   // DELETE_PATIENT_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
@@ -43,6 +46,11 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         padding: 0,
       },
+    },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
     },
     leftSection: {
       width: 328,
@@ -120,6 +128,24 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    tabsWrapper: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginLeft: 0,
+        marginRight: 0,
+        marginBottom: 0,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 15px',
+      },
+    },
+    addReportMobile: {
+      fontSize: 14,
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
     topFilters: {
       textAlign: 'right',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -128,11 +154,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 15,
       marginBottom: 10,
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-        marginLeft: 0,
-        marginRight: 0,
-        marginBottom: 0,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        flex: 1,
+        margin: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -210,6 +233,16 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    noRecordFoundWrapper: {
+      textAlign: 'center',
+      '& p': {
+        width: 260,
+        margin: 'auto',
+        fontWeight: 500,
+        fontSize: 14,
+        textAlign: 'left',
+      },
+    },
     cbcDetails: {
       backgroundColor: theme.palette.common.white,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
@@ -242,17 +275,6 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#0087ba',
         margin: 0,
-      },
-    },
-    mobileOverlay: {
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        backgroundColor: '#f0f1ec',
-        zIndex: 991,
       },
     },
     headerBackArrow: {
@@ -435,7 +457,11 @@ export const MedicalRecords: React.FC = (props) => {
   };
 
   if (loading) {
-    return <LinearProgress />;
+    return (
+      <div className={classes.loader}>
+        <CircularProgress />
+      </div>
+    );
   }
 
   return (
@@ -461,10 +487,20 @@ export const MedicalRecords: React.FC = (props) => {
             Physical
           </AphButton>
         </div> */}
+        <div className={classes.tabsWrapper}>
+          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+            <img src={require('images/ic_addfile.svg')} />
+          </Link>
+          {/* <div className={classes.topFilters}>
+            <AphButton className={classes.buttonActive}>All Consults</AphButton>
+            <AphButton>Online</AphButton>
+            <AphButton>Physical</AphButton>
+          </div> */}
+        </div>
         <Scrollbars
           autoHide={true}
           autoHeight
-          autoHeightMax={
+          autoHeightMin={
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
@@ -496,7 +532,7 @@ export const MedicalRecords: React.FC = (props) => {
           </AphButton>
         </div>
       </div>
-      <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
+      <div className={`${classes.rightSection}`}>
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
             <AphButton>
@@ -522,7 +558,7 @@ export const MedicalRecords: React.FC = (props) => {
               : 'calc(100vh - 245px)'
           }
         >
-          {activeData && (
+          {activeData ? (
             <div className={classes.medicalRecordsDetails}>
               <div className={classes.cbcDetails}>
                 <div className={classes.reportsDetails}>
@@ -563,6 +599,14 @@ export const MedicalRecords: React.FC = (props) => {
                   activeData.data.testResultPrismFileIds) && (
                   <RenderImage activeData={activeData} />
                 )}
+            </div>
+          ) : (
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy
+                in one place!
+              </p>
             </div>
           )}
         </Scrollbars>

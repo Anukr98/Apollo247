@@ -41,6 +41,12 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '100%',
     },
+    noWrapper: {
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      textTransform: 'uppercase',
+    },
     cardTitle: {
       fontSize: 14,
       fontWeight: 500,
@@ -111,7 +117,7 @@ export const FollowUp: React.FC<FollowUpProps> = (props) => {
                 </div>
               </>
             ) : (
-              'No FollowUp'
+              <div className={classes.noWrapper}>No FollowUp</div>
             )}
           </Grid>
         </Grid>
