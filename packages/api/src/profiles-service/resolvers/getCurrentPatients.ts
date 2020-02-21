@@ -273,8 +273,8 @@ const getCurrentPatients: Resolver<
     homeLogger('CREATE_OR_RETURN_PATIENTS_END');
 
     homeLogger('ASYNC_UPDATE_APP_VERSION_START');
-    patients = await patientRepo.findByMobileNumber(mobileNumber);
-
+    //patients = await patientRepo.findByMobileNumber(mobileNumber);
+    patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
     if (args.appVersion && args.deviceType) {
       const versionUpdateRecords = patients.map((patient) => {
         return args.deviceType === DEVICE_TYPE.ANDROID
@@ -453,7 +453,8 @@ const getLoginPatients: Resolver<
       await patientRepo.createNewUhid(patient.id);
     }
   });*/
-  const patients = await patientRepo.findByMobileNumber(mobileNumber);
+  //const patients = await patientRepo.findByMobileNumber(mobileNumber);
+  const patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
   if (args.appVersion && args.deviceType) {
     const versionUpdateRecords = patients.map((patient) => {
       return args.deviceType === DEVICE_TYPE.ANDROID

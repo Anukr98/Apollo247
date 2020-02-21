@@ -84,13 +84,13 @@ export class AppointmentRepository extends Repository<Appointment> {
   async getAppointmentsByDoctorIds(doctorId: string) {
     const appointmentData = await this.find({
       where: {
-        doctorId: doctorId
+        doctorId: doctorId,
       },
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
-      })
-    })
+      });
+    });
     return appointmentData;
   }
   checkPatientCancelledHistory(patientId: string, doctorId: string) {
@@ -180,11 +180,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     const fromDate = new Date(inputStartDate + 'T18:30');
     const toDate = new Date(inputEndDate + 'T18:29');
     const appointments = await this.find({
-      where: [{
-        doctorId: In(doctorIds),
-        appointmentDateTime: Between(fromDate, toDate),
-        status: Not('PAYMENT_PENDING')
-      }]
+      where: [
+        {
+          doctorId: In(doctorIds),
+          appointmentDateTime: Between(fromDate, toDate),
+          status: Not('PAYMENT_PENDING'),
+        },
+      ],
     });
     return appointments.length;
   }
@@ -954,9 +956,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1010,9 +1012,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${nextSlot
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}`;
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}`;
   }
 
   getAlignedSlot(curDate: Date) {
@@ -1230,9 +1232,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1290,9 +1292,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 

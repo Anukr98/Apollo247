@@ -43,6 +43,13 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '100%',
     },
+    noWrapper: {
+      padding: '0 10px',
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      textTransform: 'uppercase',
+    },
     cardTitle: {
       fontSize: 14,
       fontWeight: 500,
@@ -111,20 +118,22 @@ export const Symptoms: React.FC<SymptomProps> = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          {symptoms.length > 0
-            ? symptoms.map((symptom: SymptomType, idx: number) => (
-                <Grid key={idx} item xs={12} sm={6}>
-                  <div className={classes.cardTitle}>{symptom.symptom}</div>
-                  <div className={classes.cardSection}>
-                    Since: {symptom.since}
-                    <br />
-                    How Often: {symptom.howOften}
-                    <br />
-                    Severity: {symptom.severity}
-                  </div>
-                </Grid>
-              ))
-            : 'No Symptoms'}
+          {symptoms.length > 0 ? (
+            symptoms.map((symptom: SymptomType, idx: number) => (
+              <Grid key={idx} item xs={12} sm={6}>
+                <div className={classes.cardTitle}>{symptom.symptom}</div>
+                <div className={classes.cardSection}>
+                  Since: {symptom.since}
+                  <br />
+                  How Often: {symptom.howOften}
+                  <br />
+                  Severity: {symptom.severity}
+                </div>
+              </Grid>
+            ))
+          ) : (
+            <div className={classes.noWrapper}>No Symptoms</div>
+          )}
         </Grid>
       </ExpansionPanelDetails>
     </ExpansionPanel>
