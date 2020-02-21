@@ -500,8 +500,8 @@ export const MedicalRecords: React.FC = (props) => {
           <div className={classes.consultationsList}>
             {allCombinedData &&
               allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: any) => (
-                <div onClick={() => setActiveData(combinedData)}>
+              allCombinedData.map((combinedData: any, idx: number) => (
+                <div key={idx} onClick={() => setActiveData(combinedData)}>
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
                     <span>{getFormattedDate(combinedData)}</span>

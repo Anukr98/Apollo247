@@ -538,12 +538,10 @@ export const AddRecords: React.FC = (props) => {
                 })
                   .then(({ data }) => {
                     setshowSpinner(false);
-                    console.log('suceessfully added', data);
                     window.location.href = clientRoutes.healthRecords();
                   })
                   .catch((e) => {
                     setshowSpinner(false);
-                    console.log(JSON.stringify(e), 'eeeee');
                     alert('Please fill all the details');
                   });
               } else {
@@ -557,7 +555,6 @@ export const AddRecords: React.FC = (props) => {
           .catch((e) => {
             setshowSpinner(false);
             alert('Your upload images are failed');
-            console.log({ e });
           });
       } else {
         const inputData = {
@@ -583,11 +580,9 @@ export const AddRecords: React.FC = (props) => {
         })
           .then(({ data }) => {
             setshowSpinner(false);
-            console.log('suceessfully added', data);
           })
           .catch((e) => {
             setshowSpinner(false);
-            console.log(JSON.stringify(e), 'eeeee');
             alert('Please fill all the details');
           });
       }
@@ -637,15 +632,13 @@ export const AddRecords: React.FC = (props) => {
       reader.onerror = (error) => reject(error);
     });
 
-  console.log(uploadedDocuments);
-
   return (
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
         <div className={classes.addRecordsPage}>
           <div className={classes.breadcrumbs}>
-            <Link to={clientRoutes.healthRecords()}>
+            <Link to={{ pathname: clientRoutes.healthRecords(), state: 'medical' }}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
