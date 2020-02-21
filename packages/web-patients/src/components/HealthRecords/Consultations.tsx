@@ -460,9 +460,9 @@ export const Consultations: React.FC = (props) => {
             {consultsData &&
               consultsData.length > 0 &&
               consultsData.map(
-                (consult) =>
+                (consult, idx) =>
                   consult && (
-                    <div onClick={() => setActiveConsult(consult)}>
+                    <div key={idx} onClick={() => setActiveConsult(consult)}>
                       <div className={classes.consultGroupHeader}>
                         <div className={classes.circle}></div>
                         {consult.patientId
