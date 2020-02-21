@@ -230,11 +230,7 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
       ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
         <div className={classes.doctorInfoGroup}>
           <div className={classes.doctorImg}>
-            <Avatar
-              alt="Dr. Simran Rai"
-              src={require('images/doctordp_01.png')}
-              className={classes.avatar}
-            />
+            <img src={require('images/ic_prescription_icon.svg')} alt="" />
           </div>
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName}>Prescription uploaded by Patient</div>
