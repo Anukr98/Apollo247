@@ -8,7 +8,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { Source } from 'graphql';
 
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {

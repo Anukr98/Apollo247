@@ -410,8 +410,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -428,8 +428,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                    .where('doctor.experience >= ' + exp.minimum)
-                    .andWhere('doctor.experience <= ' + exp.maximum);
+                      .where('doctor.experience >= ' + exp.minimum)
+                      .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });
@@ -750,10 +750,9 @@ export class DoctorRepository extends Repository<Doctor> {
     }
   }
   async getSpecialityDoctors(specialty: string) {
-    const queryBuilder = this.createQueryBuilder('doctor').where(
-      'doctor.specialty = :specialty',
-      { specialty }
-    );
+    const queryBuilder = this.createQueryBuilder('doctor').where('doctor.specialty = :specialty', {
+      specialty,
+    });
     const doctorsResult = await queryBuilder.getMany();
     return doctorsResult;
   }

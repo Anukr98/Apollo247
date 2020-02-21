@@ -435,12 +435,11 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
           const withInTime = isWithinInterval(new Date(callStartTimeFormat), {
             start: new Date(apptFormat),
-            end: new Date(addingFiveMinutesFormat)
-          })
+            end: new Date(addingFiveMinutesFormat),
+          });
           if (withInTime) {
             count = count + 1;
           }
-
         }
         if (index + 1 === array.length) {
           resolve(count);
@@ -599,12 +598,12 @@ export class CurrentAvailStatusRepository extends Repository<CurrentAvailability
   }
 }
 @EntityRepository(utilizationCapacity)
-export class UtilizationCapacityRepository extends Repository<utilizationCapacity>{
+export class UtilizationCapacityRepository extends Repository<utilizationCapacity> {
   async updateUtilization(
     specialityId: string,
     specialityName: string,
     doctorSlots: number,
-    bookedSlots: number,
+    bookedSlots: number
   ) {
     const utilizationCapacityData: Partial<utilizationCapacity> = {
       specialityId: specialityId,
@@ -618,7 +617,7 @@ export class UtilizationCapacityRepository extends Repository<utilizationCapacit
         throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
           utilizationError,
         });
-      });;
+      });
     } else {
       return this.save(utilizationCapacityData).catch((utilizationError) => {
         throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
