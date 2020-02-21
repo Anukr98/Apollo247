@@ -538,7 +538,7 @@ export const AddRecords: React.FC = (props) => {
                 })
                   .then(({ data }) => {
                     setshowSpinner(false);
-                    window.location.href = `${clientRoutes.healthRecords()}`;
+                    window.location.href = clientRoutes.healthRecords();
                   })
                   .catch((e) => {
                     setshowSpinner(false);
