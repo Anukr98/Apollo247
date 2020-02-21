@@ -465,11 +465,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                 ? getStartDayConsults(startDate).map(
                     (item, index) => item && renderConsultHours(item)
                   )
-                : AllDates &&
-                  AllDates.length &&
-                  startDate &&
-                  endDate &&
-                  AllDates.map((date) => {
+                : AllDates && AllDates.length && startDate && endDate
+                ? AllDates.map((date) => {
                     const consults = getStartDayConsults(date);
                     if (consults.length)
                       return (
@@ -493,7 +490,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                           </View>
                         </View>
                       );
-                  })}
+                  })
+                : null}
             </View>
           ) : (
             <View style={{ marginLeft: 23, marginRight: 16 }}>
