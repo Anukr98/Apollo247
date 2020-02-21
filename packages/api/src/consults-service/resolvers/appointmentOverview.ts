@@ -3,11 +3,12 @@ import { Resolver } from 'api-gateway';
 import { Between } from 'typeorm';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { Appointment, STATUS } from 'consults-service/entities';
+import { Appointment, STATUS, BOOKINGSOURCE } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { Source } from 'graphql';
 
 export const getAppointmentOverviewTypeDefs = gql`
   type AppointmentList {
@@ -36,7 +37,11 @@ export const getAppointmentOverviewTypeDefs = gql`
     getAppointmentByPaymentOrderId(orderId: String): AppointmentList
   }
   extend type Mutation {
-    updatePaymentOrderId(appointmentId: String, orderId: String): UpdatePaymentOrderIdResult
+    updatePaymentOrderId(
+      appointmentId: String
+      orderId: String
+      source: BOOKINGSOURCE
+    ): UpdatePaymentOrderIdResult
   }
 `;
 
@@ -118,10 +123,10 @@ const getAppointmentOverview: Resolver<
 
 const updatePaymentOrderId: Resolver<
   null,
-  { appointmentId: string; orderId: string },
+  { appointmentId: string; orderId: string; source: BOOKINGSOURCE },
   ConsultServiceContext,
   UpdatePaymentOrderIdResult
-> = async (parent, { appointmentId, orderId }, context) => {
+> = async (parent, { appointmentId, orderId, source }, context) => {
   if (!appointmentId) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   if (!orderId) throw new AphError(AphErrorMessages.INVALID_ORDER_ID);
   const { apptRepo } = getRepos(context);
@@ -129,6 +134,7 @@ const updatePaymentOrderId: Resolver<
   if (!appointmentDetails || appointmentDetails.status !== STATUS.PAYMENT_PENDING)
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   appointmentDetails.paymentOrderId = orderId;
+  appointmentDetails.bookingSource = source;
   await apptRepo.updateMedmantraStatus(appointmentDetails);
   return { status: true };
 };

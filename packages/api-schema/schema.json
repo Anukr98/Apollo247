@@ -19825,6 +19825,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "source",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "BOOKINGSOURCE",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {

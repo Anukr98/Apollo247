@@ -246,9 +246,14 @@ app.get('/consulttransaction', (req, res) => {
       });
       console.log(response.data.data.makeAppointmentPayment.appointment.id, 'response is....');
       if (req.query.STATUS == 'TXN_SUCCESS') {
-        res.redirect(
-          `/consultpg-success?tk=${response.data.data.makeAppointmentPayment.appointment.id}&status=${req.query.STATUS}`
-        );
+        if (req.session.source == 'WEB') {
+          const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}`;
+          res.redirect(redirectUrl);
+        } else {
+          res.redirect(
+            `/consultpg-success?tk=${response.data.data.makeAppointmentPayment.appointment.id}&status=${req.query.STATUS}`
+          );
+        }
       } else {
         res.redirect(`/consultpg-error?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
       }
@@ -291,6 +296,10 @@ app.get('/consultpg-error', (req, res) => {
 
 app.get('/consultpayment', (req, res) => {
   //res.send('consult payment');
+  let source = 'MOBILE';
+  if (req.query.source) {
+    source = req.query.source;
+  }
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
   // validate the order and token.
   axios({
@@ -351,10 +360,13 @@ app.get('/consultpayment', (req, res) => {
                   req.query.appointmentId +
                   '",orderId:"' +
                   resp.data.Result +
-                  '"){ status }}',
+                  '",source:"' +
+                  source +
+                  '"){ status } }',
               };
               axios.post(process.env.API_URL, requestJSON);
               req.session.appointmentId = req.query.appointmentId;
+              req.session.source = source;
               res.render('consults.ejs', {
                 athsToken: response.data.data.getAthsToken.patient.athsToken,
                 merchantId: resp.data.Result,
