@@ -21,6 +21,11 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum AccountType {
+  CURRENT = "CURRENT",
+  SAVINGS = "SAVINGS",
+}
+
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -46,6 +51,11 @@ export enum ConsultType {
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
   IOS = "IOS",
+}
+
+export enum DOCTOR_ONLINE_STATUS {
+  AWAY = "AWAY",
+  ONLINE = "ONLINE",
 }
 
 export enum DiscountType {

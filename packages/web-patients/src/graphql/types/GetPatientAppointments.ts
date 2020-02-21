@@ -12,6 +12,31 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   __typename: "DoctorSpecialties";
   name: string;
   id: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
+}
+
+export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_doctorHospital_facility {
+  __typename: "Facility";
+  city: string | null;
+  country: string | null;
+  facilityType: string;
+  id: string;
+  imageUrl: string | null;
+  name: string;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zipcode: string | null;
+  latitude: string | null;
+  longitude: string | null;
+}
+
+export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_doctorHospital_facility;
 }
 
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo {
@@ -19,6 +44,8 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   id: string;
   firstName: string;
   lastName: string;
+  fullName: string | null;
+  displayName: string | null;
   doctorType: DoctorType;
   experience: string | null;
   isActive: boolean;
@@ -29,6 +56,7 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   streetLine2: string | null;
   streetLine3: string | null;
   specialty: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty | null;
+  doctorHospital: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_doctorHospital[];
 }
 
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments {
