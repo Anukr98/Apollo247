@@ -199,6 +199,11 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum PRISM_DOCUMENT_CATEGORY {
+  HealthChecks = "HealthChecks",
+  OpSummary = "OpSummary",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
@@ -260,6 +265,13 @@ export enum TRANSFER_INITIATED_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum UPLOAD_FILE_TYPES {
+  JPEG = "JPEG",
+  JPG = "JPG",
+  PDF = "PDF",
+  PNG = "PNG",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -268,6 +280,30 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export interface AddMedicalRecordInput {
+  additionalNotes?: string | null;
+  documentURLs?: string | null;
+  issuingDoctor?: string | null;
+  location?: string | null;
+  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+  observations?: string | null;
+  patientId: string;
+  prismFileIds?: string | null;
+  recordType?: MedicalRecordType | null;
+  referringDoctor?: string | null;
+  sourceName?: string | null;
+  testDate?: any | null;
+  testName: string;
+}
+
+export interface AddMedicalRecordParametersInput {
+  maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: MedicalTestUnit | null;
 }
 
 export interface AppointmentHistoryInput {
@@ -488,6 +524,13 @@ export interface UpdatePatientInput {
   referralCode?: string | null;
   relation?: Relation | null;
   photoUrl?: string | null;
+}
+
+export interface UploadDocumentInput {
+  fileType: UPLOAD_FILE_TYPES;
+  base64FileInput: string;
+  patientId: string;
+  category: PRISM_DOCUMENT_CATEGORY;
 }
 
 //==============================================================

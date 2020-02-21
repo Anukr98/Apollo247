@@ -423,3 +423,29 @@ export const DOWNLOAD_DOCUMENT = gql`
     }
   }
 `;
+
+export const ADD_MEDICAL_RECORD = gql`
+  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
+    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
+      status
+    }
+  }
+`;
+
+export const UPLOAD_DOCUMENT = gql`
+  mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
+    uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
+      status
+      fileId
+      filePath
+    }
+  }
+`;
+
+export const DELETE_PATIENT_MEDICAL_RECORD = gql`
+  mutation deletePatientMedicalRecord($recordId: ID!) {
+    deletePatientMedicalRecord(recordId: $recordId) {
+      status
+    }
+  }
+`;
