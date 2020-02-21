@@ -144,6 +144,19 @@ const useStyles = makeStyles((theme: Theme) => {
     hideMessage: {
       opacity: 0,
     },
+    saveButton: {
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      '&:hover': {
+        backgroundColor: '#fcb716',
+        color: '#fff',
+      },
+    },
+    saveBtnDisable: {
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      opacity: 0.5,
+    },
   };
 });
 
@@ -492,6 +505,10 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
               }
             }}
             disabled={!disableSubmitButton}
+            classes={{
+              root: classes.saveButton,
+              disabled: !disableSubmitButton ? classes.saveBtnDisable : '',
+            }}
           >
             {mutationLoading ? <CircularProgress size={20} /> : 'Save'}
           </AphButton>
