@@ -612,7 +612,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                                 )
                             : ''}
 
-                          {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
                           {item.medicineConsumptionDurationInDays == ''
                             ? ''
                             : item!.medicineConsumptionDurationInDays! &&
@@ -625,6 +624,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                               item!.medicineConsumptionDurationInDays! +
                               ' ' +
                               getFormattedUnit(item!.medicineConsumptionDurationUnit)}
+                          {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
                         </Text>
                       </View>
                     );
