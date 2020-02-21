@@ -702,7 +702,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           {
-            Linking.openURL('tel:1066');
+            Linking.openURL('tel:08047192606');
           }
         }}
       >
@@ -719,7 +719,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }}
         >
           <Text style={theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20)}>
-            Call 1066 in emergency
+            {string.common.emergencyBannerText}
           </Text>
           <Ambulance style={{ height: 41, width: 41 }} />
         </View>
@@ -803,7 +803,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       {renderBottomTabBar()}
       {showPopUp && (
         <BottomPopUp
-          title={string.home.welcome_popup.title}
+          title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
           description={string.home.welcome_popup.description}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>

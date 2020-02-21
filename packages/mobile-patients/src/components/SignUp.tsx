@@ -41,6 +41,7 @@ import {
   Relation,
   Gender,
   UpdatePatientInput,
+  DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
@@ -50,6 +51,8 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { db } from '../strings/FirebaseConfig';
+import { AppConfig } from '../strings/AppConfig';
 
 const { height } = Dimensions.get('window');
 
@@ -71,6 +74,7 @@ const styles = StyleSheet.create({
   buttonViewStyle: {
     width: '30%',
     backgroundColor: 'white',
+    marginRight: 20,
   },
   selectedButtonViewStyle: {
     backgroundColor: theme.colors.APP_GREEN,
@@ -130,7 +134,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
   const [referral, setReferral] = useState<string>('');
-  const { signOut, getPatientByPrism } = useAuth();
+  const { signOut, getPatientApiCall, getPatientByPrism } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
 
@@ -177,7 +181,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
-      getPatientByPrism();
+      getPatientApiCall();
     }
   }, [currentPatient]);
 
@@ -316,7 +320,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           <TextInputComponent label={'Gender'} noInput={true} />
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10 }}>
             {GenderOptions.map((option) => (
               <Button
                 key={option.name}
@@ -407,6 +411,32 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                       console.log('signup currentPatient', currentPatient);
 
+                      try {
+                        const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+                        const versionInput = {
+                          appVersion:
+                            Platform.OS === 'ios'
+                              ? AppConfig.Configuration.iOS_Version
+                              : AppConfig.Configuration.Android_Version,
+                          deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+                        };
+                        db.ref('ApolloPatientsNewUser/')
+                          .push({
+                            mobileNumber: storedPhoneNumber,
+                            versionInput: versionInput,
+                            referralCode: referral ? referral : null,
+                            relation: 'false',
+                          })
+                          .then((data: any) => {
+                            //success callback
+                            console.log('getPatientByPrismdata ', data);
+                          })
+                          .catch((error: Error) => {
+                            //error callback
+                            console.log('getPatientByPrismerror ', error);
+                          });
+                      } catch (error) {}
+
                       const patientsDetails: UpdatePatientInput = {
                         id: currentPatient ? currentPatient.id : '',
                         mobileNumber: currentPatient ? currentPatient.mobileNumber : '',
@@ -422,7 +452,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         uhid: '',
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
-                        referralCode: referral,
+                        referralCode: referral ? referral : null,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({
