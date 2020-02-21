@@ -323,8 +323,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                           fileExtension &&
                           (fileExtension.toLowerCase() === 'png' ||
                             fileExtension.toLowerCase() === 'jpg' ||
-                            fileExtension.toLowerCase() === 'jpeg' ||
-                            fileExtension.toLowerCase() === 'pdf')
+                            fileExtension.toLowerCase() === 'jpeg')
                         ) {
                           setIsUploading(true);
                           if (file) {
@@ -340,7 +339,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                           }
                         } else {
                           alert(
-                            'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                            'Invalid File Extension. Only files with .jpg and.png extensions are allowed.'
                           );
                         }
                         setIsUploading(false);
