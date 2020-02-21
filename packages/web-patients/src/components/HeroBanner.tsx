@@ -29,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 400,
         padding: 40,
       },
+      [theme.breakpoints.up(900)]: {
+        minHeight: 420,
+      },
       '& p': {
         fontSize: 17,
         lineHeight: 1.47,
