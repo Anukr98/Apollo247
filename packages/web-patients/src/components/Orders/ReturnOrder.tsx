@@ -194,7 +194,7 @@ export const ReturnOrder: React.FC<ReturnOrderProps> = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
           </div>
         </div>

@@ -249,7 +249,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           return (
             <Form>
               <div className={classes.mascotIcon}>
-                <img src={require('images/ic_mascot.png')} alt="" />
+                <img src={require('images/ic-mascot.png')} alt="" />
               </div>
               <div className={classes.customScrollBar}>
                 <div className={classes.signinGroup}>

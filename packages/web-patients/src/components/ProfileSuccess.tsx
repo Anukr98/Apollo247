@@ -100,7 +100,7 @@ export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
     <div className={classes.signUpBar}>
       <div className={classes.signUpPop}>
         <div className={classes.mascotIcon}>
-          <img src={require('images/ic_mascot.png')} alt="" />
+          <img src={require('images/ic-mascot.png')} alt="" />
         </div>
         <div className={classes.signinGroup}>
           <Typography variant="h2">congratulations!</Typography>
