@@ -4,9 +4,9 @@ import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import { AphButton } from '@aph/web-ui-components';
+// import Dialog from '@material-ui/core/Dialog';
+// import DialogContent from '@material-ui/core/DialogContent';
+// import { AphButton } from '@aph/web-ui-components';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -16,6 +16,7 @@ import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { AppLocations } from './AppLocations';
 import { LocationProvider } from 'components/LocationProvider';
 import { MedicinesCartProvider, MedicinesCartContext } from 'components/MedicinesCartProvider';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -199,7 +200,7 @@ export const Header: React.FC = (props) => {
           )}
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-              <a href="https://play.google.com/" target="_blank">
+              <a href={getAppStoreLink()} target="_blank">
                 Download Apollo247 App
               </a>
             </div>
