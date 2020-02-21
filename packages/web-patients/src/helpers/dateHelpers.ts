@@ -14,3 +14,9 @@ export const getIstTimestamp = (today: Date, slotTime: string) => {
     )
   );
 };
+
+export const getAppStoreLink = () => {
+  return navigator.appVersion.indexOf('Mac') !== -1
+    ? process.env.IOS_APP_LINK
+    : process.env.ANDROID_APP_LINK;
+};

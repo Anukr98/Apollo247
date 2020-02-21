@@ -22,7 +22,8 @@ import { ApolloError } from 'apollo-client';
 import { useMutation } from 'react-apollo-hooks';
 import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
 import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
-import moment, { Moment } from 'moment';
+import moment from 'moment';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -203,6 +204,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ConsultationsCardProps {
   appointments: appointmentDetails[];
+  pastOrCurrent: string;
 }
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
@@ -218,8 +220,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   };
 
   const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
-  const [isScheduledAppPopoverOpen, setIsScheduledAppPopoverOpen] = React.useState<boolean>(false);
-  const [isAppDetailsPopoverOpen, setIsAppDetailsPopoverOpen] = React.useState<boolean>(true);
+  const [isScheduledAppPopoverOpen, setIsScheduledAppPopoverOpen] = useState<boolean>(false);
+  const [isAppDetailsPopoverOpen, setIsAppDetailsPopoverOpen] = useState<boolean>(false);
+  const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
+  const [currentApptTime, setCurrentApptTime] = useState<string>('');
 
   const shouldRefreshComponent = (diff: number) => {
     const id = setInterval(() => {
@@ -271,13 +275,20 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         <Grid container spacing={2}>
           {props.appointments.map((appointmentDetails, index) => {
             const appointmentId = appointmentDetails.id;
-            const firstName =
-              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
-                ? appointmentDetails.doctorInfo.firstName
-                : '';
-            const lastName =
-              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.lastName
-                ? appointmentDetails.doctorInfo.lastName
+            const { appointmentState, status } = appointmentDetails;
+
+            // console.log(appointmentDetails);
+            // const firstName =
+            //   appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
+            //     ? appointmentDetails.doctorInfo.firstName
+            //     : '';
+            // const lastName =
+            //   appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.lastName
+            //     ? appointmentDetails.doctorInfo.lastName
+            //     : '';
+            const fullName =
+              appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName
+                ? appointmentDetails.doctorInfo.fullName
                 : '';
             const doctorImage =
               appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.photoUrl
@@ -291,7 +302,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
               appointmentDetails.doctorInfo &&
               appointmentDetails.doctorInfo.specialty &&
               !_isNull(appointmentDetails.doctorInfo.specialty.name)
-                ? appointmentDetails.doctorInfo.specialty.name
+                ? appointmentDetails.doctorInfo.specialty.specialistSingularTerm
                 : '';
             const currentTime = new Date().getTime();
             const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
@@ -302,9 +313,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 ? appointmentDetails.doctorId
                 : '';
             const isConsultStarted = appointmentDetails.isConsultStarted;
-            const { appointmentState, status } = appointmentDetails;
-            var day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
-            var day2 = moment(new Date());
+            const day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
+            const day2 = moment(new Date());
             day1.diff(day2, 'days'); // 1
             const comparingDays = () => {
               return day1.diff(day2, 'days') == 0
@@ -313,15 +323,58 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     ' more ' +
                     (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
             };
+            const clinicList =
+              appointmentDetails &&
+              appointmentDetails.doctorInfo &&
+              appointmentDetails.doctorInfo.doctorHospital
+                ? appointmentDetails.doctorInfo.doctorHospital
+                : [];
+            let facilityName = '',
+              streetName = '';
+            if (
+              clinicList &&
+              clinicList.length > 0 &&
+              clinicList[0] &&
+              clinicList[0].facility &&
+              clinicList[0].facility.name
+            ) {
+              facilityName = clinicList[0].facility.name;
+              streetName =
+                clinicList[0].facility.streetLine1 && clinicList[0].facility.streetLine1.length > 0
+                  ? clinicList[0].facility.streetLine1
+                  : '';
+            }
+            // console.log(facilityName, streetName, 'facility name.....');
+            // console.log(
+            //   'appointment time....',
+            //   appointmentTime,
+            //   new Date(appointmentDetails.appointmentDateTime)
+            // );
             return (
               <Grid item sm={4} xs={12} key={index}>
                 <div
                   className={classes.consultCard}
-                  onClick={() => setIsScheduledAppPopoverOpen(true)}
+                  onClick={() => {
+                    if (props.pastOrCurrent === 'past') {
+                      setIsAppDetailsPopoverOpen(true);
+                    } else {
+                      setIsScheduledAppPopoverOpen(true);
+                      setCurrentDoctorName(fullName);
+                      setCurrentApptTime(
+                        moment(appointmentDetails.appointmentDateTime).format(
+                          'MMMM, DD YYYY [at] LT'
+                        )
+                      );
+                    }
+                  }}
                 >
                   <div className={classes.consultCardWrap}>
                     <div className={classes.startDoctor}>
-                      <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
+                      <Avatar
+                        alt="Doctor Image"
+                        src={doctorImage}
+                        className={classes.doctorAvatar}
+                      />
                       {appointmentDetails.doctorInfo &&
                         appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO && (
                           <span>
@@ -339,27 +392,34 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           ? `Available in ${difference} mins`
                           : otherDateMarkup(appointmentTime)}
                       </div>
-                      <Link to={clientRoutes.doctorDetails(doctorId)}>
-                        <div className={classes.doctorName}>{`Dr. ${_startCase(
-                          _toLower(firstName)
-                        )} ${_startCase(_toLower(lastName))}`}</div>
-                      </Link>
+                      {/* <Link to={clientRoutes.doctorDetails(doctorId)} target="_blank"> */}
+                      <div className={classes.doctorName}>{`${_startCase(
+                        _toLower(fullName)
+                      )}`}</div>
+                      {/* </Link> */}
                       <div className={classes.doctorType}>
                         {specialization}
                         <span className={classes.doctorExp}>{experience} YRS</span>
                       </div>
                       <div className={classes.consultaitonType}>
                         <span>
-                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                          {appointmentDetails.appointmentType === 'ONLINE'
                             ? 'Online Consultation'
                             : 'Clinic Visit'}
                         </span>
                         <span>
-                          {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
+                          {appointmentDetails.appointmentType === 'ONLINE' ? (
                             <img src={require('images/ic_onlineconsult.svg')} alt="" />
                           ) : (
                             <img src={require('images/ic_clinicvisit.svg')} alt="" />
                           )}
+                        </span>
+                      </div>
+                      <div className={classes.consultaitonType}>
+                        <span>
+                          {appointmentDetails.appointmentType !== 'ONLINE'
+                            ? `${facilityName}, ${streetName}`
+                            : ''}
                         </span>
                       </div>
                     </div>
@@ -413,20 +473,22 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           })}
         </Grid>
       </div>
+
       <AphDialog open={isScheduledAppPopoverOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsScheduledAppPopoverOpen(false)} />
         <AphDialogTitle>Scheduled Appointment</AphDialogTitle>
         <div className={classes.messageBox}>
           <p>
-            You have an online consultation scheduled with Dr. Simran Rai for February 19, 2020 at
-            4:35 PM.
+            You have an online consultation scheduled with {currentDoctorName} for {currentApptTime}
+            .
           </p>
           <p>Kindly visit the app to continue with the consultation or to make any changes.</p>
-          <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
+          <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
             Download Apollo247 App
           </a>
         </div>
       </AphDialog>
+
       <AphDialog open={isAppDetailsPopoverOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAppDetailsPopoverOpen(false)} />
         <AphDialogTitle>Appointment Details</AphDialogTitle>
@@ -435,7 +497,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
             Kindly visit the app to access your appointment details.
           </p>
           <p className={classes.textCenter}>Download the app by clicking below.</p>
-          <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
+          <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
             Download Apollo247 App
           </a>
         </div>

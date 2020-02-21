@@ -8,21 +8,24 @@ import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
-``;
+import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+// import {
+//   GetPatientAppointments,
+//   GetPatientAppointmentsVariables,
+// } from 'graphql/types/GetPatientAppointments';
 import {
-  GetPatientAppointments,
-  GetPatientAppointmentsVariables,
-} from 'graphql/types/GetPatientAppointments';
+  GetPatientAllAppointments,
+  GetPatientAllAppointmentsVariables,
+} from 'graphql/types/GetPatientAllAppointments';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 // import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
-import { STATUS } from 'graphql/types/globalTypes';
-import isToday from 'date-fns/isToday';
-import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMessage';
+// import { STATUS } from 'graphql/types/globalTypes';
+// import isToday from 'date-fns/isToday';
+// import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMessage';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import moment from 'moment';
@@ -305,38 +308,46 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 export const Appointments: React.FC = (props) => {
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  // const currentDate = new Date().toISOString().substring(0, 10);
   const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-  const { isSignedIn, isSigningIn } = useAuth();
+  const { isSigningIn } = useAuth();
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  // const { data, loading, error } = useQueryWithSkip<
+  //   GetPatientAppointments,
+  //   GetPatientAppointmentsVariables
+  // >(GET_PATIENT_APPOINTMENTS, {
+  //   variables: {
+  //     patientAppointmentsInput: {
+  //       patientId:
+  //         (currentPatient && currentPatient.id) ||
+  //         (allCurrentPatients && allCurrentPatients[0].id) ||
+  //         '',
+  //       appointmentDate: currentDate,
+  //     },
+  //   },
+  //   fetchPolicy: 'no-cache',
+  // });
+
   const { data, loading, error } = useQueryWithSkip<
-    GetPatientAppointments,
-    GetPatientAppointmentsVariables
-  >(GET_PATIENT_APPOINTMENTS, {
+    GetPatientAllAppointments,
+    GetPatientAllAppointmentsVariables
+  >(GET_PATIENT_ALL_APPOINTMENTS, {
     variables: {
-      patientAppointmentsInput: {
-        patientId:
-          (currentPatient && currentPatient.id) ||
-          (allCurrentPatients && allCurrentPatients[0].id) ||
-          '',
-        appointmentDate: currentDate,
-      },
+      patientId:
+        (currentPatient && currentPatient.id) ||
+        (allCurrentPatients && allCurrentPatients[0].id) ||
+        '',
     },
     fetchPolicy: 'no-cache',
   });
 
-  if (error) {
-    return <div>Unable to load Consults...</div>;
-  }
-
-  let todaysConsultations = 0;
+  if (error) return <div>Unable to load Consults...</div>;
 
   const appointments =
-    data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments
-      ? data.getPatinetAppointments.patinetAppointments
+    data && data.getPatientAllAppointments && data.getPatientAllAppointments.appointments
+      ? data.getPatientAllAppointments.appointments
       : [];
 
   // filter appointments that are greater than current time.
@@ -468,7 +479,7 @@ export const Appointments: React.FC = (props) => {
             {tabValue === 0 && (
               <TabContainer>
                 {availableAppointments && availableAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={availableAppointments} />
+                  <ConsultationsCard appointments={availableAppointments} pastOrCurrent="current" />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
@@ -502,7 +513,7 @@ export const Appointments: React.FC = (props) => {
             {tabValue === 1 && (
               <TabContainer>
                 {pastAppointments && pastAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={pastAppointments} />
+                  <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
@@ -536,7 +547,8 @@ export const Appointments: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
+
+      {/* <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
         <AphDialogClose onClick={() => setIsConfirmedPopoverOpen(false)} />
         <AphDialogTitle>Confirmed</AphDialogTitle>
         <div className={classes.messageBox}>
@@ -563,8 +575,9 @@ export const Appointments: React.FC = (props) => {
             Download Apollo247 App
           </a>
         </div>
-      </AphDialog>
-      <Popover
+      </AphDialog> */}
+
+      {/* <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
         anchorOrigin={{
@@ -585,7 +598,8 @@ export const Appointments: React.FC = (props) => {
             <TransferConsultMessage />
           </div>
         </div>
-      </Popover>
+      </Popover> */}
+
       <NavigationBottom />
     </div>
   );
