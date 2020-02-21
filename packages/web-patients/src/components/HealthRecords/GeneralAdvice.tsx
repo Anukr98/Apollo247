@@ -43,6 +43,12 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '100%',
     },
+    noWrapper: {
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      textTransform: 'uppercase',
+    },
     cardTitle: {
       fontSize: 14,
       fontWeight: 500,
@@ -128,7 +134,7 @@ export const GeneralAdvice: React.FC<GeneralAdviceProps> = (props) => {
                 </ol>
               </div>
             ) : (
-              'No Advice'
+              <div className={classes.noWrapper}>No Advice</div>
             )}
           </Grid>
         </Grid>
