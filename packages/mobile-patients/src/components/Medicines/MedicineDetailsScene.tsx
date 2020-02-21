@@ -726,11 +726,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderTabComponent = () => {
     // let description = desc; // props.route.key; //data.CaptionDesc;
     const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
-    const description = filterHtmlContent(
+    let description =
       selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
         ? selectedTabdata[0].CaptionDesc
-        : ''
-    );
+        : '';
+    description = description
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;rn/g, '>')
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/\.t/g, '.');
 
     return (
       <View
@@ -745,15 +751,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       >
         <View>
           {!!description && (
-            <Text
-              style={{
-                color: theme.colors.SKY_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 22,
+            <HTML
+              html={description}
+              baseFontStyle={{
+                ...theme.viewStyles.text('M', 14, '#0087ba', 1, 22),
               }}
-            >
-              {description}
-            </Text>
+              imagesMaxWidth={Dimensions.get('window').width}
+            />
           )}
         </View>
       </View>
@@ -785,9 +789,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderInfo = () => {
     const description = medicineDetails.description
+      .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;rn/g, '>')
-      .replace(/&gt;/g, '>');
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/.t/, '.');
     console.log(description);
 
     if (!!description)
