@@ -40,7 +40,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
-import { getPatientMedicalRecordsResolvers } from 'profiles-service/resolvers/getPatientMedicalRecords';
+//import { getPatientMedicalRecordsResolvers } from 'profiles-service/resolvers/getPatientMedicalRecords';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -55,6 +55,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
+      relations: ['appointment_payments'],
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,

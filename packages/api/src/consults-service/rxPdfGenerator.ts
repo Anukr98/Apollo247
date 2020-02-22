@@ -97,6 +97,15 @@ export const convertCaseSheetToRxPdfData = async (
               .join(' ');
         }
       }
+      if (csRx.medicineConsumptionDurationInDays && csRx.medicineConsumptionDurationUnit) {
+        frequency =
+          frequency +
+          ', for ' +
+          csRx.medicineConsumptionDurationInDays +
+          ' ' +
+          csRx.medicineConsumptionDurationUnit.replace('S', '(s)');
+      }
+
       frequency = _capitalize(frequency);
 
       const instructions = csRx.medicineInstructions;
