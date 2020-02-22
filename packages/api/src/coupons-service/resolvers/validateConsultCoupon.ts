@@ -102,8 +102,11 @@ const validateConsultCoupon: Resolver<
 > = async (parent, args, { mobileNumber, patientsDb, doctorsDb, consultsDb }) => {
   //check for patient request validity
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.findDetailsByMobileNumber(mobileNumber);
-  if (patientData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  const patientData = await patientRepo.findByMobileNumber(mobileNumber);
+  if (patientData.length == 0) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //get patientIds
+  const patientIds = patientData.map((item) => item.id);
 
   //get doctors Data
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
@@ -170,7 +173,7 @@ const validateConsultCoupon: Resolver<
   //customer type check
   if (couponGenericRulesData.couponApplicableCustomerType) {
     const appointmentsCount = await appointmentRepo.getPatientAppointmentCountByConsultMode(
-      patientData.id,
+      patientIds,
       args.consultType
     );
     if (
@@ -188,7 +191,7 @@ const validateConsultCoupon: Resolver<
   // coupon count per customer check
   if (couponGenericRulesData.couponReuseCountPerCustomer) {
     const customerUsageCount = await appointmentRepo.getPatientAppointmentCountByCouponCode(
-      patientData.id,
+      patientIds,
       args.code
     );
     if (customerUsageCount >= couponGenericRulesData.couponReuseCountPerCustomer)
