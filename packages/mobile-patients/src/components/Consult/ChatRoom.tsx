@@ -406,14 +406,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let thirtySecondTimer: any;
   let minuteTimer: any;
 
-  const { analytics, getPatientApiCall } = useAuth();
+  const { getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
 
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
-
-  let currentDateTime = new Date();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -695,6 +693,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setUserAnswers(data);
     if (isSendAnswers.find((item) => item === false) === undefined) {
       requestToJrDoctor();
+      getPatientApiCall();
     }
   };
 

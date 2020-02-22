@@ -31,7 +31,11 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { Relation, UpdatePatientInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  Relation,
+  UpdatePatientInput,
+  DEVICE_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updatePatientVariables,
   updatePatient,
@@ -49,6 +53,8 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
+import { db } from '../strings/FirebaseConfig';
+import { AppConfig } from '../strings/AppConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -412,6 +418,32 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     Alert.alert('Apollo', 'Enter valid referral code');
                   } else {
                     setVerifyingPhoneNumber(true);
+
+                    try {
+                      const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+                      const versionInput = {
+                        appVersion:
+                          Platform.OS === 'ios'
+                            ? AppConfig.Configuration.iOS_Version
+                            : AppConfig.Configuration.Android_Version,
+                        deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+                      };
+                      db.ref('ApolloPatientsNewUser/')
+                        .push({
+                          mobileNumber: storedPhoneNumber,
+                          versionInput: versionInput,
+                          referralCode: referral ? referral : null,
+                          relation: 'true',
+                        })
+                        .then((data: any) => {
+                          //success callback
+                          console.log('getPatientByPrismdata ', data);
+                        })
+                        .catch((error: Error) => {
+                          //error callback
+                          console.log('getPatientByPrismerror ', error);
+                        });
+                    } catch (error) {}
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
                       const patientsDetails: UpdatePatientInput = {

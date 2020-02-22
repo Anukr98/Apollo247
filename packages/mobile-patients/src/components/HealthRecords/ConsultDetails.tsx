@@ -46,7 +46,10 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -58,13 +61,17 @@ import {
   handleGraphQlError,
   g,
   addTestsToCart,
+  doRequestAndAccessLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
   useDiagnosticsCart,
   DiagnosticsCartItem,
 } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -348,17 +355,25 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, setLocationDetails } = useAppCommonData();
 
-  const onAddTestsToCart = () => {
-    if (!locationDetails) {
-      Alert.alert(
-        'Uh oh.. :(',
-        'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
-      );
-      return;
-    }
+  const onAddTestsToCart = async () => {
+    let location: LocationData | null = null;
     setLoading && setLoading(true);
+
+    if (!locationDetails) {
+      try {
+        location = await doRequestAndAccessLocation();
+        setLocationDetails!(location);
+      } catch (error) {
+        setLoading && setLoading(false);
+        Alert.alert(
+          'Uh oh.. :(',
+          'Unable to get location. We need your location in order to add tests to your cart.'
+        );
+        return;
+      }
+    }
 
     const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
       []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
@@ -379,7 +394,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     } as EPrescription;
 
     // Adding tests to DiagnosticsCart
-    addTestsToCart(testPrescription, client, g(locationDetails, 'city') || '')
+    addTestsToCart(testPrescription, client, g(locationDetails || location, 'city') || '')
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
         const unAvailableItemsArray = testPrescription.filter(
@@ -424,6 +439,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       (item) => item!.id
     );
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
+    const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION) => {
+      return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+        ? 30
+        : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+        ? 7
+        : 1;
+    };
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
@@ -438,11 +460,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
             medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
               ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
-                parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1') *
+                parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1', 10) *
+                getDaysCount(medPrescription[index]!.medicineConsumptionDurationUnit!) *
                 (medPrescription[index]!.medicineToBeTaken!.length || 1) *
                 parseFloat(medPrescription[index]!.medicineDosage! || '1')
               : 1;
-          const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
+          const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1', 10));
 
           return {
             id: medicineDetails!.sku!,
@@ -516,6 +539,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       });
   };
 
+  const getFormattedUnit = (unit: MEDICINE_CONSUMPTION_DURATION | null) => {
+    return (unit || '').toLowerCase().replace('s', '(s)');
+  };
+
   const renderPrescriptions = () => {
     return (
       <View>
@@ -585,13 +612,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                                 )
                             : ''}
 
-                          {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
                           {item.medicineConsumptionDurationInDays == ''
                             ? ''
                             : item!.medicineConsumptionDurationInDays! &&
                               item!.medicineConsumptionDurationInDays!.length == 1
-                            ? ' for ' + item!.medicineConsumptionDurationInDays! + ' day'
-                            : ' for ' + item!.medicineConsumptionDurationInDays! + ' days'}
+                            ? ' for ' +
+                              item!.medicineConsumptionDurationInDays! +
+                              ' ' +
+                              getFormattedUnit(item!.medicineConsumptionDurationUnit)
+                            : ' for ' +
+                              item!.medicineConsumptionDurationInDays! +
+                              ' ' +
+                              getFormattedUnit(item!.medicineConsumptionDurationUnit)}
+                          {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
                         </Text>
                       </View>
                     );

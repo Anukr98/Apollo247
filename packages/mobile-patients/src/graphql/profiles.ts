@@ -138,6 +138,23 @@ export const BOOK_APPOINTMENT = gql`
   }
 `;
 
+export const MAKE_APPOINTMENT_PAYMENT = gql`
+  mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
+    makeAppointmentPayment(paymentInput: $paymentInput) {
+      appointment {
+        id
+        amountPaid
+        paymentRefId
+        paymentDateTime
+        responseCode
+        responseMessage
+        bankTxnId
+        orderId
+      }
+    }
+  }
+`;
+
 export const SAVE_SEARCH = gql`
   mutation saveSearch($saveSearchInput: SaveSearchInput!) {
     saveSearch(saveSearchInput: $saveSearchInput) {
@@ -1308,6 +1325,26 @@ export const GET_COUPONS = gql`
   }
 `;
 
+export const VALIDATE_CONSULT_COUPON = gql`
+  query ValidateConsultCoupon(
+    $doctorId: ID!
+    $code: String!
+    $consultType: AppointmentType!
+    $appointmentDateTimeInUTC: DateTime!
+  ) {
+    validateConsultCoupon(
+      doctorId: $doctorId
+      code: $code
+      consultType: $consultType
+      appointmentDateTimeInUTC: $appointmentDateTimeInUTC
+    ) {
+      validityStatus
+      revisedAmount
+      reasonForInvalidStatus
+    }
+  }
+`;
+
 export const GET_NOTIFICATION_SETTINGS = gql`
   query getPatientNotificationSettings($patient: ID!) {
     getPatientNotificationSettings(patient: $patient) {
@@ -1576,6 +1613,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             medicineName
             id
             medicineUnit
+            medicineConsumptionDurationUnit
           }
           symptoms {
             symptom

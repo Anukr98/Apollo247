@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from 'components/Header';
 import { Consultations } from 'components/HealthRecords/Consultations';
 import { MedicalRecords } from 'components/HealthRecords/MedicalRecords';
@@ -58,9 +58,22 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const PHRLanding: React.FC = (props) => {
-  const classes = useStyles();
+type LandingProps = {
+  location: {
+    state: string;
+    search: string;
+  };
+};
+
+export const PHRLanding: React.FC<LandingProps> = (props) => {
+  const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
+  useEffect(() => {
+    if (props && props.location && props.location.state === 'medical') {
+      setTabValue(1);
+      window.history.pushState('', '', '');
+    }
+  }, [props]);
   return (
     <div className={classes.root}>
       <Header />

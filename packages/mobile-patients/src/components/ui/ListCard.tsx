@@ -45,10 +45,10 @@ export const ListCard: React.FC<ListCardProps> = (props) => {
     <TouchableOpacity activeOpacity={1} onPress={props.onPress}>
       <View style={[styles.container, props.container]}>
         {leftIcon}
-        <Text style={styles.titleStyle}>{title}</Text>
-        <View style={{ alignItems: 'flex-end', flex: 1 }}>
-          {rightIcon ? rightIcon : <ArrowRight />}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.titleStyle}>{title}</Text>
         </View>
+        {rightIcon ? rightIcon : <ArrowRight />}
       </View>
     </TouchableOpacity>
   );
