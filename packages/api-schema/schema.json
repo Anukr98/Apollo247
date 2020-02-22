@@ -19830,8 +19830,8 @@
                 "name": "source",
                 "description": null,
                 "type": {
-                  "kind": "ENUM",
-                  "name": "BOOKINGSOURCE",
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 },
                 "defaultValue": null
