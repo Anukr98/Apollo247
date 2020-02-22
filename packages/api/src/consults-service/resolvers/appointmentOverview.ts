@@ -39,7 +39,7 @@ export const getAppointmentOverviewTypeDefs = gql`
     updatePaymentOrderId(
       appointmentId: String
       orderId: String
-      source: BOOKINGSOURCE
+      source: String
     ): UpdatePaymentOrderIdResult
   }
 `;
@@ -122,7 +122,7 @@ const getAppointmentOverview: Resolver<
 
 const updatePaymentOrderId: Resolver<
   null,
-  { appointmentId: string; orderId: string; source: BOOKINGSOURCE },
+  { appointmentId: string; orderId: string; source: string },
   ConsultServiceContext,
   UpdatePaymentOrderIdResult
 > = async (parent, { appointmentId, orderId, source }, context) => {
@@ -133,7 +133,12 @@ const updatePaymentOrderId: Resolver<
   if (!appointmentDetails || appointmentDetails.status !== STATUS.PAYMENT_PENDING)
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   appointmentDetails.paymentOrderId = orderId;
-  appointmentDetails.bookingSource = source;
+  if (source == BOOKINGSOURCE.WEB) {
+    appointmentDetails.bookingSource = BOOKINGSOURCE.WEB;
+  } else {
+    appointmentDetails.bookingSource = BOOKINGSOURCE.MOBILE;
+  }
+
   await apptRepo.updateMedmantraStatus(appointmentDetails);
   return { status: true };
 };
