@@ -512,6 +512,19 @@ export interface UpdateAppointmentSessionInput {
   requestRole: string;
 }
 
+export interface UpdatePatientAddressInput {
+  id: string;
+  addressLine1: string;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode: string;
+  mobileNumber?: string | null;
+  landmark?: string | null;
+  addressType?: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType?: string | null;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
