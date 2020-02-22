@@ -133,7 +133,7 @@ const updatePaymentOrderId: Resolver<
   if (!appointmentDetails || appointmentDetails.status !== STATUS.PAYMENT_PENDING)
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   appointmentDetails.paymentOrderId = orderId;
-  if (source == 'WEB') {
+  if (source == BOOKINGSOURCE.WEB) {
     appointmentDetails.bookingSource = BOOKINGSOURCE.WEB;
   } else {
     appointmentDetails.bookingSource = BOOKINGSOURCE.MOBILE;
