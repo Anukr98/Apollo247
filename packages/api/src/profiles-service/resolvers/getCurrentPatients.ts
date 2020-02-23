@@ -104,7 +104,6 @@ const getCurrentPatients: Resolver<
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   let patients;
-  mobileNumber = '+918179172393';
   patients = await patientRepo.findByMobileNumber(mobileNumber);
   if (patients.length == 0) {
     const callStartTime = new Date();
@@ -122,8 +121,8 @@ const getCurrentPatients: Resolver<
 
     let isPrismWorking = 1,
       isUserDetails = 0;
-    const prismUrl = 'https://apolloprism.com'; // process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
-    const prismHost = 'apolloprism.com'; // process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
+    const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
+    const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
     // if (prismUrl == '') {
     //   isPrismWorking = 0;
     // }
