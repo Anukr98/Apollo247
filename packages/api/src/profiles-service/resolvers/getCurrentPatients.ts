@@ -119,12 +119,13 @@ const getCurrentPatients: Resolver<
 
     homeLogger('API_CALL___START');
 
-    let isPrismWorking = 1;
+    let isPrismWorking = 1,
+      isUserDetails = 0;
     const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
     const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
-    if (prismUrl == '') {
-      isPrismWorking = 0;
-    }
+    // if (prismUrl == '') {
+    //   isPrismWorking = 0;
+    // }
     const prismBaseUrl = prismUrl + '/data';
     const prismHeaders = {
       method: 'get',
@@ -195,6 +196,7 @@ const getCurrentPatients: Resolver<
             //   prismGetUsersError,
             // });
             isPrismWorking = 0;
+            isUserDetails = 1;
           });
       }
 
@@ -206,10 +208,11 @@ const getCurrentPatients: Resolver<
       //   JSON.stringify(uhids),
       //   ''
       // );
-
+      isUserDetails = 1;
       console.log(uhids, 'uhid', isPrismWorking);
     } catch (e) {
       isPrismWorking = 0;
+      isUserDetails = 1;
     }
 
     const findOrCreatePatient = (
@@ -249,7 +252,7 @@ const getCurrentPatients: Resolver<
     //if prism is not working - process with 24x7 database
     //isPrismWorking = 0;
     const checkPatients = await patientRepo.findByMobileNumber(mobileNumber);
-    if (isPrismWorking == 0) {
+    if (isPrismWorking == 0 && isUserDetails == 1) {
       if (checkPatients == null || checkPatients.length == 0) {
         homeLogger('CREATE_OR_RETURN_PATIENTS_START');
         patientPromises = [

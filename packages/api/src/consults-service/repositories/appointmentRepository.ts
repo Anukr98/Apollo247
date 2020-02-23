@@ -54,6 +54,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
+      relations: ['appointment_payments'],
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
@@ -617,11 +618,10 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     weekDay = format(actualDate, 'EEEE').toUpperCase();
     const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
-    timeSlots = timeSlots.concat(timeSlotsNext);
-
     if (timeSlots.length > 0) {
       prevDaySlots = 1;
     }
+    timeSlots = timeSlots.concat(timeSlotsNext);
     const checkEnd = `${actualDate.toDateString()} 18:30:00`;
 
     enum CONSULTFLAG {
