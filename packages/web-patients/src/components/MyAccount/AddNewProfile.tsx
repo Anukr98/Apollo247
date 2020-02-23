@@ -14,6 +14,8 @@ import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/dist/aphVa
 import FormHelperText from '@material-ui/core/FormHelperText';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -439,7 +441,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                               setGenderSelected(gender as Gender);
                             }}
                           >
-                            {gender}
+                            {_startCase(_toLower(gender))}
                           </AphButton>
                         </Grid>
                       );
@@ -457,7 +459,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     {orderedRelations.map((relation) => {
                       return (
                         <MenuItem classes={{ selected: classes.menuSelected }} value={relation}>
-                          {relation}
+                          {_startCase(_toLower(relation))}
                         </MenuItem>
                       );
                     })}
