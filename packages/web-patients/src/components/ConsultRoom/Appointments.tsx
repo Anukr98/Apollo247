@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
-import React, { useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
@@ -8,7 +8,8 @@ import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+// import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
 //   GetPatientAppointments,
 //   GetPatientAppointmentsVariables,
@@ -29,6 +30,10 @@ import { useAuth } from 'hooks/authHooks';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import moment from 'moment';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
+import { GET_APPOINTMENT_DATA } from 'graphql/consult';
+
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -308,12 +313,17 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 export const Appointments: React.FC = (props) => {
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+  const urlParams = new URLSearchParams(window.location.search);
+  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : null;
+  const client = useApolloClient();
+  // console.log(urlParams, 'url params.....', urlParams.get('apptidkkkk'));
+
+  // const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
   const { isSigningIn } = useAuth();
-  const mascotRef = useRef(null);
-  const [isPopoverOpen] = React.useState<boolean>(false);
+  // const mascotRef = useRef(null);
+  // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  // const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables
@@ -376,6 +386,8 @@ export const Appointments: React.FC = (props) => {
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
     return compareDate > appointmentTime;
   });
+
+  // console.log(availableAppointments, 'available appointments....', pastAppointments);
 
   const appointmentText = () => {
     return appointments.filter((item) =>

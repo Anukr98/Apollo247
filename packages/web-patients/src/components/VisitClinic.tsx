@@ -485,7 +485,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                     res.data.bookAppointment.appointment.id
                   }&patientId=${
                     currentPatient ? currentPatient.id : ''
-                  }&price=${physicalConsultationFees}&source=web`;
+                  }&price=${physicalConsultationFees}&source=WEB`;
                   window.location.href = pgUrl;
                   // setMutationLoading(false);
                   // setIsDialogOpen(true);
