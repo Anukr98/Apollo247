@@ -7,6 +7,7 @@ import {
   RoundChatIcon,
   RoundIcon,
   Star,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
@@ -31,6 +32,7 @@ import { Alert, Image, SafeAreaView, StyleSheet, Text, TextInput, View } from 'r
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   buttonendStyle: {
@@ -109,7 +111,9 @@ const styles = StyleSheet.create({
   },
   imageview: {
     height: 141,
+    width: '100%',
     marginBottom: 16,
+    resizeMode: 'contain',
   },
   drname: {
     ...theme.fonts.IBMPlexSansSemiBold(20),
@@ -164,7 +168,9 @@ export interface ProfileProps
 export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const client = useApolloClient();
   const profileData = props.navigation.getParam('ProfileData');
-  const [phoneNumber, setPhoneNumber] = useState<string>(profileData!.delegateNumber!.substring(3));
+  const [phoneNumber, setPhoneNumber] = useState<string>(
+    (profileData.delegateNumber || '').substring(3)
+  );
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { doctorDetails, setDoctorDetails } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -289,7 +295,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   };
 
   const isPhoneNumberValid = (number: string) => {
-    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
+    const isValidNumber = /^[6-9]{1}\d{0,9}$/.test(number);
     return isValidNumber;
   };
   const validateAndSetPhoneNumber = (number: string) => {
@@ -418,48 +424,45 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
               <View
                 style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}
               >
-                {profileData!.photoUrl ? (
-                  <Image style={styles.imageview} source={{ uri: profileData!.photoUrl }} />
+                {profileData.photoUrl ? (
+                  <Image style={styles.imageview} source={{ uri: profileData.photoUrl }} />
                 ) : (
-                  <Image
-                    style={styles.imageview}
-                    source={require('@aph/mobile-doctors/src/images/doctor/doctor.png')}
-                  />
+                  <UserPlaceHolder style={styles.imageview} />
                 )}
               </View>
-              {profileData!.doctorType == 'STAR_APOLLO' ? (
+              {profileData.doctorType == 'STAR_APOLLO' ? (
                 <Star style={styles.starIconStyle}></Star>
               ) : null}
               <View style={styles.columnContainer}>
                 <Text style={[styles.drname]} numberOfLines={1}>
-                  {`${strings.common.dr} ${profileData!.firstName} ${profileData!.lastName}`}
+                  {`${strings.common.dr} ${profileData.firstName} ${profileData.lastName}`}
                 </Text>
                 <Text style={styles.drnametext}>
                   {formatSpecialityAndExperience(
-                    profileData!.specialty!.name,
-                    profileData!.experience || ''
+                    profileData.specialty!.name,
+                    profileData.experience || ''
                   )}
                 </Text>
                 <View style={styles.understatusline} />
               </View>
-              {profileRow(strings.account.education, profileData!.qualification!)}
-              {profileRow(strings.account.speciality, profileData!.specialty!.name!)}
-              {profileRow(strings.account.services, profileData!.specialization || '')}
+              {profileRow(strings.account.education, profileData.qualification || '')}
+              {profileRow(strings.account.speciality, g(profileData, 'specialty', 'name') || '')}
+              {profileRow(strings.account.services, profileData.specialization || '')}
               {profileRow(
                 strings.account.awards,
-                (profileData!.awards || '')
+                (profileData.awards || '')
                   .replace('&amp;', '&')
                   .replace(/<\/?[^>]+>/gi, '')
                   .trim()
               )}
               {profileRow(
                 strings.account.speaks,
-                (profileData!.languages || '').split(',').join(', ')
+                (profileData.languages || '').split(',').join(', ')
               )}
-              {profileRow(strings.account.mci_num, profileData!.registrationNumber)}
+              {profileRow(strings.account.mci_num, profileData.registrationNumber)}
               {profileRow(strings.account.in_person_consult_loc, getFormattedLocation())}
             </View>
-            {profileData!.doctorType == 'STAR_APOLLO' ? (
+            {profileData.doctorType == 'STAR_APOLLO' ? (
               <AccountStarTeam
                 profileData={profileData}
                 scrollViewRef={props.scrollViewRef}
