@@ -319,6 +319,7 @@ export const MedicalRecords: React.FC = (props) => {
   );
   const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
   const [activeData, setActiveData] = useState<any | null>(null);
+  const { isSigningIn } = useAuth();
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
   const mobileStyles: CSS.Properties = {
     display: isSmallScreen && !showMobileDetails ? 'none' : 'block',
@@ -652,7 +653,7 @@ export const MedicalRecords: React.FC = (props) => {
                     <RenderImage activeData={activeData} />
                   )}
               </div>
-            </>
+            </div>
           ) : (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
