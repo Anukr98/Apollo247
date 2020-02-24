@@ -538,7 +538,7 @@ export const AddRecords: React.FC = (props) => {
                 })
                   .then(({ data }) => {
                     setshowSpinner(false);
-                    window.location.href = clientRoutes.healthRecords();
+                    window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
                   .catch((e) => {
                     setshowSpinner(false);
@@ -814,7 +814,7 @@ export const AddRecords: React.FC = (props) => {
                               <AphTextField
                                 disabled={showSpinner}
                                 value={dateOfTest}
-                                onClick={() => setShowCalendar(true)}
+                                onFocus={() => setShowCalendar(true)}
                                 placeholder="dd/mm/yyyy"
                               />
                               {showCalendar && (
@@ -851,7 +851,7 @@ export const AddRecords: React.FC = (props) => {
                               <AphTextField
                                 disabled={showSpinner}
                                 value={dateOfPrescription}
-                                onClick={() => setShowCalendar(true)}
+                                onFocus={() => setShowCalendar(true)}
                                 placeholder="dd/mm/yyyy"
                               />
                               {showCalendar && (

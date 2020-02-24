@@ -69,7 +69,10 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
   useEffect(() => {
-    if (props && props.location && props.location.state === 'medical') {
+    if (
+      (props && props.location && props.location.state === 'medical') ||
+      window.location.href.includes('active=medical')
+    ) {
       setTabValue(1);
       window.history.pushState('', '', '');
     }

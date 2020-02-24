@@ -51,6 +51,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
     responseMessage: String!
     bankTxnId: String!
     orderId: String!
+    appointment: Appointment
   }
 
   type AppointmentPaymentResult {
@@ -76,6 +77,7 @@ type AppointmentPayment = {
   responseMessage: string;
   bankTxnId: string;
   orderId: string;
+  appointment: Appointment;
 };
 
 type AppointmentPaymentInput = {
