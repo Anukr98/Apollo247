@@ -56,8 +56,12 @@ const useStyles = makeStyles((theme: Theme) => {
     dialogActions: {
       padding: 16,
       textAlign: 'center',
+      display: 'flex',
       '& button': {
-        minWidth: 288,
+        flex: 1,
+        '&:first-child': {
+          marginRight: 10,
+        },
       },
     },
     activeCard: {
@@ -127,6 +131,15 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         <AphDialogTitle>Delete Report</AphDialogTitle>
         <div className={classes.dialogBody}>Are you want to delete the selected record?</div>
         <div className={classes.dialogActions}>
+          <AphButton
+            color="default"
+            onClick={() => {
+              setShowPopup(false);
+            }}
+            autoFocus
+          >
+            Cancel
+          </AphButton>
           <AphButton
             color="primary"
             onClick={() => {

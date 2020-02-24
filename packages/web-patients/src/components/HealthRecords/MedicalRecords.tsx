@@ -494,7 +494,7 @@ export const MedicalRecords: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.leftSection}>
+      <div style={recordStyles} className={classes.leftSection}>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -596,12 +596,10 @@ export const MedicalRecords: React.FC = (props) => {
               <div className={classes.cbcDetails}>
                 <div className={classes.reportsDetails}>
                   <label>Check-up Date</label>
-                  {/* <p>03 May 2019</p> */}
                   <p>{getFormattedDate(activeData)}</p>
                 </div>
                 <div className={classes.reportsDetails}>
                   <label>Source</label>
-                  {/* <p>Apollo Hospital, Jubilee Hills</p> */}
                   <p>{getSource()}</p>
                 </div>
                 <div className={classes.reportsDetails}>
@@ -615,44 +613,22 @@ export const MedicalRecords: React.FC = (props) => {
                   </p>
                 </div>
               </div>
-              <div className={classes.medicalRecordsDetails}>
-                <div className={classes.cbcDetails}>
-                  <div className={classes.reportsDetails}>
-                    <label>Check-up Date</label>
-                    <p>{getFormattedDate(activeData)}</p>
-                  </div>
-                  <div className={classes.reportsDetails}>
-                    <label>Source</label>
-                    <p>{getSource()}</p>
-                  </div>
-                  <div className={classes.reportsDetails}>
-                    <label>Referring Doctor</label>
-                    <p>
-                      {!!activeData.data.referringDoctor
-                        ? activeData.data.referringDoctor
-                        : !!activeData.data.signingDocName
-                        ? activeData.data.signingDocName
-                        : '-'}
-                    </p>
-                  </div>
-                </div>
-                {(activeData.data.observations ||
-                  activeData.data.additionalNotes ||
-                  activeData.data.healthCheckSummary) && <ToplineReport activeData={activeData} />}
-                {((activeData.data.medicalRecordParameters &&
-                  activeData.data.medicalRecordParameters.length > 0) ||
-                  (activeData.data.labTestResultParameters &&
-                    activeData.data.labTestResultParameters.length > 0)) && (
-                  <DetailedFindings activeData={activeData} />
+              {(activeData.data.observations ||
+                activeData.data.additionalNotes ||
+                activeData.data.healthCheckSummary) && <ToplineReport activeData={activeData} />}
+              {((activeData.data.medicalRecordParameters &&
+                activeData.data.medicalRecordParameters.length > 0) ||
+                (activeData.data.labTestResultParameters &&
+                  activeData.data.labTestResultParameters.length > 0)) && (
+                <DetailedFindings activeData={activeData} />
+              )}
+              {activeData.data &&
+                (activeData.data.prismFileIds ||
+                  activeData.data.hospitalizationPrismFileIds ||
+                  activeData.data.healthCheckPrismFileIds ||
+                  activeData.data.testResultPrismFileIds) && (
+                  <RenderImage activeData={activeData} />
                 )}
-                {activeData.data &&
-                  (activeData.data.prismFileIds ||
-                    activeData.data.hospitalizationPrismFileIds ||
-                    activeData.data.healthCheckPrismFileIds ||
-                    activeData.data.testResultPrismFileIds) && (
-                    <RenderImage activeData={activeData} />
-                  )}
-              </div>
             </div>
           ) : (
             <div className={classes.noRecordFoundWrapper}>
