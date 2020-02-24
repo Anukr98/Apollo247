@@ -175,7 +175,7 @@ const getPatientAllAppointments: Resolver<
 export const getPatinetAppointmentsResolvers = {
   PatinetAppointments: {
     doctorInfo(appointments: PatinetAppointments) {
-      return { __typename: 'DoctorDetails', id: appointments.doctorId };
+      return { __typename: 'DoctorDetailsWithStatusExclude', id: appointments.doctorId };
     },
   },
   Query: {

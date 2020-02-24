@@ -378,6 +378,13 @@ export const getDoctorDetailsResolvers = {
       return await doctorRepo.getDoctorProfileData(object.id.toString());
     },
   },
+  DoctorDetailsWithStatusExclude: {
+    async __resolveReference(object: Doctor) {
+      const connection = getConnection();
+      const doctorRepo = connection.getCustomRepository(DoctorRepository);
+      return await doctorRepo.findByIdWithStatusExclude(object.id.toString());
+    },
+  },
 
   Query: {
     getDoctorDetails,
