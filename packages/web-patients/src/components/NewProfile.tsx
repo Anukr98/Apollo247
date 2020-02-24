@@ -189,7 +189,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
 
-  const orderedGenders = [Gender.MALE, Gender.FEMALE, Gender.OTHER];
+  const orderedGenders = [Gender.MALE, Gender.FEMALE];
 
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
@@ -390,7 +390,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           <AphTextField
                             {...field}
                             label="Email Address (Optional)"
-                            placeholder="name@emailaddress.com"
+                            placeholder="name@email.com"
                             error={showError('emailAddress')}
                           />
                           {showError('emailAddress') ? (

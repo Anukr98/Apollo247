@@ -950,6 +950,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
+      status: CASESHEET_STATUS.COMPLETED,
     };
   }
 

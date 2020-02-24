@@ -160,10 +160,7 @@ export const MyProfile: React.FC = (props) => {
                 </span>
               </Link>
             </div> */}
-            <div
-              className={`${classes.sectionGroup}`}
-              onClick={() => signOut()}
-            >
+            <div className={`${classes.sectionGroup}`} onClick={() => signOut()}>
               <div className={`${classes.serviceType} ${classes.textVCenter}`}>
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_logout.svg')} alt="" />

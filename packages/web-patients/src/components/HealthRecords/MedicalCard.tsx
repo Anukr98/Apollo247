@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
@@ -56,8 +56,12 @@ const useStyles = makeStyles((theme: Theme) => {
     dialogActions: {
       padding: 16,
       textAlign: 'center',
+      display: 'flex',
       '& button': {
-        minWidth: 288,
+        flex: 1,
+        '&:first-child': {
+          marginRight: 10,
+        },
       },
     },
     activeCard: {
@@ -109,6 +113,9 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{props.name}</div>
+          {/* <div className={classes.doctorService}>
+            <span>Apollo Sugar Clinic, Hyderabad</span>
+          </div> */}
         </div>
         <div className={classes.moreIcon}>
           <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
@@ -124,6 +131,15 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         <AphDialogTitle>Delete Report</AphDialogTitle>
         <div className={classes.dialogBody}>Are you want to delete the selected record?</div>
         <div className={classes.dialogActions}>
+          <AphButton
+            color="default"
+            onClick={() => {
+              setShowPopup(false);
+            }}
+            autoFocus
+          >
+            Cancel
+          </AphButton>
           <AphButton
             color="primary"
             onClick={() => {

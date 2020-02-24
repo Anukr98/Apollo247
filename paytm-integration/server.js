@@ -220,7 +220,7 @@ app.get('/consulttransaction', (req, res) => {
       req.query.ORDERID +
       '", bankTxnId: "' +
       req.query.BANKTXNID +
-      '" }){appointment { id } }}',
+      '" }){appointment { id appointment{ id } } }}',
   };
   const fileName = process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptPayments.txt';
   let content =
