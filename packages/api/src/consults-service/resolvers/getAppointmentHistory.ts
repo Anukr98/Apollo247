@@ -55,6 +55,9 @@ export const getAppointmentHistoryTypeDefs = gql`
     isJdQuestionsComplete: Boolean
     isSeniorConsultStarted: Boolean
     paymentOrderId: String
+    couponCode: String
+    actualAmount: Float
+    discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
   }
 
@@ -126,6 +129,9 @@ type AppointmentHistory = {
   isJdQuestionsComplete: Boolean;
   isSeniorConsultStarted: Boolean;
   paymentOrderId: string;
+  couponCode: string;
+  actualAmount: number;
+  discountedAmount: number;
   appointmentPayments: AppointmentPayment[];
 };
 

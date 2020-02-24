@@ -54,7 +54,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
-      relations: ['appointment_payments'],
+      relations: ['appointmentPayments'],
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
