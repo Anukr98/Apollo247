@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowRadius: 2,
     shadowOpacity: 0.2,
-    elevation: 10,
+    elevation: 0,
     backgroundColor: 'white',
   },
 });
@@ -1049,7 +1049,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             styles.shadowview,
             showPopUp
               ? {
-                  // elevation: 1000,
+                  // elevation: 1,
                 }
               : {},
           ]}
@@ -1262,7 +1262,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             onPress: () => {
               setHideView(!hideView);
               setActiveTabIndex(tabsData[1].title);
-              startConsult && setShowPopUp(true);
+              startConsult && isAfter && setShowPopUp(true);
             },
           },
           {

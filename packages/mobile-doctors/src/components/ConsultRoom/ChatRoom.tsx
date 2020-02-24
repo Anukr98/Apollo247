@@ -535,10 +535,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <View
                   style={{
                     backgroundColor: 'transparent',
-                    width: 282,
                     borderRadius: 10,
                     marginVertical: 2,
-                    alignSelf: 'flex-end',
                   }}
                 >
                   {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
