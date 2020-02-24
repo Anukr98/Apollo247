@@ -30,9 +30,11 @@ import { useAuth } from 'hooks/authHooks';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import moment from 'moment';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
-import { GET_APPOINTMENT_DATA } from 'graphql/consult';
+// import { useApolloClient } from 'react-apollo-hooks';
+import _find from 'lodash/find';
+import { getAppStoreLink } from 'helpers/dateHelpers';
+// import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
+// import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 
@@ -315,7 +317,7 @@ export const Appointments: React.FC = (props) => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
   const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : null;
-  const client = useApolloClient();
+  // const client = useApolloClient();
   // console.log(urlParams, 'url params.....', urlParams.get('apptidkkkk'));
 
   // const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
@@ -323,7 +325,12 @@ export const Appointments: React.FC = (props) => {
   // const mascotRef = useRef(null);
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  // const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
+  const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
+  const [specialtyName, setSpecialtyName] = React.useState<string>('');
+  const [photoUrl, setPhotoUrl] = React.useState<string>('');
+  const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
+
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables
@@ -386,6 +393,38 @@ export const Appointments: React.FC = (props) => {
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
     return compareDate > appointmentTime;
   });
+
+  useEffect(() => {
+    if (availableAppointments.length > 0 && successApptId !== '' && !isConfirmPopupLoaded) {
+      const isAppointmentAvailable = _find(
+        availableAppointments,
+        (appointmentDetails) => appointmentDetails.id === successApptId
+      );
+
+      if (isAppointmentAvailable && Object.keys(isAppointmentAvailable).length > 0) {
+        const doctorName =
+          isAppointmentAvailable.doctorInfo && isAppointmentAvailable.doctorInfo.fullName
+            ? isAppointmentAvailable.doctorInfo.fullName
+            : '';
+        const photoUrl =
+          isAppointmentAvailable.doctorInfo && isAppointmentAvailable.doctorInfo.photoUrl
+            ? isAppointmentAvailable.doctorInfo.photoUrl
+            : '';
+        const specialty =
+          isAppointmentAvailable.doctorInfo &&
+          isAppointmentAvailable.doctorInfo.specialty &&
+          isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
+            ? isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
+            : '';
+        setAppointmentDoctorName(doctorName);
+        setSpecialtyName(specialty);
+        setPhotoUrl(photoUrl);
+        setIsConfirmedPopoverOpen(true);
+        setIsConfirmPopupLoaded(true);
+        // console.log(isAppointmentAvailable);
+      }
+    }
+  }, [availableAppointments, successApptId, isConfirmPopupLoaded]);
 
   // console.log(availableAppointments, 'available appointments....', pastAppointments);
 
@@ -560,7 +599,7 @@ export const Appointments: React.FC = (props) => {
         </div>
       </div>
 
-      {/* <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
+      <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
         <AphDialogClose onClick={() => setIsConfirmedPopoverOpen(false)} />
         <AphDialogTitle>Confirmed</AphDialogTitle>
         <div className={classes.messageBox}>
@@ -568,26 +607,27 @@ export const Appointments: React.FC = (props) => {
             <div className={classes.doctorInfo}>
               <Avatar alt="" src={require('images/dp_03.png')} className={classes.bigAvatar} />
               <div className={classes.doctorText}>
-                <div className={classes.drName}>Dr. Simran Rai</div>
-                <div className={classes.specality}>General Physician</div>
+                <div className={classes.drName}>{appointmentDoctorName}</div>
+                <div className={classes.specality}>{specialtyName}</div>
               </div>
             </div>
             <div className={classes.appLogo}>
-              <img src={require('images/ic_logo.png')} />
+              <img src={photoUrl} />
             </div>
           </div>
           <p>
-            Your consultation with Dr. Simran Rai is confirmed. Thank you for choosing Apollo 247.
+            Your consultation with {appointmentDoctorName} is confirmed. Thank you for choosing
+            Apollo 247.
           </p>
           <p className={classes.borderText}>
-            We shared your details with Dr. Simran’s team. Please download the app to continue with
-            the consultation.
+            We shared your details with {appointmentDoctorName}'s team. Please download the app to
+            continue with the consultation.
           </p>
-          <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
+          <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
             Download Apollo247 App
           </a>
         </div>
-      </AphDialog> */}
+      </AphDialog>
 
       {/* <Popover
         open={isPopoverOpen}
