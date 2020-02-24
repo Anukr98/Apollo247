@@ -616,7 +616,7 @@ export const ChatRoom: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
               {/* <Typography variant="h2">hi! :)</Typography> */}
@@ -667,7 +667,7 @@ export const ChatRoom: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
               <p>Hi! :)</p>
@@ -693,7 +693,7 @@ export const ChatRoom: React.FC = (props) => {
           }}
         >
           <div className={classes.mascotIconFeedback}>
-            <img src={require('images/ic_mascot.png')} alt="" />
+            <img src={require('images/ic-mascot.png')} alt="" />
           </div>
         </div>
       </div>
@@ -713,7 +713,7 @@ export const ChatRoom: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
               <div className={classes.windowBody}>
@@ -824,7 +824,7 @@ export const ChatRoom: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
               <Typography variant="h2">Send Note</Typography>

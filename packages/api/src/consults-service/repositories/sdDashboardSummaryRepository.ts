@@ -14,13 +14,16 @@ import {
   CASESHEET_STATUS,
   TRANSFER_INITIATED_TYPE,
   CurrentAvailabilityStatus,
+  utilizationCapacity,
 } from 'consults-service/entities';
-import { format, addDays, differenceInMinutes } from 'date-fns';
-import { ConsultMode, DoctorType } from 'doctors-service/entities';
+
+import { format, addDays, differenceInMinutes, addMinutes, isWithinInterval } from 'date-fns';
+import { ConsultMode, DoctorType, WeekDay, Doctor } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentSessions } from 'consults-service/entities';
+import { ConsultHours } from 'doctors-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
 type NewPatientCount = {
@@ -33,6 +36,10 @@ type Archive = {
 };
 type CasesheetPrepTime = {
   totaltime: number;
+  totalrows: number;
+};
+type TotalConsultation = {
+  totalduration: number;
   totalrows: number;
 };
 
@@ -371,7 +378,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       return 0;
     }
   }
-
   getFollowUpBookedCount(doctorId: string, appointmentDate: Date, followUpType: string) {
     const newStartDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
@@ -406,7 +412,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     }
   }
-
   async getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
     const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
@@ -425,8 +430,14 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         });
         if (calldetails) {
           const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
-          const callFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
-          if (apptFormat === callFormat) {
+          const callStartTimeFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
+          const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
+          const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
+          const withInTime = isWithinInterval(new Date(callStartTimeFormat), {
+            start: new Date(apptFormat),
+            end: new Date(addingFiveMinutesFormat),
+          });
+          if (withInTime) {
             count = count + 1;
           }
         }
@@ -533,6 +544,32 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       return caseSheetRows.length;
     }
   }
+  async getTotalConsultationTime(selDate: Date, doctorId: string, needAvg: number) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    const caseSheetRows: TotalConsultation[] = await CaseSheet.createQueryBuilder('case_sheet')
+      .select([
+        'sum(case_sheet."preperationTimeInSeconds") as totalduration',
+        'count(case_sheet."preperationTimeInSeconds") as totalrows',
+      ])
+      .where('case_sheet."createdDate" between :fromDate and :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
+      .getRawMany();
+    if (caseSheetRows[0].totalrows > 0) {
+      const totalDurationInMins = parseFloat((caseSheetRows[0].totalduration / 60).toFixed(2));
+      if (needAvg == 0) {
+        return parseFloat((totalDurationInMins / caseSheetRows[0].totalrows).toFixed(2));
+      } else {
+        return totalDurationInMins;
+      }
+    } else {
+      return 0;
+    }
+  }
 }
 @EntityRepository(CurrentAvailabilityStatus)
 export class CurrentAvailStatusRepository extends Repository<CurrentAvailabilityStatus> {
@@ -548,13 +585,43 @@ export class CurrentAvailStatusRepository extends Repository<CurrentAvailability
       totalCount: totalDoc,
       onlineCount: onlineDoc,
     };
-    const specialityData = await this.find({ where: [{ specialityId }] });
-    if (specialityData.length > 0) {
-      this.update(specialityId, CurrentAvailabilityStatusData);
+    const specialityData = await this.findOne({ where: [{ specialityId }] });
+    if (specialityData) {
+      this.update(specialityData.id, CurrentAvailabilityStatusData);
     } else {
       return this.save(CurrentAvailabilityStatusData).catch((saveCurrentAvailabilityError) => {
         throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
           saveCurrentAvailabilityError,
+        });
+      });
+    }
+  }
+}
+@EntityRepository(utilizationCapacity)
+export class UtilizationCapacityRepository extends Repository<utilizationCapacity> {
+  async updateUtilization(
+    specialityId: string,
+    specialityName: string,
+    doctorSlots: number,
+    bookedSlots: number
+  ) {
+    const utilizationCapacityData: Partial<utilizationCapacity> = {
+      specialityId: specialityId,
+      specialtyName: specialityName,
+      doctorSlots: doctorSlots,
+      slotsBooked: bookedSlots,
+    };
+    const Data = await this.findOne({ where: [{ specialityId }] });
+    if (Data) {
+      this.update(Data.id, utilizationCapacityData).catch((utilizationError) => {
+        throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
+          utilizationError,
+        });
+      });
+    } else {
+      return this.save(utilizationCapacityData).catch((utilizationError) => {
+        throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
+          utilizationError,
         });
       });
     }

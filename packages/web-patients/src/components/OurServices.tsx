@@ -23,6 +23,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 8,
       paddingRight: 8,
       paddingBottom: 8,
+      [theme.breakpoints.down(560)]: {
+        width: '100%',
+      },
     },
     serviceItemIn: {
       padding: 10,
@@ -106,35 +109,35 @@ export const OurServices: React.FC = (props) => {
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
     },
-    {
-      title: `Buy Medicines`,
-      content: 'You can search by name or prescription.',
-      imgUrl: `${require('images/ic_medicines.png')}`,
-      action: { link: clientRoutes.medicines(), content: 'Search Medicine' },
-    },
-    {
-      title: 'Order Tests',
-      content: 'Get your tests/diagnostics booked here.',
-      imgUrl: `${require('images/ic-tests.svg')}`,
-      action: { link: '', content: 'Book a test' },
-    },
-    {
-      title: 'Manage Diabetes',
-      content: 'Learn about our Start Doctors Program.',
-      imgUrl: `${require('images/ic-diabetes.svg')}`,
-      action: { link: '', content: 'Who are star doctors' },
-    },
-    {
-      title: 'Track Symptoms',
-      content: 'Learn about our Start Doctors Program.',
-      imgUrl: `${require('images/ic-symptomtracker.svg')}`,
-      action: { link: '', content: 'Who are star doctors' },
-    },
+    // {
+    //   title: `Buy Medicines`,
+    //   content: 'You can search by name or prescription.',
+    //   imgUrl: `${require('images/ic_medicines.png')}`,
+    //   action: { link: clientRoutes.medicines(), content: 'Search Medicine' },
+    // },
+    // {
+    //   title: 'Order Tests',
+    //   content: 'Get your tests/diagnostics booked here.',
+    //   imgUrl: `${require('images/ic-tests.svg')}`,
+    //   action: { link: '', content: 'Book a test' },
+    // },
+    // {
+    //   title: 'Manage Diabetes',
+    //   content: 'Learn about our Start Doctors Program.',
+    //   imgUrl: `${require('images/ic-diabetes.svg')}`,
+    //   action: { link: '', content: 'Who are star doctors' },
+    // },
+    // {
+    //   title: 'Track Symptoms',
+    //   content: 'Learn about our Start Doctors Program.',
+    //   imgUrl: `${require('images/ic-symptomtracker.svg')}`,
+    //   action: { link: '', content: 'Who are star doctors' },
+    // },
     {
       title: 'View Health Records',
       content: 'Learn about our Start Doctors Program.',
       imgUrl: `${require('images/ic-prescription.svg')}`,
-      action: { link: '', content: 'Who are star doctors' },
+      action: { link: clientRoutes.healthRecords(), content: 'Who are star doctors' },
     },
   ];
 

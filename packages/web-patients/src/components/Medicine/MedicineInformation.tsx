@@ -553,7 +553,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <MedicineNotifyPopover medicineName={data.name} setIsPopoverOpen={setIsPopoverOpen} />
           </div>

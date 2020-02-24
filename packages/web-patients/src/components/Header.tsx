@@ -4,9 +4,9 @@ import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import { AphButton } from '@aph/web-ui-components';
+// import Dialog from '@material-ui/core/Dialog';
+// import DialogContent from '@material-ui/core/DialogContent';
+// import { AphButton } from '@aph/web-ui-components';
 import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
@@ -16,6 +16,7 @@ import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { AppLocations } from './AppLocations';
 import { LocationProvider } from 'components/LocationProvider';
 import { MedicinesCartProvider, MedicinesCartContext } from 'components/MedicinesCartProvider';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.down(990)]: {
+      [theme.breakpoints.down(900)]: {
         display: 'none',
       },
     },
@@ -88,10 +89,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccountLogin: {
-      marginLeft: 'auto',
-      [theme.breakpoints.down(990)]: {
-        display: 'block',
-      },
+      display: 'flex',
+      alignItems: 'center',
     },
     userCircle: {
       display: 'flex',
@@ -134,6 +133,42 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 15,
       },
     },
+    headerRightGroup: {
+      marginLeft: 'auto',
+      display: 'flex',
+      alignItems: 'center',
+    },
+    appLogin: {
+      marginLeft: 0,
+    },
+    appDownloadBtn: {
+      paddingLeft: 20,
+      paddingRight: 20,
+      textAlign: 'center',
+      '& a': {
+        backgroundColor: '#fcb716',
+        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+        borderRadius: 5,
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 'bold',
+        padding: '4px 12px',
+        display: 'block',
+      },
+    },
+    preAppLogin: {
+      paddingRight: 0,
+    },
+    loginLinks: {
+      color: '#02475b',
+      fontSize: 13,
+      fontWeight: 'bold',
+      paddingRight: 10,
+      cursor: 'pointer',
+      [theme.breakpoints.down(520)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -163,78 +198,96 @@ export const Header: React.FC = (props) => {
           {isSignedIn && (
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           )}
-          <div
-            className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
-              currentPath === clientRoutes.myAccount() || currentPath === clientRoutes.addressBook()
-                ? classes.userAccountActive
-                : ''
-            }`}
-          >
-            {isSignedIn ? (
-              <Link
-                className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                to={clientRoutes.myAccount()}
-              >
-                {isSigningIn ? (
-                  <CircularProgress />
-                ) : (
-                  <img src={require('images/ic_account.svg')} />
-                )}
-              </Link>
-            ) : (
-              <ProtectedWithLoginPopup>
-                {({ protectWithLoginPopup }) => (
-                  <div
-                    className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                    onClick={() =>
-                      isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+          <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
+            <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
+              <a href={getAppStoreLink()} target="_blank">
+                Download Apollo247 App
+              </a>
+            </div>
+            <div
+              className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
+                currentPath === clientRoutes.myAccount() ||
+                currentPath === clientRoutes.addressBook()
+                  ? classes.userAccountActive
+                  : ''
+              }`}
+            >
+              {isSignedIn ? (
+                <Link
+                  className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                  to={clientRoutes.myAccount()}
+                >
+                  {isSigningIn ? (
+                    <CircularProgress />
+                  ) : (
+                    <img src={require('images/ic_account.svg')} />
+                  )}
+                </Link>
+              ) : (
+                <ProtectedWithLoginPopup>
+                  {({ protectWithLoginPopup }) => (
+                    <>
+                      <div
+                        onClick={() =>
+                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                        }
+                        className={classes.loginLinks}
+                      >
+                        Login/SignUp
+                      </div>
+                      <div
+                        className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                        onClick={() =>
+                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                        }
+                        ref={avatarRef}
+                      >
+                        {isSigningIn ? (
+                          <CircularProgress />
+                        ) : (
+                          <img src={require('images/ic_account.svg')} />
+                        )}
+                      </div>
+                    </>
+                  )}
+                </ProtectedWithLoginPopup>
+              )}
+              {isSignedIn ? (
+                ''
+              ) : (
+                <Popover
+                  open={isLoginPopupVisible}
+                  anchorEl={avatarRef.current}
+                  onClose={() => {
+                    const otpAfterCleaning = otp.replace(/,/g, '');
+                    if (
+                      mobileNumber.length === 0 ||
+                      (mobileNumber.length === 10 && otpAfterCleaning.length === 0)
+                    ) {
+                      setIsLoginPopupVisible(false);
                     }
-                    ref={avatarRef}
-                  >
-                    {isSigningIn ? (
-                      <CircularProgress />
-                    ) : (
-                      <img src={require('images/ic_account.svg')} />
-                    )}
-                  </div>
-                )}
-              </ProtectedWithLoginPopup>
-            )}
-            {isSignedIn ? (
-              ''
-            ) : (
-              <Popover
-                open={isLoginPopupVisible}
-                anchorEl={avatarRef.current}
-                onClose={() => {
-                  const otpAfterCleaning = otp.replace(/,/g, '');
-                  if (
-                    mobileNumber.length === 0 ||
-                    (mobileNumber.length === 10 && otpAfterCleaning.length === 0)
-                  ) {
-                    setIsLoginPopupVisible(false);
-                  }
-                }}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                classes={{ paper: classes.topPopover }}
-              >
-                <Paper className={classes.loginForm}>
-                  <SignIn
-                    setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
-                    setOtp={(otp: string) => setOtp(otp)}
-                    mobileNumber={mobileNumber}
-                    otp={otp}
-                  />
-                </Paper>
-              </Popover>
-            )}
+                  }}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  classes={{ paper: classes.topPopover }}
+                >
+                  <Paper className={classes.loginForm}>
+                    <SignIn
+                      setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
+                      setOtp={(otp: string) => setOtp(otp)}
+                      mobileNumber={mobileNumber}
+                      otp={otp}
+                    />
+                  </Paper>
+                </Popover>
+              )}
+            </div>
           </div>
         </header>
       </div>

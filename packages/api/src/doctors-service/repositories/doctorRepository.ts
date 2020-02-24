@@ -732,7 +732,6 @@ export class DoctorRepository extends Repository<Doctor> {
         'doctor.specialty = :specialty',
         { specialty }
       );
-
       const doctorsResult = await queryBuilder.getMany();
       return doctorsResult.length;
     } else {
@@ -740,7 +739,6 @@ export class DoctorRepository extends Repository<Doctor> {
         'doctor.specialty = :specialty',
         { specialty }
       );
-
       const doctorsResult = await queryBuilder.getMany();
       const doc: Doctor[] = [];
       await doctorsResult.map((doctor) => {
@@ -750,5 +748,12 @@ export class DoctorRepository extends Repository<Doctor> {
       });
       return doc.length;
     }
+  }
+  async getSpecialityDoctors(specialty: string) {
+    const queryBuilder = this.createQueryBuilder('doctor').where('doctor.specialty = :specialty', {
+      specialty,
+    });
+    const doctorsResult = await queryBuilder.getMany();
+    return doctorsResult;
   }
 }

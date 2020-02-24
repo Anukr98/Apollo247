@@ -185,8 +185,8 @@ export const DoctorsLanding: React.FC = (props) => {
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
-  const isLargeScreen = useMediaQuery('(min-width:991px)');
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
+  const isLargeScreen = useMediaQuery('(min-width:901px)');
 
   let showError = false;
   //   matchingDoctorsFound = 0,

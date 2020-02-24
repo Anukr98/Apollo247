@@ -382,10 +382,14 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
-    const cancelApptSMS =
-      notificationBody + ' ' + 'Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : ' ' + ApiConstants.PATIENT_CANCEL_APPT_BODY_END;
+    let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here' +
+        process.env.SMS_LINK_BOOK_APOINTMENT +
+        ' ' +
+        ApiConstants.PATIENT_CANCEL_APPT_BODY_END
+      : '';
+    cancelApptSMS = notificationBody + cancelApptSMS;
+
     console.log('cancelApptSMS======================', cancelApptSMS);
     sendNotificationSMS(patientDetails.mobileNumber, cancelApptSMS ? cancelApptSMS : '');
     //send sms to doctor
@@ -401,10 +405,10 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const smsLink =
-      notificationBody + ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
+    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
@@ -417,10 +421,10 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const smsLink =
-      notificationBody + ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
+    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
@@ -433,11 +437,10 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    const smsLink =
-      notificationBody + ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
-        ? process.env.SMS_LINK_BOOK_APOINTMENT
-        : '';
-
+    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Click here' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     const transferRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
@@ -926,6 +929,7 @@ export async function sendReminderNotification(
       );
       doctorSMS = doctorSMS.replace('{1}', patientDetails.firstName);
     }
+    console.log('doctorSMS=======================', doctorSMS);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
   } else if (
@@ -1055,7 +1059,12 @@ export async function sendReminderNotification(
   console.log(notificationResponse, 'notificationResponse');
   if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15)
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
-
+  if (
+    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
+  ) {
+    const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
+    notificationBody = notificationBody + ' Click here ' + smsLink;
+  }
   //send SMS notification
   sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   return notificationResponse;
@@ -1281,9 +1290,8 @@ export async function sendPatientRegistrationNotification(
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
   let notificationBody: string = '';
   notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
-  let smsContent =
-    notificationBody + 'Click here ' + process.env.SMS_LINK ? process.env.SMS_LINK : '';
-
+  let smsContent = process.env.SMS_LINK ? ' Click here ' + process.env.SMS_LINK : '';
+  smsContent = notificationBody + smsContent;
   const payload = {
     notification: {
       title: notificationTitle,

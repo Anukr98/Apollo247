@@ -26,6 +26,12 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum AppointmentType {
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -352,6 +358,17 @@ export interface AppointmentHistoryInput {
   doctorId: string;
 }
 
+export interface AppointmentPaymentInput {
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId?: string | null;
+  orderId?: string | null;
+}
+
 export interface BookAppointmentInput {
   patientId: string;
   doctorId: string;
@@ -361,6 +378,7 @@ export interface BookAppointmentInput {
   symptoms?: string | null;
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
+  couponCode?: string | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -451,6 +469,8 @@ export interface DoctorAvailabilityInput {
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
+  availableType?: APPOINTMENT_TYPE | null;
+  currentTimeInput?: any | null;
 }
 
 export interface DoctorPhysicalAvailabilityInput {

@@ -17,3 +17,54 @@ export const ADD_TO_CONSULT_QUEUE = gql`
     }
   }
 `;
+
+export const GET_APPOINTMENT_DATA = gql`
+  query GetAppointmentData($appointmentId: String!) {
+    getAppointmentData(appointmentId: $appointmentId) {
+      appointmentsHistory {
+        appointmentType
+        id
+        patientId
+        appointmentDateTime
+        status
+        hospitalId
+        doctorId
+        isFollowUp
+        displayId
+        rescheduleCount
+        appointmentState
+        isJdQuestionsComplete
+        isSeniorConsultStarted
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          displayName
+          fullName
+          experience
+          onlineConsultationFees
+          physicalConsultationFees
+          specialty {
+            name
+          }
+          qualification
+          city
+          photoUrl
+          thumbnailUrl
+          doctorType
+          doctorHospital {
+            facility {
+              id
+              name
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+            }
+          }
+        }
+      }
+    }
+  }
+`;

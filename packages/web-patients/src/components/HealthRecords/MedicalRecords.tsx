@@ -1,12 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, LinearProgress, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { useMutation } from 'react-apollo-hooks';
+
+import {
+  DELETE_PATIENT_MEDICAL_RECORD,
+  GET_MEDICAL_PRISM_RECORD,
+  GET_MEDICAL_RECORD,
+} from '../../graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getPatientMedicalRecords,
+  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords as MedicalRecordsType,
+} from '../../graphql/types/getPatientMedicalRecords';
+import {
+  getPatientPrismMedicalRecords,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests as LabTestsType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks as HealthChecksType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations as HospitalizationsType,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
+import moment from 'moment';
+import { RenderImage } from 'components/HealthRecords/RenderImage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -21,6 +44,11 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         padding: 0,
       },
+    },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
     },
     leftSection: {
       width: 328,
@@ -98,6 +126,24 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    tabsWrapper: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginLeft: 0,
+        marginRight: 0,
+        marginBottom: 0,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 15px',
+      },
+    },
+    addReportMobile: {
+      fontSize: 14,
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
     topFilters: {
       textAlign: 'right',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -106,11 +152,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 15,
       marginBottom: 10,
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-        marginLeft: 0,
-        marginRight: 0,
-        marginBottom: 0,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        flex: 1,
+        margin: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -188,6 +231,16 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    noRecordFoundWrapper: {
+      textAlign: 'center',
+      '& p': {
+        width: 260,
+        margin: 'auto',
+        fontWeight: 500,
+        fontSize: 14,
+        textAlign: 'left',
+      },
+    },
     cbcDetails: {
       backgroundColor: theme.palette.common.white,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
@@ -222,17 +275,6 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
     },
-    mobileOverlay: {
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        backgroundColor: '#f0f1ec',
-        zIndex: 991,
-      },
-    },
     headerBackArrow: {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
@@ -260,22 +302,194 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MedicalRecords: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [medicalRecords, setMedicalRecords] = useState<(MedicalRecordsType | null)[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [labTests, setLabTests] = useState<(LabTestsType | null)[] | null>(null);
+  const [healthChecks, setHealthChecks] = useState<(HealthChecksType | null)[] | null>(null);
+  const [hospitalizations, setHospitalizations] = useState<(HospitalizationsType | null)[] | null>(
+    null
+  );
+
+  const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
+  const [activeData, setActiveData] = useState<any | null>(null);
+
+  const fetchData = () => {
+    client
+      .query<getPatientMedicalRecords>({
+        query: GET_MEDICAL_RECORD,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        if (data && data.getPatientMedicalRecords && data.getPatientMedicalRecords.medicalRecords) {
+          setMedicalRecords(data.getPatientMedicalRecords.medicalRecords);
+        }
+      })
+      .catch((error) => {
+        alert(error);
+        setLoading(false);
+      });
+  };
+
+  const fetchTestData = () => {
+    client
+      .query<getPatientPrismMedicalRecords>({
+        query: GET_MEDICAL_PRISM_RECORD,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        if (data && data.getPatientPrismMedicalRecords) {
+          setLabTests(data.getPatientPrismMedicalRecords.labTests);
+          setHealthChecks(data.getPatientPrismMedicalRecords.healthChecks);
+          setHospitalizations(data.getPatientPrismMedicalRecords.hospitalizations);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        setLoading(false);
+      });
+  };
+
+  const sortByDate = (array: { type: string; data: any }[]) => {
+    return array.sort(({ data: data1 }, { data: data2 }) => {
+      let date1 = new Date(
+        data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
+      );
+      let date2 = new Date(
+        data2.testDate || data2.labTestDate || data2.appointmentDate || data2.dateOfHospitalization
+      );
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+    });
+  };
+
+  useEffect(() => {
+    if (!medicalRecords) {
+      setLoading(true);
+      fetchData();
+    }
+    if (!labTests || !healthChecks || !hospitalizations) {
+      fetchTestData();
+    }
+    if (medicalRecords && (labTests || healthChecks || hospitalizations)) {
+      let mergeArray: { type: string; data: any }[] = [];
+      medicalRecords.forEach((item) => {
+        mergeArray.push({ type: 'medical', data: item });
+      });
+      labTests &&
+        labTests.forEach((item) => {
+          mergeArray.push({ type: 'lab', data: item });
+        });
+      healthChecks &&
+        healthChecks.forEach((item) => {
+          mergeArray.push({ type: 'health', data: item });
+        });
+      hospitalizations &&
+        hospitalizations.forEach((item) => {
+          mergeArray.push({ type: 'hospital', data: item });
+        });
+      const sortedData = sortByDate(mergeArray);
+      setAllCombinedData(sortedData);
+      setActiveData(sortedData[0]);
+      // setFilteredData(sortedData);
+      setLoading(false);
+    }
+  }, [medicalRecords, labTests, healthChecks, hospitalizations]);
+
+  const getFormattedDate = (combinedData: any) => {
+    switch (combinedData.type) {
+      case 'medical':
+        return moment(combinedData.data.testDate).format('DD MMM YYYY');
+      case 'lab':
+        return moment(combinedData.data.labTestDate).format('DD MMM YYYY');
+      case 'hospital':
+        return moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY');
+      case 'health':
+        return moment(combinedData.data.appointmentDate).format('DD MMM YYYY');
+      default:
+        return '';
+    }
+  };
+
+  const getName = (combinedData: any) => {
+    switch (combinedData.type) {
+      case 'medical':
+        return (
+          combinedData.data.testName ||
+          combinedData.data.issuingDoctor ||
+          combinedData.data.location
+        );
+      case 'lab':
+        return combinedData.data.labTestName;
+      case 'hospital':
+        return combinedData.data.diagnosisNotes;
+      case 'health':
+        return combinedData.data.healthCheckName;
+      default:
+        return '';
+    }
+  };
+
+  const getSource = () => {
+    switch (activeData.type) {
+      case 'medical':
+        return !!activeData.data.sourceName ? activeData.data.sourceName : '-';
+      case 'lab':
+        return !!activeData.data.labTestSource ? activeData.data.labTestSource : '-';
+      case 'hospital':
+      case 'health':
+        return !!activeData.data.source ? activeData.data.source : '-';
+      default:
+        return '-';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={classes.loader}>
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
+
+  const deleteReport = (id: string) => {
+    deleteReportMutation({
+      variables: { recordId: id },
+      fetchPolicy: 'no-cache',
+    })
+      .then((_data) => {
+        const newRecords =
+          medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
+        setMedicalRecords(newRecords);
+      })
+      .catch((e) => {
+        console.log('Error occured while render Delete MedicalOrder', { e });
+      });
+  };
 
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        <div className={classes.topFilters}>
-          <AphButton className={classes.buttonActive}>All Consults</AphButton>
-          <AphButton>Online</AphButton>
-          <AphButton>Physical</AphButton>
+        <div className={classes.tabsWrapper}>
+          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+            <img src={require('images/ic_addfile.svg')} />
+          </Link>
         </div>
         <Scrollbars
           autoHide={true}
           autoHeight
-          autoHeightMax={
+          autoHeightMin={
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
@@ -284,49 +498,37 @@ export const MedicalRecords: React.FC = (props) => {
           }
         >
           <div className={classes.consultationsList}>
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 12 Aug 2019</span>
-            </div>
-            <MedicalCard />
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 9 Aug 2019</span>
-            </div>
-            <MedicalCard />
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 6 Aug 2019</span>
-            </div>
-            <MedicalCard />
-            <div className={classes.consultGroupHeader}>
-              <div className={classes.circle}></div>
-              <span>Today, 6 Aug 2019</span>
-            </div>
-            <MedicalCard />
+            {allCombinedData &&
+              allCombinedData.length > 0 &&
+              allCombinedData.map((combinedData: any, idx: number) => (
+                <div key={idx} onClick={() => setActiveData(combinedData)}>
+                  <div className={classes.consultGroupHeader}>
+                    <div className={classes.circle}></div>
+                    <span>{getFormattedDate(combinedData)}</span>
+                  </div>
+                  <MedicalCard
+                    deleteReport={deleteReport}
+                    name={getName(combinedData)}
+                    id={combinedData.data.id}
+                    isActiveCard={activeData === combinedData}
+                  />
+                </div>
+              ))}
           </div>
         </Scrollbars>
         <div className={classes.addReportActions}>
-          <AphButton color="primary" fullWidth>
+          <AphButton
+            color="primary"
+            onClick={() => {
+              window.location.href = clientRoutes.addRecords();
+            }}
+            fullWidth
+          >
             Add a Report
           </AphButton>
         </div>
       </div>
-      <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
-        <div className={classes.sectionHeader}>
-          <div className={classes.headerBackArrow}>
-            <AphButton>
-              <img src={require('images/ic_back.svg')} />
-            </AphButton>
-            <span>CBC Details</span>
-          </div>
-          <div className={classes.headerActions}>
-            <AphButton>View Consult</AphButton>
-            <div className={classes.downloadIcon}>
-              <img src={require('images/ic_download.svg')} alt="" />
-            </div>
-          </div>
-        </div>
+      <div className={`${classes.rightSection}`}>
         <Scrollbars
           autoHide={true}
           autoHeight
@@ -338,24 +540,64 @@ export const MedicalRecords: React.FC = (props) => {
               : 'calc(100vh - 245px)'
           }
         >
-          <div className={classes.medicalRecordsDetails}>
-            <div className={classes.cbcDetails}>
-              <div className={classes.reportsDetails}>
-                <label>Check-up Date</label>
-                <p>03 May 2019</p>
+          {activeData ? (
+            <>
+              <div className={classes.sectionHeader}>
+                <div className={classes.headerBackArrow}>
+                  <AphButton>
+                    <img src={require('images/ic_back.svg')} />
+                  </AphButton>
+                  <span>CBC Details</span>
+                </div>
               </div>
-              <div className={classes.reportsDetails}>
-                <label>Source</label>
-                <p>Apollo Hospital, Jubilee Hills</p>
+              <div className={classes.medicalRecordsDetails}>
+                <div className={classes.cbcDetails}>
+                  <div className={classes.reportsDetails}>
+                    <label>Check-up Date</label>
+                    <p>{getFormattedDate(activeData)}</p>
+                  </div>
+                  <div className={classes.reportsDetails}>
+                    <label>Source</label>
+                    <p>{getSource()}</p>
+                  </div>
+                  <div className={classes.reportsDetails}>
+                    <label>Referring Doctor</label>
+                    <p>
+                      {!!activeData.data.referringDoctor
+                        ? activeData.data.referringDoctor
+                        : !!activeData.data.signingDocName
+                        ? activeData.data.signingDocName
+                        : '-'}
+                    </p>
+                  </div>
+                </div>
+                {(activeData.data.observations ||
+                  activeData.data.additionalNotes ||
+                  activeData.data.healthCheckSummary) && <ToplineReport activeData={activeData} />}
+                {((activeData.data.medicalRecordParameters &&
+                  activeData.data.medicalRecordParameters.length > 0) ||
+                  (activeData.data.labTestResultParameters &&
+                    activeData.data.labTestResultParameters.length > 0)) && (
+                  <DetailedFindings activeData={activeData} />
+                )}
+                {activeData.data &&
+                  (activeData.data.prismFileIds ||
+                    activeData.data.hospitalizationPrismFileIds ||
+                    activeData.data.healthCheckPrismFileIds ||
+                    activeData.data.testResultPrismFileIds) && (
+                    <RenderImage activeData={activeData} />
+                  )}
               </div>
-              <div className={classes.reportsDetails}>
-                <label>Referring Doctor</label>
-                <p>Dr. Simran Rai</p>
-              </div>
+            </>
+          ) : (
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy
+                in one place!
+              </p>
             </div>
-            <ToplineReport />
-            <DetailedFindings />
-          </div>
+          )}
         </Scrollbars>
       </div>
     </div>

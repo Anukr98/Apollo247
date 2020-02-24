@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
-      [theme.breakpoints.up(990)]: {
+      [theme.breakpoints.up(900)]: {
         marginBottom: 20,
       },
     },
@@ -463,7 +463,7 @@ export const MedicineLanding: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
           </div>
@@ -485,7 +485,7 @@ export const MedicineLanding: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <OrderPlaced
               orderAutoId={params.orderAutoId}

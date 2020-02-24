@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, LinearProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { DoctorConsultCard } from 'components/HealthRecords/DoctorConsultCard';
@@ -36,6 +36,11 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         padding: 0,
       },
+    },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
     },
     leftSection: {
       width: 328,
@@ -113,6 +118,23 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    tabsWrapper: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginLeft: 0,
+        marginRight: 0,
+        marginBottom: 0,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 15px',
+      },
+    },
+    addReportMobile: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
     topFilters: {
       textAlign: 'right',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
@@ -121,11 +143,8 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 15,
       marginBottom: 10,
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-        marginLeft: 0,
-        marginRight: 0,
-        marginBottom: 0,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        flex: 1,
+        margin: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -139,6 +158,16 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'none',
         borderBottom: '5px solid #fff',
         minWidth: 'auto',
+      },
+    },
+    noRecordFoundWrapper: {
+      textAlign: 'center',
+      '& p': {
+        width: 260,
+        margin: 'auto',
+        fontWeight: 500,
+        fontSize: 14,
+        textAlign: 'left',
       },
     },
     buttonActive: {
@@ -157,13 +186,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div:last-child >div': {
         position: 'relative',
         '&:before': {
-          position: 'absolute',
-          content: '""',
-          left: -29,
-          top: -24,
-          width: 4,
-          height: '200%',
-          backgroundColor: theme.palette.common.white,
           [theme.breakpoints.down('xs')]: {
             backgroundColor: '#f0f1ec',
           },
@@ -194,6 +216,9 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 20,
         paddingBottom: 10,
       },
+    },
+    prescriptionImage: {
+      width: '100%',
     },
     addReportActions: {
       paddingLeft: 15,
@@ -356,7 +381,11 @@ export const Consultations: React.FC = (props) => {
   }, [filter, allConsultsData]);
 
   if (loading) {
-    return <LinearProgress />;
+    return (
+      <div className={classes.loader}>
+        <CircularProgress />
+      </div>
+    );
   }
   if (error) {
     return <div>Error occured while fetching Heath records...</div>;
@@ -391,30 +420,35 @@ export const Consultations: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        <div className={classes.topFilters}>
-          <AphButton
-            className={filter === 'ALL' ? classes.buttonActive : ''}
-            onClick={() => setFilter('ALL')}
-          >
-            All Consults
-          </AphButton>
-          <AphButton
-            className={filter === 'ONLINE' ? classes.buttonActive : ''}
-            onClick={() => setFilter('ONLINE')}
-          >
-            Online
-          </AphButton>
-          <AphButton
-            className={filter === 'PHYSICAL' ? classes.buttonActive : ''}
-            onClick={() => setFilter('PHYSICAL')}
-          >
-            Physical
-          </AphButton>
+        <div className={classes.tabsWrapper}>
+          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+            <img src={require('images/ic_addfile.svg')} />
+          </Link>
+          <div className={classes.topFilters}>
+            <AphButton
+              className={filter === 'ALL' ? classes.buttonActive : ''}
+              onClick={() => setFilter('ALL')}
+            >
+              All Consults
+            </AphButton>
+            <AphButton
+              className={filter === 'ONLINE' ? classes.buttonActive : ''}
+              onClick={() => setFilter('ONLINE')}
+            >
+              Online
+            </AphButton>
+            <AphButton
+              className={filter === 'PHYSICAL' ? classes.buttonActive : ''}
+              onClick={() => setFilter('PHYSICAL')}
+            >
+              Physical
+            </AphButton>
+          </div>
         </div>
         <Scrollbars
           autoHide={true}
           autoHeight
-          autoHeightMax={
+          autoHeightMin={
             isMediumScreen
               ? 'calc(100vh - 364px)'
               : isSmallScreen
@@ -426,9 +460,9 @@ export const Consultations: React.FC = (props) => {
             {consultsData &&
               consultsData.length > 0 &&
               consultsData.map(
-                (consult) =>
+                (consult, idx) =>
                   consult && (
-                    <div onClick={() => setActiveConsult(consult)}>
+                    <div key={idx} onClick={() => setActiveConsult(consult)}>
                       <div className={classes.consultGroupHeader}>
                         <div className={classes.circle}></div>
                         {consult.patientId
@@ -451,7 +485,7 @@ export const Consultations: React.FC = (props) => {
           </Link>
         </div>
       </div>
-      <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
+      <div className={classes.rightSection}>
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
             <AphButton>
@@ -488,8 +522,16 @@ export const Consultations: React.FC = (props) => {
                 {/* <PaymentInvoice />
                 <PrescriptionPreview /> */}
               </>
+            ) : activeConsult ? (
+              <img className={classes.prescriptionImage} src={activeConsult.prescriptionImageUrl} />
             ) : (
-              activeConsult && <img src={activeConsult.prescriptionImageUrl} />
+              <div className={classes.noRecordFoundWrapper}>
+                <img src={require('images/ic_records.svg')} />
+                <p>
+                  You don’t have any records with us right now. Add a record to keep everything
+                  handy in one place!
+                </p>
+              </div>
             )}
           </div>
         </Scrollbars>

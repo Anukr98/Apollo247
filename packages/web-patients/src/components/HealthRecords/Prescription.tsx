@@ -53,6 +53,13 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '100%',
     },
+    noWrapper: {
+      padding: '0 10px',
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      textTransform: 'uppercase',
+    },
     cardTitle: {
       fontSize: 14,
       fontWeight: 500,
@@ -206,79 +213,81 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          {prescriptions && prescriptions.length > 0
-            ? prescriptions.map((prescription: PrescriptionType, idx: number) => (
-                <Grid key={idx} item xs={12} sm={6}>
-                  <div className={classes.cardTitle}>{prescription.medicineName}</div>
-                  {prescription && (
-                    <div className={classes.cardSection}>
-                      {prescription.medicineUnit && prescription.medicineFormTypes == 'OTHERS'
-                        ? 'Take ' +
-                          prescription.medicineDosage +
-                          ' ' +
-                          prescription.medicineUnit.toLowerCase() +
-                          ' (s)' +
-                          ' '
-                        : 'Apply ' + prescription &&
-                          prescription.medicineUnit &&
-                          prescription.medicineUnit.toLowerCase() + ' '}
+          {prescriptions && prescriptions.length > 0 ? (
+            prescriptions.map((prescription: PrescriptionType, idx: number) => (
+              <Grid key={idx} item xs={12} sm={6}>
+                <div className={classes.cardTitle}>{prescription.medicineName}</div>
+                {prescription && (
+                  <div className={classes.cardSection}>
+                    {prescription.medicineUnit && prescription.medicineFormTypes == 'OTHERS'
+                      ? 'Take ' +
+                        prescription.medicineDosage +
+                        ' ' +
+                        prescription.medicineUnit.toLowerCase() +
+                        ' (s)' +
+                        ' '
+                      : 'Apply ' + prescription &&
+                        prescription.medicineUnit &&
+                        prescription.medicineUnit.toLowerCase() + ' '}
 
-                      {prescription.medicineFrequency! &&
-                        prescription.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
-                          ' '}
-                      {prescription.medicineToBeTaken
-                        ? prescription.medicineToBeTaken
-                            .map(
-                              (item: MEDICINE_TO_BE_TAKEN | null) =>
-                                item &&
-                                item
-                                  .split('_')
-                                  .join(' ')
-                                  .toLowerCase()
-                            )
-                            .join(', ')
-                        : ''}
-                      {prescription.medicineTimings && prescription.medicineTimings.length > 0
-                        ? ' in the '
-                        : ''}
-                      {prescription.medicineTimings
-                        ? prescription.medicineTimings
-                            .map(
-                              (item: MEDICINE_TIMINGS | null) =>
-                                item &&
-                                item
-                                  .split('_')
-                                  .join(' ')
-                                  .toLowerCase()
-                            )
-                            .map(
-                              (val: string | null, idx: number, array: (string | null)[]) =>
-                                val &&
-                                array &&
-                                `${val}${
-                                  idx == array.length - 2
-                                    ? ' and '
-                                    : idx > array.length - 2
-                                    ? ''
-                                    : ', '
-                                }`
-                            )
-                        : ''}
+                    {prescription.medicineFrequency! &&
+                      prescription.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
+                        ' '}
+                    {prescription.medicineToBeTaken
+                      ? prescription.medicineToBeTaken
+                          .map(
+                            (item: MEDICINE_TO_BE_TAKEN | null) =>
+                              item &&
+                              item
+                                .split('_')
+                                .join(' ')
+                                .toLowerCase()
+                          )
+                          .join(', ')
+                      : ''}
+                    {prescription.medicineTimings && prescription.medicineTimings.length > 0
+                      ? ' in the '
+                      : ''}
+                    {prescription.medicineTimings
+                      ? prescription.medicineTimings
+                          .map(
+                            (item: MEDICINE_TIMINGS | null) =>
+                              item &&
+                              item
+                                .split('_')
+                                .join(' ')
+                                .toLowerCase()
+                          )
+                          .map(
+                            (val: string | null, idx: number, array: (string | null)[]) =>
+                              val &&
+                              array &&
+                              `${val}${
+                                idx == array.length - 2
+                                  ? ' and '
+                                  : idx > array.length - 2
+                                  ? ''
+                                  : ', '
+                              }`
+                          )
+                      : ''}
 
-                      {prescription.medicineInstructions
-                        ? '\n' + prescription.medicineInstructions
-                        : ''}
-                      {prescription.medicineConsumptionDurationInDays == ''
-                        ? ''
-                        : prescription.medicineConsumptionDurationInDays &&
-                          prescription.medicineConsumptionDurationInDays === '1'
-                        ? ' for ' + prescription.medicineConsumptionDurationInDays! + ' day'
-                        : ' for ' + prescription.medicineConsumptionDurationInDays! + ' days'}
-                    </div>
-                  )}
-                </Grid>
-              ))
-            : 'No Prescription'}
+                    {prescription.medicineInstructions
+                      ? '\n' + prescription.medicineInstructions
+                      : ''}
+                    {prescription.medicineConsumptionDurationInDays == ''
+                      ? ''
+                      : prescription.medicineConsumptionDurationInDays &&
+                        prescription.medicineConsumptionDurationInDays === '1'
+                      ? ' for ' + prescription.medicineConsumptionDurationInDays! + ' day'
+                      : ' for ' + prescription.medicineConsumptionDurationInDays! + ' days'}
+                  </div>
+                )}
+              </Grid>
+            ))
+          ) : (
+            <div className={classes.noWrapper}>No Prescription</div>
+          )}
         </Grid>
         {prescriptions && prescriptions.length > 0 && (
           <div className={classes.bottomActions}>

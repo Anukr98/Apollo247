@@ -1,14 +1,17 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
-import React from 'react';
+import { Theme, Popover } from '@material-ui/core';
+import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
-import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+// import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { OurServices } from 'components/OurServices';
+import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
+import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
+import { MascotWithMessage } from './MascotWithMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -17,6 +20,17 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
       },
     },
     bannerInfo: {
@@ -28,6 +42,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         width: 400,
         padding: 40,
+      },
+      [theme.breakpoints.up(900)]: {
+        minHeight: 420,
       },
       '& p': {
         fontSize: 17,
@@ -63,6 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         maxWidth: '100%',
+        verticalAlign: 'middle',
       },
     },
     menuSelected: {
@@ -117,23 +135,22 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
-    mobileImg: {
-      display: 'none',
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-      },
-    },
-    desktopImg: {
-      display: 'none',
-      [theme.breakpoints.up('sm')]: {
-        display: 'block',
-      },
-    },
     loginHeroBanner: {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
     },
     loginbannerImg: {
       bottom: 0,
+    },
+    desktopBanner: {
+      display: 'none',
+      [theme.breakpoints.up('sm')]: {
+        display: 'block',
+      },
+    },
+    mobileBanner: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
     },
   };
 });
@@ -144,6 +161,8 @@ export const HeroBanner: React.FC = () => {
   const classes = useStyles();
   const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
 
   return (
     <div
@@ -151,8 +170,12 @@ export const HeroBanner: React.FC = () => {
       data-cypress="HeroBanner"
     >
       <div className={`${classes.bannerImg} ${isSignedIn ? classes.loginbannerImg : ''}`}>
-        <img className={classes.mobileImg} src={require('images/img_doctorimage.png')} alt="" />
-        <img className={classes.desktopImg} src={require('images/banner-img.png')} alt="" />
+        <img
+          className={classes.mobileBanner}
+          src={require('images/img_doctors_xxhdpi.png')}
+          alt=""
+        />
+        <img className={classes.desktopBanner} src={require('images/img-doctors@2x.png')} alt="" />
       </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
@@ -180,7 +203,13 @@ export const HeroBanner: React.FC = () => {
                 );
               })}
               <MenuItem classes={{ selected: classes.menuSelected }}>
-                <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                <AphButton
+                  color="primary"
+                  classes={{ root: classes.addMemberBtn }}
+                  onClick={() => {
+                    setIsAddNewProfileDialogOpen(true);
+                  }}
+                >
                   Add Member
                 </AphButton>
               </MenuItem>
@@ -198,6 +227,40 @@ export const HeroBanner: React.FC = () => {
           </span>
         </div>
       </div>
+      <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} />
+        <AphDialogTitle>Add New Member</AphDialogTitle>
+        <AddNewProfile
+          closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+            setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+          }
+          selectedPatientId=""
+          successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+          isProfileDelete={false}
+        />
+      </AphDialog>
+      <Popover
+        open={isPopoverOpen}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <MascotWithMessage
+          messageTitle=""
+          message="Profile created successfully."
+          closeButtonLabel="OK"
+          closeMascot={() => {
+            setIsPopoverOpen(false);
+            window.location.reload(true);
+          }}
+        />
+      </Popover>
     </div>
   );
 };

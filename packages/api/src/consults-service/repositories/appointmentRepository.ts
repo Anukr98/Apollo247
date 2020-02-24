@@ -54,6 +54,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
+      relations: ['appointmentPayments'],
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
@@ -80,7 +81,18 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
     });
   }
-
+  async getAppointmentsByDoctorIds(doctorId: string) {
+    const appointmentData = await this.find({
+      where: {
+        doctorId: doctorId,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+    return appointmentData;
+  }
   checkPatientCancelledHistory(patientId: string, doctorId: string) {
     const newStartDate = new Date(format(addDays(new Date(), -9), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30');
@@ -159,7 +171,25 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .getMany();
   }
-
+  async getBookedSlots(doctorIds: string[]) {
+    const appointmentDate = new Date();
+    //const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const inputStartDate = format(appointmentDate, 'yyyy-MM-dd');
+    const inputEndDate = format(addDays(appointmentDate, +1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const fromDate = new Date(inputStartDate + 'T18:30');
+    const toDate = new Date(inputEndDate + 'T18:29');
+    const appointments = await this.find({
+      where: [
+        {
+          doctorId: In(doctorIds),
+          appointmentDateTime: Between(fromDate, toDate),
+          status: Not('PAYMENT_PENDING'),
+        },
+      ],
+    });
+    return appointments.length;
+  }
   saveAppointment(appointmentAttrs: Partial<Appointment>) {
     return this.create(appointmentAttrs)
       .save()
@@ -588,11 +618,10 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     weekDay = format(actualDate, 'EEEE').toUpperCase();
     const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
-    timeSlots = timeSlots.concat(timeSlotsNext);
-
     if (timeSlots.length > 0) {
       prevDaySlots = 1;
     }
+    timeSlots = timeSlots.concat(timeSlotsNext);
     const checkEnd = `${actualDate.toDateString()} 18:30:00`;
 
     enum CONSULTFLAG {
@@ -1671,9 +1700,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
-  getPatientAppointmentCountByConsultMode(patientId: string, appointmenType: APPOINTMENT_TYPE) {
+  getPatientAppointmentCountByConsultMode(patientId: string[], appointmenType: APPOINTMENT_TYPE) {
     return this.createQueryBuilder('appointment')
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId in(:...patientId)', { patientId: patientId })
       .andWhere('appointment.appointmentType = :appointmenType', { appointmenType })
       .andWhere('appointment.status not in(:status1)', {
         status1: STATUS.PAYMENT_PENDING,
@@ -1681,9 +1710,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
-  getPatientAppointmentCountByCouponCode(patientId: string, couponCode: string) {
+  getPatientAppointmentCountByCouponCode(patientId: string[], couponCode: string) {
     return this.createQueryBuilder('appointment')
-      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.patientId in(:...patientId)', { patientId: patientId })
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
       .andWhere('appointment.status not in(:status1)', {
         status1: STATUS.PAYMENT_PENDING,

@@ -10,8 +10,6 @@ import _compact from 'lodash/compact';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
-// import Popover from '@material-ui/core/Popover';
-// import { MascotWithMessage } from 'components/MascotWithMessage';
 import { format, addDays } from 'date-fns';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConsultMode } from 'graphql/types/globalTypes';
@@ -43,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       },
-      [theme.breakpoints.up(991)]: {
+      [theme.breakpoints.up(901)]: {
         display: 'flex',
         alignItems: 'flex-end',
       },
@@ -177,6 +175,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const { filter, specialityName, specialityId, specialityPlural, specialitySingular } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const { currentPatient } = useAllCurrentPatients();
+  const [tabValue, setTabValue] = useState('All Consults');
 
   const consultOptions = {
     all: 'All Consults',
@@ -187,8 +186,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   // const [show20SecPopup, setShow20SecPopup] = useState<boolean>(false);
   // const [show40SecPopup, setShow40SecPopup] = useState<boolean>(false);
   // const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
-  const isLargeScreen = useMediaQuery('(min-width:991px)');
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
+  const isLargeScreen = useMediaQuery('(min-width:901px)');
   const mascotRef = useRef(null);
 
   type Range = {
@@ -266,13 +265,22 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const consultErrorMessage = () => {
     const selectedConsultName =
-      selectedFilterOption === 'online' ? 'Online Consultation' : ' Clinic Visit';
+      selectedFilterOption === 'online' ? 'Online Consultation' : 'Physical Consult';
+
     const suggestedConsultName =
       selectedFilterOption === 'online' ? 'Clinic Visit' : ' Online Consultation';
+
     const noConsultFoundError = `There is no ${specialityName} available for ${selectedConsultName}. Please try
     ${suggestedConsultName}`;
-    const noDoctorFoundError = `There is no ${specialityPlural} available to match your filters. Please try again with
+
+    const noDoctorFoundError = `There is no ${specialitySingular} available to match your filters. Please try again with
     different filters.`;
+
+    const suggestedClinicName =
+      selectedFilterOption === 'Clinic Visit' ? 'Clinic Visit' : 'Online Consultation';
+
+    const noDoctorFoundClinicError = `There is no ${specialitySingular} available for ${selectedConsultName}. Please you try
+    ${suggestedClinicName}.`;
 
     return (
       <Grid container spacing={2} justify="center">
@@ -284,6 +292,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             data.getDoctorsBySpecialtyAndFilters.doctors &&
             data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
               ? noConsultFoundError
+              : tabValue == 'Clinic Visit'
+              ? noDoctorFoundClinicError
               : noDoctorFoundError}
           </div>
         </Grid>
@@ -336,6 +346,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
                   }
                   onClick={(e) => {
                     setSelectedFilterOption(e.currentTarget.value);
+                    setTabValue(consultName);
                   }}
                   value={consultType}
                   key={_uniqueId('cbutton_')}

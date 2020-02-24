@@ -269,7 +269,7 @@ const bookAppointment: Resolver<
     else doctorFees = <number>docDetails.physicalConsultationFees;
     const couponGenericRulesData = couponData.couponGenericRule;
 
-    if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue) {
+    if (couponGenericRulesData.discountType && couponGenericRulesData.discountValue >= 0) {
       appointmentInput.actualAmount = doctorFees;
       appointmentInput.discountedAmount = await discountCalculation(
         doctorFees,

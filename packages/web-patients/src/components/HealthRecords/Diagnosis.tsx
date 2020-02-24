@@ -42,6 +42,12 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       width: '100%',
     },
+    noWrapper: {
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      textTransform: 'uppercase',
+    },
     cardTitle: {
       fontSize: 14,
       fontWeight: 500,
@@ -110,11 +116,13 @@ export const Diagnosis: React.FC<DiagnosisProps> = (props) => {
         Diagnosis
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
-        {diagnosticPrescriptions && diagnosticPrescriptions.length > 0
-          ? diagnosticPrescriptions.map((prescription: DiagnosisType) => (
-              <div className={classes.cardTitle}>{prescription.itemname}</div>
-            ))
-          : 'No diagnosis'}
+        {diagnosticPrescriptions && diagnosticPrescriptions.length > 0 ? (
+          diagnosticPrescriptions.map((prescription: DiagnosisType) => (
+            <div className={classes.cardTitle}>{prescription.itemname}</div>
+          ))
+        ) : (
+          <div className={classes.noWrapper}>No diagnosis</div>
+        )}
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );
