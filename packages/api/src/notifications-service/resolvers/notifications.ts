@@ -108,6 +108,7 @@ export enum NotificationType {
   PHYSICAL_APPT_60 = 'PHYSICAL_APPT_60',
   PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
   PATIENT_NO_SHOW = 'PATIENT_NO_SHOW',
+  ACCEPT_RESCHEDULED_APPOINTMENT = 'ACCEPT_RESCHEDULED_APPOINTMENT',
 }
 
 export enum APPT_CALL_TYPE {
@@ -559,6 +560,28 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT
+  ) {
+    notificationTitle = ApiConstants.PATIENT_APPOINTMENT_RESCHEDULE_TITLE;
+    notificationBody = ApiConstants.PATIENT_APPOINTMENT_RESCHEDULE_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace('{1}', appointment.displayId.toString());
+    notificationBody = notificationBody.replace(
+      '{2}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+
+    /*let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;*/
+
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -710,6 +733,7 @@ export async function sendNotification(
       },
     };
   }
+
   console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
   const options = {

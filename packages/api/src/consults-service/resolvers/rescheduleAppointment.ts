@@ -295,7 +295,6 @@ const bookRescheduleAppointment: Resolver<
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-
   const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
     bookRescheduleAppointmentInput.appointmentId
   );
@@ -306,11 +305,9 @@ const bookRescheduleAppointment: Resolver<
       patientRecordExist = 1;
     }
   }
-
   if (apptDetails.status == STATUS.COMPLETED || apptDetails.status == STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-
   // doctor details
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
   const docDetails = await doctor.findById(apptDetails.doctorId);
@@ -322,7 +319,6 @@ const bookRescheduleAppointment: Resolver<
   if (bookRescheduleAppointmentInput.newDateTimeslot <= new Date()) {
     throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
   }
-
   //check if doctor slot is blocked
   const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
   const slotDetails = await blockRepo.checkIfSlotBlocked(
@@ -431,7 +427,6 @@ const bookRescheduleAppointment: Resolver<
       await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
     }
   }
-
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
     if (rescheduleDetails) {
       rescheduleDetails.id;
@@ -506,6 +501,7 @@ const bookRescheduleAppointment: Resolver<
     messageContent: mailContent,
   };
   sendMail(emailContent);
+
   //send mail to doctor admin start
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
     const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
@@ -531,9 +527,25 @@ const bookRescheduleAppointment: Resolver<
     });
   }
   //send mail to doctor admin end
+
+  //send SMS to patient after appintment reschedule accepted by patient
+
   const appointmentDetails = await appointmentRepo.findById(finalAppointmentId);
   if (!appointmentDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+  const pushNotificationInput = {
+    appointmentId: bookRescheduleAppointmentInput.appointmentId,
+    notificationType: NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT,
+  };
+  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
+    const notificationResult = await sendNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
+    console.log(notificationResult, 'appt rescheduled notification');
   }
   return { appointmentDetails };
 };
