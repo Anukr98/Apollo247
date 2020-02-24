@@ -25,6 +25,11 @@ export const getPatinetAppointmentsTypeDefs = gql`
     isSeniorConsultStarted: Boolean
     isJdQuestionsComplete: Boolean
     symptoms: String
+    paymentOrderId: String
+    couponCode: String
+    actualAmount: Float
+    discountedAmount: Float
+    appointmentPayments: [AppointmentPayment]
     doctorInfo: DoctorDetails @provides(fields: "id")
   }
 
@@ -92,6 +97,23 @@ type PatinetAppointments = {
   appointmentState: APPOINTMENT_STATE;
   isJdQuestionsComplete: Boolean;
   symptoms: string;
+  paymentOrderId: string;
+  couponCode: string;
+  actualAmount: number;
+  discountedAmount: number;
+  appointmentPayments: AppointmentPayment[];
+};
+
+type AppointmentPayment = {
+  id: string;
+  amountPaid: number;
+  paymentRefId: string;
+  paymentStatus: string;
+  paymentDateTime: Date;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
 };
 
 type Doctor = {

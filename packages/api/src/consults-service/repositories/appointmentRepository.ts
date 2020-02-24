@@ -374,6 +374,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getPatientAllAppointments(patientId: string, offset?: number, limit?: number) {
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId = :patientId', { patientId })
       .andWhere('appointment.status not in(:status1,:status2,:status3)', {
         status1: STATUS.CANCELLED,
@@ -463,6 +464,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
 
     const upcomingAppts = await this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
       .andWhere('appointment.patientId = :patientId', { patientId: patientId })
       .andWhere('appointment.status not in(:status1,:status2,:status3)', {
