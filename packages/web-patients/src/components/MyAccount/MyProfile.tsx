@@ -52,6 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingbottom: 8,
       display: 'flex',
       width: '100%',
+      height: '100%',
       color: '#02475b',
       fontSize: 14,
       fontWeight: 500,
@@ -86,9 +87,6 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       minHeight: 54,
       paddingbottom: 10,
-    },
-    lastGroup: {
-      marginBottom: 0,
     },
   };
 });
@@ -135,7 +133,7 @@ export const MyProfile: React.FC = (props) => {
                 </span>
               </Link>
             </div>
-            <div className={classes.sectionGroup}>
+            {/* <div className={classes.sectionGroup}>
               <Link
                 className={`${classes.serviceType} ${classes.textVCenter} ${
                   currentPath === clientRoutes.notificationSettings() ? classes.menuActive : ''
@@ -150,7 +148,7 @@ export const MyProfile: React.FC = (props) => {
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
               </Link>
-            </div>
+            </div> */}
             {/* <div className={classes.sectionGroup}>
               <Link className={`${classes.serviceType} ${classes.textVCenter}`} to="#">
                 <span className={classes.serviceImg}>
@@ -163,7 +161,7 @@ export const MyProfile: React.FC = (props) => {
               </Link>
             </div> */}
             <div
-              className={`${classes.sectionGroup} ${classes.lastGroup}`}
+              className={`${classes.sectionGroup}`}
               onClick={() => signOut()}
             >
               <div className={`${classes.serviceType} ${classes.textVCenter}`}>
