@@ -247,7 +247,7 @@ app.get('/consulttransaction', (req, res) => {
       console.log(response.data.data.makeAppointmentPayment.appointment.id, 'response is....');
       if (req.query.STATUS == 'TXN_SUCCESS') {
         if (req.session.source == 'WEB') {
-          const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${response.data.data.makeAppointmentPayment.appointment.id}`;
+          const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${response.data.data.makeAppointmentPayment.appointment.appointment.id}`;
           res.redirect(redirectUrl);
         } else {
           res.redirect(
