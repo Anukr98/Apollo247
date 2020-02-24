@@ -10,14 +10,11 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-
+import { useMutation } from 'react-apollo-hooks';
 import {
-  // DELETE_PATIENT_MEDICAL_RECORD,
+  DELETE_PATIENT_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
   GET_MEDICAL_RECORD,
-  // GET_PAST_CONSULTS_PRESCRIPTIONS,
-  // UPLOAD_DOCUMENT,
-  // SAVE_PRESCRIPTION_MEDICINE_ORDER,
 } from '../../graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -32,6 +29,7 @@ import {
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,6 +69,17 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         display: 'none',
         paddingRight: 0,
+      },
+    },
+    mobileOverlay: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        backgroundColor: '#f0f1ec',
+        zIndex: 991,
       },
     },
     sectionHeader: {
@@ -137,11 +146,13 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
         display: 'flex',
         alignItems: 'center',
-        padding: '0 15px',
+        padding: '8px 8px 8px 20px',
       },
     },
     addReportMobile: {
-      fontSize: 14,
+      '& img': {
+        verticalAlign: 'middle',
+      },
       [theme.breakpoints.up('sm')]: {
         display: 'none',
       },
@@ -187,13 +198,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div:last-child >div': {
         position: 'relative',
         '&:before': {
-          position: 'absolute',
-          content: '""',
-          left: -29,
-          top: -24,
-          width: 4,
-          height: '200%',
-          backgroundColor: theme.palette.common.white,
           [theme.breakpoints.down('xs')]: {
             backgroundColor: '#f0f1ec',
           },
@@ -316,10 +320,10 @@ export const MedicalRecords: React.FC = (props) => {
   const [hospitalizations, setHospitalizations] = useState<(HospitalizationsType | null)[] | null>(
     null
   );
-  // const [filteredData, setFilteredData] = useState<any | null>(null);
-  // const [filter, setFilter] = useState<string>('ALL');
   const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
   const [activeData, setActiveData] = useState<any | null>(null);
+  const { isSigningIn } = useAuth();
+  const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
 
   const fetchData = () => {
     client
@@ -376,12 +380,14 @@ export const MedicalRecords: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!medicalRecords) {
-      setLoading(true);
-      fetchData();
-    }
-    if (!labTests || !healthChecks || !hospitalizations) {
-      fetchTestData();
+    if (!isSigningIn) {
+      if (!medicalRecords) {
+        setLoading(true);
+        fetchData();
+      }
+      if (!labTests || !healthChecks || !hospitalizations) {
+        fetchTestData();
+      }
     }
     if (medicalRecords && (labTests || healthChecks || hospitalizations)) {
       let mergeArray: { type: string; data: any }[] = [];
@@ -402,11 +408,13 @@ export const MedicalRecords: React.FC = (props) => {
         });
       const sortedData = sortByDate(mergeArray);
       setAllCombinedData(sortedData);
-      setActiveData(sortedData[0]);
+      if (!isSmallScreen) {
+        setActiveData(sortedData[0]);
+      }
       // setFilteredData(sortedData);
       setLoading(false);
     }
-  }, [medicalRecords, labTests, healthChecks, hospitalizations]);
+  }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
 
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
@@ -464,38 +472,30 @@ export const MedicalRecords: React.FC = (props) => {
     );
   }
 
+  const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
+
+  const deleteReport = (id: string) => {
+    deleteReportMutation({
+      variables: { recordId: id },
+      fetchPolicy: 'no-cache',
+    })
+      .then((_data) => {
+        const newRecords =
+          medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
+        setMedicalRecords(newRecords);
+      })
+      .catch((e) => {
+        console.log('Error occured while render Delete MedicalOrder', { e });
+      });
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        {/* <div className={classes.topFilters}>
-          <AphButton
-            className={filter === 'ALL' ? classes.buttonActive : ''}
-            onClick={() => setFilter('ALL')}
-          >
-            All Consults
-          </AphButton>
-          <AphButton
-            className={filter === 'ONLINE' ? classes.buttonActive : ''}
-            onClick={() => setFilter('ONLINE')}
-          >
-            Online
-          </AphButton>
-          <AphButton
-            className={filter === 'PHYSICAL' ? classes.buttonActive : ''}
-            onClick={() => setFilter('PHYSICAL')}
-          >
-            Physical
-          </AphButton>
-        </div> */}
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
           </Link>
-          {/* <div className={classes.topFilters}>
-            <AphButton className={classes.buttonActive}>All Consults</AphButton>
-            <AphButton>Online</AphButton>
-            <AphButton>Physical</AphButton>
-          </div> */}
         </div>
         <Scrollbars
           autoHide={true}
@@ -505,40 +505,74 @@ export const MedicalRecords: React.FC = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 320px)'
+              : 'calc(100vh - 245px)'
           }
         >
           <div className={classes.consultationsList}>
             {allCombinedData &&
               allCombinedData.length > 0 &&
               allCombinedData.map((combinedData: any) => (
-                <div onClick={() => setActiveData(combinedData)}>
+                <div
+                  onClick={() => {
+                    setActiveData(combinedData);
+                    if (isSmallScreen) {
+                      setShowMobileDetails(true);
+                    }
+                  }}
+                >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
                     {/* <span>Today, 12 Aug 2019</span> */}
                     <span>{getFormattedDate(combinedData)}</span>
                   </div>
                   <MedicalCard
+                    deleteReport={deleteReport}
                     name={getName(combinedData)}
+                    id={combinedData.data.id}
                     isActiveCard={activeData === combinedData}
                   />
                 </div>
               ))}
           </div>
+          {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy
+                in one place!
+              </p>
+            </div>
+          )}
         </Scrollbars>
         <div className={classes.addReportActions}>
-          <AphButton color="primary" fullWidth>
+          <AphButton
+            color="primary"
+            onClick={() => {
+              window.location.href = clientRoutes.addRecords();
+            }}
+            fullWidth
+          >
             Add a Report
           </AphButton>
         </div>
       </div>
-      <div className={`${classes.rightSection}`}>
+      <div
+        className={`${classes.rightSection} ${
+          isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
+        }`}
+      >
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
-            <AphButton>
+            <AphButton
+              onClick={() => {
+                if (isSmallScreen) {
+                  setShowMobileDetails(false);
+                }
+              }}
+            >
               <img src={require('images/ic_back.svg')} />
             </AphButton>
-            <span>CBC Details</span>
+            <span>REPORT Details</span>
           </div>
           {/* <div className={classes.headerActions}>
             <AphButton>View Consult</AphButton>
@@ -550,25 +584,23 @@ export const MedicalRecords: React.FC = (props) => {
         <Scrollbars
           autoHide={true}
           autoHeight
-          autoHeightMax={
+          autoHeightMin={
             isMediumScreen
               ? 'calc(100vh - 287px)'
               : isSmallScreen
-              ? 'calc(100vh - 96px)'
+              ? 'calc(100vh - 55px)'
               : 'calc(100vh - 245px)'
           }
         >
-          {activeData ? (
+          {(!isSmallScreen && activeData) || (isSmallScreen && showMobileDetails && activeData) ? (
             <div className={classes.medicalRecordsDetails}>
               <div className={classes.cbcDetails}>
                 <div className={classes.reportsDetails}>
                   <label>Check-up Date</label>
-                  {/* <p>03 May 2019</p> */}
                   <p>{getFormattedDate(activeData)}</p>
                 </div>
                 <div className={classes.reportsDetails}>
                   <label>Source</label>
-                  {/* <p>Apollo Hospital, Jubilee Hills</p> */}
                   <p>{getSource()}</p>
                 </div>
                 <div className={classes.reportsDetails}>
@@ -591,7 +623,6 @@ export const MedicalRecords: React.FC = (props) => {
                   activeData.data.labTestResultParameters.length > 0)) && (
                 <DetailedFindings activeData={activeData} />
               )}
-              {/* {showSpinner ? <CircularProgress /> : <p>coming</p>} */}
               {activeData.data &&
                 (activeData.data.prismFileIds ||
                   activeData.data.hospitalizationPrismFileIds ||

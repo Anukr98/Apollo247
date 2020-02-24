@@ -6,6 +6,7 @@ import { MyProfile } from 'components/MyAccount/MyProfile';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageAddressBook } from 'components/MyAccount/ManageAddressBook';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -52,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const AddressBook: React.FC = (props) => {
   const classes = useStyles();
   const patient = useCurrentPatient();
-  if (!patient) return null;
+  if (!patient) return <CircularProgress />;
 
   return (
     <div className={classes.root}>

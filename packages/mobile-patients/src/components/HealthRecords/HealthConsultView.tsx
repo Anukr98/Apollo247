@@ -27,6 +27,7 @@ import {
   g,
   handleGraphQlError,
   addTestsToCart,
+  doRequestAndAccessLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -36,7 +37,10 @@ import {
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import RNFetchBlob from 'rn-fetch-blob';
-import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -45,7 +49,7 @@ import { mimeType } from '../../helpers/mimeType';
 import { useDiagnosticsCart, DiagnosticsCartItem } from '../DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../../graphql/types/getCaseSheet';
 import { useUIElements } from '../UIElementsProvider';
-import { useAppCommonData } from '../AppCommonDataProvider';
+import { useAppCommonData, LocationData } from '../AppCommonDataProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 
 const styles = StyleSheet.create({
@@ -143,7 +147,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, setLocationDetails } = useAppCommonData();
   const { setLoading: setGlobalLoading } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
@@ -359,7 +363,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   {g(item, 'medicinePrescription') || g(item, 'diagnosticPrescription') ? (
                     <Text
                       style={styles.yellowTextStyle}
-                      onPress={() => {
+                      onPress={async () => {
                         let item =
                           props.PastData!.caseSheet &&
                           props.PastData!.caseSheet.find((obj: any) => {
@@ -379,6 +383,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                             setGlobalLoading!(true);
 
+                            let location: LocationData | null = null;
+
                             const medPrescription = ((item.medicinePrescription ||
                               []) as getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription[]).filter(
                               (item) => item!.id
@@ -386,6 +392,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
                               item!.blobName!
                             );
+                            const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION) => {
+                              return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+                                ? 30
+                                : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+                                ? 7
+                                : 1;
+                            };
 
                             console.log('diagnosticPrescription', {
                               a: item.diagnosticPrescription,
@@ -408,7 +421,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             Promise.all(
                               medPrescription.map((item: any) => getMedicineDetailsApi(item!.id!))
                             )
-                              .then((result) => {
+                              .then(async (result) => {
                                 const medicineAll = result.map(({ data: { productdp } }, index) => {
                                   const medicineDetails = (productdp && productdp[0]) || {};
                                   if (medicineDetails.id == 0) {
@@ -420,9 +433,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
                                       ? ((medPrescription[index]!.medicineTimings || []).length ||
                                           1) *
+                                        getDaysCount(
+                                          medPrescription[index]!.medicineConsumptionDurationUnit!
+                                        ) *
                                         parseInt(
                                           medPrescription[index]!
-                                            .medicineConsumptionDurationInDays || '1'
+                                            .medicineConsumptionDurationInDays || '1',
+                                          10
                                         )
                                       : 1;
                                   const qty = Math.ceil(
@@ -490,7 +507,18 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   //   'Uh oh.. :(',
                                   //   'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
                                   // );
-                                  return;
+                                  // return;
+                                  try {
+                                    location = await doRequestAndAccessLocation();
+                                    setLocationDetails!(location);
+                                  } catch (error) {
+                                    setGlobalLoading!(false);
+                                    Alert.alert(
+                                      'Uh oh.. :(',
+                                      'Unable to get location. We need your location in order to add tests to your cart.'
+                                    );
+                                    return;
+                                  }
                                 }
                                 if (!testPrescription.length) {
                                   // Alert.alert(
@@ -503,7 +531,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   return addTestsToCart(
                                     testPrescription,
                                     client,
-                                    g(locationDetails, 'city') || ''
+                                    g(locationDetails || location, 'city') || ''
                                   );
                                 }
                               })

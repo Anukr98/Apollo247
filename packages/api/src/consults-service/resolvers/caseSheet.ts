@@ -937,6 +937,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
       base64FileInput: uploadedPdfData.base64pdf,
       patientId: patientData.id,
       category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+      status: CASESHEET_STATUS.COMPLETED,
     };
 
     const prismUploadResponse = await uploadPdfBase64ToPrism(
@@ -949,6 +950,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,
       prismFileId: prismUploadResponse.fileId,
+      status: CASESHEET_STATUS.COMPLETED,
     };
   }
 

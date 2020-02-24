@@ -28,7 +28,36 @@ export const SAVE_PATIENT_ADDRESS = gql`
         addressLine2
         zipcode
         mobileNumber
+        addressType
       }
+    }
+  }
+`;
+
+export const UPDATE_PATIENT_ADDRESS = gql`
+  mutation UpdatePatientAddress($UpdatePatientAddressInput: UpdatePatientAddressInput!) {
+    updatePatientAddress(UpdatePatientAddressInput: $UpdatePatientAddressInput) {
+      patientAddress {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+        addressType
+        otherAddressType
+      }
+    }
+  }
+`;
+
+export const DELETE_PATIENT_ADDRESS = gql`
+  mutation deletePatientAddress($id: String) {
+    deletePatientAddress(id: $id) {
+      status
     }
   }
 `;

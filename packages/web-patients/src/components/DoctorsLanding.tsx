@@ -1,4 +1,4 @@
-import { Theme, Grid, CircularProgress } from '@material-ui/core';
+import { Theme, Grid, CircularProgress, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
@@ -24,12 +24,24 @@ import {
   SearchDoctorAndSpecialtyByName,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _find from 'lodash/find';
+import { MascotWithMessage } from './MascotWithMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 10,
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
       },
     },
     container: {
@@ -178,7 +190,11 @@ const searchObject: SearchObject = {
 export const DoctorsLanding: React.FC = (props) => {
   const classes = useStyles();
   const [filterOptions, setFilterOptions] = useState<SearchObject>(searchObject);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [failedPopupOpened, setIsFailedPopupOpened] = React.useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
+  const urlParams = new URLSearchParams(window.location.search);
+  const failedStatus = urlParams.get('status') ? String(urlParams.get('status')) : null;
 
   const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
@@ -216,6 +232,13 @@ export const DoctorsLanding: React.FC = (props) => {
       setShowSearchAndPastSearch(false);
     }
   }, [specialitySelected]);
+
+  useEffect(() => {
+    if (failedStatus && failedStatus === 'failed' && !failedPopupOpened) {
+      setIsPopoverOpen(true);
+      setIsFailedPopupOpened(true);
+    }
+  }, [failedStatus, failedPopupOpened]);
 
   const { data, loading } = useQueryWithSkip<
     SearchDoctorAndSpecialtyByName,
@@ -628,6 +651,27 @@ export const DoctorsLanding: React.FC = (props) => {
         </div>
       </div>
       <NavigationBottom />
+      <Popover
+        open={isPopoverOpen}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <MascotWithMessage
+          messageTitle="uh oh..:("
+          message="Your payment wasn't successful due to bad network connectivity. Please try again."
+          closeButtonLabel="OK, GOT IT"
+          closeMascot={() => {
+            setIsPopoverOpen(false);
+          }}
+        />
+      </Popover>
     </div>
   );
 };

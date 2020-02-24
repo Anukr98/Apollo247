@@ -282,7 +282,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     const filteredClinics = clinics.filter(
       (clinicDetails: Facility) => clinicDetails.facility.id === clinicId
     );
-    console.log('filteredClinics', filteredClinics);
+    // console.log('filteredClinics', filteredClinics);
     if (filteredClinics != null && filteredClinics.length > 0) {
       if (
         filteredClinics[0].facility.latitude != null &&
@@ -485,7 +485,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                     res.data.bookAppointment.appointment.id
                   }&patientId=${
                     currentPatient ? currentPatient.id : ''
-                  }&price=${physicalConsultationFees}&source=web`;
+                  }&price=${physicalConsultationFees}&source=WEB`;
                   window.location.href = pgUrl;
                   // setMutationLoading(false);
                   // setIsDialogOpen(true);

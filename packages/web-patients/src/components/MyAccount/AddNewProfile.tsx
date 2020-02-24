@@ -13,6 +13,9 @@ import moment from 'moment';
 import { isNameValid, isEmailValid, isDobValid } from '@aph/universal/dist/aphValidators';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -160,6 +163,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const client = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
+
 interface AddNewProfileProps {
   closeHandler: (popOpen: boolean) => void;
   selectedPatientId: string;
@@ -186,6 +194,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const [isGenderValid, setIsGenderValid] = useState(true);
   const [isValidDob, setIsValidDob] = useState(true);
   const [isEmailAddressValid, setIsEmailAddressValid] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
 
@@ -255,7 +264,6 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
             : require('images/ic_account.svg')
         );
       }
-      console.log(selectedPatientDetails, 'patient details.....');
     }
   }, [allCurrentPatients, selectedPatientId]);
 
@@ -302,13 +310,48 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <input
                     accept="image/*"
                     className={classes.uploadInput}
-                    id="upload-prifile-photo"
+                    id="upload-profile-photo"
                     type="file"
+                    onChange={async (e) => {
+                      setIsUploading(false);
+                      const fileNames = e.target.files;
+                      if (fileNames && fileNames.length > 0) {
+                        const file = fileNames[0] || null;
+                        const fileExtension = file.name.split('.').pop();
+                        const fileSize = file.size;
+                        if (fileSize > 2000000) {
+                          alert('Invalid File Size. File size must be less than 2MB');
+                        } else if (
+                          fileExtension &&
+                          (fileExtension.toLowerCase() === 'png' ||
+                            fileExtension.toLowerCase() === 'jpg' ||
+                            fileExtension.toLowerCase() === 'jpeg')
+                        ) {
+                          setIsUploading(true);
+                          if (file) {
+                            const aphBlob = await client
+                              .uploadBrowserFile({ file })
+                              .catch((error) => {
+                                throw error;
+                              });
+                            if (aphBlob && aphBlob.name) {
+                              const url = client.getBlobUrl(aphBlob.name);
+                              setPhotoUrl(url);
+                            }
+                          }
+                        } else {
+                          alert(
+                            'Invalid File Extension. Only files with .jpg and.png extensions are allowed.'
+                          );
+                        }
+                        setIsUploading(false);
+                      }
+                    }}
                   />
-                  <label className={classes.profileCircle} htmlFor="upload-prifile-photo">
-                    <img src={photoUrl} />
+                  <label className={classes.profileCircle} htmlFor="upload-profile-photo">
+                    {isUploading ? <CircularProgress /> : <img src={photoUrl} />}
                   </label>
-                  <label className={classes.editBtn} htmlFor="upload-prifile-photo">
+                  <label className={classes.editBtn} htmlFor="upload-profile-photo">
                     <img src={require('images/ic-edit-white.svg')} />
                   </label>
                 </div>
@@ -398,7 +441,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                               setGenderSelected(gender as Gender);
                             }}
                           >
-                            {gender}
+                            {_startCase(_toLower(gender))}
                           </AphButton>
                         </Grid>
                       );
@@ -416,7 +459,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     {orderedRelations.map((relation) => {
                       return (
                         <MenuItem classes={{ selected: classes.menuSelected }} value={relation}>
-                          {relation}
+                          {_startCase(_toLower(relation))}
                         </MenuItem>
                       );
                     })}
@@ -465,7 +508,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                 gender: genderSelected,
                 relation: relation,
                 emailAddress: emailAddress,
-                photoUrl: '',
+                photoUrl: photoUrl,
                 id: selectedPatientId,
                 mobileNumber:
                   currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : '',

@@ -83,7 +83,11 @@ const get12HrsFormat = (timeString: string /* 12:30 */) => {
 };
 
 const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
-  `${get12HrsFormat(startTime.replace('Z', ''))} - ${get12HrsFormat(endTime.replace('Z', ''))}`;
+  `${moment(startTime, 'HH:mm')
+    .add(330, 'm')
+    .format('hh:mm A')} - ${moment(endTime, 'HH:mm')
+    .add(330, 'm')
+    .format('hh:mm A')}`;
 
 export const MyAvailability: React.FC<ProfileProps> = (props) => {
   const [blockedCalendar, setblockedCalendar] = useState<
@@ -188,6 +192,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
       />
     );
   };
+  console.log('this is is ', profileData);
 
   return (
     <View style={{ flex: 1 }}>
@@ -248,26 +253,29 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                 {strings.account.consult_hours}
               </Text>
               <View style={{ marginLeft: 20, marginRight: 20 }}>
-                {profileData!.consultHours!.map((i, idx) => (
-                  <ConsultationHoursCard
-                    days={i!.weekDay}
-                    timing={fromatConsultationHours(i!.startTime, i!.endTime)}
-                    isAvailableForOnlineConsultation={i!.consultMode.toLocaleLowerCase()}
-                    //isAvailableForPhysicalConsultation={i!.consultType}
-                    key={idx}
-                    type="fixed"
-                    containerStyle={{
-                      shadowColor: '#000000',
-                      shadowOffset: {
-                        width: 0,
-                        height: 5,
-                      },
-                      shadowRadius: 10,
-                      shadowOpacity: 0.2,
-                      elevation: 5,
-                    }}
-                  />
-                ))}
+                {profileData.consultHours!.map(
+                  (i, idx) =>
+                    i && (
+                      <ConsultationHoursCard
+                        days={i.weekDay}
+                        timing={fromatConsultationHours(i.startTime, i.endTime)}
+                        isAvailableForOnlineConsultation={i.consultMode.toLocaleLowerCase()}
+                        //isAvailableForPhysicalConsultation={i!.consultType}
+                        key={idx}
+                        type="fixed"
+                        containerStyle={{
+                          shadowColor: '#000000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 5,
+                          },
+                          shadowRadius: 10,
+                          shadowOpacity: 0.2,
+                          elevation: 5,
+                        }}
+                      />
+                    )
+                )}
               </View>
             </View>
           ) : null}

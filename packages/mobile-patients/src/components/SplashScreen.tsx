@@ -76,7 +76,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { setVirtualConsultationFee } = useAppCommonData();
+  // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     getData('ConsultRoom');
@@ -352,13 +352,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
               AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
 
-              if (buildName() === 'PROD') {
-                setVirtualConsultationFee &&
-                  setVirtualConsultationFee(JSON.stringify(nietos[9].value));
-              } else {
-                setVirtualConsultationFee &&
-                  setVirtualConsultationFee(JSON.stringify(nietos[10].value));
-              }
+              // if (buildName() === 'PROD') {
+              //   setVirtualConsultationFee &&
+              //     setVirtualConsultationFee(JSON.stringify(nietos[9].value));
+              // } else {
+              //   setVirtualConsultationFee &&
+              //     setVirtualConsultationFee(JSON.stringify(nietos[10].value));
+              // }
 
               if (Platform.OS === 'ios') {
                 if (buildName() === 'QA') {

@@ -75,6 +75,7 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         landmark
         createdDate
         updatedDate
+        addressType
       }
     }
   }
@@ -420,6 +421,32 @@ export const DOWNLOAD_DOCUMENT = gql`
   query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
     downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
       downloadPaths
+    }
+  }
+`;
+
+export const ADD_MEDICAL_RECORD = gql`
+  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
+    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
+      status
+    }
+  }
+`;
+
+export const UPLOAD_DOCUMENT = gql`
+  mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
+    uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
+      status
+      fileId
+      filePath
+    }
+  }
+`;
+
+export const DELETE_PATIENT_MEDICAL_RECORD = gql`
+  mutation deletePatientMedicalRecord($recordId: ID!) {
+    deletePatientMedicalRecord(recordId: $recordId) {
+      status
     }
   }
 `;

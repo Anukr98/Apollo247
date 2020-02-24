@@ -54,6 +54,11 @@ export const getAppointmentHistoryTypeDefs = gql`
     doctorInfo: Profile @provides(fields: "id")
     isJdQuestionsComplete: Boolean
     isSeniorConsultStarted: Boolean
+    paymentOrderId: String
+    couponCode: String
+    actualAmount: Float
+    discountedAmount: Float
+    appointmentPayments: [AppointmentPayment]
   }
 
   input AppointmentHistoryInput {
@@ -123,6 +128,23 @@ type AppointmentHistory = {
   displayId: number;
   isJdQuestionsComplete: Boolean;
   isSeniorConsultStarted: Boolean;
+  paymentOrderId: string;
+  couponCode: string;
+  actualAmount: number;
+  discountedAmount: number;
+  appointmentPayments: AppointmentPayment[];
+};
+
+type AppointmentPayment = {
+  id: string;
+  amountPaid: number;
+  paymentRefId: string;
+  paymentStatus: string;
+  paymentDateTime: Date;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
 };
 
 type AppointmentInputArgs = { appointmentHistoryInput: AppointmentHistoryInput };

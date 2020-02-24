@@ -4,6 +4,9 @@ import React, { useRef } from 'react';
 import { AphDialogTitle, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
+import { DELETE_PATIENT_ADDRESS } from 'graphql/address';
+import { useMutation } from 'react-apollo-hooks';
+import { MascotWithMessage } from '../MascotWithMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -20,6 +23,17 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
       },
     },
     addressType: {
@@ -61,16 +75,28 @@ interface AddressCardProps {
 export const AddressCard: React.FC<AddressCardProps> = (props) => {
   const classes = useStyles({});
   const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = React.useState<boolean>(false);
-  const deleteAddRef = useRef(null);
   const [isDeletePopoverOpen, setIsDeletePopoverOpen] = React.useState<boolean>(false);
+  const [currentAddress, setCurrentAddress] = React.useState<
+    GetPatientAddressList_getPatientAddressList_addressList
+  >();
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  console.log('THE PROPS ARE: ', props);
+  const deleteAddRef = useRef(null);
+  const deleteAddressMutation = useMutation(DELETE_PATIENT_ADDRESS);
+
+  // console.log('THE PROPS ARE: ', props);
 
   const addressDivs = props.addresses.map((address) => {
     return (
-      <Grid item xs={12} key={address.id}>
-        <div className={classes.root} onClick={() => setIsEditAddressDialogOpen(true)}>
-          <div className={classes.addressType}>Home</div>
+      <Grid item xs={12} key={`${address.id}`}>
+        <div
+          className={classes.root}
+          onClick={() => {
+            setIsEditAddressDialogOpen(true);
+            setCurrentAddress(address);
+          }}
+        >
+          <div className={classes.addressType}>{address.addressType}</div>
           {address.addressLine1}
           <br /> {address.addressLine2}
           <br /> {address.zipcode}
@@ -94,7 +120,11 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
             <img src={require('images/ic_more.svg')} alt="" />
           </div>
         </AphDialogTitle>
-        <AddNewAddress setIsAddAddressDialogOpen={setIsEditAddressDialogOpen} />
+        <AddNewAddress
+          setIsAddAddressDialogOpen={setIsEditAddressDialogOpen}
+          currentAddress={currentAddress}
+          disableActions
+        />
       </AphDialog>
       <Popover
         open={isDeletePopoverOpen}
@@ -109,7 +139,42 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
           horizontal: 'right',
         }}
       >
-        <AphButton className={classes.deleteBtn}>Delete Address</AphButton>
+        <AphButton
+          className={classes.deleteBtn}
+          onClick={() => {
+            setIsEditAddressDialogOpen(false);
+            setIsDeletePopoverOpen(false);
+            deleteAddressMutation({ variables: { id: currentAddress && currentAddress.id } })
+              .then(() => {
+                setIsPopoverOpen(true);
+              })
+              .catch(() => {});
+          }}
+        >
+          Delete Address
+        </AphButton>
+      </Popover>
+      <Popover
+        open={isPopoverOpen}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <MascotWithMessage
+          messageTitle=""
+          message="Address deleted successfully."
+          closeButtonLabel="OK"
+          closeMascot={() => {
+            setIsPopoverOpen(false);
+          }}
+          refreshPage
+        />
       </Popover>
     </Grid>
   );

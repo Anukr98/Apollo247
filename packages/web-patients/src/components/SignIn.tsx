@@ -98,8 +98,8 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const classes = useStyles();
   const { mobileNumber, setOtp: setOtpMain } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
-  const initialOTPMessage = 'Type in the OTP sent to you, to authenticate';
-  const resentOTPMessage = 'Type in the OTP that has been resent to you for authentication';
+  const initialOTPMessage = 'Now type in the OTP sent to you for authentication';
+  const resentOTPMessage = 'Type in the OTP that has been resent to your mobile number';
   const blockedMessage = 'You entered an incorrect OTP 3 times. Please try again after some time';
   const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
 
@@ -160,6 +160,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               <Grid item xs={2} key={index}>
                 <AphTextField
                   autoFocus={index === 0}
+                  error={verifyOtpError}
                   inputRef={otpInputRefs[index]}
                   value={_isNumber(otp[index]) ? otp[index] : ''}
                   inputProps={{ type: 'tel', maxLength: 1 }}

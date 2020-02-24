@@ -1,6 +1,6 @@
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AphButton } from '@aph/web-ui-components';
 
@@ -67,15 +67,23 @@ export interface MascotWithMessageProps {
   messageTitle: string;
   message: string;
   closeButtonLabel: string;
+  refreshPage?: boolean;
 }
 
-export const MascotWithMessage: React.FC<MascotWithMessageProps> = (props) => {
+export const MascotWithMessage: React.FC<MascotWithMessageProps> = (props, history) => {
   const classes = useStyles();
+
+  // const { refreshPage } = props;
+
+  // useEffect(() => {
+  //   return <Redirect to="/address-book" />;
+  // }, [refreshPage]);
+
   return (
     <div className={classes.signUpBar}>
       <div className={classes.signUpPop}>
         <div className={classes.mascotIcon}>
-          <img src={require('images/ic_mascot.png')} alt="" />
+          <img src={require('images/ic-mascot.png')} alt="" />
         </div>
         <div className={classes.signinGroup}>
           {props.messageTitle.length > 0 ? (
@@ -88,7 +96,10 @@ export const MascotWithMessage: React.FC<MascotWithMessageProps> = (props) => {
             type="submit"
             color="primary"
             classes={{ root: classes.button }}
-            onClick={() => props.closeMascot()}
+            onClick={() => {
+              props.closeMascot();
+              props.refreshPage ? window.location.reload(true) : null;
+            }}
           >
             {props.closeButtonLabel}
           </AphButton>

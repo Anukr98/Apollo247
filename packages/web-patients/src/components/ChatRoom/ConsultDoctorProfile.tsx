@@ -729,7 +729,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
               <Typography variant="h2">hi! :)</Typography>

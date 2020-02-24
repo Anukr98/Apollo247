@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, MenuItem, Popover, CircularProgress, Avatar } from '@material-ui/core';
-import React, { useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Header } from 'components/Header';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
@@ -8,24 +8,34 @@ import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
-``;
+// import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+// import {
+//   GetPatientAppointments,
+//   GetPatientAppointmentsVariables,
+// } from 'graphql/types/GetPatientAppointments';
 import {
-  GetPatientAppointments,
-  GetPatientAppointmentsVariables,
-} from 'graphql/types/GetPatientAppointments';
+  GetPatientAllAppointments,
+  GetPatientAllAppointmentsVariables,
+} from 'graphql/types/GetPatientAllAppointments';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 // import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
-import { STATUS } from 'graphql/types/globalTypes';
-import isToday from 'date-fns/isToday';
-import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMessage';
+// import { STATUS } from 'graphql/types/globalTypes';
+// import isToday from 'date-fns/isToday';
+// import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMessage';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import moment from 'moment';
+// import { useApolloClient } from 'react-apollo-hooks';
+import _find from 'lodash/find';
+import { getAppStoreLink } from 'helpers/dateHelpers';
+// import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
+// import { GET_APPOINTMENT_DATA } from 'graphql/consult';
+
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -305,38 +315,56 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 export const Appointments: React.FC = (props) => {
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  // const currentDate = new Date().toISOString().substring(0, 10);
-  const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-  const { isSignedIn, isSigningIn } = useAuth();
-  const mascotRef = useRef(null);
-  const [isPopoverOpen] = React.useState<boolean>(false);
+  const urlParams = new URLSearchParams(window.location.search);
+  const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : null;
+  // const client = useApolloClient();
+  // console.log(urlParams, 'url params.....', urlParams.get('apptidkkkk'));
+
+  // const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+  const { isSigningIn } = useAuth();
+  // const mascotRef = useRef(null);
+  // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
+  const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
+  const [specialtyName, setSpecialtyName] = React.useState<string>('');
+  const [photoUrl, setPhotoUrl] = React.useState<string>('');
+  const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
+
+  // const { data, loading, error } = useQueryWithSkip<
+  //   GetPatientAppointments,
+  //   GetPatientAppointmentsVariables
+  // >(GET_PATIENT_APPOINTMENTS, {
+  //   variables: {
+  //     patientAppointmentsInput: {
+  //       patientId:
+  //         (currentPatient && currentPatient.id) ||
+  //         (allCurrentPatients && allCurrentPatients[0].id) ||
+  //         '',
+  //       appointmentDate: currentDate,
+  //     },
+  //   },
+  //   fetchPolicy: 'no-cache',
+  // });
+
   const { data, loading, error } = useQueryWithSkip<
-    GetPatientAppointments,
-    GetPatientAppointmentsVariables
-  >(GET_PATIENT_APPOINTMENTS, {
+    GetPatientAllAppointments,
+    GetPatientAllAppointmentsVariables
+  >(GET_PATIENT_ALL_APPOINTMENTS, {
     variables: {
-      patientAppointmentsInput: {
-        patientId:
-          (currentPatient && currentPatient.id) ||
-          (allCurrentPatients && allCurrentPatients[0].id) ||
-          '',
-        appointmentDate: currentDate,
-      },
+      patientId:
+        (currentPatient && currentPatient.id) ||
+        (allCurrentPatients && allCurrentPatients[0].id) ||
+        '',
     },
     fetchPolicy: 'no-cache',
   });
 
-  if (error) {
-    return <div>Unable to load Consults...</div>;
-  }
-
-  let todaysConsultations = 0;
+  if (error) return <div>Unable to load Consults...</div>;
 
   const appointments =
-    data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments
-      ? data.getPatinetAppointments.patinetAppointments
+    data && data.getPatientAllAppointments && data.getPatientAllAppointments.appointments
+      ? data.getPatientAllAppointments.appointments
       : [];
 
   // filter appointments that are greater than current time.
@@ -365,6 +393,40 @@ export const Appointments: React.FC = (props) => {
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
     return compareDate > appointmentTime;
   });
+
+  useEffect(() => {
+    if (availableAppointments.length > 0 && successApptId !== '' && !isConfirmPopupLoaded) {
+      const isAppointmentAvailable = _find(
+        availableAppointments,
+        (appointmentDetails) => appointmentDetails.id === successApptId
+      );
+
+      if (isAppointmentAvailable && Object.keys(isAppointmentAvailable).length > 0) {
+        const doctorName =
+          isAppointmentAvailable.doctorInfo && isAppointmentAvailable.doctorInfo.fullName
+            ? isAppointmentAvailable.doctorInfo.fullName
+            : '';
+        const photoUrl =
+          isAppointmentAvailable.doctorInfo && isAppointmentAvailable.doctorInfo.photoUrl
+            ? isAppointmentAvailable.doctorInfo.photoUrl
+            : '';
+        const specialty =
+          isAppointmentAvailable.doctorInfo &&
+          isAppointmentAvailable.doctorInfo.specialty &&
+          isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
+            ? isAppointmentAvailable.doctorInfo.specialty.specialistSingularTerm
+            : '';
+        setAppointmentDoctorName(doctorName);
+        setSpecialtyName(specialty);
+        setPhotoUrl(photoUrl);
+        setIsConfirmedPopoverOpen(true);
+        setIsConfirmPopupLoaded(true);
+        // console.log(isAppointmentAvailable);
+      }
+    }
+  }, [availableAppointments, successApptId, isConfirmPopupLoaded]);
+
+  // console.log(availableAppointments, 'available appointments....', pastAppointments);
 
   const appointmentText = () => {
     return appointments.filter((item) =>
@@ -468,7 +530,7 @@ export const Appointments: React.FC = (props) => {
             {tabValue === 0 && (
               <TabContainer>
                 {availableAppointments && availableAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={availableAppointments} />
+                  <ConsultationsCard appointments={availableAppointments} pastOrCurrent="current" />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
@@ -502,7 +564,7 @@ export const Appointments: React.FC = (props) => {
             {tabValue === 1 && (
               <TabContainer>
                 {pastAppointments && pastAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={pastAppointments} />
+                  <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
                 ) : loading || isSigningIn ? (
                   <div className={classes.loader}>
                     <CircularProgress />
@@ -536,6 +598,7 @@ export const Appointments: React.FC = (props) => {
           </div>
         </div>
       </div>
+
       <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
         <AphDialogClose onClick={() => setIsConfirmedPopoverOpen(false)} />
         <AphDialogTitle>Confirmed</AphDialogTitle>
@@ -544,27 +607,29 @@ export const Appointments: React.FC = (props) => {
             <div className={classes.doctorInfo}>
               <Avatar alt="" src={require('images/dp_03.png')} className={classes.bigAvatar} />
               <div className={classes.doctorText}>
-                <div className={classes.drName}>Dr. Simran Rai</div>
-                <div className={classes.specality}>General Physician</div>
+                <div className={classes.drName}>{appointmentDoctorName}</div>
+                <div className={classes.specality}>{specialtyName}</div>
               </div>
             </div>
             <div className={classes.appLogo}>
-              <img src={require('images/ic_logo.png')} />
+              <img src={photoUrl} />
             </div>
           </div>
           <p>
-            Your consultation with Dr. Simran Rai is confirmed. Thank you for choosing Apollo 247.
+            Your consultation with {appointmentDoctorName} is confirmed. Thank you for choosing
+            Apollo 247.
           </p>
           <p className={classes.borderText}>
-            We shared your details with Dr. Simran’s team. Please download the app to continue with
-            the consultation.
+            We shared your details with {appointmentDoctorName}'s team. Please download the app to
+            continue with the consultation.
           </p>
-          <a className={classes.appDownloadBtn} href="https://play.google.com/" target="_blank">
+          <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
             Download Apollo247 App
           </a>
         </div>
       </AphDialog>
-      <Popover
+
+      {/* <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
         anchorOrigin={{
@@ -580,12 +645,13 @@ export const Appointments: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic_mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <TransferConsultMessage />
           </div>
         </div>
-      </Popover>
+      </Popover> */}
+
       <NavigationBottom />
     </div>
   );

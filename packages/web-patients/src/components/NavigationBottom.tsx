@@ -1,9 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { BottomNavigation, Theme, Dialog, DialogContent } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
+import { BottomNavigation, Theme } from '@material-ui/core';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
 
@@ -26,6 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
     labelRoot: {
       width: '100%',
       minWidth: 'auto',
+      borderTop: '4px solid #fff',
     },
     iconLabel: {
       fontSize: 10,
@@ -58,13 +57,16 @@ const useStyles = makeStyles((theme: Theme) => {
     hieLink: {
       display: 'none',
     },
+    activeMenu: {
+      backgroundColor: '#f7f8f5',
+      borderTop: '4px solid #00b38e',
+    },
   };
 });
 
 export const NavigationBottom: React.FC = (props) => {
   const classes = useStyles();
-  const { signOut } = useAuth();
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const currentPath = window.location.pathname;
 
   return (
     <BottomNavigation showLabels className={classes.root}>
@@ -73,6 +75,7 @@ export const NavigationBottom: React.FC = (props) => {
         label="Consult Room"
         icon={<img src={require('images/bottom-nav/ic_appointments.svg')} />}
         to={clientRoutes.appointments()}
+        className={currentPath === clientRoutes.appointments() ? classes.activeMenu : ''}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -84,6 +87,7 @@ export const NavigationBottom: React.FC = (props) => {
         component={Link}
         to={clientRoutes.healthRecords()}
         icon={<img src={require('images/bottom-nav/ic_myhealth.svg')} />}
+        className={currentPath === clientRoutes.healthRecords() ? classes.activeMenu : ''}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -117,28 +121,13 @@ export const NavigationBottom: React.FC = (props) => {
         component={Link}
         to={clientRoutes.myAccount()}
         icon={<img src={require('images/bottom-nav/ic_account.svg')} />}
-        onClick={() => setIsDialogOpen(true)}
+        className={currentPath === clientRoutes.myAccount() ? classes.activeMenu : ''}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
           selected: classes.iconSelected,
         }}
       />
-      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-        <DialogContent>
-          <div className={classes.logoutModal}>
-            <h3>You are successfully Logged in with Apollo 24x7</h3>
-            <div className={classes.bottomActions}>
-              <AphButton color="secondary" onClick={() => setIsDialogOpen(false)} autoFocus>
-                Cancel
-              </AphButton>
-              <AphButton color="primary" onClick={() => signOut()}>
-                Sign out
-              </AphButton>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </BottomNavigation>
   );
 };

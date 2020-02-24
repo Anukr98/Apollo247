@@ -25,6 +25,7 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { usePrevious } from 'hooks/reactCustomHooks';
 import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -317,6 +318,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   }
 
   let differenceInMinutes = 0;
+  let differenceInHours = 0;
+  let differenceInDays = 0;
 
   // it must be always one record or we return only first record.
   if (
@@ -326,6 +329,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   ) {
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
+        // console.log(availability && availability.availableSlot, 'availability.....');
         // console.log(availability.availableSlot);
         // const slotTimeUtc = new Date(
         //   new Date(`${apiDateFormat} ${availability.availableSlot}:00`).toISOString()
@@ -333,15 +337,25 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
         // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
         // const currentTime = new Date(new Date().toISOString()).getTime();
-        const slotTime = new Date(availability.availableSlot).getTime();
-        const currentTime = new Date(new Date().toISOString()).getTime();
-        if (slotTime > currentTime) {
-          const difference = slotTime - currentTime;
-          const slotArray = availability.availableSlot.split('T');
-          differenceInMinutes = Math.round(difference / 60000);
-          slotAvailableNext = slotArray[1].substr(0, 5);
-          autoSlot = availability.availableSlot;
-        }
+        // return Math.round(differenceInHours) + 1;
+
+        // const slotTime = new Date(availability.availableSlot).getTime();
+        // const currentTime = new Date(new Date().toISOString()).getTime();
+        // if (slotTime > currentTime) {
+        // const difference = slotTime - currentTime;
+        // differenceInMinutes = Math.round(difference / 60000);
+        const slotArray = availability.availableSlot.split('T');
+        const nextAvailabilityTime =
+          availability.availableSlot && moment(availability.availableSlot);
+        const currentTime = moment(new Date());
+        slotAvailableNext = slotArray[1].substr(0, 5);
+        autoSlot = availability.availableSlot;
+        differenceInHours = Math.round(currentTime.diff(nextAvailabilityTime, 'hours') * -1) + 1;
+        differenceInMinutes =
+          Math.round(currentTime.diff(nextAvailabilityTime, 'minutes') * -1) + 1;
+        differenceInDays = Math.round(currentTime.diff(nextAvailabilityTime, 'days') * -1) + 1;
+
+        // }
       } else {
         differenceInMinutes = -1;
       }
@@ -391,12 +405,22 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         <div className={classes.customScrollBar}>
           {!props.isRescheduleConsult && (
             <div className={classes.consultGroup}>
-              {differenceInMinutes > 0 ? (
+              {differenceInMinutes > 0 && differenceInMinutes <= 60 ? (
                 <p>
                   Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
                   consult now or schedule for later?
                 </p>
-              ) : null}
+              ) : differenceInMinutes > 60 && differenceInMinutes <= 1440 ? (
+                <p>
+                  Dr. {doctorName} is available in {differenceInHours} hours! Would you like to
+                  consult now or schedule for later?
+                </p>
+              ) : (
+                <p>
+                  Dr. {doctorName} is available in {differenceInDays} days! Would you like to
+                  consult now or schedule for later?
+                </p>
+              )}
               <div className={classes.actions}>
                 <AphButton
                   onClick={(e) => {
@@ -573,7 +597,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       res.data.bookAppointment.appointment.id
                     }&patientId=${
                       currentPatient ? currentPatient.id : ''
-                    }&price=${onlineConsultationFees}&source=web`;
+                    }&price=${onlineConsultationFees}&source=WEB`;
                     window.location.href = pgUrl;
                     // setMutationLoading(false);
                     // setIsDialogOpen(true);

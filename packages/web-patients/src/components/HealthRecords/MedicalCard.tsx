@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
+import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,6 +44,26 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.04,
       color: '#02475b',
     },
+    dialogBody: {
+      padding: 20,
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      '& span': {
+        fontWeight: 'bold',
+      },
+    },
+    dialogActions: {
+      padding: 16,
+      textAlign: 'center',
+      display: 'flex',
+      '& button': {
+        flex: 1,
+        '&:first-child': {
+          marginRight: 10,
+        },
+      },
+    },
     activeCard: {
       border: '1px solid #00b38e',
       position: 'relative',
@@ -79,10 +100,13 @@ const useStyles = makeStyles((theme: Theme) => {
 type MedicalCardProps = {
   name: string;
   isActiveCard: boolean;
+  deleteReport: (id: string) => void;
+  id: string;
 };
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
+  const [showPopup, setShowPopup] = useState<boolean>(false);
 
   return (
     <div className={`${classes.root} ${props.isActiveCard ? classes.activeCard : ''}`}>
@@ -94,9 +118,40 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           </div> */}
         </div>
         <div className={classes.moreIcon}>
-          <img src={require('images/ic_more.svg')} alt="" />
+          <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
         </div>
       </div>
+      <AphDialog
+        open={showPopup}
+        disableBackdropClick
+        disableEscapeKeyDown
+        onClose={() => setShowPopup(false)}
+        maxWidth="sm"
+      >
+        <AphDialogTitle>Delete Report</AphDialogTitle>
+        <div className={classes.dialogBody}>Are you want to delete the selected record?</div>
+        <div className={classes.dialogActions}>
+          <AphButton
+            color="default"
+            onClick={() => {
+              setShowPopup(false);
+            }}
+            autoFocus
+          >
+            Cancel
+          </AphButton>
+          <AphButton
+            color="primary"
+            onClick={() => {
+              props.deleteReport(props.id);
+              setShowPopup(false);
+            }}
+            autoFocus
+          >
+            Ok
+          </AphButton>
+        </div>
+      </AphDialog>
     </div>
   );
 };

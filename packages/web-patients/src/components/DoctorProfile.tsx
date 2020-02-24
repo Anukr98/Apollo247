@@ -12,8 +12,9 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
-import { AphButton } from '@aph/web-ui-components';
+// import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
+import { getAppStoreLink } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -563,7 +564,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <span>consultation experience</span>
           </div>
           <a
-            href="https://play.google.com/"
+            href={getAppStoreLink()}
             target="_blank"
             color="primary"
             className={classes.downloadLink}
