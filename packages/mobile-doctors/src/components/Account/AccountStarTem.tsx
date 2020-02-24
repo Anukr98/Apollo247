@@ -13,6 +13,10 @@ import {
   MakeTeamDoctorActive,
   MakeTeamDoctorActiveVariables,
 } from '@aph/mobile-doctors/src/graphql/types/MakeTeamDoctorActive';
+import {
+  removeTeamDoctorFromStarTeam,
+  removeTeamDoctorFromStarTeamVariables,
+} from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -22,10 +26,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import {
-  removeTeamDoctorFromStarTeam,
-  removeTeamDoctorFromStarTeamVariables,
-} from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 
 const styles = StyleSheet.create({
   inputTextStyle: {

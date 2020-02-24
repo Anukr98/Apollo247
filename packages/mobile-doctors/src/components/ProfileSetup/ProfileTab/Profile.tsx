@@ -221,10 +221,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
               </View>
             </TouchableOpacity>
             <View
-              style={[
-                styles.inputStyle,
-                !isDropdownOpen ? { borderBottomColor: 'rgba(2, 71, 91, 0.6)' } : {},
-              ]}
+              style={[styles.inputStyle, !isDropdownOpen ? { borderBottomColor: '#00b38e' } : {}]}
             />
           </View>
         </View>
