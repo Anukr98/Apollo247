@@ -36,55 +36,33 @@ export const LocationProvider: React.FC = (props) => {
   const [currentPincode, setCurrentPincode] = useState<string>('');
 
   useEffect(() => {
-    const currentAddress = localStorage.getItem('currentAddress');
-    if (currentAddress) {
-      if (currentAddress.includes(',')) {
-        setCurrentLocation(currentAddress.substring(0, currentAddress.indexOf(',')));
-      } else {
-        setCurrentLocation(currentAddress);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: { latitude, longitude } }) => {
+        setCurrentLat(latitude.toString());
+        setCurrentLong(longitude.toString());
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
+          )
+          .then((res) => {
+            const addrComponents = res.data.results[0].address_components || [];
+            const _pincode = (
+              addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
+            ).long_name;
+            localStorage.setItem('currentAddress', addrComponents[2].short_name);
+            setCurrentLocation(addrComponents[2].short_name);
+            setCurrentPincode(_pincode);
+          });
+      },
+      (err) => {
+        console.log(err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
       }
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${process.env.GOOGLE_API_KEY}`;
-      axios.get(url).then((res) => {
-        if (res && res.data && res.data.results[0]) {
-          const { lat, lng } = res.data.results[0].geometry.location;
-          const addrComponents = res.data.results[0].address_components || [];
-          const _pincode = (
-            addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
-          ).long_name;
-          setCurrentLat(lat.toString());
-          setCurrentLong(lng.toString());
-          setCurrentPincode(_pincode);
-        }
-      });
-    } else {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: { latitude, longitude } }) => {
-          setCurrentLat(latitude.toString());
-          setCurrentLong(longitude.toString());
-          axios
-            .get(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
-            )
-            .then((res) => {
-              const addrComponents = res.data.results[0].address_components || [];
-              const _pincode = (
-                addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
-              ).long_name;
-              localStorage.setItem('currentAddress', addrComponents[2].short_name);
-              setCurrentLocation(addrComponents[2].short_name);
-              setCurrentPincode(_pincode);
-            });
-        },
-        (err) => {
-          console.log(err.message);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0,
-        }
-      );
-    }
+    );
   }, []);
 
   return (
