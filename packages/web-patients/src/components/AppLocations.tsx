@@ -252,7 +252,7 @@ export const AppLocations: React.FC = (props) => {
     <div className={classes.userLocation}>
       <Helmet>
         <script
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_API_KEY}&libraries=places`}
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
         ></script>
       </Helmet>
       <div
