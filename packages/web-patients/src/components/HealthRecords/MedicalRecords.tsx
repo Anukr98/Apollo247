@@ -11,7 +11,6 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
-import CSS from 'csstype';
 import {
   DELETE_PATIENT_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
@@ -74,6 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     mobileOverlay: {
       [theme.breakpoints.down('xs')]: {
+        display: 'block',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -150,6 +150,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addReportMobile: {
+      '& img': {
+        verticalAlign: 'middle',
+      },
       [theme.breakpoints.up('sm')]: {
         display: 'none',
       },
@@ -321,12 +324,6 @@ export const MedicalRecords: React.FC = (props) => {
   const [activeData, setActiveData] = useState<any | null>(null);
   const { isSigningIn } = useAuth();
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
-  const mobileStyles: CSS.Properties = {
-    display: isSmallScreen && !showMobileDetails ? 'none' : 'block',
-  };
-  const recordStyles: CSS.Properties = {
-    display: isSmallScreen && showMobileDetails ? 'none' : 'block',
-  };
 
   const fetchData = () => {
     client
@@ -494,7 +491,7 @@ export const MedicalRecords: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div style={recordStyles} className={classes.leftSection}>
+      <div className={classes.leftSection}>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -559,7 +556,8 @@ export const MedicalRecords: React.FC = (props) => {
           </AphButton>
         </div>
       </div>
-      <div style={mobileStyles} className={`${classes.rightSection} ${classes.mobileOverlay}`}>
+      <div
+        className={`${classes.rightSection} ${isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay}`}>
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
             <AphButton
@@ -583,11 +581,11 @@ export const MedicalRecords: React.FC = (props) => {
         <Scrollbars
           autoHide={true}
           autoHeight
-          autoHeightMax={
+          autoHeightMin={
             isMediumScreen
               ? 'calc(100vh - 287px)'
               : isSmallScreen
-              ? 'calc(100vh - 96px)'
+              ? 'calc(100vh - 55px)'
               : 'calc(100vh - 245px)'
           }
         >
