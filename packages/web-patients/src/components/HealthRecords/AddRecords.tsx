@@ -814,7 +814,6 @@ export const AddRecords: React.FC = (props) => {
                               <AphTextField
                                 disabled={showSpinner}
                                 value={dateOfTest}
-                                onClick={() => setShowCalendar(true)}
                                 onFocus={() => setShowCalendar(true)}
                                 placeholder="dd/mm/yyyy"
                               />
@@ -852,8 +851,7 @@ export const AddRecords: React.FC = (props) => {
                               <AphTextField
                                 disabled={showSpinner}
                                 value={dateOfPrescription}
-                                onClick={() => setShowCalendar(true)}
-                                onClick={() => setShowCalendar(true)}
+                                onFocus={() => setShowCalendar(true)}
                                 placeholder="dd/mm/yyyy"
                               />
                               {showCalendar && (
