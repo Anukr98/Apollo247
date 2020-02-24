@@ -507,7 +507,10 @@ export const Consultations: React.FC = (props) => {
         </div>
       </div>
       <div
-        className={`${classes.rightSection} ${isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay}`}>
+        className={`${classes.rightSection} ${
+          isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
+        }`}
+      >
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
             <AphButton
