@@ -3,12 +3,12 @@ import { Theme, Grid, Avatar, Switch } from '@material-ui/core';
 import React, { useState } from 'react';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import {
-  GetPatientAppointments,
+  // GetPatientAppointments,
   GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
 } from 'graphql/types/GetPatientAppointments';
-import { DoctorType, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'graphql/types/globalTypes';
+import { DoctorType, APPOINTMENT_STATE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
@@ -224,6 +224,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const [isAppDetailsPopoverOpen, setIsAppDetailsPopoverOpen] = useState<boolean>(false);
   const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
   const [currentApptTime, setCurrentApptTime] = useState<string>('');
+  const [appointmentType, setAppointmentType] = useState<string>('');
 
   const shouldRefreshComponent = (diff: number) => {
     const id = setInterval(() => {
@@ -359,6 +360,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       setIsAppDetailsPopoverOpen(true);
                     } else {
                       setIsScheduledAppPopoverOpen(true);
+                      setAppointmentType(
+                        appointmentDetails.appointmentType === 'ONLINE' ? 'online' : 'clinic'
+                      );
                       setCurrentDoctorName(fullName);
                       setCurrentApptTime(
                         moment(appointmentDetails.appointmentDateTime).format(
@@ -481,8 +485,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         <AphDialogTitle>Scheduled Appointment</AphDialogTitle>
         <div className={classes.messageBox}>
           <p>
-            You have an online consultation scheduled with {currentDoctorName} for {currentApptTime}
-            .
+            You have {appointmentType === 'online' ? 'an online consultation' : 'clinic visit'}{' '}
+            scheduled with {currentDoctorName} for {currentApptTime}.
           </p>
           <p>Kindly visit the app to continue with the consultation or to make any changes.</p>
           <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
