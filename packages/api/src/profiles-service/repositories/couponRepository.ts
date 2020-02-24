@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, Raw } from 'typeorm';
 import { Coupon } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -25,7 +25,7 @@ export class CouponRepository extends Repository<Coupon> {
     return this.findOne({
       where: {
         isActive: 'true',
-        code,
+        code: Raw((alias) => `${alias} ILIKE '%${code}%'`),
       },
       order: {
         createdDate: 'DESC',
