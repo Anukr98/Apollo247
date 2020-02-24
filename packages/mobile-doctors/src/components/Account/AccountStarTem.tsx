@@ -235,7 +235,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const renderStarDoctorCards = () => {
     return starDoctorsActive.map((starDoctor, i) => {
-
       return (
         <DoctorCard
           onRemove={(id) => {
@@ -252,7 +251,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
           location={getFormattedLocation(starDoctor)}
         />
       );
-
     });
   };
 
