@@ -30,6 +30,7 @@ import {
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -317,6 +318,7 @@ export const MedicalRecords: React.FC = (props) => {
 
   const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
   const [activeData, setActiveData] = useState<any | null>(null);
+  const { isSigningIn } = useAuth();
 
   const fetchData = () => {
     client
@@ -373,12 +375,14 @@ export const MedicalRecords: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!medicalRecords) {
-      setLoading(true);
-      fetchData();
-    }
-    if (!labTests || !healthChecks || !hospitalizations) {
-      fetchTestData();
+    if (!isSigningIn) {
+      if (!medicalRecords) {
+        setLoading(true);
+        fetchData();
+      }
+      if (!labTests || !healthChecks || !hospitalizations) {
+        fetchTestData();
+      }
     }
     if (medicalRecords && (labTests || healthChecks || hospitalizations)) {
       let mergeArray: { type: string; data: any }[] = [];
@@ -400,10 +404,9 @@ export const MedicalRecords: React.FC = (props) => {
       const sortedData = sortByDate(mergeArray);
       setAllCombinedData(sortedData);
       setActiveData(sortedData[0]);
-      // setFilteredData(sortedData);
       setLoading(false);
     }
-  }, [medicalRecords, labTests, healthChecks, hospitalizations]);
+  }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
 
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
