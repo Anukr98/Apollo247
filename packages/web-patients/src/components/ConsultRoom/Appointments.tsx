@@ -37,6 +37,8 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 
 // import { getIstTimestamp } from 'helpers/dateHelpers';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -607,7 +609,7 @@ export const Appointments: React.FC = (props) => {
             <div className={classes.doctorInfo}>
               <Avatar alt="" src={require('images/dp_03.png')} className={classes.bigAvatar} />
               <div className={classes.doctorText}>
-                <div className={classes.drName}>{appointmentDoctorName}</div>
+                <div className={classes.drName}>{_startCase(_toLower(appointmentDoctorName))}</div>
                 <div className={classes.specality}>{specialtyName}</div>
               </div>
             </div>
@@ -616,12 +618,12 @@ export const Appointments: React.FC = (props) => {
             </div>
           </div>
           <p>
-            Your consultation with {appointmentDoctorName} is confirmed. Thank you for choosing
-            Apollo 247.
+            Your consultation with {_startCase(_toLower(appointmentDoctorName))} is confirmed. Thank
+            you for choosing Apollo 247.
           </p>
           <p className={classes.borderText}>
-            We shared your details with {appointmentDoctorName}'s team. Please download the app to
-            continue with the consultation.
+            We shared your details with {_startCase(_toLower(appointmentDoctorName))}'s team. Please
+            download the app to continue with the consultation.
           </p>
           <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
             Download Apollo247 App

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -89,8 +90,9 @@ export enum DOCTOR_ONLINE_STATUS {
 }
 
 export enum DiscountType {
-  AMOUNT = "AMOUNT",
+  FLATPRICE = "FLATPRICE",
   PERCENT = "PERCENT",
+  PRICEOFF = "PRICEOFF",
 }
 
 export enum DoctorType {

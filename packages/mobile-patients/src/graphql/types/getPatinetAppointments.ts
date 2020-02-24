@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Salutation, DoctorType } from "./globalTypes";
@@ -7,6 +8,19 @@ import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, 
 // ====================================================
 // GraphQL query operation: getPatinetAppointments
 // ====================================================
+
+export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments_appointmentPayments {
+  __typename: "AppointmentPayment";
+  id: string;
+  amountPaid: number;
+  paymentRefId: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
+}
 
 export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
@@ -51,6 +65,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
 
 export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments {
   __typename: "PatinetAppointments";
+  appointmentPayments: (getPatinetAppointments_getPatinetAppointments_patinetAppointments_appointmentPayments | null)[] | null;
   appointmentType: APPOINTMENT_TYPE;
   id: string;
   patientId: string;
