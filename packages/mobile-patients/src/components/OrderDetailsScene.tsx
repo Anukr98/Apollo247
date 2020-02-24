@@ -232,6 +232,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               quantity: items[index].qty || 1,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
               thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+              isInStock: medicineDetails.is_in_stock,
             } as ShoppingCartItem;
           })
           .filter((item) => item) as ShoppingCartItem[];
