@@ -3,7 +3,6 @@ import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { consultHoursRepository } from 'doctors-service/repositories/consultHoursRepository';
 import {
   SdDashboardSummary,
   FeedbackDashboardSummary,
@@ -11,7 +10,7 @@ import {
   DoctorFeeSummary,
   TRANSFER_INITIATED_TYPE,
 } from 'consults-service/entities';
-import { ConsultMode, WeekDay, Doctor } from 'doctors-service/entities';
+import { ConsultMode, WeekDay } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -30,7 +29,7 @@ import { LoginHistoryRepository } from 'doctors-service/repositories/loginSessio
 import _isEmpty from 'lodash/isEmpty';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
-import { subMilliseconds } from 'date-fns';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -136,7 +135,7 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   DoctorSpecialtyRepo: doctorsDb.getCustomRepository(DoctorSpecialtyRepository),
   CurrentAvailStatusRepo: consultsDb.getCustomRepository(CurrentAvailStatusRepository),
   UtilizationCapacityRepo: consultsDb.getCustomRepository(UtilizationCapacityRepository),
-  consultHoursRepo: doctorsDb.getCustomRepository(consultHoursRepository),
+  consultHoursRepo: doctorsDb.getCustomRepository(DoctorConsultHoursRepository),
 });
 
 const updateConsultRating: Resolver<
@@ -416,7 +415,6 @@ const updateUtilizationCapacity: Resolver<
     DoctorSpecialtyRepo,
     UtilizationCapacityRepo,
     consultHoursRepo,
-    dashboardRepo,
   } = getRepos(context);
   const DoctorSpeciality = await DoctorSpecialtyRepo.findById(args.specialityId);
   if (!DoctorSpeciality) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
@@ -425,9 +423,9 @@ const updateUtilizationCapacity: Resolver<
   const doctorIds = Doctors.map((doctor) => {
     return doctor.id;
   });
-  const totalSlots = await consultHoursRepo.getConsultHours(doctorIds, args.weekDay);
+  const totalSlots = await consultHoursRepo.getTotalConsultHours(doctorIds, args.weekDay);
   const appointments = await apptRepo.getBookedSlots(doctorIds);
-  const utilizationCapacity = await UtilizationCapacityRepo.updateUtilization(
+  await UtilizationCapacityRepo.updateUtilization(
     args.specialityId,
     DoctorSpeciality.name,
     totalSlots,

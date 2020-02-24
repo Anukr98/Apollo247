@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, In } from 'typeorm';
 import { ConsultHours, WeekDay } from 'doctors-service/entities';
 import { addMilliseconds, format } from 'date-fns';
 import { AphError } from 'AphError';
@@ -41,6 +41,21 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
       ],
       order: { startTime: 'ASC' },
     });
+  }
+  async getTotalConsultHours(doctorIds: string[], weekDay: WeekDay) {
+    const consult_hours = await this.find({
+      where: [
+        {
+          doctor: In(doctorIds),
+          weekDay,
+        },
+      ],
+    });
+    let count: number = 0;
+    consult_hours.map((consult_hour) => {
+      if (consult_hour.weekDay === weekDay) count = count + consult_hour.slotsPerHour;
+    });
+    return count;
   }
 
   checkByDoctorAndConsultMode(doctor: string, consultMode: string) {
