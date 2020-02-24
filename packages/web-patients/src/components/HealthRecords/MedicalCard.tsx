@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
@@ -109,6 +109,9 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{props.name}</div>
+          {/* <div className={classes.doctorService}>
+            <span>Apollo Sugar Clinic, Hyderabad</span>
+          </div> */}
         </div>
         <div className={classes.moreIcon}>
           <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />

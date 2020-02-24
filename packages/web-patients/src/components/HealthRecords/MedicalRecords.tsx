@@ -11,7 +11,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
-
+import CSS from 'csstype';
 import {
   DELETE_PATIENT_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
@@ -70,6 +70,16 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         display: 'none',
         paddingRight: 0,
+      },
+    },
+    mobileOverlay: {
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        backgroundColor: '#f0f1ec',
+        zIndex: 991,
       },
     },
     sectionHeader: {
@@ -136,11 +146,10 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
         display: 'flex',
         alignItems: 'center',
-        padding: '0 15px',
+        padding: '8px 8px 8px 20px',
       },
     },
     addReportMobile: {
-      fontSize: 14,
       [theme.breakpoints.up('sm')]: {
         display: 'none',
       },
@@ -186,13 +195,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div:last-child >div': {
         position: 'relative',
         '&:before': {
-          position: 'absolute',
-          content: '""',
-          left: -29,
-          top: -24,
-          width: 4,
-          height: '200%',
-          backgroundColor: theme.palette.common.white,
           [theme.breakpoints.down('xs')]: {
             backgroundColor: '#f0f1ec',
           },
@@ -315,10 +317,15 @@ export const MedicalRecords: React.FC = (props) => {
   const [hospitalizations, setHospitalizations] = useState<(HospitalizationsType | null)[] | null>(
     null
   );
-
   const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
   const [activeData, setActiveData] = useState<any | null>(null);
-  const { isSigningIn } = useAuth();
+  const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
+  const mobileStyles: CSS.Properties = {
+    display: isSmallScreen && !showMobileDetails ? 'none' : 'block',
+  };
+  const recordStyles: CSS.Properties = {
+    display: isSmallScreen && showMobileDetails ? 'none' : 'block',
+  };
 
   const fetchData = () => {
     client
@@ -403,7 +410,10 @@ export const MedicalRecords: React.FC = (props) => {
         });
       const sortedData = sortByDate(mergeArray);
       setAllCombinedData(sortedData);
-      setActiveData(sortedData[0]);
+      if (!isSmallScreen) {
+        setActiveData(sortedData[0]);
+      }
+      // setFilteredData(sortedData);
       setLoading(false);
     }
   }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
@@ -497,16 +507,24 @@ export const MedicalRecords: React.FC = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 320px)'
+              : 'calc(100vh - 245px)'
           }
         >
           <div className={classes.consultationsList}>
             {allCombinedData &&
               allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: any, idx: number) => (
-                <div key={idx} onClick={() => setActiveData(combinedData)}>
+              allCombinedData.map((combinedData: any) => (
+                <div
+                  onClick={() => {
+                    setActiveData(combinedData);
+                    if (isSmallScreen) {
+                      setShowMobileDetails(true);
+                    }
+                  }}
+                >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
+                    {/* <span>Today, 12 Aug 2019</span> */}
                     <span>{getFormattedDate(combinedData)}</span>
                   </div>
                   <MedicalCard
@@ -518,6 +536,15 @@ export const MedicalRecords: React.FC = (props) => {
                 </div>
               ))}
           </div>
+          {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy
+                in one place!
+              </p>
+            </div>
+          )}
         </Scrollbars>
         <div className={classes.addReportActions}>
           <AphButton
@@ -531,7 +558,27 @@ export const MedicalRecords: React.FC = (props) => {
           </AphButton>
         </div>
       </div>
-      <div className={`${classes.rightSection}`}>
+      <div style={mobileStyles} className={`${classes.rightSection} ${classes.mobileOverlay}`}>
+        <div className={classes.sectionHeader}>
+          <div className={classes.headerBackArrow}>
+            <AphButton
+              onClick={() => {
+                if (isSmallScreen) {
+                  setShowMobileDetails(false);
+                }
+              }}
+            >
+              <img src={require('images/ic_back.svg')} />
+            </AphButton>
+            <span>REPORT Details</span>
+          </div>
+          {/* <div className={classes.headerActions}>
+            <AphButton>View Consult</AphButton>
+            <div className={classes.downloadIcon}>
+              <img src={require('images/ic_download.svg')} alt="" />
+            </div>
+          </div> */}
+        </div>
         <Scrollbars
           autoHide={true}
           autoHeight
@@ -543,14 +590,28 @@ export const MedicalRecords: React.FC = (props) => {
               : 'calc(100vh - 245px)'
           }
         >
-          {activeData ? (
-            <>
-              <div className={classes.sectionHeader}>
-                <div className={classes.headerBackArrow}>
-                  <AphButton>
-                    <img src={require('images/ic_back.svg')} />
-                  </AphButton>
-                  <span>CBC Details</span>
+          {(!isSmallScreen && activeData) || (isSmallScreen && showMobileDetails && activeData) ? (
+            <div className={classes.medicalRecordsDetails}>
+              <div className={classes.cbcDetails}>
+                <div className={classes.reportsDetails}>
+                  <label>Check-up Date</label>
+                  {/* <p>03 May 2019</p> */}
+                  <p>{getFormattedDate(activeData)}</p>
+                </div>
+                <div className={classes.reportsDetails}>
+                  <label>Source</label>
+                  {/* <p>Apollo Hospital, Jubilee Hills</p> */}
+                  <p>{getSource()}</p>
+                </div>
+                <div className={classes.reportsDetails}>
+                  <label>Referring Doctor</label>
+                  <p>
+                    {!!activeData.data.referringDoctor
+                      ? activeData.data.referringDoctor
+                      : !!activeData.data.signingDocName
+                      ? activeData.data.signingDocName
+                      : '-'}
+                  </p>
                 </div>
               </div>
               <div className={classes.medicalRecordsDetails}>

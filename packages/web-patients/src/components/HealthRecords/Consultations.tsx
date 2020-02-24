@@ -22,6 +22,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import ImageGallery from 'react-image-gallery';
+import CSS from 'csstype';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -131,6 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addReportMobile: {
+      display: 'none',
       [theme.breakpoints.up('sm')]: {
         display: 'none',
       },
@@ -239,11 +241,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       fontSize: 13,
       fontWeight: 'bold',
-      display: 'block',
+      display: 'none',
     },
     mobileOverlay: {
       [theme.breakpoints.down('xs')]: {
-        display: 'block',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -296,6 +297,13 @@ export const Consultations: React.FC = (props) => {
   const [allConsultsData, setAllConsultsData] = useState<any[] | null>(null);
   const [filter, setFilter] = useState<string>('ALL');
   const [activeConsult, setActiveConsult] = useState<any | null>(null);
+  const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
+  const mobileStyles: CSS.Properties = {
+    display: isSmallScreen && !showMobileDetails ? 'none' : 'block',
+  };
+  const recordStyles: CSS.Properties = {
+    display: isSmallScreen && showMobileDetails ? 'none' : 'block',
+  };
 
   const fetchPastData = () => {
     setLoading(true);
@@ -349,7 +357,9 @@ export const Consultations: React.FC = (props) => {
           setLoading(false);
           setConsultsData(array);
           setAllConsultsData(array);
-          setActiveConsult(array[0]);
+          if (!isSmallScreen) {
+            setActiveConsult(array[0]);
+          }
         })
         .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));
@@ -376,7 +386,9 @@ export const Consultations: React.FC = (props) => {
         });
       }
       setConsultsData(filteredConsults);
-      setActiveConsult(filteredConsults ? filteredConsults[0] : null);
+      if (!isSmallScreen) {
+        setActiveConsult(filteredConsults ? filteredConsults[0] : null);
+      }
     }
   }, [filter, allConsultsData]);
 
@@ -419,7 +431,7 @@ export const Consultations: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.leftSection}>
+      <div style={recordStyles} className={classes.leftSection}>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -460,9 +472,16 @@ export const Consultations: React.FC = (props) => {
             {consultsData &&
               consultsData.length > 0 &&
               consultsData.map(
-                (consult, idx) =>
+                (consult) =>
                   consult && (
-                    <div key={idx} onClick={() => setActiveConsult(consult)}>
+                    <div
+                      onClick={() => {
+                        setActiveConsult(consult);
+                        if (isSmallScreen) {
+                          setShowMobileDetails(true);
+                        }
+                      }}
+                    >
                       <div className={classes.consultGroupHeader}>
                         <div className={classes.circle}></div>
                         {consult.patientId
@@ -478,6 +497,15 @@ export const Consultations: React.FC = (props) => {
                   )
               )}
           </div>
+          {isSmallScreen && consultsData && consultsData.length === 0 && (
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy
+                in one place!
+              </p>
+            </div>
+          )}
         </Scrollbars>
         <div className={classes.addReportActions}>
           <Link to={clientRoutes.addRecords()} className={classes.addReport}>
@@ -485,10 +513,16 @@ export const Consultations: React.FC = (props) => {
           </Link>
         </div>
       </div>
-      <div className={classes.rightSection}>
+      <div style={mobileStyles} className={`${classes.rightSection} ${classes.mobileOverlay}`}>
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
-            <AphButton>
+            <AphButton
+              onClick={() => {
+                if (isSmallScreen) {
+                  setShowMobileDetails(false);
+                }
+              }}
+            >
               <img src={require('images/ic_back.svg')} />
             </AphButton>
             <span>Prescription Details</span>
@@ -512,7 +546,8 @@ export const Consultations: React.FC = (props) => {
           }
         >
           <div className={classes.consultationDetails}>
-            {activeConsult && activeConsult.patientId ? (
+            {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
+            (isSmallScreen && showMobileDetails && activeConsult) ? (
               <>
                 <Symptoms caseSheetList={activeConsult.caseSheet} />
                 <Prescription caseSheetList={activeConsult.caseSheet} />
