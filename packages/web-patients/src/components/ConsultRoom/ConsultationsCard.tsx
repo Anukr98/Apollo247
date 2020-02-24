@@ -388,9 +388,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           difference <= 15 && difference > 0 ? classes.availableNow : ''
                         }`}
                       >
-                        {difference <= 15 && difference > 0
-                          ? `Available in ${difference} mins`
-                          : otherDateMarkup(appointmentTime)}
+                        {appointmentDetails.appointmentType === 'ONLINE'
+                          ? difference <= 15 && difference > 0
+                            ? `Available in ${difference} mins`
+                            : otherDateMarkup(appointmentTime)
+                          : 'Clinic Visit'}
                       </div>
                       {/* <Link to={clientRoutes.doctorDetails(doctorId)} target="_blank"> */}
                       <div className={classes.doctorName}>{`${_startCase(
@@ -405,7 +407,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         <span>
                           {appointmentDetails.appointmentType === 'ONLINE'
                             ? 'Online Consultation'
-                            : 'Clinic Visit'}
+                            : `${facilityName}, ${streetName}`}
                         </span>
                         <span>
                           {appointmentDetails.appointmentType === 'ONLINE' ? (
@@ -415,13 +417,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           )}
                         </span>
                       </div>
-                      <div className={classes.consultaitonType}>
+                      {/* <div className={classes.consultaitonType}>
                         <span>
                           {appointmentDetails.appointmentType !== 'ONLINE'
                             ? `${facilityName}, ${streetName}`
                             : ''}
                         </span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                   <div className={classes.cardBottomActons}>
