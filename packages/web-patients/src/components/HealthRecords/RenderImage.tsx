@@ -16,6 +16,21 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       display: 'block',
     },
+    prescriptionImage: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 40,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+      },
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
   };
 });
 
@@ -85,5 +100,9 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   if (showSpinner) {
     return <CircularProgress className={classes.loader} />;
   }
-  return <img src={placeImage} alt={'No Image'} />;
+  return (
+    <div className={classes.prescriptionImage}>
+      <img src={placeImage} alt="Prescription Preview" />
+    </div>
+  );
 };
