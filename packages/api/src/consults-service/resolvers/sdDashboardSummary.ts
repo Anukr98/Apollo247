@@ -179,6 +179,8 @@ const updateConsultRating: Resolver<
       okRating,
       helpTickets: helpTicketCount,
     };
+
+    console.log('helpTicketCount',helpTicketCount)
     await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
   return { ratingRowsCount: feedbackData.length };
