@@ -173,9 +173,11 @@ interface AddNewProfileProps {
   selectedPatientId: string;
   successHandler: (isPopoverOpen: boolean) => void;
   isProfileDelete: boolean;
+  isMeClicked?: boolean;
 }
 
 export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
+
   const classes = useStyles();
   const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
 
@@ -185,6 +187,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const [dob, setDob] = useState('');
   const [genderSelected, setGenderSelected] = useState('');
   const [relation, setRelation] = useState('');
+  const [selectedRelation, setSelectedRelation] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
 
@@ -221,6 +224,28 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
 
   const addProfileMutation = useMutation(ADD_PROFILE);
   const editProfileMutation = useMutation(EDIT_PROFILE);
+
+  const multiplePrimaryUsers = allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length > 0;
+  const [primaryUserErrorMessage, setPrimaryUserErrorMessage] = useState<string>('');
+
+
+  useEffect(() => {
+    if (selectedPatientId.length > 0) {
+      const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
+        return currentPatientDetails.id === selectedPatientId;
+      });
+      if (multiplePrimaryUsers && selectedRelation === 'ME' && selectedPatientDetails && selectedPatientDetails.relation !== selectedRelation) {
+        setPrimaryUserErrorMessage('Relation can be set as Me for only 1 profile');
+      } else {
+        setPrimaryUserErrorMessage('');
+      }
+      if (multiplePrimaryUsers && props.isMeClicked && selectedRelation.length > 0 && selectedRelation !== 'ME') {
+        setPrimaryUserErrorMessage('fOR ATLEAST OME');
+      }
+
+    }
+  }, [selectedRelation, selectedPatientId]);
+
 
   useEffect(() => {
     if (selectedPatientId.length > 0) {
@@ -267,6 +292,8 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
     }
   }, [allCurrentPatients, selectedPatientId]);
 
+
+
   const disableSubmitButton =
     (firstName.length > 0 &&
       lastName.length > 0 &&
@@ -278,6 +305,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         isLastNameValid &&
         isRelationValid &&
         isGenderValid &&
+        !primaryUserErrorMessage &&
         isValidDob &&
         (emailAddress !== '' ? isEmailAddressValid : true))) ||
     isProfileDelete;
@@ -435,7 +463,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                             color="secondary"
                             className={`${classes.genderBtns} ${
                               gender === genderSelected ? classes.btnActive : ''
-                            }`}
+                              }`}
                             value={genderSelected}
                             onClick={() => {
                               setGenderSelected(gender as Gender);
@@ -452,7 +480,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <label>Relation</label>
                   <AphSelect
                     onChange={(e) => {
+                      setSelectedRelation(e.target.value as Relation)
                       setRelation(e.target.value as Relation);
+                      multiplePrimaryUsers
                     }}
                     value={relation}
                   >
@@ -464,6 +494,11 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       );
                     })}
                   </AphSelect>
+                  {primaryUserErrorMessage && (
+                    <FormHelperText component="div" error={true}>
+                      {primaryUserErrorMessage}
+                    </FormHelperText>
+                  )}
                 </FormControl>
                 <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
                   <AphTextField
