@@ -177,7 +177,6 @@ interface AddNewProfileProps {
 }
 
 export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
-
   const classes = useStyles();
   const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
 
@@ -225,27 +224,35 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const addProfileMutation = useMutation(ADD_PROFILE);
   const editProfileMutation = useMutation(EDIT_PROFILE);
 
-  const multiplePrimaryUsers = allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length > 0;
+  const multiplePrimaryUsers =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length > 0;
   const [primaryUserErrorMessage, setPrimaryUserErrorMessage] = useState<string>('');
-
 
   useEffect(() => {
     if (selectedPatientId.length > 0) {
       const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
         return currentPatientDetails.id === selectedPatientId;
       });
-      if (multiplePrimaryUsers && selectedRelation === 'ME' && selectedPatientDetails && selectedPatientDetails.relation !== selectedRelation) {
+      if (
+        multiplePrimaryUsers &&
+        selectedRelation === 'ME' &&
+        selectedPatientDetails &&
+        selectedPatientDetails.relation !== selectedRelation
+      ) {
         setPrimaryUserErrorMessage('Relation can be set as Me for only 1 profile');
       } else {
         setPrimaryUserErrorMessage('');
       }
-      if (multiplePrimaryUsers && props.isMeClicked && selectedRelation.length > 0 && selectedRelation !== 'ME') {
+      if (
+        multiplePrimaryUsers &&
+        props.isMeClicked &&
+        selectedRelation.length > 0 &&
+        selectedRelation !== 'ME'
+      ) {
         setPrimaryUserErrorMessage('fOR ATLEAST OME');
       }
-
     }
   }, [selectedRelation, selectedPatientId]);
-
 
   useEffect(() => {
     if (selectedPatientId.length > 0) {
@@ -291,8 +298,6 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
       }
     }
   }, [allCurrentPatients, selectedPatientId]);
-
-
 
   const disableSubmitButton =
     (firstName.length > 0 &&
@@ -463,7 +468,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                             color="secondary"
                             className={`${classes.genderBtns} ${
                               gender === genderSelected ? classes.btnActive : ''
-                              }`}
+                            }`}
                             value={genderSelected}
                             onClick={() => {
                               setGenderSelected(gender as Gender);
@@ -480,9 +485,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <label>Relation</label>
                   <AphSelect
                     onChange={(e) => {
-                      setSelectedRelation(e.target.value as Relation)
+                      setSelectedRelation(e.target.value as Relation);
                       setRelation(e.target.value as Relation);
-                      multiplePrimaryUsers
+                      multiplePrimaryUsers;
                     }}
                     value={relation}
                   >

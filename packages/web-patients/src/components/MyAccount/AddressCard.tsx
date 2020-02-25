@@ -70,11 +70,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface AddressCardProps {
   addresses: Array<GetPatientAddressList_getPatientAddressList_addressList>;
-
 }
 
 export const AddressCard: React.FC<AddressCardProps> = (props) => {
-
   const classes = useStyles({});
   const [isEditAddressDialogOpen, setIsEditAddressDialogOpen] = React.useState<boolean>(false);
   const [isDeletePopoverOpen, setIsDeletePopoverOpen] = React.useState<boolean>(false);
@@ -126,7 +124,6 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
           setIsAddAddressDialogOpen={setIsEditAddressDialogOpen}
           currentAddress={currentAddress}
           disableActions
-
         />
       </AphDialog>
       <Popover
@@ -151,7 +148,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
               .then(() => {
                 setIsPopoverOpen(true);
               })
-              .catch(() => { });
+              .catch(() => {});
           }}
         >
           Delete Address
