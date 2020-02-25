@@ -35,6 +35,7 @@ import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 import { MedicineDetails } from 'components/Medicine/MedicineDetails';
 import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
+import { LocationProvider } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,7 +144,9 @@ const AppContainer: React.FC = () => {
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <MedicinesCartProvider>
-              <App />
+              <LocationProvider>
+                <App />
+              </LocationProvider>
             </MedicinesCartProvider>
           </MuiPickersUtilsProvider>
         </AphThemeProvider>

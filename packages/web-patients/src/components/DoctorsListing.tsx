@@ -1,6 +1,6 @@
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import { DoctorCard } from 'components/DoctorCard';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
@@ -17,6 +17,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Scrollbars from 'react-custom-scrollbars';
 import _find from 'lodash/find';
+import { LocationContext } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -162,7 +163,6 @@ interface DoctorsListingProps {
 
 const convertAvailabilityToDate = (availability: String[]) => {
   return _map(availability, (ava) => {
-    // if (ava === 'now') return 'NOW';
     if (ava === 'today') return format(new Date(), 'yyyy-MM-dd');
     if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
     if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
@@ -183,12 +183,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     PHYSICAL: 'Clinic Visit',
   };
 
-  // const [show20SecPopup, setShow20SecPopup] = useState<boolean>(false);
-  // const [show40SecPopup, setShow40SecPopup] = useState<boolean>(false);
-  // const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isLargeScreen = useMediaQuery('(min-width:901px)');
   const mascotRef = useRef(null);
+  const { currentLat, currentLong } = useContext(LocationContext);
 
   type Range = {
     [index: number]: {
@@ -229,12 +227,22 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       filter.availability && filter.availability.findIndex((v) => v == 'now') >= 0
         ? format(new Date(), 'yyyy-MM-dd HH:mm')
         : '',
+    geolocation: {
+      latitude: currentLat && currentLat.length > 0 ? parseFloat(currentLat) : 0,
+      longitude: currentLong && currentLong.length > 0 ? parseFloat(currentLong) : 0,
+    },
   };
 
-  const { data, loading } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
+  const { data, loading, refetch } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
     variables: { filterInput: apiVairables },
     fetchPolicy: 'no-cache',
   });
+
+  useEffect(() => {
+    if (currentLat || currentLong) {
+      refetch();
+    }
+  }, [currentLat, currentLong]);
 
   if (loading)
     <div className={classes.circlularProgress}>
