@@ -218,7 +218,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         const itemsToAdd = result
           .map(({ data: { productdp } }, index) => {
             const medicineDetails = (productdp && productdp[0]) || {};
-            if (!medicineDetails.is_in_stock) return null;
+            // if (!medicineDetails.is_in_stock) return null;
             return {
               id: medicineDetails!.sku!,
               mou: medicineDetails.mou,
@@ -232,8 +232,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               quantity: items[index].qty || 1,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
               thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-              isInStock: medicineDetails.is_in_stock,
-            } as ShoppingCartItem;
+              isInStock: !!medicineDetails.is_in_stock,
+            };
           })
           .filter((item) => item) as ShoppingCartItem[];
 
