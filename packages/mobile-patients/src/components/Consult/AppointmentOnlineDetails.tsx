@@ -54,7 +54,7 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { useAppCommonData } from '../AppCommonDataProvider';
+import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '../../graphql/types/getPatinetAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -172,8 +172,9 @@ type rescheduleType = {
 export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
-  const data = props.navigation.state.params!.data;
-  const doctorDetails = data.doctorInfo;
+  const data: getPatinetAppointments_getPatinetAppointments_patinetAppointments = props.navigation
+    .state.params!.data;
+  const doctorDetails = data.doctorInfo!;
   const movedFrom = props.navigation.state.params!.from;
   console.log('******DATA*********', { data, doctorDetails });
 
@@ -197,7 +198,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { VirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -541,8 +541,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                       </>
                     )}{' '}
                     Rs. {VirtualConsultationFee} */}
-                    {Number(VirtualConsultationFee) <= 0 ||
-                    VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                    {g(data, 'appointmentPayments', '0' as any, 'amountPaid') ===
+                    Number(doctorDetails.onlineConsultationFees) ? (
                       <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
                     ) : (
                       <>
@@ -554,7 +554,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                         >
                           {`(Rs. ${doctorDetails.onlineConsultationFees})`}
                         </Text>
-                        <Text> Rs. {VirtualConsultationFee}</Text>
+                        <Text> Rs. {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}</Text>
                       </>
                     )}
                   </Text>

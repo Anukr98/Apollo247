@@ -1263,7 +1263,7 @@ export class CurrentAvailabilityStatus extends BaseEntity {
 }
 
 @Entity()
-export class utilizationCapacity extends BaseEntity {
+export class UtilizationCapacity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

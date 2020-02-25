@@ -21,8 +21,6 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import ImageGallery from 'react-image-gallery';
-import CSS from 'csstype';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -46,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
     leftSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
-      padding: '0 0 20px 5px',
+      paddingLeft: 5,
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
@@ -187,7 +185,18 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& >div:last-child >div': {
         position: 'relative',
+      },
+    },
+    consultGroup: {
+      position: 'relative',
+      '&:last-child': {
         '&:before': {
+          content: '""',
+          position: 'absolute',
+          left: -18,
+          width: 4,
+          height: '100%',
+          backgroundColor: '#fff',
           [theme.breakpoints.down('xs')]: {
             backgroundColor: '#f0f1ec',
           },
@@ -245,6 +254,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     mobileOverlay: {
       [theme.breakpoints.down('xs')]: {
+        display: 'block',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -276,7 +286,6 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    menuItemActive: { background: 'red' },
   };
 });
 
@@ -298,12 +307,6 @@ export const Consultations: React.FC = (props) => {
   const [filter, setFilter] = useState<string>('ALL');
   const [activeConsult, setActiveConsult] = useState<any | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
-  const mobileStyles: CSS.Properties = {
-    display: isSmallScreen && !showMobileDetails ? 'none' : 'block',
-  };
-  const recordStyles: CSS.Properties = {
-    display: isSmallScreen && showMobileDetails ? 'none' : 'block',
-  };
 
   const fetchPastData = () => {
     setLoading(true);
@@ -431,7 +434,7 @@ export const Consultations: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <div style={recordStyles} className={classes.leftSection}>
+      <div className={classes.leftSection}>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -465,7 +468,7 @@ export const Consultations: React.FC = (props) => {
               ? 'calc(100vh - 364px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 320px)'
+              : 'calc(100vh - 280px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -475,6 +478,7 @@ export const Consultations: React.FC = (props) => {
                 (consult) =>
                   consult && (
                     <div
+                      className={classes.consultGroup}
                       onClick={() => {
                         setActiveConsult(consult);
                         if (isSmallScreen) {
@@ -513,7 +517,11 @@ export const Consultations: React.FC = (props) => {
           </Link>
         </div>
       </div>
-      <div style={mobileStyles} className={`${classes.rightSection} ${classes.mobileOverlay}`}>
+      <div
+        className={`${classes.rightSection} ${
+          isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
+        }`}
+      >
         <div className={classes.sectionHeader}>
           <div className={classes.headerBackArrow}>
             <AphButton
@@ -542,7 +550,7 @@ export const Consultations: React.FC = (props) => {
               ? 'calc(100vh - 287px)'
               : isSmallScreen
               ? 'calc(100vh - 96px)'
-              : 'calc(100vh - 245px)'
+              : 'calc(100vh - 250px)'
           }
         >
           <div className={classes.consultationDetails}>

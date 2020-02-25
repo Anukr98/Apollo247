@@ -198,6 +198,10 @@ const useStyles = makeStyles((theme: Theme) => {
         minWidth: 200,
       },
     },
+    loader: {
+      top: -88,
+      zIndex: 999,
+    },
   };
 });
 
@@ -225,7 +229,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   if (loading) {
-    return <LinearProgress />;
+    return <LinearProgress className={classes.loader} />;
   }
   if (error) {
     return <div>Error....</div>;
@@ -377,6 +381,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       </div>
     );
   } else {
-    return <LinearProgress />;
+    return <LinearProgress className={classes.loader} />;
   }
 };

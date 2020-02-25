@@ -51,7 +51,7 @@ export const getAppointmentHistoryTypeDefs = gql`
     followUpParentId: String
     displayId: Int
     patientInfo: Patient @provides(fields: "id")
-    doctorInfo: Profile @provides(fields: "id")
+    doctorInfo: DoctorDetailsWithStatusExclude @provides(fields: "id")
     isJdQuestionsComplete: Boolean
     isSeniorConsultStarted: Boolean
     paymentOrderId: String
@@ -270,7 +270,7 @@ const getPatientLog: Resolver<
 export const getAppointmentHistoryResolvers = {
   AppointmentHistory: {
     doctorInfo(appointments: AppointmentHistory) {
-      return { __typename: 'Profile', id: appointments.doctorId };
+      return { __typename: 'DoctorDetailsWithStatusExclude', id: appointments.doctorId };
     },
 
     patientInfo(appointments: AppointmentHistory) {

@@ -37,6 +37,8 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 
 // import { getIstTimestamp } from 'helpers/dateHelpers';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -325,7 +327,7 @@ export const Appointments: React.FC = (props) => {
   // const mascotRef = useRef(null);
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
@@ -381,18 +383,28 @@ export const Appointments: React.FC = (props) => {
   // });
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
-    const currentDate = new Date();
-    const compareDate = currentDate.setDate(currentDate.getDate() - 6);
-    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    return compareDate < appointmentTime;
+    const appointmentDate = moment(appointmentDetails.appointmentDateTime);
+    const currentDate = moment(new Date());
+    const diffDays = currentDate.diff(appointmentDate, 'days');
+    return diffDays <= 7;
+    // const currentDate = new Date();
+    // console.log('diff in days..................', diffDays);
+    // const compareDate = currentDate.setDate(currentDate.getDate() - 7);
+    // const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
   });
 
   const pastAppointments = appointments.filter((appointmentDetails) => {
-    const currentDate = new Date();
-    const compareDate = currentDate.setDate(currentDate.getDate() - 7);
-    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    return compareDate > appointmentTime;
+    const appointmentDate = moment(appointmentDetails.appointmentDateTime);
+    const currentDate = moment(new Date());
+    const diffDays = currentDate.diff(appointmentDate, 'days');
+    return diffDays > 7;
+    // const currentDate = new Date();
+    // const compareDate = currentDate.setDate(currentDate.getDate() - 7);
+    // const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+    // return compareDate >= appointmentTime;
   });
+
+  // console.log(appointments, availableAppointments, pastAppointments);
 
   useEffect(() => {
     if (availableAppointments.length > 0 && successApptId !== '' && !isConfirmPopupLoaded) {
@@ -605,23 +617,23 @@ export const Appointments: React.FC = (props) => {
         <div className={classes.messageBox}>
           <div className={classes.doctorDetails}>
             <div className={classes.doctorInfo}>
-              <Avatar alt="" src={require('images/dp_03.png')} className={classes.bigAvatar} />
+              <Avatar alt="" src={photoUrl} className={classes.bigAvatar} />
               <div className={classes.doctorText}>
-                <div className={classes.drName}>{appointmentDoctorName}</div>
+                <div className={classes.drName}>{_startCase(_toLower(appointmentDoctorName))}</div>
                 <div className={classes.specality}>{specialtyName}</div>
               </div>
             </div>
             <div className={classes.appLogo}>
-              <img src={photoUrl} />
+              <img src={require('images/ic_logo.png')} />
             </div>
           </div>
           <p>
-            Your consultation with {appointmentDoctorName} is confirmed. Thank you for choosing
-            Apollo 247.
+            Your consultation with {_startCase(_toLower(appointmentDoctorName))} is confirmed. Thank
+            you for choosing Apollo 247.
           </p>
           <p className={classes.borderText}>
-            We shared your details with {appointmentDoctorName}'s team. Please download the app to
-            continue with the consultation.
+            We shared your details with {_startCase(_toLower(appointmentDoctorName))}'s team. Please
+            download the app to continue with the consultation.
           </p>
           <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
             Download Apollo247 App

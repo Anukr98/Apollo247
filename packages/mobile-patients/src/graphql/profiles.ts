@@ -282,6 +282,17 @@ export const GET_PATIENT_APPOINTMENTS = gql`
   query getPatinetAppointments($patientAppointmentsInput: PatientAppointmentsInput!) {
     getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
       patinetAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
         appointmentType
         id
         patientId
@@ -337,6 +348,17 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
   query getPatientAllAppointments($patientId: String!) {
     getPatientAllAppointments(patientId: $patientId) {
       appointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
         id
         patientId
         doctorId
@@ -1785,6 +1807,17 @@ export const GET_APPOINTMENT_DATA = gql`
               city
             }
           }
+        }
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
         }
       }
     }

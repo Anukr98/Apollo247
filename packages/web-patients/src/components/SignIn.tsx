@@ -160,7 +160,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               <Grid item xs={2} key={index}>
                 <AphTextField
                   autoFocus={index === 0}
-                  error={verifyOtpError}
+                  error={verifyOtpError && !isSigningIn}
                   inputRef={otpInputRefs[index]}
                   value={_isNumber(otp[index]) ? otp[index] : ''}
                   inputProps={{ type: 'tel', maxLength: 1 }}

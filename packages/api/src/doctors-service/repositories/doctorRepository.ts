@@ -95,6 +95,25 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  findByIdWithStatusExclude(id: string) {
+    return this.findOne({
+      where: [{ id }],
+      relations: [
+        'specialty',
+        'doctorHospital',
+        'doctorHospital.facility',
+        'consultHours',
+        'starTeam',
+        'bankAccount',
+        'packages',
+        'starTeam.associatedDoctor',
+        'starTeam.associatedDoctor.specialty',
+        'starTeam.associatedDoctor.doctorHospital',
+        'starTeam.associatedDoctor.doctorHospital.facility',
+      ],
+    });
+  }
+
   getSearchDoctorsByIds(doctorIds: string[]) {
     return this.createQueryBuilder('doctor')
       .select('doctor.id', 'typeId')
