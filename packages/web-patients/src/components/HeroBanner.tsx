@@ -217,8 +217,8 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-            <Typography variant="h1">hello there!</Typography>
-          )}
+          <Typography variant="h1">hello there!</Typography>
+        )}
         <p>How can we help you today? :)</p>
         <OurServices />
         <div className={classes.callEmergency}>

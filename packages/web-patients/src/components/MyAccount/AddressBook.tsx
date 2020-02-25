@@ -58,7 +58,12 @@ const useStyles = makeStyles((theme: Theme) => {
 export const AddressBook: React.FC = (props) => {
   const classes = useStyles();
   const patient = useCurrentPatient();
-  if (!patient) return <div className={classes.pageLoader}><LinearProgress /></div>;
+  if (!patient)
+    return (
+      <div className={classes.pageLoader}>
+        <LinearProgress />
+      </div>
+    );
 
   return (
     <div className={classes.root}>
