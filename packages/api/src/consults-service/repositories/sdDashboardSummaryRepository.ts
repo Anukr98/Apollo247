@@ -14,16 +14,15 @@ import {
   CASESHEET_STATUS,
   TRANSFER_INITIATED_TYPE,
   CurrentAvailabilityStatus,
-  utilizationCapacity,
+  UtilizationCapacity,
 } from 'consults-service/entities';
 
 import { format, addDays, differenceInMinutes, addMinutes, isWithinInterval } from 'date-fns';
-import { ConsultMode, DoctorType, WeekDay, Doctor } from 'doctors-service/entities';
+import { ConsultMode, DoctorType } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentSessions } from 'consults-service/entities';
-import { ConsultHours } from 'doctors-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
 type NewPatientCount = {
@@ -597,15 +596,15 @@ export class CurrentAvailStatusRepository extends Repository<CurrentAvailability
     }
   }
 }
-@EntityRepository(utilizationCapacity)
-export class UtilizationCapacityRepository extends Repository<utilizationCapacity> {
+@EntityRepository(UtilizationCapacity)
+export class UtilizationCapacityRepository extends Repository<UtilizationCapacity> {
   async updateUtilization(
     specialityId: string,
     specialityName: string,
     doctorSlots: number,
     bookedSlots: number
   ) {
-    const utilizationCapacityData: Partial<utilizationCapacity> = {
+    const utilizationCapacityData: Partial<UtilizationCapacity> = {
       specialityId: specialityId,
       specialtyName: specialityName,
       doctorSlots: doctorSlots,
