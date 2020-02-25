@@ -327,7 +327,7 @@ export const Appointments: React.FC = (props) => {
   // const mascotRef = useRef(null);
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
@@ -607,14 +607,14 @@ export const Appointments: React.FC = (props) => {
         <div className={classes.messageBox}>
           <div className={classes.doctorDetails}>
             <div className={classes.doctorInfo}>
-              <Avatar alt="" src={require('images/dp_03.png')} className={classes.bigAvatar} />
+              <Avatar alt="" src={photoUrl} className={classes.bigAvatar} />
               <div className={classes.doctorText}>
                 <div className={classes.drName}>{_startCase(_toLower(appointmentDoctorName))}</div>
                 <div className={classes.specality}>{specialtyName}</div>
               </div>
             </div>
             <div className={classes.appLogo}>
-              <img src={photoUrl} />
+              <img src={require('images/ic_logo.png')} />
             </div>
           </div>
           <p>
