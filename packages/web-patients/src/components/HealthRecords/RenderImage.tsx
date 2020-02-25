@@ -17,7 +17,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     prescriptionImage: {
-      margin: 'auto',
       textAlign: 'center',
       '& img': {
         maxWidth: '100%',
