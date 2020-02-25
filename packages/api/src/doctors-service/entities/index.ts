@@ -956,6 +956,12 @@ export class Auditor extends BaseEntity {
   @Column({ default: true })
   isActive: Boolean;
 
+  @Column('decimal', { precision: 5, scale: 2, default: 0 })
+  averageRating: number;
+
+  @Column({ nullable: true, default: 0 })
+  auditedAppointments: number;
+
   @OneToMany((type) => AdminAuditorMapper, (adminauditormapper) => adminauditormapper.auditor)
   adminauditormapper: AdminAuditorMapper[];
 }
