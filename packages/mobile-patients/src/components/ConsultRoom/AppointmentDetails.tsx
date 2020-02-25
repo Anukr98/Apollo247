@@ -58,6 +58,7 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '../../graphql/types/getPatinetAppointments';
 
 const { width, height } = Dimensions.get('window');
 
@@ -129,8 +130,9 @@ type rescheduleType = {
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
-  const data = props.navigation.state.params!.data;
-  const doctorDetails = data.doctorInfo;
+  const data: getPatinetAppointments_getPatinetAppointments_patinetAppointments = props.navigation
+    .state.params!.data;
+  const doctorDetails = data.doctorInfo!;
 
   const movedFrom = props.navigation.state.params!.from;
 
@@ -525,7 +527,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 >
                   <Text style={styles.descriptionStyle}>Advance Paid</Text>
                   <Text style={styles.descriptionStyle}>
-                    {data.doctorInfo.onlineConsultationFees}
+                    {g(data, 'appointmentPayments', '0' as any, 'amountPaid')}
                   </Text>
                 </View>
                 <View

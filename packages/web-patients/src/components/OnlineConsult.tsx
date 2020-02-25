@@ -223,8 +223,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const { doctorDetails, setIsPopoverOpen } = props;
 
-  let slotAvailableNext = '';
-  let autoSlot = '';
+  let slotAvailableNext = '',
+    consultNowSlotTime = '';
+  // let autoSlot = '';
 
   // console.log('-------', autoSlot);
 
@@ -349,11 +350,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           availability.availableSlot && moment(availability.availableSlot);
         const currentTime = moment(new Date());
         slotAvailableNext = slotArray[1].substr(0, 5);
-        autoSlot = availability.availableSlot;
+        // autoSlot = availability.availableSlot;
         differenceInHours = Math.round(currentTime.diff(nextAvailabilityTime, 'hours') * -1) + 1;
         differenceInMinutes =
           Math.round(currentTime.diff(nextAvailabilityTime, 'minutes') * -1) + 1;
         differenceInDays = Math.round(currentTime.diff(nextAvailabilityTime, 'days') * -1) + 1;
+
+        if (differenceInMinutes >= 0 && differenceInMinutes <= 15) {
+          consultNowSlotTime = availability.availableSlot;
+        }
 
         // }
       } else {
@@ -560,7 +565,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         <div className={classes.bottomActions}>
           <AphButton
             color="primary"
-            disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
+            disabled={disableSubmit || mutationLoading || isDialogOpen}
             onClick={() => {
               setMutationLoading(true);
               paymentMutation({
@@ -568,16 +573,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   bookAppointment: {
                     patientId: currentPatient ? currentPatient.id : '',
                     doctorId: doctorId,
-                    appointmentDateTime:
-                      consultNow && !scheduleLater
-                        ? autoSlot
-                        : new Date(
-                            `${apiDateFormat} ${
-                              timeSelected !== ''
-                                ? timeSelected.padStart(5, '0')
-                                : slotAvailableNext.padStart(5, '0')
-                            }:00`
-                          ).toISOString(),
+                    appointmentDateTime: consultNowSlotTime,
                     appointmentType: APPOINTMENT_TYPE.ONLINE,
                     hospitalId: hospitalId,
                   },
@@ -610,9 +606,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 });
             }}
             className={
-              disableSubmit || mutationLoading || isDialogOpen || !timeSelected
-                ? classes.buttonDisable
-                : ''
+              disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
             }
           >
             {mutationLoading ? (
