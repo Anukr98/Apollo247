@@ -92,6 +92,9 @@ const useStyles = makeStyles((theme: Theme) => {
         borderColor: 'transparent transparent transparent #f7f8f5',
         borderWidth: 8,
         marginTop: -8,
+        [theme.breakpoints.down('xs')]: {
+          borderColor: 'transparent transparent transparent #fff',
+        },
       },
     },
   };
