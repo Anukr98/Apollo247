@@ -100,6 +100,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
             ...(!isValidCoupon && couponText.length > 0 ? { selectionColor: '#e50000' } : {}),
             maxLength: 15,
             autoFocus: true,
+            autoCapitalize: 'characters',
           }}
           inputStyle={[
             styles.couponInputStyle,

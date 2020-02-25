@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
     leftSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
-      padding: '0 0 20px 5px',
+      paddingLeft: 5,
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
@@ -185,7 +185,18 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& >div:last-child >div': {
         position: 'relative',
+      },
+    },
+    consultGroup: {
+      position: 'relative',
+      '&:last-child': {
         '&:before': {
+          content: '""',
+          position: 'absolute',
+          left: -18,
+          width: 4,
+          height: '100%',
+          backgroundColor: '#fff',
           [theme.breakpoints.down('xs')]: {
             backgroundColor: '#f0f1ec',
           },
@@ -275,7 +286,6 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    menuItemActive: { background: 'red' },
   };
 });
 
@@ -458,7 +468,7 @@ export const Consultations: React.FC = (props) => {
               ? 'calc(100vh - 364px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 320px)'
+              : 'calc(100vh - 280px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -468,6 +478,7 @@ export const Consultations: React.FC = (props) => {
                 (consult) =>
                   consult && (
                     <div
+                      className={classes.consultGroup}
                       onClick={() => {
                         setActiveConsult(consult);
                         if (isSmallScreen) {
@@ -539,7 +550,7 @@ export const Consultations: React.FC = (props) => {
               ? 'calc(100vh - 287px)'
               : isSmallScreen
               ? 'calc(100vh - 96px)'
-              : 'calc(100vh - 245px)'
+              : 'calc(100vh - 250px)'
           }
         >
           <div className={classes.consultationDetails}>

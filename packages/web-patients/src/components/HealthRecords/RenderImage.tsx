@@ -9,8 +9,18 @@ import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 type RenderImageProps = {
   activeData: any;
 };
+const useStyles = makeStyles((theme: Theme) => {
+  return {
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
+  };
+});
 
 export const RenderImage: React.FC<RenderImageProps> = (props) => {
+  const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [placeImage, setPlaceImage] = useState<any | null>(null);
@@ -73,7 +83,7 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   }, [placeImage]);
 
   if (showSpinner) {
-    return <CircularProgress />;
+    return <CircularProgress className={classes.loader} />;
   }
   return <img src={placeImage} alt={'No Image'} />;
 };
