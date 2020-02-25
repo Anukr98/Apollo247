@@ -501,8 +501,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   {education && education.includes(';') ? (
                     education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
                   ) : (
-                      <div>{education}</div>
-                    )}
+                    <div>{education}</div>
+                  )}
                 </div>
               </div>
               <div className={classes.infoRow}>

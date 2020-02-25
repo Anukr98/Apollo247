@@ -249,8 +249,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             {doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                _toLower(doctorDetails.lastName)
-              )}`}
+                  _toLower(doctorDetails.lastName)
+                )}`}
           </div>
           <div className={classes.doctorType}>
             {doctorDetails.specialty ? doctorDetails.specialty.name : null}
