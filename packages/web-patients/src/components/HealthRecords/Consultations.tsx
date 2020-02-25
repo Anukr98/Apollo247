@@ -545,7 +545,7 @@ export const Consultations: React.FC = (props) => {
         <Scrollbars
           autoHide={true}
           autoHeight
-          autoHeightMax={
+          autoHeightMin={
             isMediumScreen
               ? 'calc(100vh - 287px)'
               : isSmallScreen
