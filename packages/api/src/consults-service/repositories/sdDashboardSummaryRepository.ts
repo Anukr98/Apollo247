@@ -424,7 +424,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         status: Not(STATUS.CANCELLED),
       },
     });
-    console.log('appointmentList==', appointmentList);
     let count: number = 0;
     if (appointmentList.length) {
       return new Promise<number>((resolve, reject) => {

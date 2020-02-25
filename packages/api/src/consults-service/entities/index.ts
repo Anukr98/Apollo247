@@ -1069,7 +1069,7 @@ export class SdDashboardSummary extends BaseEntity {
   paidFollowUp: number;
 
   @Column({ default: 0 })
-  cancelledByPatient: number;
+  patientCancelCount: number;
 
   @Column({ default: 0 })
   unPaidFollowUp: number;
