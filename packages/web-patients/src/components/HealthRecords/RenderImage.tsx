@@ -17,9 +17,18 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     prescriptionImage: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 40,
       textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+      },
       '& img': {
         maxWidth: '100%',
+        verticalAlign: 'middle',
       },
     },
   };
@@ -93,7 +102,7 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   }
   return (
     <div className={classes.prescriptionImage}>
-      <img src={placeImage} alt="" />
+      <img src={placeImage} alt="Prescription Preview" />
     </div>
   );
 };

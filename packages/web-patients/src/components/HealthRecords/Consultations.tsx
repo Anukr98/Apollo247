@@ -229,7 +229,19 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     prescriptionImage: {
-      width: '100%',
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 40,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+      },
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
     },
     addReportActions: {
       paddingLeft: 15,
@@ -566,7 +578,9 @@ export const Consultations: React.FC = (props) => {
                 <PrescriptionPreview /> */}
               </>
             ) : activeConsult ? (
-              <img className={classes.prescriptionImage} src={activeConsult.prescriptionImageUrl} />
+              <div className={classes.prescriptionImage}>
+                <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
+              </div>
             ) : (
               <div className={classes.noRecordFoundWrapper}>
                 <img src={require('images/ic_records.svg')} />
