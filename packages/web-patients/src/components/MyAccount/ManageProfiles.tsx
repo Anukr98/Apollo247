@@ -27,6 +27,13 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 0,
         boxShadow: 'none',
         backgroundColor: 'transparent',
+        minHeight: 'auto',
+      },
+      [theme.breakpoints.up(768)]: {
+        minHeight: 'calc(100vh - 195px)',
+      },
+      [theme.breakpoints.up(901)]: {
+        minHeight: 'calc(100vh - 154px)',
       },
     },
     bottomPopover: {
@@ -125,14 +132,28 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     scrollBars: {
-      height: 'calc(100vh - 255px) !important',
       [theme.breakpoints.down('xs')]: {
-        height: '100% !important',
+        maxHeight: '100% !important',
+        '& >div': {
+          maxHeight: '100% !important',
+        },
         '& >div:nth-child(2)': {
           display: 'none',
         },
         '& >div:nth-child(3)': {
           display: 'none',
+        },
+      },
+      [theme.breakpoints.up(768)]: {
+        maxHeight: 'calc(100vh - 278px) !important',
+        '& >div': {
+          maxHeight: 'calc(100vh - 278px) !important',
+        },
+      },
+      [theme.breakpoints.up(901)]: {
+        maxHeight: 'calc(100vh - 236px) !important',
+        '& >div': {
+          maxHeight: 'calc(100vh - 236px) !important',
         },
       },
     },
@@ -156,6 +177,7 @@ export const ManageProfiles: React.FC = (props) => {
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [updatingPatientId, setUpdatingPatientId] = useState<string>('');
   const [isProfileDelete, setIsProfileDelete] = useState<boolean>(false);
+  const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const { allCurrentPatients } = useAllCurrentPatients();
@@ -171,6 +193,7 @@ export const ManageProfiles: React.FC = (props) => {
     <div className={classes.root}>
       <Scrollbars
         autoHide={true}
+        autoHeight
         className={classes.scrollBars}
         renderView={(props) =>
           isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
@@ -202,6 +225,7 @@ export const ManageProfiles: React.FC = (props) => {
                 onClick={() => {
                   setIsAddNewProfileDialogOpen(true);
                   setUpdatingPatientId(userId);
+                  setIsMeClicked(accountDetails.relation === 'ME');
                 }}
               >
                 <div className={classes.profileCard}>
@@ -262,43 +286,48 @@ export const ManageProfiles: React.FC = (props) => {
           closeHandler={(isAddNewProfileDialogOpen: boolean) =>
             setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
           }
+          isMeClicked={isMeClicked}
           selectedPatientId={updatingPatientId}
           successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
           isProfileDelete={isProfileDelete}
         />
       </AphDialog>
-      <Popover
-        open={isDeletePopoverOpen}
-        anchorEl={cancelAppointRef.current}
-        onClose={() => setIsDeletePopoverOpen(false)}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <AphButton
-          className={classes.deleteBtn}
-          onClick={() => {
-            setIsProfileDelete(true);
-            deleteProfileMutation({ variables: { patientId: updatingPatientId } })
-              .then(() => {
-                setIsAddNewProfileDialogOpen(false);
-                setIsDeletePopoverOpen(false);
-                setIsPopoverOpen(true);
-              })
-              .catch(() => {
-                setIsProfileDelete(false);
-                alert('An error occurred while deleting profile.');
-              });
-          }}
-        >
-          Delete Profile
-        </AphButton>
-      </Popover>
+      {!isMeClicked && (
+        <>
+          <Popover
+            open={isDeletePopoverOpen}
+            anchorEl={cancelAppointRef.current}
+            onClose={() => setIsDeletePopoverOpen(false)}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+            <AphButton
+              className={classes.deleteBtn}
+              onClick={() => {
+                setIsProfileDelete(true);
+                deleteProfileMutation({ variables: { patientId: updatingPatientId } })
+                  .then(() => {
+                    setIsAddNewProfileDialogOpen(false);
+                    setIsDeletePopoverOpen(false);
+                    setIsPopoverOpen(true);
+                  })
+                  .catch(() => {
+                    setIsProfileDelete(false);
+                    alert('An error occurred while deleting profile.');
+                  });
+              }}
+            >
+              Delete Profile
+            </AphButton>
+          </Popover>
+        </>
+      )}
       <Popover
         open={isPopoverOpen}
         anchorOrigin={{

@@ -116,9 +116,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [address2, setAddress2] = useState<string>('');
   const [pincode, setPincode] = useState<string>('');
   const [addressType, setAddressType] = useState<string>('');
+  const [otherTextbox, setOtherTextBox] = useState<string>('');
   const [addressId, setAddressId] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
-
+  const [otherText, setOtherText] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient ? currentPatient.id : '';
 
@@ -258,6 +259,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                             }`}
                             onClick={() => {
                               setAddressType(addressTypeValue);
+                              setOtherText(addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER);
                             }}
                             value={addressType}
                           >
@@ -266,7 +268,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                         </Grid>
                       );
                     })}
-
                     {/* <Grid item xs={4} sm={4}>
                       <AphButton color="secondary" className={`${classes.genderBtns}`}>
                         Office
@@ -281,6 +282,18 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       </AphButton>
                     </Grid> */}
                   </Grid>
+                  {otherText && (
+                    <AphTextField
+                      placeholder="Enter Address Type"
+                      onChange={(e) => {
+                        setOtherTextBox(e.target.value);
+                      }}
+                      inputProps={{
+                        maxLength: 100,
+                      }}
+                      value={otherTextbox}
+                    />
+                  )}
                 </div>
                 {/* <div className={classes.formGroup}>
                   <AphTextField placeholder="Enter Address Type" />
