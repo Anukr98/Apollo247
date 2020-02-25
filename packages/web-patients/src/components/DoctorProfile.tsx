@@ -379,7 +379,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
         );
-      } else if (differenceInMinutes && differenceInMinutes >= 1 && differenceInMinutes <= 15) {
+      } else if (differenceInMinutes && differenceInMinutes > 0 && differenceInMinutes <= 15) {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>
             AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
@@ -415,7 +415,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
         );
-      } else if (differenceInMinutes && differenceInMinutes >= 1 && differenceInMinutes <= 15) {
+      } else if (differenceInMinutes && differenceInMinutes > 0 && differenceInMinutes <= 15) {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>
             AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
@@ -501,8 +501,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   {education && education.includes(';') ? (
                     education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
                   ) : (
-                    <div>{education}</div>
-                  )}
+                      <div>{education}</div>
+                    )}
                 </div>
               </div>
               <div className={classes.infoRow}>
