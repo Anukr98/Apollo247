@@ -173,7 +173,7 @@ interface AddNewProfileProps {
   selectedPatientId: string;
   successHandler: (isPopoverOpen: boolean) => void;
   isProfileDelete: boolean;
-  isMeClicked?: boolean;
+  isMeClicked: boolean;
 }
 
 export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
@@ -249,7 +249,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         selectedRelation.length > 0 &&
         selectedRelation !== 'ME'
       ) {
-        setPrimaryUserErrorMessage('fOR ATLEAST OME');
+        setPrimaryUserErrorMessage('There should be 1 profile with relation set as Me');
       }
     }
   }, [selectedRelation, selectedPatientId]);
