@@ -302,7 +302,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             className={classes.bottomAction}
           >
             <AphButton fullWidth color="primary" className={classes.button}>
-              {getDiffInMinutes() > 0 && getDiffInMinutes() <= 60
+              {getDiffInMinutes() > 0 && getDiffInMinutes() <= 15
                 ? 'CONSULT NOW'
                 : 'BOOK APPOINTMENT'}
             </AphButton>
