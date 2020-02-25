@@ -528,7 +528,7 @@ export const Appointments: React.FC = (props) => {
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
-                label="Upcoming"
+                label="Active"
               />
               <Tab
                 classes={{

@@ -85,7 +85,7 @@ export const LocationProvider: React.FC = (props) => {
         }
       );
     }
-  }, []);
+  }, [currentLocation]);
 
   return (
     <LocationContext.Provider

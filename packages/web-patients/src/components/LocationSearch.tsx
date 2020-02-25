@@ -206,14 +206,9 @@ export const LocationSearch: React.FC = (props) => {
   const [selectedAddress, setSelectedAddress] = React.useState('');
 
   const handleChange = (address: string) => setAddress(address);
-  const {
-    currentLocation,
-    setCurrentLat,
-    setCurrentLong,
-    currentLat,
-    currentLong,
-    setCurrentLocation,
-  } = useContext(LocationContext);
+  const { currentLocation, setCurrentLat, setCurrentLong, setCurrentLocation } = useContext(
+    LocationContext
+  );
 
   const handleSelect = (address: string) => {
     setCurrentLocation(address);
