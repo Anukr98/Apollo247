@@ -323,7 +323,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const { medicalRecords, allCombinedData, setMedicalRecords, loading } = props;
 
   useEffect(() => {
-    if (!isSmallScreen && allCombinedData) {
+    if (!isSmallScreen && allCombinedData && !activeData) {
       setActiveData(allCombinedData[0]);
     }
   }, [allCombinedData]);
@@ -435,14 +435,15 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    {/* <span>Today, 12 Aug 2019</span> */}
                     <span>{getFormattedDate(combinedData)}</span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
                     name={getName(combinedData)}
                     id={combinedData.data.id}
-                    isActiveCard={activeData === combinedData}
+                    isActiveCard={
+                      activeData && activeData.data && activeData.data.id === combinedData.data.id
+                    }
                   />
                 </div>
               ))}
