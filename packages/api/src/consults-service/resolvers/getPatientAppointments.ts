@@ -30,7 +30,11 @@ export const getPatinetAppointmentsTypeDefs = gql`
     actualAmount: Float
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
-    doctorInfo: DoctorDetails @provides(fields: "id")
+    doctorInfo: DoctorDetailsWithStatusExclude @provides(fields: "id")
+  }
+
+  extend type DoctorDetailsWithStatusExclude @key(fields: "id") {
+    id: ID! @external
   }
 
   extend type DoctorDetails @key(fields: "id") {

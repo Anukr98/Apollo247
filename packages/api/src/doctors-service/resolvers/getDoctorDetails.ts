@@ -135,6 +135,50 @@ export const getDoctorDetailsTypeDefs = gql`
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
   }
+
+  type DoctorDetailsWithStatusExclude @key(fields: "id") {
+    awards: String
+    city: String
+    country: String
+    dateOfBirth: String
+    displayName: String
+    doctorType: DoctorType!
+    delegateNumber: String
+    emailAddress: String
+    experience: String
+    firebaseToken: String
+    firstName: String!
+    fullName: String
+    gender: Gender
+    isActive: Boolean!
+    id: ID!
+    languages: String
+    lastName: String!
+    mobileNumber: String!
+    onlineConsultationFees: String!
+    onlineStatus: DOCTOR_ONLINE_STATUS!
+    photoUrl: String
+    physicalConsultationFees: String!
+    qualification: String
+    registrationNumber: String!
+    salutation: Salutation
+    signature: String
+    specialization: String
+    state: String
+    streetLine1: String
+    streetLine2: String
+    streetLine3: String
+    thumbnailUrl: String
+    zip: String
+    bankAccount: [BankAccount]
+    consultHours: [ConsultHours]
+    doctorHospital: [DoctorHospital!]!
+    doctorSecretary: DoctorSecretaryDetails
+    packages: [Packages]
+    specialty: DoctorSpecialties
+    starTeam: [StarTeam]
+  }
+
   type DoctorHospital {
     facility: Facility!
   }
