@@ -53,7 +53,11 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       },
     });
     if (checkRecord) {
-      return this.update(checkRecord.id, dashboardSummaryAttrs);
+      return this.update(checkRecord.id, dashboardSummaryAttrs).catch((createErrors) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+          createErrors,
+        });
+      });
     } else {
       return this.create(dashboardSummaryAttrs)
         .save()
@@ -110,17 +114,16 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
     const cancelCount = await Appointment.createQueryBuilder('appointment')
-      .where('appointment.status = :Status', { status: STATUS.CANCELLED })
+      .where('appointment.status = :status', { status: STATUS.CANCELLED })
       .andWhere('appointment."cancelledBy" = :cancelledBy', { cancelledBy: 'PATIENT' })
       .andWhere('appointment."appointmentDateTime" between :fromDate and :toDate', {
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere('appointment."doctorId = :doctorId"', { doctorId })
+      .andWhere('appointment."doctorId" = :doctorId', { doctorId })
       .getCount();
     return cancelCount;
   }
-
   getDocumentSummary(docDate: Date) {
     const newStartDate = new Date(format(addDays(docDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(docDate, 'yyyy-MM-dd') + 'T18:30');
@@ -422,31 +425,35 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         status: Not(STATUS.CANCELLED),
       },
     });
+    console.log('appointmentList==', appointmentList);
     let count: number = 0;
-    return new Promise<number>((resolve, reject) => {
-      appointmentList.forEach(async (appt, index, array) => {
-        const calldetails = await AppointmentCallDetails.findOne({
-          where: { appointment: appt.id },
-        });
-        if (calldetails) {
-          const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
-          const callStartTimeFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
-          const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
-          const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
-          const withInTime = isWithinInterval(new Date(callStartTimeFormat), {
-            start: new Date(apptFormat),
-            end: new Date(addingFiveMinutesFormat),
+    if (appointmentList.length) {
+      return new Promise<number>((resolve, reject) => {
+        appointmentList.forEach(async (appt, index, array) => {
+          const calldetails = await AppointmentCallDetails.findOne({
+            where: { appointment: appt.id },
           });
-          if (withInTime) {
-            count = count + 1;
+          if (calldetails) {
+            const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
+            const callStartTimeFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
+            const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
+            const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
+            const withInTime = isWithinInterval(new Date(callStartTimeFormat), {
+              start: new Date(apptFormat),
+              end: new Date(addingFiveMinutesFormat),
+            });
+            if (withInTime) {
+              count = count + 1;
+            }
           }
-        }
-        if (index + 1 === array.length) {
-          resolve(count);
-        }
+          if (index + 1 === array.length) {
+            resolve(count);
+          }
+        });
       });
-    });
-    return count;
+    } else {
+      return count;
+    }
   }
 
   async getPatientTypes(appointmentDate: Date, doctorId: string) {

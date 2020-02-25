@@ -243,6 +243,10 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         'PHYSICAL'
       );
+      const cancelledByPatient = await dashboardRepo.getPatientCancelCount(
+        doctor.id,
+        args.summaryDate
+      );
       const auidoCount = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
       const videoCount = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
       const chatCount = await dashboardRepo.getCallsCount(doctor.id, 'CHAT', args.summaryDate);
@@ -295,6 +299,7 @@ const updateSdSummary: Resolver<
         totalConsultations,
         totalVirtualConsultations: virtaulConsultations,
         totalPhysicalConsultations,
+        cancelledByPatient: cancelledByPatient,
         appointmentDateTime: args.summaryDate,
         audioConsultations: auidoCount,
         videoConsultations: videoCount,
