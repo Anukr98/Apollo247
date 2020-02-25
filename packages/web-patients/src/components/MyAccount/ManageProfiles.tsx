@@ -272,7 +272,7 @@ export const ManageProfiles: React.FC = (props) => {
         <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} />
         <AphDialogTitle>
           {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Profile'}
-          {updatingPatientId.length > 0 ? (
+          {/* {updatingPatientId.length > 0 ? (
             <div
               onClick={() => setIsDeletePopoverOpen(true)}
               ref={cancelAppointRef}
@@ -280,7 +280,7 @@ export const ManageProfiles: React.FC = (props) => {
             >
               <img src={require('images/ic_more.svg')} alt="" />
             </div>
-          ) : null}
+          ) : null} */}
         </AphDialogTitle>
         <AddNewProfile
           closeHandler={(isAddNewProfileDialogOpen: boolean) =>
