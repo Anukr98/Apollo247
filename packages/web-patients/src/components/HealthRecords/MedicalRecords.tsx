@@ -323,10 +323,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const { medicalRecords, allCombinedData, setMedicalRecords, loading } = props;
 
   useEffect(() => {
-    if (!isSmallScreen) {
+    if (!isSmallScreen && allCombinedData) {
       setActiveData(allCombinedData[0]);
     }
-  });
+  }, [allCombinedData]);
 
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
