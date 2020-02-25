@@ -204,6 +204,22 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    consultGroup: {
+      position: 'relative',
+      '&:last-child': {
+        '&:before': {
+          content: '""',
+          position: 'absolute',
+          left: -18,
+          width: 4,
+          height: '100%',
+          backgroundColor: '#fff',
+          [theme.breakpoints.down('xs')]: {
+            backgroundColor: '#f0f1ec',
+          },
+        },
+      },
+    },
     consultGroupHeader: {
       display: 'flex',
       alignItems: 'center',
@@ -505,7 +521,7 @@ export const MedicalRecords: React.FC = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 245px)'
+              : 'calc(100vh - 270px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -513,6 +529,7 @@ export const MedicalRecords: React.FC = (props) => {
               allCombinedData.length > 0 &&
               allCombinedData.map((combinedData: any) => (
                 <div
+                  className={classes.consultGroup}
                   onClick={() => {
                     setActiveData(combinedData);
                     if (isSmallScreen) {

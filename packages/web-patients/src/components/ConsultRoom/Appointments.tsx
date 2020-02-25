@@ -327,7 +327,7 @@ export const Appointments: React.FC = (props) => {
   // const mascotRef = useRef(null);
   // const [isPopoverOpen] = React.useState<boolean>(false);
   const [tabValue, setTabValue] = React.useState<number>(0);
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
   const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
@@ -383,18 +383,28 @@ export const Appointments: React.FC = (props) => {
   // });
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
-    const currentDate = new Date();
-    const compareDate = currentDate.setDate(currentDate.getDate() - 6);
-    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    return compareDate < appointmentTime;
+    const appointmentDate = moment(appointmentDetails.appointmentDateTime);
+    const currentDate = moment(new Date());
+    const diffDays = currentDate.diff(appointmentDate, 'days');
+    return diffDays <= 7;
+    // const currentDate = new Date();
+    // console.log('diff in days..................', diffDays);
+    // const compareDate = currentDate.setDate(currentDate.getDate() - 7);
+    // const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
   });
 
   const pastAppointments = appointments.filter((appointmentDetails) => {
-    const currentDate = new Date();
-    const compareDate = currentDate.setDate(currentDate.getDate() - 7);
-    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    return compareDate > appointmentTime;
+    const appointmentDate = moment(appointmentDetails.appointmentDateTime);
+    const currentDate = moment(new Date());
+    const diffDays = currentDate.diff(appointmentDate, 'days');
+    return diffDays > 7;
+    // const currentDate = new Date();
+    // const compareDate = currentDate.setDate(currentDate.getDate() - 7);
+    // const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+    // return compareDate >= appointmentTime;
   });
+
+  // console.log(appointments, availableAppointments, pastAppointments);
 
   useEffect(() => {
     if (availableAppointments.length > 0 && successApptId !== '' && !isConfirmPopupLoaded) {
