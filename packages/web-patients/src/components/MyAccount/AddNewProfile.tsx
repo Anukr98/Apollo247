@@ -180,23 +180,23 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const classes = useStyles();
   const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
 
-  const [mutationLoading, setMutationLoading] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [dob, setDob] = useState('');
-  const [genderSelected, setGenderSelected] = useState('');
-  const [relation, setRelation] = useState('');
-  const [selectedRelation, setSelectedRelation] = useState('');
-  const [emailAddress, setEmailAddress] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [mutationLoading, setMutationLoading] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [dob, setDob] = useState<string>('');
+  const [genderSelected, setGenderSelected] = useState<string>('');
+  const [relation, setRelation] = useState<string>('');
+  const [selectedRelation, setSelectedRelation] = useState<string>('');
+  const [emailAddress, setEmailAddress] = useState<string>('');
+  const [photoUrl, setPhotoUrl] = useState<string>('');
 
-  const [isFirstNameValid, setIsFirstNameValid] = useState(true);
-  const [isLastNameValid, setIsLastNameValid] = useState(true);
-  const [isRelationValid, setIsRelationValid] = useState(true);
-  const [isGenderValid, setIsGenderValid] = useState(true);
-  const [isValidDob, setIsValidDob] = useState(true);
-  const [isEmailAddressValid, setIsEmailAddressValid] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isFirstNameValid, setIsFirstNameValid] = useState<boolean>(true);
+  const [isLastNameValid, setIsLastNameValid] = useState<boolean>(true);
+  const [isRelationValid, setIsRelationValid] = useState<boolean>(true);
+  const [isGenderValid, setIsGenderValid] = useState<boolean>(true);
+  const [isValidDob, setIsValidDob] = useState<boolean>(true);
+  const [isEmailAddressValid, setIsEmailAddressValid] = useState<boolean>(true);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
 
@@ -468,7 +468,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                             color="secondary"
                             className={`${classes.genderBtns} ${
                               gender === genderSelected ? classes.btnActive : ''
-                            }`}
+                              }`}
                             value={genderSelected}
                             onClick={() => {
                               setGenderSelected(gender as Gender);

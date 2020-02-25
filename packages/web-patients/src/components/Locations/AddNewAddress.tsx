@@ -262,11 +262,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                               }`}
                             onClick={() => {
                               setAddressType(addressTypeValue);
-                              if (addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER) {
-                                setOtherText(true);
-                              } else {
-                                setOtherText(false);
-                              }
+                              setOtherText(addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER)
                             }}
                             value={addressType}
                           >
