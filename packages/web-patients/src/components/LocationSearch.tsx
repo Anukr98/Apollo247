@@ -3,8 +3,9 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
 import { AphTextField } from '@aph/web-ui-components';
 import { LocationContext } from 'components/LocationProvider';
+import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
+import { Helmet } from 'react-helmet';
 import { AllowLocation } from 'components/AllowLocation';
-import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -171,28 +172,65 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
-type AddressType = {
-  name: string;
-  placeId: string;
+type SuggestionProps = {
+  active: boolean;
+  description: string;
+  id: string;
+  index: number;
+  formattedSuggestion: {
+    mainText: string;
+    secondText: string;
+  };
+  matchedSubstrings: Array<{ length: number; offset: number }>;
+};
+
+type InputProps = {
+  getInputProps: Function;
+  suggestions: Array<SuggestionProps>;
+  getSuggestionItemProps: Function;
+  loading: boolean;
 };
 
 export const LocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
   const [isLocationPopoverOpen, setIsLocationPopoverOpen] = React.useState<boolean>(false);
+  const searchOptions = {
+    componentRestrictions: { country: ['in'] },
+  };
 
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [suggestions, setSuggestions] = React.useState<AddressType[] | null>(null);
 
   const [address, setAddress] = React.useState('');
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const [selectedAddress, setSelectedAddress] = React.useState('');
 
-  const onChangeAddress = (address: string) => {
+  const handleChange = (address: string) => setAddress(address);
+  const {
+    currentLocation,
+    setCurrentLat,
+    setCurrentLong,
+    currentLat,
+    currentLong,
+    setCurrentLocation,
+  } = useContext(LocationContext);
+
+  const handleSelect = (address: string) => {
+    setCurrentLocation(address);
     localStorage.setItem('currentAddress', address);
-    setAddress(address);
+    setSelectedAddress(address.substring(0, address.indexOf(',')));
+    setAddress('');
+    setIsLocationPopoverOpen(false);
+    geocodeByAddress(address)
+      .then((results: any) => getLatLng(results[0]))
+      .then((resObj: any) => {
+        if (resObj) {
+          setCurrentLat(resObj.lat);
+          setCurrentLong(resObj.lng);
+        }
+      })
+      .catch((error: any) => console.error('Error', error));
   };
-  const { currentLocation } = useContext(LocationContext);
 
   useEffect(() => {
     if (!localStorage.getItem('currentAddress')) {
@@ -207,6 +245,15 @@ export const LocationSearch: React.FC = (props) => {
     }
   });
 
+  const renderSuggestion = (text: string, matchedLength: number) => {
+    return (
+      <>
+        <span style={{ fontWeight: 500 }}>{text.substring(0, matchedLength)}</span>
+        <span style={{ fontWeight: 400 }}>{text.substring(matchedLength, text.length)}</span>
+      </>
+    );
+  };
+
   const getAddressFromLocalStorage = () => {
     const currentAddress = localStorage.getItem('currentAddress');
     if (currentAddress) {
@@ -217,39 +264,13 @@ export const LocationSearch: React.FC = (props) => {
     return 'No location';
   };
 
-  const searchAdress = (searchText: string) => {
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${process.env.GOOGLE_API_KEY}`;
-    setLoading(true);
-    axios
-      .get(url)
-      .then(({ data }) => {
-        if (data && data.predictions) {
-          const addressList = data.predictions.map(
-            (item: {
-              place_id: string;
-              structured_formatting: {
-                main_text: string;
-              };
-            }) => {
-              return {
-                name: item.structured_formatting.main_text,
-                placeId: item.place_id,
-              };
-            }
-          );
-          setSuggestions(addressList);
-          setLoading(false);
-        }
-      })
-      .catch((e) => {
-        setLoading(false);
-        console.log(e);
-        alert('Error while fetching addresses');
-      });
-  };
-
   return (
     <div className={classes.userLocation}>
+      <Helmet>
+        <script
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
+        ></script>
+      </Helmet>
       <div
         className={classes.locationWrap}
         ref={locationRef}
@@ -261,8 +282,8 @@ export const LocationSearch: React.FC = (props) => {
           alt=""
         />
         <span className={classes.selectedLocation}>
-          {!isPopoverOpen && address.length > 0
-            ? address
+          {!isPopoverOpen && selectedAddress.length > 0
+            ? selectedAddress
             : !isPopoverOpen && currentLocation && currentLocation.length > 0
             ? currentLocation
             : getAddressFromLocalStorage()}
@@ -289,41 +310,39 @@ export const LocationSearch: React.FC = (props) => {
           horizontal: 'left',
         }}
       >
-        <div className={classes.locationPopWrap}>
-          <label className={classes.inputLabel}>Current Location</label>
-          <div className={classes.searchInput}>
-            <AphTextField
-              onChange={(e: any) => searchAdress(e.target.value)}
-              type="search"
-              placeholder="Search Places..."
-            />
-            <div className={classes.popLocationIcon}>
-              <img src={require('images/ic-location.svg')} alt="" />
-            </div>
-          </div>
-          <div className={classes.locationAutoComplete}>
-            {loading ? (
-              <div className={classes.dateLoader}>Loading...</div>
-            ) : (
-              <ul>
-                {suggestions &&
-                  suggestions.length > 0 &&
-                  suggestions.map((suggestion: AddressType, idx: number) => {
-                    return idx < 3 ? (
-                      <li
-                        onClick={() => {
-                          onChangeAddress(suggestion.name);
-                          setIsLocationPopoverOpen(false);
-                        }}
-                      >
-                        {suggestion.name}
+        <PlacesAutocomplete
+          value={address}
+          onChange={handleChange}
+          onSelect={handleSelect}
+          searchOptions={searchOptions}
+        >
+          {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => (
+            <div className={classes.locationPopWrap}>
+              <label className={classes.inputLabel}>Current Location</label>
+              <div className={classes.searchInput}>
+                <AphTextField type="search" placeholder="Search Places..." {...getInputProps()} />
+                <div className={classes.popLocationIcon}>
+                  <img src={require('images/ic-location.svg')} alt="" />
+                </div>
+              </div>
+              <div className={classes.locationAutoComplete}>
+                {loading && <div className={classes.dateLoader}>Loading...</div>}
+                <ul>
+                  {suggestions.map((suggestion: SuggestionProps) => {
+                    return suggestion.index < 3 ? (
+                      <li {...getSuggestionItemProps(suggestion)}>
+                        {renderSuggestion(
+                          suggestion.formattedSuggestion.mainText,
+                          suggestion.matchedSubstrings[0].length
+                        )}
                       </li>
                     ) : null;
                   })}
-              </ul>
-            )}
-          </div>
-        </div>
+                </ul>
+              </div>
+            </div>
+          )}
+        </PlacesAutocomplete>
       </Popover>
       <Popover
         open={isPopoverOpen}
