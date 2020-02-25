@@ -163,6 +163,7 @@ export const HeroBanner: React.FC = () => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
   return (
     <div
@@ -216,8 +217,8 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-          <Typography variant="h1">hello there!</Typography>
-        )}
+            <Typography variant="h1">hello there!</Typography>
+          )}
         <p>How can we help you today? :)</p>
         <OurServices />
         <div className={classes.callEmergency}>
@@ -234,6 +235,7 @@ export const HeroBanner: React.FC = () => {
           closeHandler={(isAddNewProfileDialogOpen: boolean) =>
             setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
           }
+          isMeClicked={isMeClicked}
           selectedPatientId=""
           successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
           isProfileDelete={false}
