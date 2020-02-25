@@ -37,7 +37,9 @@
     "landing_descr": "The best way to connect with your \n patients, grow your practice and \n enhance your professional network; \n",
     "consultation_experience": "How was your overall consultation experience?",
     "select_date": "Select a date",
-    "reach_an_expert": " to reach an expert from our team who will resolve your issue."
+    "reach_an_expert": " to reach an expert from our team who will resolve your issue.",
+    "uh_oh": "Uh oh.. :(",
+    "oops_msg": "Oops! seems like we are having an issue. Please try again."
   },
   "login": {
     "hello": "hello!",

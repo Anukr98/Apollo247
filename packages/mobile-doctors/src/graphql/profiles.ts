@@ -420,6 +420,20 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
   }
 `;
 
+export const GET_CASESHEET_DETAILS = gql`
+  query GetCaseSheetDetails($appointmentId: String!) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        id
+        blobName
+        doctorId
+        sentToPatient
+        status
+      }
+    }
+  }
+`;
+
 export const GET_CASESHEET = gql`
   query GetCaseSheet($appointmentId: String!) {
     getCaseSheet(appointmentId: $appointmentId) {
