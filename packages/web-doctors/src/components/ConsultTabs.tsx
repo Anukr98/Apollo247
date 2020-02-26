@@ -306,6 +306,7 @@ interface MessagesObjectProps {
   messageDate: string;
   sentBy: string;
   type: string;
+  fileType: string;
 }
 let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
@@ -446,6 +447,16 @@ export const ConsultTabs: React.FC = () => {
           message.message.url &&
           message.message.fileType &&
           message.message.fileType === 'image'
+        ) {
+          const data = {
+            documentPath: message.message.url,
+          };
+          setDocumentArray(data);
+        }
+        if (
+          message.message.url &&
+          message.message.fileType &&
+          message.message.fileType === 'pdf'
         ) {
           const data = {
             documentPath: message.message.url,

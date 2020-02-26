@@ -343,6 +343,7 @@ interface MessagesObjectProps {
   messageDate: string;
   sentBy: string;
   type: string;
+  fileType: string;
 }
 
 interface ConsultRoomProps {
@@ -448,7 +449,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     timerIntervalId && clearInterval(timerIntervalId);
   };
   const srollToBottomAction = () => {
-    console.log(1111111);
     //setTimeout(() => {
     const scrollDiv = document.getElementById('scrollDiv');
     if (scrollDiv) {
@@ -784,12 +784,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   // </div>
                   <div
                     onClick={() => {
-                      setModalOpen(true);
+                      setModalOpen(rowData.fileType==='pdf'?false:true);
                       setImgPrevUrl(rowData.url);
                     }}
                     className={classes.imageUpload}
                   >
-                    <img src={rowData.url} alt={rowData.url} />
+                    {rowData.fileType==='pdf'?
+                  <a href={rowData.url}>
+                  <img src={require('images/pdf_thumbnail.png')} />
+                </a>
+                    : <img src={rowData.url} alt={rowData.url} />
+                  }
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
                         {convertChatTime(rowData.messageDate)}
@@ -1000,12 +1005,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {rowData.message === documentUpload ? (
                   <div
                     onClick={() => {
-                      setModalOpen(true);
+                      setModalOpen(rowData.fileType==='pdf'?false:true);
                       setImgPrevUrl(rowData.url);
                     }}
                     className={classes.imageUpload}
                   >
-                    <img src={rowData.url} alt={rowData.url} />
+                   {rowData.fileType==='pdf'?
+                  <a href={rowData.url}>
+                  <img src={require('images/pdf_thumbnail.png')} />
+                </a>
+                    : <img src={rowData.url} alt={rowData.url} />
+                  }
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
                         {convertChatTime(rowData.messageDate)}
@@ -1085,6 +1095,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                             fileExtension.toLowerCase() === 'pdf')
                         ) {
                           if (file) {
+                           
                             const aphBlob = await client
                               .uploadBrowserFile({ file })
                               .catch((error) => {
@@ -1093,7 +1104,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                             const url = client.getBlobUrl(aphBlob.name);
                             const uploadObject = {
                               id: doctorId,
-                              fileType: `image`,
+                              fileType: `${fileExtension.toLowerCase() === 'pdf'?'pdf':'image'}`,
                               message: `^^#DocumentUpload`,
                               url: url,
                               isTyping: true,
