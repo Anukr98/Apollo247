@@ -349,6 +349,7 @@ export const AppLocations: React.FC = (props) => {
             <AllowLocation
               setIsLocationPopoverOpen={setIsLocationPopoverOpen}
               setIsPopoverOpen={setIsPopoverOpen}
+              isPopoverOpen={isPopoverOpen}
             />
           </div>
         </div>

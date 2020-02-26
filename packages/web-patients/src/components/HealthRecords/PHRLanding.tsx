@@ -191,6 +191,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       .then(({ data }) => {
         if (data && data.getPatientMedicalRecords && data.getPatientMedicalRecords.medicalRecords) {
           setMedicalRecords(data.getPatientMedicalRecords.medicalRecords);
+        } else {
+          setMedicalRecords([]);
         }
       })
       .catch((error) => {
@@ -213,6 +215,10 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           setLabTests(data.getPatientPrismMedicalRecords.labTests);
           setHealthChecks(data.getPatientPrismMedicalRecords.healthChecks);
           setHospitalizations(data.getPatientPrismMedicalRecords.hospitalizations);
+        } else {
+          setLabTests([]);
+          setHealthChecks([]);
+          setHospitalizations([]);
         }
       })
       .catch((error) => {
@@ -262,9 +268,6 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         });
       const sortedData = sortByDate(mergeArray);
       setAllCombinedData(sortedData);
-      // if (!isSmallScreen) {
-      //   setActiveData(sortedData[0]);
-      // }
       setMedicalLoading(false);
     }
   }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
@@ -305,6 +308,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
             <TabContainer>
               <MedicalRecords
                 loading={medicalLoading}
+                setLoading={setMedicalLoading}
                 medicalRecords={medicalRecords}
                 setMedicalRecords={setMedicalRecords}
                 allCombinedData={allCombinedData}

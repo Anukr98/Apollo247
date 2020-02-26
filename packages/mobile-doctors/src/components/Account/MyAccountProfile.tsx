@@ -204,7 +204,8 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
-          Alert.alert(strings.common.error, errorMessage);
+          // Alert.alert(strings.common.error, errorMessage);
+          Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
         });
     } else {
       setIsLoading(true);
@@ -235,7 +236,8 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding Delegate Number', errorMessage, error);
-          Alert.alert(strings.common.error, errorMessage);
+          // Alert.alert(strings.common.error, errorMessage);
+          Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
         });
     }
   };

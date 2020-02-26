@@ -465,66 +465,72 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
         }`}
       >
-        <div className={classes.sectionHeader}>
-          <div className={classes.headerBackArrow}>
-            <AphButton
-              onClick={() => {
-                if (isSmallScreen) {
-                  setShowMobileDetails(false);
-                }
-              }}
+        {consultsData && consultsData.length > 0 ? (
+          <>
+            <div className={classes.sectionHeader}>
+              <div className={classes.headerBackArrow}>
+                <AphButton
+                  onClick={() => {
+                    if (isSmallScreen) {
+                      setShowMobileDetails(false);
+                    }
+                  }}
+                >
+                  <img src={require('images/ic_back.svg')} />
+                </AphButton>
+                <span>Prescription Details</span>
+              </div>
+              <div className={classes.headerActions}>
+                {/* <AphButton>View Consult</AphButton>  */}
+                {consultsData && consultsData.length > 0 && (
+                  <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
+                    <img src={require('images/ic_download.svg')} alt="" />
+                  </div>
+                )}
+              </div>
+            </div>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMin={
+                isMediumScreen
+                  ? 'calc(100vh - 287px)'
+                  : isSmallScreen
+                  ? 'calc(100vh - 96px)'
+                  : 'calc(100vh - 250px)'
+              }
             >
-              <img src={require('images/ic_back.svg')} />
-            </AphButton>
-            <span>Prescription Details</span>
-          </div>
-          <div className={classes.headerActions}>
-            <AphButton>View Consult</AphButton>
-            {consultsData && consultsData.length > 0 && (
-              <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
-                <img src={require('images/ic_download.svg')} alt="" />
-              </div>
-            )}
-          </div>
-        </div>
-        <Scrollbars
-          autoHide={true}
-          autoHeight
-          autoHeightMin={
-            isMediumScreen
-              ? 'calc(100vh - 287px)'
-              : isSmallScreen
-              ? 'calc(100vh - 96px)'
-              : 'calc(100vh - 250px)'
-          }
-        >
-          <div className={classes.consultationDetails}>
-            {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
-            (isSmallScreen && showMobileDetails && activeConsult) ? (
-              <>
-                <Symptoms caseSheetList={activeConsult.caseSheet} />
-                <Prescription caseSheetList={activeConsult.caseSheet} />
-                <Diagnosis caseSheetList={activeConsult.caseSheet} />
-                <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
-                <FollowUp caseSheetList={activeConsult.caseSheet} />
-                {/* <PaymentInvoice />
+              <div className={classes.consultationDetails}>
+                {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
+                (isSmallScreen && showMobileDetails && activeConsult) ? (
+                  <>
+                    <Symptoms caseSheetList={activeConsult.caseSheet} />
+                    <Prescription caseSheetList={activeConsult.caseSheet} />
+                    <Diagnosis caseSheetList={activeConsult.caseSheet} />
+                    <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
+                    <FollowUp caseSheetList={activeConsult.caseSheet} />
+                    {/* <PaymentInvoice />
                 <PrescriptionPreview /> */}
-              </>
-            ) : activeConsult ? (
-              <div className={classes.prescriptionImage}>
-                <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
+                  </>
+                ) : (
+                  activeConsult && (
+                    <div className={classes.prescriptionImage}>
+                      <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
+                    </div>
+                  )
+                )}
               </div>
-            ) : (
-              <div className={classes.noRecordFoundWrapper}>
-                <img src={require('images/ic_records.svg')} />
-                <p>
-                  You don’t have any records with us right now. Add a record to keep everything
-                  handy in one place!
-                </p>
-              </div>
-            )}
+            </Scrollbars>
+          </>
+        ) : (
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>
+              You don’t have any records with us right now. Add a record to keep everything handy in
+              one place!
+            </p>
           </div>
-        </Scrollbars>
+        )}
       </div>
     </div>
   );

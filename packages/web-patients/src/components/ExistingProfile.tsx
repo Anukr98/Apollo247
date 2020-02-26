@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, CircularProgress } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
@@ -183,10 +183,17 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const { patient, number } = props;
 
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
-    patient.relation || ''
+    patient.relation || (number === 1 ? Relation.ME : '')
   );
 
-  const placeholderClass = selectedRelation ? 'classes.placeholder' : '';
+  useEffect(() => {
+    if (number === 1) {
+      const updatedPatient = { ...patient, relation: Relation.ME };
+      props.onUpdatePatient(updatedPatient);
+    }
+  }, [number]);
+
+  // const placeholderClass = selectedRelation ? 'classes.placeholder' : '';
 
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
@@ -252,15 +259,20 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const [loading, setLoading] = useState(false);
   const loneUser = patients.length === 1 && patients[0].relation !== 'ME';
   if (loneUser) patients[0].relation = Relation.ME;
-  const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
+  // const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = true;
   const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
-  const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
-  const disabled = patients.some(isPatientInvalid) || !onePrimaryUser;
+  // const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
+  const disabled = patients.some(isPatientInvalid);
+
+  // console.log(patients, 'patients....');
+
   let primaryUserErrorMessage;
+
   if (multiplePrimaryUsers)
     primaryUserErrorMessage = 'Relation can be set as Me for only 1 profile';
-  else if (noPrimaryUsers)
-    primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
+  // else if (noPrimaryUsers)
+  //   primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
 
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">

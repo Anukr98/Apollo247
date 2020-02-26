@@ -105,6 +105,7 @@ type MedicalCardProps = {
   isActiveCard: boolean;
   deleteReport: (id: string) => void;
   id: string;
+  setLoading: (loading: boolean) => void;
 };
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
@@ -128,7 +129,9 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         maxWidth="sm"
       >
         <AphDialogTitle>Delete Report</AphDialogTitle>
-        <div className={classes.dialogBody}>Are you want to delete the selected record?</div>
+        <div className={classes.dialogBody}>
+          Are you sure you want to delete the selected record?
+        </div>
         <div className={classes.dialogActions}>
           <AphButton
             color="default"
@@ -142,6 +145,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
+              props.setLoading(true);
               props.deleteReport(props.id);
               setShowPopup(false);
             }}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useAuth } from 'hooks/authHooks';
 
 export interface LocationContextProps {
   currentLocation: string | null;
@@ -12,7 +13,7 @@ export interface LocationContextProps {
   setCurrentPincode: (currenPincode: string) => void;
 }
 
-interface Address {
+export interface Address {
   long_name: string;
   short_name: string;
   types: Array<string>;
@@ -34,6 +35,7 @@ export const LocationProvider: React.FC = (props) => {
   const [currentLat, setCurrentLat] = useState<string | null>(null);
   const [currentLong, setCurrentLong] = useState<string | null>(null);
   const [currentPincode, setCurrentPincode] = useState<string>('');
+  const { isSigningIn } = useAuth();
 
   useEffect(() => {
     const currentAddress = localStorage.getItem('currentAddress');
@@ -57,33 +59,36 @@ export const LocationProvider: React.FC = (props) => {
         }
       });
     } else {
-      navigator.geolocation.getCurrentPosition(
-        ({ coords: { latitude, longitude } }) => {
-          setCurrentLat(latitude.toString());
-          setCurrentLong(longitude.toString());
-          axios
-            .get(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
-            )
-            .then((res) => {
-              const addrComponents = res.data.results[0].address_components || [];
-              const _pincode = (
-                addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
-              ).long_name;
-              localStorage.setItem('currentAddress', addrComponents[2].short_name);
-              setCurrentLocation(addrComponents[2].short_name);
-              setCurrentPincode(_pincode);
-            });
-        },
-        (err) => {
-          console.log(err.message);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0,
-        }
-      );
+      if (!isSigningIn) {
+        navigator.geolocation.getCurrentPosition(
+          ({ coords: { latitude, longitude } }) => {
+            setCurrentLat(latitude.toString());
+            setCurrentLong(longitude.toString());
+            axios
+              .get(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
+              )
+              .then((res) => {
+                const addrComponents = res.data.results[0].address_components || [];
+                const _pincode = (
+                  addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
+                  {}
+                ).long_name;
+                setCurrentLocation(addrComponents[2].short_name);
+                setCurrentPincode(_pincode);
+                localStorage.setItem('currentAddress', addrComponents[2].short_name);
+              });
+          },
+          (err) => {
+            console.log(err.message);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0,
+          }
+        );
+      }
     }
   }, [currentLocation]);
 

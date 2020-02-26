@@ -112,7 +112,7 @@ export interface GetPatientAllAppointments_getPatientAllAppointments_appointment
 }
 
 export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo {
-  __typename: "DoctorDetails";
+  __typename: "DoctorDetailsWithStatusExclude";
   awards: string | null;
   city: string | null;
   country: string | null;

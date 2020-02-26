@@ -101,7 +101,7 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
 
   return (
     <div className={classes.prescriptionImage}>
-      <img src={placeImage} alt="Prescription Preview" />
+      <img src={placeImage} alt="Prescription Preview is not available" />
     </div>
   );
 };

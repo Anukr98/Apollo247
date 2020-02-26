@@ -199,16 +199,22 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       ) > -1
                     ) {
                       setLoading && setLoading(true);
-                      props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                        DoctorId: doctorId,
-                        PatientId: patientId,
-                        PatientConsultTime: null,
-                        PatientInfoAll: PatientInfo,
-                        AppId: appId,
-                        Appintmentdatetime: i.appointmentDateTime,
-                        AppointmentStatus: i.status,
-                        AppoinementData: i,
-                      });
+                      if (i.status === STATUS.COMPLETED) {
+                        props.navigation.push(AppRoutes.PreviewPrescription, {
+                          id: i.id,
+                        });
+                      } else {
+                        props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                          DoctorId: doctorId,
+                          PatientId: patientId,
+                          PatientConsultTime: null,
+                          PatientInfoAll: PatientInfo,
+                          AppId: appId,
+                          Appintmentdatetime: i.appointmentDateTime,
+                          AppointmentStatus: i.status,
+                          AppoinementData: i,
+                        });
+                      }
                     } else {
                       showAphAlert &&
                         showAphAlert({
