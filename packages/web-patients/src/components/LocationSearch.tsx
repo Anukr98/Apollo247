@@ -234,21 +234,25 @@ export const LocationSearch: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('currentAddress')) {
-      if (!isSigningIn) {
-        navigator.permissions &&
-          navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
-            if (PermissionStatus.state === 'denied') {
-              alert('Location Permission was denied. Please allow browser settings.');
-            } else if (PermissionStatus.state !== 'granted') {
-              setIsPopoverOpen(true);
-            }
-          });
-      } else {
-        setIsPopoverOpen(false);
-      }
+    if (!localStorage.getItem('currentAddress') && !isSigningIn) {
+      navigator.permissions &&
+        navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
+          if (PermissionStatus.state === 'denied') {
+            alert('Location Permission was denied. Please allow browser settings.');
+          } else if (PermissionStatus.state !== 'granted') {
+            setIsPopoverOpen(true);
+          }
+        });
+    } else {
+      setIsPopoverOpen(false);
     }
   });
+
+  useEffect(() => {
+    if (!isLocationPopoverOpen) {
+      setIsPopoverOpen(false);
+    }
+  }, [isLocationPopoverOpen]);
 
   const renderSuggestion = (text: string, matchedLength: number) => {
     return (
