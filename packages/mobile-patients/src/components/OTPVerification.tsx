@@ -39,7 +39,6 @@ import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { BottomPopUp } from './ui/BottomPopUp';
-import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
@@ -116,7 +115,6 @@ export interface OTPVerificationProps
   extends NavigationScreenProps<{
     otpString: string;
     phoneNumber: string;
-    dbChildKey: string;
     loginId: string;
   }> {}
 
@@ -141,8 +139,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
-
-  const dbChildKey = props.navigation.state.params!.dbChildKey;
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -309,11 +305,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   useEffect(() => {
     if (onOtpClick) {
       if (currentPatient) {
-        db.ref('ApolloPatients/')
-          .child(dbChildKey)
-          .update({
-            patientApiCallSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-          });
         if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
           if (currentPatient.relation == null) {
             navigateTo(AppRoutes.MultiSignup);
@@ -364,12 +355,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           console.log('otp OTPVerification', otp, otp.length, 'length');
           setshowSpinner(true);
 
-          db.ref('ApolloPatients/')
-            .child(dbChildKey)
-            .update({
-              OTPEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-            });
-
           const { loginId } = props.navigation.state.params!;
 
           verifyOTP(loginId, otp)
@@ -380,12 +365,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
                 CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
 
-                db.ref('ApolloPatients/')
-                  .child(dbChildKey)
-                  .update({
-                    OTPEnteredSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-                  });
-
                 _removeFromStore();
                 setOnOtpClick(true);
                 console.log('error', data.authToken);
@@ -393,13 +372,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 sendOtp(data.authToken)
                   .then((data) => {
                     // setshowSpinner(true);
-                    db.ref('ApolloPatients/')
-                      .child(dbChildKey)
-                      .update({
-                        FirebaseTokenSuccess: moment(new Date()).format(
-                          'Do MMMM, dddd \nhh:mm:ss A'
-                        ),
-                      });
                   })
                   .catch((e) => {
                     CommonBugFender('OTPVerification_sendOtp', e);
@@ -424,17 +396,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     setIsValidOTP(true);
                   }
                   setInvalidOtpCount(invalidOtpCount + 1);
-                  db.ref('ApolloPatients/')
-                    .child(dbChildKey)
-                    .update({
-                      wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-                    });
-
-                  db.ref('ApolloPatients/')
-                    .child(dbChildKey)
-                    .update({
-                      OTPFailedReason: 'Wrong OTP',
-                    });
                 } catch (error) {
                   CommonBugFender('OTP_ENTERED_try', error);
                   setshowSpinner(false);
@@ -463,17 +424,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   setIsValidOTP(true);
                 }
                 setInvalidOtpCount(invalidOtpCount + 1);
-                db.ref('ApolloPatients/')
-                  .child(dbChildKey)
-                  .update({
-                    wrongOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-                  });
-
-                db.ref('ApolloPatients/')
-                  .child(dbChildKey)
-                  .update({
-                    OTPFailedReason: error ? error.message : '',
-                  });
 
                 CommonBugFender('OTP_ENTERED_FAIL', error);
                 CommonLogEvent('OTP_ENTERED_FAIL', JSON.stringify(error));
@@ -563,11 +513,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickResend = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
-    db.ref('ApolloPatients/')
-      .child(dbChildKey)
-      .update({
-        ResendOTP: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-      });
 
     getNetStatus()
       .then((status) => {

@@ -342,8 +342,8 @@ export function g(obj: any, ...props: string[]) {
 export const getNetStatus = async () => {
   const status = await NetInfo.fetch()
     .then((connectionInfo) => {
-      //console.log(connectionInfo, 'connectionInfo');
-      return connectionInfo.type !== 'none';
+      console.log(connectionInfo, 'connectionInfo');
+      return connectionInfo.isConnected && connectionInfo.isInternetReachable;
     })
     .catch((e) => {
       CommonBugFender('helperFunctions_getNetStatus', e);
