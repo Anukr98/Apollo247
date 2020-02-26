@@ -21,7 +21,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MedicalTestUnit, AddMedicalRecordParametersInput } from '../../graphql/types/globalTypes';
 import { ADD_MEDICAL_RECORD, UPLOAD_DOCUMENT } from '../../graphql/profiles';
 import moment from 'moment';
-import { AphCalendar } from '../AphCalendar';
+import { AphCalendarPastDate } from '../AphCalendarPastDate';
 import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -520,7 +520,11 @@ export const AddRecords: React.FC = (props) => {
                 issuingDoctor: doctorIssuedPrescription,
                 location,
                 testDate:
-                  dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+                  dateOfTest !== ''
+                    ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
+                    : dateOfPrescription !== ''
+                    ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+                    : '',
                 recordType: typeOfRecord,
                 referringDoctor: referringDoctor,
                 sourceName: '',
@@ -562,7 +566,12 @@ export const AddRecords: React.FC = (props) => {
           testName: nameOfTest,
           issuingDoctor: doctorIssuedPrescription,
           location,
-          testDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+          testDate:
+            dateOfTest !== ''
+              ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
+              : dateOfPrescription !== ''
+              ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+              : '',
           recordType: typeOfRecord,
           referringDoctor: referringDoctor,
           sourceName: '',
@@ -818,7 +827,7 @@ export const AddRecords: React.FC = (props) => {
                                 placeholder="dd/mm/yyyy"
                               />
                               {showCalendar && (
-                                <AphCalendar
+                                <AphCalendarPastDate
                                   getDate={(dateSelected: string) => {
                                     setdateOfTest(dateSelected);
                                     setShowCalendar(false);
@@ -855,7 +864,7 @@ export const AddRecords: React.FC = (props) => {
                                 placeholder="dd/mm/yyyy"
                               />
                               {showCalendar && (
-                                <AphCalendar
+                                <AphCalendarPastDate
                                   getDate={(dateSelected: string) => {
                                     setDateOfPrescription(dateSelected);
                                     setShowCalendar(false);
@@ -1043,7 +1052,7 @@ export const AddRecords: React.FC = (props) => {
             </Scrollbars>
             <div className={classes.pageBottomActions}>
               <AphButton color="primary" disabled={!isValid().isvalid} onClick={() => saveRecord()}>
-                {showSpinner ? <CircularProgress /> : 'Add Record'}
+                {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Add Record'}
               </AphButton>
             </div>
           </div>

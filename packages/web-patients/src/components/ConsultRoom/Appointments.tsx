@@ -383,10 +383,22 @@ export const Appointments: React.FC = (props) => {
   // });
 
   const availableAppointments = appointments.filter((appointmentDetails) => {
-    const appointmentDate = moment(appointmentDetails.appointmentDateTime);
-    const currentDate = moment(new Date());
-    const diffDays = currentDate.diff(appointmentDate, 'days');
-    return diffDays <= 7;
+    return moment(new Date(appointmentDetails.appointmentDateTime))
+      .add(6, 'days')
+      .startOf('day')
+      .isSameOrAfter(moment(new Date()).startOf('day'));
+    // const appointmentDate = moment(appointmentDetails.appointmentDateTime);
+    // const currentDate = moment(new Date());
+    // const diffDays = currentDate.diff(appointmentDate, 'days');
+    // console.log(
+    //   diffDays,
+    //   'diff days....',
+    //   moment(new Date(appointmentDetails.appointmentDateTime))
+    //     .add(6, 'days')
+    //     .startOf('day')
+    //     .isSameOrAfter(moment(new Date()).startOf('day'))
+    // );
+    // return diffDays <= 7;
     // const currentDate = new Date();
     // console.log('diff in days..................', diffDays);
     // const compareDate = currentDate.setDate(currentDate.getDate() - 7);
@@ -394,10 +406,14 @@ export const Appointments: React.FC = (props) => {
   });
 
   const pastAppointments = appointments.filter((appointmentDetails) => {
-    const appointmentDate = moment(appointmentDetails.appointmentDateTime);
-    const currentDate = moment(new Date());
-    const diffDays = currentDate.diff(appointmentDate, 'days');
-    return diffDays > 7;
+    return moment(new Date(appointmentDetails.appointmentDateTime))
+      .add(6, 'days')
+      .startOf('day')
+      .isBefore(moment(new Date()).startOf('day'));
+    // const appointmentDate = moment(appointmentDetails.appointmentDateTime);
+    // const currentDate = moment(new Date());
+    // const diffDays = currentDate.diff(appointmentDate, 'days');
+    // return diffDays > 7;
     // const currentDate = new Date();
     // const compareDate = currentDate.setDate(currentDate.getDate() - 7);
     // const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
@@ -612,7 +628,16 @@ export const Appointments: React.FC = (props) => {
       </div>
 
       <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
-        <AphDialogClose onClick={() => setIsConfirmedPopoverOpen(false)} />
+        <Route
+          render={({ history }) => (
+            <AphDialogClose
+              onClick={() => {
+                setIsConfirmedPopoverOpen(false);
+                history.push(clientRoutes.appointments());
+              }}
+            />
+          )}
+        />
         <AphDialogTitle>Confirmed</AphDialogTitle>
         <div className={classes.messageBox}>
           <div className={classes.doctorDetails}>
