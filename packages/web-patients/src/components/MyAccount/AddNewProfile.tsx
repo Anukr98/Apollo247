@@ -233,11 +233,20 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
     const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
       return currentPatientDetails.id === (currentPatient ? currentPatient.id : '');
     });
+
+    console.log(
+      selectedPatientDetails,
+      multiplePrimaryUsers &&
+        selectedRelation === 'ME' &&
+        selectedPatientDetails &&
+        selectedPatientDetails.relation !== selectedRelation
+    );
+
     if (
       multiplePrimaryUsers &&
       selectedRelation === 'ME' &&
       selectedPatientDetails &&
-      selectedPatientDetails.relation !== selectedRelation
+      selectedPatientDetails.relation === 'ME'
     ) {
       setPrimaryUserErrorMessage('Relation can be set as Me for only 1 profile');
     } else {
@@ -318,7 +327,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         isLastNameValid &&
         isRelationValid &&
         isGenderValid &&
-        !primaryUserErrorMessage &&
+        primaryUserErrorMessage.length === 0 &&
         isValidDob &&
         (emailAddress !== '' ? isEmailAddressValid : true))) ||
     isProfileDelete;
