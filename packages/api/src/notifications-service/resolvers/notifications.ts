@@ -1087,7 +1087,7 @@ export async function sendReminderNotification(
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
   ) {
     const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    notificationBody = notificationBody + ' Click here ' + smsLink;
+    notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
   }
   //send SMS notification
   sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
