@@ -39,7 +39,6 @@ import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { BottomPopUp } from './ui/BottomPopUp';
-import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
@@ -116,7 +115,6 @@ export interface OTPVerificationProps
   extends NavigationScreenProps<{
     otpString: string;
     phoneNumber: string;
-    dbChildKey: string;
     loginId: string;
   }> {}
 
@@ -141,8 +139,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
-
-  const dbChildKey = props.navigation.state.params!.dbChildKey;
 
   const handleBack = async () => {
     setonClickOpen(false);

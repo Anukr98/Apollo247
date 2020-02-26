@@ -32,7 +32,6 @@ import {
 import firebase from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
-import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
@@ -112,7 +111,6 @@ const isPhoneNumberValid = (number: string) => {
 
 let otpString = '';
 let didBlurSubscription: NavigationEventSubscription;
-let dbChildKey: string = '';
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -278,7 +276,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
                   phoneNumber: phoneNumber,
-                  dbChildKey,
                   loginId: confirmResult.loginId,
                 });
               })
