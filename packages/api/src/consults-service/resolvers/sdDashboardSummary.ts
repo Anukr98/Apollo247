@@ -30,6 +30,8 @@ import _isEmpty from 'lodash/isEmpty';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { format, differenceInMinutes } from 'date-fns';
+import { ApiConstants } from 'ApiConstants';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -210,7 +212,9 @@ const updateSdSummary: Resolver<
   ConsultServiceContext,
   DashboardSummaryResult
 > = async (parent, args, context) => {
-  const { docRepo, dashboardRepo, adminMapRepo, loginSessionRepo } = getRepos(context);
+  const { docRepo, dashboardRepo, adminMapRepo, loginSessionRepo, consultHoursRepo } = getRepos(
+    context
+  );
   const docsList = await docRepo.getAllDoctors(args.doctorId);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
@@ -224,6 +228,20 @@ const updateSdSummary: Resolver<
         loggedInHours = parseFloat((loginSessionData.onlineTimeInSeconds / 60 / 60).toFixed(2));
         awayHours = parseFloat((loginSessionData.offlineTimeInSeconds / 60 / 60).toFixed(2));
       }
+      const weekDay = format(args.summaryDate, 'EEEE').toUpperCase();
+      const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+      let difference = 0;
+      let totalSlotsTime = 0;
+      if (timeSlots.length) {
+        timeSlots.forEach(async (timeSlot) => {
+          difference += differenceInMinutes(
+            new Date(ApiConstants.SAMPLE_DATE + timeSlot.endTime),
+            new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime)
+          );
+        });
+        totalSlotsTime = difference / timeSlots[0].consultDuration;
+      }
+
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,
         args.summaryDate,
@@ -300,6 +318,7 @@ const updateSdSummary: Resolver<
         totalConsultations,
         totalVirtualConsultations: virtaulConsultations,
         totalPhysicalConsultations,
+        slotsDurationInMinutes: totalSlotsTime,
         patientCancelCount: patientCancelCount,
         appointmentDateTime: args.summaryDate,
         audioConsultations: auidoCount,
