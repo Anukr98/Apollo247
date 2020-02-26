@@ -143,6 +143,21 @@ winston.loggers.add('couponServiceLogger', {
   ],
 });
 
+//API-Gateway logger
+winston.loggers.add('apiGatewayLogger', {
+  format: combine(label({ label: 'apiGatewayLogger' }), timestamp(), winstonFormat.json()),
+  transports: [
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.API_GATEWAY_ACCESS_LOG_FILE,
+      level: 'info',
+    }),
+    new winston.transports.File({
+      filename: logsDir + ApiConstants.API_GATEWAY_ERROR_LOG_FILE,
+      level: 'error',
+    }),
+  ],
+});
+
 export const winstonLogger = winston;
 
 export const log = (
