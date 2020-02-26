@@ -206,9 +206,13 @@ export const LocationSearch: React.FC = (props) => {
   const [address, setAddress] = React.useState('');
   const [selectedAddress, setSelectedAddress] = React.useState('');
 
-  const { currentLocation, setCurrentLat, setCurrentLong, setCurrentLocation } = useContext(
-    LocationContext
-  );
+  const {
+    currentLocation,
+    setCurrentLat,
+    setCurrentLong,
+    setCurrentLocation,
+    locateCurrentLocation,
+  } = useContext(LocationContext);
   const { isSigningIn } = useAuth();
 
   const handleChange = (address: string) => setAddress(address);
@@ -241,6 +245,9 @@ export const LocationSearch: React.FC = (props) => {
             alert('Location Permission was denied. Please allow browser settings.');
           } else if (PermissionStatus.state !== 'granted') {
             setIsPopoverOpen(true);
+          } else {
+            locateCurrentLocation();
+            setIsPopoverOpen(false);
           }
         });
     } else {
