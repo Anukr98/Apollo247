@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 13,
     width: '100%',
+    marginBottom: 10,
   },
   leftSmallText: {
     color: '#004053',
@@ -134,58 +135,56 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
 
   const BodyView = () => {
     return (
-      <View>
-        <View style={styles.cardView}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.leftSmallText}>Appointment Details : </Text>
-              <Text style={styles.leftMidiumText}> 6th June, 2019</Text>
-            </View>
-
-            <Text style={styles.rupeesStyle}>Rs. 100</Text>
+      <View style={styles.cardView}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={styles.leftSmallText}>Appointment Details : </Text>
+            <Text style={styles.leftMidiumText}> 6th June, 2019</Text>
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.leftSmallText}>Appointment ID : </Text>
-              <Text style={styles.leftMidiumText}> 12345</Text>
-            </View>
 
-            <Text style={styles.cunsultTextStyle}>Online Consult | New</Text>
+          <Text style={styles.rupeesStyle}>Rs. 100</Text>
+        </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={styles.leftSmallText}>Appointment ID : </Text>
+            <Text style={styles.leftMidiumText}> 12345</Text>
           </View>
-          <View style={styles.underline} />
 
-          <View style={{ flexDirection: 'row', flex: 1 }}>
-            <View style={{ flexDirection: 'column', marginRight: 5 }}>
-              <Text style={styles.leftSmallText}>Fee </Text>
-              <Text style={[styles.nameStyles, { marginLeft: -3 }]}> Rs. 499</Text>
-            </View>
-            <View style={{ flexDirection: 'column', marginRight: 5 }}>
-              <Text style={styles.leftSmallText}> </Text>
-              <Text style={styles.nameStyles}>-</Text>
-            </View>
+          <Text style={styles.cunsultTextStyle}>Online Consult | New</Text>
+        </View>
+        <View style={styles.underline} />
 
-            <View style={{ flexDirection: 'column', marginRight: 5 }}>
-              <Text style={styles.leftSmallText}>Commission </Text>
-              <Text style={styles.nameStyles}> Rs. 50</Text>
-            </View>
+        <View style={{ flexDirection: 'row', flex: 1 }}>
+          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+            <Text style={styles.leftSmallText}>Fee </Text>
+            <Text style={[styles.nameStyles, { marginLeft: -3 }]}> Rs. 499</Text>
+          </View>
+          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+            <Text style={styles.leftSmallText}> </Text>
+            <Text style={styles.nameStyles}>-</Text>
+          </View>
 
-            <View style={{ flexDirection: 'column', marginRight: 5 }}>
-              <Text style={styles.leftSmallText}> </Text>
-              <Text style={styles.nameStyles}>-</Text>
-            </View>
+          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+            <Text style={styles.leftSmallText}>Commission </Text>
+            <Text style={styles.nameStyles}> Rs. 50</Text>
+          </View>
 
-            <View style={{ flexDirection: 'column', marginRight: 5 }}>
-              <Text style={styles.leftSmallText}>Discount </Text>
-              <Text style={styles.nameStyles}> Rs. 50</Text>
-            </View>
-            <View style={{ flexDirection: 'column', marginRight: 5 }}>
-              <Text style={styles.leftSmallText}> </Text>
-              <Text style={styles.nameStyles}>=</Text>
-            </View>
-            <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-              <Text style={styles.leftSmallText}>Received </Text>
-              <Text style={styles.nameStyles}> Rs. 399</Text>
-            </View>
+          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+            <Text style={styles.leftSmallText}> </Text>
+            <Text style={styles.nameStyles}>-</Text>
+          </View>
+
+          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+            <Text style={styles.leftSmallText}>Discount </Text>
+            <Text style={styles.nameStyles}> Rs. 50</Text>
+          </View>
+          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+            <Text style={styles.leftSmallText}> </Text>
+            <Text style={styles.nameStyles}>=</Text>
+          </View>
+          <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Text style={styles.leftSmallText}>Received </Text>
+            <Text style={styles.nameStyles}> Rs. 399</Text>
           </View>
         </View>
       </View>
@@ -240,7 +239,10 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
         <View>{showHeaderView()}</View>
 
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          <View style={{ marginTop: 20, marginHorizontal: 20 }}>{BodyView()}</View>
+          <View style={{ marginTop: 20, marginHorizontal: 20 }}>
+            {BodyView()}
+            {BodyView()}
+          </View>
         </ScrollView>
       </SafeAreaView>
     </View>
