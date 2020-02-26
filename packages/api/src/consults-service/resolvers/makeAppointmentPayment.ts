@@ -207,9 +207,9 @@ const sendPatientAcknowledgements = async (
     if (hospitalCity) {
       subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace(
         '{0}',
-        'ATHS' + '&nbsp' + hospitalCity
+        'ATHS' + '&nbsp;' + hospitalCity
       );
-      displayHospitalCity = 'ATHS' + '&nbsp' + hospitalCity;
+      displayHospitalCity = 'ATHS' + '&nbsp;' + hospitalCity;
     } else {
       subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', 'ATHS');
       displayHospitalCity = hospitalCity;
