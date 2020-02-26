@@ -157,8 +157,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   //   /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
 
   const _setEmail = (value: string) => {
-    setEmail(value);
-    setEmailValidation(isSatisfyingEmailRegex(value));
+    const trimmedValue = (value || '').trim();
+    setEmail(trimmedValue);
+    setEmailValidation(isSatisfyingEmailRegex(trimmedValue));
   };
 
   const _setFirstName = (value: string) => {
