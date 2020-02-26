@@ -20,16 +20,6 @@ import io.invertase.firebase.auth.RNFirebaseAuthPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 
-// import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
-// import com.opentokreactnative.OTPackage;
-// import org.devio.rn.splashscreen.SplashScreenReactPackage;
-// import io.invertase.firebase.RNFirebasePackage;
-// import com.oblador.vectoricons.VectorIconsPackage;
-// import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-// import com.centaurwarchief.smslistener.SmsListenerPackage;
-// import com.facebook.react.shell.MainReactPackage;
-// import java.util.Arrays;
-
 public class MainApplication extends Application implements ReactApplication {
 
     private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
@@ -41,34 +31,10 @@ public class MainApplication extends Application implements ReactApplication {
         @Override
         protected List<ReactPackage> getPackages() {
             List<ReactPackage> packages = new PackageList(this).getPackages();
-            // Packages that cannot be autolinked yet can be added manually here, for example:
-            // packages.add(new MyReactNativePackage());
-            // new MainReactPackage(),            
-            // new PickerPackage(),
-            // new ImagePickerPackage(),
-            // new RNFirebasePackage(),
-            // new DocumentPickerPackage(),
-            // new OTPackage(),
-            // new SplashScreenReactPackage(),
-            // new RNFirebasePackage(),
-            // new VectorIconsPackage(),
-            // new RNGestureHandlerPackage(),
-            // new SmsListenerPackage(),
-            // new RNFirebaseAnalyticsPackage(), // <-- Add this line
-            // new RNFirebaseAuthPackage(),
-            // new RNFirebaseMessagingPackage(),
-            // new RNFirebaseNotificationsPackage()
-            // packages.add(new ReactNativeExceptionHandlerPackage());
-            // packages.add(new RNExitAppPackage());
             packages.add(new RNFirebaseAnalyticsPackage());
             packages.add(new RNFirebaseAuthPackage());
             packages.add(new RNFirebaseMessagingPackage());
             packages.add(new RNFirebaseNotificationsPackage());
-            // packages.add(new ImagePickerPackage());
-            // packages.add(new PickerPackage());
-            // packages.add(new AsyncStoragePackage());
-            // packages.add(new StreamPackage());
-            // packages.add(new RNFirebaseRemoteConfigPackage());
             return packages;
         }
 

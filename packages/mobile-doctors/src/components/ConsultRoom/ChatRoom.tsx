@@ -117,7 +117,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
   useEffect(() => {
-    console.log(messages, 'props.messages');
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
@@ -174,7 +173,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
           .finally(() => {
             setLoading && setLoading(false);
-            props.setPatientImageshow(true);
+            // props.setPatientImageshow(true);
           });
       } else {
         setLoading && setLoading(false);
@@ -204,8 +203,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderCommonImageView = (rowData: any, isMatched: boolean, onPress: () => void) => {
-    console.log(rowData.url, 'rowData.url', isMatched);
-
     return (
       <View>
         <TouchableOpacity onPress={onPress} activeOpacity={1}>

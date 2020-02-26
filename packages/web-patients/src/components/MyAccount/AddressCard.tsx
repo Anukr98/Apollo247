@@ -7,6 +7,7 @@ import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql
 import { DELETE_PATIENT_ADDRESS } from 'graphql/address';
 import { useMutation } from 'react-apollo-hooks';
 import { MascotWithMessage } from '../MascotWithMessage';
+import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -96,7 +97,11 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
             setCurrentAddress(address);
           }}
         >
-          <div className={classes.addressType}>{address.addressType}</div>
+          <div className={classes.addressType}>
+            {address.addressType === PATIENT_ADDRESS_TYPE.OTHER
+              ? address.otherAddressType
+              : address.addressType}
+          </div>
           {address.addressLine1}
           <br /> {address.addressLine2}
           <br /> {address.zipcode}

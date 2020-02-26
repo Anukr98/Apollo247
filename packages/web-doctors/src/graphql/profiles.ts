@@ -749,6 +749,7 @@ export const GET_CASESHEET = gql`
         sentToPatient
         appointment {
           id
+          appointmentType
           appointmentDateTime
           appointmentDocuments {
             documentPath
@@ -830,6 +831,7 @@ export const GET_CASESHEET = gql`
       }
       pastAppointments {
         id
+        appointmentType
         appointmentDateTime
         appointmentState
         doctorId

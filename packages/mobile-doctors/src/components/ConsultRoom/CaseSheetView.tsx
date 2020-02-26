@@ -95,7 +95,7 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Dispatch } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -411,6 +411,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 
   caseSheet: GetCaseSheet_getCaseSheet | null | undefined;
   caseSheetEdit: boolean;
+  setCaseSheetEdit: Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -490,6 +491,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { doctorDetails } = useAuth();
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
+  const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
+
   const client = useApolloClient();
 
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
@@ -740,7 +743,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   const followUpMessage = () => {
@@ -849,7 +852,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   const error = JSON.parse(JSON.stringify(e));
                   const errorMessage = error && error.message;
                   console.log('Error occured while End casesheet', errorMessage, error);
-                  Alert.alert(strings.common.error, errorMessage);
+                  Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
                 });
             },
           },
@@ -951,7 +954,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <View style={styles.footerButtonsContainer}>
           <Button
-            // onPress={() => saveDetails()}
+            onPress={() => {
+              props.setCaseSheetEdit(true);
+              setShowEditPreviewButtons(true);
+            }}
             title={'EDIT CASE SHEET'}
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
@@ -960,7 +966,42 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Button
             title={'SEND TO PATIENT'}
             onPress={() => {
-              // sendToPatientAction();
+              sendToPatientAction();
+            }}
+            style={styles.buttonendStyle}
+          />
+        </View>
+      </StickyBottomComponent>
+    );
+  };
+
+  const renderSentToPatient = () => {
+    return (
+      <StickyBottomComponent
+        style={{ backgroundColor: '#f0f4f5', justifyContent: 'center', height: 50 }}
+      >
+        <Text style={theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE)}>
+          PRESCRIPTION SENT
+        </Text>
+      </StickyBottomComponent>
+    );
+  };
+  const renderEditPreviewButtons = () => {
+    //console.log({ Appintmentdatetimeconsultpage });
+    return (
+      <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
+        <View style={styles.footerButtonsContainer}>
+          <Button
+            onPress={() => saveDetails()}
+            title={'SAVE'}
+            titleTextStyle={styles.buttonTextStyle}
+            variant="white"
+            style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+          />
+          <Button
+            title={'PREVIEW PRESCRIPTION'}
+            onPress={() => {
+              prescriptionView();
             }}
             style={styles.buttonendStyle}
           />
@@ -977,7 +1018,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={show}
           onPress={() => setShow(!show)}
         >
-          {symptonsData == null || symptonsData.length == 0 ? (
+          {symptonsData == null || (symptonsData && symptonsData.length == 0) ? (
             <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
               {strings.common.no_data}
             </Text>
@@ -1898,7 +1939,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 flexWrap: 'wrap',
               }}
             >
-              {diagnosisData == null || diagnosisData.length == 0
+              {diagnosisData == null || (diagnosisData && diagnosisData.length == 0)
                 ? renderInfoText(strings.common.no_data)
                 : diagnosisData.map(
                     (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null, i) => {
@@ -2562,6 +2603,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
+  console.log(caseSheetEdit, 'caseSheetEdit');
+
   return (
     <View style={styles.casesheetView}>
       <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
@@ -2608,7 +2651,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={{ height: 80 }} />
         </ScrollView>
       </KeyboardAwareScrollView>
-      {stastus == STATUS.COMPLETED
+      {showEditPreviewButtons
+        ? renderEditPreviewButtons()
+        : stastus == STATUS.COMPLETED
         ? renderCompletedButtons()
         : moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
           stastus == 'IN_PROGRESS'

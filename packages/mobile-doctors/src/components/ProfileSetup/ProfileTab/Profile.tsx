@@ -298,7 +298,8 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   const removeSecretaryFromProgram = (id: string) => {
@@ -321,7 +322,8 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while removeSecretaryFromProgram ', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   return (

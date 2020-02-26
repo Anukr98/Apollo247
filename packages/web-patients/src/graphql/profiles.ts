@@ -76,6 +76,7 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         createdDate
         updatedDate
         addressType
+        otherAddressType
       }
     }
   }
