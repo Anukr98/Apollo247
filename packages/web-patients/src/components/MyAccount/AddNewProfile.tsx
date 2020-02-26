@@ -229,29 +229,37 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const [primaryUserErrorMessage, setPrimaryUserErrorMessage] = useState<string>('');
 
   useEffect(() => {
-    if (selectedPatientId.length > 0) {
-      const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
-        return currentPatientDetails.id === selectedPatientId;
-      });
-      if (
-        multiplePrimaryUsers &&
-        selectedRelation === 'ME' &&
-        selectedPatientDetails &&
-        selectedPatientDetails.relation !== selectedRelation
-      ) {
-        setPrimaryUserErrorMessage('Relation can be set as Me for only 1 profile');
-      } else {
-        setPrimaryUserErrorMessage('');
-      }
-      if (
-        multiplePrimaryUsers &&
-        props.isMeClicked &&
-        selectedRelation.length > 0 &&
-        selectedRelation !== 'ME'
-      ) {
-        setPrimaryUserErrorMessage('There should be 1 profile with relation set as Me');
-      }
+    // if (selectedPatientId.length > 0) {
+    const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
+      return currentPatientDetails.id === (currentPatient ? currentPatient.id : '');
+    });
+    if (
+      multiplePrimaryUsers &&
+      selectedRelation === 'ME' &&
+      selectedPatientDetails &&
+      selectedPatientDetails.relation !== selectedRelation
+    ) {
+      setPrimaryUserErrorMessage('Relation can be set as Me for only 1 profile');
+    } else {
+      setPrimaryUserErrorMessage('');
     }
+
+    // if (
+    //   multiplePrimaryUsers &&
+    //   props.isMeClicked &&
+    //   selectedRelation.length > 0 &&
+    //   selectedRelation !== 'ME'
+    // ) {
+    //   setPrimaryUserErrorMessage('There should be 1 profile with relation set as Me');
+    // }
+    // } else if (selectedRelation.length > 0 && selectedPatientId.length === 0) {
+    //   console.log(
+    //     multiplePrimaryUsers &&
+    //       selectedRelation === 'ME' &&
+    //       selectedPatientDetails &&
+    //       selectedPatientDetails.relation !== selectedRelation
+    //   );
+    // }
   }, [selectedRelation, selectedPatientId]);
 
   useEffect(() => {
