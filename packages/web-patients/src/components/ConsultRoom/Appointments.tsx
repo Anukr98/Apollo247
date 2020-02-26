@@ -138,7 +138,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 7,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
-      textOverflow: 'ellipsis',      
+      textOverflow: 'ellipsis',
       [theme.breakpoints.down('xs')]: {
         fontSize: 30,
         lineHeight: '46px',
