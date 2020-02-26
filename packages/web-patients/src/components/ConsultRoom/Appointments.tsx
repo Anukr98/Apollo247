@@ -612,7 +612,16 @@ export const Appointments: React.FC = (props) => {
       </div>
 
       <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
-        <AphDialogClose onClick={() => setIsConfirmedPopoverOpen(false)} />
+        <Route
+          render={({ history }) => (
+            <AphDialogClose
+              onClick={() => {
+                setIsConfirmedPopoverOpen(false);
+                history.push(clientRoutes.appointments());
+              }}
+            />
+          )}
+        />
         <AphDialogTitle>Confirmed</AphDialogTitle>
         <div className={classes.messageBox}>
           <div className={classes.doctorDetails}>
