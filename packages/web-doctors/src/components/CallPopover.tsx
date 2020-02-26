@@ -1347,10 +1347,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       disablesecond;
     const disableaddedTime = new Date(disableaddedMinutes);
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
-    const curTm1 = new Date().toISOString();
+    const presentTime = new Date().toISOString();
 
     if (
-      aptDTTM.substring(0, 19) === curTm1.substring(0, 19) &&
+      aptDTTM.substring(0, 19) === presentTime.substring(0, 19) &&
       isConsultStarted &&
       appointmentInfo &&
       appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
