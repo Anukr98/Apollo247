@@ -40,7 +40,7 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
 }
 
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo {
-  __typename: "DoctorDetails";
+  __typename: "DoctorDetailsWithStatusExclude";
   id: string;
   firstName: string;
   lastName: string;

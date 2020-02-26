@@ -29,17 +29,17 @@ export interface GetAppointmentData_getAppointmentData_appointmentsHistory_docto
 }
 
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo {
-  __typename: "Profile";
+  __typename: "DoctorDetailsWithStatusExclude";
   id: string;
   salutation: Salutation | null;
-  firstName: string | null;
-  lastName: string | null;
+  firstName: string;
+  lastName: string;
   displayName: string | null;
   fullName: string | null;
   experience: string | null;
   onlineConsultationFees: string;
   physicalConsultationFees: string;
-  specialty: GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo_specialty;
+  specialty: GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo_specialty | null;
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;

@@ -129,7 +129,9 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         maxWidth="sm"
       >
         <AphDialogTitle>Delete Report</AphDialogTitle>
-        <div className={classes.dialogBody}>Are you want to delete the selected record?</div>
+        <div className={classes.dialogBody}>
+          Are you sure you want to delete the selected record?
+        </div>
         <div className={classes.dialogActions}>
           <AphButton
             color="default"
