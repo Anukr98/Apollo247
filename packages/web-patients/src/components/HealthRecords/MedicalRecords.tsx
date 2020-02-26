@@ -311,6 +311,7 @@ type MedicalRecordProps = {
   allCombinedData: any;
   setMedicalRecords: (medicalRecords: any) => void;
   loading: boolean;
+  setLoading: (loading: boolean) => void;
 };
 
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
@@ -320,10 +321,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const [activeData, setActiveData] = useState<any | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
 
-  const { medicalRecords, allCombinedData, setMedicalRecords, loading } = props;
+  const { medicalRecords, allCombinedData, loading, setLoading, setMedicalRecords } = props;
 
   useEffect(() => {
-    if (!isSmallScreen && allCombinedData && !activeData) {
+    if (!isSmallScreen && allCombinedData) {
       setActiveData(allCombinedData[0]);
     }
   }, [allCombinedData]);
@@ -392,6 +393,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       fetchPolicy: 'no-cache',
     })
       .then((_data) => {
+        setLoading(true);
         const newRecords =
           medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
         setMedicalRecords(newRecords);
@@ -444,6 +446,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     isActiveCard={
                       activeData && activeData.data && activeData.data.id === combinedData.data.id
                     }
+                    setLoading={setLoading}
                   />
                 </div>
               ))}
@@ -475,80 +478,87 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
         }`}
       >
-        <div className={classes.sectionHeader}>
-          <div className={classes.headerBackArrow}>
-            <AphButton
-              onClick={() => {
-                if (isSmallScreen) {
-                  setShowMobileDetails(false);
-                }
-              }}
-            >
-              <img src={require('images/ic_back.svg')} />
-            </AphButton>
-            <span>REPORT Details</span>
-          </div>
-        </div>
-        <Scrollbars
-          autoHide={true}
-          autoHeight
-          autoHeightMin={
-            isMediumScreen
-              ? 'calc(100vh - 287px)'
-              : isSmallScreen
-              ? 'calc(100vh - 55px)'
-              : 'calc(100vh - 245px)'
-          }
-        >
-          {(!isSmallScreen && activeData) || (isSmallScreen && showMobileDetails && activeData) ? (
-            <div className={classes.medicalRecordsDetails}>
-              <div className={classes.cbcDetails}>
-                <div className={classes.reportsDetails}>
-                  <label>Check-up Date</label>
-                  <p>{getFormattedDate(activeData)}</p>
-                </div>
-                <div className={classes.reportsDetails}>
-                  <label>Source</label>
-                  <p>{getSource()}</p>
-                </div>
-                <div className={classes.reportsDetails}>
-                  <label>Referring Doctor</label>
-                  <p>
-                    {!!activeData.data.referringDoctor
-                      ? activeData.data.referringDoctor
-                      : !!activeData.data.signingDocName
-                      ? activeData.data.signingDocName
-                      : '-'}
-                  </p>
-                </div>
+        {allCombinedData && allCombinedData.length > 0 ? (
+          <>
+            <div className={classes.sectionHeader}>
+              <div className={classes.headerBackArrow}>
+                <AphButton
+                  onClick={() => {
+                    if (isSmallScreen) {
+                      setShowMobileDetails(false);
+                    }
+                  }}
+                >
+                  <img src={require('images/ic_back.svg')} />
+                </AphButton>
+                <span>REPORT Details</span>
               </div>
-              {(activeData.data.observations ||
-                activeData.data.additionalNotes ||
-                activeData.data.healthCheckSummary) && <ToplineReport activeData={activeData} />}
-              {((activeData.data.medicalRecordParameters &&
-                activeData.data.medicalRecordParameters.length > 0) ||
-                (activeData.data.labTestResultParameters &&
-                  activeData.data.labTestResultParameters.length > 0)) && (
-                <DetailedFindings activeData={activeData} />
+            </div>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMin={
+                isMediumScreen
+                  ? 'calc(100vh - 287px)'
+                  : isSmallScreen
+                  ? 'calc(100vh - 55px)'
+                  : 'calc(100vh - 245px)'
+              }
+            >
+              {((!isSmallScreen && activeData) ||
+                (isSmallScreen && showMobileDetails && activeData)) && (
+                <div className={classes.medicalRecordsDetails}>
+                  <div className={classes.cbcDetails}>
+                    <div className={classes.reportsDetails}>
+                      <label>Check-up Date</label>
+                      <p>{getFormattedDate(activeData)}</p>
+                    </div>
+                    <div className={classes.reportsDetails}>
+                      <label>Source</label>
+                      <p>{getSource()}</p>
+                    </div>
+                    <div className={classes.reportsDetails}>
+                      <label>Referring Doctor</label>
+                      <p>
+                        {!!activeData.data.referringDoctor
+                          ? activeData.data.referringDoctor
+                          : !!activeData.data.signingDocName
+                          ? activeData.data.signingDocName
+                          : '-'}
+                      </p>
+                    </div>
+                  </div>
+                  {(activeData.data.observations ||
+                    activeData.data.additionalNotes ||
+                    activeData.data.healthCheckSummary) && (
+                    <ToplineReport activeData={activeData} />
+                  )}
+                  {((activeData.data.medicalRecordParameters &&
+                    activeData.data.medicalRecordParameters.length > 0) ||
+                    (activeData.data.labTestResultParameters &&
+                      activeData.data.labTestResultParameters.length > 0)) && (
+                    <DetailedFindings activeData={activeData} />
+                  )}
+                  {activeData.data &&
+                    (activeData.data.prismFileIds ||
+                      activeData.data.hospitalizationPrismFileIds ||
+                      activeData.data.healthCheckPrismFileIds ||
+                      activeData.data.testResultPrismFileIds) && (
+                      <RenderImage activeData={activeData} />
+                    )}
+                </div>
               )}
-              {activeData.data &&
-                (activeData.data.prismFileIds ||
-                  activeData.data.hospitalizationPrismFileIds ||
-                  activeData.data.healthCheckPrismFileIds ||
-                  activeData.data.testResultPrismFileIds) && (
-                  <RenderImage activeData={activeData} />
-                )}
-            </div>
-          ) : (
-            <div className={classes.noRecordFoundWrapper}>
-              <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
-            </div>
-          )}
-        </Scrollbars>
+            </Scrollbars>
+          </>
+        ) : (
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>
+              You don’t have any records with us right now. Add a record to keep everything handy in
+              one place!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
