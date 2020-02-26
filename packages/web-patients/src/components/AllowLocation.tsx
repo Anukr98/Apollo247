@@ -66,13 +66,11 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
             props.setIsPopoverOpen(false);
             props.setIsLocationPopoverOpen(true);
           }}
-          disabled={props.isPopoverOpen}
         >
           Enter Manualy
         </AphButton>
         <AphButton
           color="primary"
-          disabled={props.isPopoverOpen}
           onClick={() => {
             navigator.geolocation.getCurrentPosition(
               ({ coords: { latitude, longitude } }) => {
