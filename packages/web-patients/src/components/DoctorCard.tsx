@@ -21,6 +21,7 @@ import { SEARCH_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import moment from 'moment';
+import CircularProgress from '@material-ui/core/CircularProgress';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 // import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
@@ -142,6 +143,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const { doctorDetails, nextAvailability } = props;
   const { currentPatient } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
 
   const clinics: any = [];
@@ -297,14 +299,25 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         {(mutation) => (
           <div
             onClick={() => {
-              mutation();
+              setPopupLoading(true);
+              mutation()
+                .then(() => {
+                  setPopupLoading(false);
+                })
+                .catch(() => {
+                  setPopupLoading(false);
+                });
             }}
             className={classes.bottomAction}
           >
             <AphButton fullWidth color="primary" className={classes.button}>
-              {getDiffInMinutes() > 0 && getDiffInMinutes() <= 15
-                ? 'CONSULT NOW'
-                : 'BOOK APPOINTMENT'}
+              {popupLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
+                'CONSULT NOW'
+              ) : (
+                'BOOK APPOINTMENT'
+              )}
             </AphButton>
           </div>
         )}
