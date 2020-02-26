@@ -356,7 +356,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           Math.round(currentTime.diff(nextAvailabilityTime, 'minutes') * -1) + 1;
         differenceInDays = Math.round(currentTime.diff(nextAvailabilityTime, 'days') * -1) + 1;
 
-        if (differenceInMinutes >= 0 && differenceInMinutes <= 15) {
+        if (differenceInMinutes >= 0 && differenceInMinutes <= 60) {
           consultNowSlotTime = availability.availableSlot;
         }
 
@@ -400,7 +400,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     }
   });
 
-  const consultNowAvailable = differenceInMinutes > 0 && differenceInMinutes <= 15;
+  const consultNowAvailable = differenceInMinutes > 0 && differenceInMinutes <= 60;
 
   // console.log(consultNowAvailable, 'consult now available.....');
   // console.log(slotAvailableNext, consultNow, timeSelected);
@@ -445,10 +445,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   }}
                   color="secondary"
                   className={`${classes.button} ${
-                    consultNow && slotAvailableNext !== '' && !scheduleLater && consultNowAvailable
-                      ? classes.buttonActive
+                    consultNowAvailable && consultNow
+                      ? !scheduleLater
+                        ? classes.buttonActive
+                        : ''
                       : classes.disabledButton
-                  } ${consultNow && slotAvailableNext === '' ? classes.disabledButton : ''}`}
+                  }`}
                   disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
                 >
                   Consult Now
@@ -594,6 +596,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 appointmentDateTime = consultNowSlotTime;
               }
 
+              console.log(appointmentDateTime, 'appt date and time.....');
+
               setMutationLoading(true);
               paymentMutation({
                 variables: {
@@ -633,7 +637,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 });
             }}
             className={
-              disableSubmit || mutationLoading || isDialogOpen ? classes.buttonDisable : ''
+              disableSubmit ||
+              mutationLoading ||
+              isDialogOpen ||
+              (scheduleLater && consultNowSlotTime === '')
+                ? classes.buttonDisable
+                : ''
             }
           >
             {mutationLoading ? (
