@@ -111,6 +111,7 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingTop: 0,
           marginTop: -10,
           width: 'auto',
+          maxWidth: 'calc(100% - 55px)',
         },
       },
       '& p': {
@@ -135,6 +136,9 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '66px',
       paddingTop: 2,
       paddingBottom: 7,
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',      
       [theme.breakpoints.down('xs')]: {
         fontSize: 30,
         lineHeight: '46px',
