@@ -197,8 +197,8 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.userName}>{_capitalize(patient.firstName || '')}</div>
         <div className={classes.userInfo}>
-          {_capitalize(patient.gender + ' | ')}
-          {patient.dateOfBirth && format(parseISO(patient.dateOfBirth), 'dd MMMM yyyy')}
+          {`${_capitalize(patient.gender || '')} ${patient.gender && patient.dateOfBirth ? '|' : ''}
+          ${(patient.dateOfBirth && format(parseISO(patient.dateOfBirth), 'dd MMMM yyyy')) || ''}`}
         </div>
         <AphSelect
           value={selectedRelation ? _capitalize(selectedRelation) : 'Relation'}
