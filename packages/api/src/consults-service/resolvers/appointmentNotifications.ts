@@ -125,6 +125,8 @@ const sendPhysicalApptReminderNotification: Resolver<
         pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_1;
       } else if (args.inNextMin == 59) {
         pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_60;
+      } else if (args.inNextMin == 180) {
+        pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_180;
       } else if (appt.caseSheet.length > 0) {
         if (
           appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
