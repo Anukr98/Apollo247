@@ -43,63 +43,62 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   const { data } = props.activeData;
 
   useEffect(() => {
-    if (!placeImage) {
-      if (
-        data &&
-        (data.prismFileIds ||
-          data.hospitalizationPrismFileIds ||
-          data.healthCheckPrismFileIds ||
-          data.testResultPrismFileIds)
-      ) {
-        const prismFileds =
-          (data.prismFileIds && data.prismFileIds.split(',')) ||
-          (data.hospitalizationPrismFileIds &&
-            (typeof data.hospitalizationPrismFileIds === 'string'
-              ? data.hospitalizationPrismFileIds.split(',')
-              : data.hospitalizationPrismFileIds)) ||
-          (data.healthCheckPrismFileIds &&
-            (typeof data.healthCheckPrismFileIds === 'string'
-              ? data.healthCheckPrismFileIds.split(',')
-              : data.healthCheckPrismFileIds)) ||
-          (data.testResultPrismFileIds &&
-            (typeof data.testResultPrismFileIds === 'string'
-              ? data.testResultPrismFileIds.split(',')
-              : data.testResultPrismFileIds));
-        const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
-        setShowSpinner(true);
-        client
-          .query<downloadDocuments>({
-            query: DOWNLOAD_DOCUMENT,
-            fetchPolicy: 'no-cache',
-            variables: {
-              downloadDocumentsInput: {
-                patientId: currentPatient && currentPatient.id,
-                fileIds: prismFileds,
-              },
+    if (
+      data &&
+      (data.prismFileIds ||
+        data.hospitalizationPrismFileIds ||
+        data.healthCheckPrismFileIds ||
+        data.testResultPrismFileIds)
+    ) {
+      const prismFileds =
+        (data.prismFileIds && data.prismFileIds.split(',')) ||
+        (data.hospitalizationPrismFileIds &&
+          (typeof data.hospitalizationPrismFileIds === 'string'
+            ? data.hospitalizationPrismFileIds.split(',')
+            : data.hospitalizationPrismFileIds)) ||
+        (data.healthCheckPrismFileIds &&
+          (typeof data.healthCheckPrismFileIds === 'string'
+            ? data.healthCheckPrismFileIds.split(',')
+            : data.healthCheckPrismFileIds)) ||
+        (data.testResultPrismFileIds &&
+          (typeof data.testResultPrismFileIds === 'string'
+            ? data.testResultPrismFileIds.split(',')
+            : data.testResultPrismFileIds));
+      const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
+      setShowSpinner(true);
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: currentPatient && currentPatient.id,
+              fileIds: prismFileds,
             },
-          })
-          .then(({ data }) => {
-            const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
-              (item, index) => item || (urls && urls.length <= index + 1 ? urls[index] : '')
-            );
-            setPlaceImage(uploadUrlscheck);
-            setShowSpinner(false);
-          })
-          .catch((e) => {
-            setShowSpinner(false);
-          })
-          .finally(() => {
-            setShowSpinner(false);
-          });
-      } else if (data.prescriptionImageUrl) {
-        setPlaceImage(data.prescriptionImageUrl.split(','));
-      }
+          },
+        })
+        .then(({ data }) => {
+          const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
+            (item, index) => item || (urls && urls.length <= index + 1 ? urls[index] : '')
+          );
+          setPlaceImage(uploadUrlscheck);
+          setShowSpinner(false);
+        })
+        .catch((e) => {
+          setShowSpinner(false);
+        })
+        .finally(() => {
+          setShowSpinner(false);
+        });
+    } else if (data.prescriptionImageUrl) {
+      setPlaceImage(data.prescriptionImageUrl.split(','));
     }
-  }, [placeImage]);
+  }, [data]);
 
   if (showSpinner) {
     return <CircularProgress className={classes.loader} />;
   }
+
   return (
     <div className={classes.prescriptionImage}>
       <img src={placeImage} alt="Prescription Preview" />

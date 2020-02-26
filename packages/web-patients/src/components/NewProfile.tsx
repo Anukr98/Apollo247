@@ -411,7 +411,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         </FormControl>
                       )}
                     />
-                    <div className={classes.referralCodeWrapper}>
+                    {/* <div className={classes.referralCodeWrapper}>
                       <img src={require('images/ic_gift.svg')} alt="" />
                       <div className={classes.enterCode}>
                         <div>Preeti Has Sent You A Referral Code!</div>
@@ -427,7 +427,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           />
                         </FormControl>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
