@@ -465,6 +465,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     onBlur={(e) => {
                       setIsValidDob(isDobValid(e.target.value));
                     }}
+                    error={!isValidDob}
                   />
                   {!isValidDob ? (
                     <FormHelperText
@@ -536,6 +537,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                         setIsEmailAddressValid(isEmailValid(e.target.value));
                       }
                     }}
+                    error={!isEmailAddressValid}
                   />
                   {emailAddress !== '' && !isEmailAddressValid ? (
                     <FormHelperText
