@@ -1475,7 +1475,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   useEffect(() => {
     const presenceEventObject = props.presenceEventObject;
-    if (presenceEventObject && isConsultStarted && props.appointmentStatus !== STATUS.COMPLETED) {
+    if (
+      presenceEventObject &&
+      isConsultStarted &&
+      props.appointmentStatus !== STATUS.COMPLETED &&
+      appointmentInfo &&
+      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
+    ) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
       const occupancyPatient = data.filter((obj: any) => {
         return obj.uuid === REQUEST_ROLES.PATIENT;
@@ -1486,12 +1492,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         abondmentStarted = false;
       } else {
         if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
-          if (
-            !abondmentStarted &&
-            didPatientJoined &&
-            appointmentInfo &&
-            appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
-          ) {
+          if (!abondmentStarted && didPatientJoined) {
             abondmentStarted = true;
             callAbundantIntervalTimer(200);
             // eventsAfterConnectionDestroyed();
