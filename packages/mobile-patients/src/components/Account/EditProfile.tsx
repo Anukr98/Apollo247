@@ -564,18 +564,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         }}
         leftIcon={'backArrow'}
         title={isEdit ? 'EDIT PROFILE' : 'ADD NEW PROFILE'}
-        rightComponent={
-          isEdit ? (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                setDeleteProfile(true);
-              }}
-            >
-              <More />
-            </TouchableOpacity>
-          ) : null
-        }
+        rightComponent={null}
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     );
