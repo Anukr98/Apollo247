@@ -63,7 +63,6 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
       <div className={classes.actions}>
         <AphButton
           onClick={() => {
-            props.setIsPopoverOpen(false);
             props.setIsLocationPopoverOpen(true);
           }}
         >
@@ -72,6 +71,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
         <AphButton
           color="primary"
           onClick={() => {
+            props.setIsPopoverOpen(false);
             navigator.geolocation.getCurrentPosition(
               ({ coords: { latitude, longitude } }) => {
                 setCurrentLat(latitude.toString());
