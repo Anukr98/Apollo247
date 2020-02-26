@@ -187,11 +187,11 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   );
 
   useEffect(() => {
-    if (number === 1) {
+    if (number === 1 && !patient.relation) {
       const updatedPatient = { ...patient, relation: Relation.ME };
       props.onUpdatePatient(updatedPatient);
     }
-  }, [number]);
+  }, [number, patient]);
 
   // const placeholderClass = selectedRelation ? 'classes.placeholder' : '';
 
@@ -263,16 +263,17 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const onePrimaryUser = true;
   const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
   // const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
-  const disabled = patients.some(isPatientInvalid);
+  // const disabled = patients.some(isPatientInvalid);
 
   // console.log(patients, 'patients....');
 
-  let primaryUserErrorMessage;
-
+  // let primaryUserErrorMessage;
+  let primaryUserErrorMessage = '';
   if (multiplePrimaryUsers)
     primaryUserErrorMessage = 'Relation can be set as Me for only 1 profile';
   // else if (noPrimaryUsers)
   //   primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
+  const disabled = patients.some(isPatientInvalid) || primaryUserErrorMessage.length > 0;
 
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">
