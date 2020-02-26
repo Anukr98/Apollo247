@@ -36,6 +36,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   DoctorType,
+  APPOINTMENT_TYPE,
 } from 'graphql/types/globalTypes';
 import * as _ from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -849,6 +850,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     followUp,
     patientDetails,
   } = useContext(CaseSheetContext);
+  console.log(appointmentInfo);
   const apiDateFormat = new Date();
 
   const covertVideoMsg = '^^convert`video^^';
@@ -1345,9 +1347,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       disablesecond;
     const disableaddedTime = new Date(disableaddedMinutes);
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
-    const curTm1 = new Date().toISOString();
+    const presentTime = new Date().toISOString();
 
-    if (aptDTTM.substring(0, 19) === curTm1.substring(0, 19) && isConsultStarted) {
+    if (
+      aptDTTM.substring(0, 19) === presentTime.substring(0, 19) &&
+      isConsultStarted &&
+      appointmentInfo &&
+      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
+    ) {
       clearInterval(intervalcallId);
       callIntervalTimer(180);
     }
@@ -1468,7 +1475,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   useEffect(() => {
     const presenceEventObject = props.presenceEventObject;
-    if (presenceEventObject && isConsultStarted && props.appointmentStatus !== STATUS.COMPLETED) {
+    if (
+      presenceEventObject &&
+      isConsultStarted &&
+      props.appointmentStatus !== STATUS.COMPLETED &&
+      appointmentInfo &&
+      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
+    ) {
       const data: any = presenceEventObject.channels[props.appointmentId].occupants;
       const occupancyPatient = data.filter((obj: any) => {
         return obj.uuid === REQUEST_ROLES.PATIENT;
@@ -1854,7 +1867,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         }}
                       >
                         {sendToPatientButtonDisable && 'Please wait...'}
-                        { sendToPatientButtonDisable ? <CircularProgress size={22} /> : 'Send To Patient'}
+                        {sendToPatientButtonDisable ? (
+                          <CircularProgress size={22} />
+                        ) : (
+                          'Send To Patient'
+                        )}
                       </Button>
                     </Fragment>
                   )}
@@ -1953,7 +1970,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     setCaseSheetEdit(true);
                     setConsultStart(true);
                     isConsultStarted = true;
-                    callIntervalTimer(180);
+                    if (
+                      appointmentInfo &&
+                      appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
+                    ) {
+                      callIntervalTimer(180);
+                    }
                   }}
                 >
                   <svg
