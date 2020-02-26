@@ -214,6 +214,14 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
+  let geolocation = {} as any;
+  if (currentLat && currentLong) {
+    geolocation['geolocation'] = {
+      latitude: parseFloat(currentLat.toString()),
+      longitude: parseFloat(currentLong.toString()),
+    };
+  }
+
   const apiVairables = {
     patientId: currentPatient ? currentPatient.id : '',
     specialty: specialityId,
@@ -227,10 +235,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       filter.availability && filter.availability.findIndex((v) => v == 'now') >= 0
         ? format(new Date(), 'yyyy-MM-dd HH:mm')
         : '',
-    geolocation: {
-      latitude: currentLat && currentLat.length > 0 ? parseFloat(currentLat) : 0,
-      longitude: currentLong && currentLong.length > 0 ? parseFloat(currentLong) : 0,
-    },
+    ...geolocation,
   };
 
   const { data, loading, refetch } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {

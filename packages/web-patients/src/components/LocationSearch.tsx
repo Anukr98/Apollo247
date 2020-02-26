@@ -6,6 +6,7 @@ import { LocationContext } from 'components/LocationProvider';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import { Helmet } from 'react-helmet';
 import { AllowLocation } from 'components/AllowLocation';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -205,38 +206,47 @@ export const LocationSearch: React.FC = (props) => {
   const [address, setAddress] = React.useState('');
   const [selectedAddress, setSelectedAddress] = React.useState('');
 
-  const handleChange = (address: string) => setAddress(address);
   const { currentLocation, setCurrentLat, setCurrentLong, setCurrentLocation } = useContext(
     LocationContext
   );
+  const { isSigningIn } = useAuth();
+
+  const handleChange = (address: string) => setAddress(address);
 
   const handleSelect = (address: string) => {
-    setCurrentLocation(address);
-    localStorage.setItem('currentAddress', address);
-    setSelectedAddress(address.substring(0, address.indexOf(',')));
-    setAddress('');
-    setIsLocationPopoverOpen(false);
     geocodeByAddress(address)
       .then((results: any) => getLatLng(results[0]))
       .then((resObj: any) => {
         if (resObj) {
+          localStorage.setItem('currentAddress', address);
           setCurrentLat(resObj.lat);
           setCurrentLong(resObj.lng);
+          setCurrentLocation(address);
+          setSelectedAddress(address.substring(0, address.indexOf(',')));
+          setAddress('');
+          setIsLocationPopoverOpen(false);
         }
       })
-      .catch((error: any) => console.error('Error', error));
+      .catch((error: any) => {
+        setAddress('');
+        setIsLocationPopoverOpen(false);
+      });
   };
 
   useEffect(() => {
     if (!localStorage.getItem('currentAddress')) {
-      navigator.permissions &&
-        navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
-          if (PermissionStatus.state === 'denied') {
-            alert('Location Permission was denied. Please allow browser settings.');
-          } else if (PermissionStatus.state !== 'granted') {
-            setIsPopoverOpen(true);
-          }
-        });
+      if (!isSigningIn) {
+        navigator.permissions &&
+          navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
+            if (PermissionStatus.state === 'denied') {
+              alert('Location Permission was denied. Please allow browser settings.');
+            } else if (PermissionStatus.state !== 'granted') {
+              setIsPopoverOpen(true);
+            }
+          });
+      } else {
+        setIsPopoverOpen(false);
+      }
     }
   });
 
@@ -360,6 +370,7 @@ export const LocationSearch: React.FC = (props) => {
             <AllowLocation
               setIsLocationPopoverOpen={setIsLocationPopoverOpen}
               setIsPopoverOpen={setIsPopoverOpen}
+              isPopoverOpen={isPopoverOpen}
             />
           </div>
         </div>
