@@ -318,7 +318,8 @@ export const ReschduleConsult: React.FC<ProfileProps> = (props) => {
           errorMessage,
           error
         );
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   return (

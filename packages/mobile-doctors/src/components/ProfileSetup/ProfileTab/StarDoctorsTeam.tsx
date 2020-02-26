@@ -126,7 +126,8 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
 
@@ -154,7 +155,8 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while removing Doctor', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
 

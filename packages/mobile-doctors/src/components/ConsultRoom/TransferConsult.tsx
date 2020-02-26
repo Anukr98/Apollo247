@@ -354,7 +354,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while searching for Doctors', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   const renderSuggestionCardDoctor = () => (
@@ -520,7 +521,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           errorMessage,
           error
         );
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   return (
