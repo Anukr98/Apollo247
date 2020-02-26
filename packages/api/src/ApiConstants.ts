@@ -139,6 +139,8 @@ export enum ApiConstants {
   CONSULTS_SERVICE_ERROR_LOG_FILE = '/error-logs/consults-service.log',
   COUPONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/coupons-service.log',
   COUPONS_SERVICE_ERROR_LOG_FILE = '/error-logs/coupons-service.log',
+  API_GATEWAY_ACCESS_LOG_FILE = '/access-logs/api-gateway.log',
+  API_GATEWAY_ERROR_LOG_FILE = '/error-logs/api-gateway.log',
 
   NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/access-logs/notifications-service.log',
   NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/error-logs/notifications-service.log',
