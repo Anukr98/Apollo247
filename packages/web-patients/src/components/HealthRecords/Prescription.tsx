@@ -289,7 +289,7 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
             <div className={classes.noWrapper}>No Prescription</div>
           )}
         </Grid>
-        {prescriptions && prescriptions.length > 0 && (
+        {/* {prescriptions && prescriptions.length > 0 && (
           <div className={classes.bottomActions}>
             <AphButton
               onClick={() => {
@@ -305,7 +305,7 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
               )}
             </AphButton>
           </div>
-        )}
+        )} */}
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );

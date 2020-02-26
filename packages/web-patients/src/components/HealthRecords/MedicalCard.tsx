@@ -105,6 +105,7 @@ type MedicalCardProps = {
   isActiveCard: boolean;
   deleteReport: (id: string) => void;
   id: string;
+  setLoading: (loading: boolean) => void;
 };
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
@@ -142,6 +143,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
+              props.setLoading(true);
               props.deleteReport(props.id);
               setShowPopup(false);
             }}
