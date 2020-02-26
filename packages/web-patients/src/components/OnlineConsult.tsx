@@ -596,7 +596,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 appointmentDateTime = consultNowSlotTime;
               }
 
-              console.log(appointmentDateTime, 'appt date and time.....');
+              // console.log(appointmentDateTime, 'appt date and time.....');
 
               setMutationLoading(true);
               paymentMutation({
