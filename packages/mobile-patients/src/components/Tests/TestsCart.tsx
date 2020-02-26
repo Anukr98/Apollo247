@@ -578,9 +578,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .catch((e) => {
           CommonBugFender('TestsCart_checkServicability', e);
           console.log('Error occured', { e });
-          // setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticSlot && setDiagnosticSlot(null);
-          // setPinCode && setPinCode('');
           setselectedTimeSlot(undefined);
           const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
 
