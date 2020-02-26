@@ -65,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     progressBar: {
       textAlign: 'center',
+      padding: 20,
     },
   };
 });
