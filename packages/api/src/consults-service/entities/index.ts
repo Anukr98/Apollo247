@@ -1071,6 +1071,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   patientCancelCount: number;
 
+  @Column('decimal', { default: 0 })
+  slotsDurationInMinutes: number;
+
   @Column({ default: 0 })
   unPaidFollowUp: number;
 
