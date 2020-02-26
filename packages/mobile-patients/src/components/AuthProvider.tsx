@@ -76,6 +76,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 
+const knownErrors = ['NO_HUB_SLOTS', 'INVALID_ZIPCODE'];
+
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
     console.log('-------error-------', error);
@@ -89,7 +91,12 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
         console.log('-------unauthenticatedError-------', unauthenticatedError);
       }
     }
-    return forward(operation);
+    //This stops multiple trigger of graphql for known errors
+    if (graphQLErrors && graphQLErrors.findIndex((i) => knownErrors.includes(i.message)) > -1) {
+      return;
+    } else {
+      return forward(operation);
+    }
   });
   const authLink = setContext(async (_, { headers }) => ({
     headers: {
@@ -217,35 +224,36 @@ export const AuthProvider: React.FC = (props) => {
       mobileNumber: '+91' + storedPhoneNumber,
     };
     console.log('getPatientApiCall', input);
-    apolloClient
-      .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
-        query: GET_PATIENTS_MOBILE,
-        variables: input,
-        fetchPolicy: 'no-cache',
-      })
-      .then((data) => {
-        const profileData =
-          data.data.getPatientByMobileNumber && data.data.getPatientByMobileNumber.patients;
-        console.log('consoleofdata', profileData);
+    storedPhoneNumber &&
+      apolloClient
+        .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
+          query: GET_PATIENTS_MOBILE,
+          variables: input,
+          fetchPolicy: 'no-cache',
+        })
+        .then((data) => {
+          const profileData =
+            data.data.getPatientByMobileNumber && data.data.getPatientByMobileNumber.patients;
+          console.log('consoleofdata', profileData);
 
-        setSignInError(false);
-        console.log('getPatientApiCall', data);
-        AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-        AsyncStorage.setItem('callByPrism', 'false');
-        setAllPatients(data);
-        setMobileAPICalled(false);
-        if (profileData && profileData.length === 0) {
-          getPatientByPrism();
-        }
-      })
-      .catch(async (error) => {
-        CommonBugFender('AuthProvider_getPatientApiCall', error);
-        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-        const item = JSON.parse(retrievedItem);
-        setAllPatients(item);
-        setSignInError(false);
-        console.log('getPatientApiCallerror', error);
-      });
+          setSignInError(false);
+          console.log('getPatientApiCall', data);
+          AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+          AsyncStorage.setItem('callByPrism', 'false');
+          setAllPatients(data);
+          setMobileAPICalled(false);
+          if (profileData && profileData.length === 0) {
+            getPatientByPrism();
+          }
+        })
+        .catch(async (error) => {
+          CommonBugFender('AuthProvider_getPatientApiCall', error);
+          const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+          const item = JSON.parse(retrievedItem);
+          setAllPatients(item);
+          setSignInError(false);
+          console.log('getPatientApiCallerror', error);
+        });
   };
 
   const getPatientByPrism = async () => {

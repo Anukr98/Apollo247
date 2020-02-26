@@ -578,16 +578,34 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .catch((e) => {
           CommonBugFender('TestsCart_checkServicability', e);
           console.log('Error occured', { e });
-          setDeliveryAddressId && setDeliveryAddressId('');
+          // setDeliveryAddressId && setDeliveryAddressId('');
           setDiagnosticSlot && setDiagnosticSlot(null);
-          setPinCode && setPinCode('');
+          // setPinCode && setPinCode('');
           setselectedTimeSlot(undefined);
-          const noHubSlots = g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS';
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
-          });
+          const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
+
+          if (noHubSlots) {
+            setDeliveryAddressId!(selectedAddress.id);
+            setPinCode!(selectedAddress.zipcode!);
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: `Sorry! There are no slots available on ${moment(date).format(
+                'DD MMM, YYYY'
+              )}. Please choose another date.`,
+              onPressOk: () => {
+                setDisplaySchedule(true);
+                hideAphAlert && hideAphAlert();
+              },
+            });
+          } else {
+            setDeliveryAddressId && setDeliveryAddressId('');
+            setPinCode && setPinCode('');
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description:
+                'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+            });
+          }
         })
         .finally(() => {
           setCheckingServicability(false);
@@ -1446,34 +1464,36 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const zipCode = (deliveryAddressId && selectedAddr && selectedAddr.zipcode) || '0';
   return (
     <View style={{ flex: 1 }}>
-      <TestSlotSelectionOverlay
-        heading="Schedule Appointment"
-        date={date}
-        maxDate={moment()
-          .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
-          .toDate()}
-        isVisible={displaySchedule}
-        onClose={() => setDisplaySchedule(false)}
-        slots={slots}
-        zipCode={parseInt(zipCode, 10)}
-        slotInfo={selectedTimeSlot}
-        onSchedule={(date: Date, slotInfo: TestSlot) => {
-          console.log({ slotInfo });
+      {displaySchedule && (
+        <TestSlotSelectionOverlay
+          heading="Schedule Appointment"
+          date={date}
+          maxDate={moment()
+            .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
+            .toDate()}
+          isVisible={displaySchedule}
+          onClose={() => setDisplaySchedule(false)}
+          slots={slots}
+          zipCode={parseInt(zipCode, 10)}
+          slotInfo={selectedTimeSlot}
+          onSchedule={(date: Date, slotInfo: TestSlot) => {
+            console.log({ slotInfo });
 
-          setDate(date);
-          setselectedTimeSlot(slotInfo);
-          setDiagnosticSlot!({
-            slotStartTime: slotInfo.slotInfo.startTime!,
-            slotEndTime: slotInfo.slotInfo.endTime!,
-            date: date.getTime(),
-            employeeSlotId: slotInfo.slotInfo.slot!,
-            diagnosticBranchCode: slotInfo.diagnosticBranchCode,
-            diagnosticEmployeeCode: slotInfo.employeeCode,
-            city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
-          });
-          setDisplaySchedule(false);
-        }}
-      />
+            setDate(date);
+            setselectedTimeSlot(slotInfo);
+            setDiagnosticSlot!({
+              slotStartTime: slotInfo.slotInfo.startTime!,
+              slotEndTime: slotInfo.slotInfo.endTime!,
+              date: date.getTime(),
+              employeeSlotId: slotInfo.slotInfo.slot!,
+              diagnosticBranchCode: slotInfo.diagnosticBranchCode,
+              diagnosticEmployeeCode: slotInfo.employeeCode,
+              city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+            });
+            setDisplaySchedule(false);
+          }}
+        />
+      )}
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
