@@ -1081,7 +1081,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           fileExtension &&
                           (fileExtension.toLowerCase() === 'png' ||
                             fileExtension.toLowerCase() === 'jpg' ||
-                            fileExtension.toLowerCase() === 'jpeg')
+                            fileExtension.toLowerCase() === 'jpeg'||
+                            fileExtension.toLowerCase() === 'pdf')
                         ) {
                           if (file) {
                             const aphBlob = await client

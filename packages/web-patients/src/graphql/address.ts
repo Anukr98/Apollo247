@@ -14,6 +14,8 @@ export const GET_PATIENT_ADDRESSES_LIST = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
     }
   }
@@ -29,6 +31,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         zipcode
         mobileNumber
         addressType
+        otherAddressType
       }
     }
   }

@@ -16,6 +16,7 @@ export interface SavePatientAddress_savePatientAddress_patientAddress {
   zipcode: string | null;
   mobileNumber: string | null;
   addressType: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType: string | null;
 }
 
 export interface SavePatientAddress_savePatientAddress {

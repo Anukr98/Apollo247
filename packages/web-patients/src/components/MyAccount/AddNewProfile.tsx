@@ -173,28 +173,30 @@ interface AddNewProfileProps {
   selectedPatientId: string;
   successHandler: (isPopoverOpen: boolean) => void;
   isProfileDelete: boolean;
+  isMeClicked: boolean;
 }
 
 export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const classes = useStyles();
   const { closeHandler, selectedPatientId, successHandler, isProfileDelete } = props;
 
-  const [mutationLoading, setMutationLoading] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [dob, setDob] = useState('');
-  const [genderSelected, setGenderSelected] = useState('');
-  const [relation, setRelation] = useState('');
-  const [emailAddress, setEmailAddress] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [mutationLoading, setMutationLoading] = useState<boolean>(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [dob, setDob] = useState<string>('');
+  const [genderSelected, setGenderSelected] = useState<string>('');
+  const [relation, setRelation] = useState<string>('');
+  const [selectedRelation, setSelectedRelation] = useState<string>('');
+  const [emailAddress, setEmailAddress] = useState<string>('');
+  const [photoUrl, setPhotoUrl] = useState<string>('');
 
-  const [isFirstNameValid, setIsFirstNameValid] = useState(true);
-  const [isLastNameValid, setIsLastNameValid] = useState(true);
-  const [isRelationValid, setIsRelationValid] = useState(true);
-  const [isGenderValid, setIsGenderValid] = useState(true);
-  const [isValidDob, setIsValidDob] = useState(true);
-  const [isEmailAddressValid, setIsEmailAddressValid] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isFirstNameValid, setIsFirstNameValid] = useState<boolean>(true);
+  const [isLastNameValid, setIsLastNameValid] = useState<boolean>(true);
+  const [isRelationValid, setIsRelationValid] = useState<boolean>(true);
+  const [isGenderValid, setIsGenderValid] = useState<boolean>(true);
+  const [isValidDob, setIsValidDob] = useState<boolean>(true);
+  const [isEmailAddressValid, setIsEmailAddressValid] = useState<boolean>(true);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
 
@@ -221,6 +223,36 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
 
   const addProfileMutation = useMutation(ADD_PROFILE);
   const editProfileMutation = useMutation(EDIT_PROFILE);
+
+  const multiplePrimaryUsers =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length > 0;
+  const [primaryUserErrorMessage, setPrimaryUserErrorMessage] = useState<string>('');
+
+  useEffect(() => {
+    if (selectedPatientId.length > 0) {
+      const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
+        return currentPatientDetails.id === selectedPatientId;
+      });
+      if (
+        multiplePrimaryUsers &&
+        selectedRelation === 'ME' &&
+        selectedPatientDetails &&
+        selectedPatientDetails.relation !== selectedRelation
+      ) {
+        setPrimaryUserErrorMessage('Relation can be set as Me for only 1 profile');
+      } else {
+        setPrimaryUserErrorMessage('');
+      }
+      if (
+        multiplePrimaryUsers &&
+        props.isMeClicked &&
+        selectedRelation.length > 0 &&
+        selectedRelation !== 'ME'
+      ) {
+        setPrimaryUserErrorMessage('There should be 1 profile with relation set as Me');
+      }
+    }
+  }, [selectedRelation, selectedPatientId]);
 
   useEffect(() => {
     if (selectedPatientId.length > 0) {
@@ -278,6 +310,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         isLastNameValid &&
         isRelationValid &&
         isGenderValid &&
+        !primaryUserErrorMessage &&
         isValidDob &&
         (emailAddress !== '' ? isEmailAddressValid : true))) ||
     isProfileDelete;
@@ -452,7 +485,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <label>Relation</label>
                   <AphSelect
                     onChange={(e) => {
+                      setSelectedRelation(e.target.value as Relation);
                       setRelation(e.target.value as Relation);
+                      multiplePrimaryUsers;
                     }}
                     value={relation}
                   >
@@ -464,6 +499,11 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                       );
                     })}
                   </AphSelect>
+                  {primaryUserErrorMessage && (
+                    <FormHelperText component="div" error={true}>
+                      {primaryUserErrorMessage}
+                    </FormHelperText>
+                  )}
                 </FormControl>
                 <FormControl className={`${classes.formControl} ${classes.noMargin}`} fullWidth>
                   <AphTextField

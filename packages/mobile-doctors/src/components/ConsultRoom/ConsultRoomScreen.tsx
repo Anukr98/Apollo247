@@ -103,6 +103,14 @@ const styles = StyleSheet.create({
     elevation: 0,
     backgroundColor: 'white',
   },
+  positionAbsolute: {
+    flex: 1,
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
 });
 
 let connectionCount = 0;
@@ -159,15 +167,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
   const [messages, setMessages] = useState([]);
-  const [messageText, setMessageText] = useState<string>('');
-  const [heightList, setHeightList] = useState<number>(height - 185);
   const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [cameraPosition, setCameraPosition] = useState<string>('front');
-  const [mute, setMute] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
-  const [PipView, setPipView] = useState<boolean>(false);
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const [isCall, setIsCall] = useState<boolean>(false);
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
@@ -425,7 +429,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while End casesheet', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   const [callId, setCallId] = useState<string>();
@@ -720,42 +725,23 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
 
     const addMessages = (message: Pubnub.MessageEvent) => {
-      console.log('messages', messages);
-      console.log('before insertText', insertText);
       insertText[insertText.length] = message;
       setMessages(() => [...(insertText as [])]);
-      console.log('after insertText', insertText);
-      console.log('messages', messages);
-
       if (!isCall || !isAudioCall) {
         setChatReceived(true);
-        console.log('true chat icon');
       }
       setTimeout(() => {
         flatListRef.current && flatListRef.current.scrollToEnd();
       }, 200);
     };
-    const keyboardDidShow = (e: KeyboardEvent) => {
-      setHeightList(height - e.endCoordinates.height - 185);
-      setTimeout(() => {
-        flatListRef.current && flatListRef.current.scrollToEnd();
-      }, 200);
-    };
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
     return function cleanup() {
       pubnub.unsubscribe({
         channels: [channel],
       });
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
     };
   }, []);
 
-  const keyboardDidHide = () => {
-    setHeightList(height - 185);
-  };
   let insertText: object[] = [];
   const getHistory = () => {
     pubnub.history(
@@ -767,7 +753,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       (status, res) => {
         const newmessage: object[] = [];
         res.messages.forEach((element, index) => {
-          let item = element.entry;
+          const item = element.entry;
           // console.log(item, 'element');
           if (item.prismId) {
             getPrismUrls(client, patientId, item.prismId)
@@ -805,7 +791,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const send = (messageText: any) => {
+  const send = (messageText: string) => {
     const text = {
       id: doctorId,
       message: messageText,
@@ -821,8 +807,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       },
       (status, response) => {
         console.log(response, 'response');
-
-        setMessageText('');
       }
     );
   };
@@ -1044,16 +1028,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const renderTabPage = () => {
     return (
       <>
-        <View
-          style={[
-            styles.shadowview,
-            showPopUp
-              ? {
-                  // elevation: 1,
-                }
-              : {},
-          ]}
-        >
+        <View style={[styles.shadowview]}>
           <TabsComponent
             data={tabsData}
             onChange={(index) => setActiveTabIndex(index)}
@@ -1090,6 +1065,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               favTest={favTest}
               caseSheet={caseSheet}
               caseSheetEdit={caseSheetEdit}
+              setCaseSheetEdit={setCaseSheetEdit}
             />
           ) : (
             <View
@@ -1098,7 +1074,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 width: '100%',
               }}
             >
-              {/* {ChatRoom()} */}
               <ChatRoom
                 returnToCall={returnToCall}
                 setReturnToCall={setReturnToCall}
@@ -1139,46 +1114,48 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
+
+        //
+        setTimeout(() => {
+          flatListRef.current && flatListRef.current.scrollToEnd();
+        }, 1000);
+        sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, false);
+        console.log('onStartConsult');
+        pubnub.publish(
+          {
+            message: {
+              isTyping: true,
+              message: messageCodes.startConsultMsg,
+            },
+            channel: channel,
+            storeInHistory: true,
+          },
+          (status, response) => {
+            setActiveTabIndex(tabsData[0].title);
+            setStartConsult(true);
+            if (timediffInSec > 0) {
+              startNoShow(timediffInSec, () => {
+                console.log('countdown ', joinTimerNoShow);
+                startNoShow(180, () => {
+                  console.log('Trigger no ShowAPi');
+                  console.log(joinTimerNoShow, 'joinTimerNoShow');
+
+                  endAppointmentApiCall(STATUS.NO_SHOW);
+                });
+              });
+            } else {
+              startNoShow(180, () => {
+                console.log('Trigger no ShowAPi');
+                endAppointmentApiCall(STATUS.NO_SHOW);
+              });
+            }
+            startInterval(timer);
+          }
+        );
       })
       .catch((e: any) => {
         console.log('Error occured while adding Doctor', e);
       });
-    setTimeout(() => {
-      flatListRef.current && flatListRef.current.scrollToEnd();
-    }, 1000);
-    sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, false);
-    console.log('onStartConsult');
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: messageCodes.startConsultMsg,
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {
-        setActiveTabIndex(tabsData[0].title);
-        setStartConsult(true);
-        if (timediffInSec > 0) {
-          startNoShow(timediffInSec, () => {
-            console.log('countdown ', joinTimerNoShow);
-            startNoShow(180, () => {
-              console.log('Trigger no ShowAPi');
-              console.log(joinTimerNoShow, 'joinTimerNoShow');
-
-              endAppointmentApiCall(STATUS.NO_SHOW);
-            });
-          });
-        } else {
-          startNoShow(180, () => {
-            console.log('Trigger no ShowAPi');
-            endAppointmentApiCall(STATUS.NO_SHOW);
-          });
-        }
-        startInterval(timer);
-      }
-    );
   };
 
   const onStopConsult = () => {
@@ -1204,19 +1181,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
-  // const getTimerText = () => {
-  //   const now = new Date();
-  //   const diff = moment.duration(moment(Appintmentdatetime).diff(now));
-
-  //   const diffInHours = diff.asHours();
-
-  //   if (diff.hours() > 0 && diff.hours() < 12)
-  //     return `${strings.consult_room.time_to_consult} {' '} ${moment(
-  //       new Date(0, 0, 0, diff.hours(), diff.minutes())
-  //     ).format('hh: mm')}`;
-  //   return '';
-  // };
-
   const showHeaderView = () => {
     return (
       <NotificationHeader
@@ -1236,13 +1200,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         middleText={strings.consult_room.consult_room}
-        // timerText={
-        //   consultStarted
-        //     ? `${strings.consult_room.time_left}{' '} ${
-        //         minutes.toString().length < 2 ? '0' + minutes : minutes
-        //       } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
-        //     : getTimerText()
-        // }
         timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         textStyles={{
           marginTop: 10,
@@ -1329,9 +1286,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 onPress: () => {
                   setDropdownShow(false);
                   setDisplayReSchedulePopUp(true);
-                  // props.navigation.push(AppRoutes.ReschduleConsult, {
-                  //   AppointmentId: props.navigation.getParam('AppId'),
-                  // });
                 },
               },
             ]}
@@ -1417,106 +1371,69 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setPatientImageshow(false);
     setShowWeb(false);
   };
-  const renderCloseIcon = () => {
+  const popupView = (children: React.ReactNode) => {
     return (
-      <View
-        style={{
-          alignSelf: 'flex-end',
-          backgroundColor: 'transparent',
-          marginRight: 16,
-          marginTop: 30,
-        }}
-      >
-        <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
-          <CrossPopup
-            style={{
-              marginRight: 1,
-            }}
-          />
-        </TouchableOpacity>
+      <View style={styles.positionAbsolute}>
+        <View
+          style={{
+            ...styles.positionAbsolute,
+            backgroundColor: 'black',
+            opacity: 0.6,
+          }}
+        />
+        <View
+          style={{
+            alignSelf: 'flex-end',
+            backgroundColor: 'transparent',
+            marginRight: 16,
+            marginTop: 30,
+          }}
+        >
+          <TouchableOpacity activeOpacity={1} onPress={() => closeviews()}>
+            <CrossPopup
+              style={{
+                marginRight: 1,
+              }}
+            />
+          </TouchableOpacity>
+        </View>
+        {children}
       </View>
     );
   };
+
   const imageOpen = () => {
-    return (
-      <View
+    return popupView(
+      <Image
         style={{
           flex: 1,
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
+          resizeMode: 'contain',
+          marginTop: 20,
+          marginHorizontal: 20,
+          marginBottom: 20,
+          borderRadius: 10,
         }}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'black',
-            opacity: 0.6,
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        />
-        {renderCloseIcon()}
-        <Image
-          style={{
-            flex: 1,
-            resizeMode: 'contain',
-            marginTop: 20,
-            marginHorizontal: 20,
-            marginBottom: 20,
-            borderRadius: 10,
-          }}
-          source={{
-            uri: url,
-          }}
-        />
-      </View>
+        source={{
+          uri: url,
+        }}
+      />
     );
   };
   const showWeimageOpen = () => {
-    return (
-      <View
+    console.log(url, 'showWeimageOpen url');
+
+    return popupView(
+      <WebView
         style={{
-          flex: 1,
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
+          marginTop: 20,
+          marginHorizontal: 20,
+          marginBottom: 20,
+          borderRadius: 10,
         }}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'black',
-            opacity: 0.6,
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        />
-        {renderCloseIcon()}
-        <WebView
-          style={{
-            // flex: 1,
-            //resizeMode: 'stretch',
-            marginTop: 20,
-            marginHorizontal: 20,
-            marginBottom: 20,
-            borderRadius: 10,
-          }}
-          source={{
-            uri: url,
-          }}
-        />
-      </View>
+        source={{
+          uri: url,
+        }}
+      />
     );
   };
 
@@ -1567,7 +1484,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           setAudioCallStyles={setAudioCallStyles}
           cameraPosition={cameraPosition}
           setCameraPosition={setCameraPosition}
-          // PipView={PipView}
           firstName={PatientInfoAll.firstName}
           chatReceived={chatReceived}
           callAccepted={callAccepted}

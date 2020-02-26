@@ -179,7 +179,7 @@ const updateConsultRating: Resolver<
       helpTickets: helpTicketCount,
     };
 
-    console.log('helpTicketCount',helpTicketCount)
+    console.log('helpTicketCount', helpTicketCount);
     await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
   return { ratingRowsCount: feedbackData.length };
@@ -244,6 +244,10 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         'PHYSICAL'
       );
+      const patientCancelCount = await dashboardRepo.getPatientCancelCount(
+        doctor.id,
+        args.summaryDate
+      );
       const auidoCount = await dashboardRepo.getCallsCount(doctor.id, 'AUDIO', args.summaryDate);
       const videoCount = await dashboardRepo.getCallsCount(doctor.id, 'VIDEO', args.summaryDate);
       const chatCount = await dashboardRepo.getCallsCount(doctor.id, 'CHAT', args.summaryDate);
@@ -296,6 +300,7 @@ const updateSdSummary: Resolver<
         totalConsultations,
         totalVirtualConsultations: virtaulConsultations,
         totalPhysicalConsultations,
+        patientCancelCount: patientCancelCount,
         appointmentDateTime: args.summaryDate,
         audioConsultations: auidoCount,
         videoConsultations: videoCount,

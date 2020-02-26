@@ -464,7 +464,8 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
-          Alert.alert(strings.common.error, errorMessage);
+          // Alert.alert(strings.common.error, errorMessage);
+          Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
         });
     } else {
       Alert.alert(strings.common.failed, strings.smartPrescr.pls_add_advice);
@@ -496,7 +497,8 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
-          Alert.alert(strings.common.error, errorMessage);
+          // Alert.alert(strings.common.error, errorMessage);
+          Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
         });
     } else {
       Alert.alert(strings.common.failed, strings.smartPrescr.pls_add_advice);

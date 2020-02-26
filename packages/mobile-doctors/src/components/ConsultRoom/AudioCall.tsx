@@ -26,7 +26,6 @@ export interface AudioCallProps extends NavigationScreenProps {
   minutes: number;
   seconds: number;
   firstName: string;
-  PipView: boolean;
   convertVideo: boolean;
   callTimerStarted: string;
   setChatReceived: (arg0: boolean) => void;
@@ -80,7 +79,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
     borderRadius: 30,
   });
 
-  const { minutes, seconds, firstName, convertVideo, PipView } = props;
+  const { minutes, seconds, firstName, convertVideo } = props;
 
   const renderMuteIcon = () => (
     <TouchableOpacity onPress={() => setMute(mute === true ? false : true)}>
@@ -98,7 +97,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
           }}
         />
       )}
-      {!PipView && (
+      {/* {!PipView && (
         <>
           <View
             style={{
@@ -140,7 +139,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
             {firstName}
           </Text>
         </>
-      )}
+      )} */}
       <View
         style={{
           position: 'absolute',
@@ -161,13 +160,6 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
         ref={props.otSessionRef}
       >
         <OTPublisher
-          // style={publisherStyles}
-          // properties={{
-          //   publishVideo: convertVideo ? true : false,
-          //   publishAudio: mute,
-          //   audioVolume: 100,
-          // }}
-          // eventHandlers={publisherEventHandlers}
           style={
             convertVideo
               ? publisherStyles

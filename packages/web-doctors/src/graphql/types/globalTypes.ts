@@ -249,6 +249,8 @@ export interface DoctorAvailabilityInput {
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
+  availableType?: APPOINTMENT_TYPE | null;
+  currentTimeInput?: any | null;
 }
 
 export interface DownloadDocumentsInput {
@@ -391,6 +393,7 @@ export interface UpdatePatientInput {
   uhid?: string | null;
   emailAddress?: string | null;
   dateOfBirth?: any | null;
+  referralCode?: string | null;
   relation?: Relation | null;
   photoUrl?: string | null;
 }

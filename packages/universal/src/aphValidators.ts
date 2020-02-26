@@ -6,10 +6,10 @@ export const isEmailValid = isEmail;
 export const isMobileNumberValid = (number: string) => isMobilePhone(number, 'en-IN');
 
 export const isNameValid = (name: string) => {
+  var passesEmpty = name.length >= 1
   const passesApostropheConditions =
     !name.startsWith("'") && !name.endsWith("'") && !name.includes("''");
-
-  return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length > 1 && passesApostropheConditions;
+  return /^[a-zA-Z ']*$/.test(name.trim()) && name.trim().length >= 1 && passesApostropheConditions && passesEmpty;
 };
 
 export const aphClientDateFormat = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/;

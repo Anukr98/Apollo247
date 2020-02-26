@@ -11,7 +11,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { LocationSearch } from './LocationSearch';
-import { LocationProvider } from 'components/LocationProvider';
+import { LocationProvider, LocationContext } from 'components/LocationProvider';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 
@@ -188,9 +188,7 @@ export const Header: React.FC = (props) => {
             </Link>
           </div>
           {isSignedIn && (
-            <LocationProvider>
-              <LocationSearch />
-            </LocationProvider>
+            <LocationContext.Consumer>{() => <LocationSearch />}</LocationContext.Consumer>
           )}
           {isSignedIn && (
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
