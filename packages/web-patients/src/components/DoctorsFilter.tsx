@@ -227,7 +227,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     tomorrow: 'Tomorrow',
     next3: 'Next 3 Days',
   };
-  const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1001_10000': '1000+' };
+  const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1000_-1': '1000+' };
   const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE
   const filterLanguages = { hindi: 'Hindi', english: 'English', telugu: 'Telugu' };
 
@@ -317,12 +317,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           Sorry, we couldn't find what you are looking for :(
         </FormHelperText>
       ) : (
-        ''
-      )}
+          ''
+        )}
       <div
         className={` ${showResponsiveFilter ? classes.filterSectionOpen : ''} ${
           classes.filterSection
-        } ${disableFilters ? classes.filterSectionDisabled : ''}`}
+          } ${disableFilters ? classes.filterSectionDisabled : ''}`}
       >
         <div className={classes.filterHeader}>
           <AphButton
@@ -349,8 +349,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 320px)'
               : isSmallScreen
-              ? 'calc(100vh - 120px)'
-              : 'calc(100vh - 275px)'
+                ? 'calc(100vh - 120px)'
+                : 'calc(100vh - 275px)'
           }
         >
           <div className={classes.customScroll}>
