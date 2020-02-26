@@ -231,7 +231,7 @@ const updateSdSummary: Resolver<
       const weekDay = format(args.summaryDate, 'EEEE').toUpperCase();
       const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
       let difference = 0;
-      let totalslotsTime = 0;
+      let totalSlotsTime = 0;
       if (timeSlots.length) {
         timeSlots.forEach(async (timeSlot) => {
           difference += differenceInMinutes(
@@ -239,7 +239,7 @@ const updateSdSummary: Resolver<
             new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime)
           );
         });
-        totalslotsTime = difference / timeSlots[0].consultDuration;
+        totalSlotsTime = difference / timeSlots[0].consultDuration;
       }
 
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
@@ -318,7 +318,7 @@ const updateSdSummary: Resolver<
         totalConsultations,
         totalVirtualConsultations: virtaulConsultations,
         totalPhysicalConsultations,
-        slotsDurationInMinutes: totalslotsTime,
+        slotsDurationInMinutes: totalSlotsTime,
         patientCancelCount: patientCancelCount,
         appointmentDateTime: args.summaryDate,
         audioConsultations: auidoCount,
