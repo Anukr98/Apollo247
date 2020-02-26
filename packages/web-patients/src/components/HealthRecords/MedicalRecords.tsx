@@ -324,7 +324,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const { medicalRecords, allCombinedData, loading, setLoading, setMedicalRecords } = props;
 
   useEffect(() => {
-    if (!isSmallScreen && allCombinedData) {
+    if (!isSmallScreen && allCombinedData && !activeData) {
       setActiveData(allCombinedData[0]);
     }
   }, [allCombinedData]);
