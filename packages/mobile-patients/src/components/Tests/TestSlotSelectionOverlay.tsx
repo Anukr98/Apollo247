@@ -82,21 +82,20 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const uniqueSlots = getUniqueTestSlots(slots);
   type UniqueSlotType = typeof uniqueSlots[0];
 
-  const getSlots = client.query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-    query: GET_DIAGNOSTIC_SLOTS,
-    fetchPolicy: 'no-cache',
-    variables: {
-      patientId: g(currentPatient, 'id'),
-      hubCode: 'HYD_HUB1',
-      selectedDate: moment(date).format('YYYY-MM-DD'),
-      zipCode: zipCode,
-    },
-  });
-
   const fetchSlots = () => {
-    if (!isVisible) return;
+    if (!isVisible || !zipCode) return;
     showSpinner(true);
-    getSlots
+    client
+      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+        query: GET_DIAGNOSTIC_SLOTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: g(currentPatient, 'id'),
+          hubCode: 'HYD_HUB1',
+          selectedDate: moment(date).format('YYYY-MM-DD'),
+          zipCode: zipCode,
+        },
+      })
       .then(({ data }) => {
         const diagnosticSlots = g(data, 'getDiagnosticSlots', 'diagnosticSlot') || [];
         // console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
@@ -139,7 +138,10 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       })
       .catch((e) => {
         console.log('getDiagnosticSlots Error', { e });
-        handleGraphQlError(e);
+        const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
+        if (!noHubSlots) {
+          handleGraphQlError(e);
+        }
       })
       .finally(() => {
         showSpinner(false);
