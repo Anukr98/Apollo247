@@ -160,6 +160,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   const mailContentTemplate = _.template(
     `<html>
     <body>
+    <p> #original_sender{ <%- patientDetails.mobileNumber %>#@apollo247.org} </p>
     <p> Patient Help Form</p>
     <ul>
     <li>Need help with  : <%- helpEmailInput.category %></li>
