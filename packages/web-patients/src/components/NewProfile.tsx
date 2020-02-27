@@ -219,7 +219,10 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
               },
             },
           })
-            .then(() => setShowProfileSuccess(true))
+            .then(() => {
+              setShowProfileSuccess(true);
+              props.onClose();
+            })
             .catch((error) => {
               console.error(error);
               window.alert('Something went wrong :(');
@@ -286,8 +289,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.firstName}
                             </FormHelperText>
                           ) : (
-                            ''
-                          )}
+                              ''
+                            )}
                         </FormControl>
                       )}
                     />
@@ -316,8 +319,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.lastName}
                             </FormHelperText>
                           ) : (
-                            ''
-                          )}
+                              ''
+                            )}
                         </FormControl>
                       )}
                     />
@@ -347,8 +350,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.dateOfBirth}
                             </FormHelperText>
                           ) : (
-                            ''
-                          )}
+                              ''
+                            )}
                         </FormControl>
                       )}
                     />
@@ -366,7 +369,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                                   value={gender}
                                   className={`${classes.genderBtns} ${
                                     values.gender === gender ? classes.btnActive : ''
-                                  }`}
+                                    }`}
                                   onClick={(e) =>
                                     setFieldValue('gender', e.currentTarget.value as Gender)
                                   }
@@ -406,8 +409,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.emailAddress}
                             </FormHelperText>
                           ) : (
-                            ''
-                          )}
+                              ''
+                            )}
                         </FormControl>
                       )}
                     />
