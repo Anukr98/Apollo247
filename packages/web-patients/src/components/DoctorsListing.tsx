@@ -162,29 +162,14 @@ interface DoctorsListingProps {
   specialityPlural: string;
 }
 
-const convertAvailabilityToDate = (availability: String[]) => {
-  // return _map(availability, (ava) => {
-  //   console.log([0, 1, 2].map(days => format(addDays(new Date(), days), 'yyyy-MM-dd')), '3days')
-
-  //   if (ava === 'today') return format(new Date(), 'yyyy-MM-dd');
-  //   if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
-  //   if (ava === 'next3') return [0, 1, 2].map(days => format(addDays(new Date(), days), 'yyyy-MM-dd'))
-  //   // if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
-  // });
-  let availableNow = {};
+const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
   const availabilityArray: String[] = [];
   const today = moment(new Date())
     .utc()
     .format('YYYY-MM-DD');
-  if (availability.length > 0)
+  if (availability.length > 0) {
     availability.forEach((value: String) => {
-      if (value === 'now') {
-        availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
-        };
-      } else if (value === 'today') {
+      if (value === 'today') {
         availabilityArray.push(today);
       } else if (value === 'tomorrow') {
         availabilityArray.push(
@@ -212,6 +197,12 @@ const convertAvailabilityToDate = (availability: String[]) => {
         availabilityArray.push(value);
       }
     });
+  } else if (dateSelectedFromFilter !== '') {
+    const filterDateSelected = moment(dateSelectedFromFilter, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    if (filterDateSelected !== '') {
+      availabilityArray.push(filterDateSelected);
+    }
+  }
   return availabilityArray;
 };
 
@@ -282,7 +273,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     specialty: specialityId,
     city: filter.cityName,
     experience: expRange,
-    availability: convertAvailabilityToDate(filter.availability || []),
+    availability: convertAvailabilityToDate(filter.availability || [], filter.dateSelected),
     fees: feeRange,
     gender: filter.gender,
     language: filter.language,
