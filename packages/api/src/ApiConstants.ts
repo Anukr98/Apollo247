@@ -94,6 +94,9 @@ export enum ApiConstants {
 
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE = 'Diagnostic test payment failed',
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
+  MEDICINE_ORDER_PAYMENT_FAILED_TITLE = 'Medicine order payment failed',
+  MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
+
   /*** push-notification messages end here ***/
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
