@@ -191,7 +191,7 @@ export type Resolver<Parent, Args, Context, Result> = (
               requestContext.errors.forEach((error) => {
                 logger.log(
                   'error',
-                  `API Gateway Error for ${internalContext.mobileNumber} at ${reqStartTimeFormatted}: `,
+                  `API Gateway Error for ${internalContext.mobileNumber} at ${reqStartTimeFormatted} in ${requestContext.request.query}: `,
                   error
                 );
               });
