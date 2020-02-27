@@ -37,7 +37,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
 import moment from 'moment';
@@ -56,11 +56,12 @@ import {
   Dimensions,
   StyleProp,
   ViewStyle,
+  Image,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
-const { width } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
@@ -1170,6 +1171,47 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const renderSearchLoadingView = () => {
+    const getWidth = (percentage: number) => screenWidth * (percentage / 100);
+    const localStyles = StyleSheet.create({
+      container: {
+        flexDirection: 'row',
+        marginTop: 73,
+      },
+      imageStyle: {
+        width: getWidth(50.27),
+        height: getWidth(50.27) * 0.88 /* w181, h159, tw360 */,
+      },
+      pleaseWaitTextStyle: {
+        ...theme.viewStyles.text('M', 17, '#0089b7', 1, 26),
+        textAlign: 'center',
+        marginTop: 25,
+      },
+      lookingForDoctorsTextStyle: {
+        ...theme.viewStyles.text('M', 17, '#9a9a9a', 1, 26),
+        textAlign: 'center',
+        marginTop: 10,
+      },
+    });
+    return (
+      <View>
+        <View style={localStyles.container}>
+          <View style={{ width: getWidth(20) }} />
+          <Image
+            style={localStyles.imageStyle}
+            source={require('@aph/mobile-patients/src/images/doctor/doctor_search_filler_img.png')}
+          />
+        </View>
+        <Text style={localStyles.pleaseWaitTextStyle}>
+          {string.doctor_search_listing.pleaseWait}
+        </Text>
+        <Text style={localStyles.lookingForDoctorsTextStyle}>
+          {string.doctor_search_listing.lookingForBestDoctors}
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView
@@ -1193,9 +1235,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             { listener: handleScroll }
           )}
         >
-          {selectedTab === tabs[0].title && renderDoctorSearches()}
-          {selectedTab === tabs[1].title && renderDoctorSearches(ConsultMode.ONLINE)}
-          {selectedTab === tabs[2].title && renderDoctorSearches(ConsultMode.PHYSICAL)}
+          {showSpinner && renderSearchLoadingView()}
+          {!showSpinner && (
+            <>
+              {selectedTab === tabs[0].title && renderDoctorSearches()}
+              {selectedTab === tabs[1].title && renderDoctorSearches(ConsultMode.ONLINE)}
+              {selectedTab === tabs[2].title && renderDoctorSearches(ConsultMode.PHYSICAL)}
+            </>
+          )}
         </Animated.ScrollView>
       </SafeAreaView>
       {displayFilter ? (
@@ -1234,7 +1281,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       {renderAnimatedView()}
       {renderTopView()}
       {renderPopup()}
-      {showSpinner && <Spinner />}
+      {/* {showSpinner && <Spinner />} */}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
