@@ -351,6 +351,7 @@ interface MessagesObjectProps {
   messageDate: string;
   sentBy: string;
   type: string;
+  fileType: string;
 }
 
 interface ConsultRoomProps {
@@ -725,13 +726,21 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   className={classes.imageUpload}
                   onClick={() => {
                     if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
-                      setModalOpen(true);
+                      setModalOpen(rowData.fileType === 'pdf' ? false : true);
                       setImgPrevUrl(rowData.url);
                     }
                   }}
                 >
                   {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
-                    <img src={rowData.url} alt={rowData.url} />
+                    <>
+                      {rowData.fileType === 'pdf' ? (
+                        <a href={rowData.url} target="_blank">
+                          <img src={require('images/pdf_thumbnail.png')} />
+                        </a>
+                      ) : (
+                        <img src={rowData.url} alt={rowData.url} />
+                      )}
+                    </>
                   ) : (
                     <a href={rowData.url}>
                       <img src={require('images/pdf_thumbnail.png')} />
@@ -1015,18 +1024,23 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                         fileExtension &&
                         (fileExtension.toLowerCase() === 'png' ||
                           fileExtension.toLowerCase() === 'jpg' ||
-                          fileExtension.toLowerCase() === 'jpeg')
+                          fileExtension.toLowerCase() === 'jpeg' ||
+                          fileExtension.toLowerCase() === 'pdf')
                       ) {
                         if (file) {
-                          const aphBlob = await client
-                            .uploadBrowserFile({ file })
-                            .catch((error) => {
-                              throw error;
-                            });
-                          const url = client.getBlobUrl(aphBlob.name);
+                          let aphBlob;
+                          aphBlob =
+                            fileExtension.toLowerCase() === 'pdf'
+                              ? await client.uploadPdfBrowserFile({ file }).catch((error: any) => {
+                                  throw error;
+                                })
+                              : await client.uploadBrowserFile({ file }).catch((error: any) => {
+                                  throw error;
+                                });
+                          const url = client.getBlobUrl(aphBlob && aphBlob.name);
                           const uploadObject = {
                             id: doctorId,
-                            fileType: `image`,
+                            fileType: `${fileExtension.toLowerCase() === 'pdf' ? 'pdf' : 'image'}`,
                             message: `^^#DocumentUpload`,
                             url: url,
                             isTyping: true,
