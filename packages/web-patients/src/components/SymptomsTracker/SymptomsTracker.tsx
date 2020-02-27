@@ -7,7 +7,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import _isEmpty from 'lodash/isEmpty';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
-import { OurServices } from 'components/OurServices';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { Header } from 'components/Header';
@@ -93,6 +92,7 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         padding: '16px 20px',
         position: 'fixed',
+        top: 72,
         width: '100%',
       },
     },
@@ -190,6 +190,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff !important',
       backgroundColor: '#fcb716 !important',
     },
+    signUpBar: {
+      marginBottom: 20,
+    },
   };
 });
 
@@ -217,12 +220,12 @@ export const SymptomsTracker: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              CONSULT A DOCTOR
+              consult a doctor
             </div>
             <Scrollbars
               autoHide={true}
               autoHeight
-              autoHeightMax={isMediumScreen ? 'calc(100vh - 200px)' : 'calc(100vh - 240px)'}
+              autoHeightMax={isMediumScreen ? 'calc(100vh - 200px)' : 'auto'}
             >
               <div className={classes.bannerInfo}>
                 {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
@@ -291,7 +294,9 @@ export const SymptomsTracker: React.FC = () => {
         </div>
       </div>
       {isSignedIn && <NavigationBottom />}
-      <ManageProfile />
+      <div className={classes.signUpBar}>
+        <ManageProfile />
+      </div>
     </div>
   );
 };
