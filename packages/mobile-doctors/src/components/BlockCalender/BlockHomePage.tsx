@@ -37,31 +37,11 @@ import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { AddBlockedCalendarItemVariables } from '@aph/mobile-doctors/src/graphql/types/AddBlockedCalendarItem';
+import BlockHomePageStyles from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage.styles';
 
 const { width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  labelText: {
-    ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 0.5, undefined, 0.02),
-    marginBottom: 6,
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 1,
-    paddingTop: 0,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  placeholderTextStyle: {
-    ...theme.viewStyles.text('M', 18, '#01475b'),
-  },
-});
+const styles = BlockHomePageStyles;
 
 export interface BlockHomePageProps extends NavigationScreenProps {}
 

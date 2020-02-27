@@ -1,3 +1,4 @@
+import AppointmentsListStyles from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList.styles';
 import { CalendarCard } from '@aph/mobile-doctors/src/components/Appointments/CalendarCard';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
@@ -16,7 +17,7 @@ import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import moment from 'moment';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import {
   NavigationParams,
   NavigationRoute,
@@ -25,19 +26,7 @@ import {
   ScrollView,
 } from 'react-navigation';
 
-const styles = StyleSheet.create({
-  leftTimeLineContainer: {
-    // marginBottom: -40,
-    marginRight: 9,
-    marginLeft: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verticalLine: {
-    flex: 1,
-    width: 2,
-  },
-});
+const styles = AppointmentsListStyles;
 
 let upcomingNextRendered: boolean = false;
 

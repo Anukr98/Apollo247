@@ -6,18 +6,9 @@ import { ActivityIndicator, AsyncStorage, Linking, Platform, StyleSheet, View } 
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
+import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
 
-const styles = StyleSheet.create({
-  mainView: {
-    flex: 1,
-    alignItems: 'center',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f0f4f5',
-    width: '100%',
-    height: '100%',
-  },
-});
+const styles = SplashScreenStyles;
 
 export interface SplashScreenProps extends NavigationScreenProps {}
 

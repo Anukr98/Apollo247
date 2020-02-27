@@ -35,31 +35,14 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import ProfileSetupStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileSetup.styles';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
 // const isMobileNumberValid = (n: string) => true;
 const { height } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  footerButtonsContainer: {
-    zIndex: -1,
-    justifyContent: 'center',
-    paddingTop: 40,
-    paddingBottom: 32,
-    marginHorizontal: 20,
-    flexDirection: 'row',
-    width: '92%',
-  },
-  buttonStyle: {
-    width: '46%',
-  },
-  buttonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    textAlign: 'center',
-    margin: 1.5,
-  },
-});
+const styles = ProfileSetupStyles;
 
 const headerContent = [
   {

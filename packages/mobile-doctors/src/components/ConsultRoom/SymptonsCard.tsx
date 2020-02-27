@@ -1,28 +1,9 @@
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle, TouchableOpacity } from 'react-native';
 import { theme } from '../../theme/theme';
+import SymptonsCardStyles from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard.styles';
 
-const styles = StyleSheet.create({
-  containerStyle: {
-    borderRadius: 5,
-    backgroundColor: 'rgba(0, 0, 0, 0.03)',
-    borderStyle: 'solid',
-    borderWidth: 1,
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-    // marginTop: 16,
-    // marginBottom: 14,
-  },
-
-  doctorNameStyles: {
-    ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 1),
-    marginLeft: 12,
-    marginTop: 12,
-  },
-  tabdata: {
-    ...theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE, 1, 18, 0),
-    marginLeft: 12,
-  },
-});
+const styles = SymptonsCardStyles;
 
 export interface CapsuleViewProps {
   containerStyle?: StyleProp<ViewStyle>;

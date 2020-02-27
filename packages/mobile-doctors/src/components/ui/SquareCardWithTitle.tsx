@@ -1,27 +1,9 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import SquareCardWithTitleStyles from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle.styles';
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: theme.colors.CARD_GRAY_BG,
-    paddingTop: 20,
-    shadowOffset: {
-      height: 5,
-      width: 0,
-    },
-    shadowColor: '#808080',
-    shadowRadius: 20,
-    shadowOpacity: 0.4,
-    elevation: 5,
-  },
-  textStyle: {
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-    letterSpacing: 0.07,
-    color: theme.colors.darkBlueColor(),
-    marginHorizontal: 20,
-  },
-});
+const styles = SquareCardWithTitleStyles;
 
 export interface SquareCardWithTitleProps {
   title: string;
