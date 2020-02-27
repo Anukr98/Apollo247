@@ -4,6 +4,7 @@ import {
   sendReminderNotification,
   NotificationType,
   sendNotification,
+  DOCTOR_CALL_TYPE,
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -123,15 +124,25 @@ const sendPhysicalApptReminderNotification: Resolver<
       };
       if (args.inNextMin == 1) {
         pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_1;
-      } else if (args.inNextMin == 59) {
-        pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_60;
       } else if (appt.caseSheet.length > 0) {
         if (
           appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
-          appt.caseSheet[0].doctorType == 'JUNIOR'
+          appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString()
         ) {
           pushNotificationInput.notificationType =
             NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
+        } else if (
+          appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
+          appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString() &&
+          args.inNextMin == 59
+        ) {
+          pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_60;
+        } else if (
+          appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
+          appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString() &&
+          args.inNextMin == 180
+        ) {
+          pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_180;
         }
       } else if (appt.caseSheet.length == 0) {
         pushNotificationInput.notificationType = NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, CircularProgress } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
@@ -183,10 +183,17 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
   const { patient, number } = props;
 
   const [selectedRelation, setSelectedRelation] = React.useState<Relation | ''>(
-    patient.relation || ''
+    patient.relation || (number === 1 ? Relation.ME : '')
   );
 
-  const placeholderClass = selectedRelation ? 'classes.placeholder' : '';
+  useEffect(() => {
+    if (number === 1 && !patient.relation) {
+      const updatedPatient = { ...patient, relation: Relation.ME };
+      props.onUpdatePatient(updatedPatient);
+    }
+  }, [number, patient]);
+
+  // const placeholderClass = selectedRelation ? 'classes.placeholder' : '';
 
   return (
     <div className={classes.profileBox} data-cypress="PatientProfile">
@@ -197,8 +204,8 @@ const PatientProfile: React.FC<PatientProfileProps> = (props) => {
       <div className={classes.boxContent}>
         <div className={classes.userName}>{_capitalize(patient.firstName || '')}</div>
         <div className={classes.userInfo}>
-          {_capitalize(patient.gender + ' | ')}
-          {patient.dateOfBirth && format(parseISO(patient.dateOfBirth), 'dd MMMM yyyy')}
+          {`${_capitalize(patient.gender || '')} ${patient.gender && patient.dateOfBirth ? '|' : ''}
+          ${(patient.dateOfBirth && format(parseISO(patient.dateOfBirth), 'dd MMMM yyyy')) || ''}`}
         </div>
         <AphSelect
           value={selectedRelation ? _capitalize(selectedRelation) : 'Relation'}
@@ -252,15 +259,21 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const [loading, setLoading] = useState(false);
   const loneUser = patients.length === 1 && patients[0].relation !== 'ME';
   if (loneUser) patients[0].relation = Relation.ME;
-  const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
+  // const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = true;
   const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
-  const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
-  const disabled = patients.some(isPatientInvalid) || !onePrimaryUser;
-  let primaryUserErrorMessage;
+  // const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
+  // const disabled = patients.some(isPatientInvalid);
+
+  // console.log(patients, 'patients....');
+
+  // let primaryUserErrorMessage;
+  let primaryUserErrorMessage = '';
   if (multiplePrimaryUsers)
     primaryUserErrorMessage = 'Relation can be set as Me for only 1 profile';
-  else if (noPrimaryUsers)
-    primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
+  // else if (noPrimaryUsers)
+  //   primaryUserErrorMessage = 'There should be 1 profile with relation set as Me';
+  const disabled = patients.some(isPatientInvalid) || primaryUserErrorMessage.length > 0;
 
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">

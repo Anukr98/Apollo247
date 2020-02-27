@@ -105,20 +105,17 @@ type MedicalCardProps = {
   isActiveCard: boolean;
   deleteReport: (id: string) => void;
   id: string;
+  setLoading: (loading: boolean) => void;
 };
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
   const [showPopup, setShowPopup] = useState<boolean>(false);
-
   return (
     <div className={`${classes.root} ${props.isActiveCard ? classes.activeCard : ''}`}>
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{props.name}</div>
-          {/* <div className={classes.doctorService}>
-            <span>Apollo Sugar Clinic, Hyderabad</span>
-          </div> */}
         </div>
         <div className={classes.moreIcon}>
           <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
@@ -132,7 +129,9 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         maxWidth="sm"
       >
         <AphDialogTitle>Delete Report</AphDialogTitle>
-        <div className={classes.dialogBody}>Are you want to delete the selected record?</div>
+        <div className={classes.dialogBody}>
+          Are you sure you want to delete the selected record?
+        </div>
         <div className={classes.dialogActions}>
           <AphButton
             color="default"
@@ -146,6 +145,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
+              props.setLoading(true);
               props.deleteReport(props.id);
               setShowPopup(false);
             }}

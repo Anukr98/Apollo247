@@ -75,56 +75,9 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
+import SmartPrescriptionStyles from '@aph/mobile-doctors/src/components/Account/SmartPrescription.styles';
 
-const styles = StyleSheet.create({
-  containerListStyle: {
-    padding: 16,
-    paddingTop: 12,
-    borderRadius: 5,
-    backgroundColor: theme.colors.CARD_BG,
-    marginBottom: 12,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    elevation: 5,
-  },
-  subheading: {
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-    color: '#02475b',
-    marginVertical: 20,
-  },
-  inputArea: {
-    height: 80,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#30c1a3',
-    color: '#01475b',
-
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingBottom: 20,
-    paddingTop: 20,
-    marginBottom: 10,
-  },
-
-  AphInnerView: {
-    shadowColor: '#66000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.5,
-    elevation: 5,
-
-    padding: 20,
-    ...theme.viewStyles.container,
-  },
-});
+const styles = SmartPrescriptionStyles;
 
 export interface ProfileProps extends NavigationScreenProps {
   overlayDisplay: (renderDisplay: React.ReactNode) => void;
@@ -464,7 +417,8 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
-          Alert.alert(strings.common.error, errorMessage);
+          // Alert.alert(strings.common.error, errorMessage);
+          Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
         });
     } else {
       Alert.alert(strings.common.failed, strings.smartPrescr.pls_add_advice);
@@ -496,7 +450,8 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log('Error occured while adding advice', errorMessage, error);
-          Alert.alert(strings.common.error, errorMessage);
+          // Alert.alert(strings.common.error, errorMessage);
+          Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
         });
     } else {
       Alert.alert(strings.common.failed, strings.smartPrescr.pls_add_advice);

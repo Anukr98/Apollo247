@@ -3,26 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacityProps, TouchableOpacity } from 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 import { ArrowRight } from '@aph/mobile-doctors/src/components/ui/Icons';
+import SmartPrescriptionCardStyles from '@aph/mobile-doctors/src/components/ui/SmartPrescriptionCard.styles';
 
-const styles = StyleSheet.create({
-  containerStyle: {
-    paddingVertical: 6,
-  },
-  seperatorline: {
-    flexDirection: 'row',
-    marginTop: 1,
-    borderBottomColor: '#02475b',
-    borderBottomWidth: 1,
-    marginRight: 10,
-    opacity: 0.05,
-    paddingTop: 6,
-    paddingBottom: 6,
-  },
-  titleStyle: {
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-});
+const styles = SmartPrescriptionCardStyles;
 
 export interface SmartPrescriptionCardProps {
   title?: string | null;

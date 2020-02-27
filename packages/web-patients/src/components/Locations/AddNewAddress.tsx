@@ -119,7 +119,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [otherTextbox, setOtherTextBox] = useState<string>('');
   const [addressId, setAddressId] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
-  const [otherText, setOtherText] = useState<boolean>(false);
+  const [showTextbox, setShowText] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient ? currentPatient.id : '';
 
@@ -158,6 +158,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
         props.currentAddress && props.currentAddress.addressType
           ? props.currentAddress.addressType
           : '';
+      const otherTextbox =
+        props.currentAddress && props.currentAddress.otherAddressType
+          ? props.currentAddress.otherAddressType
+          : '';
       const addressId =
         props.currentAddress && props.currentAddress.id && props.currentAddress.id.length > 0
           ? props.currentAddress.id
@@ -168,6 +172,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
       setPincode(pincode);
       setAddressType(addressType);
       setAddressId(addressId);
+      setOtherTextBox(otherTextbox);
+      setShowText(!!otherTextbox);
     }
   }, [props.currentAddress]);
 
@@ -259,7 +265,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                             }`}
                             onClick={() => {
                               setAddressType(addressTypeValue);
-                              setOtherText(addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER);
+                              setShowText(addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER);
                             }}
                             value={addressType}
                           >
@@ -282,7 +288,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       </AphButton>
                     </Grid> */}
                   </Grid>
-                  {otherText && (
+                  {showTextbox ? (
                     <AphTextField
                       placeholder="Enter Address Type"
                       onChange={(e) => {
@@ -291,8 +297,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       inputProps={{
                         maxLength: 100,
                       }}
-                      value={otherTextbox}
+                      value={otherTextbox || ''}
                     />
+                  ) : (
+                    ''
                   )}
                 </div>
                 {/* <div className={classes.formGroup}>
@@ -315,6 +323,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 zipcode: pincode,
                 mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                 addressType: addressType as PATIENT_ADDRESS_TYPE,
+                otherAddressType: otherTextbox,
               },
             }}
             onError={(error) => {
@@ -351,6 +360,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 zipcode: pincode,
                 mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                 addressType: addressType as PATIENT_ADDRESS_TYPE,
+                otherAddressType: otherTextbox,
               },
             }}
             onError={(error) => {

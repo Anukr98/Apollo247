@@ -18,6 +18,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Scrollbars from 'react-custom-scrollbars';
 import _find from 'lodash/find';
 import { LocationContext } from 'components/LocationProvider';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -161,12 +162,48 @@ interface DoctorsListingProps {
   specialityPlural: string;
 }
 
-const convertAvailabilityToDate = (availability: String[]) => {
-  return _map(availability, (ava) => {
-    if (ava === 'today') return format(new Date(), 'yyyy-MM-dd');
-    if (ava === 'tomorrow') return format(addDays(new Date(), 1), 'yyyy-MM-dd');
-    if (ava === 'next3') return format(addDays(new Date(), 3), 'yyyy-MM-dd');
-  });
+const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
+  const availabilityArray: String[] = [];
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
+  if (availability.length > 0) {
+    availability.forEach((value: String) => {
+      if (value === 'today') {
+        availabilityArray.push(today);
+      } else if (value === 'tomorrow') {
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD')
+            .utc()
+            .format('YYYY-MM-DD')
+        );
+      } else if (value === 'next3') {
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+            'YYYY-MM-DD'
+          )
+        );
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+            'YYYY-MM-DD'
+          )
+        );
+        availabilityArray.push(
+          moment(new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+            'YYYY-MM-DD'
+          )
+        );
+      } else {
+        availabilityArray.push(value);
+      }
+    });
+  } else if (dateSelectedFromFilter !== '') {
+    const filterDateSelected = moment(dateSelectedFromFilter, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    if (filterDateSelected !== '') {
+      availabilityArray.push(filterDateSelected);
+    }
+  }
+  return availabilityArray;
 };
 
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
@@ -214,19 +251,41 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
+  let availableNow = {};
+  if (filter.availability && filter.availability.includes('now')) {
+    availableNow = {
+      availableNow: moment(new Date())
+        .utc()
+        .format('YYYY-MM-DD hh:mm'),
+    };
+  }
+
+  let geolocation = {} as any;
+  if (currentLat && currentLong) {
+    geolocation['geolocation'] = {
+      latitude: parseFloat(currentLat.toString()),
+      longitude: parseFloat(currentLong.toString()),
+    };
+  }
+
   const apiVairables = {
     patientId: currentPatient ? currentPatient.id : '',
     specialty: specialityId,
     city: filter.cityName,
     experience: expRange,
-    availability: _compact(convertAvailabilityToDate(filter.availability || [])),
+    availability: convertAvailabilityToDate(filter.availability || [], filter.dateSelected),
     fees: feeRange,
     gender: filter.gender,
     language: filter.language,
-    availableNow:
-      filter.availability && filter.availability.findIndex((v) => v == 'now') >= 0
-        ? format(new Date(), 'yyyy-MM-dd HH:mm')
-        : '',
+    ...availableNow,
+    // availableNow:
+    //   filter.availability && filter.availability.findIndex((v) => v == 'now') >= 0
+    //     ?
+    //     // format(new Date(), 'yyyy-MM-dd HH:mm')
+    //     moment(new Date())
+    //       .utc()
+    //       .format('YYYY-MM-DD hh:mm')
+    //     : '',
     geolocation: {
       latitude: currentLat && currentLat.length > 0 ? parseFloat(currentLat) : 0,
       longitude: currentLong && currentLong.length > 0 ? parseFloat(currentLong) : 0,

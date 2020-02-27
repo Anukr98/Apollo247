@@ -7,29 +7,12 @@ import { MedicalCard } from 'components/HealthRecords/MedicalCard';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
-import {
-  DELETE_PATIENT_MEDICAL_RECORD,
-  GET_MEDICAL_PRISM_RECORD,
-  GET_MEDICAL_RECORD,
-} from '../../graphql/profiles';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  getPatientMedicalRecords,
-  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords as MedicalRecordsType,
-} from '../../graphql/types/getPatientMedicalRecords';
-import {
-  getPatientPrismMedicalRecords,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests as LabTestsType,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks as HealthChecksType,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations as HospitalizationsType,
-} from '../../graphql/types/getPatientPrismMedicalRecords';
+import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
-import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -323,114 +306,28 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicalRecords: React.FC = (props) => {
+type MedicalRecordProps = {
+  medicalRecords: any;
+  allCombinedData: any;
+  setMedicalRecords: (medicalRecords: any) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+};
+
+export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  const { currentPatient } = useAllCurrentPatients();
-  const client = useApolloClient();
-  const [medicalRecords, setMedicalRecords] = useState<(MedicalRecordsType | null)[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [labTests, setLabTests] = useState<(LabTestsType | null)[] | null>(null);
-  const [healthChecks, setHealthChecks] = useState<(HealthChecksType | null)[] | null>(null);
-  const [hospitalizations, setHospitalizations] = useState<(HospitalizationsType | null)[] | null>(
-    null
-  );
-  const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
   const [activeData, setActiveData] = useState<any | null>(null);
-  const { isSigningIn } = useAuth();
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
 
-  const fetchData = () => {
-    client
-      .query<getPatientMedicalRecords>({
-        query: GET_MEDICAL_RECORD,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        if (data && data.getPatientMedicalRecords && data.getPatientMedicalRecords.medicalRecords) {
-          setMedicalRecords(data.getPatientMedicalRecords.medicalRecords);
-        }
-      })
-      .catch((error) => {
-        alert(error);
-        setLoading(false);
-      });
-  };
-
-  const fetchTestData = () => {
-    client
-      .query<getPatientPrismMedicalRecords>({
-        query: GET_MEDICAL_PRISM_RECORD,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        if (data && data.getPatientPrismMedicalRecords) {
-          setLabTests(data.getPatientPrismMedicalRecords.labTests);
-          setHealthChecks(data.getPatientPrismMedicalRecords.healthChecks);
-          setHospitalizations(data.getPatientPrismMedicalRecords.hospitalizations);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        setLoading(false);
-      });
-  };
-
-  const sortByDate = (array: { type: string; data: any }[]) => {
-    return array.sort(({ data: data1 }, { data: data2 }) => {
-      let date1 = new Date(
-        data1.testDate || data1.labTestDate || data1.appointmentDate || data1.dateOfHospitalization
-      );
-      let date2 = new Date(
-        data2.testDate || data2.labTestDate || data2.appointmentDate || data2.dateOfHospitalization
-      );
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
-    });
-  };
+  const { medicalRecords, allCombinedData, loading, setLoading, setMedicalRecords } = props;
 
   useEffect(() => {
-    if (!isSigningIn) {
-      if (!medicalRecords) {
-        setLoading(true);
-        fetchData();
-      }
-      if (!labTests || !healthChecks || !hospitalizations) {
-        fetchTestData();
-      }
+    if (!isSmallScreen && allCombinedData && !activeData) {
+      setActiveData(allCombinedData[0]);
     }
-    if (medicalRecords && (labTests || healthChecks || hospitalizations)) {
-      let mergeArray: { type: string; data: any }[] = [];
-      medicalRecords.forEach((item) => {
-        mergeArray.push({ type: 'medical', data: item });
-      });
-      labTests &&
-        labTests.forEach((item) => {
-          mergeArray.push({ type: 'lab', data: item });
-        });
-      healthChecks &&
-        healthChecks.forEach((item) => {
-          mergeArray.push({ type: 'health', data: item });
-        });
-      hospitalizations &&
-        hospitalizations.forEach((item) => {
-          mergeArray.push({ type: 'hospital', data: item });
-        });
-      const sortedData = sortByDate(mergeArray);
-      setAllCombinedData(sortedData);
-      if (!isSmallScreen) {
-        setActiveData(sortedData[0]);
-      }
-      // setFilteredData(sortedData);
-      setLoading(false);
-    }
-  }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
+  }, [allCombinedData]);
 
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
@@ -496,6 +393,7 @@ export const MedicalRecords: React.FC = (props) => {
       fetchPolicy: 'no-cache',
     })
       .then((_data) => {
+        setLoading(true);
         const newRecords =
           medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
         setMedicalRecords(newRecords);
@@ -539,14 +437,16 @@ export const MedicalRecords: React.FC = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    {/* <span>Today, 12 Aug 2019</span> */}
                     <span>{getFormattedDate(combinedData)}</span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
                     name={getName(combinedData)}
                     id={combinedData.data.id}
-                    isActiveCard={activeData === combinedData}
+                    isActiveCard={
+                      activeData && activeData.data && activeData.data.id === combinedData.data.id
+                    }
+                    setLoading={setLoading}
                   />
                 </div>
               ))}
@@ -578,86 +478,87 @@ export const MedicalRecords: React.FC = (props) => {
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
         }`}
       >
-        <div className={classes.sectionHeader}>
-          <div className={classes.headerBackArrow}>
-            <AphButton
-              onClick={() => {
-                if (isSmallScreen) {
-                  setShowMobileDetails(false);
-                }
-              }}
-            >
-              <img src={require('images/ic_back.svg')} />
-            </AphButton>
-            <span>REPORT Details</span>
-          </div>
-          {/* <div className={classes.headerActions}>
-            <AphButton>View Consult</AphButton>
-            <div className={classes.downloadIcon}>
-              <img src={require('images/ic_download.svg')} alt="" />
-            </div>
-          </div> */}
-        </div>
-        <Scrollbars
-          autoHide={true}
-          autoHeight
-          autoHeightMin={
-            isMediumScreen
-              ? 'calc(100vh - 287px)'
-              : isSmallScreen
-              ? 'calc(100vh - 55px)'
-              : 'calc(100vh - 245px)'
-          }
-        >
-          {(!isSmallScreen && activeData) || (isSmallScreen && showMobileDetails && activeData) ? (
-            <div className={classes.medicalRecordsDetails}>
-              <div className={classes.cbcDetails}>
-                <div className={classes.reportsDetails}>
-                  <label>Check-up Date</label>
-                  <p>{getFormattedDate(activeData)}</p>
-                </div>
-                <div className={classes.reportsDetails}>
-                  <label>Source</label>
-                  <p>{getSource()}</p>
-                </div>
-                <div className={classes.reportsDetails}>
-                  <label>Referring Doctor</label>
-                  <p>
-                    {!!activeData.data.referringDoctor
-                      ? activeData.data.referringDoctor
-                      : !!activeData.data.signingDocName
-                      ? activeData.data.signingDocName
-                      : '-'}
-                  </p>
-                </div>
+        {allCombinedData && allCombinedData.length > 0 ? (
+          <>
+            <div className={classes.sectionHeader}>
+              <div className={classes.headerBackArrow}>
+                <AphButton
+                  onClick={() => {
+                    if (isSmallScreen) {
+                      setShowMobileDetails(false);
+                    }
+                  }}
+                >
+                  <img src={require('images/ic_back.svg')} />
+                </AphButton>
+                <span>REPORT Details</span>
               </div>
-              {(activeData.data.observations ||
-                activeData.data.additionalNotes ||
-                activeData.data.healthCheckSummary) && <ToplineReport activeData={activeData} />}
-              {((activeData.data.medicalRecordParameters &&
-                activeData.data.medicalRecordParameters.length > 0) ||
-                (activeData.data.labTestResultParameters &&
-                  activeData.data.labTestResultParameters.length > 0)) && (
-                <DetailedFindings activeData={activeData} />
+            </div>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMin={
+                isMediumScreen
+                  ? 'calc(100vh - 287px)'
+                  : isSmallScreen
+                  ? 'calc(100vh - 55px)'
+                  : 'calc(100vh - 245px)'
+              }
+            >
+              {((!isSmallScreen && activeData) ||
+                (isSmallScreen && showMobileDetails && activeData)) && (
+                <div className={classes.medicalRecordsDetails}>
+                  <div className={classes.cbcDetails}>
+                    <div className={classes.reportsDetails}>
+                      <label>Check-up Date</label>
+                      <p>{getFormattedDate(activeData)}</p>
+                    </div>
+                    <div className={classes.reportsDetails}>
+                      <label>Source</label>
+                      <p>{getSource()}</p>
+                    </div>
+                    <div className={classes.reportsDetails}>
+                      <label>Referring Doctor</label>
+                      <p>
+                        {!!activeData.data.referringDoctor
+                          ? activeData.data.referringDoctor
+                          : !!activeData.data.signingDocName
+                          ? activeData.data.signingDocName
+                          : '-'}
+                      </p>
+                    </div>
+                  </div>
+                  {(activeData.data.observations ||
+                    activeData.data.additionalNotes ||
+                    activeData.data.healthCheckSummary) && (
+                    <ToplineReport activeData={activeData} />
+                  )}
+                  {((activeData.data.medicalRecordParameters &&
+                    activeData.data.medicalRecordParameters.length > 0) ||
+                    (activeData.data.labTestResultParameters &&
+                      activeData.data.labTestResultParameters.length > 0)) && (
+                    <DetailedFindings activeData={activeData} />
+                  )}
+                  {activeData.data &&
+                    (activeData.data.prismFileIds ||
+                      activeData.data.hospitalizationPrismFileIds ||
+                      activeData.data.healthCheckPrismFileIds ||
+                      activeData.data.testResultPrismFileIds) && (
+                      <RenderImage activeData={activeData} />
+                    )}
+                </div>
               )}
-              {activeData.data &&
-                (activeData.data.prismFileIds ||
-                  activeData.data.hospitalizationPrismFileIds ||
-                  activeData.data.healthCheckPrismFileIds ||
-                  activeData.data.testResultPrismFileIds) && (
-                  <RenderImage activeData={activeData} />
-                )}
-            </div>
-          ) : (
-            <div className={classes.noRecordFoundWrapper}>
-              <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
-            </div>
-          )}
-        </Scrollbars>
+            </Scrollbars>
+          </>
+        ) : (
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>
+              You don’t have any records with us right now. Add a record to keep everything handy in
+              one place!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

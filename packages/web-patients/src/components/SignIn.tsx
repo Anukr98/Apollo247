@@ -196,13 +196,8 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               </Grid>
             ))}
           </Grid>
-          {verifyOtpError && (
-            <FormHelperText
-              component="div"
-              className={classes.helpText}
-              error={verifyOtpError}
-              style={{ opacity: verifyOtpError ? 1.0 : 0 }}
-            >
+          {verifyOtpError && !isSigningIn && (
+            <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
               <div>
                 {submitCount > 0 && ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
               </div>

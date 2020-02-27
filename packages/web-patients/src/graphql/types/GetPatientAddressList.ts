@@ -20,6 +20,7 @@ export interface GetPatientAddressList_getPatientAddressList_addressList {
   createdDate: any | null;
   updatedDate: any | null;
   addressType: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType: string | null;
 }
 
 export interface GetPatientAddressList_getPatientAddressList {

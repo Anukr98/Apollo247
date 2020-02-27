@@ -21,7 +21,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MedicalTestUnit, AddMedicalRecordParametersInput } from '../../graphql/types/globalTypes';
 import { ADD_MEDICAL_RECORD, UPLOAD_DOCUMENT } from '../../graphql/profiles';
 import moment from 'moment';
-import { AphCalendar } from '../AphCalendar';
+import { AphCalendarPastDate } from '../AphCalendarPastDate';
 import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -473,7 +473,7 @@ export const AddRecords: React.FC = (props) => {
       .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
 
     if (medicalRecordsVaild.length > 0) {
-      setmedicalRecordParameters(medicalRecordsVaild);
+      // setmedicalRecordParameters(medicalRecordsVaild);
       return medicalRecordsVaild;
     } else {
       return [];
@@ -483,11 +483,12 @@ export const AddRecords: React.FC = (props) => {
   const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
     return Promise.all(
       prescriptions.map((item) => {
+        const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
         return uploadDocumentMutation({
           fetchPolicy: 'no-cache',
           variables: {
             UploadDocumentInput: {
-              base64FileInput: item.baseFormat,
+              base64FileInput: baseFormatSplitArry[1],
               category: 'HealthChecks',
               fileType: item.fileType === 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
               patientId: currentPatient && currentPatient.id,
@@ -505,11 +506,9 @@ export const AddRecords: React.FC = (props) => {
       if (uploadedDocuments.length > 0) {
         multiplePhysicalPrescriptionUpload(uploadedDocuments)
           .then((data) => {
-            const uploadUrlscheck = data.map(({ data }: any) => {
-              return data && data.uploadDocument && data.uploadDocument.filePath
-                ? data.uploadDocument.filePath
-                : null;
-            });
+            const uploadUrlscheck = data.map(({ data }: any) =>
+              data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
+            );
             const filtered = uploadUrlscheck.filter(function(el) {
               return el != null;
             });
@@ -520,15 +519,19 @@ export const AddRecords: React.FC = (props) => {
                 issuingDoctor: doctorIssuedPrescription,
                 location,
                 testDate:
-                  dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+                  dateOfTest !== ''
+                    ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
+                    : dateOfPrescription !== ''
+                    ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+                    : '',
                 recordType: typeOfRecord,
                 referringDoctor: referringDoctor,
                 sourceName: '',
                 observations: observation,
                 additionalNotes: notes,
                 medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-                documentURLs: filtered.map((item) => item).join(','),
-                prismFileIds: filtered.map((item) => item).join(','),
+                documentURLs: filtered.map((item) => item.filePath).join(','),
+                prismFileIds: filtered.map((item) => item.fileId).join(','),
               };
               if (uploadUrlscheck.length > 0) {
                 addMedicalRecordMutation({
@@ -545,16 +548,17 @@ export const AddRecords: React.FC = (props) => {
                     alert('Please fill all the details');
                   });
               } else {
-                alert('Download image url not getting');
+                setshowSpinner(false);
+                alert('An error occurred while loading the image.');
               }
             } else {
               setshowSpinner(false);
-              alert('Your upload images are failed');
+              alert('An error occurred while uploading the image.');
             }
           })
           .catch((e) => {
             setshowSpinner(false);
-            alert('Your upload images are failed');
+            alert('An error occurred while uploading the image.');
           });
       } else {
         const inputData = {
@@ -562,7 +566,12 @@ export const AddRecords: React.FC = (props) => {
           testName: nameOfTest,
           issuingDoctor: doctorIssuedPrescription,
           location,
-          testDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+          testDate:
+            dateOfTest !== ''
+              ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
+              : dateOfPrescription !== ''
+              ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+              : '',
           recordType: typeOfRecord,
           referringDoctor: referringDoctor,
           sourceName: '',
@@ -734,7 +743,7 @@ export const AddRecords: React.FC = (props) => {
                                           setIsUploading(false);
                                           setForceRender(!forceRender); // Added because after setUploadedDocuments component is not rerendering.
                                         })
-                                        .catch((e) => {
+                                        .catch((e: any) => {
                                           setIsUploading(false);
                                           alert('Error while uploading the file');
                                         });
@@ -818,7 +827,7 @@ export const AddRecords: React.FC = (props) => {
                                 placeholder="dd/mm/yyyy"
                               />
                               {showCalendar && (
-                                <AphCalendar
+                                <AphCalendarPastDate
                                   getDate={(dateSelected: string) => {
                                     setdateOfTest(dateSelected);
                                     setShowCalendar(false);
@@ -855,7 +864,7 @@ export const AddRecords: React.FC = (props) => {
                                 placeholder="dd/mm/yyyy"
                               />
                               {showCalendar && (
-                                <AphCalendar
+                                <AphCalendarPastDate
                                   getDate={(dateSelected: string) => {
                                     setDateOfPrescription(dateSelected);
                                     setShowCalendar(false);
@@ -931,7 +940,6 @@ export const AddRecords: React.FC = (props) => {
                                 disabled={showSpinner}
                                 value={record.unit}
                                 onChange={(e) => {
-                                  // setUnit(e.target.value as string);
                                   setParametersData('unit', e.target.value as string, idx);
                                 }}
                                 MenuProps={{
@@ -948,7 +956,7 @@ export const AddRecords: React.FC = (props) => {
                               >
                                 {MedicalTest.map((test: any) => (
                                   <MenuItem
-                                    value={test.value}
+                                    value={test.key}
                                     classes={{ selected: classes.menuSelected }}
                                   >
                                     {test.value}
@@ -1042,8 +1050,8 @@ export const AddRecords: React.FC = (props) => {
               </div>
             </Scrollbars>
             <div className={classes.pageBottomActions}>
-              <AphButton color="primary" disabled={!isValid().isvalid} onClick={() => saveRecord()}>
-                {showSpinner ? <CircularProgress /> : 'Add Record'}
+              <AphButton color="primary" onClick={() => saveRecord()}>
+                {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Add Record'}
               </AphButton>
             </div>
           </div>

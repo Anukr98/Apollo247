@@ -16,6 +16,21 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       display: 'block',
     },
+    prescriptionImage: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 40,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+      },
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
   };
 });
 
@@ -28,62 +43,68 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   const { data } = props.activeData;
 
   useEffect(() => {
-    if (!placeImage) {
-      if (
-        data &&
-        (data.prismFileIds ||
-          data.hospitalizationPrismFileIds ||
-          data.healthCheckPrismFileIds ||
-          data.testResultPrismFileIds)
-      ) {
-        const prismFileds =
-          (data.prismFileIds && data.prismFileIds.split(',')) ||
-          (data.hospitalizationPrismFileIds &&
-            (typeof data.hospitalizationPrismFileIds === 'string'
-              ? data.hospitalizationPrismFileIds.split(',')
-              : data.hospitalizationPrismFileIds)) ||
-          (data.healthCheckPrismFileIds &&
-            (typeof data.healthCheckPrismFileIds === 'string'
-              ? data.healthCheckPrismFileIds.split(',')
-              : data.healthCheckPrismFileIds)) ||
-          (data.testResultPrismFileIds &&
-            (typeof data.testResultPrismFileIds === 'string'
-              ? data.testResultPrismFileIds.split(',')
-              : data.testResultPrismFileIds));
-        const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
-        setShowSpinner(true);
-        client
-          .query<downloadDocuments>({
-            query: DOWNLOAD_DOCUMENT,
-            fetchPolicy: 'no-cache',
-            variables: {
-              downloadDocumentsInput: {
-                patientId: currentPatient && currentPatient.id,
-                fileIds: prismFileds,
-              },
+    if (
+      data &&
+      (data.prismFileIds ||
+        data.hospitalizationPrismFileIds ||
+        data.healthCheckPrismFileIds ||
+        data.testResultPrismFileIds)
+    ) {
+      const prismFileds =
+        (data.prismFileIds && data.prismFileIds.split(',')) ||
+        (data.hospitalizationPrismFileIds &&
+          (typeof data.hospitalizationPrismFileIds === 'string'
+            ? data.hospitalizationPrismFileIds.split(',')
+            : data.hospitalizationPrismFileIds)) ||
+        (data.healthCheckPrismFileIds &&
+          (typeof data.healthCheckPrismFileIds === 'string'
+            ? data.healthCheckPrismFileIds.split(',')
+            : data.healthCheckPrismFileIds)) ||
+        (data.testResultPrismFileIds &&
+          (typeof data.testResultPrismFileIds === 'string'
+            ? data.testResultPrismFileIds.split(',')
+            : data.testResultPrismFileIds));
+      const urls = data.prescriptionImageUrl && data.prescriptionImageUrl.split(',');
+      setShowSpinner(true);
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: currentPatient && currentPatient.id,
+              fileIds: prismFileds,
             },
-          })
-          .then(({ data }) => {
-            const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
-              (item, index) => item || (urls && urls.length <= index + 1 ? urls[index] : '')
-            );
-            setPlaceImage(uploadUrlscheck);
-            setShowSpinner(false);
-          })
-          .catch((e) => {
-            setShowSpinner(false);
-          })
-          .finally(() => {
-            setShowSpinner(false);
-          });
-      } else if (data.prescriptionImageUrl) {
-        setPlaceImage(data.prescriptionImageUrl.split(','));
-      }
+          },
+        })
+        .then(({ data }) => {
+          const uploadUrlscheck = data.downloadDocuments.downloadPaths!.map(
+            (item, index) => item || (urls && urls.length <= index + 1 ? urls[index] : '')
+          );
+          setPlaceImage(uploadUrlscheck);
+          setShowSpinner(false);
+        })
+        .catch((e) => {
+          setShowSpinner(false);
+        })
+        .finally(() => {
+          setShowSpinner(false);
+        });
+    } else if (data.prescriptionImageUrl) {
+      setPlaceImage(data.prescriptionImageUrl.split(','));
     }
-  }, [placeImage]);
+  }, [data]);
 
   if (showSpinner) {
     return <CircularProgress className={classes.loader} />;
   }
-  return <img src={placeImage} alt={'No Image'} />;
+
+  return (
+    <div className={classes.prescriptionImage}>
+      {placeImage &&
+        placeImage.map((item: string) => (
+          <img src={item} alt="Prescription Preview is not available" />
+        ))}
+    </div>
+  );
 };

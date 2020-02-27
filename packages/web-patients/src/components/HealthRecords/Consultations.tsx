@@ -12,10 +12,6 @@ import { FollowUp } from 'components/HealthRecords/FollowUp';
 import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
 import { PrescriptionPreview } from 'components/HealthRecords/PrescriptionPreview';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '../../graphql/profiles';
-import { getPatientPastConsultsAndPrescriptions } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
-import { useAllCurrentPatients } from 'hooks/authHooks';
-import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -229,7 +225,19 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     prescriptionImage: {
-      width: '100%',
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
+      marginBottom: 12,
+      padding: 40,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+      },
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
     },
     addReportActions: {
       paddingLeft: 15,
@@ -294,99 +302,34 @@ const storageClient = new AphStorageClient(
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
 
-export const Consultations: React.FC = (props) => {
+type ConsultationProps = {
+  loading: boolean;
+  error: boolean;
+  consultsData: any;
+  allConsultsData: any;
+  setConsultsData: (consultsData: any) => void;
+};
+
+export const Consultations: React.FC<ConsultationProps> = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  const { currentPatient } = useAllCurrentPatients();
-  const client = useApolloClient();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
-  const [consultsData, setConsultsData] = useState<any[] | null>(null);
-  const [allConsultsData, setAllConsultsData] = useState<any[] | null>(null);
   const [filter, setFilter] = useState<string>('ALL');
   const [activeConsult, setActiveConsult] = useState<any | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
-
-  const fetchPastData = () => {
-    setLoading(true);
-    if (currentPatient) {
-      client
-        .query<getPatientPastConsultsAndPrescriptions>({
-          query: GET_PAST_CONSULTS_PRESCRIPTIONS,
-          fetchPolicy: 'no-cache',
-          variables: {
-            consultsAndOrdersInput: {
-              patient: currentPatient.id ? currentPatient.id : '',
-              filter: [],
-            },
-          },
-        })
-        .then((_data) => {
-          const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
-          const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
-          const consultsAndMedOrders: { [key: string]: any } = {};
-
-          consults.forEach((c) => {
-            consultsAndMedOrders[c!.bookingDate] = {
-              ...consultsAndMedOrders[c!.bookingDate],
-              ...c,
-            };
-          });
-
-          medOrders.forEach((c) => {
-            consultsAndMedOrders[c!.quoteDateTime] = {
-              ...consultsAndMedOrders[c!.quoteDateTime],
-              ...c,
-            };
-          });
-          const array = Object.keys(consultsAndMedOrders)
-            .map((i) => consultsAndMedOrders[i])
-            .sort(
-              (a: any, b: any) =>
-                moment(b.bookingDate || b.quoteDateTime)
-                  .toDate()
-                  .getTime() -
-                moment(a.bookingDate || a.quoteDateTime)
-                  .toDate()
-                  .getTime()
-            )
-            .filter(
-              (i) =>
-                (!i.patientId && (i.prescriptionImageUrl || i.prismPrescriptionFileId)) ||
-                i.patientId
-            );
-          setError(false);
-          setLoading(false);
-          setConsultsData(array);
-          setAllConsultsData(array);
-          if (!isSmallScreen) {
-            setActiveConsult(array[0]);
-          }
-        })
-        .catch((e) => {
-          const error = JSON.parse(JSON.stringify(e));
-          setError(true);
-          setLoading(false);
-        });
-    }
-  };
-
-  useEffect(() => {
-    if (!consultsData) {
-      fetchPastData();
-    }
-  }, [consultsData, currentPatient]);
+  const { loading, error, consultsData, allConsultsData, setConsultsData } = props;
 
   useEffect(() => {
     if (allConsultsData) {
       let filteredConsults = allConsultsData;
       if (filter === 'ONLINE' || filter === 'PHYSICAL') {
-        filteredConsults = allConsultsData.filter((consult) => {
-          if (consult && consult.patientId) {
-            return consult.appointmentType === filter;
-          }
-        });
+        filteredConsults =
+          allConsultsData &&
+          allConsultsData.filter((consult: any) => {
+            if (consult && consult.patientId) {
+              return consult.appointmentType === filter;
+            }
+          });
       }
       setConsultsData(filteredConsults);
       if (!isSmallScreen) {
@@ -475,7 +418,7 @@ export const Consultations: React.FC = (props) => {
             {consultsData &&
               consultsData.length > 0 &&
               consultsData.map(
-                (consult) =>
+                (consult: any) =>
                   consult && (
                     <div
                       className={classes.consultGroup}
@@ -522,62 +465,72 @@ export const Consultations: React.FC = (props) => {
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
         }`}
       >
-        <div className={classes.sectionHeader}>
-          <div className={classes.headerBackArrow}>
-            <AphButton
-              onClick={() => {
-                if (isSmallScreen) {
-                  setShowMobileDetails(false);
-                }
-              }}
-            >
-              <img src={require('images/ic_back.svg')} />
-            </AphButton>
-            <span>Prescription Details</span>
-          </div>
-          <div className={classes.headerActions}>
-            <AphButton>View Consult</AphButton>
-            <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
-              <img src={require('images/ic_download.svg')} alt="" />
-            </div>
-          </div>
-        </div>
-        <Scrollbars
-          autoHide={true}
-          autoHeight
-          autoHeightMax={
-            isMediumScreen
-              ? 'calc(100vh - 287px)'
-              : isSmallScreen
-              ? 'calc(100vh - 96px)'
-              : 'calc(100vh - 250px)'
-          }
-        >
-          <div className={classes.consultationDetails}>
-            {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
-            (isSmallScreen && showMobileDetails && activeConsult) ? (
-              <>
-                <Symptoms caseSheetList={activeConsult.caseSheet} />
-                <Prescription caseSheetList={activeConsult.caseSheet} />
-                <Diagnosis caseSheetList={activeConsult.caseSheet} />
-                <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
-                <FollowUp caseSheetList={activeConsult.caseSheet} />
-                {/* <PaymentInvoice />
-                <PrescriptionPreview /> */}
-              </>
-            ) : activeConsult ? (
-              <img className={classes.prescriptionImage} src={activeConsult.prescriptionImageUrl} />
-            ) : (
-              <div className={classes.noRecordFoundWrapper}>
-                <img src={require('images/ic_records.svg')} />
-                <p>
-                  You don’t have any records with us right now. Add a record to keep everything
-                  handy in one place!
-                </p>
+        {consultsData && consultsData.length > 0 ? (
+          <>
+            <div className={classes.sectionHeader}>
+              <div className={classes.headerBackArrow}>
+                <AphButton
+                  onClick={() => {
+                    if (isSmallScreen) {
+                      setShowMobileDetails(false);
+                    }
+                  }}
+                >
+                  <img src={require('images/ic_back.svg')} />
+                </AphButton>
+                <span>Prescription Details</span>
               </div>
-            )}
+              <div className={classes.headerActions}>
+                {/* <AphButton>View Consult</AphButton>  */}
+                {consultsData && consultsData.length > 0 && (
+                  <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
+                    <img src={require('images/ic_download.svg')} alt="" />
+                  </div>
+                )}
+              </div>
+            </div>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMin={
+                isMediumScreen
+                  ? 'calc(100vh - 287px)'
+                  : isSmallScreen
+                  ? 'calc(100vh - 96px)'
+                  : 'calc(100vh - 250px)'
+              }
+            >
+              <div className={classes.consultationDetails}>
+                {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
+                (isSmallScreen && showMobileDetails && activeConsult) ? (
+                  <>
+                    <Symptoms caseSheetList={activeConsult.caseSheet} />
+                    <Prescription caseSheetList={activeConsult.caseSheet} />
+                    <Diagnosis caseSheetList={activeConsult.caseSheet} />
+                    <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
+                    <FollowUp caseSheetList={activeConsult.caseSheet} />
+                    {/* <PaymentInvoice />
+                <PrescriptionPreview /> */}
+                  </>
+                ) : (
+                  activeConsult && (
+                    <div className={classes.prescriptionImage}>
+                      <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
+                    </div>
+                  )
+                )}
+              </div>
+            </Scrollbars>
+          </>
+        ) : (
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>
+              You don’t have any records with us right now. Add a record to keep everything handy in
+              one place!
+            </p>
           </div>
-        </Scrollbars>
+        )}
       </div>
     </div>
   );

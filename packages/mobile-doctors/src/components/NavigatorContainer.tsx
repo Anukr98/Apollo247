@@ -42,6 +42,7 @@ import { SmartPrescription } from '@aph/mobile-doctors/src/components/Account/Sm
 import { MyStats } from '@aph/mobile-doctors/src/components/Account/MyStats';
 import { PaymentHistory } from '@aph/mobile-doctors/src/components/Account/PaymentHistory';
 import { BlockHomePage } from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage';
+import { PreviewPrescription } from '@aph/mobile-doctors/src/components/ConsultRoom/PreviewPrescription';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -83,6 +84,7 @@ export enum AppRoutes {
   RenderPdf = 'RenderPdf',
   PaymentHistory = 'PaymentHistory',
   BlockHomePage = 'BlockHomePage',
+  PreviewPrescription = 'PreviewPrescription',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -207,6 +209,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.BlockHomePage]: {
     screen: BlockHomePage,
+  },
+  [AppRoutes.PreviewPrescription]: {
+    screen: PreviewPrescription,
   },
 };
 

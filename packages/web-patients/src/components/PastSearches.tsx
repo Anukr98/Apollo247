@@ -108,23 +108,23 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { speciality, disableFilter } = props;
 
-  const { data, loading, error } = useQueryWithSkip<
-    GetPatientPastSearches,
-    GetPatientPastSearchesVariables
-  >(PATIENT_PAST_SEARCHES, {
-    variables: {
-      patientId: (currentPatient && currentPatient.id) || '',
-    },
-    fetchPolicy: 'no-cache',
-  });
+  const { data, error } = useQueryWithSkip<GetPatientPastSearches, GetPatientPastSearchesVariables>(
+    PATIENT_PAST_SEARCHES,
+    {
+      variables: {
+        patientId: (currentPatient && currentPatient.id) || '',
+      },
+      fetchPolicy: 'no-cache',
+    }
+  );
 
-  if (loading) {
-    return (
-      <div className={classes.circlularProgress}>
-        <CircularProgress />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className={classes.circlularProgress}>
+  //       <CircularProgress />
+  //     </div>
+  //   );
+  // }
 
   // if (error) {
   //   return <></>;
@@ -177,7 +177,6 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
         </Grid>
       </div>
     </div>
-  ) : (
-    <></>
-  );
+  ) : null;
+
 };

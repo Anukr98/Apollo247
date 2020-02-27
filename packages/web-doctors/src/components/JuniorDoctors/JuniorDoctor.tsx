@@ -187,10 +187,9 @@ export const JuniorDoctor: React.FC = (props) => {
     }));
     const activeConsults = allConsults.filter((consult) => consult.isActive);
 
-    const pastConsults = allConsults.filter(
+    const pastConsults = (allConsults.filter(
       (consult) => !consult.isActive && consult.appointment.status !== STATUS.CANCELLED
-    );
-
+    )).reverse();
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>

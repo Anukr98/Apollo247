@@ -37,114 +37,10 @@ import {
 import Highlighter from 'react-native-highlight-words';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import TransferConsultStyles from '@aph/mobile-doctors/src/components/ConsultRoom/TransferConsult.styles';
 //import { doctorDetails } from '@aph/mobile-doctors/src/hooks/authHooks';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f7f7',
-  },
-  inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    width: '100%',
-    color: theme.colors.INPUT_TEXT,
-    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-  },
-  inputView: {
-    height: 80,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#30c1a3',
-    color: '#01475b',
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 10,
-  },
-  buttonView: {
-    height: 40,
-    borderRadius: 5,
-    backgroundColor: '#fed6a2',
-    width: 200,
-    alignItems: 'center',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 2,
-    marginTop: 32,
-  },
-  buttonViewfull: {
-    height: 40,
-    borderRadius: 5,
-    backgroundColor: '#fc9916',
-    width: 200,
-    alignItems: 'center',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 2,
-    marginTop: 32,
-  },
-
-  titleTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.BUTTON_TEXT,
-  },
-  dropDownCardStyle: {
-    // marginTop: Platform.OS == 'android' ? -35 : -35,
-    marginTop: -35,
-    marginBottom: 26,
-    paddingTop: 16,
-    paddingBottom: 15,
-    //position: Platform.OS == 'android' ? 'relative' : 'absolute',
-    top: 0,
-    zIndex: 2,
-    width: '90%',
-    alignSelf: 'center',
-    justifyContent: 'flex-end',
-    ...theme.viewStyles.whiteRoundedCornerCard,
-    shadowColor: '#808080',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 16,
-    position: 'absolute',
-  },
-  commonView: {
-    backgroundColor: '#ffffff',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    elevation: 5,
-    marginBottom: 16,
-  },
-  commonText: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(16),
-    marginLeft: 20,
-    marginRight: 20,
-    marginTop: 12,
-    marginBottom: 16,
-  },
-  commonSubText: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#02475b',
-    opacity: 0.4,
-    marginTop: 10,
-    marginBottom: 9,
-  },
-});
+const styles = TransferConsultStyles;
 
 export interface ProfileProps
   extends NavigationScreenProps<{
@@ -354,7 +250,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while searching for Doctors', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   const renderSuggestionCardDoctor = () => (
@@ -520,7 +417,8 @@ export const TransferConsult: React.FC<ProfileProps> = (props) => {
           errorMessage,
           error
         );
-        Alert.alert(strings.common.error, errorMessage);
+        // Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   return (

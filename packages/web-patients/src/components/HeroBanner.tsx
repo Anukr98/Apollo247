@@ -12,6 +12,7 @@ import { OurServices } from 'components/OurServices';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MascotWithMessage } from './MascotWithMessage';
+// import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -64,6 +65,10 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingTop: 0,
           marginTop: -10,
           width: 'auto',
+          maxWidth: 370,
+          [theme.breakpoints.down('xs')]: {
+            maxWidth: 'calc(100% - 55px)',
+          },
         },
       },
     },
@@ -99,6 +104,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 56,
       fontWeight: 600,
       lineHeight: '66px',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
       [theme.breakpoints.down('xs')]: {
         fontSize: 36,
         lineHeight: '46px',
@@ -163,6 +171,7 @@ export const HeroBanner: React.FC = () => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
   return (
     <div
@@ -187,10 +196,9 @@ export const HeroBanner: React.FC = () => {
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
             >
               {allCurrentPatients.map((patient) => {
-                const isSelected = patient.id === currentPatient.id;
-                const name = isSelected
-                  ? (patient.firstName || '').toLocaleLowerCase()
-                  : (patient.firstName || '').toLocaleLowerCase();
+                // const isSelected = patient.id === currentPatient.id;
+                const isSelected = patient.relation === 'ME';
+                const name = (patient.firstName || '').toLocaleLowerCase();
                 return (
                   <MenuItem
                     selected={isSelected}
@@ -234,6 +242,7 @@ export const HeroBanner: React.FC = () => {
           closeHandler={(isAddNewProfileDialogOpen: boolean) =>
             setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
           }
+          isMeClicked={isMeClicked}
           selectedPatientId=""
           successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
           isProfileDelete={false}

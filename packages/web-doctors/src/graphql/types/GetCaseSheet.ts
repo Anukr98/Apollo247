@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, APPOINTMENT_TYPE } from "./globalTypes";
+import { Gender, Relation, APPOINTMENT_TYPE, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -72,6 +72,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointm
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
+  appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
   appointmentDocuments: (GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments | null)[] | null;
   status: STATUS;
@@ -237,6 +238,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
   __typename: "Appointment";
   id: string;
+  appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
   appointmentState: string | null;
   doctorId: string;

@@ -95,7 +95,7 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Dispatch } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -116,275 +116,13 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
+import CaseSheetViewStyles from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView.styles';
 
 const { width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  casesheetView: {
-    width: '100%',
-    ...theme.viewStyles.container,
-  },
-  nameText: {
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(20),
-    marginLeft: 20,
-    // marginBottom: 8,
-  },
-  agetext: {
-    color: 'rgba(2, 71, 91, 0.8)',
-    ...theme.fonts.IBMPlexSansMedium(16),
-    marginLeft: 15,
-    // marginTop: 4,
-  },
-  understatusline: {
-    borderStyle: 'solid',
-    borderWidth: 0.5,
-    borderColor: 'rgba(2, 71, 91, 0.4)',
-    ...ifIphoneX(
-      {
-        height: 1,
-      },
-      {
-        height: 1,
-      }
-    ),
-    marginLeft: 20,
-    marginRight: 54,
-    marginBottom: 16,
-  },
-  line: {
-    height: 16,
-    borderWidth: 0.5,
-    borderColor: 'rgba(2, 71, 91, 0.6)',
-    marginLeft: 15,
-    // marginTop: 10,
-  },
-  uhidText: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: 'rgba(2, 71, 91, 0.6)',
-    marginLeft: 20,
-    marginBottom: 11.5,
-  },
-  appid: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: '#02475b',
-    // marginBottom: 8,
-  },
-  appdate: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: '#02475b',
-  },
-  underlineend: {
-    borderStyle: 'solid',
-    borderWidth: 0.5,
-    borderColor: '#02475b',
-    opacity: 0.4,
-    ...ifIphoneX(
-      {
-        height: 1,
-      },
-      {
-        height: 1,
-      }
-    ),
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 12,
-    marginTop: 5,
-  },
+const styles = CaseSheetViewStyles;
 
-  buttonStyle: {
-    // width: '100%',
-    // flex: 1,
-    // marginHorizontal: 80,
-    // marginBottom: 20,
-    // shadowOffset: {
-    //   height: 2,
-    //   width: 0,
-    // },
-    // shadowColor: '#000000',
-    // shadowRadius: 2,
-    // shadowOpacity: 0.2,
-    // elevation: 2,
-    // justifyContent: 'center',
-    // alignSelf: 'center',
-    // alignItems: 'center',
-  },
-  buttonendStyle: {
-    width: '45%',
-    height: 40,
-    backgroundColor: '#890000',
-    shadowOffset: {
-      height: 2,
-      width: 0,
-    },
-    shadowColor: '#000000',
-    shadowRadius: 2,
-    shadowOpacity: 0.4,
-    elevation: 2,
-  },
-  buttonsaveStyle: {
-    width: '35%',
-    height: 40,
-    shadowOffset: {
-      height: 2,
-      width: 0,
-    },
-    shadowColor: '#000000',
-    shadowRadius: 2,
-    shadowOpacity: 0.2,
-    elevation: 2,
-  },
-  buttonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    textAlign: 'center',
-  },
-  footerButtonsContainer: {
-    // zIndex: -1,
-    justifyContent: 'center',
-    // paddingTop: 20,
-    // paddingBottom: 20,
-    marginLeft: 10,
-    marginRight: 10,
-    marginHorizontal: 20,
-    flexDirection: 'row',
-    width: '100%',
-    alignSelf: 'center',
-    alignItems: 'center',
-  },
-  footerButtonsContainersave: {
-    flex: 1,
-
-    // justifyContent: 'center',
-    // paddingTop: 20,
-    // paddingBottom: 20,
-    marginHorizontal: 60,
-    // flexDirection: 'row',
-    // width: '100%',
-    // alignSelf: 'center',
-    // alignItems: 'center',
-  },
-  inputView: {
-    borderWidth: 2,
-    borderRadius: 10,
-    height: 80,
-    paddingLeft: 12,
-    paddingRight: 12,
-    paddingBottom: 12,
-    paddingTop: 12,
-    borderColor: theme.colors.APP_GREEN,
-    ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
-  },
-  inputSingleView: {
-    borderBottomWidth: 2,
-    width: width / 2.75,
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingBottom: 2,
-    paddingTop: 0,
-    borderColor: theme.colors.APP_GREEN,
-    ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
-  },
-  inputBorderView: {
-    borderRadius: 10,
-    backgroundColor: theme.colors.CARD_BG,
-    //padding: 20,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    elevation: 5,
-    marginLeft: 20,
-    marginRight: 20,
-    marginBottom: 30,
-  },
-  notes: {
-    ...theme.fonts.IBMPlexSansMedium(17),
-    color: '#0087ba',
-    marginBottom: 10,
-  },
-  symptomsInputView: {
-    flex: 1,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(2, 71, 91, 0.15)',
-    marginBottom: 16,
-    marginLeft: 16,
-    marginRight: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-  },
-  symptomsText: {
-    marginTop: 12,
-    marginLeft: 12,
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 16,
-  },
-
-  familyText: {
-    //marginTop: 12,
-    marginLeft: 16,
-    color: '#02475b',
-    opacity: 0.6,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    letterSpacing: 0.03,
-    marginBottom: 12,
-  },
-
-  medicineText: {
-    color: 'rgba(2, 71, 91, 0.6)',
-    ...theme.fonts.IBMPlexSansMedium(14),
-    marginBottom: 0,
-  },
-
-  medicineunderline: {
-    height: 2,
-    borderWidth: 1,
-    borderColor: '#e2e2e2',
-    opacity: 0.2,
-    marginBottom: 13,
-  },
-  addDoctorText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    letterSpacing: 0,
-    color: '#fc9916',
-    marginTop: 2,
-    marginLeft: 7,
-  },
-
-  dataCardsStyle: {
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    marginVertical: 6,
-    borderColor: 'rgba(2, 71, 91, 0.2)',
-    padding: 12,
-    borderRadius: 5,
-    backgroundColor: '#F9F9F9',
-    flexDirection: 'row',
-  },
-  leftTimeLineContainer: {
-    // position: 'absolute',
-    // left: 0,
-    // marginBottom: -40,
-    // marginRight: 9,
-    // marginLeft: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verticalLine: {
-    flex: 1,
-    width: 1,
-    // backgroundColor: theme.colors.LIGHT_BLUE,
-  },
-});
-
-interface DataPair {
+interface dataPair {
   key: string;
   value: string;
 }
@@ -411,6 +149,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 
   caseSheet: GetCaseSheet_getCaseSheet | null | undefined;
   caseSheetEdit: boolean;
+  setCaseSheetEdit: Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -490,6 +229,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { doctorDetails } = useAuth();
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
+  const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
+
   const client = useApolloClient();
 
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
@@ -740,7 +481,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        Alert.alert(strings.common.error, errorMessage);
+        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
   const followUpMessage = () => {
@@ -849,7 +590,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   const error = JSON.parse(JSON.stringify(e));
                   const errorMessage = error && error.message;
                   console.log('Error occured while End casesheet', errorMessage, error);
-                  Alert.alert(strings.common.error, errorMessage);
+                  Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
                 });
             },
           },
@@ -951,7 +692,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       >
         <View style={styles.footerButtonsContainer}>
           <Button
-            // onPress={() => saveDetails()}
+            onPress={() => {
+              props.setCaseSheetEdit(true);
+              setShowEditPreviewButtons(true);
+            }}
             title={'EDIT CASE SHEET'}
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
@@ -960,7 +704,42 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Button
             title={'SEND TO PATIENT'}
             onPress={() => {
-              // sendToPatientAction();
+              sendToPatientAction();
+            }}
+            style={styles.buttonendStyle}
+          />
+        </View>
+      </StickyBottomComponent>
+    );
+  };
+
+  const renderSentToPatient = () => {
+    return (
+      <StickyBottomComponent
+        style={{ backgroundColor: '#f0f4f5', justifyContent: 'center', height: 50 }}
+      >
+        <Text style={theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE)}>
+          PRESCRIPTION SENT
+        </Text>
+      </StickyBottomComponent>
+    );
+  };
+  const renderEditPreviewButtons = () => {
+    //console.log({ Appintmentdatetimeconsultpage });
+    return (
+      <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
+        <View style={styles.footerButtonsContainer}>
+          <Button
+            onPress={() => saveDetails()}
+            title={'SAVE'}
+            titleTextStyle={styles.buttonTextStyle}
+            variant="white"
+            style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+          />
+          <Button
+            title={'PREVIEW PRESCRIPTION'}
+            onPress={() => {
+              prescriptionView();
             }}
             style={styles.buttonendStyle}
           />
@@ -977,7 +756,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={show}
           onPress={() => setShow(!show)}
         >
-          {symptonsData == null || symptonsData.length == 0 ? (
+          {symptonsData == null || (symptonsData && symptonsData.length == 0) ? (
             <Text style={[styles.symptomsText, { textAlign: 'center' }]}>
               {strings.common.no_data}
             </Text>
@@ -1898,7 +1677,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 flexWrap: 'wrap',
               }}
             >
-              {diagnosisData == null || diagnosisData.length == 0
+              {diagnosisData == null || (diagnosisData && diagnosisData.length == 0)
                 ? renderInfoText(strings.common.no_data)
                 : diagnosisData.map(
                     (showdata: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null, i) => {
@@ -2562,6 +2341,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
+  console.log(caseSheetEdit, 'caseSheetEdit');
+
   return (
     <View style={styles.casesheetView}>
       <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
@@ -2608,7 +2389,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={{ height: 80 }} />
         </ScrollView>
       </KeyboardAwareScrollView>
-      {stastus == STATUS.COMPLETED
+      {showEditPreviewButtons
+        ? renderEditPreviewButtons()
+        : stastus == STATUS.COMPLETED
         ? renderCompletedButtons()
         : moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
           stastus == 'IN_PROGRESS'

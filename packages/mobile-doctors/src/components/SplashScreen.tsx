@@ -6,23 +6,14 @@ import { ActivityIndicator, AsyncStorage, Linking, Platform, StyleSheet, View } 
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
+import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
 
-const styles = StyleSheet.create({
-  mainView: {
-    flex: 1,
-    alignItems: 'center',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f0f4f5',
-    width: '100%',
-    height: '100%',
-  },
-});
+const styles = SplashScreenStyles;
 
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { firebaseUser } = useAuth();
+  const { firebaseUser, doctorDetails, getDoctorDetailsApi } = useAuth();
 
   const handleOpenURL = (url: string) => {
     console.log(url);
@@ -41,11 +32,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
     }
   };
-  // useEffect(() => {
-  //   if (!doctorDetails) {
-  //     getDoctorDetailsApi && getDoctorDetailsApi();
-  //   }
-  // }, [doctorDetails]);
+  useEffect(() => {
+    if (!doctorDetails) {
+      getDoctorDetailsApi &&
+        getDoctorDetailsApi()
+          .then((res) => {
+            console.log(res, 'res');
+          })
+          .catch((error) => {
+            console.log(error, 'error');
+          });
+    }
+  }, [doctorDetails]);
 
   const getRegistrationToken = async () => {
     // const fcmToken = await firebase.messaging().getToken();

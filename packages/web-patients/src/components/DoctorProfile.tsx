@@ -382,7 +382,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       } else if (differenceInMinutes && differenceInMinutes > 0 && differenceInMinutes <= 15) {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInMinutes} MINS
+            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
           </div>
         );
       } else if (differenceInMinutes && differenceInMinutes > 15 && differenceInMinutes <= 60) {
@@ -418,7 +418,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       } else if (differenceInMinutes && differenceInMinutes > 0 && differenceInMinutes <= 15) {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>
-            AVAILABLE IN {differenceInMinutes} MINS
+            AVAILABLE IN {differenceInMinutes} {differenceInMinutes === 1 ? 'MIN' : 'MINS'}
           </div>
         );
       } else if (differenceInMinutes && differenceInMinutes > 15 && differenceInMinutes <= 60) {

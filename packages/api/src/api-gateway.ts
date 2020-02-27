@@ -7,6 +7,9 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
+import { winstonLogger } from 'customWinstonLogger';
+import { format, differenceInMilliseconds } from 'date-fns';
+
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
@@ -96,6 +99,8 @@ export type Resolver<Parent, Args, Context, Result> = (
     '104.211.216.178',
   ];
 
+  const logger = winstonLogger.loggers.get('apiGatewayLogger');
+
   const server = new ApolloServer({
     cors: { origin: corsOrigins },
     schema,
@@ -103,8 +108,11 @@ export type Resolver<Parent, Args, Context, Result> = (
     engine: {
       apiKey: process.env.ENGINE_API_KEY,
       schemaTag: process.env.NODE_ENV,
+      debugPrintReports: true,
     },
     context: async ({ req }) => {
+      // console.log(req);
+      //log('apiGatewayLogger', '', req.body, '', '');
       const isNotProduction = process.env.NODE_ENV !== 'production';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
       if (isNotProduction && isSchemaIntrospectionQuery) {
@@ -159,6 +167,53 @@ export type Resolver<Parent, Args, Context, Result> = (
 
       return gatewayContext;
     },
+    plugins: [
+      /* This plugin is defined in-line. */
+      {
+        requestDidStart({ operationName, request }) {
+          /* Within this returned object, define functions that respond
+             to request-specific lifecycle events. */
+          const reqStartTime = new Date();
+          const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+          return {
+            parsingDidStart(requestContext) {
+              const internalContext = (requestContext.context as any) as GatewayContext;
+
+              logger.log({
+                message: 'API Gateway Request Started for :' + internalContext.mobileNumber,
+                time: reqStartTimeFormatted,
+                operation: requestContext.request.query,
+                level: 'info',
+              });
+            },
+            didEncounterErrors(requestContext) {
+              const internalContext = (requestContext.context as any) as GatewayContext;
+              requestContext.errors.forEach((error) => {
+                logger.log(
+                  'error',
+                  `API Gateway Error for ${internalContext.mobileNumber} at ${reqStartTimeFormatted} in ${requestContext.request.query}: `,
+                  error
+                );
+              });
+            },
+            willSendResponse({ response }) {
+              const errorCount = (response.errors || []).length;
+              const responseLog = {
+                message: 'API Gateway Request Ended',
+                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+                errorCount,
+                level: 'info',
+                response: response,
+              };
+              //remove response if there is no error
+              if (errorCount === 0) delete responseLog.response;
+              logger.log(responseLog);
+            },
+          };
+        },
+      },
+    ],
   });
 
   server

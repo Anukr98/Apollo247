@@ -1,3 +1,4 @@
+import AppointmentsListStyles from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList.styles';
 import { CalendarCard } from '@aph/mobile-doctors/src/components/Appointments/CalendarCard';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
@@ -16,7 +17,7 @@ import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import moment from 'moment';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import {
   NavigationParams,
   NavigationRoute,
@@ -25,19 +26,7 @@ import {
   ScrollView,
 } from 'react-navigation';
 
-const styles = StyleSheet.create({
-  leftTimeLineContainer: {
-    // marginBottom: -40,
-    marginRight: 9,
-    marginLeft: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verticalLine: {
-    flex: 1,
-    width: 2,
-  },
-});
+const styles = AppointmentsListStyles;
 
 let upcomingNextRendered: boolean = false;
 
@@ -137,7 +126,11 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
 
   const showUpNext = (aptTime: string, index: number) => {
     if (index === 0) upcomingNextRendered = false;
-    if (new Date(aptTime) > new Date() && !upcomingNextRendered) {
+    if (
+      new Date(aptTime) > new Date() &&
+      !upcomingNextRendered &&
+      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+    ) {
       upcomingNextRendered = true;
       return true;
     } else {
@@ -160,13 +153,16 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
               if (item) {
                 return (
                   item.weekDay ===
-                  moment(i.appointmentDateTime)
+                  moment
+                    .utc(i.appointmentDateTime)
+                    .local()
                     .format('dddd')
                     .toUpperCase()
                 );
               }
             })[0];
-          const consultDuration = filterData && filterData.consultDuration;
+
+          const consultDuration = filterData ? filterData.consultDuration : 0;
           const showNext = showUpNext(i.appointmentDateTime, index);
 
           return (
@@ -199,16 +195,22 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       ) > -1
                     ) {
                       setLoading && setLoading(true);
-                      props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                        DoctorId: doctorId,
-                        PatientId: patientId,
-                        PatientConsultTime: null,
-                        PatientInfoAll: PatientInfo,
-                        AppId: appId,
-                        Appintmentdatetime: i.appointmentDateTime,
-                        AppointmentStatus: i.status,
-                        AppoinementData: i,
-                      });
+                      if (i.status === STATUS.COMPLETED) {
+                        props.navigation.push(AppRoutes.PreviewPrescription, {
+                          id: i.id,
+                        });
+                      } else {
+                        props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                          DoctorId: doctorId,
+                          PatientId: patientId,
+                          PatientConsultTime: null,
+                          PatientInfoAll: PatientInfo,
+                          AppId: appId,
+                          Appintmentdatetime: i.appointmentDateTime,
+                          AppointmentStatus: i.status,
+                          AppoinementData: i,
+                        });
+                      }
                     } else {
                       showAphAlert &&
                         showAphAlert({
