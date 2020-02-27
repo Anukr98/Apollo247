@@ -13,6 +13,7 @@ import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { format, parseISO } from 'date-fns';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -262,6 +263,8 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   // const onePrimaryUser = patients.filter((x) => x.relation === Relation.ME).length === 1;
   const onePrimaryUser = true;
   const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
+  const { setCurrentPatientId } = useAllCurrentPatients();
+
   // const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
   // const disabled = patients.some(isPatientInvalid);
 
@@ -333,7 +336,18 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
                 });
                 setLoading(true);
                 Promise.all(updatePatientPromises)
-                  .then(() => props.onComplete())
+                  .then(() => {
+                    const mePatientId = patients.filter((x) => x.relation === Relation.ME);
+                    if (
+                      mePatientId &&
+                      mePatientId.length > 0 &&
+                      mePatientId[0] &&
+                      mePatientId[0].id !== ''
+                    ) {
+                      setCurrentPatientId(mePatientId[0].id);
+                    }
+                    props.onComplete();
+                  })
                   .catch(() => window.alert('Something went wrong :('))
                   .finally(() => setLoading(false));
               }}
