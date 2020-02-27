@@ -3,6 +3,7 @@ import { CapsuleView } from '@aph/mobile-doctors/src/components/ui/CapsuleView';
 import { Audio, UserPlaceHolder, Video } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TagCard } from '@aph/mobile-doctors/src/components/ui/TagCard';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import React from 'react';
@@ -18,7 +19,6 @@ import {
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
-import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = CalendarCardStyles;
 

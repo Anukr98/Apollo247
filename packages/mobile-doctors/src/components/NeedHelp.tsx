@@ -1,21 +1,11 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import NeedHelpStyles from '@aph/mobile-doctors/src/components/NeedHelp.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import {
-  ActivityIndicator,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { SafeAreaView, Text, TextInput, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import NeedHelpStyles from '@aph/mobile-doctors/src/components/NeedHelp.styles';
 
 const styles = NeedHelpStyles;
 

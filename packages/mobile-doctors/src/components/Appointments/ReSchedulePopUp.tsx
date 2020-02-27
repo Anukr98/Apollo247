@@ -1,3 +1,4 @@
+import ReSchedulePopUpStyles from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-doctors/src/components/ui/CalendarView';
 import {
@@ -31,18 +32,11 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Dimensions,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Dimensions, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
-import ReSchedulePopUpStyles from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp.styles';
+import { divideSlots, timeTo12HrFormat } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 const { width } = Dimensions.get('window');
+
 const styles = ReSchedulePopUpStyles;
 
 type TimeArray = {

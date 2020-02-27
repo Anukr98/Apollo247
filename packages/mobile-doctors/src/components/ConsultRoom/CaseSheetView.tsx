@@ -122,7 +122,7 @@ const { width } = Dimensions.get('window');
 
 const styles = CaseSheetViewStyles;
 
-interface DataPair {
+interface dataPair {
   key: string;
   value: string;
 }

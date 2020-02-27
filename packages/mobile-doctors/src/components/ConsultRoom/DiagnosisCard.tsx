@@ -12,6 +12,7 @@ import {
 import { theme } from '../../theme/theme';
 import { DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import DiagnosisCardStyles from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard.styles';
+const { width, height } = Dimensions.get('window');
 
 const styles = DiagnosisCardStyles;
 

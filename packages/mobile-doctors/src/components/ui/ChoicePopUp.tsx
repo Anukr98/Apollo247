@@ -5,6 +5,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect } from 'react';
 import {
   BackHandler,
+  Dimensions,
   KeyboardAvoidingView,
   Platform,
   StyleProp,
@@ -13,7 +14,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Dimensions,
 } from 'react-native';
 const { width, height } = Dimensions.get('window');
 

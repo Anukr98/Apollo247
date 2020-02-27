@@ -1,6 +1,7 @@
 import { Star, UserPlaceHolder } from '@aph/mobile-doctors/src/components/ui/Icons';
 import PatientCardStyles from '@aph/mobile-doctors/src/components/ui/PatientCard.styles';
 import { getPatientLog_getPatientLog_patientInfo } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
+import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React from 'react';
 import {
@@ -15,7 +16,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
-import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = PatientCardStyles;
 
