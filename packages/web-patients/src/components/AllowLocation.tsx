@@ -43,6 +43,7 @@ type AllowLocationProps = {
   setIsLocationPopoverOpen: (isLocationPopoverOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
   isPopoverOpen: boolean;
+  setAllowedAutoDetect?: (allowedAutoDetect: boolean) => void;
 };
 
 export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
@@ -62,6 +63,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
         <AphButton
           onClick={() => {
             props.setIsLocationPopoverOpen(true);
+            props.setIsPopoverOpen(false);
           }}
         >
           Enter Manualy
@@ -69,7 +71,8 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
         <AphButton
           color="primary"
           onClick={() => {
-            // props.setIsPopoverOpen(false);
+            props.setIsPopoverOpen(false);
+            props.setAllowedAutoDetect && props.setAllowedAutoDetect(true);
             locateCurrentLocation();
           }}
         >
