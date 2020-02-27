@@ -21,6 +21,7 @@ export const helpTypeDefs = gql`
     category: String
     reason: String
     comments: String
+    patientId: ID
   }
 
   extend type Query {
@@ -32,6 +33,7 @@ type HelpEmailInput = {
   category: string;
   reason: string;
   comments: string;
+  patientId: string;
 };
 
 type HelpEmailInputArgs = { helpEmailInput: HelpEmailInput };
@@ -43,7 +45,13 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
 ) => {
   //get patient details
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findDetailsByMobileNumber(mobileNumber);
+  let patientDetails;
+  if (helpEmailInput.patientId) {
+    patientDetails = await patientRepo.getPatientDetails(helpEmailInput.patientId);
+  } else {
+    patientDetails = await patientRepo.findDetailsByMobileNumber(mobileNumber);
+  }
+
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
