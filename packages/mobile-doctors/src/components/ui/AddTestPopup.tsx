@@ -72,6 +72,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
       }
     }
     // settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+
     console.log('temparr', '.....vlaue', tempTestArray, '//////');
   };
 
@@ -92,7 +93,8 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                   optionText: item!.itemname,
                   onPress: () => {
                     Keyboard.dismiss();
-                    getTempTestArray(item);
+                    // getTempTestArray(item);
+                    getTempTestArray(item!.itemname);
                     setsearchTestVal(g(item, 'itemname') || '');
                     // isSearchTestListVisible;
                     setisSearchTestListVisible(!isSearchTestListVisible);
@@ -221,12 +223,13 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                           console.log('......tempTestArray:', tempTestArray);
                           return (
                             <ChipIconView
-                              title={item.itemname || ''}
+                              title={item}
                               onPress={(e: any) => {
                                 console.log('deleted');
                                 settempTestArray(tempTestArray.slice(1));
                                 setsearchTestVal('');
                                 console.log('delete tempTestArray:', tempTestArray);
+                                setisSearchTestListVisible(false);
                               }}
                             />
                           );
