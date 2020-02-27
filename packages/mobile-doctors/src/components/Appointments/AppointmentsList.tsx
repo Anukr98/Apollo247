@@ -26,20 +26,9 @@ import {
 import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import AppointmentsListStyles from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList.styles';
 
-const styles = StyleSheet.create({
-  leftTimeLineContainer: {
-    // marginBottom: -40,
-    marginRight: 9,
-    marginLeft: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verticalLine: {
-    flex: 1,
-    width: 2,
-  },
-});
+const styles = AppointmentsListStyles;
 
 let upcomingNextRendered: boolean = false;
 

@@ -48,46 +48,11 @@ import {
 import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import ReSchedulePopUpStyles from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp.styles';
 
 const { height, width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 0,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  placeholderTextStyle: {
-    ...theme.viewStyles.text('M', 14, '#01475b'),
-    marginRight: 10,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  optionsView: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingBottom: 16,
-    paddingLeft: 8,
-    justifyContent: 'center',
-  },
-  buttonStyle: {
-    width: 'auto',
-    marginRight: 8,
-    marginTop: 12,
-    backgroundColor: theme.colors.WHITE,
-  },
-  buttonTextStyle: {
-    paddingHorizontal: 12,
-    color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansMedium(15),
-  },
-});
+const styles = ReSchedulePopUpStyles;
 
 type TimeArray = {
   label: string;

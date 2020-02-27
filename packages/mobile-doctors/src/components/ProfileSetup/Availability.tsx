@@ -7,31 +7,9 @@ import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graph
 import { format } from 'date-fns';
 import { AddPlus, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import AvailabilityStyles from '@aph/mobile-doctors/src/components/ProfileSetup/Availability.styles';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-  },
-  // consultTypeSelection: {
-  //   flexDirection: 'row',
-  //   marginHorizontal: 20,
-  //   marginTop: 12,
-  //   marginBottom: 20,
-  // },
-  consultDescText: {
-    ...theme.fonts.IBMPlexSans(14),
-    color: theme.colors.darkBlueColor(0.5),
-    marginTop: 16,
-    marginHorizontal: 20,
-  },
-  descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#0087ba',
-    lineHeight: 24,
-    //marginTop: 20,
-  },
-});
+const styles = AvailabilityStyles;
 
 export interface AvailabilityProps {
   profileData: GetDoctorDetails_getDoctorDetails;

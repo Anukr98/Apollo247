@@ -11,24 +11,10 @@ import {
 } from 'react-native';
 import { theme } from '../../theme/theme';
 import { DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
+import DiagnosisCardStyles from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard.styles';
 const { width, height } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  containerStyle: {
-    borderRadius: 16,
-    backgroundColor: '#00b38e',
-    justifyContent: 'space-between',
-    flexDirection: 'row',
-    marginTop: 12,
-  },
-
-  doctorNameStyles: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: '#ffffff',
-    marginHorizontal: 12,
-    marginVertical: 7,
-  },
-});
+const styles = DiagnosisCardStyles;
 
 export interface CapsuleViewProps {
   containerStyle?: StyleProp<ViewStyle>;

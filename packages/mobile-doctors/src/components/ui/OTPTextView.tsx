@@ -8,23 +8,9 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import OTPTextViewStyles from '@aph/mobile-doctors/src/components/ui/OTPTextView.styles';
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  textInput: {
-    height: 50,
-    width: 50,
-    borderBottomWidth: 4,
-    margin: 5,
-    textAlign: 'center',
-    fontSize: 22,
-    fontWeight: '500',
-    color: '#000000',
-  },
-});
+const styles = OTPTextViewStyles;
 
 export interface OTPTextViewProps {
   defaultValue?: string;

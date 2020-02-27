@@ -8,65 +8,9 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { RadioButtons } from '@aph/mobile-doctors/src/components/ui/RadioButtons';
+import PaymentHistoryStyles from '@aph/mobile-doctors/src/components/Account/PaymentHistory.styles';
 
-const styles = StyleSheet.create({
-  cardView: {
-    backgroundColor: '#ffffff',
-    borderRadius: 4,
-    shadowColor: '#31004053',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    elevation: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 13,
-    width: '100%',
-  },
-  leftSmallText: {
-    color: '#004053',
-    opacity: 0.6,
-    letterSpacing: -0.01,
-    ...theme.fonts.IBMPlexSans(8),
-  },
-  leftMidiumText: {
-    color: '#004053',
-
-    letterSpacing: 0.02,
-    ...theme.fonts.IBMPlexSansMedium(10),
-  },
-  rupeesStyle: {
-    color: '#004053',
-    letterSpacing: -0.01,
-    ...theme.fonts.IBMPlexSansBold(14),
-    alignItems: 'flex-end',
-  },
-  cunsultTextStyle: {
-    color: '#0087ba',
-    letterSpacing: -0.01,
-    ...theme.fonts.IBMPlexSansBold(8),
-    alignItems: 'flex-end',
-  },
-  underline: {
-    borderBottomColor: '#2602475b',
-    borderBottomWidth: 1,
-    marginTop: 10,
-    marginBottom: 10,
-    opacity: 0.1,
-  },
-
-  nameStyles: {
-    color: '#004053',
-    letterSpacing: -0.01,
-    ...theme.fonts.IBMPlexSansMedium(10),
-  },
-  popupText: {
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(15),
-  },
-});
+const styles = PaymentHistoryStyles;
 
 export interface PaymentHistoryProps extends NavigationScreenProps<{}> {
   //profileData: object;

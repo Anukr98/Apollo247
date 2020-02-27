@@ -1,22 +1,9 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, TextStyle, View, ViewStyle, Text } from 'react-native';
+import TagCardStyles from '@aph/mobile-doctors/src/components/ui/TagCard.styles';
 
-const styles = StyleSheet.create({
-  container: {
-    width: 52,
-    height: 24,
-    borderTopRightRadius: 10,
-    backgroundColor: '#ff748e',
-    justifyContent: 'center',
-    borderBottomRightRadius: 10,
-  },
-  labelstyle: {
-    textAlign: 'center',
-    color: '#ffffff',
-    ...theme.fonts.IBMPlexSansBold(12),
-  },
-});
+const styles = TagCardStyles;
 
 export interface TagCardProps {
   label?: string;

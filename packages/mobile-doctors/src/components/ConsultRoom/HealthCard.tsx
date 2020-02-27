@@ -1,30 +1,9 @@
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { theme } from '../../theme/theme';
+import HealthCardStyles from '@aph/mobile-doctors/src/components/ConsultRoom/HealthCard.styles';
 
-const styles = StyleSheet.create({
-  containerStyle: {
-    // borderRadius: 16,
-    //backgroundColor: '#00b38e',
-    // justifyContent: 'center',
-    // alignItems: 'center',
-    flexDirection: 'row',
-  },
-
-  doctorNameStyles: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: '#0087ba',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  desc: {
-    ...theme.fonts.IBMPlexSansMedium(10),
-    color: '#02475b',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-    opacity: 0.6,
-  },
-});
+const styles = HealthCardStyles;
 
 export interface CapsuleViewProps {
   containerStyle?: StyleProp<ViewStyle>;

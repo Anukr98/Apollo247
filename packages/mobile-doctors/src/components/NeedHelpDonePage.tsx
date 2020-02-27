@@ -6,34 +6,9 @@ import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
+import NeedHelpDonePageStyles from '@aph/mobile-doctors/src/components/NeedHelpDonePage.styles';
 
-const styles = StyleSheet.create({
-  container: {
-    //...theme.viewStyles.container,
-    flex: 1,
-    width: '100%',
-    height: 600,
-    backgroundColor: '#f0f4f5',
-  },
-
-  statusBarBg: {
-    width: '100%',
-    opacity: 0.05,
-    backgroundColor: '#000000',
-    ...ifIphoneX(
-      {
-        height: 44,
-      },
-      {
-        height: 24,
-      }
-    ),
-  },
-  needdataview: {
-    marginTop: 0,
-    height: 300,
-  },
-});
+const styles = NeedHelpDonePageStyles;
 
 export interface NeedHelpDonePageProps extends NavigationScreenProps {}
 

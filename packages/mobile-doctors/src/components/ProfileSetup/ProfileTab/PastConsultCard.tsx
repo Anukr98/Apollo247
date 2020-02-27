@@ -17,20 +17,9 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import PastConsultCardStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/PastConsultCard.styles';
 
-const styles = StyleSheet.create({
-  leftTimeLineContainer: {
-    // marginBottom: -40,
-    marginRight: 9,
-    marginLeft: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verticalLine: {
-    flex: 1,
-    width: 2,
-  },
-});
+const styles = PastConsultCardStyles;
 
 export interface PastConsultCardProps extends NavigationScreenProps {
   data: (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null;

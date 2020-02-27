@@ -13,22 +13,10 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import SampleStyles from '@aph/mobile-doctors/src/components/Sample.styles';
 
-const styles = StyleSheet.create({
-  shadowview: {
-    height: 44,
-    width: '100%',
-    shadowOffset: {
-      height: 1,
-      width: 0,
-    },
-    shadowColor: '#000000',
-    shadowRadius: 2,
-    shadowOpacity: 0.2,
-    elevation: 10,
-    backgroundColor: 'white',
-  },
-});
+const styles = SampleStyles;
+
 export interface PatientsProps extends NavigationScreenProps {}
 
 export const Sample: React.FC<PatientsProps> = (props) => {

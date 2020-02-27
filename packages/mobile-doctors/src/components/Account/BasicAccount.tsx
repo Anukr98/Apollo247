@@ -18,28 +18,10 @@ import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'r
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import BasicAccountStyles from '@aph/mobile-doctors/src/components/Account/BasicAccount.styles';
 
-const styles = StyleSheet.create({
-  cardContainer: {
-    marginHorizontal: 20,
-    borderRadius: 5,
-    backgroundColor: theme.colors.CARD_BG,
-    marginBottom: 12,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    elevation: 5,
-  },
-  headingText: {
-    color: theme.colors.CARD_HEADER,
-    ...theme.fonts.IBMPlexSansMedium(15),
-    marginLeft: 20,
-  },
-});
+const styles = BasicAccountStyles;
+
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const BasicAccount: React.FC<MyAccountProps> = (props) => {
