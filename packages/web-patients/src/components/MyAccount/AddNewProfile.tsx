@@ -238,9 +238,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
     console.log(
       selectedPatientDetails,
       multiplePrimaryUsers &&
-      selectedRelation === 'ME' &&
-      selectedPatientDetails &&
-      selectedPatientDetails.relation !== selectedRelation
+        selectedRelation === 'ME' &&
+        selectedPatientDetails &&
+        selectedPatientDetails.relation !== selectedRelation
     );
 
     if (
@@ -487,7 +487,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                             color="secondary"
                             className={`${classes.genderBtns} ${
                               gender === genderSelected ? classes.btnActive : ''
-                              }`}
+                            }`}
                             value={genderSelected}
                             onClick={() => {
                               setGenderSelected(gender as Gender);

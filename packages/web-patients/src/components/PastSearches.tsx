@@ -108,15 +108,15 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { speciality, disableFilter } = props;
 
-  const { data, error } = useQueryWithSkip<
-    GetPatientPastSearches,
-    GetPatientPastSearchesVariables
-  >(PATIENT_PAST_SEARCHES, {
-    variables: {
-      patientId: (currentPatient && currentPatient.id) || '',
-    },
-    fetchPolicy: 'no-cache',
-  });
+  const { data, error } = useQueryWithSkip<GetPatientPastSearches, GetPatientPastSearchesVariables>(
+    PATIENT_PAST_SEARCHES,
+    {
+      variables: {
+        patientId: (currentPatient && currentPatient.id) || '',
+      },
+      fetchPolicy: 'no-cache',
+    }
+  );
 
   // if (loading) {
   //   return (
@@ -150,34 +150,34 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                 </Link>
               </Grid>
             ) : (
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  title={(searchDetails && searchDetails.name) || ''}
-                  onClick={(e) => {
-                    speciality(e.currentTarget.title);
-                    disableFilter(false);
-                  }}
-                  key={_uniqueId('psearch_spl_')}
-                >
-                  <div className={classes.contentBox}>
-                    <Avatar
-                      alt={(searchDetails && searchDetails.name) || ''}
-                      src={(searchDetails && searchDetails.image) || ''}
-                      className={classes.bigAvatar}
-                    />
-                    {(searchDetails && searchDetails.name) || ''}
-                  </div>
-                </Grid>
-              );
+              <Grid
+                item
+                xs={6}
+                sm={6}
+                md={4}
+                lg={3}
+                title={(searchDetails && searchDetails.name) || ''}
+                onClick={(e) => {
+                  speciality(e.currentTarget.title);
+                  disableFilter(false);
+                }}
+                key={_uniqueId('psearch_spl_')}
+              >
+                <div className={classes.contentBox}>
+                  <Avatar
+                    alt={(searchDetails && searchDetails.name) || ''}
+                    src={(searchDetails && searchDetails.image) || ''}
+                    className={classes.bigAvatar}
+                  />
+                  {(searchDetails && searchDetails.name) || ''}
+                </div>
+              </Grid>
+            );
           })}
         </Grid>
       </div>
     </div>
   ) : (
-      <></>
-    );
+    <></>
+  );
 };

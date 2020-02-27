@@ -300,7 +300,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         placeholder="Search doctors or specialities"
         onChange={(event) => {
           if (isValidSearch(event.target.value)) {
-            if (selectedSpecialtyName !== '' && selectedSpecialtyName !== event.currentTarget.value) {
+            if (
+              selectedSpecialtyName !== '' &&
+              selectedSpecialtyName !== event.currentTarget.value
+            ) {
               emptyFilters(false);
             }
             setSearchKeyword(event.target.value);
@@ -311,7 +314,6 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
               handleFilterOptions(filterOptions);
             }
           }
-
         }}
         value={searchKeyword}
         error={showError}
@@ -321,12 +323,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           Sorry, we couldn't find what you are looking for :(
         </FormHelperText>
       ) : (
-          ''
-        )}
+        ''
+      )}
       <div
         className={` ${showResponsiveFilter ? classes.filterSectionOpen : ''} ${
           classes.filterSection
-          } ${disableFilters ? classes.filterSectionDisabled : ''}`}
+        } ${disableFilters ? classes.filterSectionDisabled : ''}`}
       >
         <div className={classes.filterHeader}>
           <AphButton
@@ -353,8 +355,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 320px)'
               : isSmallScreen
-                ? 'calc(100vh - 120px)'
-                : 'calc(100vh - 275px)'
+              ? 'calc(100vh - 120px)'
+              : 'calc(100vh - 275px)'
           }
         >
           <div className={classes.customScroll}>
