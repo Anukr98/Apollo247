@@ -102,7 +102,7 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   return (
     <div className={classes.prescriptionImage}>
       {placeImage &&
-        placeImage.map((item: any) => (
+        placeImage.map((item: string) => (
           <img src={item} alt="Prescription Preview is not available" />
         ))}
     </div>

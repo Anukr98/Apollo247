@@ -549,16 +549,16 @@ export const AddRecords: React.FC = (props) => {
                   });
               } else {
                 setshowSpinner(false);
-                alert('Download image url not getting');
+                alert('An error occurred while loading the image.');
               }
             } else {
               setshowSpinner(false);
-              alert('Your upload images are failed');
+              alert('An error occurred while uploading the image.');
             }
           })
           .catch((e) => {
             setshowSpinner(false);
-            alert('Your upload images are failed');
+            alert('An error occurred while uploading the image.');
           });
       } else {
         const inputData = {
@@ -940,7 +940,7 @@ export const AddRecords: React.FC = (props) => {
                                 disabled={showSpinner}
                                 value={record.unit}
                                 onChange={(e) => {
-                                  setParametersData('unit', e.target.value, idx);
+                                  setParametersData('unit', e.target.value as string, idx);
                                 }}
                                 MenuProps={{
                                   classes: { paper: classes.menuPopover },
