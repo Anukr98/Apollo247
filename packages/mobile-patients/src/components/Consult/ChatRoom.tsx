@@ -4161,7 +4161,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-            {PipView && renderOnCallPipButtons()}
+            {PipView && renderOnCallPipButtons('video')}
             {!PipView && renderChatNotificationIcon()}
             {!PipView && renderBottomButtons()}
           </View>
@@ -4302,6 +4302,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
         {showAudioPipView && renderAudioCallButtons()}
+        {!showAudioPipView && renderOnCallPipButtons('audio')}
         {!showAudioPipView && renderAudioFullScreen()}
       </View>
     );
@@ -4533,7 +4534,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const renderOnCallPipButtons = () => {
+  const renderOnCallPipButtons = (pipType: 'audio' | 'video') => {
     return (
       <View
         style={{
@@ -4548,7 +4549,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            changeVideoStyles();
+            pipType === 'audio' && changeAudioStyles();
+            pipType === 'video' && changeVideoStyles();
             setHideStatusBar(true);
           }}
         >
@@ -4557,7 +4559,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            setIsCall(false);
+            pipType === 'audio' && setIsAudioCall(false);
+            pipType === 'video' && setIsCall(false);
             setMute(true);
             setShowVideo(true);
             setCameraPosition('front');
@@ -4568,7 +4571,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {
                 message: {
                   isTyping: true,
-                  message: 'Video call ended',
+                  message: pipType === 'audio' ? 'Audio call ended' : 'Video call ended',
                   duration: callTimerStarted,
                   id: patientId,
                   messageDate: new Date(),
