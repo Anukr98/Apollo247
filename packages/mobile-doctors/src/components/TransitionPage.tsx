@@ -8,27 +8,9 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import TransitionPageStyles from '@aph/mobile-doctors/src/components/TransitionPage.styles';
 
-const styles = StyleSheet.create({
-  buttonStyle: {
-    marginBottom: 32,
-    position: 'absolute',
-    alignSelf: 'center',
-    bottom: 0,
-    borderRadius: 10,
-    width: 240,
-    backgroundColor: '#fc9916',
-    shadowColor: 'rgba(0,0,0,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  titleTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.BUTTON_TEXT,
-  },
-});
+const styles = TransitionPageStyles;
 
 export interface TransitionPageProps extends NavigationScreenProps {}
 

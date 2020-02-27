@@ -1,3 +1,4 @@
+import BasicAccountStyles from '@aph/mobile-doctors/src/components/Account/BasicAccount.styles';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
   AvailabilityIcon,
@@ -15,37 +16,12 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
-const styles = StyleSheet.create({
-  cardContainer: {
-    marginHorizontal: 20,
-    borderRadius: 5,
-    backgroundColor: theme.colors.CARD_BG,
-    marginBottom: 12,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowRadius: 10,
-    shadowOpacity: 0.2,
-    elevation: 5,
-  },
-  headingText: {
-    color: theme.colors.CARD_HEADER,
-    ...theme.fonts.IBMPlexSansMedium(15),
-    marginLeft: 20,
-  },
-  imageStyle: {
-    height: 178,
-    width: '100%',
-    resizeMode: 'center',
-    backgroundColor: theme.colors.WHITE,
-  },
-});
+const styles = BasicAccountStyles;
+
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const BasicAccount: React.FC<MyAccountProps> = (props) => {

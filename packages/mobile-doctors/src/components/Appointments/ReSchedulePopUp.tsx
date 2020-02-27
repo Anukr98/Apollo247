@@ -1,3 +1,4 @@
+import ReSchedulePopUpStyles from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-doctors/src/components/ui/CalendarView';
 import {
@@ -26,62 +27,17 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/initiateRescheduleAppointment';
 import { getNextAvailableSlots } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { divideSlots, timeTo12HrFormat } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Dimensions,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Dimensions, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
-
+import { divideSlots, timeTo12HrFormat } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 const { width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 0,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  placeholderTextStyle: {
-    ...theme.viewStyles.text('M', 14, '#01475b'),
-    marginRight: 10,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  optionsView: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingBottom: 16,
-    paddingLeft: 8,
-    justifyContent: 'center',
-  },
-  buttonStyle: {
-    width: 'auto',
-    marginRight: 8,
-    marginTop: 12,
-    backgroundColor: theme.colors.WHITE,
-  },
-  buttonTextStyle: {
-    paddingHorizontal: 12,
-    color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansMedium(15),
-  },
-});
+const styles = ReSchedulePopUpStyles;
 
 type TimeArray = {
   label: string;

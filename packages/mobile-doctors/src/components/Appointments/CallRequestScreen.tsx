@@ -4,23 +4,10 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import CallRequestScreenStyles from '@aph/mobile-doctors/src/components/Appointments/CallRequestScreen.styles';
 
-const styles = StyleSheet.create({
-  mainview: {
-    marginLeft: 20,
-    marginBottom: 20,
-  },
-  descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: '#003646',
-    letterSpacing: 0.05,
-  },
-  textview: {
-    fontFamily: 'IBMPlexSans',
-    fontSize: 15,
-    color: '#003646',
-  },
-});
+const styles = CallRequestScreenStyles;
+
 export interface CallRequestScreenProps {}
 
 export const CallRequestScreen: React.FC<CallRequestScreenProps> = (props) => {

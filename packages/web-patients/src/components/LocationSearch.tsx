@@ -205,10 +205,16 @@ export const LocationSearch: React.FC = (props) => {
 
   const [address, setAddress] = React.useState('');
   const [selectedAddress, setSelectedAddress] = React.useState('');
+  const [isLocationDenied, setIsLocationDenied] = React.useState<boolean>(false);
+  const [detectBy, setDetectBy] = React.useState<string | null>('');
 
-  const { currentLocation, setCurrentLat, setCurrentLong, setCurrentLocation } = useContext(
-    LocationContext
-  );
+  const {
+    currentLocation,
+    setCurrentLat,
+    setCurrentLong,
+    setCurrentLocation,
+    locateCurrentLocation,
+  } = useContext(LocationContext);
   const { isSigningIn } = useAuth();
 
   const handleChange = (address: string) => setAddress(address);
@@ -234,25 +240,24 @@ export const LocationSearch: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('currentAddress') && !isSigningIn) {
+    if (!localStorage.getItem('currentAddress') && !isSigningIn && !isLocationDenied) {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
+          console.log(PermissionStatus);
           if (PermissionStatus.state === 'denied') {
-            alert('Location Permission was denied. Please allow browser settings.');
-          } else if (PermissionStatus.state !== 'granted') {
+            setIsPopoverOpen(false);
+            setIsLocationDenied(true);
+          } else if (PermissionStatus.state !== 'granted' && !detectBy) {
             setIsPopoverOpen(true);
+          } else if (PermissionStatus.state === 'granted' && !detectBy) {
+            locateCurrentLocation();
+            setIsPopoverOpen(false);
           }
         });
     } else {
       setIsPopoverOpen(false);
     }
   });
-
-  useEffect(() => {
-    if (!isLocationPopoverOpen) {
-      setIsPopoverOpen(false);
-    }
-  }, [isLocationPopoverOpen]);
 
   const renderSuggestion = (text: string, matchedLength: number) => {
     return (
@@ -375,6 +380,7 @@ export const LocationSearch: React.FC = (props) => {
               setIsLocationPopoverOpen={setIsLocationPopoverOpen}
               setIsPopoverOpen={setIsPopoverOpen}
               isPopoverOpen={isPopoverOpen}
+              setDetectBy={setDetectBy}
             />
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import PastConsultCardStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/PastConsultCard.styles';
 import {
   ArrowRight,
   Audio,
@@ -7,33 +9,20 @@ import {
   UpComingIcon,
   Video,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
-import { STATUS, APPOINTMENT_TYPE } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import moment from 'moment';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import {
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
+import { APPOINTMENT_TYPE, STATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
-const styles = StyleSheet.create({
-  leftTimeLineContainer: {
-    // marginBottom: -40,
-    marginRight: 9,
-    marginLeft: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verticalLine: {
-    flex: 1,
-    width: 2,
-  },
-});
+const styles = PastConsultCardStyles;
 
 export interface PastConsultCardProps extends NavigationScreenProps {
   data: (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null;

@@ -12,6 +12,7 @@ import { OurServices } from 'components/OurServices';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MascotWithMessage } from './MascotWithMessage';
+// import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -195,10 +196,9 @@ export const HeroBanner: React.FC = () => {
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
             >
               {allCurrentPatients.map((patient) => {
-                const isSelected = patient.id === currentPatient.id;
-                const name = isSelected
-                  ? (patient.firstName || '').toLocaleLowerCase()
-                  : (patient.firstName || '').toLocaleLowerCase();
+                // const isSelected = patient.id === currentPatient.id;
+                const isSelected = patient.relation === 'ME';
+                const name = (patient.firstName || '').toLocaleLowerCase();
                 return (
                   <MenuItem
                     selected={isSelected}

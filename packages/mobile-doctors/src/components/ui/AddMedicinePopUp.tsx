@@ -46,38 +46,11 @@ import {
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import AddMedicinePopUpStyles from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp.styles';
 
 const { width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  chipContainerStyle: {
-    maxWidth: (width - 150) / 2,
-    marginRight: 16,
-    marginTop: 8,
-  },
-  chiptextStyle: {
-    paddingTop: 0,
-    paddingBottom: 2,
-    paddingLeft: 16,
-    paddingRight: 16,
-    ...theme.viewStyles.text('S', 12, theme.colors.APP_GREEN),
-  },
-  chipSelectedTextStyle: {
-    paddingTop: 0,
-    paddingBottom: 2,
-    paddingLeft: 16,
-    paddingRight: 16,
-    ...theme.viewStyles.text('SB', 12, theme.colors.WHITE),
-  },
-  inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
-    width: '100%',
-    color: '#01475b',
-    paddingBottom: 4,
-    borderBottomWidth: 2,
-    borderColor: theme.colors.APP_GREEN,
-  },
-});
+const styles = AddMedicinePopUpStyles;
 
 export interface AddMedicinePopUpProps {
   onClose: () => void;

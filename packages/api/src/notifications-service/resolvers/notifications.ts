@@ -106,6 +106,7 @@ export enum NotificationType {
   DIAGNOSTIC_ORDER_PAYMENT_FAILED = 'DIAGNOSTIC_ORDER_PAYMENT_FAILED',
   PATIENT_CANCEL_APPOINTMENT = 'PATIENT_CANCEL_APPOINTMENT',
   PHYSICAL_APPT_60 = 'PHYSICAL_APPT_60',
+  PHYSICAL_APPT_180 = 'PHYSICAL_APPT_180',
   PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
   PATIENT_NO_SHOW = 'PATIENT_NO_SHOW',
   ACCEPT_RESCHEDULED_APPOINTMENT = 'ACCEPT_RESCHEDULED_APPOINTMENT',
@@ -806,7 +807,6 @@ export async function sendReminderNotification(
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
   if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
@@ -850,6 +850,11 @@ export async function sendReminderNotification(
         content: notificationBody,
       },
     };
+    const doctorSMS = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_DOCTOR_1_BODY.replace(
+      '{0}',
+      doctorDetails.firstName
+    ).replace('{1}', patientDetails.firstName);
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_60) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
@@ -889,13 +894,57 @@ export async function sendReminderNotification(
         content: notificationBody,
       },
     };
+  } else if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_180) {
+    notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
+    notificationBody =
+      notificationTitle + ': ' + ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        notificationBody = notificationBody.replace(
+          '{1}',
+          facilityDets.name +
+            ' ' +
+            facilityDets.streetLine1 +
+            ' ' +
+            facilityDets.city +
+            ' ' +
+            facilityDets.state
+        );
+      }
+    }
+    notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Reminder_Appointment_180',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
   } else if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_BODY;
     let diffMins = Math.ceil(
       Math.abs(differenceInMinutes(new Date(), appointment.appointmentDateTime))
     );
+    let doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS.replace(
+      '{0}',
+      patientDetails.firstName
+    );
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS_PHYSICAL.replace(
+        '{0}',
+        patientDetails.firstName
+      );
       notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
       notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
@@ -942,10 +991,6 @@ export async function sendReminderNotification(
       },
     };
     //send doctor SMS starts
-    let doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS.replace(
-      '{0}',
-      patientDetails.firstName
-    );
     if (diffMins <= 1) {
       doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_1_SMS.replace(
         '{0}',
@@ -1043,6 +1088,19 @@ export async function sendReminderNotification(
       registrationToken.push(values.deviceToken);
     });
   }
+  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
+    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
+  }
+  if (
+    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
+  ) {
+    const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
+    notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
+  }
+  //send SMS notification
+  if (pushNotificationInput.notificationType != NotificationType.APPOINTMENT_REMINDER_15) {
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  }
   if (registrationToken.length == 0) return;
   admin
     .messaging()
@@ -1081,16 +1139,6 @@ export async function sendReminderNotification(
     });
 
   console.log(notificationResponse, 'notificationResponse');
-  if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15)
-    notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
-  if (
-    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
-  ) {
-    const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    notificationBody = notificationBody + ' Click here ' + smsLink;
-  }
-  //send SMS notification
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   return notificationResponse;
 }
 

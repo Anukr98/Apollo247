@@ -1,3 +1,4 @@
+import AddTestPopupStyles from '@aph/mobile-doctors/src/components/ui/AddTestPopup.styles';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipIconView } from '@aph/mobile-doctors/src/components/ui/ChipIconView';
@@ -18,52 +19,9 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { ActivityIndicator, Alert, Keyboard, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Keyboard, Text, View } from 'react-native';
 
-const styles = StyleSheet.create({
-  searchTestDropdown: {
-    margin: 0,
-    overflow: 'hidden',
-    shadowColor: theme.colors.SHADOW_GRAY,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    ...Platform.select({
-      ios: {
-        zIndex: 1,
-      },
-      android: {
-        elevation: 12,
-        zIndex: 2,
-      },
-    }),
-  },
-  inputView: {
-    borderRadius: 0,
-    borderBottomColor: '#30c1a3',
-    borderBottomWidth: 1,
-    color: theme.colors.SHARP_BLUE,
-    marginLeft: 0,
-    marginRight: 0,
-    marginBottom: 10,
-  },
-  tabTitle: {
-    color: theme.colors.SHARP_BLUE,
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    textAlign: 'center',
-  },
-  tabViewstyle: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  doneButtonStyle: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    width: '50%',
-    marginHorizontal: '25%',
-  },
-});
+const styles = AddTestPopupStyles;
 
 export interface AddTestPopupProps {
   searchTestVal?: string;
@@ -114,6 +72,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
       }
     }
     // settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+
     console.log('temparr', '.....vlaue', tempTestArray, '//////');
   };
 
@@ -134,7 +93,8 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                   optionText: item!.itemname,
                   onPress: () => {
                     Keyboard.dismiss();
-                    getTempTestArray(item);
+                    // getTempTestArray(item);
+                    getTempTestArray(item!.itemname);
                     setsearchTestVal(g(item, 'itemname') || '');
                     // isSearchTestListVisible;
                     setisSearchTestListVisible(!isSearchTestListVisible);
@@ -263,12 +223,13 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                           console.log('......tempTestArray:', tempTestArray);
                           return (
                             <ChipIconView
-                              title={item.itemname || ''}
+                              title={item}
                               onPress={(e: any) => {
                                 console.log('deleted');
                                 settempTestArray(tempTestArray.slice(1));
                                 setsearchTestVal('');
                                 console.log('delete tempTestArray:', tempTestArray);
+                                setisSearchTestListVisible(false);
                               }}
                             />
                           );
