@@ -230,7 +230,14 @@ export const ManageProfiles: React.FC = (props) => {
               >
                 <div className={classes.profileCard}>
                   <div className={classes.profileImg}>
-                    <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
+                    <img
+                      src={
+                        photoUrl && photoUrl.includes('apolloaphstorage')
+                          ? photoUrl
+                          : require('images/no_photo.png')
+                      }
+                      alt=""
+                    />
                   </div>
                   <div className={classes.profileGroup}>
                     <div className={classes.userTopGroup}>
