@@ -205,6 +205,8 @@ export const LocationSearch: React.FC = (props) => {
 
   const [address, setAddress] = React.useState('');
   const [selectedAddress, setSelectedAddress] = React.useState('');
+  const [isLocationDenied, setIsLocationDenied] = React.useState<boolean>(false);
+  const [allowedAutoDetect, setAllowedAutoDetect] = React.useState<boolean>(false);
 
   const {
     currentLocation,
@@ -238,14 +240,17 @@ export const LocationSearch: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('currentAddress') && !isSigningIn) {
+    if (!localStorage.getItem('currentAddress') && !isSigningIn && !isLocationDenied) {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
+          console.log(PermissionStatus);
           if (PermissionStatus.state === 'denied') {
-            alert('Location Permission was denied. Please allow browser settings.');
-          } else if (PermissionStatus.state !== 'granted') {
+            setIsPopoverOpen(false);
+            setIsLocationDenied(true);
+            // alert('Location Permission was denied. Please allow browser settings.');
+          } else if (PermissionStatus.state !== 'granted' && !allowedAutoDetect) {
             setIsPopoverOpen(true);
-          } else {
+          } else if (PermissionStatus.state === 'granted') {
             locateCurrentLocation();
             setIsPopoverOpen(false);
           }
@@ -382,6 +387,7 @@ export const LocationSearch: React.FC = (props) => {
               setIsLocationPopoverOpen={setIsLocationPopoverOpen}
               setIsPopoverOpen={setIsPopoverOpen}
               isPopoverOpen={isPopoverOpen}
+              setAllowedAutoDetect={setAllowedAutoDetect}
             />
           </div>
         </div>
