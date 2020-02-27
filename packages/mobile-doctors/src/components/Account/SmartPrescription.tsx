@@ -214,10 +214,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   ) => {
     console.log('updateTestId-----', updateTestId, 'updateTestName-----', updateTestName);
     // tempTestArray.push(tempTestArray);
-    const AddingTest = tempTestArray
-      .map((ele) => ele.itemname)
-      .filter((i) => i !== '')
-      .join(',');
+    // const AddingTest = tempTestArray
+    //   .map((ele) => ele.itemname)
+    //   .filter((i) => i !== '')
+    //   .join(',');
+    const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
     console.log('AddingTest---', AddingTest);
 
     setLoading(true);
@@ -540,10 +541,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     searchTestVal: string,
     tempTestArray: searchDiagnostic_searchDiagnostic[]
   ) => {
-    const AddingTest = tempTestArray
-      .map((ele) => ele.itemname)
-      .filter((i) => i !== '')
-      .join(',');
+    // const AddingTest = tempTestArray
+    //   .map((ele) => ele.itemname)
+    //   .filter((i) => i !== '')
+    //   .join(',');
+    const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
     console.log('AddingTest---', AddingTest);
 
     if (searchTestVal != '') {
