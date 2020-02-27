@@ -198,7 +198,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const [isEmailAddressValid, setIsEmailAddressValid] = useState<boolean>(true);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   // console.log(currentPatient, 'current patient......');
 
@@ -235,13 +235,13 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
       return currentPatientDetails.relation === 'ME';
     });
 
-    console.log(
-      selectedPatientDetails,
-      multiplePrimaryUsers &&
-        selectedRelation === 'ME' &&
-        selectedPatientDetails &&
-        selectedPatientDetails.relation !== selectedRelation
-    );
+    // console.log(
+    //   selectedPatientDetails,
+    //   multiplePrimaryUsers &&
+    //   selectedRelation === 'ME' &&
+    //   selectedPatientDetails &&
+    //   selectedPatientDetails.relation !== selectedRelation
+    // );
 
     if (
       multiplePrimaryUsers &&
@@ -582,6 +582,8 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   },
                 })
                   .then(() => {
+                    setCurrentPatientId(selectedPatientId);
+                    // localStorage.removeItem('currentUser');
                     closeHandler(false);
                     successHandler(true);
                   })
