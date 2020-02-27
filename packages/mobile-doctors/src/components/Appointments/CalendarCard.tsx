@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
+import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -193,7 +194,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
         {renderNewTag()}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={styles.imageView}>
-            {props.photoUrl ? (
+            {isValidImageUrl(props.photoUrl) ? (
               <ImageNative
                 placeholderStyle={styles.placeHolderLoading}
                 PlaceholderContent={

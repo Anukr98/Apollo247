@@ -178,4 +178,5 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
       </div>
     </div>
   ) : null;
+
 };

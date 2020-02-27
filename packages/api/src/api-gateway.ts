@@ -8,7 +8,7 @@ import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 import { winstonLogger } from 'customWinstonLogger';
-import { format } from 'date-fns';
+import { format, differenceInMilliseconds } from 'date-fns';
 
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
@@ -177,17 +177,38 @@ export type Resolver<Parent, Args, Context, Result> = (
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
           return {
             parsingDidStart(requestContext) {
+              const internalContext = (requestContext.context as any) as GatewayContext;
+
               logger.log({
-                message: 'Request',
+                message: 'API Gateway Request Started for :' + internalContext.mobileNumber,
                 time: reqStartTimeFormatted,
                 operation: requestContext.request.query,
                 level: 'info',
               });
             },
             didEncounterErrors(requestContext) {
+              const internalContext = (requestContext.context as any) as GatewayContext;
               requestContext.errors.forEach((error) => {
-                logger.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+                logger.log(
+                  'error',
+                  `API Gateway Error for ${internalContext.mobileNumber} at ${reqStartTimeFormatted} in ${requestContext.request.query}: `,
+                  error
+                );
               });
+            },
+            willSendResponse({ response }) {
+              const errorCount = (response.errors || []).length;
+              const responseLog = {
+                message: 'API Gateway Request Ended',
+                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+                errorCount,
+                level: 'info',
+                response: response,
+              };
+              //remove response if there is no error
+              if (errorCount === 0) delete responseLog.response;
+              logger.log(responseLog);
             },
           };
         },

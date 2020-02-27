@@ -289,6 +289,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setShowCalendar(false);
     handleFilterOptions(filterOptions);
   };
+  const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
   return (
     <div className={classes.root}>
@@ -298,15 +299,20 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         }}
         placeholder="Search doctors or specialities"
         onChange={(event) => {
-          if (selectedSpecialtyName !== '' && selectedSpecialtyName !== event.currentTarget.value) {
-            emptyFilters(false);
-          }
-          setSearchKeyword(event.target.value);
-          filterOptions.searchKeyword = event.currentTarget.value;
-          if (event.target.value.length === 0) {
-            emptyFilters(true);
-          } else if (event.target.value.length > 2) {
-            handleFilterOptions(filterOptions);
+          if (isValidSearch(event.target.value)) {
+            if (
+              selectedSpecialtyName !== '' &&
+              selectedSpecialtyName !== event.currentTarget.value
+            ) {
+              emptyFilters(false);
+            }
+            setSearchKeyword(event.target.value);
+            filterOptions.searchKeyword = event.currentTarget.value;
+            if (event.target.value.length === 0) {
+              emptyFilters(true);
+            } else if (event.target.value.length > 2) {
+              handleFilterOptions(filterOptions);
+            }
           }
         }}
         value={searchKeyword}

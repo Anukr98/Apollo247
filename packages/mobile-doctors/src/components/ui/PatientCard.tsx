@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
+import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -114,7 +115,7 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
       <View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={[styles.imageView, { marginTop: 15 }]}>
-            {props.photoUrl ? (
+            {isValidImageUrl(props.photoUrl) ? (
               <ImageNative
                 placeholderStyle={styles.placeHolderLoading}
                 PlaceholderContent={
