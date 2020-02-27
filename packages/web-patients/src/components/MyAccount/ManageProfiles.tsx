@@ -62,12 +62,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     profileImg: {
       marginRight: 16,
-      width: 100,
-      height: 100,
+      width: 80,
+      height: 80,
       borderRadius: '50%',
       overflow: 'hidden',
       '& img': {
-        maxHeight: 100,
+        maxWidth: 80,
       },
     },
     profileGroup: {
@@ -230,14 +230,7 @@ export const ManageProfiles: React.FC = (props) => {
               >
                 <div className={classes.profileCard}>
                   <div className={classes.profileImg}>
-                    <img
-                      src={
-                        photoUrl && photoUrl.includes('apolloaphstorage')
-                          ? photoUrl
-                          : require('images/no_photo.png')
-                      }
-                      alt=""
-                    />
+                    <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
                   </div>
                   <div className={classes.profileGroup}>
                     <div className={classes.userTopGroup}>
