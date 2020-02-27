@@ -62,12 +62,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     profileImg: {
       marginRight: 16,
-      width: 80,
-      height: 80,
+      width: 100,
+      height: 100,
       borderRadius: '50%',
       overflow: 'hidden',
       '& img': {
-        maxWidth: 80,
+        maxHeight: 100,
       },
     },
     profileGroup: {

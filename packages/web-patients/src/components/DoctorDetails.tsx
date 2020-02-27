@@ -300,7 +300,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     Book Appointment
                   </AphButton>
                   <div className={classes.customScroll}>
-                    {isStarDoctor && (
+                    {!isPayrollDoctor && (
                       <>
                         <DoctorClinics doctorDetails={doctorDetails} />
                         <StarDoctorTeam doctorDetails={doctorDetails} />
