@@ -90,11 +90,10 @@ export const LocationProvider: React.FC = (props) => {
           setCurrentPincode(_pincode);
         }
       });
-    } else {
-      if (!isSigningIn) {
-        locateCurrentLocation();
-      }
     }
+    // else if (!isSigningIn) {
+    //   locateCurrentLocation();
+    // }
   }, [currentLocation]);
 
   return (

@@ -43,7 +43,7 @@ type AllowLocationProps = {
   setIsLocationPopoverOpen: (isLocationPopoverOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
   isPopoverOpen: boolean;
-  setAllowedAutoDetect?: (allowedAutoDetect: boolean) => void;
+  setDetectBy?: (detectBy: string) => void;
 };
 
 export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
@@ -62,8 +62,9 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
       <div className={classes.actions}>
         <AphButton
           onClick={() => {
-            props.setIsLocationPopoverOpen(true);
             props.setIsPopoverOpen(false);
+            props.setIsLocationPopoverOpen(true);
+            props.setDetectBy && props.setDetectBy('manual');
           }}
         >
           Enter Manualy
@@ -72,7 +73,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
           color="primary"
           onClick={() => {
             props.setIsPopoverOpen(false);
-            props.setAllowedAutoDetect && props.setAllowedAutoDetect(true);
+            props.setDetectBy && props.setDetectBy('auto');
             locateCurrentLocation();
           }}
         >
