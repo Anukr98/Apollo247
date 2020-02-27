@@ -209,6 +209,10 @@ export const FormatDateToString = (date: Date, format: string = 'YYYY-MM-DD') =>
   return moment(date).format(format);
 };
 
+export const isValidImageUrl = (url: string | undefined | null) => {
+  return url && url.match(/\.(jpeg|jpg|gif|png)$/);
+};
+
 export function g<T, P1 extends keyof NonNullable<T>>(
   obj: T,
   prop1: P1

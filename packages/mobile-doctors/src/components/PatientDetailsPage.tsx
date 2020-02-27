@@ -6,12 +6,10 @@ import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails,
-  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
-  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { getPatientLog_getPatientLog_patientLog_patientInfo } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { g, isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
@@ -394,7 +392,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             <BackArrow />
           </TouchableOpacity>
         </View>
-        {patientDetails && patientDetails.photoUrl ? (
+        {patientDetails && isValidImageUrl(patientDetails.photoUrl) ? (
           <Image
             source={{
               uri: (patientDetails && patientDetails.photoUrl) || '',
@@ -443,16 +441,18 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   {PatientInfo && PatientInfo.firstName}
                 </Text>
               </View>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(12),
-                  color: 'rgba(2, 71, 91, 0.8)',
-                  marginLeft: 14,
-                  marginBottom: 8,
-                }}
-              >
-                {strings.case_sheet.uhid}: {PatientInfo && PatientInfo.uhid}
-              </Text>
+              {PatientInfo && PatientInfo.uhid && (
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(12),
+                    color: 'rgba(2, 71, 91, 0.8)',
+                    marginLeft: 14,
+                    marginBottom: 8,
+                  }}
+                >
+                  {strings.case_sheet.uhid}: {PatientInfo.uhid}
+                </Text>
+              )}
 
               {/* <View
               style={{

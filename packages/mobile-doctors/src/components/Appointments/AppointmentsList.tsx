@@ -137,7 +137,11 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
 
   const showUpNext = (aptTime: string, index: number) => {
     if (index === 0) upcomingNextRendered = false;
-    if (new Date(aptTime) > new Date() && !upcomingNextRendered) {
+    if (
+      new Date(aptTime) > new Date() &&
+      !upcomingNextRendered &&
+      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+    ) {
       upcomingNextRendered = true;
       return true;
     } else {
@@ -160,13 +164,16 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
               if (item) {
                 return (
                   item.weekDay ===
-                  moment(i.appointmentDateTime)
+                  moment
+                    .utc(i.appointmentDateTime)
+                    .local()
                     .format('dddd')
                     .toUpperCase()
                 );
               }
             })[0];
-          const consultDuration = filterData && filterData.consultDuration;
+
+          const consultDuration = filterData ? filterData.consultDuration : 0;
           const showNext = showUpNext(i.appointmentDateTime, index);
 
           return (
