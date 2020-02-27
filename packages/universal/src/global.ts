@@ -68,5 +68,6 @@ declare namespace NodeJS {
     COUPONS_SERVICE_PORT: string;
 
     BUGSNAG_API_KEY: string;
+    SMS_LINK: string;
   }
 }

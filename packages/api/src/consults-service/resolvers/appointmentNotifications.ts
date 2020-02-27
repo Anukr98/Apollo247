@@ -132,6 +132,12 @@ const sendPhysicalApptReminderNotification: Resolver<
         ) {
           pushNotificationInput.notificationType =
             NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
+        } else if (
+          appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
+          appt.caseSheet[0].doctorType == 'JUNIOR' &&
+          args.inNextMin == 180
+        ) {
+          pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_180;
         }
       } else if (appt.caseSheet.length == 0) {
         pushNotificationInput.notificationType = NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
