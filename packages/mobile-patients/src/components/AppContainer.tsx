@@ -41,14 +41,14 @@ const postToFirebase = (
     environment: getBuildEnvironment(),
   };
   console.log('crash payload ---', { payload });
-  db.ref('ApolloCrashes/')
-    .push(payload)
-    .then((data) => {
-      console.log('data ', { data });
-    })
-    .catch((error) => {
-      console.log('error ', { error });
-    });
+  // db.ref('ApolloCrashes/')
+  //   .push(payload)
+  //   .then((data) => {
+  //     console.log('data ', { data });
+  //   })
+  //   .catch((error) => {
+  //     console.log('error ', { error });
+  //   });
 };
 
 const reporter = (error: string, type: 'JS' | 'Native') => {
