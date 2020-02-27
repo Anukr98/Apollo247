@@ -177,7 +177,5 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
         </Grid>
       </div>
     </div>
-  ) : (
-      <></>
-    );
+  ) : null;
 };
