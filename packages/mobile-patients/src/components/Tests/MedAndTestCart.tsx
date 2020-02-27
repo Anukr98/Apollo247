@@ -78,7 +78,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
     return (
       <View>
         <Header
-          title={'YOUR CART'}
+          title={'MY CART'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => backDataFunctionality()}

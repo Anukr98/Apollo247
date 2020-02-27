@@ -33,6 +33,7 @@ import {
   aphConsole,
   isEmptyObject,
   handleGraphQlError,
+  doRequestAndAccessLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -210,46 +211,28 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, setLocationDetails } = useAppCommonData();
 
   useEffect(() => {
-    if (!(locationDetails && locationDetails.pincode)) {
-      Geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          getPlaceInfoByLatLng(latitude, longitude)
-            .then((obj) => {
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const _pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
-                  setpincode(_pincode || '');
-                }
-              } catch (e) {
-                CommonBugFender('MedicineDetailsScene_getPlaceInfoByLatLng_try', e);
-              }
-            })
-            .catch((error) => {
-              CommonBugFender('MedicineDetailsScene_getPlaceInfoByLatLng', error);
-              console.log(error, 'geocode error');
+    if (!locationDetails) {
+      doRequestAndAccessLocation()
+        .then((response) => {
+          setLoading(false);
+          setLocationDetails && setLocationDetails(response);
+        })
+        .catch((e) => {
+          CommonBugFender('MedicineDetailsScene_Location_Request', e);
+          setLoading(false);
+          showAphAlert &&
+            showAphAlert({
+              title: 'Uh oh! :(',
+              description: 'Unable to access location.',
             });
-        },
-        (error) => {
-          console.log(error.code, error.message, 'getCurrentPosition error');
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-      );
+        });
     } else {
       setpincode(locationDetails.pincode || '');
     }
-  }, []);
+  }, [locationDetails]);
 
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
@@ -726,11 +709,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderTabComponent = () => {
     // let description = desc; // props.route.key; //data.CaptionDesc;
     const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
-    const description = filterHtmlContent(
+    let description =
       selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
         ? selectedTabdata[0].CaptionDesc
-        : ''
-    );
+        : '';
+    description = description
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;rn/g, '>')
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/\.t/g, '.');
 
     return (
       <View
@@ -745,15 +734,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       >
         <View>
           {!!description && (
-            <Text
-              style={{
-                color: theme.colors.SKY_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 22,
+            <HTML
+              html={description}
+              baseFontStyle={{
+                ...theme.viewStyles.text('M', 14, '#0087ba', 1, 22),
               }}
-            >
-              {description}
-            </Text>
+              imagesMaxWidth={Dimensions.get('window').width}
+            />
           )}
         </View>
       </View>
@@ -785,9 +772,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderInfo = () => {
     const description = medicineDetails.description
+      .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;rn/g, '>')
-      .replace(/&gt;/g, '>');
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/.t/, '.');
     console.log(description);
 
     if (!!description)
