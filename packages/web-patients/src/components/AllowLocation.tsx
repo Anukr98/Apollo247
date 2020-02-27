@@ -2,6 +2,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
+import axios from 'axios';
+import { useContext } from 'react';
+import { LocationContext, Address } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -39,10 +42,12 @@ const useStyles = makeStyles((theme: Theme) => {
 type AllowLocationProps = {
   setIsLocationPopoverOpen: (isLocationPopoverOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
+  isPopoverOpen: boolean;
 };
 
 export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
   const classes = useStyles({});
+  const { locateCurrentLocation } = useContext(LocationContext);
 
   return (
     <div className={classes.root}>
@@ -56,13 +61,18 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
       <div className={classes.actions}>
         <AphButton
           onClick={() => {
-            props.setIsPopoverOpen(false);
             props.setIsLocationPopoverOpen(true);
           }}
         >
           Enter Manualy
         </AphButton>
-        <AphButton color="primary" onClick={() => props.setIsPopoverOpen(false)}>
+        <AphButton
+          color="primary"
+          onClick={() => {
+            // props.setIsPopoverOpen(false);
+            locateCurrentLocation();
+          }}
+        >
           Allow Auto Detect
         </AphButton>
       </div>

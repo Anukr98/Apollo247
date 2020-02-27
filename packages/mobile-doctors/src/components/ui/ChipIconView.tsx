@@ -1,9 +1,8 @@
+import ChipIconViewStyles from '@aph/mobile-doctors/src/components/ui/ChipIconView.styles';
 import { DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import {
   StyleProp,
-  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
@@ -11,39 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 32,
-    alignSelf: 'flex-start',
-    flexWrap: 'wrap',
-    marginBottom: 10,
-  },
-
-  containerSelected: {
-    backgroundColor: '#00b38e',
-    borderRadius: 16,
-
-    // flexWrap: 'wrap',
-  },
-  iconView: { justifyContent: 'center', paddingRight: 6 },
-
-  textSelectedStyle: {
-    color: '#ffffff',
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    textAlign: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    paddingLeft: 13,
-    paddingTop: 2,
-    paddingBottom: 4,
-    paddingRight: 13,
-    letterSpacing: 0.02,
-  },
-});
+const styles = ChipIconViewStyles;
 
 export interface ChipIconViewProps {
   title: string;

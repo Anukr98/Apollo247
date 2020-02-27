@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 5,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingTop: 0,
+        paddingTop: 56,
         paddingRight: 0,
       },
     },

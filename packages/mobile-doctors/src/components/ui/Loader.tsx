@@ -1,18 +1,8 @@
 import React from 'react';
 import { ActivityIndicator, ActivityIndicatorProps, StyleSheet, View } from 'react-native';
+import LoaderStyles from '@aph/mobile-doctors/src/components/ui/Loader.styles';
 
-const styles = StyleSheet.create({
-  spinnerContainerStyle: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0, 0.2)',
-    alignSelf: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    elevation: 10,
-  },
-});
+const styles = LoaderStyles;
 
 export interface LoaderProps {
   fullScreen?: boolean; // It will take the full height of parent view (absolute positioned) with gray background

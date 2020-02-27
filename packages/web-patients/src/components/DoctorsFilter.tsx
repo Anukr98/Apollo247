@@ -227,7 +227,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     tomorrow: 'Tomorrow',
     next3: 'Next 3 Days',
   };
-  const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1001_10000': '1000+' };
+  const filterFees = { '100_500': '100-500', '501_1000': '501-1000', '1000_-1': '1000+' };
   const filterGenders = _reverse(_filter(Object.values(Gender), (gender) => gender !== 'OTHER')); // show MALE, FEMALE instead of FEMALE, MALE
   const filterLanguages = { hindi: 'Hindi', english: 'English', telugu: 'Telugu' };
 
@@ -289,6 +289,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setShowCalendar(false);
     handleFilterOptions(filterOptions);
   };
+  const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
   return (
     <div className={classes.root}>
@@ -298,15 +299,20 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         }}
         placeholder="Search doctors or specialities"
         onChange={(event) => {
-          if (selectedSpecialtyName !== '' && selectedSpecialtyName !== event.currentTarget.value) {
-            emptyFilters(false);
-          }
-          setSearchKeyword(event.target.value);
-          filterOptions.searchKeyword = event.currentTarget.value;
-          if (event.target.value.length === 0) {
-            emptyFilters(true);
-          } else if (event.target.value.length > 2) {
-            handleFilterOptions(filterOptions);
+          if (isValidSearch(event.target.value)) {
+            if (
+              selectedSpecialtyName !== '' &&
+              selectedSpecialtyName !== event.currentTarget.value
+            ) {
+              emptyFilters(false);
+            }
+            setSearchKeyword(event.target.value);
+            filterOptions.searchKeyword = event.currentTarget.value;
+            if (event.target.value.length === 0) {
+              emptyFilters(true);
+            } else if (event.target.value.length > 2) {
+              handleFilterOptions(filterOptions);
+            }
           }
         }}
         value={searchKeyword}

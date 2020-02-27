@@ -31,6 +31,7 @@ export const clientRoutes = {
     `/${searchMedicineType}/${searchText}`,
   medicineDetails: (sku: string) => `/medicine-details/${sku}`,
   addressBook: () => '/address-book',
+  symptomsTracker: () => '/symptoms-tracker',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
