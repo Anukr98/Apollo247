@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
+import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = CalendarCardStyles;
 

@@ -15,6 +15,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
+import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = PatientCardStyles;
 
