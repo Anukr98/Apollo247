@@ -453,11 +453,7 @@ export const ConsultTabs: React.FC = () => {
           };
           setDocumentArray(data);
         }
-        if (
-          message.message.url &&
-          message.message.fileType &&
-          message.message.fileType === 'pdf'
-        ) {
+        if (message.message.url && message.message.fileType && message.message.fileType === 'pdf') {
           const data = {
             documentPath: message.message.url,
           };
