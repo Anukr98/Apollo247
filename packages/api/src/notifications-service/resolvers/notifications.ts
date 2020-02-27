@@ -807,7 +807,6 @@ export async function sendReminderNotification(
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
   if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
@@ -851,6 +850,11 @@ export async function sendReminderNotification(
         content: notificationBody,
       },
     };
+    const doctorSMS = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_DOCTOR_1_BODY.replace(
+      '{0}',
+      doctorDetails.firstName
+    ).replace('{1}', patientDetails.firstName);
+    sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_60) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
@@ -932,7 +936,15 @@ export async function sendReminderNotification(
     let diffMins = Math.ceil(
       Math.abs(differenceInMinutes(new Date(), appointment.appointmentDateTime))
     );
+    let doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS.replace(
+      '{0}',
+      patientDetails.firstName
+    );
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+      doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS_PHYSICAL.replace(
+        '{0}',
+        patientDetails.firstName
+      );
       notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_15_BODY;
       notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
       if (appointment.hospitalId != '' && appointment.hospitalId != null) {
@@ -979,10 +991,6 @@ export async function sendReminderNotification(
       },
     };
     //send doctor SMS starts
-    let doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS.replace(
-      '{0}',
-      patientDetails.firstName
-    );
     if (diffMins <= 1) {
       doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_1_SMS.replace(
         '{0}',
@@ -1090,7 +1098,9 @@ export async function sendReminderNotification(
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;
   }
   //send SMS notification
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  if (pushNotificationInput.notificationType != NotificationType.APPOINTMENT_REMINDER_15) {
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  }
   if (registrationToken.length == 0) return;
   admin
     .messaging()
