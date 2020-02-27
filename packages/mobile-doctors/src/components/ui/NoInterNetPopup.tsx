@@ -3,18 +3,9 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import NoInterNetPopupStyles from '@aph/mobile-doctors/src/components/ui/NoInterNetPopup.styles';
 
-const styles = StyleSheet.create({
-  gotItStyles: {
-    height: 60,
-    paddingRight: 25,
-    backgroundColor: 'transparent',
-  },
-  gotItTextStyles: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
-  },
-});
+const styles = NoInterNetPopupStyles;
 
 export interface NoInterNetPopupProps {
   onClickClose: () => void;

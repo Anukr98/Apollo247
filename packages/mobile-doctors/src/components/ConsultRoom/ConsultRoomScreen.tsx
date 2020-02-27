@@ -83,35 +83,13 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
+import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
 
 const { height, width } = Dimensions.get('window');
-let joinTimerNoShow: NodeJS.Timeout;
-let missedCallTimer: NodeJS.Timeout;
-const styles = StyleSheet.create({
-  mainview: {
-    backgroundColor: '#ffffff',
-    height: 50,
-  },
-  shadowview: {
-    shadowOffset: {
-      height: 1,
-      width: 0,
-    },
-    shadowColor: '#000000',
-    shadowRadius: 2,
-    shadowOpacity: 0.2,
-    elevation: 0,
-    backgroundColor: 'white',
-  },
-  positionAbsolute: {
-    flex: 1,
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-});
+let joinTimerNoShow: any;
+let missedCallTimer: any;
+const styles = ConsultRoomScreenStyles;
 
 let connectionCount = 0;
 let timer = 900;
