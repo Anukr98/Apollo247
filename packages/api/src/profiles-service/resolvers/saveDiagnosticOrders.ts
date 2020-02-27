@@ -21,7 +21,7 @@ import {
   ItdosTestDetails,
   AddProcessResult,
 } from 'types/diagnosticOrderTypes';
-import { format } from 'date-fns';
+import { format, differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import {
   sendDiagnosticOrderStatusNotification,
@@ -471,9 +471,10 @@ const SaveDiagnosticOrder: Resolver<
       const hubDetails = await diagnosticRepo.getHubDetails(
         diagnosticOrderInput.diagnosticBranchCode
       );
-      patientDob = '1 Jan 2000';
+      patientDob = '30';
       if (patientDetails.dateOfBirth != null) {
-        patientDob = format(patientDetails.dateOfBirth, 'dd MMM yyyy');
+        patientDob = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth)).toString();
+        // format(patientDetails.dateOfBirth, 'dd MMM yyyy');
       }
       const addProcessInput = [
         {
