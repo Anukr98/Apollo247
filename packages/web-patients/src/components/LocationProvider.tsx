@@ -11,6 +11,7 @@ export interface LocationContextProps {
   setCurrentLat: (currentLat: string) => void;
   setCurrentLong: (currentLong: string) => void;
   setCurrentPincode: (currenPincode: string) => void;
+  locateCurrentLocation: () => void;
 }
 
 export interface Address {
@@ -28,6 +29,7 @@ export const LocationContext = React.createContext<LocationContextProps>({
   setCurrentLat: () => {},
   setCurrentLong: () => {},
   setCurrentPincode: () => {},
+  locateCurrentLocation: () => {},
 });
 
 export const LocationProvider: React.FC = (props) => {
@@ -36,6 +38,36 @@ export const LocationProvider: React.FC = (props) => {
   const [currentLong, setCurrentLong] = useState<string | null>(null);
   const [currentPincode, setCurrentPincode] = useState<string>('');
   const { isSigningIn } = useAuth();
+
+  const locateCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: { latitude, longitude } }) => {
+        setCurrentLat(latitude.toString());
+        setCurrentLong(longitude.toString());
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
+          )
+          .then((res) => {
+            const addrComponents = res.data.results[0].address_components || [];
+            const _pincode = (
+              addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
+            ).long_name;
+            setCurrentLocation(addrComponents[2].short_name);
+            setCurrentPincode(_pincode);
+            localStorage.setItem('currentAddress', addrComponents[2].short_name);
+          });
+      },
+      (err) => {
+        console.log(err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+  };
 
   useEffect(() => {
     const currentAddress = localStorage.getItem('currentAddress');
@@ -58,38 +90,10 @@ export const LocationProvider: React.FC = (props) => {
           setCurrentPincode(_pincode);
         }
       });
-    } else {
-      if (!isSigningIn) {
-        navigator.geolocation.getCurrentPosition(
-          ({ coords: { latitude, longitude } }) => {
-            setCurrentLat(latitude.toString());
-            setCurrentLong(longitude.toString());
-            axios
-              .get(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
-              )
-              .then((res) => {
-                const addrComponents = res.data.results[0].address_components || [];
-                const _pincode = (
-                  addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
-                  {}
-                ).long_name;
-                setCurrentLocation(addrComponents[2].short_name);
-                setCurrentPincode(_pincode);
-                localStorage.setItem('currentAddress', addrComponents[2].short_name);
-              });
-          },
-          (err) => {
-            console.log(err.message);
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0,
-          }
-        );
-      }
     }
+    // else if (!isSigningIn) {
+    //   locateCurrentLocation();
+    // }
   }, [currentLocation]);
 
   return (
@@ -103,6 +107,7 @@ export const LocationProvider: React.FC = (props) => {
         setCurrentLong,
         currentPincode,
         setCurrentPincode,
+        locateCurrentLocation,
       }}
     >
       {props.children}

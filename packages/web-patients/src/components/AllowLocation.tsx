@@ -43,13 +43,12 @@ type AllowLocationProps = {
   setIsLocationPopoverOpen: (isLocationPopoverOpen: boolean) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
   isPopoverOpen: boolean;
+  setDetectBy?: (detectBy: string) => void;
 };
 
 export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
   const classes = useStyles({});
-  const { setCurrentLat, setCurrentLong, setCurrentLocation, setCurrentPincode } = useContext(
-    LocationContext
-  );
+  const { locateCurrentLocation } = useContext(LocationContext);
 
   return (
     <div className={classes.root}>
@@ -63,7 +62,9 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
       <div className={classes.actions}>
         <AphButton
           onClick={() => {
+            props.setIsPopoverOpen(false);
             props.setIsLocationPopoverOpen(true);
+            props.setDetectBy && props.setDetectBy('manual');
           }}
         >
           Enter Manualy
@@ -72,36 +73,8 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
           color="primary"
           onClick={() => {
             props.setIsPopoverOpen(false);
-            navigator.geolocation.getCurrentPosition(
-              ({ coords: { latitude, longitude } }) => {
-                setCurrentLat(latitude.toString());
-                setCurrentLong(longitude.toString());
-                axios
-                  .get(
-                    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
-                  )
-                  .then((res) => {
-                    const addrComponents = res.data.results[0].address_components || [];
-                    const _pincode = (
-                      addrComponents.find(
-                        (item: Address) => item.types.indexOf('postal_code') > -1
-                      ) || {}
-                    ).long_name;
-                    setCurrentLocation(addrComponents[2].short_name);
-                    setCurrentPincode(_pincode);
-                    localStorage.setItem('currentAddress', addrComponents[2].short_name);
-                  });
-              },
-              (err) => {
-                console.log(err.message);
-              },
-              {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0,
-              }
-            );
-            props.setIsPopoverOpen(false);
+            props.setDetectBy && props.setDetectBy('auto');
+            locateCurrentLocation();
           }}
         >
           Allow Auto Detect

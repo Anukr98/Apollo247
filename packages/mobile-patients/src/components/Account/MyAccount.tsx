@@ -265,6 +265,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     AsyncStorage.setItem('multiSignUp', 'false');
     AsyncStorage.setItem('signUp', 'false');
     AsyncStorage.setItem('selectUserId', '');
+    AsyncStorage.removeItem('phoneNumber');
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,

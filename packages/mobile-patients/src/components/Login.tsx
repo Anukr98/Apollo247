@@ -32,7 +32,6 @@ import {
 import firebase from 'react-native-firebase';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from './UIElementsProvider';
-import { db } from '../strings/FirebaseConfig';
 import moment from 'moment';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import HyperLink from 'react-native-hyperlink';
@@ -112,7 +111,6 @@ const isPhoneNumberValid = (number: string) => {
 
 let otpString = '';
 let didBlurSubscription: NavigationEventSubscription;
-let dbChildKey: string = '';
 
 export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -128,13 +126,16 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     try {
       fireBaseFCM();
-      signOut();
+      // if (firebase.auth().currentUser) {
+      //   console.log('login auth', firebase.auth().currentUser);
+      //   signOut();
+      // }
       setLoading && setLoading(false);
       firebase.auth().appVerificationDisabledForTesting = true;
     } catch (error) {
       CommonBugFender('Login_useEffect_try', error);
     }
-  }, [signOut]);
+  }, []);
 
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();
@@ -181,30 +182,6 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   useEffect(() => {
     console.log('didmout');
-    db.ref('ApolloPatients/')
-      .push({
-        mobileNumber: '',
-        mobileNumberEntered: '',
-        mobileNumberSuccess: '',
-        OTPEntered: '',
-        ResendOTP: '',
-        wrongOTP: '',
-        OTPEnteredSuccess: '',
-        plaform: Platform.OS === 'ios' ? 'iOS' : 'andriod',
-        mobileNumberFailed: '',
-        OTPFailedReason: '',
-        FirebaseTokenSuccess: '',
-        patientApiCallSuccess: '',
-      })
-      .then((data: any) => {
-        //success callback
-        // console.log('data ', data);
-        dbChildKey = data.path.pieces_[1];
-      })
-      .catch((error: Error) => {
-        //error callback
-        console.log('error ', error);
-      });
     // Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
 
@@ -267,13 +244,6 @@ export const Login: React.FC<LoginProps> = (props) => {
   const onClickOkay = () => {
     CommonLogEvent(AppRoutes.Login, 'Login clicked');
 
-    db.ref('ApolloPatients/')
-      .child(dbChildKey)
-      .update({
-        mobileNumber: phoneNumber,
-        mobileNumberEntered: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-      });
-
     Keyboard.dismiss();
     getNetStatus().then(async (status) => {
       if (status) {
@@ -298,12 +268,6 @@ export const Login: React.FC<LoginProps> = (props) => {
 
                 CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
 
-                db.ref('ApolloPatients/')
-                  .child(dbChildKey)
-                  .update({
-                    mobileNumberSuccess: moment(new Date()).format('Do MMMM, dddd \nhh:mm:ss A'),
-                  });
-
                 console.log('confirmResult login', confirmResult);
                 try {
                   signOut();
@@ -312,19 +276,12 @@ export const Login: React.FC<LoginProps> = (props) => {
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
                   phoneNumber: phoneNumber,
-                  dbChildKey,
                   loginId: confirmResult.loginId,
                 });
               })
               .catch((error: Error) => {
                 console.log(error, 'error');
                 setShowSpinner(false);
-
-                db.ref('ApolloPatients/')
-                  .child(dbChildKey)
-                  .update({
-                    mobileNumberFailed: error && error.message,
-                  });
 
                 CommonLogEvent('OTP_SEND_FAIL', error.message);
                 CommonBugFender('OTP_SEND_FAIL', error);

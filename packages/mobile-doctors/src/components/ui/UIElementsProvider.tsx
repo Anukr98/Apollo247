@@ -15,39 +15,9 @@ import {
 } from 'react-native';
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import UIElementsProviderStyles from '@aph/mobile-doctors/src/components/ui/UIElementsProvider.styles';
 
-const styles = StyleSheet.create({
-  okButtonStyle: {
-    paddingHorizontal: 25,
-    backgroundColor: 'transparent',
-    marginTop: 8,
-    marginBottom: 20,
-    alignItems: 'flex-end',
-  },
-  okButtonTextStyle: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
-  },
-  aphAlertCtaViewStyle: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginVertical: 18,
-  },
-  ctaWhiteButtonViewStyle: {
-    flex: 1,
-    minHeight: 40,
-    height: 'auto',
-    backgroundColor: theme.colors.WHITE,
-  },
-  ctaOrangeButtonViewStyle: { flex: 1, minHeight: 40, height: 'auto' },
-  ctaOrangeTextStyle: {
-    textAlign: 'center',
-    ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
-    marginHorizontal: 5,
-  },
-});
+const styles = UIElementsProviderStyles;
 
 export interface UIElementsContextProps {
   loading: boolean;

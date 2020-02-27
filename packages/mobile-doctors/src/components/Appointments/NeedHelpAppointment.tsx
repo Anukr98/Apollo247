@@ -5,25 +5,10 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import NeedHelpAppointmentStyles from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment.styles';
 
-const styles = StyleSheet.create({
-  mainview: {
-    marginTop: 16,
-    marginBottom: 20,
-    marginLeft: 16,
-  },
-  descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#0087ba',
-    lineHeight: 24,
-    marginRight: 16,
-  },
-  fullview: {
-    borderRadius: 10,
-    backgroundColor: '#ffffff',
-    margin: 20,
-  },
-});
+const styles = NeedHelpAppointmentStyles;
+
 export interface NeedHelpAppointmentProps extends NavigationScreenProps {}
 
 export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) => {

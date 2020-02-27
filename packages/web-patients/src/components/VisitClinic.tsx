@@ -421,7 +421,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                       clinicSelected || defaultClinicId,
                       currentLat,
                       currentLong
-                    ) || 2.5}
+                    ) || 'NA'}
                   </div>
                 </div>
                 {morningSlots.length > 0 ||

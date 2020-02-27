@@ -343,6 +343,7 @@ interface MessagesObjectProps {
   messageDate: string;
   sentBy: string;
   type: string;
+  fileType: string;
 }
 
 interface ConsultRoomProps {
@@ -448,7 +449,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     timerIntervalId && clearInterval(timerIntervalId);
   };
   const srollToBottomAction = () => {
-    console.log(1111111);
     //setTimeout(() => {
     const scrollDiv = document.getElementById('scrollDiv');
     if (scrollDiv) {
@@ -784,12 +784,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   // </div>
                   <div
                     onClick={() => {
-                      setModalOpen(true);
+                      setModalOpen(rowData.fileType === 'pdf' ? false : true);
                       setImgPrevUrl(rowData.url);
                     }}
                     className={classes.imageUpload}
                   >
-                    <img src={rowData.url} alt={rowData.url} />
+                    {rowData.fileType === 'pdf' ? (
+                      <a href={rowData.url} target="_blank">
+                        <img src={require('images/pdf_thumbnail.png')} />
+                      </a>
+                    ) : (
+                      <img src={rowData.url} alt={rowData.url} />
+                    )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
                         {convertChatTime(rowData.messageDate)}
@@ -1000,12 +1006,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 {rowData.message === documentUpload ? (
                   <div
                     onClick={() => {
-                      setModalOpen(true);
+                      setModalOpen(rowData.fileType === 'pdf' ? false : true);
                       setImgPrevUrl(rowData.url);
                     }}
                     className={classes.imageUpload}
                   >
-                    <img src={rowData.url} alt={rowData.url} />
+                    {rowData.fileType === 'pdf' ? (
+                      <a href={rowData.url} target="_blank">
+                        <img src={require('images/pdf_thumbnail.png')} />
+                      </a>
+                    ) : (
+                      <img src={rowData.url} alt={rowData.url} />
+                    )}
                     {rowData.messageDate && (
                       <div className={classes.timeStampImg}>
                         {convertChatTime(rowData.messageDate)}
@@ -1081,19 +1093,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           fileExtension &&
                           (fileExtension.toLowerCase() === 'png' ||
                             fileExtension.toLowerCase() === 'jpg' ||
-                            fileExtension.toLowerCase() === 'jpeg'||
+                            fileExtension.toLowerCase() === 'jpeg' ||
                             fileExtension.toLowerCase() === 'pdf')
                         ) {
                           if (file) {
-                            const aphBlob = await client
-                              .uploadBrowserFile({ file })
-                              .catch((error) => {
-                                throw error;
-                              });
-                            const url = client.getBlobUrl(aphBlob.name);
+                            let aphBlob;
+                            aphBlob =
+                              fileExtension.toLowerCase() === 'pdf'
+                                ? await client
+                                    .uploadPdfBrowserFile({ file })
+                                    .catch((error: any) => {
+                                      throw error;
+                                    })
+                                : await client.uploadBrowserFile({ file }).catch((error: any) => {
+                                    throw error;
+                                  });
+                            const url = client.getBlobUrl(aphBlob && aphBlob.name);
+                            //const url = aphBlob.name;
                             const uploadObject = {
                               id: doctorId,
-                              fileType: `image`,
+                              fileType: `${
+                                fileExtension.toLowerCase() === 'pdf' ? 'pdf' : 'image'
+                              }`,
                               message: `^^#DocumentUpload`,
                               url: url,
                               isTyping: true,

@@ -198,7 +198,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const [isEmailAddressValid, setIsEmailAddressValid] = useState<boolean>(true);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   // console.log(currentPatient, 'current patient......');
 
@@ -231,13 +231,23 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   useEffect(() => {
     // if (selectedPatientId.length > 0) {
     const selectedPatientDetails = _find(allCurrentPatients, (currentPatientDetails) => {
-      return currentPatientDetails.id === (currentPatient ? currentPatient.id : '');
+      // return currentPatientDetails.id === (currentPatient ? currentPatient.id : '');
+      return currentPatientDetails.relation === 'ME';
     });
+
+    // console.log(
+    //   selectedPatientDetails,
+    //   multiplePrimaryUsers &&
+    //   selectedRelation === 'ME' &&
+    //   selectedPatientDetails &&
+    //   selectedPatientDetails.relation !== selectedRelation
+    // );
+
     if (
       multiplePrimaryUsers &&
       selectedRelation === 'ME' &&
       selectedPatientDetails &&
-      selectedPatientDetails.relation !== selectedRelation
+      selectedPatientDetails.relation === 'ME'
     ) {
       setPrimaryUserErrorMessage('Relation can be set as Me for only 1 profile');
     } else {
@@ -318,7 +328,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         isLastNameValid &&
         isRelationValid &&
         isGenderValid &&
-        !primaryUserErrorMessage &&
+        primaryUserErrorMessage.length === 0 &&
         isValidDob &&
         (emailAddress !== '' ? isEmailAddressValid : true))) ||
     isProfileDelete;
@@ -455,6 +465,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     onBlur={(e) => {
                       setIsValidDob(isDobValid(e.target.value));
                     }}
+                    error={!isValidDob}
                   />
                   {!isValidDob ? (
                     <FormHelperText
@@ -526,6 +537,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                         setIsEmailAddressValid(isEmailValid(e.target.value));
                       }
                     }}
+                    error={!isEmailAddressValid}
                   />
                   {emailAddress !== '' && !isEmailAddressValid ? (
                     <FormHelperText
@@ -570,6 +582,8 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   },
                 })
                   .then(() => {
+                    setCurrentPatientId(selectedPatientId);
+                    // localStorage.removeItem('currentUser');
                     closeHandler(false);
                     successHandler(true);
                   })
