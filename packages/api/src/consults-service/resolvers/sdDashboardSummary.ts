@@ -41,13 +41,16 @@ export const sdDashboardSummaryTypeDefs = gql`
     appointmentDateTime: Date
     totalConsultation: Int
   }
+
   enum PATIENT_TYPE {
     NEW
     REPEAT
   }
-  type updatePatientTypeResult {
+
+  type UpdatePatientTypeResult {
     status: Boolean
   }
+
   type FeedbackSummaryResult {
     ratingRowsCount: Int
   }
@@ -83,7 +86,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
-    updatePatientType(doctorId: String): updatePatientTypeResult
+    updatePatientType(doctorId: String): UpdatePatientTypeResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
     updateUtilizationCapacity(
@@ -104,7 +107,7 @@ type DashboardSummaryResult = {
   totalConsultation: number;
 };
 
-type updatePatientTypeResult = {
+type UpdatePatientTypeResult = {
   status: boolean;
 };
 type DoctorFeeSummaryResult = {
@@ -221,18 +224,18 @@ const updatePatientType: Resolver<
   null,
   { doctorId: string; patientId: string },
   ConsultServiceContext,
-  updatePatientTypeResult
+  UpdatePatientTypeResult
 > = async (parent, args, context) => {
   const { apptRepo } = getRepos(context);
-  let prevpatientid = '0';
-  const patienttypes = await apptRepo.getAppointmentsByDocId(args.doctorId);
-  if (patienttypes.length) {
-    patienttypes.forEach(async (appointmentdata) => {
-      if (appointmentdata.patientId != prevpatientid) {
-        prevpatientid = appointmentdata.patientId;
-        await apptRepo.updatePatientType(appointmentdata, PATIENT_TYPE.NEW);
+  let prevPatientId = '0';
+  const appointmentDetails = await apptRepo.getAppointmentsByDocId(args.doctorId);
+  if (appointmentDetails.length) {
+    appointmentDetails.forEach(async (appointmentData) => {
+      if (appointmentData.patientId != prevPatientId) {
+        prevPatientId = appointmentData.patientId;
+        await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
       } else {
-        await apptRepo.updatePatientType(appointmentdata, PATIENT_TYPE.REPEAT);
+        await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
       }
     });
   }
