@@ -294,7 +294,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
             const doctorImage =
               appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.photoUrl
                 ? appointmentDetails.doctorInfo.photoUrl
-                : require('images/ic_placeholder.png');
+                : require('images/no_photo.png');
             const experience =
               appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.experience
                 ? appointmentDetails.doctorInfo.experience
