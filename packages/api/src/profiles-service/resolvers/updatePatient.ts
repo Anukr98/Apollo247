@@ -98,8 +98,8 @@ const updatePatient: Resolver<
   if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
     const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
     const getCode = await regCodeRepo.getCode();
-    regCode = getCode[0].registrationCode;
     if (getCode.length > 0) {
+      regCode = getCode[0].registrationCode;
       await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
     }
   }
