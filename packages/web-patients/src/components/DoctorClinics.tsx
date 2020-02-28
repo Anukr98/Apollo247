@@ -143,11 +143,11 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
       }
     });
 
-    const consultationHours =
-      doctorDetails.getDoctorDetailsById.consultHours &&
-      doctorDetails.getDoctorDetailsById.consultHours.length > 0
-        ? doctorDetails.getDoctorDetailsById.consultHours
-        : [];
+    // const consultationHours =
+    //   doctorDetails.getDoctorDetailsById.consultHours &&
+    //   doctorDetails.getDoctorDetailsById.consultHours.length > 0
+    //     ? doctorDetails.getDoctorDetailsById.consultHours
+    //     : [];
 
     const { firstName } = doctorDetails.getDoctorDetailsById;
 
