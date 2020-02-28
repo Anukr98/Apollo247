@@ -414,6 +414,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
 
+  // console.log(timeSelected, 'time selected.....');
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
@@ -586,16 +588,17 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             }
             onClick={() => {
               let appointmentDateTime = '';
-              if (consultNowSlotTime === '') {
-                const dateForScheduleLater = dateSelected.length > 0 ? dateSelected : apiDateFormat;
-                const appointmentDateTimeString = `${dateForScheduleLater} ${String(
-                  timeSelected
-                ).padStart(5, '0')}:00`;
-                appointmentDateTime = moment.utc(new Date(appointmentDateTimeString)).format();
+              if (scheduleLater || !consultNowAvailable) {
+                const dateForScheduleLater =
+                  dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
+                const appointmentDateTimeString = new Date(
+                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
+                );
+                appointmentDateTime = moment.utc(appointmentDateTimeString).format();
               } else {
                 appointmentDateTime = consultNowSlotTime;
               }
-
+              // console.log(appointmentDateTime, 'appt time is....', scheduleLater);
               // console.log(appointmentDateTime, 'appt date and time.....');
 
               setMutationLoading(true);

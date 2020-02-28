@@ -24,6 +24,7 @@ import _forEach from 'lodash/forEach';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import { usePrevious } from 'hooks/reactCustomHooks';
 import { LocationContext } from 'components/LocationProvider';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -461,6 +462,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
           onClick={(e) => {
             setMutationLoading(true);
+            // console.log(
+            //   new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString(),
+            //   'visit clinic.......'
+            // );
             paymentMutation({
               variables: {
                 bookAppointment: {
