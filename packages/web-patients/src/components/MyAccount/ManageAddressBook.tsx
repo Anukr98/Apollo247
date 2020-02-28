@@ -25,6 +25,13 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 0,
         boxShadow: 'none',
         backgroundColor: 'transparent',
+        minHeight: 'auto',
+      },
+      [theme.breakpoints.up(768)]: {
+        minHeight: 'calc(100vh - 195px)',
+      },
+      [theme.breakpoints.up(901)]: {
+        minHeight: 'calc(100vh - 154px)',
       },
     },
     bottomPopover: {
@@ -52,14 +59,28 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     scrollBars: {
-      height: 'calc(100vh - 250px) !important',
       [theme.breakpoints.down('xs')]: {
-        height: '100% !important',
+        maxHeight: '100% !important',
+        '& >div': {
+          maxHeight: '100% !important',
+        },
         '& >div:nth-child(2)': {
           display: 'none',
         },
         '& >div:nth-child(3)': {
           display: 'none',
+        },
+      },
+      [theme.breakpoints.up(768)]: {
+        maxHeight: 'calc(100vh - 278px) !important',
+        '& >div': {
+          maxHeight: 'calc(100vh - 278px) !important',
+        },
+      },
+      [theme.breakpoints.up(901)]: {
+        maxHeight: 'calc(100vh - 236px) !important',
+        '& >div': {
+          maxHeight: 'calc(100vh - 236px) !important',
         },
       },
     },
@@ -112,6 +133,7 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars
         autoHide={true}
+        autoHeight
         className={classes.scrollBars}
         renderView={(props) =>
           isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
