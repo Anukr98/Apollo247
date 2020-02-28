@@ -199,7 +199,10 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
           {verifyOtpError && !isSigningIn && (
             <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
               <div>
-                {submitCount > 0 && ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
+                {submitCount > 0 &&
+                  ' Incorrect OTP, ' +
+                    (3 - submitCount) +
+                    `${submitCount === 2 ? ' attempt left' : ' attempts left'}`}
               </div>
             </FormHelperText>
           )}
@@ -214,7 +217,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               onClick={(e) => {
                 resendOtp(mobileNumberWithPrefix, customLoginId);
                 setOtp([]);
-                setSubmitCount(0);
+                // setSubmitCount(0);
                 setOtpStatusText(resentOTPMessage);
                 const firstInput = otpInputRefs[0].current;
                 if (firstInput) firstInput.focus();
