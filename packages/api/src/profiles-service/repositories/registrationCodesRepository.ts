@@ -3,8 +3,13 @@ import { RegistrationCodes, REGISTRATION_CODES_STATUS, Patient } from 'profiles-
 
 @EntityRepository(RegistrationCodes)
 export class RegistrationCodesRepository extends Repository<RegistrationCodes> {
-  updateCodeStatus(id: string, patient: Patient) {
-    return this.update(id, { codeStatus: REGISTRATION_CODES_STATUS.SENT, patient });
+  async updateCodeStatus(id: string, patient: Patient) {
+    const checkRow = await this.find({ where: { patient } });
+    if (checkRow.length == 0) {
+      return this.update(id, { codeStatus: REGISTRATION_CODES_STATUS.SENT, patient });
+    } else {
+      return false;
+    }
   }
 
   getCode() {
