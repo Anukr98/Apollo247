@@ -95,6 +95,7 @@ export enum NotificationType {
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
   MEDICINE_ORDER_PLACED = 'MEDICINE_ORDER_PLACED',
   MEDICINE_ORDER_CONFIRMED = 'MEDICINE_ORDER_CONFIRMED',
+  MEDICINE_ORDER_PAYMENT_FAILED = 'MEDICINE_ORDER_PAYMENT_FAILED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
@@ -1170,6 +1171,7 @@ export async function sendCartNotification(
       '{1}',
       pushNotificationInput.orderAutoId.toString()
     );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -1444,6 +1446,11 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
       notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_PAYMENT_FAILED:
+      payloadDataType = 'Order_Payment_Failed';
+      notificationTitle = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_TITLE;
+      notificationBody = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_BODY;
+      break;
     default:
       payloadDataType = 'Order_Placed';
       notificationTitle = ApiConstants.ORDER_PLACED_TITLE;
@@ -1453,9 +1460,11 @@ export async function sendMedicineOrderStatusNotification(
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
   let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
-  if (Date.parse(orderDetails.orderTat.toString())) {
-    const tatDate = new Date(orderDetails.orderTat.toString());
-    orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
+  if (orderDetails.orderTat) {
+    if (Date.parse(orderDetails.orderTat.toString())) {
+      const tatDate = new Date(orderDetails.orderTat.toString());
+      orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
+    }
   }
 
   notificationTitle = notificationTitle.toString();
