@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -528,6 +527,7 @@ export interface HelpEmailInput {
   category?: string | null;
   reason?: string | null;
   comments?: string | null;
+  patientId?: string | null;
 }
 
 export interface MedicineCartInput {

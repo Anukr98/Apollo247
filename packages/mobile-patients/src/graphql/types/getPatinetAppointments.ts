@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Salutation, DoctorType } from "./globalTypes";
@@ -43,7 +42,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
 }
 
 export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo {
-  __typename: "DoctorDetails";
+  __typename: "DoctorDetailsWithStatusExclude";
   id: string;
   salutation: Salutation | null;
   firstName: string;
