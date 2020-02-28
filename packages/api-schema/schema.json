@@ -20819,7 +20819,7 @@
             ],
             "type": {
               "kind": "OBJECT",
-              "name": "updatePatientTypeResult",
+              "name": "UpdatePatientTypeResult",
               "ofType": null
             },
             "isDeprecated": false,
@@ -29896,7 +29896,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "updatePatientTypeResult",
+        "name": "UpdatePatientTypeResult",
         "description": null,
         "fields": [
           {
