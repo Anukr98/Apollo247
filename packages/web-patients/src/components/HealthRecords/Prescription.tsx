@@ -17,6 +17,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
 } from '../../graphql/types/globalTypes';
 import { clientRoutes } from 'helpers/clientRoutes';
 import axios from 'axios';
@@ -203,6 +204,20 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
       window.location.href = clientRoutes.medicinesCart();
     }, 5000);
   };
+
+  const getFormattedUnit = (
+    unit: MEDICINE_CONSUMPTION_DURATION | null,
+    numberOfDays: string | null
+  ) => {
+    if (unit) {
+      if (numberOfDays && (numberOfDays === '1' || numberOfDays === '0')) {
+        return (unit || '').toLowerCase().replace('s', '');
+      }
+      return (unit || '').toLowerCase().replace('s', '(s)');
+    }
+    return null;
+  };
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -226,9 +241,11 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                         prescription.medicineUnit.toLowerCase() +
                         ' (s)' +
                         ' '
-                      : 'Apply ' + prescription &&
-                        prescription.medicineUnit &&
-                        prescription.medicineUnit.toLowerCase() + ' '}
+                      : `Apply ${
+                          prescription && prescription.medicineUnit
+                            ? prescription.medicineUnit.toLowerCase()
+                            : ''
+                        } `}
 
                     {prescription.medicineFrequency! &&
                       prescription.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
@@ -271,16 +288,21 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                               }`
                           )
                       : ''}
-
-                    {prescription.medicineInstructions
-                      ? '\n' + prescription.medicineInstructions
-                      : ''}
                     {prescription.medicineConsumptionDurationInDays == ''
                       ? ''
                       : prescription.medicineConsumptionDurationInDays &&
                         prescription.medicineConsumptionDurationInDays === '1'
-                      ? ' for ' + prescription.medicineConsumptionDurationInDays! + ' day'
-                      : ' for ' + prescription.medicineConsumptionDurationInDays! + ' days'}
+                      ? ` for ${prescription.medicineConsumptionDurationInDays} ${getFormattedUnit(
+                          prescription.medicineConsumptionDurationUnit,
+                          prescription.medicineConsumptionDurationInDays
+                        )} `
+                      : ` for ${prescription.medicineConsumptionDurationInDays} ${getFormattedUnit(
+                          prescription.medicineConsumptionDurationUnit,
+                          prescription.medicineConsumptionDurationInDays
+                        )} `}
+                    {prescription.medicineInstructions
+                      ? '\n' + prescription.medicineInstructions
+                      : ''}
                   </div>
                 )}
               </Grid>

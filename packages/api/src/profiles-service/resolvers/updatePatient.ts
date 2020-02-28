@@ -83,24 +83,27 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
   }
 
-  const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
-  if (updatePatient) {
-    if (updatePatient.uhid == '' || updatePatient.uhid == null) {
-      await patientRepo.createNewUhid(updatePatient.id);
-    }
-  }
-  const patient = await patientRepo.findById(updatePatient.id);
+  const patient = await patientRepo.findById(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
+  if (updatePatient) {
+    if (patient.uhid == '' || patient.uhid == null) {
+      await patientRepo.createNewUhid(updatePatient.id);
+    }
+  }
+
   let regCode = '';
   if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
     const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
     const getCode = await regCodeRepo.getCode();
     if (getCode.length > 0) {
-      regCode = getCode[0].registrationCode;
-      await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+      const regCodeStatus = await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+      if (regCodeStatus) {
+        regCode = getCode[0].registrationCode;
+      }
     }
   }
 
