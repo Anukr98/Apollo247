@@ -219,7 +219,10 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
               },
             },
           })
-            .then(() => setShowProfileSuccess(true))
+            .then(() => {
+              setShowProfileSuccess(true);
+              props.onClose();
+            })
             .catch((error) => {
               console.error(error);
               window.alert('Something went wrong :(');
