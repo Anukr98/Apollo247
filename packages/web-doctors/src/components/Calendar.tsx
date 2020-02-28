@@ -274,48 +274,34 @@ export const Calendar: React.FC = () => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-
+  const { isSignedIn } = useAuth();
   const setStartOfMonthDate = ({ start, end }: { start: string | Date; end: string | Date }) => {
-    //setMonthSelected(moment(selectedDate).format('MMMM'));
     const increaseDate = new Date(start);
     const newDate = new Date(increaseDate.setMonth(increaseDate.getMonth() + 1));
     setSelectedDate(startOfMonth(newDate as Date));
   };
-  const getDoctorDetail = () => {
-    client
-      .query<GetDoctorDetails>({
-        query: GET_DOCTOR_DETAILS,
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        if (_data && _data.data && _data.data.getDoctorDetails)
-          setDoctorDetails(_data.data.getDoctorDetails);
-      })
-      .catch((e) => {
-        console.log('Error occured while fetching Doctor', e);
-      });
-  };
   useEffect(() => {
     if (selectedDate) {
-      getDoctorDetail();
+      setDoctorDetails(currentPatient);
     }
   }, [selectedDate]);
-  const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
-    variables: {
-      doctorId:
-        currentUserType === LoggedInUserType.SECRETARY
-          ? currentUserId
-            ? currentUserId
-            : localStorage.getItem('currentUserId')
-          : null,
-      startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
-      endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
-    },
-    fetchPolicy: 'no-cache',
-    pollInterval: pageRefreshTimeInSeconds * 1000,
-    notifyOnNetworkStatusChange: true,
-  });
-  // console.log('currentPatient', currentPatient!.displayName);
+  const { data, loading } = isSignedIn
+    ? useQuery(GET_DOCTOR_APPOINTMENTS, {
+        variables: {
+          doctorId:
+            currentUserType === LoggedInUserType.SECRETARY
+              ? currentUserId
+                ? currentUserId
+                : localStorage.getItem('currentUserId')
+              : null,
+          startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
+          endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
+        },
+        fetchPolicy: 'no-cache',
+        pollInterval: pageRefreshTimeInSeconds * 1000,
+        notifyOnNetworkStatusChange: true,
+      })
+    : { data: [], loading: false };
 
   return (
     <div className={classes.welcome}>
