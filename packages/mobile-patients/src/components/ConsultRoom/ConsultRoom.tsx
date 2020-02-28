@@ -310,9 +310,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
+    console.log('consultroom', currentPatient);
+
     currentPatient && setshowSpinner(false);
     if (!currentPatient) {
-      getPatientApiCall();
+      // getPatientApiCall();
     } else {
       if (selectedProfile !== currentPatient.id) {
         setAppointmentLoading(true);

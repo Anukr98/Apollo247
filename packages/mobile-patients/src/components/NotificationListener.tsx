@@ -808,7 +808,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         CommonBugFender('NotificationListener_getAppointmentData', e);
         console.log('Error occured while GetDoctorNextAvailableSlot', { e });
         setLoading && setLoading(false);
-        handleGraphQlError(e);
+        // handleGraphQlError(e);
       });
   };
   return (

@@ -74,7 +74,7 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
-  const { getPatientApiCall } = useAuth();
+  const { getPatientApiCall, setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   // const { setVirtualConsultationFee } = useAppCommonData();
 
@@ -83,13 +83,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
-    PrefetchAPIReuqest({
-      clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
-    })
-      .then((res: any) => console.log(res, 'PrefetchAPIReuqest'))
-      .catch((e: Error) => {
-        CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
-      });
+    try {
+      PrefetchAPIReuqest({
+        clientId: AppConfig.Configuration.PRAKTISE_API_KEY,
+      })
+        .then((res: any) => console.log(res, 'PrefetchAPIReuqest'))
+        .catch((e: Error) => {
+          CommonBugFender('SplashScreen_PrefetchAPIReuqest', e);
+        });
+    } catch (error) {
+      CommonBugFender('SplashScreen_PrefetchAPIReuqest_catch', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -144,7 +148,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      getPatientApiCall();
+      // getPatientApiCall();
     }
   }, [currentPatient]);
 
@@ -168,16 +172,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           item && item.data && item.data.getCurrentPatients
             ? item.data.getCurrentPatients.patients
             : null;
+        setMobileAPICalled && setMobileAPICalled(true);
       } else {
         allPatients =
           item && item.data && item.data.getPatientByMobileNumber
             ? item.data.getPatientByMobileNumber.patients
             : null;
+        setMobileAPICalled && setMobileAPICalled(false);
       }
 
       const mePatient = allPatients
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
+
+      setAllPatients(allPatients);
 
       console.log(allPatients, 'allPatientssplash');
       console.log(mePatient, 'mePatientsplash');
@@ -300,95 +308,99 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const checkForVersionUpdate = () => {
     console.log('checkForVersionUpdate');
 
-    if (__DEV__) {
-      firebase.config().enableDeveloperMode();
-    }
+    try {
+      if (__DEV__) {
+        firebase.config().enableDeveloperMode();
+      }
 
-    firebase
-      .config()
-      .fetch(30 * 0) // 30 min
-      .then(() => {
-        return firebase.config().activateFetched();
-      })
-      .then(() => {
-        return firebase
-          .config()
-          .getValues([
-            'Android_mandatory',
-            'android_latest_version',
-            'ios_mandatory',
-            'ios_Latest_version',
-            'QA_Android_mandatory',
-            'QA_android_latest_version',
-            'QA_ios_mandatory',
-            'QA_ios_latest_version',
-            'Enable_Conditional_Management',
-            'Virtual_consultation_fee',
-            'QA_Virtual_consultation_fee',
-          ]);
-      })
-      .then((snapshot) => {
-        const myValye = snapshot;
-        let index: number = 0;
-        const nietos = [];
-        const Android_version: string = AppConfig.Configuration.Android_Version;
-        const iOS_version: string = AppConfig.Configuration.iOS_Version;
+      firebase
+        .config()
+        .fetch(30 * 0) // 30 min
+        .then(() => {
+          return firebase.config().activateFetched();
+        })
+        .then(() => {
+          return firebase
+            .config()
+            .getValues([
+              'Android_mandatory',
+              'android_latest_version',
+              'ios_mandatory',
+              'ios_Latest_version',
+              'QA_Android_mandatory',
+              'QA_android_latest_version',
+              'QA_ios_mandatory',
+              'QA_ios_latest_version',
+              'Enable_Conditional_Management',
+              'Virtual_consultation_fee',
+              'QA_Virtual_consultation_fee',
+            ]);
+        })
+        .then((snapshot) => {
+          const myValye = snapshot;
+          let index: number = 0;
+          const nietos = [];
+          const Android_version: string = AppConfig.Configuration.Android_Version;
+          const iOS_version: string = AppConfig.Configuration.iOS_Version;
 
-        for (const val in myValye) {
-          if (myValye.hasOwnProperty(val)) {
-            index++;
-            const element = myValye[val];
-            nietos.push({ index: index, value: element.val() });
-            if (nietos.length === 11) {
-              console.log(
-                'nietos',
-                parseFloat(nietos[1].value),
-                parseFloat(iOS_version),
-                parseFloat(Android_version),
-                parseFloat(nietos[5].value),
-                parseFloat(nietos[7].value),
-                nietos[8].value
-              );
+          for (const val in myValye) {
+            if (myValye.hasOwnProperty(val)) {
+              index++;
+              const element = myValye[val];
+              nietos.push({ index: index, value: element.val() });
+              if (nietos.length === 11) {
+                console.log(
+                  'nietos',
+                  parseFloat(nietos[1].value),
+                  parseFloat(iOS_version),
+                  parseFloat(Android_version),
+                  parseFloat(nietos[5].value),
+                  parseFloat(nietos[7].value),
+                  nietos[8].value
+                );
 
-              AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
+                AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
 
-              // if (buildName() === 'PROD') {
-              //   setVirtualConsultationFee &&
-              //     setVirtualConsultationFee(JSON.stringify(nietos[9].value));
-              // } else {
-              //   setVirtualConsultationFee &&
-              //     setVirtualConsultationFee(JSON.stringify(nietos[10].value));
-              // }
+                // if (buildName() === 'PROD') {
+                //   setVirtualConsultationFee &&
+                //     setVirtualConsultationFee(JSON.stringify(nietos[9].value));
+                // } else {
+                //   setVirtualConsultationFee &&
+                //     setVirtualConsultationFee(JSON.stringify(nietos[10].value));
+                // }
 
-              if (Platform.OS === 'ios') {
-                if (buildName() === 'QA') {
-                  if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
-                    showUpdateAlert(nietos[6].value);
+                if (Platform.OS === 'ios') {
+                  if (buildName() === 'QA') {
+                    if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
+                      showUpdateAlert(nietos[6].value);
+                    }
+                  } else {
+                    if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
+                      showUpdateAlert(nietos[2].value);
+                    }
                   }
                 } else {
-                  if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
-                    showUpdateAlert(nietos[2].value);
-                  }
-                }
-              } else {
-                if (buildName() === 'QA') {
-                  if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
-                    showUpdateAlert(nietos[4].value);
-                  }
-                } else {
-                  if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-                    showUpdateAlert(nietos[0].value);
+                  if (buildName() === 'QA') {
+                    if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
+                      showUpdateAlert(nietos[4].value);
+                    }
+                  } else {
+                    if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
+                      showUpdateAlert(nietos[0].value);
+                    }
                   }
                 }
               }
             }
           }
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('SplashScreen_checkForVersionUpdate', error);
-        console.log(`Error processing config: ${error}`);
-      });
+        })
+        .catch((error) => {
+          CommonBugFender('SplashScreen_checkForVersionUpdate', error);
+          console.log(`Error processing config: ${error}`);
+        });
+    } catch (error) {
+      CommonBugFender('SplashScreen_checkForVersionUpdate_try', error);
+    }
   };
 
   const showUpdateAlert = (mandatory: boolean) => {
@@ -429,7 +441,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 Platform.OS === 'ios'
                   ? 'https://apps.apple.com/in/app/apollo247/id1496740273'
                   : 'https://play.google.com/store/apps/details?id=com.apollo.patientapp'
-              ).catch((err) => console.error('An error occurred', err));
+              ).catch((err) => console.log('An error occurred', err));
             }}
           />
         </View>
