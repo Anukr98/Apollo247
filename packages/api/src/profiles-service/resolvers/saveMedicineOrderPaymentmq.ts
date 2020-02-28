@@ -12,6 +12,10 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ServiceBusService } from 'azure-sb';
+import {
+  sendMedicineOrderStatusNotification,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   input MedicinePaymentMqInput {
@@ -118,6 +122,11 @@ const SaveMedicineOrderPaymentMq: Resolver<
     paymentOrderId = savePaymentDetails.id;
     orderStatus = currentStatus;
     statusMsg = 'order payment failed';
+    sendMedicineOrderStatusNotification(
+      NotificationType.MEDICINE_ORDER_PAYMENT_FAILED,
+      orderDetails,
+      profilesDb
+    );
   } else {
     errorCode = 0;
     errorMessage = '';

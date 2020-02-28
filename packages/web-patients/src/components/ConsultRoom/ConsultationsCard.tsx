@@ -394,7 +394,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       >
                         {appointmentDetails.appointmentType === 'ONLINE'
                           ? difference <= 15 && difference > 0
-                            ? `Available in ${difference} mins`
+                            ? `Available in ${difference} ${difference === 1 ? 'MIN' : 'MINS'}`
                             : otherDateMarkup(appointmentTime)
                           : 'Clinic Visit'}
                       </div>

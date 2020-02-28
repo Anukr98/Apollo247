@@ -90,7 +90,7 @@ const updatePatient: Resolver<
   }
   const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   if (updatePatient) {
-    if (updatePatient.uhid == '' || updatePatient.uhid == null) {
+    if (patient.uhid == '' || patient.uhid == null) {
       await patientRepo.createNewUhid(updatePatient.id);
     }
   }
