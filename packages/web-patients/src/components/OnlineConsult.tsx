@@ -204,6 +204,9 @@ interface OnlineConsultProps {
   isRescheduleConsult: boolean;
   appointmentId?: string;
   rescheduleAPI?: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
+  tabValue?: (tabValue: number) => void;
+  setIsShownOnce?: (shownOnce: boolean) => void;
+  isShownOnce?: boolean;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
@@ -221,7 +224,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
 
-  const { doctorDetails, setIsPopoverOpen } = props;
+  const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
   let slotAvailableNext = '',
     consultNowSlotTime = '';
@@ -367,6 +370,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     });
   }
 
+  // console.log(isShownOnce, differenceInMinutes, !isShownOnce, typeof isShownOnce);
+
+  if (differenceInMinutes < 0 && (isShownOnce === false || isShownOnce === undefined)) {
+    tabValue && tabValue(1);
+    setIsShownOnce && setIsShownOnce(true);
+  }
+
   // console.log(
   //   'diff in minutes.....',
   //   differenceInMinutes,
@@ -414,8 +424,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
 
-  // console.log(timeSelected, 'time selected.....');
-
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
@@ -432,12 +440,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   Dr. {doctorName} is available in {differenceInHours} hours! Would you like to
                   consult now or schedule for later?
                 </p>
-              ) : (
+              ) : differenceInMinutes > 0 ? (
                 <p>
                   Dr. {doctorName} is available in {differenceInDays} days! Would you like to
                   consult now or schedule for later?
                 </p>
-              )}
+              ) : null}
               <div className={classes.actions}>
                 <AphButton
                   onClick={(e) => {
