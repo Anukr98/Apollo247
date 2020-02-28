@@ -228,6 +228,7 @@ const updatePatientType: Resolver<
 > = async (parent, args, context) => {
   const { apptRepo } = getRepos(context);
   let prevPatientId = '0';
+
   const appointmentDetails = await apptRepo.getAppointmentsByDocId(args.doctorId);
   if (appointmentDetails.length) {
     appointmentDetails.forEach(async (appointmentData) => {
