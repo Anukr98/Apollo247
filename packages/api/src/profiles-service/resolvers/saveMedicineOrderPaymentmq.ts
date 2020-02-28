@@ -122,7 +122,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
     paymentOrderId = savePaymentDetails.id;
     orderStatus = currentStatus;
     statusMsg = 'order payment failed';
-    console.log('orderdetails', orderDetails);
     sendMedicineOrderStatusNotification(
       NotificationType.MEDICINE_ORDER_PAYMENT_FAILED,
       orderDetails,

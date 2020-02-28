@@ -1460,7 +1460,7 @@ export async function sendMedicineOrderStatusNotification(
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
   let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
-  if (orderDetails.orderTat !== null) {
+  if (orderDetails.orderTat) {
     if (Date.parse(orderDetails.orderTat.toString())) {
       const tatDate = new Date(orderDetails.orderTat.toString());
       orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
