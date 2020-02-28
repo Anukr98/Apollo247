@@ -471,18 +471,10 @@ const SaveDiagnosticOrder: Resolver<
       const hubDetails = await diagnosticRepo.getHubDetails(
         diagnosticOrderInput.diagnosticBranchCode
       );
-      if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'as') {
-        patientDob = '1 Jan 2000';
-        if (patientDetails.dateOfBirth) {
-          patientDob = format(patientDetails.dateOfBirth, 'dd MMM yyyy');
-        }
-      } else {
-        patientDob = '30';
-        if (patientDetails.dateOfBirth) {
-          patientDob = Math.abs(
-            differenceInYears(new Date(), patientDetails.dateOfBirth)
-          ).toString();
-        }
+      patientDob = '30';
+      if (patientDetails.dateOfBirth != null) {
+        patientDob = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth)).toString();
+        // format(patientDetails.dateOfBirth, 'dd MMM yyyy');
       }
       const addProcessInput = [
         {
