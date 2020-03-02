@@ -7,7 +7,7 @@ import gql from 'graphql-tag';
 import { useAuth } from 'hooks/authHooks';
 
 const dashboardClient = new ApolloClient({
-  uri: ' https://aphapi-dashboards.popcornapps.com/',
+  uri: process.env.DASHBOARD_URL,
   request: (operation) => {
     const token = process.env.AUTH_TOKEN;
     const userId = '';
@@ -143,8 +143,6 @@ export const MyAccountStats: React.FC = () => {
       }
     }, 2000);
   };
-  console.log(process.env.POWERBI_MIS_REPORT_ID, '0000');
-
   return !accessToken ? null : (
     <Report
       id={process.env.POWERBI_MIS_REPORT_ID}
