@@ -3,21 +3,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Chip, Theme, Paper } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
-import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
 import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
-// import {
-//   GetJuniorDoctorCaseSheet,
-//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
-// } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 interface OptionType {
@@ -338,10 +330,7 @@ export const DiagnosticPrescription: React.FC = () => {
     setSuggestions([]);
   };
 
-  function renderSuggestion(
-    suggestion: any | null,
-    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-  ) {
+  function renderSuggestion(suggestion: any | null, { query }: Autosuggest.RenderSuggestionParams) {
     const matches = match(suggestion!.itemName, query);
     const parts = parse(suggestion!.itemName, matches);
 
@@ -382,7 +371,6 @@ export const DiagnosticPrescription: React.FC = () => {
   };
 
   const handleDelete = (item: any, idx: number) => {
-    // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -508,7 +496,7 @@ export const DiagnosticPrescription: React.FC = () => {
           )}
         />
       )}
-      { otherDiagnostic.trim().length > 2 && (
+      {otherDiagnostic.trim().length > 2 && (
         <div className={classes.addNewDiagnostic}>
           <AphButton
             onClick={() => {

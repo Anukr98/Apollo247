@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Chip, Theme, Paper, Grid } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
-import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
@@ -11,14 +10,8 @@ import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
 import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-
 import { GET_DOCTOR_FAVOURITE_TESTS } from 'graphql/doctors';
-import {
-  GetDoctorFavouriteTestList,
-  GetDoctorFavouriteTestList_getDoctorFavouriteTestList,
-  GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList,
-} from 'graphql/types/GetDoctorFavouriteTestList';
-import { useQuery } from 'react-apollo-hooks';
+import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
 
 interface OptionType {
   itemname: string;
@@ -280,7 +273,6 @@ export const DiagnosticPrescription: React.FC = () => {
     diagnosticPrescription: selectedValues,
     setDiagnosticPrescription: setSelectedValues,
   } = useContext(CaseSheetContext);
-  console.log(selectedValues);
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
   const { caseSheetEdit, patientDetails } = useContext(CaseSheetContext);
@@ -400,10 +392,7 @@ export const DiagnosticPrescription: React.FC = () => {
     });
   };
 
-  function renderSuggestion(
-    suggestion: any | null,
-    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-  ) {
+  function renderSuggestion(suggestion: any | null, { query }: Autosuggest.RenderSuggestionParams) {
     const matches = match(suggestion!.itemName, query);
     const parts = parse(suggestion!.itemName, matches);
 
@@ -417,7 +406,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 fontWeight: part.highlight ? 500 : 400,
                 whiteSpace: 'pre',
               }}
-              title={suggestion!.itemName} //added by Vishal
+              title={suggestion!.itemName}
             >
               {part.text}
             </span>
@@ -428,7 +417,6 @@ export const DiagnosticPrescription: React.FC = () => {
     );
   }
   const handleDelete = (item: any, idx: number) => {
-    // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -561,7 +549,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 )}
               />
             )}
-            { otherDiagnostic.trim().length > 2 && (
+            {otherDiagnostic.trim().length > 2 && (
               <AphButton
                 className={classes.darkGreenaddBtn}
                 variant="contained"
@@ -572,7 +560,6 @@ export const DiagnosticPrescription: React.FC = () => {
                       itemName: otherDiagnostic,
                       __typename: 'DiagnosticPrescription',
                     });
-                    //selectedValues && selectedValues.push(daignosisValue);
                     setShowAddOtherTests(false);
                     setShowAddCondition(false);
                     setIdx(selectedValues!.length + 1);
@@ -620,7 +607,6 @@ export const DiagnosticPrescription: React.FC = () => {
                             single: '',
                             popper: '',
                           });
-                          // handleChange('single');
                         }}
                       >
                         <img src={require('images/add_doctor_white.svg')} alt="" />

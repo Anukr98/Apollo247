@@ -2,7 +2,6 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
-import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import _startCase from 'lodash/startCase';
@@ -103,13 +102,10 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const JDProfile: React.FC = (props) => {
   const classes = useStyles();
-
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [logoutFailed, setIsLogoutFailed] = React.useState(false);
   const [clearQueue, setClearQueue] = React.useState(false);
-
   const { currentPatient: currentDoctor, signOut, isSigningIn } = useAuth();
-
   let activeConsultsCount: number = 0;
 
   const doctorAwayMutation = useMutation<
@@ -179,10 +175,6 @@ export const JDProfile: React.FC = (props) => {
 
   const doctorSalutation =
     currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
-  const doctorSpecialty =
-    currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
-      ? _startCase(_toLower(currentDoctor.specialty.name))
-      : '';
   const doctorQualification = currentDoctor && currentDoctor.qualification;
   const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
@@ -257,7 +249,7 @@ export const JDProfile: React.FC = (props) => {
           <Button
             color="primary"
             onClick={() => {
-              signOut(); // kills firebase token.
+              signOut();
               setIsDialogOpen(false);
             }}
             autoFocus

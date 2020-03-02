@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Divider, Slider, createMuiTheme, withStyles } from '@material-ui/core';
-// import { AphToggleSwitch } from '@aph/web-ui-components';
 import { AphToggleSwitch } from 'components/case-sheet/panels/AphToggleSwitch';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { debounce } from 'lodash';
@@ -27,9 +26,6 @@ const useStyles = makeStyles(() => ({
       },
       display: 'inline-block',
       textAlign: 'center',
-    },
-    '& .Mui-checked': {
-      // color: '#f00',
     },
   },
   KeyboardDatePicker: {
@@ -120,19 +116,6 @@ const useStyles = makeStyles(() => ({
     marginBottom: 10,
   },
   datepicker: {
-    // borderBottom: '2px solid #00b38e',
-    '&:hover': {
-      // borderBottom: '2px solid #00b38e',
-    },
-    '& div': {
-      '&:before': {
-        // borderBottom: '#f7f7f7 !important',
-      },
-      '&:after': {
-        // borderBottom: '#f7f7f7 !important',
-      },
-    },
-
     '& input': {
       color: 'rgba(2,71,91,0.5)',
       fontSize: 18,
@@ -233,21 +216,6 @@ const PrettoSlider = withStyles({
     height: 8,
     borderRadius: 4,
   },
-  // markLabel: {
-  //   width: '10px',
-  //   display: 'inline-block',
-  //   whiteSpace: 'normal',
-  // '&::after': {
-  //   content: '"days"',
-  //   display: 'block'
-  // },
-  // '&:nth-child(5)': {
-  //   paddingLeft: '70px'
-  // },
-  // '&:nth-last-child(2)::after': {
-  //   content: '""'
-  // }
-  // }
 })(Slider);
 
 const defaultMaterialTheme = createMuiTheme({
@@ -434,7 +402,6 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                     className={classes.button}
                     disabled={!props.startAppointment}
                   >
-                    {/* <img src={require('images/ic_clicic_consult.svg')} alt="" /> */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="18"

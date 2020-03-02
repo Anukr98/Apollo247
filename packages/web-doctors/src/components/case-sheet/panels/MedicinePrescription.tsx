@@ -606,7 +606,6 @@ export const MedicinePrescription: React.FC = () => {
   >([]);
   const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
-  const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
 
   const client = useApolloClient();
   useEffect(() => {
@@ -665,9 +664,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
-
   const [loading, setLoading] = useState<boolean>(false);
-
   const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
     {
       id: 'afterfood',
@@ -752,10 +749,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ];
-  function renderSuggestion(
-    suggestion: OptionType,
-    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-  ) {
+  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
     const matches = match(suggestion.label, query);
     const parts = parse(suggestion.label, matches);
 
@@ -851,7 +845,6 @@ export const MedicinePrescription: React.FC = () => {
       })
       .catch((error) => {
         if (error.toString().includes('404')) {
-          //setIsSuggestionFetched(false);
           setLoading(false);
         }
       });
@@ -1352,7 +1345,6 @@ export const MedicinePrescription: React.FC = () => {
           <div className={classes.medicineHeading}>Medicines</div>
           {selectedMedicinesArr!.map((_medicine: any, index: number) => {
             const medicine = _medicine!;
-            //const durations = Number(medicine.medicineConsumptionDurationInDays);
             const duration =
               medicine.medicineConsumptionDurationInDays &&
               ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
@@ -1471,7 +1463,6 @@ export const MedicinePrescription: React.FC = () => {
                         .join(', ')
                         .toLowerCase()
                     : '';
-                //const favUnitHtmls = favMedicine.medicineUnit.toLowerCase();
                 const favUnitHtmls =
                   favMedicine.medicineUnit[favMedicine.medicineUnit.length - 1].toLowerCase() ===
                   's'
