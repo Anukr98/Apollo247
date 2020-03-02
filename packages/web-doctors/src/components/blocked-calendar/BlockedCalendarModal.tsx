@@ -401,7 +401,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const TextFieldComponent = (props: any) => {
     return <TextField {...props} disabled={true} />;
   };
-  var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
+  const options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
   const [blockConsultHourDay, setBlockConsultHourDay] = useState(
     new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
   );
@@ -498,7 +498,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           }
         });
       let index = 0;
-      for (var i = 0; i < startEndList.length; i++) {
+      for (let i = 0; i < startEndList.length; i++) {
         if (new Date(startEndList[i].start).getDate() == new Date(obj.start).getDate()) {
           index = i;
         }
@@ -573,9 +573,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
   const getDateRange = (startDate: any, stopDate: any) => {
     if (startDate && stopDate) {
-      var dateArray = [];
-      var currentDate = moment(startDate);
-      var endDate = moment(stopDate);
+      let dateArray = [];
+      let currentDate = moment(startDate);
+      let endDate = moment(stopDate);
       while (currentDate <= endDate) {
         dateArray.push(moment(currentDate).format('YYYY-MM-DD'));
         currentDate = moment(currentDate).add(1, 'days');
@@ -601,13 +601,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     if (new Date(start).getDate() === new Date().getDate()) {
       if (startTime && startTime.length > 0) {
         const [shours, smins] = startTime.split(':');
-        var startHour = shours;
-        var startMinute = smins;
-        var startTimeObject = new Date();
+        let startHour = shours;
+        let startMinute = smins;
+        let startTimeObject = new Date();
         startTimeObject.setHours(Number(startHour), Number(startMinute));
         const currentHours = new Date().getHours();
         const currentMinuts = new Date().getMinutes() + 1;
-        var currentTimeObject = new Date();
+        let currentTimeObject = new Date();
         currentTimeObject.setHours(Number(currentHours), Number(currentMinuts));
         if (startTimeObject < currentTimeObject) {
           setIsPastTime(false);
@@ -623,17 +623,17 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   useEffect(() => {
     if (startTime && endTime && startTime.length > 0 && endTime.length > 0) {
       const [shours, smins] = startTime.split(':');
-      var startHour = shours;
-      var startMinute = smins;
+      let startHour = shours;
+      let startMinute = smins;
       const [ehours, emins] = endTime.split(':');
-      var endHour = ehours;
-      var endMinute = Number(emins) - 1;
+      let endHour = ehours;
+      let endMinute = Number(emins) - 1;
       //Create date object and set the time to that
-      var startTimeObject = new Date();
+      let startTimeObject = new Date();
       startTimeObject.setHours(Number(startHour), Number(startMinute));
 
       //Create date object and set the time to that
-      var endTimeObject = new Date(startTimeObject);
+      let endTimeObject = new Date(startTimeObject);
       endTimeObject.setHours(Number(endHour), Number(endMinute));
 
       //Now we are ready to compare both the dates
@@ -647,25 +647,25 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   useEffect(() => {
     if (startTime && customTimeArray && startTime.length > 0 && customTimeArray.length > 0) {
       const [shours, smins] = startTime.split(':');
-      var startHour = shours;
-      var startMinute = smins;
-      var startTimeObject = new Date();
+      let startHour = shours;
+      let startMinute = smins;
+      let startTimeObject = new Date();
       startTimeObject.setHours(Number(startHour), Number(startMinute));
       customTimeArray.map((value: any) => {
         if (value && value.startTime && value.endTime) {
           const [arrayshours, arraysmins] = value.startTime.split(':');
-          var arraystartHour = arrayshours;
-          var arraystartMinute = arraysmins;
+          let arraystartHour = arrayshours;
+          let arraystartMinute = arraysmins;
           const [arrayehours, arrayemins] = value.endTime.split(':');
-          var arrayendHour = arrayehours;
-          var arrayendMinute = arrayemins;
+          let arrayendHour = arrayehours;
+          let arrayendMinute = arrayemins;
 
           //Create date object and set the time to that
-          var startArrayTimeObject = new Date();
+          let startArrayTimeObject = new Date();
           startArrayTimeObject.setHours(Number(arraystartHour), Number(arraystartMinute));
 
           //Create date object and set the time to that
-          var endArrayTimeObject = new Date(startTimeObject);
+          let endArrayTimeObject = new Date(startTimeObject);
           endArrayTimeObject.setHours(Number(arrayendHour), Number(arrayendMinute));
           if (startArrayTimeObject <= startTimeObject) {
             if (startTimeObject < endArrayTimeObject) {
@@ -678,9 +678,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           }
           if (endTime && startTime) {
             const [ehours, emins] = endTime.split(':');
-            var endHour = ehours;
-            var endMinute = emins;
-            var endTimeObject = new Date();
+            let endHour = ehours;
+            let endMinute = emins;
+            let endTimeObject = new Date();
             endTimeObject.setHours(Number(endHour), Number(endMinute));
 
             if (startTimeObject <= startArrayTimeObject) {
