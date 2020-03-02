@@ -209,19 +209,20 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
     unit: MEDICINE_CONSUMPTION_DURATION | null,
     numberOfDays: string | null
   ) => {
+    const daysCount = numberOfDays ? parseFloat(numberOfDays) : 0;
     if (unit) {
-      if (numberOfDays && (numberOfDays === '1' || numberOfDays === '0')) {
+      if (daysCount === 1 || daysCount === 0) {
         return (unit || '').toLowerCase().replace('s', '');
       }
       return (unit || '').toLowerCase().replace('s', '(s)');
     }
-    return null;
+    return daysCount === 1 || daysCount === 0 ? 'day' : 'days';
   };
 
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
         Prescription
@@ -288,6 +289,9 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                               }`
                           )
                       : ''}
+                    {prescription.medicineInstructions
+                      ? '\n' + prescription.medicineInstructions
+                      : ''}
                     {prescription.medicineConsumptionDurationInDays == ''
                       ? ''
                       : prescription.medicineConsumptionDurationInDays &&
@@ -300,9 +304,6 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                           prescription.medicineConsumptionDurationUnit,
                           prescription.medicineConsumptionDurationInDays
                         )} `}
-                    {prescription.medicineInstructions
-                      ? '\n' + prescription.medicineInstructions
-                      : ''}
                   </div>
                 )}
               </Grid>
