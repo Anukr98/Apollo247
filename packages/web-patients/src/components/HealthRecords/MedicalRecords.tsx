@@ -320,7 +320,6 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  // const [activeData, setActiveData] = useState<any | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
 
   const {
@@ -332,12 +331,6 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     activeData,
     setActiveData,
   } = props;
-
-  // useEffect(() => {
-  //   if (!isSmallScreen && allCombinedData && !activeData) {
-  //     setActiveData(allCombinedData[0]);
-  //   }
-  // }, [allCombinedData]);
 
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
