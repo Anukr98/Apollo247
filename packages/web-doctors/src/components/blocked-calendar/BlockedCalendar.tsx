@@ -1,4 +1,4 @@
-import { Button, CircularProgress } from '@material-ui/core';
+import { CircularProgress } from '@material-ui/core';
 import { GET_BLOCKED_CALENDAR } from 'graphql/doctors';
 import { GetBlockedCalendar, GetBlockedCalendarVariables } from 'graphql/types/GetBlockedCalendar';
 import React, { useState } from 'react';
@@ -13,7 +13,6 @@ export type Item = { id: number; start: Date; end: Date };
 export interface BlockedCalendarProps {
   doctorId: string;
 }
-
 export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
