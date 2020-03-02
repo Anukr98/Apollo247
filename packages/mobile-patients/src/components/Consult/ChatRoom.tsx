@@ -751,6 +751,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CALL_ABANDON) return;
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+      if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
 
       console.log('API Called');
       endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
@@ -1217,6 +1218,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
+    if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+
     const startConsultJRResult = insertText.filter((obj: any) => {
       return obj.message === startConsultjr;
     });
