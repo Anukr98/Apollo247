@@ -518,7 +518,7 @@ export async function sendNotification(
               ' ' +
               facilityDets.state
           );
-          smsLink = content.replace(
+          smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
               ' ' +
