@@ -56,6 +56,7 @@ import {
   FEEDBACKTYPE,
   REQUEST_ROLES,
   APPOINTMENT_STATE,
+  APPOINTMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -750,6 +751,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.status === STATUS.CALL_ABANDON) return;
       if (appointmentData.status === STATUS.CANCELLED) return;
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
+      if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
 
       console.log('API Called');
       endCallAppointmentSessionAPI(isDoctorNoShow ? STATUS.NO_SHOW : STATUS.CALL_ABANDON);
@@ -1121,7 +1123,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
-        // console.log('presenceEvent', presenceEvent);
+        if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+        console.log(
+          'presenceEvent',
+          presenceEvent,
+          +' ' + APPOINTMENT_TYPE.PHYSICAL + ' ' + appointmentData.appointmentType
+        );
+
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
         const diff = moment.duration(moment(appointmentData.appointmentDateTime).diff(new Date()));
@@ -1163,7 +1171,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       APIForUpdateAppointmentData(false);
                       abondmentStarted = true;
                     } else {
-                      callAbondmentMethod(false);
+                      if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
+                        callAbondmentMethod(false);
+                      }
                     }
                     eventsAfterConnectionDestroyed();
                   }
@@ -1208,6 +1218,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
+    if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
+
     const startConsultJRResult = insertText.filter((obj: any) => {
       return obj.message === startConsultjr;
     });
@@ -1314,7 +1326,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               abondmentStarted = false;
             }
           } else {
-            callAbondmentMethod(appointmentSeniorDoctorStarted);
+            if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
+              callAbondmentMethod(appointmentSeniorDoctorStarted);
+            }
           }
         } catch (error) {
           CommonBugFender('ChatRoom_APIForUpdateAppointmentData_try', error);
