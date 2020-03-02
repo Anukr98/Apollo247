@@ -209,13 +209,14 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
     unit: MEDICINE_CONSUMPTION_DURATION | null,
     numberOfDays: string | null
   ) => {
+    const daysCount = numberOfDays ? parseFloat(numberOfDays) : 0;
     if (unit) {
-      if (numberOfDays && (numberOfDays === '1' || numberOfDays === '0')) {
+      if (daysCount === 1 || daysCount === 0) {
         return (unit || '').toLowerCase().replace('s', '');
       }
       return (unit || '').toLowerCase().replace('s', '(s)');
     }
-    return numberOfDays === '1' || numberOfDays === '0' ? 'day' : 'days';
+    return daysCount === 1 || daysCount === 0 ? 'day' : 'days';
   };
 
   return (

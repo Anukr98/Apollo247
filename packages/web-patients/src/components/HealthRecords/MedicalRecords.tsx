@@ -312,22 +312,32 @@ type MedicalRecordProps = {
   setMedicalRecords: (medicalRecords: any) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  setActiveData: (activeData: any) => void;
+  activeData: any;
 };
 
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  const [activeData, setActiveData] = useState<any | null>(null);
+  // const [activeData, setActiveData] = useState<any | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
 
-  const { medicalRecords, allCombinedData, loading, setLoading, setMedicalRecords } = props;
+  const {
+    medicalRecords,
+    allCombinedData,
+    loading,
+    setLoading,
+    setMedicalRecords,
+    activeData,
+    setActiveData,
+  } = props;
 
-  useEffect(() => {
-    if (!isSmallScreen && allCombinedData && !activeData) {
-      setActiveData(allCombinedData[0]);
-    }
-  }, [allCombinedData]);
+  // useEffect(() => {
+  //   if (!isSmallScreen && allCombinedData && !activeData) {
+  //     setActiveData(allCombinedData[0]);
+  //   }
+  // }, [allCombinedData]);
 
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
