@@ -686,7 +686,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
           const td = `${nextDate.toDateString()} 00:00:00`;
           if (new Date(ed) >= new Date(td) && timeSlot.weekDay != timeSlots[rowCount - 1].weekDay) {
-            startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+            previousDate = addDays(previousDate, 1);
+            startTime = new Date(previousDate.toDateString() + ' ' + stTime);
           }
         }
         Array(slotsCount)
