@@ -1,14 +1,8 @@
-import { Theme, Avatar, Button, CircularProgress } from '@material-ui/core';
+import { Theme, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { format } from 'date-fns';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
-import { Mutation } from 'react-apollo';
-import {
-  RemoveFromConsultQueue,
-  RemoveFromConsultQueueVariables,
-} from 'graphql/types/RemoveFromConsultQueue';
-import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -117,7 +111,7 @@ export interface ActiveConsultCardProps {
 }
 export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
   const classes = useStyles();
-  const { id, patient, appointment } = props;
+  const { patient, appointment } = props;
   const appointmentDateIST = format(
     new Date(appointment.appointmentDateTime).getTime(),
     'dd/MM/yyyy, hh:mm a'
@@ -130,25 +124,6 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
       </div>
       <div className={`${classes.cardGroup} ${classes.upNextCardGroup}`}>
         {patient.queueNumber > 1 && <div className={classes.queueText}>Queued</div>}
-        {/* <Mutation<RemoveFromConsultQueue, RemoveFromConsultQueueVariables>
-          mutation={REMOVE_FROM_CONSULT_QUEUE}
-        >
-          {(removeFromConsultQueue, { loading }) => (
-            <Button
-              variant="contained"
-              disabled={loading}
-              onClick={() =>
-                removeFromConsultQueue({
-                  variables: {
-                    id,
-                  },
-                })
-              }
-            >
-              {loading && <CircularProgress size={20} />} REMOVE
-            </Button>
-          )}
-        </Mutation> */}
         <div className={classes.cardImg}>
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />
@@ -175,7 +150,6 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
           </div>
           <div className={classes.userId}>UHID: {patient.uhid}</div>
         </div>
-        {/* {patient.queueNumber > 1 && <div className={classes.queueCount}>{patient.queueNumber}</div>} */}
       </div>
     </div>
   );

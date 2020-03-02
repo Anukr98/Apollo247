@@ -1,14 +1,13 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
-import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
@@ -187,9 +186,9 @@ export const JuniorDoctor: React.FC = (props) => {
     }));
     const activeConsults = allConsults.filter((consult) => consult.isActive);
 
-    const pastConsults = (allConsults.filter(
-      (consult) => !consult.isActive && consult.appointment.status !== STATUS.CANCELLED
-    )).reverse();
+    const pastConsults = allConsults
+      .filter((consult) => !consult.isActive && consult.appointment.status !== STATUS.CANCELLED)
+      .reverse();
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>

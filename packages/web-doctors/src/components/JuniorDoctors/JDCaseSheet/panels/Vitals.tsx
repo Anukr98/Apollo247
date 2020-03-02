@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField } from '@aph/web-ui-components';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -95,24 +95,6 @@ export const Vitals: React.FC = () => {
     caseSheetEdit,
   } = useContext(CaseSheetContextJrd);
 
-  // const [disableheightFocus, setDisableHeightFocus] = useState(true);
-  // const [disableWeightFocus, setDisableWeightFocus] = useState(true);
-  // const [disableBPFocus, setDisableBPFocus] = useState(true);
-  // const [disableTempFocus, setDisableTempFocus] = useState(true);
-
-  // const heightRef = (input: HTMLInputElement) => {
-  //   input && input.focus();
-  // };
-  // const weightRef = (input: HTMLInputElement) => {
-  //   input && input.focus();
-  // };
-  // const bpRef = (input: HTMLInputElement) => {
-  //   input && input.focus();
-  // };
-  // const tempRef = (input: HTMLInputElement) => {
-  //   input && input.focus();
-  // };
-
   return (
     <div className={classes.root}>
       <Grid container spacing={2}>
@@ -128,19 +110,7 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setHeight(e.target.value);
                 }}
-                // inputRef={heightRef}
               />
-              {/* {caseSheetEdit && height !== '' && (
-                <div className={classes.boxActions}>
-                  <AphButton
-                    onClick={() => {
-                      setHeight('');
-                    }}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                </div>
-              )} */}
             </div>
           </div>
         </Grid>
@@ -156,20 +126,7 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setWeight(e.target.value);
                 }}
-                // inputRef={weightRef}
               />
-              {/* {caseSheetEdit && weight !== '' && (
-                <div className={classes.boxActions}>
-                  
-                  <AphButton
-                    onClick={() => {
-                      setWeight('');
-                    }}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                </div>
-              )} */}
             </div>
           </div>
         </Grid>
@@ -185,19 +142,7 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setBp(e.target.value);
                 }}
-                // inputRef={bpRef}
               />
-              {/* {caseSheetEdit && bp !== '' && (
-                <div className={classes.boxActions}>
-                  <AphButton
-                    onClick={() => {
-                      setBp('');
-                    }}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                </div>
-              )} */}
             </div>
           </div>
         </Grid>
@@ -213,20 +158,7 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setTemperature(e.target.value);
                 }}
-                // inputRef={tempRef}
               />
-              {/* {caseSheetEdit && temperature !== '' && (
-                <div className={classes.boxActions}>
-                 
-                  <AphButton
-                    onClick={() => {
-                      setTemperature('');
-                    }}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                </div>
-              )} */}
             </div>
           </div>
         </Grid>
