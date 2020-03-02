@@ -664,7 +664,7 @@ export const AddRecords: React.FC = (props) => {
               <div className={classes.customScroll}>
                 <ExpansionPanel className={classes.panelRoot} defaultExpanded={true}>
                   <ExpansionPanelSummary
-                    expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+                    expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
                     classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
                   >
                     {'Documents Uploaded'}
@@ -767,7 +767,7 @@ export const AddRecords: React.FC = (props) => {
                 </ExpansionPanel>
                 <ExpansionPanel className={classes.panelRoot} defaultExpanded={true}>
                   <ExpansionPanelSummary
-                    expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+                    expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
                     classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
                   >
                     Record Details
@@ -898,7 +898,7 @@ export const AddRecords: React.FC = (props) => {
                   onChange={handleChange('report')}
                 >
                   <ExpansionPanelSummary
-                    expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+                    expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
                     classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
                   >
                     Report Details (Optional)
