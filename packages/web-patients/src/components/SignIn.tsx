@@ -113,6 +113,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   // const [timer, setTimer] = useState(179);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
+  const maxAllowedAttempts = 3;
 
   const {
     isSendingOtp,
@@ -201,7 +202,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               <div>
                 {`${submitCount > 0 ? ' Incorrect OTP, ' : ''}
                  
-                 ${3 - submitCount}
+                 ${maxAllowedAttempts - submitCount}
                     ${submitCount === 2 ? ' attempt left' : ' attempts left'}`}
               </div>
             </FormHelperText>
