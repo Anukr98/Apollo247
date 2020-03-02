@@ -106,11 +106,11 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
   const [otp, setOtp] = useState<number[]>([]);
   // const placeRecaptchaAfterMe = useRef(null);
-
+  const countDown = useRef(900);
   const [otpSubmitCount, setOtpSubmitCount] = useState(0);
   // const [isIncorrectOtp, setIsIncorrectOtp] = useState<boolean>(false);
-  // const [showTimer, setShowTimer] = useState(false);
-  // const [timer, setTimer] = useState(179);
+  const [showTimer, setShowTimer] = useState(false);
+  const [timer, setTimer] = useState(900);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
@@ -144,8 +144,21 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   }, [disableResendOtpButtonCounter]);
 
   useEffect(() => {
-    if (otpSubmitCount === 3) {
-      setOtpStatusText(blockedMessage);
+    if (otpSubmitCount > 0) {
+      if (otpSubmitCount === 3) {
+        setOtpStatusText(blockedMessage);
+        setShowTimer(true);
+        const interval = setInterval(() => {
+          countDown.current--;
+          setTimer(countDown.current);
+          if (countDown.current === 0) {
+            clearInterval(interval);
+            setOtpSubmitCount(0);
+            setShowTimer(false);
+            countDown.current = 900;
+          }
+        }, 1000);
+      }
     }
   }, [otpSubmitCount]);
 
@@ -155,105 +168,114 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
         {verifyOtpError && otpSubmitCount === 3 ? 'oops!' : 'great'}
       </Typography>
       <p>{otpStatusText}</p>
-      {verifyOtpError && otpSubmitCount === 3 ? null : (
-        <form>
-          <Grid container spacing={1}>
-            {_times(numOtpDigits, (index) => (
-              <Grid item xs={2} key={index}>
-                <AphTextField
-                  autoFocus={index === 0}
-                  error={verifyOtpError && !isSigningIn}
-                  inputRef={otpInputRefs[index]}
-                  value={_isNumber(otp[index]) ? otp[index] : ''}
-                  inputProps={{ type: 'tel', maxLength: 1 }}
-                  onChange={(e) => {
-                    const newOtp = [...otp];
-                    const num = parseInt(e.currentTarget.value, 10);
-                    if (isNaN(num)) {
-                      delete newOtp[index];
-                    } else {
-                      newOtp[index] = num;
-                      const nextInput = otpInputRefs[index + 1];
-                      if (nextInput && nextInput.current) {
-                        nextInput.current.focus();
+      {verifyOtpError && otpSubmitCount === 3 ?
+        <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
+          <div>
+            {!(isSigningIn || isVerifyingOtp) &&
+              showTimer &&
+              `Try again after  ${Math.floor(timer / 60)}:${
+              timer % 60 <= 9 ? `0` + (timer % 60) : timer % 60
+              }`}
+          </div>
+        </FormHelperText> : (
+          <form>
+            <Grid container spacing={1}>
+              {_times(numOtpDigits, (index) => (
+                <Grid item xs={2} key={index}>
+                  <AphTextField
+                    autoFocus={index === 0}
+                    error={verifyOtpError && !isSigningIn}
+                    inputRef={otpInputRefs[index]}
+                    value={_isNumber(otp[index]) ? otp[index] : ''}
+                    inputProps={{ type: 'tel', maxLength: 1 }}
+                    onChange={(e) => {
+                      const newOtp = [...otp];
+                      const num = parseInt(e.currentTarget.value, 10);
+                      if (isNaN(num)) {
+                        delete newOtp[index];
+                      } else {
+                        newOtp[index] = num;
+                        const nextInput = otpInputRefs[index + 1];
+                        if (nextInput && nextInput.current) {
+                          nextInput.current.focus();
+                        }
                       }
-                    }
-                    setOtp(newOtp);
-                    setOtpMain(newOtp.length > 0 ? newOtp.toString() : '');
-                  }}
-                  onKeyDown={(e) => {
-                    const backspaceWasPressed = e.key === 'Backspace';
-                    const currentInputIsEmpty = otp[index] == null;
-                    const focusPreviousInput = () => {
-                      const prevInput = otpInputRefs[index - 1];
-                      if (prevInput && prevInput.current) {
-                        prevInput.current.focus();
+                      setOtp(newOtp);
+                      setOtpMain(newOtp.length > 0 ? newOtp.toString() : '');
+                    }}
+                    onKeyDown={(e) => {
+                      const backspaceWasPressed = e.key === 'Backspace';
+                      const currentInputIsEmpty = otp[index] == null;
+                      const focusPreviousInput = () => {
+                        const prevInput = otpInputRefs[index - 1];
+                        if (prevInput && prevInput.current) {
+                          prevInput.current.focus();
+                        }
+                      };
+                      if (backspaceWasPressed && currentInputIsEmpty) {
+                        focusPreviousInput();
                       }
-                    };
-                    if (backspaceWasPressed && currentInputIsEmpty) {
-                      focusPreviousInput();
-                    }
-                  }}
-                />
-              </Grid>
-            ))}
-          </Grid>
-          {verifyOtpError && !isSigningIn && (
-            <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
-              <div>
-                {`${otpSubmitCount > 0 && ' Incorrect OTP, '}
+                    }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+            {verifyOtpError && !isSigningIn && (
+              <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
+                <div>
+                  {`${otpSubmitCount > 0 && ' Incorrect OTP, '}
                  ${noOfAttemptsLeft}
                     ${otpSubmitCount === 2 ? ' attempt left' : ' attempts left'}`}
-              </div>
-            </FormHelperText>
-          )}
-          <div className={classes.resendActions}>
-            <Button
-              variant="text"
-              disabled={isSendingOtp || disableResendOtpButton}
-              className={classes.resendBtn}
-              classes={{
-                disabled: classes.resendBtnDisabled,
-              }}
-              onClick={(e) => {
-                resendOtp(mobileNumberWithPrefix, customLoginId);
-                setOtp([]);
-                setOtpStatusText(resentOTPMessage);
-                const firstInput = otpInputRefs[0].current;
-                if (firstInput) firstInput.focus();
-                setDisableResendOtpButton(true);
-                setDisableResendOtpButtonCounter(30);
-              }}
-            >
-              Resend OTP
+                </div>
+              </FormHelperText>
+            )}
+            <div className={classes.resendActions}>
+              <Button
+                variant="text"
+                disabled={isSendingOtp || disableResendOtpButton}
+                className={classes.resendBtn}
+                classes={{
+                  disabled: classes.resendBtnDisabled,
+                }}
+                onClick={(e) => {
+                  resendOtp(mobileNumberWithPrefix, customLoginId);
+                  setOtp([]);
+                  setOtpStatusText(resentOTPMessage);
+                  const firstInput = otpInputRefs[0].current;
+                  if (firstInput) firstInput.focus();
+                  setDisableResendOtpButton(true);
+                  setDisableResendOtpButtonCounter(30);
+                }}
+              >
+                Resend OTP
             </Button>
-            {disableResendOtpButton ? (
-              <span>{`00:${String(disableResendOtpButtonCounter).padStart(2, '0')}`}</span>
-            ) : null}
-          </div>
-          <div className={classes.action}>
-            <Fab
-              type="submit"
-              color="primary"
-              disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
-              onClick={(e) => {
-                e.preventDefault();
-                verifyOtp(otp.join(''), customLoginId).then((authToken) => {
-                  if (!authToken) {
-                    setOtpSubmitCount(otpSubmitCount + 1);
-                  }
-                });
-              }}
-            >
-              {isSigningIn || isSendingOtp || isVerifyingOtp ? (
-                <AphCircularProgress color="inherit" />
-              ) : (
-                <img src={require('images/ic_arrow_forward.svg')} />
-              )}
-            </Fab>
-          </div>
-        </form>
-      )}
+              {disableResendOtpButton ? (
+                <span>{`00:${String(disableResendOtpButtonCounter).padStart(2, '0')}`}</span>
+              ) : null}
+            </div>
+            <div className={classes.action}>
+              <Fab
+                type="submit"
+                color="primary"
+                disabled={isSendingOtp || otp.join('').length !== numOtpDigits}
+                onClick={(e) => {
+                  e.preventDefault();
+                  verifyOtp(otp.join(''), customLoginId).then((authToken) => {
+                    if (!authToken) {
+                      setOtpSubmitCount(otpSubmitCount + 1);
+                    }
+                  });
+                }}
+              >
+                {isSigningIn || isSendingOtp || isVerifyingOtp ? (
+                  <AphCircularProgress color="inherit" />
+                ) : (
+                    <img src={require('images/ic_arrow_forward.svg')} />
+                  )}
+              </Fab>
+            </div>
+          </form>
+        )}
       {/* <div ref={placeRecaptchaAfterMe} /> */}
     </div>
   );
@@ -343,8 +365,8 @@ export const SignIn: React.FC<signInProps> = (props) => {
                           {showValidationError
                             ? 'This seems like a wrong number'
                             : showSendOtpError
-                            ? 'Error sending OTP'
-                            : 'OTP will be sent to this number'}
+                              ? 'Error sending OTP'
+                              : 'OTP will be sent to this number'}
                         </FormHelperText>
                       </FormControl>
                     );
@@ -361,8 +383,8 @@ export const SignIn: React.FC<signInProps> = (props) => {
                     {isSendingOtp ? (
                       <AphCircularProgress color="inherit" />
                     ) : (
-                      <img src={require('images/ic_arrow_forward.svg')} />
-                    )}
+                        <img src={require('images/ic_arrow_forward.svg')} />
+                      )}
                   </Fab>
                 </div>
               </Form>
