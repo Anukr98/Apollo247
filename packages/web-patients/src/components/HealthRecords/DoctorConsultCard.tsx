@@ -43,6 +43,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       color: '#01475b',
       fontWeight: 500,
+      wordBreak: 'break-word',
     },
     dateField: {
       display: 'flex',
