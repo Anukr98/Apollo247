@@ -119,8 +119,6 @@ const useStyles = makeStyles(() => ({
     marginRight: '10px',
   },
   listContainer: {
-    // display: 'flex',
-    // flexFlow: 'row',
     flowWrap: 'wrap',
     width: '100%',
   },
@@ -442,9 +440,7 @@ export const HealthVault: React.FC = () => {
                     }
                     secondary={
                       <Fragment>
-                        <Typography component="h6" variant="h6">
-                          {/* {'5MB'} | {'2019-01-01T11:30'} */}
-                        </Typography>
+                        <Typography component="h6" variant="h6"></Typography>
                       </Fragment>
                     }
                   />
@@ -484,9 +480,7 @@ export const HealthVault: React.FC = () => {
                     }
                     secondary={
                       <Fragment>
-                        <Typography component="h6" variant="h6">
-                          {/* {'5MB'} | {'2019-01-01T11:30'} */}
-                        </Typography>
+                        <Typography component="h6" variant="h6"></Typography>
                       </Fragment>
                     }
                   />
@@ -498,7 +492,6 @@ export const HealthVault: React.FC = () => {
                   <div className={classes.tableContent}>
                     <div className={classes.modalWindow}>
                       <div className={classes.modalHeader}>
-                        {/* IMAGE001.JPG */}
                         <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
                           <img src={require('images/ic_round_clear.svg')} alt="" />
                         </div>

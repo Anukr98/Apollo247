@@ -146,7 +146,6 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',

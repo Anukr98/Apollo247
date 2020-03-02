@@ -13,7 +13,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
 import ApolloClient from 'apollo-client';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
@@ -248,7 +247,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       marginLeft: 16,
       paddingTop: 8,
-      //display: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -470,7 +468,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
-        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
         resetMessagesAction();
@@ -523,7 +520,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           res({ urls: data.downloadDocuments.downloadPaths });
         })
         .catch((e: any) => {
-          const error = JSON.parse(JSON.stringify(e));
           rej({ error: e });
         });
     });
@@ -546,9 +542,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               .then((data: any) => {
                 item.url = (data && data.urls[0]) || item.url;
               })
-              .catch((e: any) => {
-                // CommonBugFender('ChatRoom_getPrismUrls', e);
-              });
+              .catch((e: any) => {});
             newmessage[index] = item;
           } else {
             newmessage.push(element.entry);
@@ -614,7 +608,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             : '',
           error: JSON.stringify(error),
         };
-
         sessionClient.notify(JSON.stringify(logObject));
       });
   };

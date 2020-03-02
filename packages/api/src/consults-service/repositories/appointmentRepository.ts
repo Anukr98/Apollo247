@@ -1233,8 +1233,12 @@ export class AppointmentRepository extends Repository<Appointment> {
   ) {
     const bciRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
     const docConsultRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    const previousDate = addDays(availableDate, -1);
+    const prevDay = format(previousDate, 'EEEE').toUpperCase();
     const weekDay = format(availableDate, 'EEEE').toUpperCase();
-    const timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
+    let timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
+    const prevDayTimeSlot = await docConsultRepo.getConsultHours(doctorId, prevDay);
+    timeSlot = timeSlot.concat(prevDayTimeSlot);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
     console.log(blockedSlots, 'blocked slots');

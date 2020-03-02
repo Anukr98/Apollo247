@@ -319,7 +319,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
+  const { appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
   const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
@@ -375,10 +375,7 @@ export const HealthVault: React.FC = () => {
                   <h4 className={classes.fileName}>
                     {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
                   </h4>
-                  <span>
-                    {/* 5 MB | 5 Aug 2019, 11.05 AM{" "} */}
-                    {/* {'5MB'} | {'2019-01-01T11:30'} */}
-                  </span>
+                  <span></span>
                 </div>
               </div>
             ))
@@ -387,27 +384,7 @@ export const HealthVault: React.FC = () => {
           )}
         </div>
       </div>
-      <div className={classes.sectionGroup}>
-        {/* <div className={classes.sectionTitle}>Reports</div> */}
-        {/* <div className={classes.listContainer}>
-          {appointmentDocuments && appointmentDocuments.length > 0 ? (
-            appointmentDocuments!.map((item, index) => (
-              <div key={index} className={classes.listItem}>
-                <Link to={(item.reportUrls as unknown) as string} target="_blank">
-                  <Avatar
-                    alt={(item.reportUrls as unknown) as string}
-                    src={(item.reportUrls as unknown) as string}
-                    className={classes.bigAvatar}
-                  />
-                </Link>
-                {item.reportUrls!.substr(item.reportUrls!.lastIndexOf('/') + 1)}
-              </div>
-            ))
-          ) : (
-            <div className={classes.noDataFound}>No data Found</div>
-          )}
-        </div> */}
-      </div>
+      <div className={classes.sectionGroup}></div>
       {
         <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
           <div className={classes.modalWindowWrap}>

@@ -115,7 +115,7 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
         Detailed Findings

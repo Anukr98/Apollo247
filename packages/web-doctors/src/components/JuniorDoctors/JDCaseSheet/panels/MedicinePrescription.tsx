@@ -771,7 +771,6 @@ export const MedicinePrescription: React.FC = () => {
       })
       .catch((error) => {
         if (error.toString().includes('404')) {
-          //setIsSuggestionFetched(false);
           setLoading(false);
         }
       });
@@ -915,7 +914,6 @@ export const MedicinePrescription: React.FC = () => {
   }
   useEffect(() => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
-      // console.log(selectedMedicinesArr, selectedMedicinesArr.length);
       selectedMedicinesArr!.forEach((res: any) => {
         const inputParamsArr: any = {
           medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
@@ -983,7 +981,7 @@ export const MedicinePrescription: React.FC = () => {
     let changedString = value.substring(0, value.length - 1);
     return changedString + char;
   };
-  // console.log(selectedMedicines);
+
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
@@ -1088,7 +1086,6 @@ export const MedicinePrescription: React.FC = () => {
     });
     const daySlotsSelected = daySlots.filter((slot: SlotsObject) => {
       if (slot.selected) {
-        //daySlotsArr.push(slot.value.toUpperCase());
         daySlotsArr.push(slot.value.toUpperCase().replace(' ', '_'));
       }
       return slot.selected !== false;

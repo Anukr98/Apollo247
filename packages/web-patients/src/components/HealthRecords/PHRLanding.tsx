@@ -22,6 +22,7 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations as HospitalizationsType,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { useAuth } from 'hooks/authHooks';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -101,6 +102,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   );
   const { isSigningIn } = useAuth();
   const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
+  const [activeMedicalData, setActiveMedicalData] = useState<any | null>(null);
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   useEffect(() => {
     if (
@@ -245,7 +248,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         setMedicalLoading(true);
         fetchData();
       }
-      if (!labTests || !healthChecks || !hospitalizations) {
+      if (!labTests && !healthChecks && !hospitalizations) {
         fetchTestData();
       }
     }
@@ -267,6 +270,9 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           mergeArray.push({ type: 'hospital', data: item });
         });
       const sortedData = sortByDate(mergeArray);
+      if (!isSmallScreen && sortedData && sortedData.length) {
+        setActiveMedicalData(sortedData[0]);
+      }
       setAllCombinedData(sortedData);
       setMedicalLoading(false);
     }
@@ -312,6 +318,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                 medicalRecords={medicalRecords}
                 setMedicalRecords={setMedicalRecords}
                 allCombinedData={allCombinedData}
+                activeData={activeMedicalData}
+                setActiveData={setActiveMedicalData}
               />
             </TabContainer>
           )}

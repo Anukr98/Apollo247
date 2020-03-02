@@ -8,7 +8,6 @@ import { MedicinePrescription } from './MedicinePrescription';
 import { DiagnosticPrescription } from './DiagnosticPrescription';
 import { FollowUp } from './FollowUp';
 import { OtherInstructions } from './OtherInstructions';
-
 export { LifeStyle };
 export { Vital };
 export { Symptoms };
