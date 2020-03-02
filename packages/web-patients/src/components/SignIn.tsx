@@ -114,6 +114,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
+  const noOfAttemptsLeft = maxAllowedAttempts - otpSubmitCount;
 
   const {
     isSendingOtp,
@@ -201,8 +202,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
             <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
               <div>
                 {`${otpSubmitCount > 0 && ' Incorrect OTP, '}
-                 
-                 ${maxAllowedAttempts - otpSubmitCount}
+                 ${noOfAttemptsLeft}
                     ${otpSubmitCount === 2 ? ' attempt left' : ' attempts left'}`}
               </div>
             </FormHelperText>
