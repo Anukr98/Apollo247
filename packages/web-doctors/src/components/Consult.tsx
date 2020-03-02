@@ -59,7 +59,6 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       position: 'absolute',
-      // bottom: 125,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
       overflow: 'hidden',
@@ -190,26 +189,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     connectionCreated: (event: string) => {},
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
-      //KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
-      // eventsAfterConnectionDestroyed();
-      // disconnectCallText();
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
-      // KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
-      // KeepAwake.activate();
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);
     },
     streamDestroyed: (event: string) => {
-      console.log('just dissconnect the call & dont call api');
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
     },
     streamPropertyChanged: (event: string) => {
@@ -287,8 +280,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   properties={{
                     publishAudio: mute,
                     publishVideo: subscribeToVideo,
-                    // subscribeToVideo: subscribeToVideo,
-                    // subscribeToAudio: subscribeToAudio,
                   }}
                   eventHandlers={publisherHandler}
                 />
@@ -322,22 +313,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         }
                       />
                     )}
-                  {/* <div
-                  className={
-                    props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer
-                  }
-                > */}
                   <OTStreams>
-                    <OTSubscriber
-                      // properties={{
-                      //   subscribeToVideo: subscribeToVideo,
-                      //   subscribeToAudio: subscribeToAudio,
-                      // }}
-                      eventHandlers={subscriberHandler}
-                    />
+                    <OTSubscriber eventHandlers={subscriberHandler} />
                   </OTStreams>
-                  {/* </div> */}
-
                   {props.showVideoChat && (
                     <div>
                       {!subscribeToVideo && (
