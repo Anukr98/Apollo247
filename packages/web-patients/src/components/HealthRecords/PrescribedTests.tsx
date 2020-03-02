@@ -8,7 +8,7 @@ import {
 } from '@material-ui/core';
 import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis as DiagnosisType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription as DiagnosisType,
 } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -83,15 +83,15 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type DiagnosisProps = {
+type PrescribedTestsProps = {
   caseSheetList: (CaseSheetType | null)[] | null;
 };
 
-export const Diagnosis: React.FC<DiagnosisProps> = (props) => {
+export const PrescribedTests: React.FC<PrescribedTestsProps> = (props) => {
   const classes = useStyles({});
   const caseSheetList = props.caseSheetList;
 
-  const diagnosisList: DiagnosisType[] = [];
+  const diagnosticPrescriptions: DiagnosisType[] = [];
 
   caseSheetList &&
     caseSheetList.length > 0 &&
@@ -99,10 +99,11 @@ export const Diagnosis: React.FC<DiagnosisProps> = (props) => {
       (caseSheet: CaseSheetType | null) =>
         caseSheet &&
         caseSheet.doctorType !== 'JUNIOR' &&
-        caseSheet.diagnosis &&
-        caseSheet.diagnosis.length > 0 &&
-        caseSheet.diagnosis.forEach(
-          (diagnosisObj: DiagnosisType | null) => diagnosisObj && diagnosisList.push(diagnosisObj)
+        caseSheet.diagnosticPrescription &&
+        caseSheet.diagnosticPrescription.length > 0 &&
+        caseSheet.diagnosticPrescription.forEach(
+          (diagnosticPrescription: DiagnosisType | null) =>
+            diagnosticPrescription && diagnosticPrescriptions.push(diagnosticPrescription)
         )
     );
 
@@ -112,17 +113,15 @@ export const Diagnosis: React.FC<DiagnosisProps> = (props) => {
         expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
-        Provisional Diagnosis
+        Prescribed Tests
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
-        {diagnosisList && diagnosisList.length > 0 ? (
-          diagnosisList.map((prescription: DiagnosisType, idx: number) => (
-            <span className={classes.cardTitle}>{`${prescription.name}${
-              diagnosisList.length - 1 === idx ? '.' : ', '
-            }`}</span>
+        {diagnosticPrescriptions && diagnosticPrescriptions.length > 0 ? (
+          diagnosticPrescriptions.map((prescription: DiagnosisType) => (
+            <div className={classes.cardTitle}>{prescription.itemname}</div>
           ))
         ) : (
-          <div className={classes.noWrapper}>No diagnosis</div>
+          <div className={classes.noWrapper}>No Tests</div>
         )}
       </ExpansionPanelDetails>
     </ExpansionPanel>
