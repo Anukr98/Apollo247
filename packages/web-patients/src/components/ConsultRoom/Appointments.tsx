@@ -646,7 +646,11 @@ export const Appointments: React.FC = (props) => {
         <div className={classes.messageBox}>
           <div className={classes.doctorDetails}>
             <div className={classes.doctorInfo}>
-              <Avatar alt="" src={photoUrl} className={classes.bigAvatar} />
+              <Avatar
+                alt=""
+                src={photoUrl ? photoUrl : require('images/no_photo.png')}
+                className={classes.bigAvatar}
+              />
               <div className={classes.doctorText}>
                 <div className={classes.drName}>{_startCase(_toLower(appointmentDoctorName))}</div>
                 <div className={classes.specality}>{specialtyName}</div>

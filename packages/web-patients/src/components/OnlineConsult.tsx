@@ -204,6 +204,9 @@ interface OnlineConsultProps {
   isRescheduleConsult: boolean;
   appointmentId?: string;
   rescheduleAPI?: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
+  tabValue?: (tabValue: number) => void;
+  setIsShownOnce?: (shownOnce: boolean) => void;
+  isShownOnce?: boolean;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
@@ -221,7 +224,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
 
-  const { doctorDetails, setIsPopoverOpen } = props;
+  const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
   let slotAvailableNext = '',
     consultNowSlotTime = '';
@@ -367,6 +370,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     });
   }
 
+  // console.log(isShownOnce, differenceInMinutes, !isShownOnce, typeof isShownOnce);
+
+  if (differenceInMinutes < 0 && (isShownOnce === false || isShownOnce === undefined)) {
+    tabValue && tabValue(1);
+    setIsShownOnce && setIsShownOnce(true);
+  }
+
   // console.log(
   //   'diff in minutes.....',
   //   differenceInMinutes,
@@ -430,12 +440,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                   Dr. {doctorName} is available in {differenceInHours} hours! Would you like to
                   consult now or schedule for later?
                 </p>
-              ) : (
+              ) : differenceInMinutes > 0 ? (
                 <p>
                   Dr. {doctorName} is available in {differenceInDays} days! Would you like to
                   consult now or schedule for later?
                 </p>
-              )}
+              ) : null}
               <div className={classes.actions}>
                 <AphButton
                   onClick={(e) => {
@@ -586,16 +596,17 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             }
             onClick={() => {
               let appointmentDateTime = '';
-              if (consultNowSlotTime === '') {
-                const dateForScheduleLater = dateSelected.length > 0 ? dateSelected : apiDateFormat;
-                const appointmentDateTimeString = `${dateForScheduleLater} ${String(
-                  timeSelected
-                ).padStart(5, '0')}:00`;
-                appointmentDateTime = moment.utc(new Date(appointmentDateTimeString)).format();
+              if (scheduleLater || !consultNowAvailable) {
+                const dateForScheduleLater =
+                  dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
+                const appointmentDateTimeString = new Date(
+                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
+                );
+                appointmentDateTime = moment.utc(appointmentDateTimeString).format();
               } else {
                 appointmentDateTime = consultNowSlotTime;
               }
-
+              // console.log(appointmentDateTime, 'appt time is....', scheduleLater);
               // console.log(appointmentDateTime, 'appt date and time.....');
 
               setMutationLoading(true);
