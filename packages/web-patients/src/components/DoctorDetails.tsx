@@ -215,6 +215,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
+  const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
@@ -365,6 +366,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   doctorDetails={doctorDetails}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                   isRescheduleConsult={false}
+                  tabValue={(tabValue: number) => setTabValue(tabValue)}
+                  setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
+                  isShownOnce={isShownOnce}
                 />
               </TabContainer>
             )}
