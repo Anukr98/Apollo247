@@ -245,7 +245,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         setMedicalLoading(true);
         fetchData();
       }
-      if (!labTests || !healthChecks || !hospitalizations) {
+      if (!labTests && !healthChecks && !hospitalizations) {
         fetchTestData();
       }
     }

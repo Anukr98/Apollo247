@@ -215,7 +215,7 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
       }
       return (unit || '').toLowerCase().replace('s', '(s)');
     }
-    return null;
+    return numberOfDays === '1' || numberOfDays === '0' ? 'day' : 'days';
   };
 
   return (
@@ -288,6 +288,9 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                               }`
                           )
                       : ''}
+                    {prescription.medicineInstructions
+                      ? '\n' + prescription.medicineInstructions
+                      : ''}
                     {prescription.medicineConsumptionDurationInDays == ''
                       ? ''
                       : prescription.medicineConsumptionDurationInDays &&
@@ -300,9 +303,6 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                           prescription.medicineConsumptionDurationUnit,
                           prescription.medicineConsumptionDurationInDays
                         )} `}
-                    {prescription.medicineInstructions
-                      ? '\n' + prescription.medicineInstructions
-                      : ''}
                   </div>
                 )}
               </Grid>
