@@ -107,12 +107,14 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const [otp, setOtp] = useState<number[]>([]);
   // const placeRecaptchaAfterMe = useRef(null);
 
-  const [submitCount, setSubmitCount] = useState(0);
+  const [otpSubmitCount, setOtpSubmitCount] = useState(0);
   // const [isIncorrectOtp, setIsIncorrectOtp] = useState<boolean>(false);
   // const [showTimer, setShowTimer] = useState(false);
   // const [timer, setTimer] = useState(179);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
+  const maxAllowedAttempts = 3;
+  const noOfAttemptsLeft = maxAllowedAttempts - otpSubmitCount;
 
   const {
     isSendingOtp,
@@ -142,18 +144,18 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   }, [disableResendOtpButtonCounter]);
 
   useEffect(() => {
-    if (submitCount === 3) {
+    if (otpSubmitCount === 3) {
       setOtpStatusText(blockedMessage);
     }
-  }, [submitCount]);
+  }, [otpSubmitCount]);
 
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">
-        {verifyOtpError && submitCount === 3 ? 'oops!' : 'great'}
+        {verifyOtpError && otpSubmitCount === 3 ? 'oops!' : 'great'}
       </Typography>
       <p>{otpStatusText}</p>
-      {verifyOtpError && submitCount === 3 ? null : (
+      {verifyOtpError && otpSubmitCount === 3 ? null : (
         <form>
           <Grid container spacing={1}>
             {_times(numOtpDigits, (index) => (
@@ -199,7 +201,9 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
           {verifyOtpError && !isSigningIn && (
             <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
               <div>
-                {submitCount > 0 && ' Incorrect OTP, ' + (3 - submitCount) + ' attempts left'}
+                {`${otpSubmitCount > 0 && ' Incorrect OTP, '}
+                 ${noOfAttemptsLeft}
+                    ${otpSubmitCount === 2 ? ' attempt left' : ' attempts left'}`}
               </div>
             </FormHelperText>
           )}
@@ -214,7 +218,6 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               onClick={(e) => {
                 resendOtp(mobileNumberWithPrefix, customLoginId);
                 setOtp([]);
-                setSubmitCount(0);
                 setOtpStatusText(resentOTPMessage);
                 const firstInput = otpInputRefs[0].current;
                 if (firstInput) firstInput.focus();
@@ -237,7 +240,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 e.preventDefault();
                 verifyOtp(otp.join(''), customLoginId).then((authToken) => {
                   if (!authToken) {
-                    setSubmitCount(submitCount + 1);
+                    setOtpSubmitCount(otpSubmitCount + 1);
                   }
                 });
               }}
