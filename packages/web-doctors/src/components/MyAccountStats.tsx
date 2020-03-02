@@ -1,7 +1,24 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React from 'react';
+import React,{useState,useEffect} from 'react';
+import ApolloClient from 'apollo-boost';
+import Report from 'react-powerbi';
+import gql from 'graphql-tag';
+import { useAuth } from 'hooks/authHooks';
 
+ const dashboardClient = new ApolloClient({
+  uri:' https://aphapi-dashboards.popcornapps.com/',
+  request: operation => {
+    const token = process.env.AUTH_TOKEN;
+    const userId ='';
+    operation.setContext({
+      headers: {
+        Authorization: token ? `${token}` : 'adminLogin',
+        userId: userId ? `${userId}` : ''
+      }
+    });
+  }
+});
 const useStyles = makeStyles((theme: Theme) => {
   return {
     ProfileContainer: {
@@ -46,11 +63,118 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const GET_POWERBI_TOKEN = gql`
+  query {
+    getPowerBiToken {
+      token_type
+      scope
+      expires_in
+      ext_expires_in
+      expires_on
+      not_before
+      resource
+      access_token
+      refresh_token
+    }
+  }
+`;
+
 export const MyAccountStats: React.FC = () => {
   const classes = useStyles();
+  const apiDetails = {
+    embedUrl: process.env.REACT_APP_POWERBI_EMBED_URL,
+    filterSchema: process.env.REACT_APP_POWERBI_FILTER_SCHEMA,
+    clientId: process.env.REACT_APP_POWERBI_CLIENT_ID,
+    clientSecret: process.env.REACT_APP_POWERBI_CLIENT_SECRET,
+    userName: process.env.REACT_APP_POWERBI_USER_NAME,
+    password: process.env.REACT_APP_POWERBI_PASSWORD,
+    resource: process.env.REACT_APP_RESOURCE
+  };
+const [accessToken,setAccessToken]=useState('')
+const { currentPatient: currentDoctor, isSignedIn, sessionClient } = useAuth();
+const doctorId = currentDoctor!.id;
+useEffect(()=>{
+
+if(!accessToken){
+    dashboardClient
+      .query<any>({
+        query: GET_POWERBI_TOKEN,
+        variables: {
+        },
+        fetchPolicy: 'no-cache',
+      })
+
+      .then(({ data }) => {
+        console.log('flitered array', data.getPowerBiToken.access_token);
+        setAccessToken(data.getPowerBiToken.access_token)
+      })
+      .catch((e) => {
+    
+      });
+    }
+    },[accessToken])
+      const filter = {
+        $schema: apiDetails.filterSchema,
+        target: {
+          table: 'doctors',
+          column: 'aid'
+        },
+        operator: 'In',
+        values: [doctorId]
+      };
+      const onEmbedded = (report:any) => {
+        setTimeout(() => {
+          if (report && report.iframe && report.iframe.contentWindow) {
+            report &&
+              report
+                .getPages()
+                .then((pages:any) => {
+                  const activePage = pages.filter((page:any) => page.isActive)[0];
+                  activePage
+                    .setFilters([filter])
+                    .then(() => {
+                      console.log('Page filter was set.');
+                    })
+                    .catch((error:any) => {
+                      const errorMessage =
+                        error && error.message
+                          ? error.message
+                          : 'Unknown';
+                      alert(
+                        `An error occurred while fetching the report: ${errorMessage}`
+                      );
+                    });
+                })
+                .catch((error:any) => {
+                  const errorMessage =
+                    error && error.message
+                      ?error.message
+                      : 'Unknown';
+                  alert(
+                    `An error occurred while fetching the report: ${errorMessage}`
+                  );
+                });
+          }
+        }, 2000);
+      };
+      console.log(process.env.POWERBI_MIS_REPORT_ID,'0000');
+      
   return (
-    <div className={classes.ProfileContainer}>
-      <div className={classes.helpTxt}>Will be available soon...</div>
-    </div>
+    !accessToken ? (
+      null
+    ) : (   
+    <Report
+      id={process.env.POWERBI_MIS_REPORT_ID}
+      embedUrl={process.env.POWERBI_MIS_REPORT_URL}
+      accessToken={accessToken}
+      navContentPaneEnabled={false}
+      embedType="report"
+      tokenType={0}
+      height="500px"
+      onEmbedded={onEmbedded}
+      filterPaneEnabled={false}
+    />
+    )
+  
   );
 };
