@@ -141,7 +141,7 @@ const sendPhysicalApptReminderNotification: Resolver<
           } else if (
             appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
             appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString() &&
-            args.inNextMin == 180
+            args.inNextMin == 179
           ) {
             pushNotificationInput.notificationType = NotificationType.PHYSICAL_APPT_180;
           }

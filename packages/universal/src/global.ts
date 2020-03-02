@@ -69,5 +69,6 @@ declare namespace NodeJS {
 
     BUGSNAG_API_KEY: string;
     SMS_LINK: string;
+    SMS_LINK_BOOK_APOINTMENT: string;
   }
 }
