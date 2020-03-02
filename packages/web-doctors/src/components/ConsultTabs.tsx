@@ -90,17 +90,7 @@ import {
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 import moment from 'moment';
-// import bugsnag from '@bugsnag/js';
 
-// const bugsnagClient = bugsnag({
-//   apiKey: `${process.env.BUGSNAG_API_KEY}`,
-//   releaseStage: `${process.env.NODE_ENV}`,
-//   autoBreadcrumbs: true,
-//   autoCaptureSessions: true,
-//   autoNotify: true,
-// });
-
-// const sessionClient = bugsnagClient.startSession();
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
@@ -170,7 +160,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalBox: {
       maxWidth: 320,
-      // height: 250,
       margin: 'auto',
       marginTop: 50,
       backgroundColor: '#fff',
@@ -224,7 +213,6 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
         lineHeight: 1.4,
         color: '#01475b',
-        // paddingBottom: 15,
       },
     },
     tabPdfBody: {
@@ -235,7 +223,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: '10px',
       paddingRight: '15px',
       textAlign: 'center',
-      /* padding: 15px; */
     },
     cross: {
       position: 'absolute',
@@ -351,9 +338,7 @@ export const ConsultTabs: React.FC = () => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const TabContainer: React.FC = (props) => {
-    return <Typography component="div">{props.children}</Typography>;
-  };
+
   const client = useApolloClient();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserType } = useAuthContext();
@@ -385,7 +370,6 @@ export const ConsultTabs: React.FC = () => {
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
-  // const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
 
   const [bp, setBp] = useState<string>('');
   const [height, setHeight] = useState<string>('');
@@ -399,7 +383,7 @@ export const ConsultTabs: React.FC = () => {
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  // const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
@@ -418,8 +402,6 @@ export const ConsultTabs: React.FC = () => {
     ssl: true,
     restore: true,
     keepAlive: true,
-    //autoNetworkDetection: true,
-    //listenToBrowserNetworkEvents: true,
     presenceTimeout: 20,
     heartbeatInterval: 20,
     uuid: REQUEST_ROLES.DOCTOR,
@@ -497,7 +479,6 @@ export const ConsultTabs: React.FC = () => {
           res({ urls: data.downloadDocuments.downloadPaths });
         })
         .catch((e: any) => {
-          const error = JSON.parse(JSON.stringify(e));
           rej({ error: e });
         });
     });
@@ -533,6 +514,7 @@ export const ConsultTabs: React.FC = () => {
       }
     );
   };
+
   /* case sheet data*/
   useEffect(() => {
     if (isSignedIn) {
@@ -693,8 +675,7 @@ export const ConsultTabs: React.FC = () => {
           );
 
           // set Jrd name and Jrd Casesheet submit date.
-          let jrdSalutation = '',
-            jrdFirstName = '',
+          let jrdFirstName = '',
             jrdLastName = '';
           if (
             _data &&
@@ -974,8 +955,7 @@ export const ConsultTabs: React.FC = () => {
             );
 
             // set Jrd name and Jrd Casesheet submit date.
-            let jrdSalutation = '',
-              jrdFirstName = '',
+            let jrdFirstName = '',
               jrdLastName = '';
             if (
               _data &&
@@ -1169,7 +1149,6 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const saveCasesheetAction = (flag: boolean, sendToPatientFlag: boolean) => {
-    // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
       diagnosisFinal = null,
       diagnosticPrescriptionFinal = null,
@@ -1208,7 +1187,6 @@ export const ConsultTabs: React.FC = () => {
     }
     setSaving(true);
 
-    // this needs to be fixed.
     const followupISODate = new Date(followUpDate[0]).toISOString();
     const followupDateArray = followupISODate.split('T');
     const inputVariables = {
