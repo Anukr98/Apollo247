@@ -86,7 +86,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
-    updatePatientType(doctorId: String): UpdatePatientTypeResult
+    updatePatientType(doctorId: ID!): UpdatePatientTypeResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
     updateUtilizationCapacity(
@@ -226,8 +226,11 @@ const updatePatientType: Resolver<
   ConsultServiceContext,
   UpdatePatientTypeResult
 > = async (parent, args, context) => {
-  const { apptRepo } = getRepos(context);
+  const { apptRepo, docRepo } = getRepos(context);
   let prevPatientId = '0';
+
+  const doctorData = await docRepo.findById(args.doctorId);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentDetails = await apptRepo.getAppointmentsByDocId(args.doctorId);
   if (appointmentDetails.length) {
