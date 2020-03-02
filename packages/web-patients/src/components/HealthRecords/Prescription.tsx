@@ -289,10 +289,17 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                               }`
                           )
                       : ''}
-                    {prescription.medicineInstructions
-                      ? '\n' + prescription.medicineInstructions
-                      : ''}
-                    {prescription.medicineConsumptionDurationInDays == ''
+
+                    {prescription.medicineInstructions ? (
+                      <>
+                        <br />
+                        {prescription.medicineInstructions}
+                      </>
+                    ) : (
+                      ''
+                    )}
+                    {prescription.medicineConsumptionDurationInDays == '' ||
+                    prescription.medicineConsumptionDurationInDays == '0'
                       ? ''
                       : prescription.medicineConsumptionDurationInDays &&
                         prescription.medicineConsumptionDurationInDays === '1'
