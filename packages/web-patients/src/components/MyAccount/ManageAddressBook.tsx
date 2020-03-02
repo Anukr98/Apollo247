@@ -174,6 +174,7 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
           closeButtonLabel="OK"
           closeMascot={() => {
             setIsPopoverOpen(false);
+            setForceRefresh(false);
           }}
         />
       </Popover>
