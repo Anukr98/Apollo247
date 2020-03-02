@@ -172,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { isSigningIn, isSignedIn } = useAuth();
+  const { isSigningIn, isSignedIn, verifyOtpError, setVerifyOtpError } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
@@ -202,10 +202,10 @@ export const Header: React.FC = (props) => {
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
                 currentPath === clientRoutes.myAccount() ||
-                currentPath === clientRoutes.addressBook()
+                  currentPath === clientRoutes.addressBook()
                   ? classes.userAccountActive
                   : ''
-              }`}
+                }`}
             >
               {isSignedIn ? (
                 <Link
@@ -215,78 +215,80 @@ export const Header: React.FC = (props) => {
                   {isSigningIn ? (
                     <CircularProgress />
                   ) : (
-                    <img src={require('images/ic_account.svg')} />
-                  )}
+                      <img src={require('images/ic_account.svg')} />
+                    )}
                 </Link>
               ) : (
-                <ProtectedWithLoginPopup>
-                  {({ protectWithLoginPopup }) => (
-                    <>
-                      <div
-                        onClick={() =>
-                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
-                        }
-                        className={classes.loginLinks}
-                      >
-                        Login/SignUp
+                  <ProtectedWithLoginPopup>
+                    {({ protectWithLoginPopup }) => (
+                      <>
+                        <div
+                          onClick={() => {
+                            isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                          }}
+                          className={classes.loginLinks}
+                        >
+                          Login/SignUp
                       </div>
-                      <div
-                        className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                        onClick={() =>
-                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
-                        }
-                        ref={avatarRef}
-                      >
-                        {isSigningIn ? (
-                          <CircularProgress />
-                        ) : (
-                          <img src={require('images/ic_account.svg')} />
-                        )}
-                      </div>
-                    </>
-                  )}
-                </ProtectedWithLoginPopup>
-              )}
+                        <div
+                          className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                          onClick={() =>
+                            isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+
+                          }
+                          ref={avatarRef}
+                        >
+                          {isSigningIn ? (
+                            <CircularProgress />
+                          ) : (
+                              <img src={require('images/ic_account.svg')} />
+                            )}
+                        </div>
+                      </>
+                    )}
+                  </ProtectedWithLoginPopup>
+                )}
               {isSignedIn ? (
                 ''
               ) : (
-                <Popover
-                  open={isLoginPopupVisible}
-                  anchorEl={avatarRef.current}
-                  onClose={() => {
-                    const otpAfterCleaning = otp.replace(/,/g, '');
-                    if (
-                      mobileNumber.length === 0 ||
-                      ((mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
-                        otpAfterCleaning.length === 6)
-                    ) {
-                      setIsLoginPopupVisible(false);
-                    }
-                  }}
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  classes={{ paper: classes.topPopover }}
-                >
-                  <Paper className={classes.loginForm}>
-                    <SignIn
-                      setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
-                      setOtp={(otp: string) => setOtp(otp)}
-                      mobileNumber={mobileNumber}
-                      otp={otp}
-                    />
-                  </Paper>
-                </Popover>
-              )}
+                  <Popover
+                    open={isLoginPopupVisible}
+                    anchorEl={avatarRef.current}
+                    onClose={() => {
+                      const otpAfterCleaning = otp.replace(/,/g, '');
+                      if (
+                        mobileNumber.length === 0 ||
+                        ((mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+                          otpAfterCleaning.length === 6)
+                      ) {
+                        setIsLoginPopupVisible(false);
+                        setVerifyOtpError(false);
+                      }
+                    }}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    classes={{ paper: classes.topPopover }}
+                  >
+                    <Paper className={classes.loginForm}>
+                      <SignIn
+                        setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
+                        setOtp={(otp: string) => setOtp(otp)}
+                        mobileNumber={mobileNumber}
+                        otp={otp}
+                      />
+                    </Paper>
+                  </Popover>
+                )}
             </div>
           </div>
         </header>
       </div>
-    </div>
+    </div >
   );
 };
