@@ -7,6 +7,7 @@ import { DoctorConsultCard } from 'components/HealthRecords/DoctorConsultCard';
 import { Symptoms } from 'components/HealthRecords/Symptoms';
 import { Prescription } from 'components/HealthRecords/Prescription';
 import { Diagnosis } from 'components/HealthRecords/Diagnosis';
+import { PrescribedTests } from 'components/HealthRecords/PrescribedTests';
 import { GeneralAdvice } from 'components/HealthRecords/GeneralAdvice';
 import { FollowUp } from 'components/HealthRecords/FollowUp';
 import { PaymentInvoice } from 'components/HealthRecords/PaymentInvoice';
@@ -506,6 +507,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                   <>
                     <Symptoms caseSheetList={activeConsult.caseSheet} />
                     <Prescription caseSheetList={activeConsult.caseSheet} />
+                    <PrescribedTests caseSheetList={activeConsult.caseSheet} />
                     <Diagnosis caseSheetList={activeConsult.caseSheet} />
                     <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
                     <FollowUp caseSheetList={activeConsult.caseSheet} />
