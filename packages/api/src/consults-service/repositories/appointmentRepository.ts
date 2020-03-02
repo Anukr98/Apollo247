@@ -19,6 +19,7 @@ import {
   APPOINTMENT_TYPE,
   CONSULTS_RX_SEARCH_FILTER,
   REQUEST_ROLES,
+  PATIENT_TYPE,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -70,6 +71,26 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
+  }
+
+  updatePatientType(appt: Appointment, patientType: PATIENT_TYPE) {
+    this.update(appt.id, { patientType }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
+  getAppointmentsByDocId(doctorId: string) {
+    const appointmentData = this.createQueryBuilder('appointment')
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
+      .orderBy('appointment.patientId', 'ASC')
+      .getMany();
+    return appointmentData;
   }
 
   getAppointmentsByDate(appointmentDateTime: Date) {

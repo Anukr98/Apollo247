@@ -9,6 +9,7 @@ import {
   PhrDocumentsSummary,
   DoctorFeeSummary,
   TRANSFER_INITIATED_TYPE,
+  PATIENT_TYPE,
 } from 'consults-service/entities';
 import { ConsultMode, WeekDay } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
@@ -39,6 +40,15 @@ export const sdDashboardSummaryTypeDefs = gql`
     doctorName: String
     appointmentDateTime: Date
     totalConsultation: Int
+  }
+
+  enum PATIENT_TYPE {
+    NEW
+    REPEAT
+  }
+
+  type UpdatePatientTypeResult {
+    status: Boolean
   }
 
   type FeedbackSummaryResult {
@@ -76,6 +86,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
+    updatePatientType(doctorId: ID!): UpdatePatientTypeResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
     updateUtilizationCapacity(
@@ -96,6 +107,9 @@ type DashboardSummaryResult = {
   totalConsultation: number;
 };
 
+type UpdatePatientTypeResult = {
+  status: boolean;
+};
 type DoctorFeeSummaryResult = {
   status: boolean;
 };
@@ -204,6 +218,32 @@ const updatePhrDocSummary: Resolver<
   };
   await dashboardRepo.saveDocumentSummary(phrDocAttrs);
   return { apptDocCount: docCount, medDocCount: prescritionCount };
+};
+
+const updatePatientType: Resolver<
+  null,
+  { doctorId: string; patientId: string },
+  ConsultServiceContext,
+  UpdatePatientTypeResult
+> = async (parent, args, context) => {
+  const { apptRepo, docRepo } = getRepos(context);
+  let prevPatientId = '0';
+
+  const doctorData = await docRepo.findById(args.doctorId);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const appointmentDetails = await apptRepo.getAppointmentsByDocId(args.doctorId);
+  if (appointmentDetails.length) {
+    appointmentDetails.forEach(async (appointmentData) => {
+      if (appointmentData.patientId != prevPatientId) {
+        prevPatientId = appointmentData.patientId;
+        await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
+      } else {
+        await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
+      }
+    });
+  }
+  return { status: true };
 };
 
 const updateSdSummary: Resolver<
@@ -467,6 +507,7 @@ export const sdDashboardSummaryResolvers = {
     updateConsultRating,
     updateSpecialtyCount,
     updateUtilizationCapacity,
+    updatePatientType,
   },
   Query: {
     getopenTokFileUrl,
