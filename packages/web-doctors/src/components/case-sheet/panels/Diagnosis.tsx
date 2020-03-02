@@ -295,7 +295,6 @@ export const Diagnosis: React.FC = () => {
   }
 
   const handleDelete = (item: any, idx: number) => {
-    // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
