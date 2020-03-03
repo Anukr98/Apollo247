@@ -472,7 +472,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             }}
             fullWidth
           >
-            Add a Report
+            Add Record
           </AphButton>
         </div>
       </div>

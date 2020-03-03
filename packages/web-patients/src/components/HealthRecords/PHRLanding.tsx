@@ -58,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '11px 32px',
       color: '#02475b',
       opacity: 1,
+      textTransform: 'none',
     },
     tabSelected: {
       color: theme.palette.secondary.dark,
