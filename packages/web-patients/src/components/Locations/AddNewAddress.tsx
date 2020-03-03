@@ -224,7 +224,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
 
             setPincode(pincode || '');
             setAddress2(location);
-          } +
+          }
         } catch {
           (e: AxiosError) => console.log(e);
         }
