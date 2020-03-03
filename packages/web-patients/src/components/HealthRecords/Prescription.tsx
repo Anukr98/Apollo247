@@ -101,7 +101,7 @@ type PrescriptionProps = {
 };
 
 const apiDetails = {
-  url: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchpdp_api.php`,
+  url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
 };
 

@@ -310,7 +310,7 @@ export const MedicineLanding: React.FC = (props) => {
     params.orderStatus && params.orderStatus.length > 0 ? true : false
   );
   const apiDetails = {
-    url: `${process.env.PHARMACY_MED_PROD_URL}/apollo_24x7_api.php`,
+    url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
