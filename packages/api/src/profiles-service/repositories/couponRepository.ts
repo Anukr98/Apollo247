@@ -25,7 +25,7 @@ export class CouponRepository extends Repository<Coupon> {
     return this.findOne({
       where: {
         isActive: 'true',
-        code: Raw((alias) => `${alias} ILIKE '%${code}%'`),
+        code: Raw((alias) => `${alias} ILIKE '${code}'`),
       },
       order: {
         createdDate: 'DESC',
