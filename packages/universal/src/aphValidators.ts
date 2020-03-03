@@ -58,5 +58,5 @@ export const trimObjects = (jsonObject: object) => {
 };
 
 export const isValidReferralCode = (referralCode: string) => {
-  return /^[a-z]{4}\d{5}$/i.test(referralCode);
+  return /^[a-z]{4}\d{4}$/i.test(referralCode);
 };
