@@ -488,7 +488,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               ...theme.viewStyles.card(12, 0),
               elevation: 10,
               flexDirection: 'row',
-              width: 152,
+              width: 156,
               height: 68,
             },
             style,
