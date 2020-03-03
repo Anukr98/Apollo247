@@ -18121,6 +18121,18 @@
         "description": null,
         "fields": [
           {
+            "name": "registerPatients",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updatePatient",
             "description": null,
             "args": [
