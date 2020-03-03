@@ -447,7 +447,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     name={getName(combinedData)}
                     id={combinedData.data.id}
                     isActiveCard={
-                      activeData && activeData.data && activeData.data.id === combinedData.data.id
+                      activeData && activeData.data && activeData.data === combinedData.data
                     }
                     setLoading={setLoading}
                   />
