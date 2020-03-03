@@ -152,7 +152,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
               .then(() => {
                 setIsPopoverOpen(true);
               })
-              .catch(() => { });
+              .catch(() => {});
           }}
         >
           Delete Address
