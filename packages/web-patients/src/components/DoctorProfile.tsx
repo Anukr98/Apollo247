@@ -479,10 +479,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       <div className={classes.root}>
         <div className={classes.doctorProfile}>
           <div className={classes.doctorImage}>
-            <img
-              src={profileImage || 'https://via.placeholder.com/328x138'}
-              alt={firstName || ''}
-            />
+            <img src={profileImage || require('images/no_photo.png')} alt={firstName || ''} />
           </div>
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName}>{fullName}</div>

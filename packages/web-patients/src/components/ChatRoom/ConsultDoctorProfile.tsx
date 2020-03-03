@@ -553,7 +553,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       <div className={classes.doctorProfile}>
         <div className={classes.doctorImage}>
           <img
-            src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
+            src={profileImage !== null ? profileImage : require('images/no_photo.png')}
             alt={firstName}
           />
           <div
