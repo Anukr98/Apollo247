@@ -1234,11 +1234,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (consultHours) {
       const filteredDay =
         consultHours &&
-        _.filter(consultHours, function(o) {
-          if (o && o.actualDay) {
-            return o.actualDay === selectedDay;
-          }
-        });
+        _.filter(
+          consultHours,
+          (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+        );
       const consultDurationDay: any =
         filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
       duration =
@@ -1548,11 +1547,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (consultHours) {
       const filteredDay =
         consultHours &&
-        _.filter(consultHours, function(o) {
-          if (o && o.actualDay) {
-            return o.actualDay === selectedDay;
-          }
-        });
+        _.filter(
+          consultHours,
+          (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+        );
       const consultDurationDay: any =
         filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
       duration =

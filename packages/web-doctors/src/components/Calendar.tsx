@@ -153,22 +153,10 @@ const dataAdapter = (
 
   const filteredDay =
     consultHours &&
-    _.filter(consultHours, function(o) {
-      if (o && o.actualDay) {
-        return o.actualDay === selectedDay;
-      }
-    });
-
-  // let consultDuration = 15;
-
-  // if (Array.isArray(filteredDay)) {
-  //   consultDuration = filteredDay[0] && filteredDay[0].consultDuration ?;
-  // } else {
-  //   consultDuration = 15;
-  // }
-
-  // const consultDuration = 15;
-
+    _.filter(
+      consultHours,
+      (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+    );
   const appointments: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[] =
     appointmentData!.getDoctorAppointments!.appointmentsHistory || [];
   const newPatientsList: (string | null)[] | null = appointmentData!.getDoctorAppointments
