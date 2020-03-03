@@ -686,7 +686,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
           const td = `${nextDate.toDateString()} 00:00:00`;
           if (new Date(ed) >= new Date(td) && timeSlot.weekDay != timeSlots[rowCount - 1].weekDay) {
-            startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+            previousDate = addDays(previousDate, 1);
+            startTime = new Date(previousDate.toDateString() + ' ' + stTime);
           }
         }
         Array(slotsCount)
@@ -1233,8 +1234,12 @@ export class AppointmentRepository extends Repository<Appointment> {
   ) {
     const bciRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
     const docConsultRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    const previousDate = addDays(availableDate, -1);
+    const prevDay = format(previousDate, 'EEEE').toUpperCase();
     const weekDay = format(availableDate, 'EEEE').toUpperCase();
-    const timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
+    let timeSlot = await docConsultRepo.getConsultHours(doctorId, weekDay);
+    const prevDayTimeSlot = await docConsultRepo.getConsultHours(doctorId, prevDay);
+    timeSlot = timeSlot.concat(prevDayTimeSlot);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
     console.log(blockedSlots, 'blocked slots');

@@ -42,6 +42,8 @@ import { BottomPopUp } from './ui/BottomPopUp';
 import moment from 'moment';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Relation } from '../graphql/types/globalTypes';
 
 const { height, width } = Dimensions.get('window');
 
@@ -134,11 +136,21 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
 
-  const { sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
+  const {
+    sendOtp,
+    signInError,
+    getPatientByPrism,
+    getFirebaseToken,
+    getPatientApiCall,
+    setMobileAPICalled,
+    setAllPatients,
+  } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
+
+  const client = useApolloClient();
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -303,28 +315,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    if (onOtpClick) {
-      if (currentPatient) {
-        if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
-          if (currentPatient.relation == null) {
-            navigateTo(AppRoutes.MultiSignup);
-          } else {
-            AsyncStorage.setItem('userLoggedIn', 'true');
-            navigateTo(AppRoutes.ConsultRoom);
-          }
-        } else {
-          if (currentPatient.firstName == '') {
-            navigateTo(AppRoutes.SignUp);
-          } else {
-            AsyncStorage.setItem('userLoggedIn', 'true');
-            navigateTo(AppRoutes.ConsultRoom);
-          }
-        }
-      }
-    }
-  }, [props.navigation, currentPatient, onOtpClick]);
-
-  useEffect(() => {
     if (signInError && otp.length === 6) {
       // Alert.alert('Apollo', 'Something went wrong. Please try again.');
       // props.navigation.replace(AppRoutes.Login);
@@ -346,40 +336,66 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     try {
       Keyboard.dismiss();
-    } catch (error) {
-      CommonBugFender('OTPVerification_KEYBOARD_DISMISS', error);
-    }
-    getNetStatus()
-      .then(async (status) => {
-        if (status) {
-          console.log('otp OTPVerification', otp, otp.length, 'length');
-          setshowSpinner(true);
 
-          const { loginId } = props.navigation.state.params!;
+      getNetStatus()
+        .then(async (status) => {
+          if (status) {
+            console.log('otp OTPVerification', otp, otp.length, 'length');
+            setshowSpinner(true);
+            const { loginId } = props.navigation.state.params!;
 
-          verifyOTP(loginId, otp)
-            .then((data: any) => {
-              console.log(data.status === true, data.status, 'status');
+            verifyOTP(loginId, otp)
+              .then((data: any) => {
+                console.log(data.status === true, data.status, 'status');
 
-              if (data.status === true) {
-                CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
-                CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
+                if (data.status === true) {
+                  CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
+                  CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
 
-                _removeFromStore();
-                setOnOtpClick(true);
-                console.log('error', data.authToken);
+                  _removeFromStore();
+                  setOnOtpClick(true);
+                  console.log('error', data.authToken);
 
-                sendOtp(data.authToken)
-                  .then((data) => {
-                    // setshowSpinner(true);
-                  })
-                  .catch((e) => {
-                    CommonBugFender('OTPVerification_sendOtp', e);
-                  });
-              } else {
-                console.log('else error');
+                  sendOtp(data.authToken)
+                    .then(() => {
+                      // setshowSpinner(true);
+                      getAuthToken();
+                    })
+                    .catch((e) => {
+                      CommonBugFender('OTPVerification_sendOtp', e);
+                    });
+                } else {
+                  console.log('else error');
 
+                  try {
+                    setshowErrorBottomLine(true);
+                    setOnOtpClick(false);
+                    setshowSpinner(false);
+                    // console.log('error', error);
+                    _storeTimerData(invalidOtpCount + 1);
+
+                    if (invalidOtpCount + 1 === 3) {
+                      setShowErrorMsg(true);
+                      setIsValidOTP(false);
+                      // startInterval(timer);
+                      setIntervalId(intervalId);
+                    } else {
+                      setShowErrorMsg(true);
+                      setIsValidOTP(true);
+                    }
+                    setInvalidOtpCount(invalidOtpCount + 1);
+                  } catch (error) {
+                    CommonBugFender('OTP_ENTERED_try', error);
+                    setshowSpinner(false);
+                    // console.log(error);
+                  }
+                }
+              })
+              .catch((error: Error) => {
                 try {
+                  console.log({
+                    error,
+                  });
                   setshowErrorBottomLine(true);
                   setOnOtpClick(false);
                   setshowSpinner(false);
@@ -396,50 +412,99 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     setIsValidOTP(true);
                   }
                   setInvalidOtpCount(invalidOtpCount + 1);
+
+                  CommonBugFender('OTP_ENTERED_FAIL', error);
+                  CommonLogEvent('OTP_ENTERED_FAIL', JSON.stringify(error));
                 } catch (error) {
-                  CommonBugFender('OTP_ENTERED_try', error);
+                  CommonBugFender('OTP_ENTERED_FAIL_try', error);
                   setshowSpinner(false);
-                  // console.log(error);
+                  console.log(error);
                 }
-              }
-            })
-            .catch((error: Error) => {
-              try {
-                console.log({
-                  error,
-                });
-                setshowErrorBottomLine(true);
-                setOnOtpClick(false);
-                setshowSpinner(false);
-                // console.log('error', error);
-                _storeTimerData(invalidOtpCount + 1);
+              });
+          } else {
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('OTPVerification_getNetStatus_onClickOk', e);
+        });
+    } catch (error) {
+      CommonBugFender('OTPVerification_KEYBOARD_DISMISS', error);
+    }
+  };
 
-                if (invalidOtpCount + 1 === 3) {
-                  setShowErrorMsg(true);
-                  setIsValidOTP(false);
-                  // startInterval(timer);
-                  setIntervalId(intervalId);
-                } else {
-                  setShowErrorMsg(true);
-                  setIsValidOTP(true);
-                }
-                setInvalidOtpCount(invalidOtpCount + 1);
-
-                CommonBugFender('OTP_ENTERED_FAIL', error);
-                CommonLogEvent('OTP_ENTERED_FAIL', JSON.stringify(error));
-              } catch (error) {
-                CommonBugFender('OTP_ENTERED_FAIL_try', error);
-                setshowSpinner(false);
-                console.log(error);
-              }
-            });
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('OTPVerification_getNetStatus_onClickOk', e);
+  const getAuthToken = () => {
+    getFirebaseToken &&
+      getFirebaseToken().then((token: any) => {
+        console.log('OTPVerificationToken', token);
+        getOTPPatientApiCall();
       });
+  };
+
+  const getOTPPatientApiCall = async () => {
+    console.log('getOTPPatientApiCall');
+
+    getPatientApiCall()
+      .then((data: any) => {
+        console.log('getOTPPatientApiCall_OTPVerification', data);
+        AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+        AsyncStorage.setItem('callByPrism', 'false');
+        dataFetchFromMobileNumber(data);
+      })
+      .catch(async (error) => {
+        CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
+        console.log('getOTPPatientApiCallerror', error);
+      });
+  };
+
+  const dataFetchFromMobileNumber = async (data: any) => {
+    const profileData =
+      data.data.getPatientByMobileNumber && data.data.getPatientByMobileNumber.patients;
+    console.log('dataFetchFromMobileNumber', data);
+    if (profileData && profileData.length === 0) {
+      getPatientByPrism().then((data: any) => {
+        const allPatients =
+          data && data.data && data.data.getCurrentPatients
+            ? data.data.getCurrentPatients.patients
+            : null;
+
+        const mePatient = allPatients
+          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+          : null;
+        // setMobileAPICalled && setMobileAPICalled(true);
+        // setAllPatients(allPatients);
+
+        moveScreenForward(mePatient);
+      });
+    } else {
+      const mePatient = profileData
+        ? profileData.find((patient: any) => patient.relation === Relation.ME) || profileData[0]
+        : null;
+      // setAllPatients(profileData);
+      // setMobileAPICalled && setMobileAPICalled(false);
+
+      moveScreenForward(mePatient);
+    }
+  };
+
+  const moveScreenForward = (mePatient: any) => {
+    AsyncStorage.setItem('logginHappened', 'true');
+
+    if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
+      if (mePatient.relation == null) {
+        navigateTo(AppRoutes.MultiSignup);
+      } else {
+        AsyncStorage.setItem('userLoggedIn', 'true');
+        navigateTo(AppRoutes.ConsultRoom);
+      }
+    } else {
+      if (mePatient.firstName == '') {
+        navigateTo(AppRoutes.SignUp);
+      } else {
+        AsyncStorage.setItem('userLoggedIn', 'true');
+        navigateTo(AppRoutes.ConsultRoom);
+      }
+    }
   };
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -512,54 +577,44 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const onClickResend = () => {
-    CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
+    try {
+      CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
 
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          setIsresent(true);
-          setOtp('');
-          Keyboard.dismiss();
-          const { phoneNumber } = props.navigation.state.params!;
-          console.log('onClickResend', phoneNumber);
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            setIsresent(true);
+            setOtp('');
+            Keyboard.dismiss();
+            const { phoneNumber } = props.navigation.state.params!;
+            console.log('onClickResend', phoneNumber);
 
-          const { loginId } = props.navigation.state.params!;
+            const { loginId } = props.navigation.state.params!;
 
-          resendOTP('+91' + phoneNumber, loginId)
-            .then((resendResult: any) => {
-              console.log('resendOTP ', resendResult.loginId);
+            resendOTP('+91' + phoneNumber, loginId)
+              .then((resendResult: any) => {
+                console.log('resendOTP ', resendResult.loginId);
 
-              props.navigation.setParams({ loginId: resendResult.loginId });
+                props.navigation.setParams({ loginId: resendResult.loginId });
 
-              CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
-              setShowResentTimer(true);
-              console.log('confirmResult login', resendResult);
-            })
-            .catch((error: Error) => {
-              console.log(error, 'error');
-              console.log(error.message, 'errormessage');
-              CommonBugFender('OTP_RESEND_FAIL', error);
-              Alert.alert('Error', 'The interaction was cancelled by the user.');
-            });
-
-          // sendOtp(phoneNumber, true)
-          //   .then((confirmResult) => {
-          //     CommonBugFender('OTP_RESEND_SUCCESS', confirmResult as Error);
-          //     setShowResentTimer(true);
-          //     console.log('confirmResult login', confirmResult);
-          //   })
-          //   .catch((error) => {
-          //     CommonBugFender('OTP_RESEND_FAIL', error);
-
-          //     Alert.alert('Error', 'The interaction was cancelled by the user.');
-          //   });
-        } else {
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('OTPVerification_getNetStatus', e);
-      });
+                CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
+                setShowResentTimer(true);
+                console.log('confirmResult login', resendResult);
+              })
+              .catch((error: Error) => {
+                console.log(error, 'error');
+                console.log(error.message, 'errormessage');
+                CommonBugFender('OTP_RESEND_FAIL', error);
+                Alert.alert('Error', 'The interaction was cancelled by the user.');
+              });
+          } else {
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('OTPVerification_getNetStatus', e);
+        });
+    } catch (error) {}
   };
 
   const openWebView = () => {

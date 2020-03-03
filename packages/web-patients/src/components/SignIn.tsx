@@ -10,13 +10,13 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphInput, AphCircularProgress } from '@aph/web-ui-components';
-import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
+import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,11 +106,11 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
   const [otp, setOtp] = useState<number[]>([]);
   // const placeRecaptchaAfterMe = useRef(null);
-
+  const countDown = useRef(900);
   const [otpSubmitCount, setOtpSubmitCount] = useState(0);
   // const [isIncorrectOtp, setIsIncorrectOtp] = useState<boolean>(false);
-  // const [showTimer, setShowTimer] = useState(false);
-  // const [timer, setTimer] = useState(179);
+  const [showTimer, setShowTimer] = useState<boolean>(false);
+  const [timer, setTimer] = useState<number>(900);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
@@ -144,8 +144,22 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   }, [disableResendOtpButtonCounter]);
 
   useEffect(() => {
-    if (otpSubmitCount === 3) {
-      setOtpStatusText(blockedMessage);
+    if (otpSubmitCount > 0) {
+      if (otpSubmitCount === 3) {
+        setOtpStatusText(blockedMessage);
+        setOtp([]);
+        setShowTimer(true);
+        const interval = setInterval(() => {
+          countDown.current--;
+          setTimer(countDown.current);
+          if (countDown.current === 0) {
+            clearInterval(interval);
+            setOtpSubmitCount(0);
+            setShowTimer(false);
+            countDown.current = 900;
+          }
+        }, 1000);
+      }
     }
   }, [otpSubmitCount]);
 
@@ -155,7 +169,17 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
         {verifyOtpError && otpSubmitCount === 3 ? 'oops!' : 'great'}
       </Typography>
       <p>{otpStatusText}</p>
-      {verifyOtpError && otpSubmitCount === 3 ? null : (
+      {verifyOtpError && otpSubmitCount === 3 ? (
+        <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
+          <div>
+            {!(isSigningIn || isVerifyingOtp) &&
+              showTimer &&
+              `Try again after  ${Math.floor(timer / 60)}:${
+                timer % 60 <= 9 ? `0` + (timer % 60) : timer % 60
+              }`}
+          </div>
+        </FormHelperText>
+      ) : (
         <form>
           <Grid container spacing={1}>
             {_times(numOtpDigits, (index) => (
@@ -343,7 +367,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
                           {showValidationError
                             ? 'This seems like a wrong number'
                             : showSendOtpError
-                            ? 'Error sending OTP'
+                            ? ''
                             : 'OTP will be sent to this number'}
                         </FormHelperText>
                       </FormControl>
