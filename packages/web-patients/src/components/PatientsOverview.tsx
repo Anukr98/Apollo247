@@ -62,6 +62,7 @@ export const PatientsOverview: React.FC = () => {
     GetPatientFutureAppointmentCountVariables
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT, {
     variables: { patientId: currentPatient ? currentPatient.id : '' },
+    ssr: currentPatient && currentPatient.id ? true : false,
     fetchPolicy: 'no-cache',
   });
 
