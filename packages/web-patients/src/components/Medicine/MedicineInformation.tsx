@@ -290,11 +290,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
 
   const apiDetails = {
-    url: `${
-      process.env.NODE_ENV === 'production'
-        ? process.env.PHARMACY_MED_PROD_URL
-        : process.env.PHARMACY_MED_UAT_URL
-    }/popcsrchprdsubt_api.php`,
+    url: `${process.env.PHARMACY_MED_PROD_URL}/popcsrchprdsubt_api.php`,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
     deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
