@@ -436,8 +436,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const filteredDay =
       consultHours &&
       _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
+        if (o && o.actualDay) {
+          return o.actualDay === selectedDay;
         }
       });
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
@@ -451,8 +451,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const filteredDay =
       consultHours &&
       _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
+        if (o && o.actualDay) {
+          return o.actualDay === selectedDay;
         }
       });
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
@@ -526,8 +526,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const filteredDay =
       consultHours &&
       _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
+        if (o && o.actualDay) {
+          return o.actualDay === selectedDay;
         }
       });
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};

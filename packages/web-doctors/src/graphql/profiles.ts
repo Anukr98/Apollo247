@@ -136,6 +136,7 @@ export const GET_DOCTOR_DETAILS = gql`
         }
       }
       consultHours {
+        actualDay
         consultMode
         startTime
         endTime
@@ -402,6 +403,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         endTime
         consultType
         weekDay
+        actualDay
         consultDuration
       }
       packages {
