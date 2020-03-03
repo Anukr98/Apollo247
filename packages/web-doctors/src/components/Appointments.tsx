@@ -415,7 +415,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({
           className={classes.calendarContent}
         >
           {appointments.map((appointment, idx) => {
-            // return appointment.caseSheet.length > 0 ? (
             const jrdCaseSheet =
               appointment.caseSheet.length > 0
                 ? appointment.caseSheet.filter(
@@ -578,8 +577,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   </div>
                 </StepContent>
               </Step>
-              // )
-              // <div>&nbsp;</div>
             );
           })}
         </Stepper>
