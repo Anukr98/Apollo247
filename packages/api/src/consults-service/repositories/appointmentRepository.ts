@@ -823,7 +823,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
       }
       let finalSlot = '';
-      let foundFlag = 0;
+      //let foundFlag = 0;
 
       //getting the available slot
       let timeWithBuffer: Date;
@@ -833,14 +833,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       //const timeWithBuffer = addMinutes(currentTime, consultBuffer);
       console.log(timeWithBuffer, 'timeWithBuffer');
       console.log(availableSlots, 'slots final list');
-      availableSlots.map((slot) => {
-        const slotDate = new Date(slot);
-        if (slotDate >= timeWithBuffer && foundFlag == 0) {
-          finalSlot = slot;
-          foundFlag = 1;
-        }
-      });
-
+      // availableSlots.map((slot) => {
+      //   const slotDate = new Date(slot);
+      //   if (slotDate >= timeWithBuffer && foundFlag == 0) {
+      //     finalSlot = slot;
+      //     foundFlag = 1;
+      //   }
+      // });
+      if (availableSlots.length > 0) {
+        finalSlot = availableSlots[0];
+      }
       //const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
       //doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
 
