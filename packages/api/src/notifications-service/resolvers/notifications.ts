@@ -1148,20 +1148,20 @@ export async function sendReminderNotification(
   return notificationResponse;
 }
 
-const sendBrowserNotitication = (doctorID: string, message: string) => {
+const sendBrowserNotitication = (id: string, message: string) => {
   const pubnub = new Pubnub({
     publishKey: process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '',
     subscribeKey: process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '',
   });
   pubnub.subscribe({
-    channels: [doctorID],
+    channels: [id],
     withPresence: true,
   });
   pubnub.publish(
     {
-      channel: doctorID,
+      channel: id,
       message: {
-        id: doctorID,
+        id: id,
         message: message,
         isTyping: true,
         messageDate: new Date(),
