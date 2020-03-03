@@ -9,5 +9,6 @@
       "@aph/mobile-patients/*": ["./*"]
     }
   },
-  "exclude": ["node_modules", "dist", "babel.config.js", "metro.config.js", "jest.config.js"]
+  "exclude": ["node_modules", "dist", "babel.config.js", "metro.config.js", "jest.config.js"],
+  "include": ["src/**/*", "index.d.ts"]
 }

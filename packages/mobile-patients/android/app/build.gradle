@@ -200,6 +200,9 @@ android {
 }
 
 dependencies {
+    implementation 'com.webengage:android-sdk:3.+'
+    implementation 'com.google.android.gms:play-services-ads:15.0.1' // optional for webengage
+    implementation project(':react-native-webengage')
     implementation project(':@react-native-community_async-storage')
     implementation project(':react-native-exception-handler')
     implementation project(':react-native-image-picker')
