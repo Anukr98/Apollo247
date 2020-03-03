@@ -151,9 +151,7 @@ export const PatientLogHealthVault: React.FC = () => {
                     }
                     secondary={
                       <Fragment>
-                        <Typography component="h6" variant="h6">
-                          {/* {'5MB'} | {'2019-01-01T11:30'} */}
-                        </Typography>
+                        <Typography component="h6" variant="h6"></Typography>
                       </Fragment>
                     }
                   />
@@ -189,13 +187,6 @@ export const PatientLogHealthVault: React.FC = () => {
                         </Typography>
                       </Fragment>
                     }
-                    // secondary={
-                    //   <Fragment>
-                    //     <Typography component="h6" variant="h6">
-                    //       {'5mb'} | {'2019-01-01T11:30'}
-                    //     </Typography>
-                    //   </Fragment>
-                    // }
                   />
                 </ListItem>
               ))

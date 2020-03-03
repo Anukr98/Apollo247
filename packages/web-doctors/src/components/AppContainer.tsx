@@ -38,8 +38,6 @@ const App: React.FC = () => {
   }, [signInError]);
 
   const currentUserType = useAuth().currentUserType;
-
-  // TODO Why is this called patient?
   const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
   const isJDAdmin = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
   const isSecretary = useAuth() && currentUserType === LoggedInUserType.SECRETARY;
