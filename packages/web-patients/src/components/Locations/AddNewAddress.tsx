@@ -118,7 +118,6 @@ type Address = {
 };
 
 export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
-
   const apiDetails = {
     googleAPIKey: process.env.GOOGLE_API_KEY,
   };
@@ -157,14 +156,14 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           : '';
       const address2 =
         props.currentAddress &&
-          props.currentAddress.addressLine2 &&
-          props.currentAddress.addressLine2.length > 0
+        props.currentAddress.addressLine2 &&
+        props.currentAddress.addressLine2.length > 0
           ? props.currentAddress.addressLine2
           : '';
       const pincode =
         props.currentAddress &&
-          props.currentAddress.zipcode &&
-          props.currentAddress.zipcode.length > 0
+        props.currentAddress.zipcode &&
+        props.currentAddress.zipcode.length > 0
           ? props.currentAddress.zipcode
           : '';
       const addressType =
@@ -302,7 +301,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     placeholder="Enter area / locality name"
                     onChange={(e) => {
                       setAddress2(address2);
-                      console.log("Address2", address2);
+                      console.log('Address2', address2);
                     }}
                     inputProps={{
                       maxLength: 100,
@@ -320,7 +319,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                             color="secondary"
                             className={`${classes.genderBtns} ${
                               addressType === addressTypeValue ? classes.btnActive : ''
-                              }`}
+                            }`}
                             onClick={() => {
                               setAddressType(addressTypeValue);
                               setShowText(addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER);
@@ -358,8 +357,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       value={otherTextbox || ''}
                     />
                   ) : (
-                      ''
-                    )}
+                    ''
+                  )}
                 </div>
                 {/* <div className={classes.formGroup}>
                   <AphTextField placeholder="Enter Address Type" />
@@ -408,43 +407,43 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
             )}
           </Mutation>
         ) : (
-            <Mutation<SavePatientAddress, SavePatientAddressVariables>
-              mutation={SAVE_PATIENT_ADDRESS}
-              variables={{
-                patientAddress: {
-                  patientId: currentPatientId,
-                  addressLine1: address1,
-                  addressLine2: address2,
-                  zipcode: pincode,
-                  mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
-                  addressType: addressType as PATIENT_ADDRESS_TYPE,
-                  otherAddressType: otherTextbox,
-                },
-              }}
-              onError={(error) => {
-                alert(error);
-              }}
-            >
-              {(mutate) => (
-                <AphButton
-                  color="primary"
-                  fullWidth
-                  onClick={() => {
-                    setMutationLoading(true);
-                    mutate().then(() => {
-                      props.forceRefresh ? props.forceRefresh(true) : null;
-                    });
-                    props.setIsAddAddressDialogOpen(false);
-                    props.setRenderAddresses && props.setRenderAddresses(true);
-                  }}
-                  disabled={disableSubmit || props.disableActions}
-                  className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
-                >
-                  {mutationLoading ? <CircularProgress /> : 'Save'}
-                </AphButton>
-              )}
-            </Mutation>
-          )}
+          <Mutation<SavePatientAddress, SavePatientAddressVariables>
+            mutation={SAVE_PATIENT_ADDRESS}
+            variables={{
+              patientAddress: {
+                patientId: currentPatientId,
+                addressLine1: address1,
+                addressLine2: address2,
+                zipcode: pincode,
+                mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+                addressType: addressType as PATIENT_ADDRESS_TYPE,
+                otherAddressType: otherTextbox,
+              },
+            }}
+            onError={(error) => {
+              alert(error);
+            }}
+          >
+            {(mutate) => (
+              <AphButton
+                color="primary"
+                fullWidth
+                onClick={() => {
+                  setMutationLoading(true);
+                  mutate().then(() => {
+                    props.forceRefresh ? props.forceRefresh(true) : null;
+                  });
+                  props.setIsAddAddressDialogOpen(false);
+                  props.setRenderAddresses && props.setRenderAddresses(true);
+                }}
+                disabled={disableSubmit || props.disableActions}
+                className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+              >
+                {mutationLoading ? <CircularProgress /> : 'Save'}
+              </AphButton>
+            )}
+          </Mutation>
+        )}
       </div>
     </div>
   );
