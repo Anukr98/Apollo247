@@ -136,8 +136,12 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                       <Grid item xs={6} sm={3}>
                         <div className={classes.resultGroup}>
                           <label>Result</label>
-                          <div className={`${classes.result} ${classes.resultError}`}>
-                            {detail.result}
+                          <div className={`${classes.result} `}>
+                            {detail.result
+                              ? detail.result
+                                  .split('.')
+                                  .map((res: string) => <div>{`${res}. `}</div>)
+                              : null}
                           </div>
                         </div>
                       </Grid>
