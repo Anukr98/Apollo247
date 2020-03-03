@@ -96,16 +96,16 @@ const updatePatient: Resolver<
   }
 
   let regCode = '';
-  if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
-    const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
-    const getCode = await regCodeRepo.getCode();
-    if (getCode.length > 0) {
-      const regCodeStatus = await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
-      if (regCodeStatus) {
-        regCode = getCode[0].registrationCode;
-      }
+  //if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
+  const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
+  const getCode = await regCodeRepo.getCode();
+  if (getCode.length > 0) {
+    const regCodeStatus = await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+    if (regCodeStatus) {
+      regCode = getCode[0].registrationCode;
     }
   }
+  //}
 
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
   console.log(getPatientList, 'getPatientList for count');
