@@ -19,6 +19,7 @@ import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import Pubnub from 'pubnub';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -856,6 +857,8 @@ export async function sendReminderNotification(
       doctorDetails.firstName
     ).replace('{1}', patientDetails.firstName);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+    //Send Browser Notification
+    sendBrowserNotitication(doctorDetails.id, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_60) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
@@ -1002,6 +1005,8 @@ export async function sendReminderNotification(
     console.log('doctorSMS=======================', doctorSMS);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
+    //Send Browser Notification
+    sendBrowserNotitication(doctorDetails.id, doctorSMS);
   } else if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
   ) {
@@ -1142,6 +1147,34 @@ export async function sendReminderNotification(
   console.log(notificationResponse, 'notificationResponse');
   return notificationResponse;
 }
+
+const sendBrowserNotitication = (doctorID: string, message: string) => {
+  const pubnub = new Pubnub({
+    publishKey: process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '',
+    subscribeKey: process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '',
+  });
+  pubnub.subscribe({
+    channels: [doctorID],
+    withPresence: true,
+  });
+  pubnub.publish(
+    {
+      channel: doctorID,
+      message: {
+        id: doctorID,
+        message: message,
+        isTyping: true,
+        messageDate: new Date(),
+        sentBy: ApiConstants.SENT_BY_API,
+      },
+      storeInHistory: true,
+      sendByPost: true,
+    },
+    (status, response) => {
+      console.log('status,response==', status, response);
+    }
+  );
+};
 
 export async function sendCartNotification(
   pushNotificationInput: CartPushNotificationInput,
