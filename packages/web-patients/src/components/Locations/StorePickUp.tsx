@@ -107,11 +107,7 @@ type Address = {
 
 export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
   const apiDetails = {
-    url: `${
-      process.env.NODE_ENV === 'production'
-        ? process.env.PHARMACY_MED_PROD_URL
-        : process.env.PHARMACY_MED_UAT_URL
-    }/searchpin_api.php`,
+    url: process.env.PHARMACY_STORE_PICKUP_SEARCH,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     googleAPIKey: process.env.GOOGLE_API_KEY,
   };
@@ -138,7 +134,7 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
   const getPharmacyAddresses = async (pincode: string) => {
     await axios
       .post(
-        apiDetails.url,
+        apiDetails.url || '',
         { params: pincode },
         {
           headers: {
@@ -146,9 +142,9 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
           },
         }
       )
-      .then((result) => {
-        if (result && result.data && result.data.Stores) {
-          const storesData = result.data.Stores;
+      .then(({ data }) => {
+        if (data && data.Stores) {
+          const storesData = data.Stores;
           if (storesData && storesData[0] && storesData[0].message !== 'Data Not Available') {
             setStores && setStores(storesData);
             setPincodeError(false);
@@ -170,10 +166,10 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${apiDetails.googleAPIKey}`
       )
-      .then((res) => {
+      .then(({ data }) => {
         try {
-          if (res && res.data && res.data.results[0] && res.data.results[0].address_components) {
-            const addressComponents = res.data.results[0].address_components || [];
+          if (data && data.results[0] && data.results[0].address_components) {
+            const addressComponents = data.results[0].address_components || [];
             const pincode = (
               addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
               {}

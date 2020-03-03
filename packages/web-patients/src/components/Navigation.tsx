@@ -26,9 +26,9 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down(900)]: {
           display: 'none',
         },
-        '&:nth-child(3)': {
-          display: 'none',
-        },
+        // '&:nth-child(10)': {
+        //   display: 'none',
+        // },
       },
     },
     menuItemActive: {
@@ -45,8 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     notificationBtn: {
-      display: 'none',
-      // display: 'inline-block',
+      display: 'inline-block',
       padding: '33px 20px 31px 20px',
       fontSize: 13,
       fontWeight: 600,
@@ -185,9 +184,9 @@ export const Navigation: React.FC = (props) => {
           <span className={classes.itemCount}>{cartItems.length || 0}</span>
         </span>
       </div>
-      <div className={`${classes.notificationBtn}`}>
+      {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />
-      </div>
+      </div> */}
       <Popover
         open={isCartPopoverOpen}
         anchorEl={cartPopoverRef.current}

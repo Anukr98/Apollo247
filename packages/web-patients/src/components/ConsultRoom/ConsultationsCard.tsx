@@ -301,8 +301,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 : '';
             const specialization =
               appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.specialty &&
-                !_isNull(appointmentDetails.doctorInfo.specialty.name)
+              appointmentDetails.doctorInfo.specialty &&
+              !_isNull(appointmentDetails.doctorInfo.specialty.name)
                 ? appointmentDetails.doctorInfo.specialty.specialistSingularTerm
                 : '';
             const currentTime = new Date().getTime();
@@ -321,13 +321,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
               return day1.diff(day2, 'days') == 0
                 ? 'Today'
                 : day1.diff(day2, 'days') +
-                ' more ' +
-                (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                    ' more ' +
+                    (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
             };
             const clinicList =
               appointmentDetails &&
-                appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.doctorHospital
+              appointmentDetails.doctorInfo &&
+              appointmentDetails.doctorInfo.doctorHospital
                 ? appointmentDetails.doctorInfo.doctorHospital
                 : [];
             let facilityName = '',
@@ -390,7 +390,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       <div
                         className={`${classes.availability} ${
                           difference <= 15 && difference > 0 ? classes.availableNow : ''
-                          }`}
+                        }`}
                       >
                         {appointmentDetails.appointmentType === 'ONLINE'
                           ? difference <= 15 && difference > 0
@@ -417,8 +417,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           {appointmentDetails.appointmentType === 'ONLINE' ? (
                             <img src={require('images/ic_onlineconsult.svg')} alt="" />
                           ) : (
-                              <img src={require('images/ic_clinicvisit.svg')} alt="" />
-                            )}
+                            <img src={require('images/ic_clinicvisit.svg')} alt="" />
+                          )}
                         </span>
                       </div>
                       {/* <div className={classes.consultaitonType}>
@@ -441,23 +441,23 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         } else {
                           isConsultStarted
                             ? (window.location.href = clientRoutes.chatRoom(
-                              appointmentId,
-                              doctorId
-                            ))
-                            : addConsultToQueue({
-                              variables: {
                                 appointmentId,
-                              },
-                            })
-                              .then((res) => {
-                                window.location.href = clientRoutes.chatRoom(
+                                doctorId
+                              ))
+                            : addConsultToQueue({
+                                variables: {
                                   appointmentId,
-                                  doctorId
-                                );
+                                },
                               })
-                              .catch((e: ApolloError) => {
-                                alert(e);
-                              });
+                                .then((res) => {
+                                  window.location.href = clientRoutes.chatRoom(
+                                    appointmentId,
+                                    doctorId
+                                  );
+                                })
+                                .catch((e: ApolloError) => {
+                                  alert(e);
+                                });
                         }
                       }}
                     >
@@ -470,8 +470,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         You can chat with the doctor for {comparingDays()}
                       </div>
                     ) : (
-                        ''
-                      )}
+                      ''
+                    )}
                   </div>
                 </div>
               </Grid>
