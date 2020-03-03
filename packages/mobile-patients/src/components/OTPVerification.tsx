@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    elevation: 20,
   },
   gotItStyles: {
     height: 60,
@@ -159,6 +160,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const handleBack = async () => {
     setonClickOpen(false);
+    setOpenFillerView(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     return true;
   };
@@ -441,10 +443,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const getAuthToken = () => {
     getFirebaseToken &&
-      getFirebaseToken().then((token: any) => {
-        console.log('OTPVerificationToken', token);
-        getOTPPatientApiCall();
-      });
+      getFirebaseToken()
+        .then((token: any) => {
+          console.log('OTPVerificationToken', token);
+          getOTPPatientApiCall();
+        })
+        .catch(async (error) => {
+          setOpenFillerView(false);
+        });
   };
 
   const getOTPPatientApiCall = async () => {
@@ -460,6 +466,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       .catch(async (error) => {
         CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
         console.log('getOTPPatientApiCallerror', error);
+        setOpenFillerView(false);
       });
   };
 
@@ -468,20 +475,24 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       data.data.getPatientByMobileNumber && data.data.getPatientByMobileNumber.patients;
     console.log('dataFetchFromMobileNumber', data);
     if (profileData && profileData.length === 0) {
-      getPatientByPrism().then((data: any) => {
-        const allPatients =
-          data && data.data && data.data.getCurrentPatients
-            ? data.data.getCurrentPatients.patients
+      getPatientByPrism()
+        .then((data: any) => {
+          const allPatients =
+            data && data.data && data.data.getCurrentPatients
+              ? data.data.getCurrentPatients.patients
+              : null;
+
+          const mePatient = allPatients
+            ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
             : null;
+          // setMobileAPICalled && setMobileAPICalled(true);
+          // setAllPatients(allPatients);
 
-        const mePatient = allPatients
-          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-          : null;
-        // setMobileAPICalled && setMobileAPICalled(true);
-        // setAllPatients(allPatients);
-
-        moveScreenForward(mePatient);
-      });
+          moveScreenForward(mePatient);
+        })
+        .catch(async (error) => {
+          setOpenFillerView(false);
+        });
     } else {
       const mePatient = profileData
         ? profileData.find((patient: any) => patient.relation === Relation.ME) || profileData[0]
@@ -628,7 +639,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
     return (
-      <View style={[styles.viewAbsoluteStyles, { elevation: 20 }]}>
+      <View style={styles.viewAbsoluteStyles}>
         <Header
           title={'Terms & Conditions'}
           leftIcon="close"
