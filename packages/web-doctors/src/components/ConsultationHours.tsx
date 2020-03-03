@@ -341,16 +341,19 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                         item.startTime
                       )} - ${convertTime(item.endTime)}`}</Typography>
                     </div>
-                    <div className={classes.columnDays}>
-                      <Typography className={classes.heading}>
-                        {item.weekDay.toLowerCase()} &nbsp; | &nbsp;
-                        <span className={classes.cosultMode}>
-                          {item.consultMode === 'PHYSICAL' && 'Physical'}
-                          {item.consultMode === 'BOTH' && 'Physical , Online'}
-                          {item.consultMode === 'ONLINE' && 'Online'}
-                        </span>
-                      </Typography>
-                    </div>
+                    {item && item.actualDay && (
+                      <div className={classes.columnDays}>
+                        <Typography className={classes.heading}>
+                          {item.actualDay.toLowerCase()} &nbsp; | &nbsp;
+                          <span className={classes.cosultMode}>
+                            {item.consultMode === 'PHYSICAL' && 'Physical'}
+                            {item.consultMode === 'BOTH' && 'Physical , Online'}
+                            {item.consultMode === 'ONLINE' && 'Online'}
+                          </span>
+                        </Typography>
+                      </div>
+                    )}
+
                     {item.consultType && <div className={classes.columnType}>(FIXED)</div>}
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.details}>
@@ -375,12 +378,15 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                         </Typography>
                       </div>
                       <div>
-                        <div>
-                          <Typography variant="h5" className={classes.timeForm}>
-                            Which days you wish to apply these hours to?
-                          </Typography>
-                          <DaySelector selectedDays={item.weekDay} />
-                        </div>
+                        {item && item.actualDay && (
+                          <div>
+                            <Typography variant="h5" className={classes.timeForm}>
+                              Which days you wish to apply these hours to?
+                            </Typography>
+                            <DaySelector selectedDays={item.actualDay} />
+                          </div>
+                        )}
+
                         <div>
                           <Typography variant="h5" className={classes.timeForm}>
                             What type of consults will you be available for?
