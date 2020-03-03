@@ -447,7 +447,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     name={getName(combinedData)}
                     id={combinedData.data.id}
                     isActiveCard={
-                      activeData && activeData.data && activeData.data.id === combinedData.data.id
+                      activeData && activeData.data && activeData.data === combinedData.data
                     }
                     setLoading={setLoading}
                   />
@@ -543,10 +543,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     <DetailedFindings activeData={activeData} />
                   )}
                   {activeData.data &&
-                    (activeData.data.prismFileIds ||
-                      activeData.data.hospitalizationPrismFileIds ||
-                      activeData.data.healthCheckPrismFileIds ||
-                      activeData.data.testResultPrismFileIds) && (
+                    ((activeData.data.prismFileIds && activeData.data.prismFileIds.length > 0) ||
+                      (activeData.data.hospitalizationPrismFileIds &&
+                        activeData.data.hospitalizationPrismFileIds.length > 0) ||
+                      (activeData.data.healthCheckPrismFileIds &&
+                        activeData.data.healthCheckPrismFileIds.length > 0) ||
+                      (activeData.data.testResultPrismFileIds &&
+                        activeData.data.testResultPrismFileIds.length > 0)) && (
                       <RenderImage activeData={activeData} />
                     )}
                 </div>
