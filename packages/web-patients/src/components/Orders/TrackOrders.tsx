@@ -177,7 +177,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               <span>ORDER #{props.orderAutoId}</span>
             </div>
             <div className={classes.headerActions}>
-              <AphButton onClick={handleClick} className={classes.moreBtn}>
+              <AphButton
+                disabled={!props.orderAutoId}
+                onClick={handleClick}
+                className={classes.moreBtn}
+              >
                 <img src={require('images/ic_more.svg')} alt="" />
               </AphButton>
               <Popover
