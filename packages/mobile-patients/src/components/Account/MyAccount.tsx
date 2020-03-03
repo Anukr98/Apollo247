@@ -327,7 +327,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View
             style={{
-              height: 200,
+              minHeight: 200,
               alignItems: 'center',
               // justifyContent: 'center',
               overflow: 'hidden',
@@ -350,7 +350,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             ) : (
               <Image
                 source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
-                style={{ top: 10, height: 140, width: '100%' }}
+                style={{ top: 10, height: 200, width: '100%' }}
                 resizeMode={'contain'}
               />
             )}
