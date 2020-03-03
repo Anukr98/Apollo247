@@ -6,7 +6,7 @@ import {
   BackArrow,
   OkText,
   OkTextDisabled,
-  FillerImage,
+  Loader,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
@@ -49,6 +49,7 @@ import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
+import { ApolloLogo } from './ApolloLogo';
 
 const { height, width } = Dimensions.get('window');
 
@@ -729,13 +730,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          <FillerImage />
+          <ApolloLogo />
+          <Loader style={{ marginTop: 12, height: 26, width: 76 }} />
           <Text
             style={{
-              marginTop: 20,
-              color: '#0089b7',
-              ...theme.fonts.IBMPlexSansMedium(17),
-              lineHeight: 26,
+              marginTop: 22,
+              color: '#02475b',
+              ...theme.fonts.IBMPlexSansBold(17),
+              lineHeight: 24,
               textAlign: 'center',
             }}
           >
@@ -743,10 +745,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </Text>
           <Text
             style={{
-              marginTop: 12,
-              color: '#9a9a9a',
-              ...theme.fonts.IBMPlexSansMedium(17),
-              lineHeight: 26,
+              marginTop: 4,
+              color: '#02475b',
+              ...theme.fonts.IBMPlexSansRegular(17),
+              lineHeight: 24,
               textAlign: 'center',
             }}
           >

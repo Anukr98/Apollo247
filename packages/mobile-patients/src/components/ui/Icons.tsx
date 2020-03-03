@@ -757,11 +757,3 @@ export const Gift: React.FC<IconProps> = (props) => (
 export const PrescriptionPad: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_prescription_pad.png')} />
 );
-
-export const FillerImage: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 166, width: 189, resizeMode: 'contain' }}
-    {...props}
-    source={require('./icons/img_onboarding_placeholder.png')}
-  />
-);
