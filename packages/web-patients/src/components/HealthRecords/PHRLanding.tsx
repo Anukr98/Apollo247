@@ -104,6 +104,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const { isSigningIn } = useAuth();
   const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
   const [activeMedicalData, setActiveMedicalData] = useState<any | null>(null);
+  const [medicalError, setMedicalError] = useState<boolean>(false);
+  const [medicalRecordError, setMedicalRecordError] = useState<boolean>(false);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   useEffect(() => {
@@ -198,9 +200,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         } else {
           setMedicalRecords([]);
         }
+        setMedicalRecordError(false);
       })
       .catch((error) => {
         alert(error);
+        setMedicalRecordError(true);
         setMedicalLoading(false);
       });
   };
@@ -224,9 +228,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           setHealthChecks([]);
           setHospitalizations([]);
         }
+        setMedicalError(false);
       })
       .catch((error) => {
         console.log(error);
+        setMedicalError(true);
         setMedicalLoading(false);
       });
   };
@@ -321,6 +327,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                 allCombinedData={allCombinedData}
                 activeData={activeMedicalData}
                 setActiveData={setActiveMedicalData}
+                error={medicalError || medicalRecordError}
               />
             </TabContainer>
           )}

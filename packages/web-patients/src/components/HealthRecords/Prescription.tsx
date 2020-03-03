@@ -285,15 +285,6 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                               }`
                           )
                       : ''}
-
-                    {prescription.medicineInstructions ? (
-                      <>
-                        <br />
-                        {prescription.medicineInstructions}
-                      </>
-                    ) : (
-                      ''
-                    )}
                     {prescription.medicineConsumptionDurationInDays == '' ||
                     prescription.medicineConsumptionDurationInDays == '0'
                       ? ''
@@ -307,6 +298,15 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                           prescription.medicineConsumptionDurationUnit,
                           prescription.medicineConsumptionDurationInDays
                         )} `}
+
+                    {prescription.medicineInstructions ? (
+                      <>
+                        <br />
+                        {prescription.medicineInstructions}
+                      </>
+                    ) : (
+                      ''
+                    )}
                   </div>
                 )}
               </Grid>

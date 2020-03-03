@@ -314,6 +314,7 @@ type MedicalRecordProps = {
   setLoading: (loading: boolean) => void;
   setActiveData: (activeData: any) => void;
   activeData: any;
+  error: boolean;
 };
 
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
@@ -330,6 +331,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     setMedicalRecords,
     activeData,
     setActiveData,
+    error,
   } = props;
 
   const getFormattedDate = (combinedData: any) => {
@@ -386,6 +388,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
         <CircularProgress />
       </div>
     );
+  }
+
+  if (error) {
+    return <div>Error while fetching the medical records</div>;
   }
 
   const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
