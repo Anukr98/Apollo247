@@ -341,7 +341,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                   const { height, width } = value.nativeEvent.source;
                   setImgHeight(height * (winWidth / width));
                 }}
-                style={{ width: '100%', minHeight: imgHeight, height: 'auto' }}
+                style={{ width: winWidth, height: winWidth }}
                 resizeMode={'contain'}
               />
             ) : (
