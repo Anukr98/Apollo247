@@ -187,6 +187,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
   const { patient } = props;
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
+  const [referralCode, setReferralCode] = useState<string>('');
+  const [isValidReferralCode, setIsValidReferralCode] = useState<boolean>(true);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
 
   const orderedGenders = [Gender.MALE, Gender.FEMALE];
@@ -216,12 +218,12 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                 dateOfBirth: convertClientDateToIsoDate(values.dateOfBirth),
                 emailAddress: _isEmpty(values.emailAddress) ? null : values.emailAddress,
                 relation: Relation.ME,
+                referralCode: referralCode.length > 0 ? referralCode : null,
               },
             },
           })
             .then(() => {
               setShowProfileSuccess(true);
-              props.onClose();
             })
             .catch((error) => {
               console.error(error);
@@ -235,8 +237,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           errors,
           values,
           setFieldValue,
-          handleSubmit,
-        }: FormikProps<FormValues>) => {
+        }: // handleSubmit,
+        FormikProps<FormValues>) => {
           const showError = (fieldName: keyof FormValues) =>
             !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
           const requiredFields: (keyof FormValues)[] = [
@@ -248,7 +250,11 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           const formIsUntouched = !dirty;
           const formHasErrors = !_isEmpty(errors);
           const someRequiredFieldsMissing = requiredFields.some((field) => _isEmpty(values[field]));
-          const submitIsDisabled = formIsUntouched || formHasErrors || someRequiredFieldsMissing;
+          const submitIsDisabled =
+            formIsUntouched ||
+            formHasErrors ||
+            someRequiredFieldsMissing ||
+            (referralCode.length > 0 && !isValidReferralCode);
           return (
             <Form>
               <div className={classes.mascotIcon}>
@@ -414,7 +420,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                         </FormControl>
                       )}
                     />
-                    {/* <div className={classes.referralCodeWrapper}>
+
+                    <div className={classes.referralCodeWrapper}>
                       <img src={require('images/ic_gift.svg')} alt="" />
                       <div className={classes.enterCode}>
                         <div>Preeti Has Sent You A Referral Code!</div>
@@ -422,7 +429,40 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           <AphTextField
                             className={classes.inputField}
                             placeholder="Enter Referral Code"
+                            value={referralCode}
+                            onChange={(e) => {
+                              const inputValue = e.target.value;
+                              setReferralCode(inputValue.toUpperCase());
+                            }}
+                            inputProps={{ type: 'text', maxLength: 9 }}
+                            onBlur={() => {
+                              if (referralCode.length > 0) {
+                                const alphabets = referralCode.substr(0, 4);
+                                const digits = referralCode.substr(4, 5);
+                                const isValidReferralCode =
+                                  /^[a-zA-Z]+$/.test(alphabets) &&
+                                  alphabets.length === 4 &&
+                                  /^\d+$/.test(digits) &&
+                                  digits.length === 5;
+                                setIsValidReferralCode(isValidReferralCode);
+                              }
+                            }}
                           />
+                          {!isValidReferralCode ? (
+                            <FormHelperText
+                              className={
+                                showError('emailAddress')
+                                  ? classes.showMessage
+                                  : classes.hideMessage
+                              }
+                              component="div"
+                              error={true}
+                            >
+                              Referral code should start with 4 alphabets follwed by 5 digits.
+                            </FormHelperText>
+                          ) : (
+                            ''
+                          )}
                           <img
                             className={classes.tickIcon}
                             src={require('images/ic_check_white.svg')}
@@ -430,7 +470,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           />
                         </FormControl>
                       </div>
-                    </div> */}
+                    </div>
                   </div>
                 </div>
               </div>
