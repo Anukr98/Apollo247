@@ -153,6 +153,9 @@ const useStyles = makeStyles((theme: Theme) => {
     hideMessage: {
       opacity: 0,
     },
+    errorMessage: {
+      paddingTop: 5,
+    },
     btnActive: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
@@ -450,11 +453,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           />
                           {!isValidReferralCode ? (
                             <FormHelperText
-                              className={
-                                showError('emailAddress')
-                                  ? classes.showMessage
-                                  : classes.hideMessage
-                              }
+                              className={classes.errorMessage}
                               component="div"
                               error={true}
                             >
