@@ -499,7 +499,7 @@ const registerPatients: Resolver<
   const controller = new AbortController();
   const timeout = setTimeout(() => {
     controller.abort();
-  }, 150);
+  }, 10);
   const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
   const prismBaseUrl = prismUrl + '/data';
 
