@@ -1564,7 +1564,9 @@ const isDeliveryChargeApplicable = (totalAmountPaid) => {
   if (totalAmountPaid === null || totalAmountPaid === '' || isNaN(totalAmountPaid)) {
     totalAmountPaid = 0;
   }
-  return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+
+  //return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+  return parseFloat(totalAmountPaid) < 200 ? true : false;
 };
 
 //returns constant response object

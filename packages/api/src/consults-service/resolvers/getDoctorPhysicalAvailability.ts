@@ -50,14 +50,16 @@ const getDoctorPhysicalAvailableSlots: Resolver<
   const checkStart = `${previousDate.toDateString()} 18:30:00`;
   const checkEnd = `${DoctorPhysicalAvailabilityInput.availableDate.toDateString()} 18:30:00`;
   let weekDay = format(previousDate, 'EEEE').toUpperCase();
-  let timeSlots = await consultHourRep.getConsultHours(
+  let timeSlots = await consultHourRep.getPhysicalConsultHours(
     DoctorPhysicalAvailabilityInput.doctorId,
-    weekDay
+    weekDay,
+    DoctorPhysicalAvailabilityInput.facilityId
   );
   weekDay = format(DoctorPhysicalAvailabilityInput.availableDate, 'EEEE').toUpperCase();
-  const timeSlotsNext = await consultHourRep.getConsultHours(
+  const timeSlotsNext = await consultHourRep.getPhysicalConsultHours(
     DoctorPhysicalAvailabilityInput.doctorId,
-    weekDay
+    weekDay,
+    DoctorPhysicalAvailabilityInput.facilityId
   );
   if (timeSlots.length > 0) {
     prevDaySlots = 1;
