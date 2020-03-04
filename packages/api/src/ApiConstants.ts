@@ -102,6 +102,7 @@ export enum ApiConstants {
   SENT_BY_API = 'SENT_BY_API',
   //case sheet submitted
   CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you. View case sheet',
+  DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointments booked for today on Apollo24x7. Summary of appointments \nOnline Appointments : {2} \nPhysical Appointments : {3}',
 
   /*** push-notification messages end here ***/
 

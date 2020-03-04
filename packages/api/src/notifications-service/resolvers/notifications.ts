@@ -20,6 +20,7 @@ import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
 import Pubnub from 'pubnub';
+import fetch from 'node-fetch';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -71,6 +72,7 @@ export const getNotificationsTypeDefs = gql`
     ): PushNotificationSuccessMessage
 
     testPushNotification(deviceToken: String): PushNotificationSuccessMessage
+    sendDailyAppointmentSummary: String
   }
 `;
 
@@ -167,7 +169,6 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
   const apiUrl = `${apiUrlWithKey}${queryParams}`;
   //logging api call data here
   log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
-
   const smsResponse = await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
@@ -1701,6 +1702,41 @@ const testPushNotification: Resolver<
   return notificationResponse;
 };
 
+const sendDailyAppointmentSummary: Resolver<null, {}, NotificationsServiceContext, string> = async (
+  parent,
+  args,
+  { doctorsDb, consultsDb }
+) => {
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctors = await doctorRepo.getAllDoctors('0');
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  doctors.forEach(async (doctor) => {
+    const appointments = await appointmentRepo.getDoctorAppointments(
+      doctor.id,
+      new Date(),
+      new Date()
+    );
+    let onlineAppointments = 0;
+    let physicalAppointments = 0;
+    appointments.forEach((appointment) => {
+      if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+        physicalAppointments++;
+      } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+        onlineAppointments++;
+      }
+    });
+    const totalAppointments = onlineAppointments + physicalAppointments;
+    const messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace('{0}', doctor.firstName)
+      .replace('{1}', totalAppointments.toString())
+      .replace('{2}', onlineAppointments.toString())
+      .replace('{3}', physicalAppointments.toString());
+    sendBrowserNotitication(doctor.id, messageBody);
+    sendNotificationSMS(doctor.mobileNumber, messageBody);
+  });
+
+  return 'Daily Appointment summarys sent successfully';
+};
+
 export const getNotificationsResolvers = {
-  Query: { sendPushNotification, testPushNotification },
+  Query: { sendPushNotification, testPushNotification, sendDailyAppointmentSummary },
 };
