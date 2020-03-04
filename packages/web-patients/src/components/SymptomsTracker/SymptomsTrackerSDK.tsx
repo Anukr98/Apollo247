@@ -1,26 +1,22 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import React, { useState } from 'react';
-import Typography from '@material-ui/core/Typography';
-import { AphButton, AphSelect } from '@aph/web-ui-components';
-import MenuItem from '@material-ui/core/MenuItem';
+import React from 'react';
 import _isEmpty from 'lodash/isEmpty';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useAuth } from 'hooks/authHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
-import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
-import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { Header } from 'components/Header';
-import { ManageProfile } from 'components/ManageProfile';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { NavigatorSDK } from '@praktice/navigator-react-web-sdk';
+import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { NavigatorSDK } from '@praktice/navigator-react-web-sdk';
-import $Generator from '@praktice/navigator-react-web-sdk';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
+    root: {
+      padding: 0,
+    },
     container: {
       maxWidth: 1064,
       margin: 'auto',
@@ -29,48 +25,8 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f7f8f5',
-      marginBottom: 20,
       [theme.breakpoints.down('xs')]: {
         borderRadius: 0,
-      },
-    },
-    heroBanner: {
-      backgroundColor: '#f7f8f5',
-      position: 'relative',
-      borderRadius: 10,
-      [theme.breakpoints.down('xs')]: {
-        borderRadius: 0,
-      },
-    },
-    bannerInfo: {
-      padding: '40px 20px 20px 20px',
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-        paddingTop: 80,
-      },
-      '& p': {
-        fontSize: 17,
-        lineHeight: 1.47,
-        fontWeight: 500,
-        color: theme.palette.secondary.main,
-        marginTop: 18,
-        marginBottom: 40,
-      },
-      '& h1': {
-        display: 'flex',
-        [theme.breakpoints.down('xs')]: {
-          fontSize: 36,
-        },
-        '& >div': {
-          marginLeft: 10,
-          paddingTop: 0,
-          marginTop: -10,
-          width: 'auto',
-          maxWidth: 'calc(100% - 65px)',
-          [theme.breakpoints.down('xs')]: {
-            maxWidth: 'calc(100% - 55px)',
-          },
-        },
       },
     },
     pageHeader: {
@@ -128,100 +84,83 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
-    menuSelected: {
-      backgroundColor: 'transparent !important',
-      color: '#00b38e !important',
-    },
-    selectMenuRoot: {
-      paddingRight: 55,
-      '& svg': {
-        color: '#00b38e',
-        fontSize: 30,
+    symptomsTracker: {
+      paddingRight: 20,
+      paddingBottom: 20,
+      paddingLeft: 5,
+      [theme.breakpoints.down(767)]: {
+        paddingTop: 55,
+        paddingLeft: 0,
+        paddingRight: 0,
       },
-    },
-    selectMenuItem: {
-      color: theme.palette.secondary.dark,
-      fontSize: 56,
-      fontWeight: 600,
-      lineHeight: '66px',
-      [theme.breakpoints.down('xs')]: {
-        fontSize: 36,
-        lineHeight: '46px',
-      },
-      backgroundColor: 'transparent',
-      '&:focus': {
-        backgroundColor: 'transparent',
-      },
-    },
-    addMemberBtn: {
-      boxShadow: 'none',
-      backgroundColor: 'transparent',
-      marginLeft: 30,
-      paddingBottom: 0,
-      paddingRight: 0,
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-    },
-    loginHeroBanner: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-    },
-    buttonsWrapper: {
-      [theme.breakpoints.down('xs')]: {
-        display: 'flex',
-      },
-      '& button': {
-        minWidth: 201,
-        textTransform: 'uppercase',
-        color: '#fcb716',
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-        backgroundColor: '#fff',
-        [theme.breakpoints.down('xs')]: {
-          flex: 1,
-          minWidth: 'auto',
-        },
-        '&:nth-child(1)': {
-          marginRight: 16,
-          [theme.breakpoints.down(340)]: {
-            marginRight: 5,
-          },
-        },
-      },
-    },
-    activeButton: {
-      color: '#fff !important',
-      backgroundColor: '#fcb716 !important',
-    },
-    signUpBar: {
-      marginBottom: 20,
     },
   };
 });
+
+const customContainerStyle = {
+  sectA_container: {
+    display: 'inline-block',
+    padding: 20,
+    paddingTop: 10,
+  },
+  search_button_wrapper: {
+    paddingTop: 20,
+  },
+  selected: {
+    marginBottom: 0,
+    marginLeft: -5,
+    marginRight: -5,
+  },
+  search_button: {
+    margin: 0,
+    textAlign: 'center',
+  },
+};
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const SymptomsTrackerSDK: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
-  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
-  const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
-  const isMediumScreen = useMediaQuery('(min-width:768px)');
-  const requestObject = {
-    type: 'categoryList',
-    component: null,
-    componentProps: [{ style: { fontWeight: 'bold' } }, 'fullWidth', 'bordered'],
-  };
+  const isMediumScreen = useMediaQuery('(max-width:900px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   return (
-    <div>
+    <div className={classes.root}>
       <Header />
-      <NavigatorSDK
-        clientId="A6A375AF-A374-41F6-8EA5-C2E8B3239FAC"
-        patientAge={30}
-        patientGender="male"
-      />
+      <div className={classes.container}>
+        <div className={classes.pageContainer}>
+          <div className={classes.pageHeader}>
+            <Link to={clientRoutes.symptomsTrackerFor()}>
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
+            Consult a doctor
+          </div>
+          <Scrollbars
+            autoHide={true}
+            autoHeight
+            autoHeightMin={
+              isSmallScreen
+                ? 'calc(100vh - 135px)'
+                : isMediumScreen
+                ? 'calc(100vh - 205px)'
+                : 'calc(100vh - 155px)'
+            }
+          >
+            <div className={classes.symptomsTracker}>
+              <NavigatorSDK
+                clientId="A6A375AF-A374-41F6-8EA5-C2E8B3239FAC"
+                patientAge={30}
+                patientGender="male"
+                sdkContainerStyle={customContainerStyle}
+              />
+            </div>
+          </Scrollbars>
+        </div>
+      </div>
       {isSignedIn && <NavigationBottom />}
     </div>
   );
