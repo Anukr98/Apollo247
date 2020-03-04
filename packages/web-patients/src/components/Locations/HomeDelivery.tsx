@@ -115,8 +115,10 @@ export const HomeDelivery: React.FC = (props) => {
   );
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
+  const [isError, setIsError] = React.useState<boolean>(false);
+
   const getAddressDetails = () => {
+    setIsLoading(true);
     client
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
@@ -131,21 +133,31 @@ export const HomeDelivery: React.FC = (props) => {
           _data.data.getPatientAddressList &&
           _data.data.getPatientAddressList.addressList
         ) {
-          setDeliveryAddresses &&
-            setDeliveryAddresses(_data.data.getPatientAddressList.addressList.reverse());
-          setDeliveryAddressId &&
-            setDeliveryAddressId(_data.data.getPatientAddressList.addressList[0].id);
+          const addresses = _data.data.getPatientAddressList.addressList.reverse();
+          if (addresses) {
+            setDeliveryAddresses && setDeliveryAddresses(addresses);
+            setDeliveryAddressId && setDeliveryAddressId(addresses[0].id);
+            setIsLoading(false);
+            setIsError(false);
+          }
         }
       })
       .catch((e) => {
+        setIsLoading(false);
+        setIsError(true);
         console.log('Error occured while fetching Doctor', e);
       });
   };
+
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
       getAddressDetails();
     }
-  }, [currentPatient, isAddAddressDialogOpen]);
+  }, [currentPatient, deliveryAddressId]);
+
+  if (isError) {
+    return <p>Error while fetching addresses.</p>;
+  }
 
   return (
     <div className={classes.root}>
@@ -203,10 +215,7 @@ export const HomeDelivery: React.FC = (props) => {
           </div>
           Add New Address
         </AphDialogTitle>
-        <AddNewAddress
-          setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
-          setRenderAddresses={setRenderAddresses}
-        />
+        <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
       </AphDialog>
 
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
@@ -217,10 +226,7 @@ export const HomeDelivery: React.FC = (props) => {
           </div>
           Select Delivery Address
         </AphDialogTitle>
-        <ViewAllAddress
-          addresses={deliveryAddresses}
-          setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
-        />
+        <ViewAllAddress setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen} />
       </AphDialog>
     </div>
   );
