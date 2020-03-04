@@ -256,7 +256,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
-
   let geolocation = {} as any;
   if (currentLat && currentLong) {
     geolocation['geolocation'] = {
@@ -309,14 +308,14 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const doctorsNextAvailability =
     data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
   const doctorsAvailability =
     data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
@@ -355,13 +354,13 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           <div className={classes.noDataCard}>
             <h2>Uh oh! :(</h2>
             {data &&
-              data.getDoctorsBySpecialtyAndFilters &&
-              data.getDoctorsBySpecialtyAndFilters.doctors &&
-              data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
+            data.getDoctorsBySpecialtyAndFilters &&
+            data.getDoctorsBySpecialtyAndFilters.doctors &&
+            data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
               ? noConsultFoundError
               : tabValue == 'Clinic Visit'
-                ? noDoctorFoundClinicError
-                : noDoctorFoundError}
+              ? noDoctorFoundClinicError
+              : noDoctorFoundError}
           </div>
         </Grid>
       </Grid>
@@ -378,18 +377,18 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       selectedFilterOption === 'all'
         ? data.getDoctorsBySpecialtyAndFilters.doctors
         : _filter(data.getDoctorsBySpecialtyAndFilters.doctors, (doctors) => {
-          const consultMode =
-            doctors.consultHours &&
+            const consultMode =
+              doctors.consultHours &&
               doctors.consultHours.length > 0 &&
               doctors.consultHours[0] &&
               doctors.consultHours[0].consultMode
-              ? doctors.consultHours[0].consultMode
-              : '';
-          if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
-            return true;
-          }
-          return false;
-        });
+                ? doctors.consultHours[0].consultMode
+                : '';
+            if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
+              return true;
+            }
+            return false;
+          });
   }
 
   // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
@@ -433,8 +432,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 345px)'
               : isLargeScreen
-                ? 'calc(100vh - 280px)'
-                : 'calc(100vh - 170px)'
+              ? 'calc(100vh - 280px)'
+              : 'calc(100vh - 170px)'
           }
         >
           <div className={classes.searchList}>
@@ -491,16 +490,16 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           </div>
         </Scrollbars>
       ) : (
-          <>
-            {!loading ? (
-              consultErrorMessage()
-            ) : (
-                <div className={classes.circlularProgress}>
-                  <CircularProgress />
-                </div>
-              )}{' '}
-          </>
-        )}
+        <>
+          {!loading ? (
+            consultErrorMessage()
+          ) : (
+            <div className={classes.circlularProgress}>
+              <CircularProgress />
+            </div>
+          )}{' '}
+        </>
+      )}
     </div>
   );
 };
