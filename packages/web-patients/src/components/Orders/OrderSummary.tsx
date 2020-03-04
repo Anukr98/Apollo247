@@ -92,7 +92,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     medicineName: {
-      wordBreak: 'break-all',
+      wordBreak: 'break-word',
     },
     rowHead: {
       fontSize: 10,
