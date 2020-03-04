@@ -71,7 +71,7 @@ const getDoctorPhysicalAvailableSlots: Resolver<
       let st = `${DoctorPhysicalAvailabilityInput.availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
       const ed = `${DoctorPhysicalAvailabilityInput.availableDate.toDateString()} ${timeSlot.endTime.toString()}`;
       let consultStartTime = new Date(st);
-      const consultEndTime = new Date(ed);
+      let consultEndTime = new Date(ed);
       if (consultEndTime < consultStartTime) {
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
         consultStartTime = new Date(st);
@@ -79,6 +79,9 @@ const getDoctorPhysicalAvailableSlots: Resolver<
       //console.log(consultStartTime, consultEndTime, 'conslt hours');
       //const duration = Math.floor(60 / timeSlot.consultDuration);
       const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
+      if (timeSlot.weekDay != timeSlot.actualDay) {
+        consultEndTime = addMinutes(consultEndTime, 1);
+      }
       //console.log(duration, 'doctor duration');
       let slotsCount =
         (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
