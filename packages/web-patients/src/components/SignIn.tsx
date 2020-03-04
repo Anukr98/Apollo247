@@ -309,9 +309,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
         }}
         render={({ errors, values }: FormikProps<{ mobileNumber: string }>) => {
           if (displayOtpInput)
-            return (
-              <OtpInput mobileNumber={values.mobileNumber} setOtp={(otp: string) => setOtp(otp)} />
-            );
+            return <OtpInput mobileNumber={mobileNumber} setOtp={(otp: string) => setOtp(otp)} />;
           return (
             <div className={classes.loginFormWrap}>
               <Typography variant="h2">hi</Typography>
