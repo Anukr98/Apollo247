@@ -14,7 +14,6 @@ import { AphInput } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
-import IdleTimer from 'react-idle-timer';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
@@ -186,11 +185,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
     sendOtp,
     sendOtpError,
     isSendingOtp,
-
     verifyOtp,
     verifyOtpError,
     isVerifyingOtp,
-
     isSigningIn,
   } = useAuth();
   useEffect(() => {
@@ -208,7 +205,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         const intervalId = setInterval(() => {
           countDown.current--;
           setTimer(countDown.current);
-
           if (countDown.current === 0) {
             clearInterval(intervalId);
             setSubmitCount(0);
@@ -242,29 +238,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
     </div>
   ) : displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
-      {count < 3 && (
-        <div>
-          &nbsp;
-          {/* <IdleTimer
-            element={document}
-            onIdle={(e) => {
-              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-              setCount(count + 1);
-            }}
-            debounce={250}
-            timeout={1000 * 30 * 1}
-          />
-          <IdleTimer
-            element={document}
-            onIdle={(e) => {
-              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-              setCount(count + 1);
-            }}
-            debounce={250}
-            timeout={1000 * 30 * 2}
-          /> */}
-        </div>
-      )}
+      {count < 3 && <div>&nbsp;</div>}
       <Button
         className={classes.backButton}
         onClick={() => {
@@ -397,7 +371,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           color="primary"
           onClick={() => {
             verifyOtp(otp.join(''), loginId).then(() => setDisplayOtpInput(true));
-            // verifyOtp(otp.join(''));
             setSubmitCount(submitCount + 1);
           }}
           disabled={
@@ -475,7 +448,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
       >
         GET HELP
       </Button>
-
       <div className={classes.action}>
         <Fab
           color="primary"

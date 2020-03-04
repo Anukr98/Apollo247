@@ -111,7 +111,7 @@ export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
             classes={{ root: classes.button }}
             onClick={() => {
               popupHandler(false);
-              window.location.reload(); // this needs to be removed.
+              window.location.reload();
             }}
           >
             Ok, Got it

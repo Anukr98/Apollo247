@@ -24,7 +24,6 @@ import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
-
 import { Link } from 'react-router-dom';
 
 const AntTabs = withStyles({

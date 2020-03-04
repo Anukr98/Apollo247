@@ -1,11 +1,10 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Button } from '@material-ui/core';
+import { Theme } from '@material-ui/core';
 import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import { FavouriteMedicines } from 'components/FavouriteMedicines';
 import { FavouriteAdvice } from 'components/FavouriteAdvice';
 import { Tests } from 'components/Tests';
-// import AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
