@@ -225,6 +225,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     <div className={classes.root}>
       <div
         className={classes.topContent}
+        title={doctorDetails.fullName}
         onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
       >
         <Avatar
@@ -251,8 +252,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             {doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                  _toLower(doctorDetails.lastName)
-                )}`}
+                _toLower(doctorDetails.lastName)
+              )}`}
           </div>
           <div className={classes.doctorType}>
             {doctorDetails.specialty ? doctorDetails.specialty.name : null}
@@ -316,8 +317,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
                 'CONSULT NOW'
               ) : (
-                'BOOK APPOINTMENT'
-              )}
+                    'BOOK APPOINTMENT'
+                  )}
             </AphButton>
           </div>
         )}
@@ -330,7 +331,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <BookConsult doctorId={doctorDetails.id} setIsPopoverOpen={setIsPopoverOpen} />
       </Modal>
-    </div>
+    </div >
   );
 };
 

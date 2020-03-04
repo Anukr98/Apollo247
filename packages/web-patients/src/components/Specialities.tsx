@@ -160,7 +160,8 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                   specialityDetails && specialityDetails.specialistSingularTerm;
                 const specialityPlural =
                   specialityDetails && specialityDetails.specialistPluralTerm;
-                const title = `${specialityName}_${specialitySingular}_${specialityPlural}`;
+                // const title = `${specialityName}_${specialitySingular}_${specialityPlural}`;
+                const title = specialityName;
                 return (
                   <Mutation<SaveSearch, SaveSearchVariables>
                     mutation={SAVE_PATIENT_SEARCH}
