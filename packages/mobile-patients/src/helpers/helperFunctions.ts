@@ -463,7 +463,9 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
             Alert.alert('Location', 'Enable location access form settings', [
               {
                 text: 'Cancle',
-                onPress: () => {},
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'false');
+                },
               },
               {
                 text: 'Ok',
