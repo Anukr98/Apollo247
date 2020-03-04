@@ -101,7 +101,7 @@ export enum ApiConstants {
   MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   SENT_BY_API = 'SENT_BY_API',
   //case sheet submitted
-  CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the Case Sheet with you. View Case Sheet',
+  CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you. View case sheet',
 
   /*** push-notification messages end here ***/
 
