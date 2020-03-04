@@ -30,6 +30,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -199,13 +200,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       if (props.availableModes) {
         nextSlot =
           props.availableModes === ConsultMode.ONLINE
-            ? filterData[0]!.onlineSlot
+            ? g(filterData, '0' as any, 'onlineSlot')
             : props.availableModes === ConsultMode.PHYSICAL
-            ? filterData[0]!.physicalSlot
+            ? g(filterData, '0' as any, 'physicalSlot')
             : null;
         console.log(props.availableModes, nextSlot);
-      } else if (filterData.length > 0 && filterData[0]!.referenceSlot) {
-        nextSlot = filterData[0] ? filterData[0]!.referenceSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+      } else if (filterData.length > 0 && g(filterData, '0' as any, 'referenceSlot')) {
+        nextSlot = filterData[0] ? g(filterData, '0' as any, 'referenceSlot') : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
       }
       if (nextSlot) {
         let timeDiff: number = 0;
