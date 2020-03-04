@@ -100,15 +100,17 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   }
 
   return (
-    <div className={classes.prescriptionImage}>
-      {placeImage &&
-        placeImage.map((item: string) => {
-          return item.includes('.pdf') ? (
-            <a href={item}>Download the file</a>
-          ) : (
-            <img src={item} alt="Preview is not available" />
-          );
-        })}
-    </div>
+    placeImage &&
+    placeImage.map((item: string) => {
+      return item.includes('.pdf') ? (
+        <div className={classes.prescriptionImage}>
+          <a href={item}>Download the file</a>
+        </div>
+      ) : (
+        <div className={classes.prescriptionImage}>
+          <img src={item} alt="Preview is not available" />
+        </div>
+      );
+    })
   );
 };

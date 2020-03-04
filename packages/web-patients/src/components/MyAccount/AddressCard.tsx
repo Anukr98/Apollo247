@@ -103,8 +103,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
               : address.addressType}
           </div>
           {address.addressLine1}
-          <br /> {address.addressLine2}
-          <br /> {address.zipcode}
+          <br /> {`${address.addressLine2} - ${address.zipcode}`}
         </div>
       </Grid>
     );

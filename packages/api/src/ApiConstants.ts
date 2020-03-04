@@ -82,7 +82,7 @@ export enum ApiConstants {
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
-  PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} and get your FREE Gift @Apollo Pharmacy retail store. Terms and Conditions Apply',
+  PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} and get your FREE Gift @Apollo Pharmacy retail store in Chennai and Hyderabad. Terms and Conditions Apply',
 
   //book appointment sucessfull
   BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
@@ -99,6 +99,9 @@ export enum ApiConstants {
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   MEDICINE_ORDER_PAYMENT_FAILED_TITLE = 'Medicine order payment failed',
   MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
+  SENT_BY_API = 'SENT_BY_API',
+  //case sheet submitted
+  CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you. View case sheet',
 
   /*** push-notification messages end here ***/
 

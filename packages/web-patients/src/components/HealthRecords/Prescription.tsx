@@ -101,11 +101,7 @@ type PrescriptionProps = {
 };
 
 const apiDetails = {
-  url: `${
-    process.env.NODE_ENV === 'production'
-      ? process.env.PHARMACY_MED_PROD_URL
-      : process.env.PHARMACY_MED_UAT_URL
-  }/popcsrchpdp_api.php`,
+  url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
 };
 
@@ -289,15 +285,6 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                               }`
                           )
                       : ''}
-
-                    {prescription.medicineInstructions ? (
-                      <>
-                        <br />
-                        {prescription.medicineInstructions}
-                      </>
-                    ) : (
-                      ''
-                    )}
                     {prescription.medicineConsumptionDurationInDays == '' ||
                     prescription.medicineConsumptionDurationInDays == '0'
                       ? ''
@@ -311,6 +298,15 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                           prescription.medicineConsumptionDurationUnit,
                           prescription.medicineConsumptionDurationInDays
                         )} `}
+
+                    {prescription.medicineInstructions ? (
+                      <>
+                        <br />
+                        {prescription.medicineInstructions}
+                      </>
+                    ) : (
+                      ''
+                    )}
                   </div>
                 )}
               </Grid>

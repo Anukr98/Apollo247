@@ -174,7 +174,6 @@ app.get('/getCmToken', (req, res) => {
         req.query.phoneNumber
     )
     .then((response) => {
-      console.log('respose', response);
       res.send({
         status: 'success',
         message: response.data.message,
@@ -192,11 +191,6 @@ app.get('/getCmToken', (req, res) => {
 });
 
 app.get('/consulttransaction', (req, res) => {
-  console.log(req.query.CompleteResponse, req.query.ORDERID);
-  console.log(req.query.BANKTXNID);
-  console.log(req.query.STATUS);
-  console.log(req.query.TXNAMOUNT);
-  console.log(req.query.TXNDATE);
   /*save response in apollo24x7*/
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
   const date = new Date(new Date().toUTCString()).toISOString();
@@ -411,10 +405,6 @@ app.get('/paymed', (req, res) => {
   req.session.amount = stripTags(req.query.amount);
   req.session.source = stripTags(req.query.source);
 
-  // console.log(
-  //   'source', req.session.source
-  // );
-
   // if there is any invalid source throw error.
   if (requestedSources.indexOf(req.session.source) < 0) {
     // fake source. through error.
@@ -497,8 +487,6 @@ app.post('/paymed-response', (req, res) => {
   const token = req.session.token;
   const date = new Date(new Date().toUTCString()).toISOString();
   const reqSource = req.session.source;
-
-  // console.log('payload is....', payload);
 
   /* make success and failure response */
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';

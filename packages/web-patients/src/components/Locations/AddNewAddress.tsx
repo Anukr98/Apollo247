@@ -1,20 +1,17 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Grid } from '@material-ui/core';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { Mutation } from 'react-apollo';
-import { SavePatientAddress, SavePatientAddressVariables } from 'graphql/types/SavePatientAddress';
-import {
-  UpdatePatientAddress,
-  UpdatePatientAddressVariables,
-} from 'graphql/types/UpdatePatientAddress';
 import { SAVE_PATIENT_ADDRESS, UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
+import axios, { AxiosError, Cancel } from 'axios';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,10 +101,15 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type AddNewAddressProps = {
   setIsAddAddressDialogOpen: (isAddAddressDialogOpen: boolean) => void;
-  setRenderAddresses?: (renderAddresses: boolean) => void;
-  forceRefresh?: (forceRefresh: boolean) => void;
   currentAddress?: GetPatientAddressList_getPatientAddressList_addressList;
   disableActions?: boolean;
+  forceRefresh?: (forceRefresh: boolean) => void;
+};
+
+type Address = {
+  long_name: string;
+  short_name: string;
+  types: Array<string>;
 };
 
 export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
@@ -122,13 +124,11 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [showTextbox, setShowText] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient ? currentPatient.id : '';
+  const [state, setState] = useState<string>('');
+  const { setDeliveryAddressId } = useShoppingCart();
 
   const disableSubmit =
     address1.length === 0 || address2.length === 0 || addressType.length <= 0 || pincode.length < 6;
-
-  // console.log(address1.length, address2.length, addressType.length, pincode.length);
-  // const address2 = 'Jubileehills, Hyderabad';
-  // console.log(address1, address2, pincode, addressType, 'in main funtion.......');
 
   const patientAddressTypes = [
     PATIENT_ADDRESS_TYPE.HOME,
@@ -177,6 +177,52 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
     }
   }, [props.currentAddress]);
 
+  // Auto-fetching the city and state using Pincode
+  // ------------------------------------------------
+
+  if (pincode && pincode.length === 6) {
+    axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
+      )
+      .then(({ data }) => {
+        try {
+          if (data && data.results[0] && data.results[0].address_components) {
+            const addressComponents = data.results[0].address_components || [];
+            const pincode = (
+              addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
+              {}
+            ).long_name;
+            const city = (
+              addressComponents.find(
+                (item: any) =>
+                  item.types.indexOf('locality') > -1 ||
+                  item.types.indexOf('administrative_area_level_2') > -1
+              ) || {}
+            ).long_name;
+            const state = (
+              addressComponents.find(
+                (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+              ) || {}
+            ).long_name;
+            setState(state || '');
+            setPincode(pincode || '');
+            const location = city.concat(', ').concat(state);
+
+            setPincode(pincode || '');
+            setAddress2(location);
+          }
+        } catch {
+          (e: AxiosError) => console.log(e);
+        }
+      })
+      .catch((e: AxiosError) => {
+        console.log(e);
+      });
+  }
+  const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
+  const saveAddressMutation = useMutation(SAVE_PATIENT_ADDRESS);
+
   return (
     <div className={classes.shadowHide}>
       <div className={classes.dialogContent}>
@@ -184,31 +230,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                {/* <div className={classes.formGroup}>
-                  <AphTextField label="Full Name" placeholder="Enter full name" />
-                </div>
-                <div className={classes.formGroup}>
-                  <label>Mobile Number</label>
-                  <AphInput
-                    placeholder="Enter mobile number"
-                    defaultValue={
-                      currentPatient && currentPatient.mobileNumber
-                        ? currentPatient.mobileNumber.substr(3, 10)
-                        : ''
-                    }
-                    inputProps={{
-                      maxLength: 10,
-                    }}
-                    onKeyPress={(e) => {
-                      if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
-                    }}
-                    startAdornment={
-                      <InputAdornment className={classes.inputAdorment} position="start">
-                        +91
-                      </InputAdornment>
-                    }
-                  />
-                </div> */}
                 <div className={classes.formGroup}>
                   <AphTextField
                     multiline
@@ -244,7 +265,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     label="Area / Locality"
                     placeholder="Enter area / locality name"
                     onChange={(e) => {
-                      setAddress2(e.target.value);
+                      setAddress2(address2);
                     }}
                     inputProps={{
                       maxLength: 100,
@@ -274,19 +295,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                         </Grid>
                       );
                     })}
-                    {/* <Grid item xs={4} sm={4}>
-                      <AphButton color="secondary" className={`${classes.genderBtns}`}>
-                        Office
-                      </AphButton>
-                    </Grid>
-                    <Grid item xs={4} sm={4}>
-                      <AphButton
-                        color="secondary"
-                        className={`${classes.genderBtns}  ${classes.btnActive}`}
-                      >
-                        Other
-                      </AphButton>
-                    </Grid> */}
                   </Grid>
                   {showTextbox ? (
                     <AphTextField
@@ -312,81 +320,58 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
         </Scrollbars>
       </div>
       <div className={classes.dialogActions}>
-        {addressId && addressId.length > 0 ? (
-          <Mutation<UpdatePatientAddress, UpdatePatientAddressVariables>
-            mutation={UPDATE_PATIENT_ADDRESS}
-            variables={{
-              UpdatePatientAddressInput: {
-                id: addressId,
-                addressLine1: address1,
-                addressLine2: address2,
-                zipcode: pincode,
-                mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
-                addressType: addressType as PATIENT_ADDRESS_TYPE,
-                otherAddressType: otherTextbox,
-              },
-            }}
-            onError={(error) => {
-              alert(error);
-            }}
-          >
-            {(mutate) => (
-              <AphButton
-                color="primary"
-                fullWidth
-                onClick={() => {
-                  setMutationLoading(true);
-                  mutate().then(() => {
-                    props.forceRefresh ? props.forceRefresh(true) : null;
+        <AphButton
+          color="primary"
+          fullWidth
+          disabled={disableSubmit}
+          className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+          onClick={() => {
+            setMutationLoading(true);
+            addressId && addressId.length > 0
+              ? updateAddressMutation({
+                  variables: {
+                    UpdatePatientAddressInput: {
+                      id: addressId,
+                      addressLine1: address1,
+                      addressLine2: address2,
+                      zipcode: pincode,
+                      mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+                      addressType: addressType as PATIENT_ADDRESS_TYPE,
+                      otherAddressType: otherTextbox,
+                    },
+                  },
+                })
+                  .then(() => {
+                    props.setIsAddAddressDialogOpen(false);
+                    props.forceRefresh && props.forceRefresh(true);
+                    setDeliveryAddressId && setDeliveryAddressId(pincode);
+                  })
+                  .catch((error) => alert(error))
+              : saveAddressMutation({
+                  variables: {
+                    patientAddress: {
+                      patientId: currentPatientId,
+                      addressLine1: address1,
+                      addressLine2: address2,
+                      zipcode: pincode,
+                      mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+                      addressType: addressType as PATIENT_ADDRESS_TYPE,
+                      otherAddressType: otherTextbox,
+                    },
+                  },
+                })
+                  .then(() => {
+                    props.setIsAddAddressDialogOpen(false);
+                    props.forceRefresh && props.forceRefresh(true);
+                    setDeliveryAddressId && setDeliveryAddressId(pincode);
+                  })
+                  .catch((error) => {
+                    alert(error);
                   });
-                  props.setIsAddAddressDialogOpen(false);
-                  props.setRenderAddresses && props.setRenderAddresses(true);
-                }}
-                disabled={disableSubmit}
-                className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
-              >
-                {mutationLoading ? <CircularProgress /> : 'Save'}
-              </AphButton>
-            )}
-          </Mutation>
-        ) : (
-          <Mutation<SavePatientAddress, SavePatientAddressVariables>
-            mutation={SAVE_PATIENT_ADDRESS}
-            variables={{
-              patientAddress: {
-                patientId: currentPatientId,
-                addressLine1: address1,
-                addressLine2: address2,
-                zipcode: pincode,
-                mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
-                addressType: addressType as PATIENT_ADDRESS_TYPE,
-                otherAddressType: otherTextbox,
-              },
-            }}
-            onError={(error) => {
-              alert(error);
-            }}
-          >
-            {(mutate) => (
-              <AphButton
-                color="primary"
-                fullWidth
-                onClick={() => {
-                  setMutationLoading(true);
-                  mutate().then(() => {
-                    props.forceRefresh ? props.forceRefresh(true) : null;
-                  });
-                  props.setIsAddAddressDialogOpen(false);
-                  props.setRenderAddresses && props.setRenderAddresses(true);
-                }}
-                disabled={disableSubmit || props.disableActions}
-                className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
-              >
-                {mutationLoading ? <CircularProgress /> : 'Save'}
-              </AphButton>
-            )}
-          </Mutation>
-        )}
+          }}
+        >
+          {mutationLoading ? <CircularProgress /> : 'Save'}
+        </AphButton>
       </div>
     </div>
   );

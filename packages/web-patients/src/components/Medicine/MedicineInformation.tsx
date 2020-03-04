@@ -290,11 +290,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
 
   const apiDetails = {
-    url: `${
-      process.env.NODE_ENV === 'production'
-        ? process.env.PHARMACY_MED_PROD_URL
-        : process.env.PHARMACY_MED_UAT_URL
-    }/popcsrchprdsubt_api.php`,
+    url: process.env.PHARMACY_MED_INFO_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
     deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
@@ -303,7 +299,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const fetchSubstitutes = async () => {
     await axios
       .post(
-        apiDetails.url,
+        apiDetails.url || '',
         { params: params.sku },
         {
           headers: {
@@ -389,7 +385,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   }}
                   ref={subDrugsRef}
                 >
-                  <span>Pick from 9 available substitutes</span>
+                  <span>Pick from {substitutes.length} available substitutes</span>
                 </div>
               </>
             )}

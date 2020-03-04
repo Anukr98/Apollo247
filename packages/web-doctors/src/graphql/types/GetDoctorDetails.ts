@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, DOCTOR_ONLINE_STATUS, Salutation, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
+import { DoctorType, DOCTOR_ONLINE_STATUS, Salutation, WeekDay, ConsultMode, ConsultType, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
@@ -21,6 +21,7 @@ export interface GetDoctorDetails_getDoctorDetails_doctorSecretary {
 
 export interface GetDoctorDetails_getDoctorDetails_consultHours {
   __typename: "ConsultHours";
+  actualDay: WeekDay | null;
   consultMode: ConsultMode;
   startTime: string;
   endTime: string;

@@ -435,11 +435,10 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const consultHours = doctorSlot && doctorSlot.length > 0 && doctorSlot;
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
-        }
-      });
+      _.filter(
+        consultHours,
+        (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+      );
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
     setConsultHours(consultDurationDay);
   };
@@ -450,11 +449,10 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const consultHours = doctorSlot && doctorSlot.length > 0 && doctorSlot;
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
-        }
-      });
+      _.filter(
+        consultHours,
+        (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+      );
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
     const startTime =
       consultDurationDay && consultDurationDay.startTime ? consultDurationDay.startTime : '';
@@ -525,11 +523,10 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const consultHours = doctorSlot && doctorSlot.length > 0 && doctorSlot;
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
-        }
-      });
+      _.filter(
+        consultHours,
+        (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+      );
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
     const startTime =
       consultDurationDay && consultDurationDay.startTime
