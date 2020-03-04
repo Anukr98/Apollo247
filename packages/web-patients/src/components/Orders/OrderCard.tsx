@@ -135,6 +135,11 @@ const useStyles = makeStyles((theme: Theme) => {
     returnAccepted: {
       backgroundColor: '#f0f1ec',
     },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
   };
 });
 
@@ -161,7 +166,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   });
   if (loading)
     return (
-      <div>
+      <div className={classes.loader}>
         <CircularProgress />
       </div>
     );
