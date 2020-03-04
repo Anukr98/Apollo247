@@ -242,8 +242,8 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       doRequestAndAccessLocation()
         .then((response) => {
           console.log('response', { response });
-          setLocationDetails!(response);
-          findDistance(`${response.latitude}, ${response.longitude}`);
+          response && setLocationDetails!(response);
+          response && findDistance(`${response.latitude}, ${response.longitude}`);
         })
         .catch((e) => {
           CommonBugFender('ConsultPhysical_fetchLocation', e);

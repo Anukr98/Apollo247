@@ -218,7 +218,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       doRequestAndAccessLocation()
         .then((response) => {
           setLoading(false);
-          setLocationDetails && setLocationDetails(response);
+          response && setLocationDetails && setLocationDetails(response);
         })
         .catch((e) => {
           CommonBugFender('MedicineDetailsScene_Location_Request', e);

@@ -364,7 +364,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     if (!locationDetails) {
       try {
         location = await doRequestAndAccessLocation();
-        setLocationDetails!(location);
+        location && setLocationDetails!(location);
       } catch (error) {
         setLoading && setLoading(false);
         Alert.alert(

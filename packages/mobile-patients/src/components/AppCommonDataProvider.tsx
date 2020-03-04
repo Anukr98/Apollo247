@@ -120,7 +120,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         if (location) {
           doRequestAndAccessLocation()
             .then((response) => {
-              _setLocationDetails(response);
+              response && _setLocationDetails(response);
             })
             .catch((e) => {
               CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage', e);

@@ -305,8 +305,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 doRequestAndAccessLocation()
                   .then((response) => {
                     console.log('response', { response });
-                    setLocationDetails!(response);
-                    setcurrentLocation(response.displayName);
+                    response && setLocationDetails!(response);
+                    response && setcurrentLocation(response.displayName);
                     response &&
                       fetchSpecialityFilterData(filterMode, FilterData, {
                         lat: response.latitude || '',

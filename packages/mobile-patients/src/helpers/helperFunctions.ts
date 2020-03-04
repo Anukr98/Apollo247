@@ -13,7 +13,8 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
-import { Alert, AsyncStorage, Dimensions, Platform } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import { Alert, Dimensions, Platform } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
@@ -458,7 +459,24 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
             getlocationData(resolve, reject);
           }
         } else {
-          reject('Unable to get location.');
+          if (response === 'restricted' && Platform.OS === 'ios') {
+            Alert.alert('Location', 'Enable location access form settings', [
+              {
+                text: 'Cancle',
+                onPress: () => {},
+              },
+              {
+                text: 'Ok',
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'true');
+                  Permissions.openSettings();
+                },
+              },
+            ]);
+            resolve(undefined);
+          } else {
+            reject('Unable to get location.');
+          }
         }
       })
       .catch((e) => {
