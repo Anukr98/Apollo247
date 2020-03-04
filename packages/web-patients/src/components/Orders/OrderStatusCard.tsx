@@ -101,6 +101,11 @@ const useStyles = makeStyles((theme: Theme) => {
         zIndex: 1,
       },
     },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
   };
 });
 
@@ -151,7 +156,6 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   ];
 
   const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
-
   const getStatus = (status: MEDICINE_ORDER_STATUS) => {
     switch (status) {
       case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
@@ -189,10 +193,10 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item sm={12}>
+      <Grid item sm={12} xs={12}>
         <div className={classes.orderStatusGroup}>
           {props.isLoading ? (
-            <CircularProgress />
+            <CircularProgress className={classes.loader} />
           ) : (
             orderStatusList &&
             orderStatusList.map(

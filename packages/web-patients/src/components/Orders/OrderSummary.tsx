@@ -91,11 +91,19 @@ const useStyles = makeStyles((theme: Theme) => {
         minWidth: 60,
       },
     },
+    medicineName: {
+      wordBreak: 'break-all',
+    },
     rowHead: {
       fontSize: 10,
       fontWeight: 500,
       textTransform: 'uppercase',
       paddingBottom: 10,
+    },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
     },
   };
 });
@@ -120,7 +128,7 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
     props.orderDetailsData.medicineOrderPayments[0];
 
   return props.isLoading ? (
-    <CircularProgress />
+    <CircularProgress className={classes.loader} />
   ) : (
     <div className={classes.root}>
       <div className={classes.summaryHeader}>
@@ -146,7 +154,7 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
             orderItem.length > 0 &&
             orderItem.map((item, index) => (
               <div key={index} className={classes.tableRow}>
-                <div>{item && item.medicineName}</div>
+                <div className={classes.medicineName}>{item && item.medicineName}</div>
                 <div>{item && item.quantity}</div>
                 <div>Rs.{item && item.price}</div>
               </div>
