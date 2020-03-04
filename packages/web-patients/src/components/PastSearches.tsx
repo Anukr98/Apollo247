@@ -138,7 +138,10 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
           {data.getPatientPastSearches.map((searchDetails) => {
             return searchDetails && searchDetails.searchType === SEARCH_TYPE.DOCTOR ? (
               <Grid item xs={6} sm={6} md={4} lg={3} key={_uniqueId('psearch_doctor_')}>
-                <Link to={`/doctor-details/${searchDetails.typeId}`} title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}>
+                <Link
+                  to={`/doctor-details/${searchDetails.typeId}`}
+                  title={searchDetails && `${_startCase(_toLower(searchDetails.name || ''))}`}
+                >
                   <div className={classes.contentBox}>
                     <Avatar
                       alt={(searchDetails && searchDetails.name) || ''}
@@ -150,29 +153,29 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                 </Link>
               </Grid>
             ) : (
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  md={4}
-                  lg={3}
-                  title={(searchDetails && searchDetails.name) || ''}
-                  onClick={(e) => {
-                    speciality(e.currentTarget.title);
-                    disableFilter(false);
-                  }}
-                  key={_uniqueId('psearch_spl_')}
-                >
-                  <div className={classes.contentBox}>
-                    <Avatar
-                      alt={(searchDetails && searchDetails.name) || ''}
-                      src={(searchDetails && searchDetails.image) || ''}
-                      className={classes.bigAvatar}
-                    />
-                    {(searchDetails && searchDetails.name) || ''}
-                  </div>
-                </Grid>
-              );
+              <Grid
+                item
+                xs={6}
+                sm={6}
+                md={4}
+                lg={3}
+                title={(searchDetails && searchDetails.name) || ''}
+                onClick={(e) => {
+                  speciality(e.currentTarget.title);
+                  disableFilter(false);
+                }}
+                key={_uniqueId('psearch_spl_')}
+              >
+                <div className={classes.contentBox}>
+                  <Avatar
+                    alt={(searchDetails && searchDetails.name) || ''}
+                    src={(searchDetails && searchDetails.image) || ''}
+                    className={classes.bigAvatar}
+                  />
+                  {(searchDetails && searchDetails.name) || ''}
+                </div>
+              </Grid>
+            );
           })}
         </Grid>
       </div>
