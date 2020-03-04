@@ -49,7 +49,11 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { height } = Dimensions.get('window');
 
@@ -354,6 +358,23 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
+  const _postWebEngageEvent = () => {
+    const eventAttributes: WebEngageEvents['Registration Done'] = {
+      'Customer ID': currentPatient ? currentPatient.id : '',
+      'Customer First Name': firstName.trim(),
+      'Customer Last Name': lastName.trim(),
+      'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+      Gender:
+        gender === 'Female'
+          ? Gender['FEMALE']
+          : gender === 'Male'
+          ? Gender['MALE']
+          : Gender['OTHER'],
+      Email: email.trim(),
+      'Referral Code': referral || undefined,
+    };
+    postWebEngageEvent('Mobile Number Entered', eventAttributes);
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -437,6 +458,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 >
                   {data
                     ? (setVerifyingPhoneNumber(false),
+                      _postWebEngageEvent(),
                       console.log('data', data.updatePatient.patient),
                       getPatientByPrism(),
                       AsyncStorage.setItem('userLoggedIn', 'true'),

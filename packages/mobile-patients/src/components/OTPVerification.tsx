@@ -10,7 +10,7 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -42,6 +42,7 @@ import { BottomPopUp } from './ui/BottomPopUp';
 import moment from 'moment';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -307,6 +308,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       if (currentPatient) {
         if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
           if (currentPatient.relation == null) {
+            const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = 'Yes';
+            postWebEngageEvent('Pre Apollo Customer', eventAttributes);
             navigateTo(AppRoutes.MultiSignup);
           } else {
             AsyncStorage.setItem('userLoggedIn', 'true');
@@ -314,6 +317,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           }
         } else {
           if (currentPatient.firstName == '') {
+            const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = 'No';
+            postWebEngageEvent('Pre Apollo Customer', eventAttributes);
             navigateTo(AppRoutes.SignUp);
           } else {
             AsyncStorage.setItem('userLoggedIn', 'true');
@@ -344,6 +349,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickOk = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
+    const eventAttributes: WebEngageEvents['OTP Entered'] = 'Yes';
+    postWebEngageEvent('OTP Entered', eventAttributes);
+
     try {
       Keyboard.dismiss();
     } catch (error) {

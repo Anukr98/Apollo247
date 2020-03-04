@@ -15,7 +15,11 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { AsyncStorage, Platform, Alert } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  postWebEngageEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
@@ -24,6 +28,7 @@ import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
 } from '../graphql/types/getPatientByMobileNumber';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -292,6 +297,12 @@ export const AuthProvider: React.FC = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((data) => {
+          // Should ME(slef) be considered as profile ??
+          // when zero should we post this event or not ??
+          const eventAttributes: WebEngageEvents['Number of Profiles fetched'] =
+            g(data, 'data', 'getCurrentPatients', 'patients', 'length') || 0;
+          postWebEngageEvent('Number of Profiles fetched', eventAttributes);
+
           AsyncStorage.setItem('callByPrism', 'true');
           AsyncStorage.setItem('currentPatient', JSON.stringify(data));
           setMobileAPICalled(true);

@@ -29,6 +29,7 @@ import {
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -711,4 +712,9 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
         return -1;
       return 0;
     });
+};
+
+export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes: Object) => {
+  // TODO: implementation
+  console.log({ eventName, attributes });
 };
