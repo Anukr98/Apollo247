@@ -366,7 +366,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       setCurrentDoctorName(fullName);
                       setCurrentApptTime(
                         moment(appointmentDetails.appointmentDateTime).format(
-                          'MMMM DD,YYYY [at] LT'
+                          'MMMM DD, YYYY [at] LT'
                         )
                       );
                     }

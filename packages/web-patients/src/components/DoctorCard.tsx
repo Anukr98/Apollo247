@@ -225,6 +225,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     <div className={classes.root}>
       <div
         className={classes.topContent}
+        title={
+          doctorDetails.fullName
+            ? doctorDetails.fullName
+            : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+                _toLower(doctorDetails.lastName)
+              )}`
+        }
         onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
       >
         <Avatar

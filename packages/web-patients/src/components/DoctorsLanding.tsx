@@ -399,16 +399,6 @@ export const DoctorsLanding: React.FC = (props) => {
                           filter={filterOptions}
                           specialityName={specialityNames[0]}
                           specialityId={derivedSpecialityId}
-                          specialitySingular={
-                            specialityNames[1] && specialityNames[1] !== ''
-                              ? specialityNames[1]
-                              : specialityNames[0]
-                          }
-                          specialityPlural={
-                            specialityNames[2] && specialityNames[2] !== ''
-                              ? specialityNames[2]
-                              : specialityNames[0]
-                          }
                         />
                       ) : (
                         <Scrollbars
