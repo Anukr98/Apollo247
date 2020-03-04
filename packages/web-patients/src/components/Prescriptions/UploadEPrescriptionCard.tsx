@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, Avatar, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
 import Scrollbars from 'react-custom-scrollbars';
@@ -15,6 +15,8 @@ import {
 } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -108,10 +110,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type EPrescriptionCardProps = {
   setIsEPrescriptionOpen?: (isEPrescriptionOpen: boolean) => void;
-  setPhrPrescriptionData?: (phrPrescriptionData: Prescription[]) => void;
-  setMedicineOrderData?: (medicineOrderData: MedicineOrder[]) => void;
-  phrPrescriptionData?: Prescription[] | null;
-  medicineOrderData?: MedicineOrder[] | null;
 };
 
 let selectedPrescriptions: Prescription[] = [];
@@ -119,6 +117,12 @@ let selectedMedicalRecords: MedicineOrder[] = [];
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
+  const {
+    setPhrPrescriptionData,
+    phrPrescriptionData,
+    medicineOrderData,
+    setMedicineOrderData,
+  } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const [pastPrescriptions, setPastPrescriptions] = useState<Prescription[] | null>(null);
   const [pastMedicalOrders, setPastMedicalOrders] = useState<MedicineOrder[] | null>(null);
@@ -136,16 +140,16 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   });
 
   useEffect(() => {
-    if (props.phrPrescriptionData && props.phrPrescriptionData.length > 0) {
-      selectedPrescriptions = props.phrPrescriptionData;
+    if (phrPrescriptionData && phrPrescriptionData.length > 0) {
+      selectedPrescriptions = phrPrescriptionData;
     }
-  }, [props.phrPrescriptionData]);
+  }, [phrPrescriptionData]);
 
   useEffect(() => {
-    if (props.medicineOrderData && props.medicineOrderData.length > 0) {
-      selectedMedicalRecords = props.medicineOrderData;
+    if (medicineOrderData && medicineOrderData.length > 0) {
+      selectedMedicalRecords = medicineOrderData;
     }
-  }, [props.medicineOrderData]);
+  }, [medicineOrderData]);
 
   useEffect(() => {
     if (!pastPrescriptions || !pastMedicalOrders) {
@@ -272,9 +276,17 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
         <div className={classes.uploadButtonWrapper}>
           <AphButton
             onClick={() => {
-              props.setPhrPrescriptionData && props.setPhrPrescriptionData(selectedPrescriptions);
-              props.setMedicineOrderData && props.setMedicineOrderData(selectedMedicalRecords);
+              const finalPrescription = selectedPrescriptions;
+              phrPrescriptionData && finalPrescription.concat(phrPrescriptionData);
+              setPhrPrescriptionData && setPhrPrescriptionData(finalPrescription);
+              const finalMedicineOrderData = selectedMedicalRecords;
+              medicineOrderData && finalMedicineOrderData.concat(medicineOrderData);
+              setMedicineOrderData && setMedicineOrderData(finalMedicineOrderData);
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
+              const currentUrl = window.location.href;
+              if (currentUrl.endsWith('/medicines')) {
+                window.location.href = clientRoutes.medicinesCart();
+              }
             }}
             className={classes.uploadPrescription}
             color="primary"
