@@ -19,6 +19,7 @@ import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import Pubnub from 'pubnub';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -95,6 +96,7 @@ export enum NotificationType {
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
   MEDICINE_ORDER_PLACED = 'MEDICINE_ORDER_PLACED',
   MEDICINE_ORDER_CONFIRMED = 'MEDICINE_ORDER_CONFIRMED',
+  MEDICINE_ORDER_PAYMENT_FAILED = 'MEDICINE_ORDER_PAYMENT_FAILED',
   MEDICINE_ORDER_OUT_FOR_DELIVERY = 'MEDICINE_ORDER_OUT_FOR_DELIVERY',
   MEDICINE_ORDER_DELIVERED = 'MEDICINE_ORDER_DELIVERED',
   DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
@@ -517,7 +519,7 @@ export async function sendNotification(
               ' ' +
               facilityDets.state
           );
-          smsLink = content.replace(
+          smsLink = smsLink.replace(
             '{4}',
             facilityDets.name +
               ' ' +
@@ -855,6 +857,8 @@ export async function sendReminderNotification(
       doctorDetails.firstName
     ).replace('{1}', patientDetails.firstName);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+    //Send Browser Notification
+    sendBrowserNotitication(doctorDetails.id, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.PHYSICAL_APPT_60) {
     notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
     notificationBody = ApiConstants.PHYSICAL_APPOINTMENT_REMINDER_60_BODY;
@@ -1001,6 +1005,8 @@ export async function sendReminderNotification(
     console.log('doctorSMS=======================', doctorSMS);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
     //send doctor sms ends
+    //Send Browser Notification
+    sendBrowserNotitication(doctorDetails.id, doctorSMS);
   } else if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
   ) {
@@ -1142,6 +1148,34 @@ export async function sendReminderNotification(
   return notificationResponse;
 }
 
+const sendBrowserNotitication = (id: string, message: string) => {
+  const pubnub = new Pubnub({
+    publishKey: process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '',
+    subscribeKey: process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '',
+  });
+  pubnub.subscribe({
+    channels: [id],
+    withPresence: true,
+  });
+  pubnub.publish(
+    {
+      channel: id,
+      message: {
+        id: id,
+        message: message,
+        isTyping: true,
+        messageDate: new Date(),
+        sentBy: ApiConstants.SENT_BY_API,
+      },
+      storeInHistory: true,
+      sendByPost: true,
+    },
+    (status, response) => {
+      console.log('status,response==', status, response);
+    }
+  );
+};
+
 export async function sendCartNotification(
   pushNotificationInput: CartPushNotificationInput,
   patientsDb: Connection
@@ -1170,6 +1204,7 @@ export async function sendCartNotification(
       '{1}',
       pushNotificationInput.orderAutoId.toString()
     );
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -1444,6 +1479,11 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
       notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_PAYMENT_FAILED:
+      payloadDataType = 'Order_Payment_Failed';
+      notificationTitle = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_TITLE;
+      notificationBody = ApiConstants.MEDICINE_ORDER_PAYMENT_FAILED_BODY;
+      break;
     default:
       payloadDataType = 'Order_Placed';
       notificationTitle = ApiConstants.ORDER_PLACED_TITLE;
@@ -1453,9 +1493,11 @@ export async function sendMedicineOrderStatusNotification(
   const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
   const orderNumber = orderDetails.orderAutoId ? orderDetails.orderAutoId.toString() : '';
   let orderTat = orderDetails.orderTat ? orderDetails.orderTat.toString() : 'few';
-  if (Date.parse(orderDetails.orderTat.toString())) {
-    const tatDate = new Date(orderDetails.orderTat.toString());
-    orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
+  if (orderDetails.orderTat) {
+    if (Date.parse(orderDetails.orderTat.toString())) {
+      const tatDate = new Date(orderDetails.orderTat.toString());
+      orderTat = Math.floor(Math.abs(differenceInHours(tatDate, new Date()))).toString();
+    }
   }
 
   notificationTitle = notificationTitle.toString();

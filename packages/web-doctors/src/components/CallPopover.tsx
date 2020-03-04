@@ -13,7 +13,6 @@ import {
 import Scrollbars from 'react-custom-scrollbars';
 import { Prompt, Link } from 'react-router-dom';
 import moment from 'moment';
-import { createMuiTheme } from '@material-ui/core';
 import { isEmpty } from 'lodash';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import { useAuth, useCurrentPatient } from 'hooks/authHooks';
@@ -43,7 +42,7 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
-import { GET_DOCTOR_NEXT_AVAILABILITY, GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
+import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
@@ -350,12 +349,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     dotPaper: {
-      // width: 300,
-      // minHeight: 50,
       padding: 0,
       borderRadius: 0,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      // backgroundColor: theme.palette.common.white,
       '& .MuiPaper-rounded': {
         borderRadius: 10,
       },
@@ -488,7 +484,6 @@ const useStyles = makeStyles((theme: Theme) => {
           minHeight: 'auto',
           paddingLeft: 10,
           paddingRight: 10,
-          // borderBottom: '1px solid rgba(1,71,91,0.2)',
           '&:last-child': {
             borderBottom: 'none',
           },
@@ -650,9 +645,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '& :after': {
         borderBottom: 'none',
       },
-      // '& :hover': {
-      //   borderBottom: 'none',
-      // },
     },
     suggestSlot: {
       textAlign: 'right',
@@ -687,14 +679,12 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     scheduleCalendar: {
-      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
       backgroundColor: '#fff',
     },
     scheduleTimeSlots: {
-      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
@@ -743,36 +733,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
     },
   };
-});
-
-const defaultMaterialTheme = createMuiTheme({
-  palette: {
-    primary: {
-      main: '#00b38e',
-    },
-    text: {
-      primary: '#00b38e',
-    },
-    action: {
-      selected: '#fff',
-    },
-  },
-  typography: {
-    fontWeightMedium: 600,
-    htmlFontSize: 14,
-    fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-    body1: {
-      fontSize: 16,
-      color: '#02475b',
-      fontWeight: 700,
-    },
-    body2: {
-      fontWeight: 600,
-    },
-    caption: {
-      fontSize: 0,
-    },
-  },
 });
 
 interface errorObject {
@@ -850,8 +810,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     followUp,
     patientDetails,
   } = useContext(CaseSheetContext);
-  console.log(appointmentInfo);
-  const apiDateFormat = new Date();
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -915,7 +873,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     intervalCallAbundant = setInterval(() => {
       if (props.appointmentStatus !== STATUS.COMPLETED) {
         timer = timer - 1;
-        console.log('call Abandonment', timer);
         stoppedTimerCall = timer;
         setCallAbundantCallTime(timer);
         if (timer < 1) {
@@ -925,10 +882,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             stopAudioVideoCall();
           }
           setShowAbandonment(true);
-          //callInitiateReschedule(true);
         }
       } else {
-        console.log('clear abundant');
+        // clear abundant
         clearInterval(intervalCallAbundant);
       }
     }, 1000);
@@ -948,7 +904,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         stopAudioVideoCall();
         if (missedCallCounter >= 3) {
           setShowAbandonment(true);
-          //callInitiateReschedule(true);
         }
       }
     }, 1000);
@@ -961,7 +916,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
       if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
         timer = timer - 1;
-        console.log('patient no-show', timer);
         stoppedTimerCall = timer;
         setRemainingCallTime(timer);
         if (timer < 1) {
@@ -1041,7 +995,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           };
 
           props.sessionClient.notify(JSON.stringify(logObject));
-          console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
           alert(errorMessage);
         });
     } else {
@@ -1155,25 +1108,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     stopIntervalTimer();
     props.endCallNotificationAction(true);
   };
-  const getCookieValue = (id: string) => {
-    const name = id + '=';
-    const ca = document.cookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) === 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-    return '';
-  };
+
   const autoSend = (callType: string) => {
     const text = {
       id: props.doctorId,
       message: callType,
-      // props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
       isTyping: true,
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
@@ -1185,9 +1124,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {
-        //setMessageText('');
-      }
+      (status: any, response: any) => {}
     );
     actionBtn();
   };
@@ -1216,9 +1153,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {
-        //setMessageText('');
-      }
+      (status: any, response: any) => {}
     );
     stopIntervalTimer();
   };
@@ -1276,7 +1211,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const addedMinutes = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
     const addedTime = new Date(addedMinutes);
     if (current > consult && addedTime > current) {
-      const now = new Date();
       const diffrent = current.getTime() - consult.getTime();
       timer = 900 - Math.floor(diffrent / 1000);
     }
@@ -1300,11 +1234,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (consultHours) {
       const filteredDay =
         consultHours &&
-        _.filter(consultHours, function(o) {
-          if (o && o.weekDay) {
-            return o.weekDay === selectedDay;
-          }
-        });
+        _.filter(
+          consultHours,
+          (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+        );
       const consultDurationDay: any =
         filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
       duration =
@@ -1320,7 +1253,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const disablemonth = disableconsult.getMonth() + 1;
     const disableday = disableconsult.getDate();
     let disablehour = disableconsult.getHours();
-    //let disableminute = disableconsult.getMinutes() + 15;
     let disableminute = disableconsult.getMinutes() + duration;
     const minusTime = new Date(disableconsult.getTime() - 15 * 60000);
     const disablesecond = disableconsult.getSeconds();
@@ -1423,7 +1355,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
       setConsultStart(false);
-      //isConsultStarted = false;
     }
   }, [props.appointmentStatus]);
   const pubnub = props.pubnub;
@@ -1465,7 +1396,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         patientMsgs.push(lastMsg.message.message);
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
-        //patientMsgs.push(lastMsg.message.message);
         setIsCallAccepted(true);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
@@ -1495,7 +1425,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           if (!abondmentStarted && didPatientJoined) {
             abondmentStarted = true;
             callAbundantIntervalTimer(200);
-            // eventsAfterConnectionDestroyed();
           }
         }
       }
@@ -1618,11 +1547,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (consultHours) {
       const filteredDay =
         consultHours &&
-        _.filter(consultHours, function(o) {
-          if (o && o.weekDay) {
-            return o.weekDay === selectedDay;
-          }
-        });
+        _.filter(
+          consultHours,
+          (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+        );
       const consultDurationDay: any =
         filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
       duration =
@@ -1653,7 +1581,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const rescheduleConsultAction = () => {
     // do api call
-    //setIsLoading(true);
     if (reason === 'Other' && isEmpty(otherTextValue)) {
       setErrorStateReshedule({
         ...errorStateReshedule,
@@ -1672,8 +1599,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   // flag: true is for missed call reschedule & false for normal
   const callInitiateReschedule = (flag: boolean) => {
     const today = moment();
-    const hours = timeSelected.split(':');
-    const momentDate = moment(dateSelected).hours();
     unSubscribeBrowserButtonsListener();
 
     const rescheduleParam = flag
@@ -1692,7 +1617,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           rescheduleReason: reason === 'Other' ? otherTextValue : reason,
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
           rescheduleInitiatedId: props.doctorId,
-          //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
           rescheduledDateTime:
             moment(
               new Date(
@@ -1743,7 +1667,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               isTyping: true,
               sentBy: REQUEST_ROLES.DOCTOR,
             },
-            channel: channel, //chanel
+            channel: channel,
             storeInHistory: true,
           },
           (status: any, response: any) => {
@@ -1754,14 +1678,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         setDisableOnCancel(true);
       })
       .catch((e) => {
-        //setIsLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
-        console.log(
-          'Error occured while searching for Initiate reschdule apppointment',
-          errorMessage,
-          error
-        );
         const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
         const logObject = {
           api: 'INITIATE_RESCHDULE_APPONITMENT',
@@ -1835,10 +1753,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             {props.appointmentStatus === STATUS.COMPLETED &&
             currentUserType !== LoggedInUserType.SECRETARY &&
             props.sentToPatient === true ? (
-              <span className={classes.prescriptionSent}>
-                PRESCRIPTION SENT
-                {/* <Button className={classes.backButton}>PRESCRIPTION SENT</Button> */}
-              </span>
+              <span className={classes.prescriptionSent}>PRESCRIPTION SENT</span>
             ) : (
               props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
@@ -2059,7 +1974,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         }
                       })
                       .catch((e) => {
-                        console.log(e);
                         const patientName =
                           patientDetails!.firstName + ' ' + patientDetails!.lastName;
                         const logObject = {
@@ -2197,7 +2111,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             >
               <div>
                 <ul className={classes.popOverUL}>
-                  {/* <li>Share Case Sheet</li> */}
                   {currentUserType !== LoggedInUserType.SECRETARY && (
                     <li
                       onClick={() => {
@@ -2273,19 +2186,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         </div>
                       </div>
                     </div>
-
-                    // <form noValidate>
-                    //   <TextField
-                    //     id="datetime-local"
-                    //     label="Date & Time"
-                    //     type="datetime-local"
-                    //     defaultValue={dateSelected || doctorNextAvailableSlot}
-                    //     className={classes.textField}
-                    //     InputLabelProps={{
-                    //       shrink: true
-                    //     }}
-                    //   />
-                    // </form>
                   )}
                   <AphButton
                     className={classes.suggestSlot}
@@ -2652,11 +2552,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               confirm if you want to proceed with Cancelling this appointment
             </h3>
 
-            <Button
-              className={classes.cancelConsult}
-              //disabled={startAppointmentButton}
-              onClick={() => setIsCancelDialogOpen(false)}
-            >
+            <Button className={classes.cancelConsult} onClick={() => setIsCancelDialogOpen(false)}>
               No
             </Button>
             <Button
@@ -2720,9 +2616,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsCancelDialogOpen(false);
                   });
               }}
-              // onClick={() => {
-              //   setIsCancelDialogOpen(false);
-              // }}
             >
               Yes
             </Button>

@@ -312,22 +312,27 @@ type MedicalRecordProps = {
   setMedicalRecords: (medicalRecords: any) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  setActiveData: (activeData: any) => void;
+  activeData: any;
+  error: boolean;
 };
 
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  const [activeData, setActiveData] = useState<any | null>(null);
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
 
-  const { medicalRecords, allCombinedData, loading, setLoading, setMedicalRecords } = props;
-
-  useEffect(() => {
-    if (!isSmallScreen && allCombinedData && !activeData) {
-      setActiveData(allCombinedData[0]);
-    }
-  }, [allCombinedData]);
+  const {
+    medicalRecords,
+    allCombinedData,
+    loading,
+    setLoading,
+    setMedicalRecords,
+    activeData,
+    setActiveData,
+    error,
+  } = props;
 
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
@@ -383,6 +388,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
         <CircularProgress />
       </div>
     );
+  }
+
+  if (error) {
+    return <div>Error while fetching the medical records</div>;
   }
 
   const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
@@ -444,7 +453,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     name={getName(combinedData)}
                     id={combinedData.data.id}
                     isActiveCard={
-                      activeData && activeData.data && activeData.data.id === combinedData.data.id
+                      activeData && activeData.data && activeData.data === combinedData.data
                     }
                     setLoading={setLoading}
                   />
@@ -469,7 +478,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             }}
             fullWidth
           >
-            Add a Report
+            Add Record
           </AphButton>
         </div>
       </div>
@@ -540,10 +549,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     <DetailedFindings activeData={activeData} />
                   )}
                   {activeData.data &&
-                    (activeData.data.prismFileIds ||
-                      activeData.data.hospitalizationPrismFileIds ||
-                      activeData.data.healthCheckPrismFileIds ||
-                      activeData.data.testResultPrismFileIds) && (
+                    ((activeData.data.prismFileIds && activeData.data.prismFileIds.length > 0) ||
+                      (activeData.data.hospitalizationPrismFileIds &&
+                        activeData.data.hospitalizationPrismFileIds.length > 0) ||
+                      (activeData.data.healthCheckPrismFileIds &&
+                        activeData.data.healthCheckPrismFileIds.length > 0) ||
+                      (activeData.data.testResultPrismFileIds &&
+                        activeData.data.testResultPrismFileIds.length > 0)) && (
                       <RenderImage activeData={activeData} />
                     )}
                 </div>

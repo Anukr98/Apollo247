@@ -91,6 +91,10 @@ export enum DEVICETYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
 }
+export enum PATIENT_TYPE {
+  NEW = 'NEW',
+  REPEAT = 'REPEAT',
+}
 
 //Appointment starts
 @Entity()
@@ -149,6 +153,9 @@ export class Appointment extends BaseEntity {
 
   @Column({ nullable: true })
   hospitalId: string;
+
+  @Column({ default: PATIENT_TYPE.NEW })
+  patientType: PATIENT_TYPE;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;

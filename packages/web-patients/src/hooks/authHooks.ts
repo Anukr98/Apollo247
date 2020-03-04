@@ -10,6 +10,7 @@ const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
 export const useAuth = () => {
   const verifyOtp = useAuthContext().verifyOtp!;
   const verifyOtpError = useAuthContext().verifyOtpError!;
+  const setVerifyOtpError = useAuthContext().setVerifyOtpError!;
   const isVerifyingOtp = useAuthContext().isVerifyingOtp!;
 
   const sendOtp = useAuthContext().sendOtp!;
@@ -28,6 +29,7 @@ export const useAuth = () => {
   return {
     verifyOtp,
     verifyOtpError,
+    setVerifyOtpError,
     isVerifyingOtp,
 
     sendOtp,
@@ -91,5 +93,8 @@ export const useLoginPopupState = (): {
 } => {
   const isLoginPopupVisible = useAuthContext().isLoginPopupVisible;
   const setIsLoginPopupVisible = useAuthContext().setIsLoginPopupVisible!;
-  return { isLoginPopupVisible, setIsLoginPopupVisible };
+  return {
+    isLoginPopupVisible,
+    setIsLoginPopupVisible,
+  };
 };

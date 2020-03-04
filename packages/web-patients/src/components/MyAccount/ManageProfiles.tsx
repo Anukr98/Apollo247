@@ -40,12 +40,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     profileCard: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
@@ -67,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       overflow: 'hidden',
       '& img': {
-        maxWidth: 80,
+        maxHeight: 80,
       },
     },
     profileGroup: {

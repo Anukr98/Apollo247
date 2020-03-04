@@ -15,7 +15,7 @@ import { GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms } from 'graphql/typ
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import { isEmpty, debounce, trim } from 'lodash';
+import { isEmpty, trim } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -31,7 +31,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     borderRadius: 5,
     minWidth: '100%',
-    // maxWidth: 288,
     margin: '5px 0',
 
     '& h6': {
@@ -301,25 +300,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    }
-    // else if (isEmpty(trim(since))) {
-    //   setErrorState({
-    //     ...errorState,
-    //     symptomError: false,
-    //     sinceError: true,
-    //     howOfftenError: false,
-    //     severityError: false,
-    //   });
-    // } else if (isEmpty(trim(howOften))) {
-    //   setErrorState({
-    //     ...errorState,
-    //     symptomError: false,
-    //     sinceError: false,
-    //     howOfftenError: true,
-    //     severityError: false,
-    //   });
-    // }
-    else if (isEmpty(trim(severity))) {
+    } else if (isEmpty(trim(severity))) {
       setErrorState({
         ...errorState,
         symptomError: false,

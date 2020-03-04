@@ -109,12 +109,12 @@ export const OurServices: React.FC = (props) => {
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
     },
-    // {
-    //   title: `Buy Medicines`,
-    //   content: 'You can search by name or prescription.',
-    //   imgUrl: `${require('images/ic_medicines.png')}`,
-    //   action: { link: clientRoutes.medicines(), content: 'Search Medicine' },
-    // },
+    {
+      title: `Buy Medicines`,
+      content: 'You can search by name or prescription.',
+      imgUrl: `${require('images/ic_medicines.png')}`,
+      action: { link: clientRoutes.medicines(), content: 'Search Medicine' },
+    },
     // {
     //   title: 'Order Tests',
     //   content: 'Get your tests/diagnostics booked here.',
@@ -127,12 +127,12 @@ export const OurServices: React.FC = (props) => {
     //   imgUrl: `${require('images/ic-diabetes.svg')}`,
     //   action: { link: '', content: 'Who are star doctors' },
     // },
-    // {
-    //   title: 'Track Symptoms',
-    //   content: 'Learn about our Start Doctors Program.',
-    //   imgUrl: `${require('images/ic-symptomtracker.svg')}`,
-    //   action: { link: '', content: 'Who are star doctors' },
-    // },
+    {
+      title: 'Track Symptoms',
+      content: 'Learn about our Star Doctors Program.',
+      imgUrl: `${require('images/ic-symptomtracker.svg')}`,
+      action: { link: clientRoutes.symptomsTrackerFor(), content: 'Who are star doctors' },
+    },
     {
       title: 'View Health Records',
       content: 'Learn about our Start Doctors Program.',

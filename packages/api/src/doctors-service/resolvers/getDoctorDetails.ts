@@ -82,6 +82,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine1: String
   }
   type ConsultHours {
+    actualDay: WeekDay
     consultMode: ConsultMode!
     consultType: ConsultType!
     endTime: String!

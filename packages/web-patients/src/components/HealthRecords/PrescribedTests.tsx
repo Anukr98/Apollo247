@@ -5,10 +5,11 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  Grid,
 } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
-import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
+import {
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription as DiagnosisType,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -82,18 +83,28 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type FollowUpProps = {
+type PrescribedTestsProps = {
   caseSheetList: (CaseSheetType | null)[] | null;
 };
 
-export const FollowUp: React.FC<FollowUpProps> = (props) => {
+export const PrescribedTests: React.FC<PrescribedTestsProps> = (props) => {
   const classes = useStyles({});
   const caseSheetList = props.caseSheetList;
-  const followUpConsultDetails =
-    caseSheetList &&
+
+  const diagnosticPrescriptions: DiagnosisType[] = [];
+
+  caseSheetList &&
     caseSheetList.length > 0 &&
-    caseSheetList.find(
-      (caseSheet: CaseSheetType | null) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
+    caseSheetList.forEach(
+      (caseSheet: CaseSheetType | null) =>
+        caseSheet &&
+        caseSheet.doctorType !== 'JUNIOR' &&
+        caseSheet.diagnosticPrescription &&
+        caseSheet.diagnosticPrescription.length > 0 &&
+        caseSheet.diagnosticPrescription.forEach(
+          (diagnosticPrescription: DiagnosisType | null) =>
+            diagnosticPrescription && diagnosticPrescriptions.push(diagnosticPrescription)
+        )
     );
 
   return (
@@ -102,28 +113,16 @@ export const FollowUp: React.FC<FollowUpProps> = (props) => {
         expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
-        Follow-Up
+        Prescribed Tests
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            {followUpConsultDetails && followUpConsultDetails.followUp ? (
-              <>
-                <div className={classes.cardTitle}>
-                  {followUpConsultDetails.followUpConsultType}
-                </div>
-                <div className={classes.cardSection}>
-                  Recommended after {followUpConsultDetails.followUpAfterInDays} days
-                </div>
-              </>
-            ) : (
-              <div className={classes.noWrapper}>No FollowUp</div>
-            )}
-          </Grid>
-        </Grid>
-        {/* <div className={classes.bottomActions}>
-          <AphButton>Book Follow-Up</AphButton>
-        </div> */}
+        {diagnosticPrescriptions && diagnosticPrescriptions.length > 0 ? (
+          diagnosticPrescriptions.map((prescription: DiagnosisType) => (
+            <div className={classes.cardTitle}>{prescription.itemname}</div>
+          ))
+        ) : (
+          <div className={classes.noWrapper}>No Tests</div>
+        )}
       </ExpansionPanelDetails>
     </ExpansionPanel>
   );

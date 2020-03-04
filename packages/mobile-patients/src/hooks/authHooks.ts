@@ -17,10 +17,15 @@ export const useAuth = () => {
 
   const analytics = useAnalytics();
   const allPatients = useAuthContext().allPatients!;
+  const setAllPatients = useAuthContext().setAllPatients!;
 
   const getPatientApiCall = useAuthContext().getPatientApiCall!;
   const getPatientByPrism = useAuthContext().getPatientByPrism!;
+
   const mobileAPICalled = useAuthContext().mobileAPICalled;
+  const setMobileAPICalled = useAuthContext().setMobileAPICalled;
+
+  const getFirebaseToken = useAuthContext().getFirebaseToken;
 
   return {
     sendOtp,
@@ -33,11 +38,14 @@ export const useAuth = () => {
 
     analytics,
     allPatients,
+    setAllPatients,
 
     getPatientApiCall,
     getPatientByPrism,
 
     mobileAPICalled,
+    setMobileAPICalled,
+    getFirebaseToken,
   };
 };
 

@@ -1,5 +1,5 @@
 import { Button, CircularProgress, Theme } from '@material-ui/core';
-import { makeStyles, mergeClasses } from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { GET_BLOCKED_CALENDAR, REMOVE_BLOCKED_CALENDAR_ITEM } from 'graphql/doctors';
 import {
@@ -47,10 +47,8 @@ export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) =
   var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
   var otherOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
   const dateText = sameDay
-    ? // ? format(item.start, 'iii, P')
-      item.start.toLocaleDateString('en-AU', options)
-    : // : `${format(item.start, 'P')} - ${format(item.end, 'P')}`;
-      `${item.start.toLocaleDateString('en-AU', otherOptions)} - ${item.end.toLocaleDateString(
+    ? item.start.toLocaleDateString('en-AU', options)
+    : `${item.start.toLocaleDateString('en-AU', otherOptions)} - ${item.end.toLocaleDateString(
         'en-AU',
         otherOptions
       )}`;

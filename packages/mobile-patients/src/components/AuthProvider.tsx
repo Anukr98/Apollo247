@@ -38,6 +38,7 @@ export interface AuthContextProps {
   currentPatientId: string | null;
   setCurrentPatientId: ((pid: string | null) => void) | null;
   allPatients: any | null;
+  setAllPatients: any | null;
 
   sendOtp: ((phoneNumber: string, forceResend?: boolean) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -48,9 +49,12 @@ export interface AuthContextProps {
   signOut: (() => void) | null;
 
   hasAuthToken: boolean;
-  getPatientApiCall: (() => void) | null;
-  getPatientByPrism: (() => void) | null;
+  getPatientApiCall: (() => Promise<unknown>) | null;
+  getPatientByPrism: (() => Promise<unknown>) | null;
+
   mobileAPICalled: boolean;
+  setMobileAPICalled: ((par: boolean) => void) | null;
+  getFirebaseToken: (() => Promise<unknown>) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -70,8 +74,14 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   getPatientApiCall: null,
   allPatients: null,
+  setAllPatients: null,
+
   getPatientByPrism: null,
+
   mobileAPICalled: false,
+  setMobileAPICalled: null,
+
+  getFirebaseToken: null,
 });
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
@@ -95,7 +105,8 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
     if (graphQLErrors && graphQLErrors.findIndex((i) => knownErrors.includes(i.message)) > -1) {
       return;
     } else {
-      return forward(operation);
+      return;
+      // return forward(operation);
     }
   });
   const authLink = setContext(async (_, { headers }) => ({
@@ -168,6 +179,8 @@ export const AuthProvider: React.FC = (props) => {
       AsyncStorage.removeItem('currentPatient');
       AsyncStorage.removeItem('deviceToken');
       AsyncStorage.removeItem('selectUserId');
+      AsyncStorage.removeItem('callByPrism');
+
       console.log('authprovider signOut');
     } catch (error) {
       CommonBugFender('AuthProvider_signOut_try', error);
@@ -185,124 +198,121 @@ export const AuthProvider: React.FC = (props) => {
 
   const getFirebaseToken = () => {
     try {
-      let authStateRegistered = false;
-      console.log('authprovider');
-      auth.onAuthStateChanged(async (user) => {
-        console.log('authprovider', authStateRegistered, user);
+      return new Promise(async (resolve, reject) => {
+        let authStateRegistered = false;
+        console.log('authprovider');
+        auth.onAuthStateChanged(async (user) => {
+          console.log('authprovider', authStateRegistered, user);
 
-        if (user && !authStateRegistered) {
-          console.log('authprovider login');
-          setIsSigningIn(true);
-          authStateRegistered = true;
+          if (user && !authStateRegistered) {
+            console.log('authprovider login');
+            setIsSigningIn(true);
+            authStateRegistered = true;
 
-          const jwt = await user.getIdToken(true).catch((error) => {
-            setIsSigningIn(false);
-            setSignInError(true);
-            setAuthToken('');
-            authStateRegistered = false;
-            console.log('authprovider error', error);
-            throw error;
-          });
-
-          console.log('authprovider jwt', jwt);
-          setAuthToken(jwt);
-
-          apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
-          authStateRegistered = false;
-          setAuthToken(jwt);
-          getNetStatus()
-            .then((item) => {
-              item && getPatientApiCall();
-            })
-            .catch((e) => {
-              Alert.alert('Oops!', 'There is no internet. Please check your internet connection.');
-              CommonBugFender('AuthProvider_getFirebaseToken', e);
+            const jwt = await user.getIdToken(true).catch((error) => {
+              setIsSigningIn(false);
+              setSignInError(true);
+              setAuthToken('');
+              authStateRegistered = false;
+              console.log('authprovider error', error);
+              reject(error);
+              throw error;
             });
-        }
-        setIsSigningIn(false);
+
+            console.log('authprovider jwt', jwt);
+            setAuthToken(jwt);
+
+            apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
+            authStateRegistered = false;
+            setAuthToken(jwt);
+            resolve(jwt);
+            getNetStatus()
+              .then(async (item) => {
+                const userLoggedIn = await AsyncStorage.getItem('logginHappened');
+                if (userLoggedIn == 'true') {
+                  item && getPatientApiCall();
+                }
+              })
+              .catch((e) => {
+                CommonBugFender('AuthProvider_getNetStatus', e);
+              });
+          }
+          setIsSigningIn(false);
+        });
       });
     } catch (error) {}
   };
 
   const getPatientApiCall = async () => {
-    try {
-      const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-      const input = {
-        mobileNumber: '+91' + storedPhoneNumber,
-      };
-      console.log('getPatientApiCall', input);
-      storedPhoneNumber &&
-        apolloClient
-          .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
-            query: GET_PATIENTS_MOBILE,
-            variables: input,
-            fetchPolicy: 'no-cache',
-          })
-          .then((data) => {
-            const profileData =
-              data.data.getPatientByMobileNumber && data.data.getPatientByMobileNumber.patients;
-            console.log('consoleofdata', profileData);
-
-            setSignInError(false);
-            console.log('getPatientApiCall', data);
-            AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-            AsyncStorage.setItem('callByPrism', 'false');
-            setAllPatients(data);
-            setMobileAPICalled(false);
-            if (profileData && profileData.length === 0) {
-              getNetStatus()
-                .then((item) => {
-                  getPatientByPrism();
-                })
-                .catch((e) => {
-                  Alert.alert(
-                    'Oops!',
-                    'There is no internet. Please check your internet connection.'
-                  );
-                  CommonBugFender('AuthProvider_getPatientApiCall', e);
-                });
-            }
-          })
-          .catch(async (error) => {
-            CommonBugFender('AuthProvider_getPatientApiCall', error);
-            const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-            const item = JSON.parse(retrievedItem);
-            setAllPatients(item);
-            setSignInError(false);
-            console.log('getPatientApiCallerror', error);
-          });
-    } catch (error) {}
+    return new Promise(async (resolve, reject) => {
+      try {
+        const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+        const input = {
+          mobileNumber: '+91' + storedPhoneNumber,
+        };
+        console.log('getPatientApiCall', input);
+        storedPhoneNumber &&
+          apolloClient
+            .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
+              query: GET_PATIENTS_MOBILE,
+              variables: input,
+              fetchPolicy: 'no-cache',
+            })
+            .then((data) => {
+              setSignInError(false);
+              console.log('getPatientApiCall', data);
+              AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+              AsyncStorage.setItem('callByPrism', 'false');
+              setAllPatients(data);
+              resolve(data);
+              setMobileAPICalled(false);
+            })
+            .catch(async (error) => {
+              CommonBugFender('AuthProvider_getPatientApiCall', error);
+              const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+              const item = JSON.parse(retrievedItem);
+              setAllPatients(item);
+              setSignInError(false);
+              reject(error);
+              console.log('getPatientApiCallerror', error);
+            });
+      } catch (error) {}
+    });
   };
 
   const getPatientByPrism = async () => {
     try {
-      const versionInput = {
-        appVersion:
-          Platform.OS === 'ios'
-            ? AppConfig.Configuration.iOS_Version
-            : AppConfig.Configuration.Android_Version,
-        deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
-      };
-      console.log('getPatientByPrism', versionInput);
+      return new Promise(async (resolve, reject) => {
+        const versionInput = {
+          appVersion:
+            Platform.OS === 'ios'
+              ? AppConfig.Configuration.iOS_Version
+              : AppConfig.Configuration.Android_Version,
+          deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+        };
+        console.log('getPatientByPrism', versionInput);
 
-      await apolloClient
-        .query<GetCurrentPatients, GetCurrentPatientsVariables>({
-          query: GET_CURRENT_PATIENTS,
-          variables: versionInput,
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          AsyncStorage.setItem('callByPrism', 'true');
-          AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-          setMobileAPICalled(true);
-          setSignInError(false);
-          console.log('getPatientByPrism', data);
-          setAllPatients(data);
-        })
-        .catch(async (error) => {
-          CommonBugFender('AuthProvider_getPatientByPrism', error);
-          console.log('getPatientByPrismerror', error);
-        });
+        await apolloClient
+          .query<GetCurrentPatients, GetCurrentPatientsVariables>({
+            query: GET_CURRENT_PATIENTS,
+            variables: versionInput,
+            fetchPolicy: 'no-cache',
+          })
+          .then((data) => {
+            AsyncStorage.setItem('callByPrism', 'true');
+            AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+            setMobileAPICalled(true);
+            setSignInError(false);
+            console.log('getPatientByPrism', data);
+            setAllPatients(data);
+            resolve(data);
+          })
+          .catch(async (error) => {
+            CommonBugFender('AuthProvider_getPatientByPrism', error);
+            console.log('getPatientByPrismerror', error);
+            reject(error);
+          });
+      });
     } catch (error) {}
   };
 
@@ -326,10 +336,14 @@ export const AuthProvider: React.FC = (props) => {
             hasAuthToken,
 
             allPatients,
+            setAllPatients,
             getPatientApiCall,
 
             getPatientByPrism,
             mobileAPICalled,
+            setMobileAPICalled,
+
+            getFirebaseToken,
           }}
         >
           {props.children}

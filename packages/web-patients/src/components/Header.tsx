@@ -172,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { isSigningIn, isSignedIn } = useAuth();
+  const { isSigningIn, isSignedIn, verifyOtpError, setVerifyOtpError } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
@@ -223,9 +223,9 @@ export const Header: React.FC = (props) => {
                   {({ protectWithLoginPopup }) => (
                     <>
                       <div
-                        onClick={() =>
-                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
-                        }
+                        onClick={() => {
+                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup();
+                        }}
                         className={classes.loginLinks}
                       >
                         Login/SignUp
@@ -257,9 +257,11 @@ export const Header: React.FC = (props) => {
                     const otpAfterCleaning = otp.replace(/,/g, '');
                     if (
                       mobileNumber.length === 0 ||
-                      (mobileNumber.length === 10 && otpAfterCleaning.length === 0)
+                      ((mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+                        otpAfterCleaning.length === 6)
                     ) {
                       setIsLoginPopupVisible(false);
+                      setVerifyOtpError(false);
                     }
                   }}
                   anchorOrigin={{

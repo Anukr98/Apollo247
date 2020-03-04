@@ -8,7 +8,7 @@ import { isEmpty } from 'lodash';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import { useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
-import { useApolloClient, useMutation } from 'react-apollo-hooks';
+import { useMutation } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
@@ -306,12 +306,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     dotPaper: {
-      // width: 300,
-      // minHeight: 50,
       padding: 0,
       borderRadius: 0,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      // backgroundColor: theme.palette.common.white,
       '& .MuiPaper-rounded': {
         borderRadius: 10,
       },
@@ -404,7 +401,6 @@ const useStyles = makeStyles((theme: Theme) => {
           minHeight: 'auto',
           paddingLeft: 10,
           paddingRight: 10,
-          // borderBottom: '1px solid rgba(1,71,91,0.2)',
           '&:last-child': {
             borderBottom: 'none',
           },
@@ -648,9 +644,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
-  const startConsult = '^^#startconsult';
   const startConsultjr = '^^#startconsultJr';
-  const stopConsult = '^^#stopconsult';
   const stopConsultJr = '^^#stopconsultJr';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
@@ -1075,9 +1069,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           setIsCallAccepted(true);
         }
       },
-      presence: (presenceEvent) => {
-        console.log(presenceEvent);
-      },
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
@@ -1216,9 +1207,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
 
-  const rescheduleConsultAction = () => {
-    console.log('reschedule not available');
-  };
   const getTimerText = () => {
     const now = new Date();
     const diff = moment.duration(
@@ -1531,14 +1519,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
             >
               Cancel
             </Button>
-            <Button
-              className={classes.ResheduleCosultButton}
-              onClick={() => {
-                rescheduleConsultAction();
-              }}
-            >
-              Reschedule Consult
-            </Button>
+            <Button className={classes.ResheduleCosultButton}>Reschedule Consult</Button>
           </div>
         </Paper>
       </Modal>

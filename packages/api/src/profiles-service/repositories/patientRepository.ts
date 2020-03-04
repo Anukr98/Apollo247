@@ -749,7 +749,7 @@ export class PatientRepository extends Repository<Patient> {
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
     this.updateUhid(id, uhidResp.result.toString());
 
-    await this.createPrismUser(patientDetails, uhidResp.result.toString());
+    this.createPrismUser(patientDetails, uhidResp.result.toString());
 
     return uhidResp.result;
   }

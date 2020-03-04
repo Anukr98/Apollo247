@@ -1,11 +1,9 @@
+import AppointmentsStyles from '@aph/mobile-doctors/src/components/Appointments/Appointments.styles';
 import { AppointmentsList } from '@aph/mobile-doctors/src/components/Appointments/AppointmentsList';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   ApploLogo,
-  Block,
-  CalendarIcon,
   CalendarTodayIcon,
   DotIcon,
   Down,
@@ -20,6 +18,7 @@ import { GET_DOCTOR_APPOINTMENTS } from '@aph/mobile-doctors/src/graphql/profile
 import {
   GetDoctorAppointments,
   GetDoctorAppointmentsVariables,
+  GetDoctorAppointments_getDoctorAppointments,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import { DoctorProfile } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
@@ -27,12 +26,11 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
-import { Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
-import AppointmentsStyles from '@aph/mobile-doctors/src/components/Appointments/Appointments.styles';
 
 const styles = AppointmentsStyles;
 
@@ -51,6 +49,7 @@ const monthsName = [
   'December',
 ];
 
+const todayDate = new Date();
 export interface AppointmentsProps extends NavigationScreenProps {
   profileData: DoctorProfile;
 }
@@ -62,6 +61,20 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   // const [DoctorId, setDoctorId] = useState<string>(
   //   (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
   // );
+
+  const [date, setDate] = useState<Date>(new Date());
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
+  const [isCalendarVisible, setCalendarVisible] = useState(false);
+  // const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [showNeedHelp, setshowNeedHelp] = useState(false);
+  const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
+  const [getAppointments, setgetAppointments] = useState<
+    GetDoctorAppointments_getDoctorAppointments
+  >();
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
+  const recordsDate = moment(date).format('YYYY-MM-DD');
+
   const { doctorDetails } = useAuth();
 
   useEffect(() => {
@@ -79,32 +92,81 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     // console.log('DoctirNAME', doctorName);
   }, [doctorDetails]);
 
-  const [date, setDate] = useState<Date>(new Date());
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
-  const [isCalendarVisible, setCalendarVisible] = useState(false);
-  // const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const [showNeedHelp, setshowNeedHelp] = useState(false);
-  const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
+  useEffect(() => {
+    let timerId: NodeJS.Timeout;
+    getAppointmentsApi();
+    timerId = setInterval(() => {
+      getAppointmentsApi();
+    }, 30 * 1000);
+    const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
+      console.log('didFocus');
+      getAppointmentsApi();
+      timerId = setInterval(() => {
+        getAppointmentsApi();
+      }, 30 * 1000);
+    });
 
-  const recordsDate = moment(date).format('YYYY-MM-DD');
+    const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
+      timerId && clearInterval(timerId);
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+      timerId && clearInterval(timerId);
+    };
+  }, []);
+  console.log(date, 'date111111111');
 
-  const { data, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
-    GET_DOCTOR_APPOINTMENTS,
-    {
-      variables: {
-        startDate: recordsDate,
-        endDate: recordsDate, //'2019-09-13',
-      },
-      fetchPolicy: 'no-cache',
-      pollInterval:
-        moment(date).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
-          ? 30 * 1000
-          : undefined,
-    }
-  );
+  // const pollInterval =
+  //   moment(date).format('YYYY-MM-DD') === moment(todayDate).format('YYYY-MM-DD')
+  //     ? 30 * 1000
+  //     : undefined;
+  // console.log(pollInterval, 'pollInterval', date);
 
-  const getAppointments = data && data.getDoctorAppointments;
-  console.log('getAppointments', getAppointments);
+  // const { data, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
+  //   GET_DOCTOR_APPOINTMENTS,
+  //   {
+  //     variables: {
+  //       startDate: recordsDate,
+  //       endDate: recordsDate, //'2019-09-13',
+  //     },
+  //     fetchPolicy: 'no-cache',
+  //     pollInterval: 30 * 1000,
+  //     notifyOnNetworkStatusChange: true,
+  //     // onCompleted: () => console.log('called'),
+  //   }
+  // );
+
+  // const getAppointments = data && data.getDoctorAppointments;
+  // let getAppointments: GetDoctorAppointments_getDoctorAppointments | null;
+
+  // console.log('getAppointments', getAppointments);
+  const client = useApolloClient();
+
+  const getAppointmentsApi = () => {
+    setshowSpinner(true);
+    client
+      .query<GetDoctorAppointments, GetDoctorAppointmentsVariables>({
+        query: GET_DOCTOR_APPOINTMENTS,
+        variables: {
+          startDate: recordsDate,
+          endDate: recordsDate, //'2019-09-13',
+        },
+        fetchPolicy: 'no-cache',
+        // pollInterval: 10 * 1000,
+        // moment(date).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+        //   ? 30 * 1000
+        //   : undefined,
+      })
+      .then(({ data }) => {
+        // getAppointments = data && data.getDoctorAppointments;
+        console.log('getAppointmentsApi', data);
+        data && data.getDoctorAppointments && setgetAppointments(data.getDoctorAppointments);
+      })
+      .finally(() => {
+        setshowSpinner(false);
+      });
+  };
 
   const renderMonthSelection = () => {
     return (
@@ -339,7 +401,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             }}
           />
         </View>
-        {loading ? (
+        {showSpinner ? (
           <Loader flex1 />
         ) : (
             (getAppointments &&

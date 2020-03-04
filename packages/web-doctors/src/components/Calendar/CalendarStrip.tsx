@@ -68,7 +68,6 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'absolute',
         left: 0,
         top: 10,
-        // display: 'none',
       },
       '& img': {
         width: 30,
@@ -208,7 +207,6 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           date={date}
           handler={(e, date) => {
             setDate(date);
-
             if (dayClickHandler) {
               dayClickHandler(date);
             }
@@ -219,7 +217,6 @@ export const CalendarStrip: React.FC<CalendarStripProps> = ({
           onClick={(e) => {
             const newDate = addWeeks(date, 1);
             setDate(newDate);
-
             if (onNext) {
               onNext(e, newDate, startOfWeek(startOfDay(newDate)));
             }

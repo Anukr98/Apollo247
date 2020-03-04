@@ -706,7 +706,6 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
           ) {
-            //setappointmentDateTime('2019-08-27T17:30:00.000Z');
             setappointmentDateTime(
               _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
@@ -902,7 +901,6 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
-    // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
       diagnosisFinal = null,
       diagnosticPrescriptionFinal = null,
@@ -920,7 +918,6 @@ export const JDConsultRoom: React.FC = () => {
       });
     }
     if (diagnosticPrescription && diagnosticPrescription.length > 0) {
-      // convert itemName to itemname
       diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
         return {
           itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
@@ -1432,7 +1429,6 @@ export const JDConsultRoom: React.FC = () => {
               if (document.getElementById('homeId')) {
                 document.getElementById('homeId')!.click();
               }
-              //window.location.href = clientRoutes.juniorDoctor();
             }}
             autoFocus
           >

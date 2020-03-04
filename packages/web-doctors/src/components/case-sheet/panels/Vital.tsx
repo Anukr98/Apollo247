@@ -1,9 +1,9 @@
-import React, { useContext, useState, useRef, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Theme } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -120,36 +120,6 @@ export const Vital: React.FC = () => {
     caseSheetEdit,
   } = useContext(CaseSheetContext);
 
-  const [disableWeight, setDisableWeight] = useState<boolean>(true);
-  const [disableHeight, setDisableHeight] = useState<boolean>(true);
-  const [disableBp, setDisableBp] = useState<boolean>(true);
-  const [disableTemperature, setDisableTemperature] = useState<boolean>(true);
-
-  const heightRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const weightRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const bpRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const tempRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-
   const moveCursorToEnd = (element: any) => {
     if (typeof element.selectionStart == 'number') {
       element.selectionStart = element.selectionEnd = element.value.length;
@@ -179,28 +149,9 @@ export const Vital: React.FC = () => {
                 defaultValue={height}
                 onBlur={(e) => {
                   setHeight(e.target.value);
-                  //setDisableHeight(true);
                 }}
                 disabled={!caseSheetEdit}
-                //inputRef={heightRef}
               />
-              {/* <div className={classes.boxActions}>
-                <AphButton
-                  onClick={() => {
-                    setDisableHeight(false);
-                  }}
-                >
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton
-                  onClick={() => {
-                    setDisableHeight(true);
-                    setHeight('');
-                  }}
-                >
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div> */}
             </Typography>
           </Typography>
           <Typography component="div" className={classes.vitalRight}>
@@ -215,28 +166,9 @@ export const Vital: React.FC = () => {
                 defaultValue={weight}
                 onBlur={(e) => {
                   setWeight(e.target.value);
-                  //setDisableWeight(true);
                 }}
                 disabled={!caseSheetEdit}
-                //inputRef={weightRef}
               />
-              {/* <div className={classes.boxActions}>
-                <AphButton
-                  onClick={() => {
-                    setDisableWeight(false);
-                  }}
-                >
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton
-                  onClick={() => {
-                    setWeight('');
-                    setDisableWeight(true);
-                  }}
-                >
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div> */}
             </Typography>
           </Typography>
           <div>
@@ -252,28 +184,9 @@ export const Vital: React.FC = () => {
                   defaultValue={bp}
                   onBlur={(e) => {
                     setBp(e.target.value);
-                    //setDisableBp(true);
                   }}
                   disabled={!caseSheetEdit}
-                  //inputRef={bpRef}
                 />
-                {/* <div className={classes.boxActions}>
-                  <AphButton
-                    onClick={() => {
-                      setDisableBp(false);
-                    }}
-                  >
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
-                  <AphButton
-                    onClick={() => {
-                      setBp('');
-                      setDisableBp(true);
-                    }}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                </div> */}
               </Typography>
             </Typography>
             <Typography component="div" className={classes.vitalRight}>
@@ -288,28 +201,9 @@ export const Vital: React.FC = () => {
                   defaultValue={temperature}
                   onBlur={(e) => {
                     setTemperature(e.target.value);
-                    //setDisableTemperature(true);
                   }}
                   disabled={!caseSheetEdit}
-                  //inputRef={tempRef}
                 />
-                {/* <div className={classes.boxActions}>
-                  <AphButton
-                    onClick={() => {
-                      setDisableTemperature(false);
-                    }}
-                  >
-                    <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
-                  <AphButton
-                    onClick={() => {
-                      setDisableTemperature(false);
-                      setTemperature('');
-                    }}
-                  >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                </div> */}
               </Typography>
             </Typography>
           </div>

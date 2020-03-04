@@ -311,7 +311,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         setPhotoUrl(
           selectedPatientDetails && selectedPatientDetails.photoUrl
             ? selectedPatientDetails.photoUrl
-            : require('images/ic_account.svg')
+            : require('images/no_photo.png')
         );
       }
     }

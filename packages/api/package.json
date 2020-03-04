@@ -63,6 +63,7 @@
     "@types/azure-sb": "0.0.36",
     "@types/pubnub": "^4.27.1",
     "@types/request-promise": "^4.1.44",
+    "abort-controller": "^3.0.0",
     "apollo-server": "^2.6.3",
     "apollo-server-core": "^2.6.7",
     "azure-sb": "^0.11.1",

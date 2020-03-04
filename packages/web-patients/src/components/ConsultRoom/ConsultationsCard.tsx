@@ -294,7 +294,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
             const doctorImage =
               appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.photoUrl
                 ? appointmentDetails.doctorInfo.photoUrl
-                : require('images/ic_placeholder.png');
+                : require('images/no_photo.png');
             const experience =
               appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.experience
                 ? appointmentDetails.doctorInfo.experience
@@ -394,7 +394,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       >
                         {appointmentDetails.appointmentType === 'ONLINE'
                           ? difference <= 15 && difference > 0
-                            ? `Available in ${difference} mins`
+                            ? `Available in ${difference} ${difference === 1 ? 'MIN' : 'MINS'}`
                             : otherDateMarkup(appointmentTime)
                           : 'Clinic Visit'}
                       </div>

@@ -112,110 +112,7 @@ export const LifeStyle: React.FC = () => {
     caseSheetEdit,
   } = useContext(CaseSheetContext);
 
-  // const [disablePastMedicalHistory, setDisablePastMedicalHistory] = useState<boolean>(true);
-  // const [disablePastSurgicalHistory, setDisablePastSurgicalHistory] = useState<boolean>(true);
-  // const [disableDrugAllergies, setDisableDrugAllergies] = useState<boolean>(true);
-  // const [disableDietAllergies, setDisableDietAllergies] = useState<boolean>(true);
-  // const [disableLifeStyle, setDisableLifeStyle] = useState<boolean>(true);
-  // const [disableFamilyHistory, setDisableFamilyHistory] = useState<boolean>(true);
-  // const [disableMenstrualHistory, setDisableMenstrualHistory] = useState<boolean>(true);
-
-  // const pastMedicalHistory =
-  //   patientDetails &&
-  //   patientDetails.patientMedicalHistory &&
-  //   patientDetails.patientMedicalHistory.pastMedicalHistory
-  //     ? patientDetails &&
-  //       patientDetails.patientMedicalHistory &&
-  //       patientDetails.patientMedicalHistory.pastMedicalHistory
-  //     : '';
-  // const pastSurgicalHistory =
-  //   patientDetails &&
-  //   patientDetails.patientMedicalHistory &&
-  //   patientDetails.patientMedicalHistory.pastSurgicalHistory
-  //     ? patientDetails &&
-  //       patientDetails.patientMedicalHistory &&
-  //       patientDetails.patientMedicalHistory.pastSurgicalHistory
-  //     : '';
-  // const drugAllergies =
-  //   patientDetails &&
-  //   patientDetails.patientMedicalHistory &&
-  //   patientDetails.patientMedicalHistory.drugAllergies
-  //     ? patientDetails &&
-  //       patientDetails.patientMedicalHistory &&
-  //       patientDetails.patientMedicalHistory.drugAllergies
-  //     : '';
-  // const dietAllergies =
-  //   patientDetails &&
-  //   patientDetails.patientMedicalHistory &&
-  //   patientDetails.patientMedicalHistory.dietAllergies
-  //     ? patientDetails &&
-  //       patientDetails.patientMedicalHistory &&
-  //       patientDetails.patientMedicalHistory.dietAllergies
-  //     : '';
-  // const menstrualHistory =
-  //   patientDetails &&
-  //   patientDetails.patientMedicalHistory &&
-  //   patientDetails.patientMedicalHistory.menstrualHistory
-  //     ? patientDetails &&
-  //       patientDetails.patientMedicalHistory &&
-  //       patientDetails.patientMedicalHistory.menstrualHistory
-  //     : '';
-
   const gender = patientDetails && patientDetails.gender ? patientDetails.gender : null;
-
-  // let familyHistoryObj = null,
-  //   lifeStyleObj = null;
-
-  // if (patientDetails && patientDetails.familyHistory && patientDetails.familyHistory[0]) {
-  //   familyHistoryObj = patientDetails.familyHistory[0];
-  // }
-
-  // if (patientDetails && patientDetails.lifeStyle && patientDetails.lifeStyle[0]) {
-  //   lifeStyleObj = patientDetails.lifeStyle[0];
-  // }
-
-  const pastMedicalRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const pastSurgicalRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const drugAllergiesRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const dietAllergiesRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const lifeStyleRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const familyHistoryRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
-  const menstrualRef = (input: HTMLInputElement) => {
-    if (input)
-      setTimeout(() => {
-        input.focus();
-      }, 100);
-  };
   const moveCursorToEnd = (element: any) => {
     if (typeof element.selectionStart == 'number') {
       element.selectionStart = element.selectionEnd = element.value.length;
@@ -245,27 +142,8 @@ export const LifeStyle: React.FC = () => {
               defaultValue={pastMedicalHistory}
               onBlur={(e) => {
                 setPastMedicalHistory(e.target.value);
-                //setDisablePastMedicalHistory(true);
               }}
-              //inputRef={pastMedicalRef}
             />
-            {/* <div className={classes.boxActions}>
-              <AphButton
-                onClick={() => {
-                  setDisablePastMedicalHistory(false);
-                }}
-              >
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton
-                onClick={() => {
-                  setPastMedicalHistory('');
-                  setDisablePastMedicalHistory(true);
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div> */}
           </Typography>
         </Typography>
 
@@ -281,27 +159,8 @@ export const LifeStyle: React.FC = () => {
               defaultValue={pastSurgicalHistory}
               onBlur={(e) => {
                 setPastSurgicalHistory(e.target.value);
-                //setDisablePastSurgicalHistory(true);
               }}
-              //inputRef={pastSurgicalRef}
             />
-            {/* <div className={classes.boxActions}>
-              <AphButton
-                onClick={() => {
-                  setDisablePastSurgicalHistory(false);
-                }}
-              >
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton
-                onClick={() => {
-                  setPastSurgicalHistory('');
-                  setDisablePastSurgicalHistory(true);
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div> */}
           </Typography>
         </Typography>
 
@@ -319,27 +178,8 @@ export const LifeStyle: React.FC = () => {
               defaultValue={drugAllergies}
               onBlur={(e) => {
                 setDrugAllergies(e.target.value);
-                //setDisableDrugAllergies(true);
               }}
-              //inputRef={drugAllergiesRef}
             />
-            {/* <div className={classes.boxActions}>
-              <AphButton
-                onClick={(e) => {
-                  setDisableDrugAllergies(false);
-                }}
-              >
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton
-                onClick={() => {
-                  setDrugAllergies('');
-                  setDisableDrugAllergies(true);
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div> */}
           </Typography>
         </Typography>
 
@@ -356,27 +196,8 @@ export const LifeStyle: React.FC = () => {
               defaultValue={dietAllergies}
               onBlur={(e) => {
                 setDietAllergies(e.target.value);
-                //setDisableDietAllergies(true);
               }}
-              //inputRef={dietAllergiesRef}
             />
-            {/* <div className={classes.boxActions}>
-              <AphButton
-                onClick={() => {
-                  setDisableDietAllergies(false);
-                }}
-              >
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton
-                onClick={() => {
-                  setDietAllergies('');
-                  setDisableDietAllergies(true);
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div> */}
           </Typography>
         </Typography>
 
@@ -393,27 +214,8 @@ export const LifeStyle: React.FC = () => {
               defaultValue={lifeStyle}
               onBlur={(e) => {
                 setLifeStyle(e.target.value);
-                //setDisableLifeStyle(true);
               }}
-              //inputRef={lifeStyleRef}
             />
-            {/* <div className={classes.boxActions}>
-              <AphButton
-                onClick={() => {
-                  setDisableLifeStyle(false);
-                }}
-              >
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton
-                onClick={() => {
-                  setLifeStyle('');
-                  setDisableLifeStyle(true);
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div> */}
           </Typography>
         </Typography>
 
@@ -431,31 +233,11 @@ export const LifeStyle: React.FC = () => {
                 defaultValue={menstrualHistory}
                 onBlur={(e) => {
                   setMenstrualHistory(e.target.value);
-                  //setDisableMenstrualHistory(true);
                 }}
-                //inputRef={menstrualRef}
               />
-              {/* <div className={classes.boxActions}>
-                <AphButton
-                  onClick={() => {
-                    setDisableMenstrualHistory(false);
-                  }}
-                >
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton
-                  onClick={() => {
-                    setMenstrualHistory('');
-                    setDisableMenstrualHistory(true);
-                  }}
-                >
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div> */}
             </Typography>
           </Typography>
         )}
-
         <Typography className={classes.mainContainer} component="div">
           <Typography component="h5" variant="h5" className={classes.header}>
             Patient's Family Medical History
@@ -469,27 +251,8 @@ export const LifeStyle: React.FC = () => {
               defaultValue={familyHistory}
               onBlur={(e) => {
                 setFamilyHistory(e.target.value);
-                //setDisableFamilyHistory(true);
               }}
-              //inputRef={familyHistoryRef}
             />
-            {/* <div className={classes.boxActions}>
-              <AphButton
-                onClick={() => {
-                  setDisableFamilyHistory(false);
-                }}
-              >
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton
-                onClick={() => {
-                  setFamilyHistory('');
-                  setDisableFamilyHistory(true);
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div> */}
           </Typography>
         </Typography>
       </div>
