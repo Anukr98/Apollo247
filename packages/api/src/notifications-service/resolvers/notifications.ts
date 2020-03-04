@@ -402,6 +402,7 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+    sendBrowserNotitication(doctorDetails.id, doctorSMS);
   } else if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
     notificationBody = ApiConstants.CANCEL_APPT_BODY.replace('{0}', patientDetails.firstName);
@@ -1148,7 +1149,7 @@ export async function sendReminderNotification(
   return notificationResponse;
 }
 
-const sendBrowserNotitication = (id: string, message: string) => {
+export const sendBrowserNotitication = (id: string, message: string) => {
   const pubnub = new Pubnub({
     publishKey: process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '',
     subscribeKey: process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '',
