@@ -160,6 +160,7 @@ interface DoctorsListingProps {
   specialityId: string;
 }
 
+let availableNow = {};
 const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
   const availabilityArray: String[] = [];
   const today = moment(new Date())
@@ -167,7 +168,13 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
-      if (value === 'today') {
+      if (value === 'now') {
+        availableNow = {
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
+        };
+      } else if (value === 'today') {
         availabilityArray.push(today);
       } else if (value === 'tomorrow') {
         availabilityArray.push(
@@ -247,15 +254,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       const feeRangeMaximum = parseInt(fees.split('_')[1], 10);
       return { minimum: feeRangeMinimum, maximum: feeRangeMaximum };
     });
-  }
-
-  let availableNow = {};
-  if (filter.availability && filter.availability.includes('now')) {
-    availableNow = {
-      availableNow: moment(new Date())
-        .utc()
-        .format('YYYY-MM-DD hh:mm'),
-    };
   }
 
   let geolocation = {} as any;
