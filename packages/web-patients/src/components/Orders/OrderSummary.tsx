@@ -128,7 +128,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
     props.orderDetailsData.medicineOrderPayments[0];
 
   return props.isLoading ? (
-    <CircularProgress className={classes.loader} />
+    <div className={classes.loader}>
+      <CircularProgress />
+    </div>
   ) : (
     <div className={classes.root}>
       <div className={classes.summaryHeader}>

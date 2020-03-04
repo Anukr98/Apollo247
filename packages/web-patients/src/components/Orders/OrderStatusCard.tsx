@@ -196,7 +196,9 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       <Grid item sm={12} xs={12}>
         <div className={classes.orderStatusGroup}>
           {props.isLoading ? (
-            <CircularProgress className={classes.loader} />
+            <div className={classes.loader}>
+              <CircularProgress />
+            </div>
           ) : (
             orderStatusList &&
             orderStatusList.map(

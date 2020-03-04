@@ -166,8 +166,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   });
   if (loading)
     return (
-      <div>
-        <CircularProgress className={classes.loader} />
+      <div className={classes.loader}>
+        <CircularProgress />
       </div>
     );
   if (error) return <div>Error :(</div>;
