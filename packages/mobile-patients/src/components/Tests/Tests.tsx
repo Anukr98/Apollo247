@@ -283,7 +283,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   .then((response) => {
                     //console.log('response', { response });
                     setLoadingContext!(false);
-                    setLocationDetails!(response);
+                    response && setLocationDetails!(response);
                   })
                   .catch((e) => {
                     CommonBugFender('Tests_ALLOW_AUTO_DETECT', e);

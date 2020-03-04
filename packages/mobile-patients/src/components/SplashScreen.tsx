@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
-  AsyncStorage,
   Platform,
   ActivityIndicator,
   Linking,
   AppStateStatus,
   AppState,
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -23,6 +23,7 @@ import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -290,10 +291,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return '';
     }
   };
-
-  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+  const { setLocationDetails } = useAppCommonData();
+  const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
-      // checkForVersionUpdate();
+      try {
+        const settingsCalled: string | null = await AsyncStorage.getItem('settingsCalled');
+        console.log(settingsCalled, 'redolocartions');
+        if (settingsCalled && settingsCalled === 'true') {
+          doRequestAndAccessLocation()
+            .then((response) => {
+              response && setLocationDetails!(response);
+              AsyncStorage.setItem('settingsCalled', 'false');
+            })
+            .catch((e) => {
+              CommonBugFender('SplashScreen_Location_update', e);
+              showAphAlert!({
+                title: 'Uh oh! :(',
+                description: 'Unable to access location.',
+              });
+            });
+        }
+      } catch {}
     }
   };
 
