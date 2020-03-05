@@ -369,7 +369,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     <View style={{ flex: 0.7 }}>
                       <Text style={styles.labelTextStyle}>Normal Range</Text>
                       <Text style={styles.valuesTextStyle}>
-                        {item.range ? item.range : `${item.minimum} - ${item.maximum}`}
+                        {item.range ? item.range : `${item.minimum || ''} - ${item.maximum || ''}`}
                       </Text>
                     </View>
                   </View>
