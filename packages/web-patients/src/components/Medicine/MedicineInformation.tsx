@@ -7,7 +7,7 @@ import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import axios, { Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -321,7 +321,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .catch((err) => alert({ err }));
   };
 
+  let cancelGetDeliveryTimeApi: Canceler | undefined;
+
   const fetchDeliveryTime = async () => {
+    const CancelToken = axios.CancelToken;
     await axios
       .post(
         apiDetails.deliveryUrl || '',
@@ -341,9 +344,31 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
-      .then((res: any) => setDeliveryTime(res.tat.deliveryDate))
+      .then((res: any) => {
+        try {
+          if (res && res.data) {
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              setDeliveryTime(res.data.tat[0].deliverydate);
+            } else if (typeof res.data === 'string') {
+              console.log(res.data);
+            } else if (typeof res.data.errorMSG === 'string') {
+              console.log(res.data.errorMSG);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })
       .catch((error: any) => alert(error));
   };
 
