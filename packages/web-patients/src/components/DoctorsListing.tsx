@@ -415,6 +415,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
                   }}
                   value={consultType}
                   key={_uniqueId('cbutton_')}
+                  title={consultName}
                 >
                   {consultName}
                 </AphButton>

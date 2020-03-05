@@ -288,13 +288,13 @@ export const LocationSearch: React.FC = (props) => {
         className={classes.locationWrap}
         ref={locationRef}
         onClick={() => setIsLocationPopoverOpen(true)}
-        title={selectedAddress || currentLocation}
+        title={selectedAddress}
       >
         <img
           className={`${classes.locationIcon} ${classes.iconDesktop}`}
           src={require('images/ic_location_on.svg')}
           alt=""
-          title={selectedAddress || currentLocation}
+          title={selectedAddress}
         />
         <span className={classes.selectedLocation}>
           {!isPopoverOpen && selectedAddress.length > 0
@@ -307,7 +307,7 @@ export const LocationSearch: React.FC = (props) => {
           className={`${classes.locationIcon} ${classes.iconMobile}`}
           src={require('images/ic_location_on.svg')}
           alt=""
-          title={currentLocation}
+          title={selectedAddress}
         />
       </div>
       <Popover

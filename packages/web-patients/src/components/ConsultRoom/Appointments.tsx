@@ -639,6 +639,7 @@ export const Appointments: React.FC = (props) => {
                 setIsConfirmedPopoverOpen(false);
                 history.push(clientRoutes.appointments());
               }}
+              title={'Close'}
             />
           )}
         />
