@@ -538,7 +538,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     appointmentDate: Date,
     appointmentType: string,
     doctorId: string,
-    doctorsDb: Connection
+    doctorsDb: Connection,
+    hospitalId: string
   ) {
     const checkActStart = `${appointmentDate.toDateString()} 18:30:00`;
     const checkActEnd = `${appointmentDate.toDateString()} 23:59:00`;
@@ -553,10 +554,22 @@ export class AppointmentRepository extends Repository<Appointment> {
     previousDate = addDays(actualDate, -1);
     const checkStart = `${previousDate.toDateString()} 18:30:00`;
     let weekDay = format(previousDate, 'EEEE').toUpperCase();
-    let timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
 
+    //let timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
+    let timeSlots: ConsultHours[];
+    if (appointmentType == APPOINTMENT_TYPE.ONLINE) {
+      timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
+    } else {
+      timeSlots = await consultHourRep.getPhysicalConsultHours(doctorId, weekDay, hospitalId);
+    }
     weekDay = format(actualDate, 'EEEE').toUpperCase();
-    const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+    //const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+    let timeSlotsNext;
+    if (appointmentType == APPOINTMENT_TYPE.ONLINE) {
+      timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
+    } else {
+      timeSlotsNext = await consultHourRep.getPhysicalConsultHours(doctorId, weekDay, hospitalId);
+    }
     if (timeSlots.length > 0) {
       prevDaySlots = 1;
     }
@@ -1250,6 +1263,17 @@ export class AppointmentRepository extends Repository<Appointment> {
         status3: STATUS.UNAVAILABLE_MEDMANTRA,
       })
       .getMany();
+  }
+
+  getAllCompletedAppointments(appointmentDate: Date) {
+    const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:29');
+    return this.find({
+      where: {
+        appointmentDateTime: Between(startDate, endDate),
+        status: STATUS.COMPLETED,
+      },
+    });
   }
 
   async checkPatientConsults(patientId: string, appointmentDateTime: Date) {

@@ -5,7 +5,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { PrescriptionFormat } from 'components/Cart/MedicineCart';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -132,13 +133,14 @@ const client = new AphStorageClient(
 );
 
 interface UploadPrescriptionProps {
-  setPrescriptionUrls: (prescription: PrescriptionFormat) => void;
   closeDialog: () => void;
   setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const classes = useStyles({});
+  const { setPrescriptionUploaded } = useShoppingCart();
+
   const [isUploading, setIsUploading] = useState(false);
 
   return (
@@ -189,10 +191,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                             });
                           if (aphBlob && aphBlob.name) {
                             const url = client.getBlobUrl(aphBlob.name);
-                            props.setPrescriptionUrls({
-                              imageUrl: url,
-                              name: aphBlob.name,
-                            });
+                            setPrescriptionUploaded &&
+                              setPrescriptionUploaded({
+                                imageUrl: url,
+                                name: aphBlob.name,
+                              });
+                            const currentUrl = window.location.href;
+                            if (currentUrl.endsWith('/medicines')) {
+                              window.location.href = clientRoutes.medicinesCart();
+                            }
                             props.closeDialog();
                           }
                         }

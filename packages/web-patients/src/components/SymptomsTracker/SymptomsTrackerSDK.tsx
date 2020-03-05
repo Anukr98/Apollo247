@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, MenuItem } from '@material-ui/core';
 import React from 'react';
 import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
@@ -11,6 +11,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { AphCustomDropdown } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -94,6 +95,65 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 0,
       },
     },
+    subHeader: {
+      position: 'relative',
+      zIndex: 9,
+      [theme.breakpoints.up(768)]: {
+        display: 'flex',
+      },
+    },
+    leftCol: {
+      display: 'none',
+      [theme.breakpoints.up(768)]: {
+        flex: '3 1 0%',
+        padding: '0 1rem',
+        display: 'block',
+      },
+    },
+    rightCol: {
+      [theme.breakpoints.up(768)]: {
+        flex: '7 1 0%',
+        padding: '0 1rem',
+        position: 'relative',
+      },
+    },
+    profileDropdown: {
+      fontSize: 14,
+      fontWeight: 500,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 20,
+      padding: '8px 0 8px 1rem',
+      [theme.breakpoints.down(767)]: {
+        left: 'auto',
+        position: 'fixed',
+        top: 78,
+      },
+    },
+    selectMenuItem: {
+      backgroundColor: 'transparent',
+      fontSize: 13,
+      color: '#02475b',
+      letterSpacing: 0.33,
+      textTransform: 'uppercase',
+      paddingTop: 7,
+      paddingBottom: 6,
+      paddingLeft: 4,
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+    menuRoot: {
+      fontSize: 13,
+      fontWeight: 500,
+      color: '#02475b',
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      color: '#00b38e',
+      fontWeight: 600,
+    },
   };
 });
 
@@ -104,7 +164,11 @@ const customContainerStyle = {
     paddingTop: 10,
   },
   search_button_wrapper: {
-    paddingTop: 20,
+    paddingTop: '1rem',
+    position: 'absolute',
+    right: 20,
+    top: 0,
+    zIndex: 9,
   },
   selected: {
     marginBottom: 0,
@@ -114,6 +178,16 @@ const customContainerStyle = {
   search_button: {
     margin: 0,
     textAlign: 'center',
+  },
+  sectB: {
+    paddingTop: 40,
+  },
+  inputWrapper: {
+    '& input': {
+      fontSize: 16,
+      fontWeight: 500,
+      fontFamily: 'IBM Plex Sans,sans-serif',
+    },
   },
 };
 
@@ -150,6 +224,24 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 : 'calc(100vh - 155px)'
             }
           >
+            <div className={classes.subHeader}>
+              <div className={classes.leftCol}></div>
+              <div className={classes.rightCol}>
+                <div className={classes.profileDropdown}>
+                  For
+                  <AphCustomDropdown classes={{ selectMenu: classes.selectMenuItem }}>
+                    <MenuItem
+                      classes={{
+                        root: classes.menuRoot,
+                        selected: classes.menuSelected,
+                      }}
+                    >
+                      Mallesh
+                    </MenuItem>
+                  </AphCustomDropdown>
+                </div>
+              </div>
+            </div>
             <div className={classes.symptomsTracker}>
               <NavigatorSDK
                 clientId="A6A375AF-A374-41F6-8EA5-C2E8B3239FAC"

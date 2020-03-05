@@ -37,7 +37,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
     },
     searchList: {
-      paddingBottom: 20,
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 14,
       },
@@ -48,36 +47,24 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       padding: 10,
       fontSize: 12,
-      marginTop: 5,
       fontWeight: 500,
       color: '#02475b',
-      textAlign: 'center',
+      alignItems: 'center',
+      textAlign: 'left',
       cursor: 'pointer',
-      minHeight: 88,
+      display: 'flex',
       [theme.breakpoints.down('xs')]: {
         fontSize: 14,
         marginTop: 0,
         padding: '14px 16px',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         minHeight: 'auto',
-        display: 'flex',
-        alignItems: 'center',
-        textAlign: 'left',
       },
     },
     bigAvatar: {
       width: 48,
       height: 48,
       marginRight: 15,
-      [theme.breakpoints.up('sm')]: {
-        width: 40,
-        height: 40,
-        margin: 'auto',
-        marginTop: -20,
-        marginBottom: 5,
-        padding: 8,
-        backgroundColor: '#dcdfcf',
-      },
       '& img': {
         verticalAlign: 'middle',
         height: 'auto',
@@ -93,9 +80,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     rightArrow: {
       marginLeft: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
     },
   });
 });
@@ -153,7 +137,7 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
         ) : null}
         <div className={classes.root}>
           <div className={classes.searchList}>
-            <Grid container spacing={2}>
+            <Grid container spacing={1}>
               {_map(filterSpecialites, (specialityDetails) => {
                 const specialityName = specialityDetails && specialityDetails.name;
                 const specialitySingular =
@@ -179,8 +163,6 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                         item
                         xs={12}
                         sm={6}
-                        md={4}
-                        lg={3}
                         title={title}
                         onClick={(e) => {
                           mutation();
