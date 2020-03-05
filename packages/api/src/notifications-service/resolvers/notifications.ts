@@ -604,7 +604,7 @@ export async function sendNotification(
       .replace('{1}', doctorDetails.firstName)
       .replace('{2}', appointment.id)
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
-
+    notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
