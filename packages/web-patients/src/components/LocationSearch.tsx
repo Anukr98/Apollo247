@@ -277,7 +277,6 @@ export const LocationSearch: React.FC = (props) => {
     }
     return 'No location';
   };
-
   return (
     <div className={classes.userLocation}>
       <Helmet>
@@ -301,8 +300,8 @@ export const LocationSearch: React.FC = (props) => {
           {!isPopoverOpen && selectedAddress.length > 0
             ? selectedAddress
             : !isPopoverOpen && currentLocation && currentLocation.length > 0
-              ? currentLocation
-              : getAddressFromLocalStorage()}
+            ? currentLocation
+            : getAddressFromLocalStorage()}
         </span>
         <img
           className={`${classes.locationIcon} ${classes.iconMobile}`}
@@ -335,11 +334,21 @@ export const LocationSearch: React.FC = (props) => {
         >
           {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => (
             <div className={classes.locationPopWrap}>
-              <label className={classes.inputLabel} title={"Current Location"}>Current Location</label>
+              <label className={classes.inputLabel} title={'Current Location'}>
+                Current Location
+              </label>
               <div className={classes.searchInput}>
-                <AphTextField type="search" placeholder="Search Places..." {...getInputProps()} title={"Search Places..."} />
+                <AphTextField
+                  type="search"
+                  placeholder="Search Places..."
+                  {...getInputProps()}
+                  onKeyDown={(e) => {
+                    e.key === 'Enter' && e.preventDefault();
+                  }}
+                  title={'Search Places...'}
+                />
                 <div className={classes.popLocationIcon}>
-                  <img src={require('images/ic-location.svg')} alt="" title={"Location"} />
+                  <img src={require('images/ic-location.svg')} alt="" title={'Location'} />
                 </div>
               </div>
               <div className={classes.locationAutoComplete}>
