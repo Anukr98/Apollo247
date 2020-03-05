@@ -146,6 +146,8 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   useEffect(() => {
     if (otpSubmitCount > 0) {
       if (otpSubmitCount === 3) {
+        localStorage.setItem('blockedNumber', mobileNumber);
+        localStorage.setItem('timerMiliSeconds', new Date().getTime().toString());
         setOtpStatusText(blockedMessage);
         setOtp([]);
         setShowTimer(true);
@@ -160,17 +162,46 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
           }
         }, 1000);
       }
+    } else if (localStorage.getItem('blockedNumber')) {
+      const leftSeconds: number =
+        (new Date().getTime() - Number(localStorage.getItem('timerMiliSeconds'))) / 1000;
+      if (leftSeconds < 900) {
+        setOtpStatusText(blockedMessage);
+        setOtp([]);
+        setShowTimer(true);
+        countDown.current = Math.floor(900 - leftSeconds);
+        const interval = setInterval(() => {
+          countDown.current--;
+          setTimer(countDown.current);
+          if (countDown.current === 0) {
+            clearInterval(interval);
+            setOtpSubmitCount(0);
+            setShowTimer(false);
+            countDown.current = 900;
+          }
+        }, 1000);
+      } else {
+        localStorage.setItem('blockedNumber', '');
+        localStorage.setItem('timerMiliSeconds', '');
+      }
     }
   }, [otpSubmitCount]);
 
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">
-        {verifyOtpError && otpSubmitCount === 3 ? 'oops!' : 'great'}
+        {(verifyOtpError && otpSubmitCount === 3) ||
+        localStorage.getItem('blockedNumber') == mobileNumber
+          ? 'oops!'
+          : 'great'}
       </Typography>
       <p>{otpStatusText}</p>
-      {verifyOtpError && otpSubmitCount === 3 ? (
-        <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
+      {(verifyOtpError && otpSubmitCount === 3) || localStorage.getItem('blockedNumber') ? (
+        <FormHelperText
+          component="div"
+          className={classes.helpText}
+          error={verifyOtpError || localStorage.getItem('blockedNumber') != ''}
+        >
           <div>
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&
