@@ -337,13 +337,42 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const getFormattedDate = (combinedData: any) => {
     switch (combinedData.type) {
       case 'medical':
-        return moment(combinedData.data.testDate).format('DD MMM YYYY');
+        return moment(new Date()).format('DD/MM/YYYY') ===
+          moment(new Date(combinedData.data.testDate)).format('DD/MM/YYYY') ? (
+          <span>Today , {moment(new Date(combinedData.data.testDate)).format('DD MMM YYYY')}</span>
+        ) : (
+          <span>{moment(new Date(combinedData.data.testDate)).format('DD MMM YYYY')}</span>
+        );
       case 'lab':
-        return moment(combinedData.data.labTestDate).format('DD MMM YYYY');
+        return moment(new Date()).format('DD/MM/YYYY') ===
+          moment(new Date(combinedData.data.labTestDate)).format('DD/MM/YYYY') ? (
+          <span>
+            Today , {moment(new Date(combinedData.data.labTestDate)).format('DD MMM YYYY')}
+          </span>
+        ) : (
+          <span>{moment(new Date(combinedData.data.labTestDate)).format('DD MMM YYYY')}</span>
+        );
       case 'hospital':
-        return moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY');
+        return moment(new Date()).format('DD/MM/YYYY') ===
+          moment(new Date(combinedData.data.dateOfHospitalization)).format('DD/MM/YYYY') ? (
+          <span>
+            Today ,{' '}
+            {moment(new Date(combinedData.data.dateOfHospitalization)).format('DD MMM YYYY')}
+          </span>
+        ) : (
+          <span>
+            {moment(new Date(combinedData.data.dateOfHospitalization)).format('DD MMM YYYY')}
+          </span>
+        );
       case 'health':
-        return moment(combinedData.data.appointmentDate).format('DD MMM YYYY');
+        return moment(new Date()).format('DD/MM/YYYY') ===
+          moment(new Date(combinedData.data.appointmentDate)).format('DD/MM/YYYY') ? (
+          <span>
+            Today , {moment(new Date(combinedData.data.appointmentDate)).format('DD MMM YYYY')}
+          </span>
+        ) : (
+          <span>{moment(new Date(combinedData.data.appointmentDate)).format('DD MMM YYYY')}</span>
+        );
       default:
         return '';
     }
@@ -368,7 +397,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     }
   };
 
-  const getSource = () => {
+  const getSource = (activeData: any) => {
     switch (activeData.type) {
       case 'medical':
         return !!activeData.data.sourceName ? activeData.data.sourceName : '-';
@@ -451,6 +480,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                   <MedicalCard
                     deleteReport={deleteReport}
                     name={getName(combinedData)}
+                    source={getSource(combinedData)}
                     id={combinedData.data.id}
                     isActiveCard={
                       activeData && activeData.data && activeData.data === combinedData.data
@@ -524,7 +554,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Source</label>
-                      <p>{getSource()}</p>
+                      <p>{getSource(activeData)}</p>
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Referring Doctor</label>
