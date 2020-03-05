@@ -90,7 +90,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
             >
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
-                <Typography variant="h5">{title}</Typography>
+                <Typography variant="h5" title={title}>{title}</Typography>
               </div>
             </Link>
           </Paper>
