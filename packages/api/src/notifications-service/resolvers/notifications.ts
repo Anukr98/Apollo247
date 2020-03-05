@@ -1744,7 +1744,7 @@ const sendDailyAppointmentSummary: Resolver<null, {}, NotificationsServiceContex
     sendNotificationSMS(doctor.mobileNumber, messageBody);
   });
 
-  return `Daily Appointment summaries have been sent to ${doctors.length} Doctors successfully`;
+  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', doctors.length.toString());
 };
 
 const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, string> = async (
@@ -1757,7 +1757,7 @@ const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, 
   const appointments = await appointmentRepo.getAllCompletedAppointments(previousDate);
   const count = await sendFollowUpSmsToPatients(appointments, patientsDb, doctorsDb, previousDate);
 
-  return `Follow up notifications sent to ${count} patients successfully`;
+  return ApiConstants.FOLLOW_UP_NOTIFICATION_RESPONSE.replace('{0}', count.toString());
 };
 
 const sendFollowUpSmsToPatients = async (
