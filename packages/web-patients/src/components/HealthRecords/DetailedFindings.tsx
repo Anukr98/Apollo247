@@ -112,6 +112,8 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
   const { data } = props.activeData;
 
+  console.log(data);
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -131,13 +133,11 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
               return (
                 <Grid item xs={12} sm={12}>
                   <div className={classes.cardTitle}>
-                    {detail.setParameter ? 'SUMMARY' : detail.parameterName}
+                    {detail.setParameterName ? detail.parameterName : 'SUMMARY'}
                   </div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
-                      {detail.setParameter ? (
-                        <div className={classes.result}>{detail.result}</div>
-                      ) : (
+                      {detail.setParameterName ? (
                         <>
                           <Grid item xs={6} sm={3}>
                             <div className={classes.resultGroup}>
@@ -162,6 +162,8 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                             </div>
                           </Grid>
                         </>
+                      ) : (
+                        <div className={classes.result}>{detail.result}</div>
                       )}
                     </Grid>
                   </div>
