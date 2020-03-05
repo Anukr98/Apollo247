@@ -485,13 +485,13 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <div className={classes.doctorName}>{fullName}</div>
             <div className={classes.specialits}>
               {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
-              <div className={classes.shareIcon}>
+              <div className={classes.shareIcon} title={'Share info'}>
                 <img src={require('images/ic-share-green.svg')} alt="" />
               </div>
             </div>
             <div className={classes.doctorInfoGroup}>
               <div className={classes.infoRow}>
-                <div className={classes.iconType}>
+                <div className={classes.iconType} title={'Education Details'}>
                   <img src={require('images/ic-edu.svg')} alt="" />
                 </div>
                 <div className={classes.details}>
@@ -503,7 +503,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                 </div>
               </div>
               <div className={classes.infoRow}>
-                <div className={classes.iconType}>
+                <div className={classes.iconType} title={'Awards'}>
                   <img src={require('images/ic-awards.svg')} alt="" />
                 </div>
                 <div className={classes.details}>
@@ -513,13 +513,13 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             </div>
             <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
               <div className={classes.infoRow}>
-                <div className={classes.iconType}>
+                <div className={classes.iconType} title={'Location'}>
                   <img src={require('images/ic-location.svg')} alt="" />
                 </div>
                 <div className={classes.details}>{hospitalLocation}</div>
               </div>
               <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                <div className={classes.iconType}>
+                <div className={classes.iconType} title={'Languages'}>
                   <img src={require('images/ic-language.svg')} alt="" />
                 </div>
                 <div className={classes.details}>{languages}</div>
@@ -565,6 +565,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             target="_blank"
             color="primary"
             className={classes.downloadLink}
+            title={'Download Apollo247 App'}
           >
             Download Apollo247 App
           </a>

@@ -267,7 +267,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
-              <Link to={clientRoutes.doctorsLanding()}>
+              <Link to={clientRoutes.doctorsLanding()} title={'Back to doctors search'}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -297,6 +297,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     onClick={(e) => setIsPopoverOpen(true)}
                     color="primary"
                     className={classes.bookAppointment}
+                    title={' Book Appointment'}
                   >
                     Book Appointment
                   </AphButton>
@@ -315,7 +316,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           </div>
         </div>
         <div className={classes.flotingBtn}>
-          <AphButton onClick={(e) => setIsPopoverOpen(true)} color="primary">
+          <AphButton
+            onClick={(e) => setIsPopoverOpen(true)}
+            color="primary"
+            title={' Book Appointment'}
+          >
             Book Appointment
           </AphButton>
         </div>
@@ -346,6 +351,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     selected: classes.tabSelected,
                   }}
                   label="Consult Online"
+                  title={'Consult Online'}
                 />
               )}
 
@@ -356,6 +362,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     selected: classes.tabSelected,
                   }}
                   label="Visit Clinic"
+                  title="Visit Clinic"
                 />
               )}
             </Tabs>

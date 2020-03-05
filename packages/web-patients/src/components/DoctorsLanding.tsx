@@ -350,7 +350,7 @@ export const DoctorsLanding: React.FC = (props) => {
             <Header />
             <div className={classes.container}>
               <div className={classes.doctorListingPage}>
-                <div className={classes.breadcrumbs}>
+                <div className={classes.breadcrumbs} title={'Back to home page'}>
                   <Link to={clientRoutes.welcome()}>
                     <div className={classes.backArrow}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />

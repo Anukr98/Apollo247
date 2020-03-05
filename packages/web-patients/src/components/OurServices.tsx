@@ -87,10 +87,13 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
                 protectWithLoginPopup();
                 if (isProtected) e.preventDefault();
               }}
+              title={title}
             >
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
-                <Typography variant="h5">{title}</Typography>
+                <Typography variant="h5" title={title}>
+                  {title}
+                </Typography>
               </div>
             </Link>
           </Paper>
