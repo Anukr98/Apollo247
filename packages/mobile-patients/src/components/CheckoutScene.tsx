@@ -33,6 +33,7 @@ import {
   aphConsole,
   g,
   handleGraphQlError,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -55,6 +56,7 @@ import {
   SaveMedicineOrderPaymentMqVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
 import moment from 'moment';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -193,11 +195,41 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
+    uploadPrescriptionRequired,
+    couponDiscount,
+    cartTotal,
+    addresses,
+    stores,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
   const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
+
+  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string) => {
+    const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+    const store = storeId && stores.find((item) => item.storeid == storeId);
+    const shippingInformation = addr
+      ? [addr.addressLine1, addr.addressLine2].filter((val) => val).join(', ')
+      : store
+      ? store.address
+      : '';
+    const eventAttributes: WebEngageEvents['Checkout completed'] = {
+      'Order ID': orderAutoId,
+      'Order Type': 'Cart',
+      'Prescription Required': uploadPrescriptionRequired,
+      'Prescription Added': true,
+      'Shipping information': shippingInformation, // (Home/Store address)
+      'Total items in cart': cartItems.length,
+      'Grand Total': cartTotal + deliveryCharges,
+      'Total Discount %': cartTotal,
+      'Discount Amount': couponDiscount,
+      'Delivery charge': deliveryCharges,
+      'Net after discount': grandTotal,
+      'Payment status': 0,
+    };
+    postWebEngageEvent('Checkout completed', eventAttributes);
+  };
 
   const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>
     client.mutate<SaveMedicineOrder, SaveMedicineOrderVariables>({
@@ -241,6 +273,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           });
         } else {
           // Order-Success, Show popup here & clear cart info
+          postwebEngageCheckoutCompletedEvent(`${orderAutoId}`);
+
           clearCartInfo && clearCartInfo();
           // setOrderInfo({
           //   orderId: orderId!,
@@ -318,6 +352,12 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
 
     console.log(JSON.stringify(orderInfo));
+
+    const eventAttributes: WebEngageEvents['Payment Initiated'] = {
+      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+      Amount: grandTotal,
+    };
+    postWebEngageEvent('Payment Initiated', eventAttributes);
 
     saveOrder(orderInfo)
       .then(({ data }) => {

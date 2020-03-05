@@ -4,6 +4,7 @@ import {
   getPackageData,
   getPlaceInfoByLatLng,
   GooglePlacesType,
+  MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -716,5 +717,28 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
 
 export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes: Object) => {
   // TODO: implementation
-  console.log({ eventName, attributes });
+  console.log('\n********* WebEngageEvent Start *********\n');
+  console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
+  console.log('\n********* WebEngageEvent End *********\n');
+};
+
+export const postwebEngageAddToCartEvent = ({
+  sku,
+  name,
+  category_id,
+  price,
+  special_price,
+}: MedicineProduct) => {
+  const eventAttributes: WebEngageEvents['Add to cart'] = {
+    'product name': name,
+    'product id': sku,
+    Brand: '',
+    'Brand ID': '',
+    'category name': '',
+    'category ID': category_id,
+    Price: price,
+    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+    Quantity: 1,
+  };
+  postWebEngageEvent('Add to cart', eventAttributes);
 };
