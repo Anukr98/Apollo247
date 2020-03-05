@@ -14,11 +14,11 @@ import { TransferAppointmentRepository } from 'consults-service/repositories/tra
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format, differenceInHours, differenceInMinutes } from 'date-fns';
+import { addMilliseconds, format, differenceInHours, differenceInMinutes, addDays } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
-import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { APPOINTMENT_TYPE, Appointment } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
 
@@ -66,6 +66,10 @@ export const getNotificationsTypeDefs = gql`
     orderAutoId: Int
   }
 
+  type SendChatMessageToDoctorResult {
+    status: Boolean
+  }
+
   extend type Query {
     sendPushNotification(
       pushNotificationInput: PushNotificationInput
@@ -73,11 +77,17 @@ export const getNotificationsTypeDefs = gql`
 
     testPushNotification(deviceToken: String): PushNotificationSuccessMessage
     sendDailyAppointmentSummary: String
+    sendFollowUpNotification: String
+    sendChatMessageToDoctor(appointmentId: String): SendChatMessageToDoctorResult
   }
 `;
 
 type PushNotificationMessage = {
   messageId: string;
+};
+
+type SendChatMessageToDoctorResult = {
+  status: boolean;
 };
 
 export type PushNotificationSuccessMessage = {
@@ -1734,9 +1744,87 @@ const sendDailyAppointmentSummary: Resolver<null, {}, NotificationsServiceContex
     sendNotificationSMS(doctor.mobileNumber, messageBody);
   });
 
-  return 'Daily Appointment summarys sent successfully';
+  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', doctors.length.toString());
+};
+
+const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, string> = async (
+  parent,
+  args,
+  { doctorsDb, consultsDb, patientsDb }
+) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const previousDate = new Date(addDays(new Date(), -4));
+  const appointments = await appointmentRepo.getAllCompletedAppointments(previousDate);
+  const count = await sendFollowUpSmsToPatients(appointments, patientsDb, doctorsDb, previousDate);
+
+  return ApiConstants.FOLLOW_UP_NOTIFICATION_RESPONSE.replace('{0}', count.toString());
+};
+
+const sendFollowUpSmsToPatients = async (
+  appointments: Appointment[],
+  patientsDb: Connection,
+  doctorsDb: Connection,
+  previousDate: Date
+) => {
+  return new Promise<Number>(async (resolve, reject) => {
+    let count = 0;
+    appointments.forEach(async (appointment, index, array) => {
+      if (!appointment.isFollowUp) {
+        const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+        const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+        const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+        const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+        if (patientDetails && doctorDetails) {
+          const followUpDate = format(addDays(previousDate, +7), 'yyyy-MM-dd');
+          const messageBody = ApiConstants.FOLLOWUP_NOTIFITICATION_TEXT.replace(
+            '{0}',
+            patientDetails.firstName
+          )
+            .replace('{1}', doctorDetails.firstName)
+            .replace('{2}', followUpDate);
+          count++;
+          sendNotificationSMS(patientDetails.mobileNumber, messageBody);
+        }
+      }
+      if (index + 1 === array.length) {
+        resolve(count);
+      }
+    });
+  });
+};
+
+const sendChatMessageToDoctor: Resolver<
+  null,
+  { appointmentId: string },
+  NotificationsServiceContext,
+  SendChatMessageToDoctorResult
+> = async (parent, args, { doctorsDb, consultsDb, patientsDb }) => {
+  if (!args.appointmentId)
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await appointmentRepo.findById(args.appointmentId);
+  if (!appointment) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
+    '{0}',
+    doctorDetails.firstName
+  ).replace('{1}', patientDetails.firstName);
+  await sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
+
+  return { status: true };
 };
 
 export const getNotificationsResolvers = {
-  Query: { sendPushNotification, testPushNotification, sendDailyAppointmentSummary },
+  Query: {
+    sendPushNotification,
+    testPushNotification,
+    sendDailyAppointmentSummary,
+    sendFollowUpNotification,
+    sendChatMessageToDoctor,
+  },
 };
