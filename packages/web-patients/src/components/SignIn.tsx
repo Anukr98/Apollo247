@@ -187,9 +187,9 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               setOtpStatusText(blockedMessage);
               setOtpExeedError(true);
               setOtp([]);
-              setShowTimer(true);
               countDown.current = Math.floor(900 - leftSeconds);
               const interval = setInterval(() => {
+                setShowTimer(true);
                 countDown.current--;
                 setTimer(countDown.current);
                 if (countDown.current === 0) {
