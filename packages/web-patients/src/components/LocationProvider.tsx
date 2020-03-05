@@ -83,7 +83,12 @@ export const LocationProvider: React.FC = (props) => {
         if (res && res.data && res.data.results[0]) {
           const { lat, lng } = res.data.results[0].geometry.location;
           const addrComponents =
-            (res && res.data && res.data.results && res.data.results[0].address_components) || [];
+            (res &&
+              res.data &&
+              res.data.results &&
+              res.data.results.length > 0 &&
+              res.data.results[0].address_components) ||
+            [];
           const _pincode = (
             addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
           ).long_name;
