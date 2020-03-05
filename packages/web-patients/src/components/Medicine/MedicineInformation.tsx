@@ -328,16 +328,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .post(
         apiDetails.deliveryUrl || '',
         {
-          params: {
-            postalcode: pinCode,
-            ordertype: 'pharma',
-            lookup: [
-              {
-                sku: params.sku,
-                qty: 1,
-              },
-            ],
-          },
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: params.sku,
+              qty: 1,
+            },
+          ],
         },
         {
           headers: {
