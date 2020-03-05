@@ -2,7 +2,12 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  BackArrow,
+  OkText,
+  OkTextDisabled,
+  Loader,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -44,6 +49,7 @@ import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
+import { ApolloLogo } from './ApolloLogo';
 
 const { height, width } = Dimensions.get('window');
 
@@ -80,7 +86,7 @@ const styles = StyleSheet.create({
     // letterSpacing: 28, // 26
     // paddingLeft: 12, // 25
   },
-  viewWebStyles: {
+  viewAbsoluteStyles: {
     position: 'absolute',
     width: width,
     height: height,
@@ -135,6 +141,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [errorpopup, setErrorpopup] = useState<boolean>(false);
   const [showResentTimer, setShowResentTimer] = useState<boolean>(false);
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
+  const [openFillerView, setOpenFillerView] = useState<boolean>(false);
 
   const {
     sendOtp,
@@ -154,6 +161,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const handleBack = async () => {
     setonClickOpen(false);
+    setOpenFillerView(false);
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
     return true;
   };
@@ -355,10 +363,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   _removeFromStore();
                   setOnOtpClick(true);
                   console.log('error', data.authToken);
+                  setshowSpinner(false);
+                  setOpenFillerView(true);
 
                   sendOtp(data.authToken)
                     .then(() => {
-                      // setshowSpinner(true);
                       getAuthToken();
                     })
                     .catch((e) => {
@@ -435,10 +444,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const getAuthToken = () => {
     getFirebaseToken &&
-      getFirebaseToken().then((token: any) => {
-        console.log('OTPVerificationToken', token);
-        getOTPPatientApiCall();
-      });
+      getFirebaseToken()
+        .then((token: any) => {
+          console.log('OTPVerificationToken', token);
+          getOTPPatientApiCall();
+        })
+        .catch(async (error) => {
+          setOpenFillerView(false);
+        });
   };
 
   const getOTPPatientApiCall = async () => {
@@ -454,6 +467,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       .catch(async (error) => {
         CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
         console.log('getOTPPatientApiCallerror', error);
+        setOpenFillerView(false);
       });
   };
 
@@ -462,20 +476,24 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       data.data.getPatientByMobileNumber && data.data.getPatientByMobileNumber.patients;
     console.log('dataFetchFromMobileNumber', data);
     if (profileData && profileData.length === 0) {
-      getPatientByPrism().then((data: any) => {
-        const allPatients =
-          data && data.data && data.data.getCurrentPatients
-            ? data.data.getCurrentPatients.patients
+      getPatientByPrism()
+        .then((data: any) => {
+          const allPatients =
+            data && data.data && data.data.getCurrentPatients
+              ? data.data.getCurrentPatients.patients
+              : null;
+
+          const mePatient = allPatients
+            ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
             : null;
+          // setMobileAPICalled && setMobileAPICalled(true);
+          // setAllPatients(allPatients);
 
-        const mePatient = allPatients
-          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-          : null;
-        // setMobileAPICalled && setMobileAPICalled(true);
-        // setAllPatients(allPatients);
-
-        moveScreenForward(mePatient);
-      });
+          moveScreenForward(mePatient);
+        })
+        .catch(async (error) => {
+          setOpenFillerView(false);
+        });
     } else {
       const mePatient = profileData
         ? profileData.find((patient: any) => patient.relation === Relation.ME) || profileData[0]
@@ -489,6 +507,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
+    setOpenFillerView(false);
 
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
@@ -621,7 +640,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
     return (
-      <View style={styles.viewWebStyles}>
+      <View style={styles.viewAbsoluteStyles}>
         <Header
           title={'Terms & Conditions'}
           leftIcon="close"
@@ -698,6 +717,48 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       </View>
     );
   };
+
+  const fillerView = () => {
+    return (
+      <View style={styles.viewAbsoluteStyles}>
+        <View
+          style={{
+            flex: 1,
+            overflow: 'hidden',
+            backgroundColor: 'white',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ApolloLogo />
+          <Loader style={{ marginTop: 12, height: 26, width: 76 }} />
+          <Text
+            style={{
+              marginTop: 22,
+              color: '#02475b',
+              ...theme.fonts.IBMPlexSansBold(17),
+              lineHeight: 24,
+              textAlign: 'center',
+            }}
+          >
+            Please Wait!
+          </Text>
+          <Text
+            style={{
+              marginTop: 4,
+              color: '#02475b',
+              ...theme.fonts.IBMPlexSansRegular(17),
+              lineHeight: 24,
+              textAlign: 'center',
+            }}
+          >
+            {`While we're fetching\nyour details`}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   // const renderTime = () => {
   //   console.log(remainingTime, 'remainingTime', timer, 'timer');
 
@@ -881,6 +942,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </Card>
         )}
         {onClickOpen && openWebView()}
+        {openFillerView && fillerView()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}

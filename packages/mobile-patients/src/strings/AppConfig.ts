@@ -131,8 +131,8 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.531',
-  Android_Version: '1.531',
+  iOS_Version: '1.611',
+  Android_Version: '1.611',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -163,8 +163,8 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.53',
-  Android_Version: '1.53',
+  iOS_Version: '1.61',
+  Android_Version: '1.61',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
