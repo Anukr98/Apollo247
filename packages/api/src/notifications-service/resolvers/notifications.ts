@@ -124,6 +124,7 @@ export enum NotificationType {
   PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
   PATIENT_NO_SHOW = 'PATIENT_NO_SHOW',
   ACCEPT_RESCHEDULED_APPOINTMENT = 'ACCEPT_RESCHEDULED_APPOINTMENT',
+  PRESCRIPTION_READY = 'PRESCRIPTION_READY',
 }
 
 export enum APPT_CALL_TYPE {
@@ -597,6 +598,14 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;*/
 
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
+    notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
+    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
+      .replace('{1}', doctorDetails.firstName)
+      .replace('{2}', appointment.id)
+      .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
+
+    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
   }
 
   //initialize firebaseadmin
@@ -680,6 +689,24 @@ export async function sendNotification(
       },
       data: {
         type: 'Patient_Cancel_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: NotificationType.PRESCRIPTION_READY,
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
