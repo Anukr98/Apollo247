@@ -115,7 +115,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
   const noOfAttemptsLeft = maxAllowedAttempts - otpSubmitCount;
-
+  const [otpExeedError, setOtpExeedError] = useState(false);
   const {
     isSendingOtp,
     verifyOtp,
@@ -146,8 +146,21 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   useEffect(() => {
     if (otpSubmitCount > 0) {
       if (otpSubmitCount === 3) {
-        localStorage.setItem('blockedNumber', mobileNumber);
-        localStorage.setItem('timerMiliSeconds', new Date().getTime().toString());
+        setOtpExeedError(true);
+        const obj = {
+          mobileNumber: mobileNumber,
+          timerMiliSeconds: new Date().getTime(),
+        };
+        const getData = localStorage.getItem('timeOutData');
+        if (getData) {
+          const timeOutData = JSON.parse(getData);
+          timeOutData.push(obj);
+          localStorage.setItem('timeOutData', JSON.stringify(timeOutData));
+        } else {
+          const timeOutData = [];
+          timeOutData.push(obj);
+          localStorage.setItem('timeOutData', JSON.stringify(timeOutData));
+        }
         setOtpStatusText(blockedMessage);
         setOtp([]);
         setShowTimer(true);
@@ -162,27 +175,36 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
           }
         }, 1000);
       }
-    } else if (localStorage.getItem('blockedNumber')) {
-      const leftSeconds: number =
-        (new Date().getTime() - Number(localStorage.getItem('timerMiliSeconds'))) / 1000;
-      if (leftSeconds < 900) {
-        setOtpStatusText(blockedMessage);
-        setOtp([]);
-        setShowTimer(true);
-        countDown.current = Math.floor(900 - leftSeconds);
-        const interval = setInterval(() => {
-          countDown.current--;
-          setTimer(countDown.current);
-          if (countDown.current === 0) {
-            clearInterval(interval);
-            setOtpSubmitCount(0);
-            setShowTimer(false);
-            countDown.current = 900;
+    } else if (localStorage.getItem('timeOutData')) {
+      const getData = localStorage.getItem('timeOutData');
+      if (getData) {
+        const timeOutData = JSON.parse(getData);
+        timeOutData.map((item: any) => {
+          if (item.mobileNumber == mobileNumber) {
+            const leftSeconds: number =
+              (new Date().getTime() - Number(item.timerMiliSeconds)) / 1000;
+            if (leftSeconds < 900) {
+              setOtpStatusText(blockedMessage);
+              setOtpExeedError(true);
+              setOtp([]);
+              setShowTimer(true);
+              countDown.current = Math.floor(900 - leftSeconds);
+              const interval = setInterval(() => {
+                countDown.current--;
+                setTimer(countDown.current);
+                if (countDown.current === 0) {
+                  clearInterval(interval);
+                  setOtpSubmitCount(0);
+                  setShowTimer(false);
+                  countDown.current = 900;
+                }
+              }, 1000);
+            } else {
+              localStorage.setItem('timeOutData', '');
+              setOtpExeedError(false);
+            }
           }
-        }, 1000);
-      } else {
-        localStorage.setItem('blockedNumber', '');
-        localStorage.setItem('timerMiliSeconds', '');
+        });
       }
     }
   }, [otpSubmitCount]);
@@ -190,17 +212,14 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">
-        {(verifyOtpError && otpSubmitCount === 3) ||
-        localStorage.getItem('blockedNumber') == mobileNumber
-          ? 'oops!'
-          : 'great'}
+        {(verifyOtpError && otpSubmitCount === 3) || otpExeedError ? 'oops!' : 'great'}
       </Typography>
       <p>{otpStatusText}</p>
-      {(verifyOtpError && otpSubmitCount === 3) || localStorage.getItem('blockedNumber') ? (
+      {(verifyOtpError && otpSubmitCount === 3) || otpExeedError ? (
         <FormHelperText
           component="div"
           className={classes.helpText}
-          error={verifyOtpError || localStorage.getItem('blockedNumber') != ''}
+          error={verifyOtpError || otpExeedError}
         >
           <div>
             {!(isSigningIn || isVerifyingOtp) &&
