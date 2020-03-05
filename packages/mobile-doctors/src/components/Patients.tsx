@@ -23,14 +23,22 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { styles } from '@aph/mobile-doctors/src/components/Patients.styles';
+import PatientsStyles from '@aph/mobile-doctors/src/components/Patients.styles';
 
+const styles = PatientsStyles;
 export interface PatientsProps extends NavigationScreenProps {}
 
 export const Patients: React.FC<PatientsProps> = (props) => {
@@ -68,9 +76,9 @@ export const Patients: React.FC<PatientsProps> = (props) => {
   );
   const [offset, setoffset] = useState<number>(0);
   const [totalResultCount, settotalResultCount] = useState<number>();
-  const [flatListReady, setflatListReady] = useState<boolean>(false);
 
   const [SelectableValue, setSelectableValue] = useState(patientLogType.All);
+  // const [patientLogSortData, setPatientLogSortData] = useState(patientLogSort.PATIENT_NAME_A_TO_Z);
   const [showNeedHelp, setshowNeedHelp] = useState(false);
 
   const client = useApolloClient();
@@ -99,9 +107,6 @@ export const Patients: React.FC<PatientsProps> = (props) => {
         ]}
       />
     );
-  };
-  const _scrolled = () => {
-    setflatListReady(true);
   };
 
   const renderTabs = () => {
@@ -187,6 +192,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
     patientLogSortData: patientLogSort,
     offset = 0
   ) => {
+    console.log('patientLogSortData', patientLogSortData, SelectableValue, offset);
     if (offset !== totalResultCount) {
       !offset && setshowSpinner(true);
       offset && setloadMoreSpinner(true);
@@ -242,7 +248,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             moment(new Date(item.appointmentdatetime))
               .add(6, 'days')
               .startOf('day')
-              .isSameOrAfter(moment(new Date()).startOf('day')) && (
+              .isSameOrAfter(moment(new Date()).startOf('day')) ? (
               <View style={{ marginRight: 12 }}>
                 <TouchableOpacity
                   activeOpacity={1}
@@ -267,7 +273,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                   <Chat />
                 </TouchableOpacity>
               </View>
-            )
+            ) : null
           }
           consults={item.consultscount}
           lastconsult={moment(item.appointmentdatetime).format('DD/MM/YYYY')}
@@ -287,16 +293,24 @@ export const Patients: React.FC<PatientsProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={[theme.viewStyles.container]}>
+        {/* <ScrollView
+          bounces={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          stickyHeaderIndices={[1]}
+        > */}
+
+        {/* <View style={{ paddingTop: 14 }}> */}
+
         <FlatList
-          onScroll={_scrolled}
           contentContainerStyle={{ paddingBottom: 20 }}
           removeClippedSubviews={false}
           bounces={false}
           data={allData}
           onEndReachedThreshold={0.5}
           onEndReached={(info) => {
-            console.log('onEndReached', info, flatListReady, 'flatListReady');
-            flatListReady && ShowAllTypeData(SelectableValue, selectedSorting, offset);
+            console.log('onEndReached', info);
+            ShowAllTypeData(SelectableValue, selectedSorting, offset);
           }}
           stickyHeaderIndices={[0]}
           renderItem={({ item, index }) => renderItemComponent(item, index)}
@@ -336,8 +350,14 @@ export const Patients: React.FC<PatientsProps> = (props) => {
               </View>
             ) : null
           }
+          // numColumns={1}
+          // keyboardShouldPersistTaps="always"
+          // keyboardDismissMode="on-drag"
         />
+        {/* </View> */}
+        {/* </ScrollView> */}
       </SafeAreaView>
+
       {showSorting && (
         <View style={styles.showPopUp}>
           <TouchableOpacity

@@ -74,40 +74,26 @@ const sendApptReminderNotification: Resolver<
       const pushNotificationInput = {
         appointmentId: appt.id,
         notificationType: NotificationType.APPOINTMENT_REMINDER_15,
-        doctorNotification: true,
       };
-      if (args.inNextMin != 1) {
-        if (appt.caseSheet.length > 0) {
-          if (
-            appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
-            appt.caseSheet[0].doctorType == 'JUNIOR'
-          ) {
-            pushNotificationInput.notificationType =
-              NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL;
-          } else if (
-            appt.caseSheet[0].status == CASESHEET_STATUS.COMPLETED &&
-            appt.caseSheet[0].doctorType == DOCTOR_CALL_TYPE.JUNIOR.toString() &&
-            args.inNextMin == 15
-          ) {
-            pushNotificationInput.notificationType = NotificationType.VIRTUAL_REMINDER_15;
-          }
-        }
-        if (appt.caseSheet.length == 0) {
+      if (appt.caseSheet.length > 0) {
+        if (
+          appt.caseSheet[0].status == CASESHEET_STATUS.PENDING &&
+          appt.caseSheet[0].doctorType == 'JUNIOR'
+        ) {
           pushNotificationInput.notificationType =
-            NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL;
-        }
-        if (args.inNextMin == 5) {
-          pushNotificationInput.doctorNotification = false;
+            NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
         }
       }
-      if (
-        !(
-          args.inNextMin == 5 &&
-          pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15
-        )
-      ) {
-        sendReminderNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
+      if (appt.caseSheet.length == 0) {
+        pushNotificationInput.notificationType = NotificationType.APPOINTMENT_CASESHEET_REMINDER_15;
       }
+      const notificationResult = sendReminderNotification(
+        pushNotificationInput,
+        patientsDb,
+        consultsDb,
+        doctorsDb
+      );
+      console.log(notificationResult, 'appt notification');
     });
   }
 

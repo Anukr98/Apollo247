@@ -42,12 +42,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   }, [doctorDetails, getDoctorDetailsApi]);
 
   const arrayData = [
-    // {
-    //   label: strings.account.my_stats,
-    //   navigation: AppRoutes.MyStats,
-    //   icon: <SmartPrescription />,
-    //   navigationParams: {},
-    // },
+    {
+      label: strings.account.my_stats,
+      navigation: AppRoutes.MyStats,
+      icon: <SmartPrescription />,
+      navigationParams: {},
+    },
     {
       label: strings.account.my_profile,
       navigation: AppRoutes.MyAccountProfile,

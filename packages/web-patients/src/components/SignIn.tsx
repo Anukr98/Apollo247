@@ -115,7 +115,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
   const noOfAttemptsLeft = maxAllowedAttempts - otpSubmitCount;
-  const [otpExeedError, setOtpExeedError] = useState(false);
+
   const {
     isSendingOtp,
     verifyOtp,
@@ -146,21 +146,6 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   useEffect(() => {
     if (otpSubmitCount > 0) {
       if (otpSubmitCount === 3) {
-        setOtpExeedError(true);
-        const obj = {
-          mobileNumber: mobileNumber,
-          timerMiliSeconds: new Date().getTime(),
-        };
-        const getData = localStorage.getItem('timeOutData');
-        if (getData) {
-          const timeOutData = JSON.parse(getData);
-          timeOutData.push(obj);
-          localStorage.setItem('timeOutData', JSON.stringify(timeOutData));
-        } else {
-          const timeOutData = [];
-          timeOutData.push(obj);
-          localStorage.setItem('timeOutData', JSON.stringify(timeOutData));
-        }
         setOtpStatusText(blockedMessage);
         setOtp([]);
         setShowTimer(true);
@@ -175,52 +160,17 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
           }
         }, 1000);
       }
-    } else if (localStorage.getItem('timeOutData')) {
-      const getData = localStorage.getItem('timeOutData');
-      if (getData) {
-        const timeOutData = JSON.parse(getData);
-        timeOutData.map((item: any) => {
-          if (item.mobileNumber == mobileNumber) {
-            const leftSeconds: number =
-              (new Date().getTime() - Number(item.timerMiliSeconds)) / 1000;
-            if (leftSeconds < 900) {
-              setOtpStatusText(blockedMessage);
-              setOtpExeedError(true);
-              setOtp([]);
-              countDown.current = Math.floor(900 - leftSeconds);
-              const interval = setInterval(() => {
-                setShowTimer(true);
-                countDown.current--;
-                setTimer(countDown.current);
-                if (countDown.current === 0) {
-                  clearInterval(interval);
-                  setOtpSubmitCount(0);
-                  setShowTimer(false);
-                  countDown.current = 900;
-                }
-              }, 1000);
-            } else {
-              localStorage.setItem('timeOutData', '');
-              setOtpExeedError(false);
-            }
-          }
-        });
-      }
     }
   }, [otpSubmitCount]);
 
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
       <Typography variant="h2">
-        {(verifyOtpError && otpSubmitCount === 3) || otpExeedError ? 'oops!' : 'great'}
+        {verifyOtpError && otpSubmitCount === 3 ? 'oops!' : 'great'}
       </Typography>
       <p>{otpStatusText}</p>
-      {(verifyOtpError && otpSubmitCount === 3) || otpExeedError ? (
-        <FormHelperText
-          component="div"
-          className={classes.helpText}
-          error={verifyOtpError || otpExeedError}
-        >
+      {verifyOtpError && otpSubmitCount === 3 ? (
+        <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
           <div>
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&

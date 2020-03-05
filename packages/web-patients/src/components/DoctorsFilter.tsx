@@ -438,7 +438,6 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                   onClick={(e) => {
                     setDateSelected('');
                     !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
-                    setAvailability([]);
                   }}
                 >
                   <img

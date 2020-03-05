@@ -110,7 +110,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
 
   const GetSearchDiagnostics = (search_value: string) => {
     console.log(search_value);
-    if (search_value.length > 2) {
+    if (search_value.length >= 1) {
       setLoading(true);
       client
         .query<searchDiagnostic, searchDiagnosticVariables>({
@@ -134,7 +134,6 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
         });
     } else {
       settestsSearchList([]);
-      setisSearchTestListVisible(false);
     }
   };
   return (
@@ -143,6 +142,10 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
         paddingVertical: 0,
       }}
       onClose={() => {
+        // setIsTest(false);
+        // setsearchTestVal('');
+        // settestsSearchList([]);
+        // settempTestArray([]);
         props.onClose();
       }}
       isVisible={true}
@@ -239,7 +242,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                 <View style={styles.doneButtonStyle}>
                   <Button
                     title={strings.buttons.done}
-                    disabled={searchTestVal ? false : !tempTestArray.length}
+                    disabled={!searchTestVal || !tempTestArray}
                     onPress={() => {
                       props.onPressDone(searchTestVal, tempTestArray);
                       //   settestsSearchList([]);

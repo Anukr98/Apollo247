@@ -49,10 +49,11 @@ const monthsName = [
   'December',
 ];
 
+const todayDate = new Date();
 export interface AppointmentsProps extends NavigationScreenProps {
   profileData: DoctorProfile;
 }
-const intervalTime = 30 * 1000;
+
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [doctorName, setDoctorName] = useState<string>(
     (props.navigation.state.params && props.navigation.state.params.Firstname) || ''
@@ -71,6 +72,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     GetDoctorAppointments_getDoctorAppointments
   >();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
+  const recordsDate = moment(date).format('YYYY-MM-DD');
 
   const { doctorDetails } = useAuth();
 
@@ -94,18 +97,16 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     getAppointmentsApi();
     timerId = setInterval(() => {
       getAppointmentsApi();
-    }, intervalTime);
+    }, 30 * 1000);
     const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
       console.log('didFocus');
       getAppointmentsApi();
-      timerId && clearInterval(timerId);
       timerId = setInterval(() => {
         getAppointmentsApi();
-      }, intervalTime);
+      }, 30 * 1000);
     });
 
     const _willBlurSubscription = props.navigation.addListener('willBlur', () => {
-      console.log('willBlur');
       timerId && clearInterval(timerId);
     });
     return () => {
@@ -113,26 +114,53 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       _willBlurSubscription && _willBlurSubscription.remove();
       timerId && clearInterval(timerId);
     };
-  }, [date]);
+  }, []);
+  console.log(date, 'date111111111');
 
+  // const pollInterval =
+  //   moment(date).format('YYYY-MM-DD') === moment(todayDate).format('YYYY-MM-DD')
+  //     ? 30 * 1000
+  //     : undefined;
+  // console.log(pollInterval, 'pollInterval', date);
+
+  // const { data, loading } = useQuery<GetDoctorAppointments, GetDoctorAppointmentsVariables>(
+  //   GET_DOCTOR_APPOINTMENTS,
+  //   {
+  //     variables: {
+  //       startDate: recordsDate,
+  //       endDate: recordsDate, //'2019-09-13',
+  //     },
+  //     fetchPolicy: 'no-cache',
+  //     pollInterval: 30 * 1000,
+  //     notifyOnNetworkStatusChange: true,
+  //     // onCompleted: () => console.log('called'),
+  //   }
+  // );
+
+  // const getAppointments = data && data.getDoctorAppointments;
+  // let getAppointments: GetDoctorAppointments_getDoctorAppointments | null;
+
+  // console.log('getAppointments', getAppointments);
   const client = useApolloClient();
 
-  const getAppointmentsApi = (selectedDate = date) => {
-    const recordsDate = moment(selectedDate).format('YYYY-MM-DD');
-
+  const getAppointmentsApi = () => {
     setshowSpinner(true);
     client
       .query<GetDoctorAppointments, GetDoctorAppointmentsVariables>({
         query: GET_DOCTOR_APPOINTMENTS,
         variables: {
           startDate: recordsDate,
-          endDate: recordsDate,
+          endDate: recordsDate, //'2019-09-13',
         },
         fetchPolicy: 'no-cache',
+        // pollInterval: 10 * 1000,
+        // moment(date).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+        //   ? 30 * 1000
+        //   : undefined,
       })
       .then(({ data }) => {
         // getAppointments = data && data.getDoctorAppointments;
-        console.log('getAppointmentsApi', data, recordsDate);
+        console.log('getAppointmentsApi', data);
         data && data.getDoctorAppointments && setgetAppointments(data.getDoctorAppointments);
       })
       .finally(() => {
@@ -174,11 +202,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             setCalendarDate(new Date(day.dateString));
             setCurrentMonth(monthsName[moment(day.timestamp).get('month')]);
             setCalendarVisible(false);
-            // getAppointmentsApi(new Date(day.dateString));
           }}
           onVisibleMonthsChange={(months) => {
             setCurrentMonth(monthsName[months[0].month - 1]);
           }}
+          // hideArrows={false}
           hideExtraDays={false}
           disableMonthChange={false}
           firstDay={1}
@@ -186,19 +214,15 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           showWeekNumbers={false}
           onPressArrowLeft={(substractMonth) => substractMonth()}
           onPressArrowRight={(addMonth) => addMonth()}
-          markedDates={{
-            [moment(calendarDate).format('YYYY-MM-DD')]: {
-              selected: true,
-              color: theme.colors.APP_GREEN,
-            },
-          }}
+          // markingType={'custom'}
+          // markedDates={mark}
           theme={{
             backgroundColor: '#ffffff',
             calendarBackground: '#ffffff',
             textSectionTitleColor: '#80a3ad',
             selectedDayBackgroundColor: '#00b38e',
             selectedDayTextColor: '#ffffff',
-            todayTextColor: '#00b38e',
+            todayTextColor: '#000000',
             dayTextColor: '#00b38e',
             textDisabledColor: '#d9e1e8',
             dotColor: '#00adf5',
@@ -288,11 +312,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
           {
             icon: <CalendarTodayIcon />,
             onPress: () => {
-              const today = new Date();
-              setDate(today);
-              setCalendarDate(today);
-              setCurrentMonth(monthsName[today.getMonth()]);
-              // getAppointmentsApi(today);
+              setDate(new Date());
+              setCurrentMonth(monthsName[new Date().getMonth()]);
             },
           },
           {
@@ -357,6 +378,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     <SafeAreaView style={[theme.viewStyles.container]}>
       {renderMainHeader()}
       <View style={{ marginBottom: 0 }}>{renderDoctorGreeting()}</View>
+
       <View>
         {renderHeader()}
         <View style={{ flex: 1 }}>{isCalendarVisible ? renderCalenderView() : null}</View>
@@ -372,7 +394,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
               setDate(date);
               setCalendarDate(date);
               setCurrentMonth(monthsName[moment(date).get('month')]);
-              // getAppointmentsApi(date);
             }}
             onWeekChanged={(date) => {
               setCalendarDate(moment(date).toDate());

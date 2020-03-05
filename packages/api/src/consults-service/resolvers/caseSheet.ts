@@ -46,9 +46,7 @@ import { differenceInSeconds } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import {
   sendNotificationSMS,
-  sendNotification,
   sendBrowserNotitication,
-  NotificationType,
 } from 'notifications-service/resolvers/notifications';
 
 export type DiagnosisJson = {
@@ -963,11 +961,6 @@ const updatePatientPrescriptionSentStatus: Resolver<
       patientData,
       patientsDb
     );
-    const pushNotificationInput = {
-      appointmentId: getCaseSheetData.appointment.id,
-      notificationType: NotificationType.PRESCRIPTION_READY,
-    };
-    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
 
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,

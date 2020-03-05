@@ -277,6 +277,7 @@ export const LocationSearch: React.FC = (props) => {
     }
     return 'No location';
   };
+
   return (
     <div className={classes.userLocation}>
       <Helmet>
@@ -333,14 +334,7 @@ export const LocationSearch: React.FC = (props) => {
             <div className={classes.locationPopWrap}>
               <label className={classes.inputLabel}>Current Location</label>
               <div className={classes.searchInput}>
-                <AphTextField
-                  type="search"
-                  placeholder="Search Places..."
-                  {...getInputProps()}
-                  onKeyDown={(e) => {
-                    e.key === 'Enter' && e.preventDefault();
-                  }}
-                />
+                <AphTextField type="search" placeholder="Search Places..." {...getInputProps()} />
                 <div className={classes.popLocationIcon}>
                   <img src={require('images/ic-location.svg')} alt="" />
                 </div>

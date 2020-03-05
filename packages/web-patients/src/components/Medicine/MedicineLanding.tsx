@@ -19,8 +19,9 @@ import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { PrescriptionFormat } from 'components/Cart/MedicineCart';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -297,7 +298,20 @@ const useStyles = makeStyles((theme: Theme) => {
 export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
-  const { currentPatient } = useAllCurrentPatients();
+  const defPresObject = {
+    name: '',
+    imageUrl: '',
+  };
+  const {
+    phrPrescriptionData,
+    setPhrPrescriptionData,
+    prescriptions,
+    setPrescriptions,
+    medicineOrderData,
+    setMedicineOrderData,
+    setPrescriptionUploaded,
+    prescriptionUploaded,
+  } = useShoppingCart();
   const params = useParams<{ orderAutoId: string; orderStatus: string }>();
   if (params.orderStatus === 'success') {
     localStorage.removeItem('cartItems');
@@ -373,9 +387,7 @@ export const MedicineLanding: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
-            <div className={classes.userName}>
-              hi {currentPatient ? currentPatient.firstName : 'User'} :)
-            </div>
+            <div className={classes.userName}>hi surj :)</div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
                 <MedicineAutoSearch />

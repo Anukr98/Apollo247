@@ -169,13 +169,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
 
           <View></View>
           <View style={{ marginTop: 20 }}>
-            <Button
-              title="DOWNLOAD STATEMENT"
-              style={{ backgroundColor: '#fc9916' }}
-              onPress={() => {
-                setVisibleDownloadStatement(false);
-              }}
-            ></Button>
+            <Button title="DOWNLOAD STATEMENT" style={{ backgroundColor: '#fc9916' }}></Button>
           </View>
         </View>
       </AphOverlay>
