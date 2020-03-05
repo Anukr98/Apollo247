@@ -26,9 +26,9 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down(900)]: {
           display: 'none',
         },
-        // '&:nth-child(3)': {
-        //   display: 'none',
-        // },
+        '&:nth-child(3)': {
+          display: 'none',
+        },
       },
     },
     menuItemActive: {
