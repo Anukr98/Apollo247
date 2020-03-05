@@ -1,3 +1,4 @@
+import SmartPrescriptionStyles from '@aph/mobile-doctors/src/components/Account/SmartPrescription.styles';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp';
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
@@ -54,6 +55,7 @@ import {
   SaveDoctorsFavouriteMedicine,
   SaveDoctorsFavouriteMedicineVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SaveDoctorsFavouriteMedicine';
+import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
 import {
   UpdateDoctorFavouriteAdvice,
   UpdateDoctorFavouriteAdviceVariables,
@@ -72,10 +74,8 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Alert, SafeAreaView, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
-import SmartPrescriptionStyles from '@aph/mobile-doctors/src/components/Account/SmartPrescription.styles';
 
 const styles = SmartPrescriptionStyles;
 
@@ -218,7 +218,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     //   .map((ele) => ele.itemname)
     //   .filter((i) => i !== '')
     //   .join(',');
-    const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
+    const AddingTest = tempTestArray!.map((ele: object) => ele).join(',');
     console.log('AddingTest---', AddingTest);
 
     setLoading(true);
@@ -240,7 +240,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setEditTestId('');
       })
       .catch((error) => {
-        CommonBugFender('Update_Doctor_Favourite_Test_SmartPrescription', e);
+        CommonBugFender('Update_Doctor_Favourite_Test_SmartPrescription', error);
         console.log(error);
         setLoading(false);
         setEditTestId('');
@@ -482,10 +482,10 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
         setIsAddMedicine(false);
       })
-      .catch((e: string) => {
+      .catch((error) => {
         setLoading(false);
-        CommonBugFender('Save_Doctor_Favourite_Medicine_SmartPrescription', e);
-        console.log(e);
+        CommonBugFender('Save_Doctor_Favourite_Medicine_SmartPrescription', error);
+        console.log(error);
         Alert.alert(strings.common.error, strings.smartPrescr.add_med_error);
 
         setIsAddMedicine(false);
@@ -510,10 +510,10 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         console.log('Updated...:', resp);
         GetFavouriteMedicineList();
       })
-      .catch((e: string) => {
+      .catch((error) => {
         setLoading(false);
-        CommonBugFender('Update_Doctor_Favourite_Medicine_SmartPrescription', e);
-        console.log(e);
+        CommonBugFender('Update_Doctor_Favourite_Medicine_SmartPrescription', error);
+        console.log(error);
         Alert.alert(strings.common.error, strings.smartPrescr.update_med_error);
       });
   };
@@ -545,41 +545,37 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     //   .map((ele) => ele.itemname)
     //   .filter((i) => i !== '')
     //   .join(',');
-    const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
+    const AddingTest = tempTestArray!.map((ele: object) => ele).join(',');
     console.log('AddingTest---', AddingTest);
 
-    if (searchTestVal != '') {
-      setLoading(true);
-      client
-        .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
-          mutation: ADD_DOCTOR_FAVOURITE_TEST,
-          variables: {
-            itemname: AddingTest
-              ? AddingTest.replace(/\s+/g, ' ')
-              : searchTestVal.replace(/\s+/g, ' '),
-          },
-        })
-        .then((_data) => {
-          setLoading(false);
-          console.log('Added Favourite test', _data.data!.addDoctorFavouriteTest);
-          GetFavouriteTestList();
-          setisSearchTestListVisible(!isSearchTestListVisible);
-          setIsTest(!isTest);
-        })
-        .catch((e) => {
-          setLoading(false);
-          CommonBugFender('Add_Doctor_Favourite_Test_SmartPrescription', e);
-          console.log('error', JSON.stringify(e.message));
-          const errorMsg = JSON.stringify(e.message);
-          if (errorMsg === 'Network error: Network request failed') {
-            Alert.alert(strings.common.error, strings.smartPrescr.add_test_error);
-          } else {
-            Alert.alert(strings.common.alert, strings.smartPrescr.existed_test_error);
-          }
-        });
-    } else {
-      Alert.alert(strings.common.alert, strings.smartPrescr.pls_add_test);
-    }
+    setLoading(true);
+    client
+      .mutate<AddDoctorFavouriteTest, AddDoctorFavouriteTestVariables>({
+        mutation: ADD_DOCTOR_FAVOURITE_TEST,
+        variables: {
+          itemname: AddingTest
+            ? AddingTest.replace(/\s+/g, ' ')
+            : searchTestVal.replace(/\s+/g, ' '),
+        },
+      })
+      .then((_data) => {
+        setLoading(false);
+        console.log('Added Favourite test', _data.data!.addDoctorFavouriteTest);
+        GetFavouriteTestList();
+        setisSearchTestListVisible(!isSearchTestListVisible);
+        setIsTest(!isTest);
+      })
+      .catch((e) => {
+        setLoading(false);
+        CommonBugFender('Add_Doctor_Favourite_Test_SmartPrescription', e);
+        console.log('error', JSON.stringify(e.message));
+        const errorMsg = JSON.stringify(e.message);
+        if (errorMsg === 'Network error: Network request failed') {
+          Alert.alert(strings.common.error, strings.smartPrescr.add_test_error);
+        } else {
+          Alert.alert(strings.common.alert, strings.smartPrescr.existed_test_error);
+        }
+      });
   };
   const showTestPopup = () => {
     return (

@@ -223,6 +223,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   </label>
                 )}
               </div>
+              <div className={classes.uploadCard}>
+                <img src={require('images/ic_gallery.svg')} alt="" />
+                <p>Camera</p>
+              </div>
 
               <div
                 className={classes.uploadCard}
