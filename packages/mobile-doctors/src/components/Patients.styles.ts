@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-export default StyleSheet.create({
+export const styles = StyleSheet.create({
   shadowview: {
     height: 44,
     width: '100%',
