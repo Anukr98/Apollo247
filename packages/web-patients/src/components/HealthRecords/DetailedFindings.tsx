@@ -112,8 +112,6 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
   const { data } = props.activeData;
 
-  console.log(data);
-
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
