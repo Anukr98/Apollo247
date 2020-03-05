@@ -119,6 +119,66 @@ app.get('/invokeApptReminder', (req, res) => {
     });
 });
 
+app.get('/invokeFollowUpNotification', (req, res) => {
+  const requestJSON = {
+    query: 'query { sendFollowUpNotification }',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data.data.sendFollowUpNotification, 'notifications response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-followUpNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendFollowUpNotification +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
+app.get('/invokeDailyAppointmentSummary', (req, res) => {
+  const requestJSON = {
+    query: 'query { sendDailyAppointmentSummary }',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data.data.sendDailyAppointmentSummary, 'notifications response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dailyAppointmentSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendDailyAppointmentSummary +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
 app.get('/invokePhysicalApptReminder', (req, res) => {
   const requestJSON = {
     query:

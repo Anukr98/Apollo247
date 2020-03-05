@@ -1245,6 +1245,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  getAllCompletedAppointments(appointmentDate: Date) {
+    const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:29');
+    return this.find({
+      where: {
+        appointmentDateTime: Between(startDate, endDate),
+        status: STATUS.COMPLETED,
+      },
+    });
+  }
+
   async checkPatientConsults(patientId: string, appointmentDateTime: Date) {
     /*const consultCount = await this.count({
       where: { patientId, appointmentDateTime, status: Not(STATUS.CANCELLED) },
