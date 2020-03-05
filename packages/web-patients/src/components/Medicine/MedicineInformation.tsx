@@ -7,7 +7,7 @@ import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios, { Canceler } from 'axios';
+import axios, { AxiosResponse, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -321,10 +321,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .catch((err) => alert({ err }));
   };
 
-  let cancelGetDeliveryTimeApi: Canceler | undefined;
-
   const fetchDeliveryTime = async () => {
     const CancelToken = axios.CancelToken;
+    let cancelGetDeliveryTimeApi: Canceler | undefined;
     await axios
       .post(
         apiDetails.deliveryUrl || '',
@@ -350,7 +349,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           }),
         }
       )
-      .then((res: any) => {
+      .then((res: AxiosResponse) => {
         try {
           if (res && res.data) {
             if (
