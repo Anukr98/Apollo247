@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
@@ -16,6 +17,7 @@ export default StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 13,
     width: '100%',
+    marginBottom: 10,
   },
   leftSmallText: {
     color: '#004053',

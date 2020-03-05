@@ -85,7 +85,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
       {showHeaderView()}
-      <ScrollView>{renderNotificationsListView()}</ScrollView>
+      <ScrollView bounces={false}>{renderNotificationsListView()}</ScrollView>
     </SafeAreaView>
   );
 };

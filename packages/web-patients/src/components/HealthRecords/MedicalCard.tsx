@@ -103,6 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicalCardProps = {
   name: string;
+  source: string;
   isActiveCard: boolean;
   deleteReport: (id: string) => void;
   id: string;
@@ -122,6 +123,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
         </div>
       </div>
+      {props.source && props.source !== '-' && <div>{props.source}</div>}
       <AphDialog
         open={showPopup}
         disableBackdropClick
