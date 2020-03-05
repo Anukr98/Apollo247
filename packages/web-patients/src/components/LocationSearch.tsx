@@ -337,7 +337,7 @@ export const LocationSearch: React.FC = (props) => {
                   type="search"
                   placeholder="Search Places..."
                   {...getInputProps()}
-                  onKeyDown={(e: any) => {
+                  onKeyDown={(e) => {
                     e.key === 'Enter' && e.preventDefault();
                   }}
                 />
