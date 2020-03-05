@@ -2,9 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
+import { Theme, Popover, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
@@ -12,13 +12,16 @@ import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { PrescriptionFormat } from 'components/Cart/MedicineCart';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -135,6 +138,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sectionGroup: {
       marginBottom: 15,
+    },
+    ePrescriptionTitle: {
+      zIndex: 9999,
     },
     serviceType: {
       backgroundColor: '#f7f8f5',
@@ -291,9 +297,21 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
-  const mascotRef = useRef(null);
   const addToCartRef = useRef(null);
-
+  const defPresObject = {
+    name: '',
+    imageUrl: '',
+  };
+  const {
+    phrPrescriptionData,
+    setPhrPrescriptionData,
+    prescriptions,
+    setPrescriptions,
+    medicineOrderData,
+    setMedicineOrderData,
+    setPrescriptionUploaded,
+    prescriptionUploaded,
+  } = useShoppingCart();
   const params = useParams<{ orderAutoId: string; orderStatus: string }>();
   if (params.orderStatus === 'success') {
     localStorage.removeItem('cartItems');
@@ -309,6 +327,9 @@ export const MedicineLanding: React.FC = (props) => {
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
     params.orderStatus && params.orderStatus.length > 0 ? true : false
   );
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -388,7 +409,9 @@ export const MedicineLanding: React.FC = (props) => {
                       <div className={classes.prescriptionGroup}>
                         <div>
                           <div className={classes.groupTitle}>Have a prescription ready?</div>
-                          <AphButton color="primary">Upload Prescription</AphButton>
+                          <AphButton color="primary" onClick={() => setIsUploadPreDialogOpen(true)}>
+                            Upload Prescription
+                          </AphButton>
                         </div>
                         <div className={classes.prescriptionIcon}>
                           <img src={require('images/ic_prescription_pad.svg')} alt="" />
@@ -490,6 +513,21 @@ export const MedicineLanding: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} />
+        <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+        <UploadPrescription
+          closeDialog={() => {
+            setIsUploadPreDialogOpen(false);
+          }}
+          setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+        />
+      </AphDialog>
+      <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
+        <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+        <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
+      </AphDialog>
       <NavigationBottom />
     </div>
   );
