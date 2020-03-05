@@ -131,11 +131,13 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
               return (
                 <Grid item xs={12} sm={12}>
                   <div className={classes.cardTitle}>
-                    {detail.setParameter ? detail.parameterName : 'SUMMARY'}
+                    {detail.setParameter ? 'SUMMARY' : detail.parameterName}
                   </div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
                       {detail.setParameter ? (
+                        <div className={classes.result}>{detail.result}</div>
+                      ) : (
                         <>
                           <Grid item xs={6} sm={3}>
                             <div className={classes.resultGroup}>
@@ -160,8 +162,6 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                             </div>
                           </Grid>
                         </>
-                      ) : (
-                        <div className={classes.result}>{detail.result}</div>
                       )}
                     </Grid>
                   </div>
