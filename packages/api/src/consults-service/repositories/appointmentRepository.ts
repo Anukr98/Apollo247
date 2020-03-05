@@ -557,7 +557,7 @@ export class AppointmentRepository extends Repository<Appointment> {
 
     //let timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
     let timeSlots: ConsultHours[];
-    if (appointmentType == 'ONLINE') {
+    if (appointmentType == APPOINTMENT_TYPE.ONLINE) {
       timeSlots = await consultHourRep.getConsultHours(doctorId, weekDay);
     } else {
       timeSlots = await consultHourRep.getPhysicalConsultHours(doctorId, weekDay, hospitalId);
@@ -565,7 +565,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     weekDay = format(actualDate, 'EEEE').toUpperCase();
     //const timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
     let timeSlotsNext;
-    if (appointmentType == 'ONLINE') {
+    if (appointmentType == APPOINTMENT_TYPE.ONLINE) {
       timeSlotsNext = await consultHourRep.getConsultHours(doctorId, weekDay);
     } else {
       timeSlotsNext = await consultHourRep.getPhysicalConsultHours(doctorId, weekDay, hospitalId);
