@@ -79,9 +79,11 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -93,6 +95,7 @@ const timer = 900;
 let intervalId: NodeJS.Timeout;
 let stoppedTimer: number;
 let timerId: NodeJS.Timeout;
+let callhandelBack: boolean = true;
 
 // let joinTimerId: any;
 // let diffInHours: number;
@@ -193,7 +196,33 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
     getCaseSheetAPI();
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
+    };
   }, []);
+
+  const backDataFunctionality = () => {
+    try {
+      console.log(callhandelBack, 'is back called');
+      if (callhandelBack) {
+        props.navigation.pop();
+        return true;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log(error, 'error');
+    }
+  };
 
   const createCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
@@ -601,6 +630,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const messageText = message.message;
         if (message.isTyping) {
           const audioVideoMethod = () => {
+            callhandelBack = true;
             addMessages(message);
             setIsCall(false);
             setIsAudioCall(false);
@@ -866,6 +896,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 return;
               }
               //need to work form here
+              callhandelBack = false;
               setIsAudioCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
@@ -936,6 +967,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (isAudioCall) {
                 return;
               }
+              callhandelBack = false;
               setIsCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
@@ -953,7 +985,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 },
                 (status, response) => {
                   if (response) {
-                    startNoShow(45, () => {
+                    startMissedCallTimer(45, () => {
                       stopAllCalls();
                       if (missedCallCounter < 2) {
                         setMissedCallCounter(missedCallCounter + 1);
@@ -961,6 +993,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                         callAbandonmentCall();
                       }
                     });
+                    // startNoShow(45, () => {
+                    //   stopAllCalls();
+                    //   if (missedCallCounter < 2) {
+                    //     setMissedCallCounter(missedCallCounter + 1);
+                    //   } else {
+                    //     callAbandonmentCall();
+                    //   }
+                    // });
                   }
                 }
               );
@@ -1172,7 +1212,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 <BackArrow />
               </View>
             ),
-            onPress: () => props.navigation.pop(),
+            onPress: () => callhandelBack && props.navigation.pop(),
           },
         ]}
         middleText={strings.consult_room.consult_room}

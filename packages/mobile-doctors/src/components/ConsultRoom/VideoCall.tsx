@@ -352,7 +352,7 @@ export const VideoCall: React.FC<VideoCallProps> = (props) => {
         </Text>
         {!PipView && (
           <>
-            <View
+            {/* <View
               style={{
                 position: 'absolute',
                 top: 0,
@@ -377,7 +377,7 @@ export const VideoCall: React.FC<VideoCallProps> = (props) => {
                 {props.minutes.toString().length < 2 ? '0' + props.minutes : props.minutes} :{' '}
                 {props.seconds.toString().length < 2 ? '0' + props.seconds : props.seconds}
               </Text>
-            </View>
+            </View> */}
             <Text
               style={{
                 position: 'absolute',
