@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
@@ -368,29 +368,6 @@ const useStyles = makeStyles((theme: Theme) => {
     uppercase: {
       textTransform: 'uppercase',
     },
-    deliveryTimeGroup: {
-      margin: 10,
-      marginTop: 0,
-      borderTop: '0.5px solid rgba(2,71,91,0.2)',
-      paddingTop: 10,
-    },
-    deliveryTimeGroupWrap: {
-      display: 'flex',
-      backgroundColor: theme.palette.common.white,
-      padding: 10,
-      borderRadius: 5,
-    },
-    deliveryTime: {
-      fontSize: 14,
-      fontWeight: 500,
-      color: '#01475b',
-    },
-    deliveryDate: {
-      fontSize: 14,
-      fontWeight: 'bold',
-      color: '#01475b',
-      marginLeft: 'auto',
-    },
     followUpWrapper: {
       backgroundColor: '#fff',
       margin: '0 0 0 8px',
@@ -469,10 +446,6 @@ export interface PrescriptionFormat {
 
 export const MedicineCart: React.FC = (props) => {
   const classes = useStyles({});
-  const defPresObject = {
-    name: '',
-    imageUrl: '',
-  };
   const {
     storePickupPincode,
     deliveryAddressId,
@@ -483,10 +456,9 @@ export const MedicineCart: React.FC = (props) => {
     setPrescriptions,
     cartItems,
     cartTotal,
-    prescriptionUploaded,
-    setPrescriptionUploaded,
     medicineOrderData,
     setMedicineOrderData,
+    deliveryAddresses,
   } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
@@ -540,7 +512,7 @@ export const MedicineCart: React.FC = (props) => {
   // if the total is less than 200 +20 is added.
   const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   const grossValue = cartTotal - discountAmount;
-  const deliveryCharges = grossValue > 200 ? -20 : 20;
+  const deliveryCharges = grossValue > 200 ? -20 : grossValue > 0 ? 20 : 0;
   const totalAmount = (grossValue + deliveryCharges).toFixed(2);
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
@@ -622,6 +594,13 @@ export const MedicineCart: React.FC = (props) => {
         window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
       });
   };
+
+  const isPaymentButtonEnable =
+    (cartItems && cartItems.length > 0) ||
+    (prescriptions && prescriptions.length > 0) ||
+    (phrPrescriptionData && phrPrescriptionData.length > 0) ||
+    (medicineOrderData && medicineOrderData.length > 0) ||
+    false;
 
   return (
     <div className={classes.root}>
@@ -776,12 +755,6 @@ export const MedicineCart: React.FC = (props) => {
                 {tabValue === 0 && (
                   <TabContainer>
                     <HomeDelivery />
-                    {/* <div className={classes.deliveryTimeGroup}>
-                      <div className={classes.deliveryTimeGroupWrap}>
-                        <span className={classes.deliveryTime}>Delivery Time</span>
-                        <span className={classes.deliveryDate}>24 Oct 2019</span>
-                      </div>
-                    </div> */}
                   </TabContainer>
                 )}
                 {tabValue === 1 && (
@@ -800,32 +773,34 @@ export const MedicineCart: React.FC = (props) => {
             <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
               <span>Total Charges</span>
             </div>
-            <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-              {couponCode === '' ? (
-                <div
-                  onClick={() => setIsApplyCouponDialogOpen(true)}
-                  className={`${classes.serviceType} ${classes.textVCenter}`}
-                >
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                  </span>
-                  <span className={classes.linkText}>Apply Coupon</span>
-                  <span className={classes.rightArrow}>
-                    <img src={require('images/ic_arrow_right.svg')} alt="" />
-                  </span>
-                </div>
-              ) : (
-                <div className={`${classes.serviceType} ${classes.textVCenter}`}>
-                  <span className={classes.serviceIcon}>
-                    <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                  </span>
-                  <span className={classes.linkText}>Coupon Applied</span>
-                  <span className={classes.rightArrow}>
-                    <img src={require('images/ic_tickmark.svg')} alt="" />
-                  </span>
-                </div>
-              )}
-            </div>
+            {isPaymentButtonEnable && (
+              <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
+                {couponCode === '' ? (
+                  <div
+                    onClick={() => setIsApplyCouponDialogOpen(true)}
+                    className={`${classes.serviceType} ${classes.textVCenter}`}
+                  >
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Apply Coupon</span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </div>
+                ) : (
+                  <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                    <span className={classes.serviceIcon}>
+                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                    </span>
+                    <span className={classes.linkText}>Coupon Applied</span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_tickmark.svg')} alt="" />
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
             <div className={`${classes.sectionGroup}`}>
               <div className={classes.priceSection}>
                 <div className={classes.topSection}>
@@ -836,7 +811,7 @@ export const MedicineCart: React.FC = (props) => {
                   <div className={classes.priceRow}>
                     <span>Delivery Charges</span>
                     <span className={classes.priceCol}>
-                      {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '(+ Rs. 20) FREE'}
+                      {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
                     </span>
                   </div>
                 </div>
@@ -857,7 +832,7 @@ export const MedicineCart: React.FC = (props) => {
             onClick={() => setCheckoutDialogOpen(true)}
             color="primary"
             fullWidth
-            disabled={disableSubmit}
+            disabled={disableSubmit || !isPaymentButtonEnable}
             className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
           >
             Proceed to pay — RS. {totalAmount}
