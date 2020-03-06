@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -7,12 +8,6 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
-  // consultTypeSelection: {
-  //   flexDirection: 'row',
-  //   marginHorizontal: 20,
-  //   marginTop: 12,
-  //   marginBottom: 20,
-  // },
   consultDescText: {
     ...theme.fonts.IBMPlexSans(14),
     color: theme.colors.darkBlueColor(0.5),
@@ -23,6 +18,22 @@ export default StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',
     lineHeight: 24,
-    //marginTop: 20,
   },
+  consultTypeText: {
+    marginLeft: 20,
+    marginTop: 8,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#02475b',
+    marginBottom: 20,
+    textTransform: 'capitalize',
+  },
+  squareCardContainer: { marginTop: 16, paddingBottom: 16 },
+  addTouchable: { flexDirection: 'row', marginTop: 18, marginLeft: 20, alignItems: 'center' },
+  addTextStyle: {
+    ...theme.viewStyles.yellowTextStyle,
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  roundChaticon: { margin: 20, flexDirection: 'row', marginBottom: -10 },
+  tollfreeText: { color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 },
 });

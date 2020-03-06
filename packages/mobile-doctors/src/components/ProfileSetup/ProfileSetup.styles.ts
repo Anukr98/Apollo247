@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
