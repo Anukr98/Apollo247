@@ -477,7 +477,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             ) : (
-              <div className={classes.medicineNoStock}>Out Of Stock</div>
+              <div className={classes.leftGroup}>
+                <div className={classes.medicineNoStock}>Out Of Stock</div>
+              </div>
             )}
             <div className={classes.medicinePrice}>
               {data.special_price && (
