@@ -478,7 +478,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     return (
       <div className={classes.root}>
         <div className={classes.doctorProfile}>
-          <div className={classes.doctorImage}>
+          <div className={classes.doctorImage} title={fullName || ''}>
             <img src={profileImage || require('images/no_photo.png')} alt={firstName || ''} />
           </div>
           <div className={classes.doctorInfo}>
@@ -528,7 +528,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
               <div className={classes.consultGroup}>
                 <div className={classes.infoRow}>
-                  <div className={classes.iconType}>
+                  <div className={classes.iconType} title={'Consultation Fee'}>
                     <img src={require('images/ic-rupee.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
