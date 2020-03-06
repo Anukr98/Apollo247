@@ -1,17 +1,23 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem } from '@material-ui/core';
-import React from 'react';
+import { Theme, MenuItem, Popover } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
 import _isEmpty from 'lodash/isEmpty';
 import { useAuth } from 'hooks/authHooks';
+import Typography from '@material-ui/core/Typography';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { NavigatorSDK } from '@praktice/navigator-react-web-sdk';
+import { NavigatorSDK, $Generator } from '@praktice/navigator-react-web-sdk';
 import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AphCustomDropdown } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
+import { MascotWithMessage } from '../MascotWithMessage';
+import { AphSelect } from '@aph/web-ui-components';
+import { Route } from 'react-router-dom';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -154,6 +160,67 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e',
       fontWeight: 600,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
+    addMemberBtn: {
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      paddingBottom: 0,
+      paddingRight: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    contentGroup: {
+      padding: 20,
+      paddingTop: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    bottomActions: {
+      textAlign: 'right',
+    },
+    selectMenuRoot: {
+      paddingRight: 55,
+      '& svg': {
+        color: '#00b38e',
+        fontSize: 30,
+      },
+    },
   };
 });
 
@@ -191,13 +258,68 @@ const customContainerStyle = {
   },
 };
 
-type Patient = GetCurrentPatients_getCurrentPatients_patients;
+// type Patient = GetCurrentPatients_getCurrentPatients_patients;
+interface CustomComponentProps {
+  setDoctorPopOver: any;
+  doctorPopover: boolean;
+  stopRedirect: string;
+}
+export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
+  const [isRedirect, setIsRedirect] = useState(false);
 
+  useEffect(() => {
+    if (props.stopRedirect === 'continue' && isRedirect) {
+      setTimeout(() => {
+        window.location.href = clientRoutes.doctorsLanding();
+      }, 5000);
+    } else if (props.stopRedirect === 'stop') {
+      window.location.reload();
+    }
+  }, [props.stopRedirect, isRedirect]);
+  return (
+    <Route
+      render={({ history }) => {
+        return (
+          <AphButton
+            title="show speciality"
+            onClick={async () => {
+              const queryResponse = await $Generator({ type: 'showSpeciality' });
+              let specialities = [];
+              if (queryResponse && queryResponse.specialists && queryResponse.specialists.length) {
+                specialities = queryResponse.specialists.map((item: { speciality: string }) =>
+                  item.speciality.trim()
+                );
+                if (specialities.length > 0) {
+                  const specialitiesEncoded = encodeURI(specialities.join(','));
+                  localStorage.setItem('symptomTracker', specialitiesEncoded);
+                  setIsRedirect(true);
+                  props.setDoctorPopOver(true);
+                  // if (isRedirect) {
+                  //   history.push(clientRoutes.doctorsLanding());
+                  // }
+                }
+              }
+            }}
+          >
+            Show Doctors
+          </AphButton>
+        );
+      }}
+    ></Route>
+  );
+};
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
 export const SymptomsTrackerSDK: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const isMediumScreen = useMediaQuery('(max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const [showPopup, setShowPopup] = useState(true);
+  const [doctorPopover, setDoctorPopOver] = useState(false);
+  const [stopRedirect, setStopRedirect] = useState('continue');
+  const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
+  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   return (
     <div className={classes.root}>
@@ -229,6 +351,47 @@ export const SymptomsTrackerSDK: React.FC = () => {
               <div className={classes.rightCol}>
                 <div className={classes.profileDropdown}>
                   For
+                  <AphSelect
+                    value={currentPatient && currentPatient.id}
+                    onChange={(e) => {
+                      setCurrentPatientId(e.target.value as Patient['id']);
+                    }}
+                    classes={{
+                      root: classes.selectMenuRoot,
+                      selectMenu: classes.selectMenuItem,
+                    }}
+                  >
+                    {allCurrentPatients &&
+                      allCurrentPatients.length > 0 &&
+                      currentPatient &&
+                      allCurrentPatients.map((patient) => {
+                        const isSelected = patient && patient.id === currentPatient.id;
+                        const name = isSelected
+                          ? (patient.firstName || '').toLocaleLowerCase()
+                          : (patient.firstName || '').toLocaleLowerCase();
+                        return (
+                          <MenuItem
+                            selected={isSelected}
+                            value={patient.id}
+                            classes={{ selected: classes.menuSelected }}
+                            key={patient.id}
+                          >
+                            {name}
+                          </MenuItem>
+                        );
+                      })}
+                    <MenuItem classes={{ selected: classes.menuSelected }}>
+                      <AphButton
+                        color="primary"
+                        classes={{ root: classes.addMemberBtn }}
+                        onClick={() => {
+                          setIsAddNewProfileDialogOpen(true);
+                        }}
+                      >
+                        Add Member
+                      </AphButton>
+                    </MenuItem>
+                  </AphSelect>
                   <AphCustomDropdown classes={{ selectMenu: classes.selectMenuItem }}>
                     <MenuItem
                       classes={{
@@ -248,10 +411,93 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 patientAge={30}
                 patientGender="male"
                 sdkContainerStyle={customContainerStyle}
+                showDocBtn={() => (
+                  <CustomComponent
+                    // setDoctorPopOver={(flag: boolean) => setDoctorPopOver()}
+                    setDoctorPopOver={setDoctorPopOver}
+                    doctorPopover={doctorPopover}
+                    stopRedirect={stopRedirect}
+                  />
+                )}
               />
             </div>
           </Scrollbars>
         </div>
+
+        <Popover
+          open={showPopup}
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div className={classes.contentGroup}>
+                <Typography variant="h3">Hi! :)</Typography>
+                <p>Please pick or type the symptom most closely relating to your condition</p>
+                <div className={classes.bottomActions}>
+                  <AphButton
+                    color="primary"
+                    classes={{ root: classes.addMemberBtn }}
+                    onClick={() => {
+                      setShowPopup(false);
+                    }}
+                  >
+                    OK, GOT It
+                  </AphButton>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Popover>
+        <Popover
+          open={doctorPopover}
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div className={classes.contentGroup}>
+                <Typography variant="h3">Hi! :)</Typography>
+                <p>We're finding the earliest available general physican for you</p>
+                <div className={classes.bottomActions}>
+                  <AphButton
+                    color="primary"
+                    classes={{ root: classes.addMemberBtn }}
+                    onClick={() => {
+                      setDoctorPopOver(false);
+                      setStopRedirect('stop');
+                      // history.push(clientRoutes.doctorsLanding());
+                    }}
+                  >
+                    NO, WAIT
+                  </AphButton>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Popover>
       </div>
       {isSignedIn && <NavigationBottom />}
     </div>

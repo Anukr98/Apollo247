@@ -203,6 +203,8 @@ export const SymptomsTracker: React.FC = () => {
   const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [select, setSelect] = useState<boolean>(false);
+
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px)');
@@ -230,40 +232,54 @@ export const SymptomsTracker: React.FC = () => {
               <div className={classes.bannerInfo}>
                 {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
                   <Typography variant="h1">
-                    <span>hi</span>
-                    <AphSelect
-                      value={currentPatient.id}
-                      onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
-                      classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
-                    >
-                      {allCurrentPatients.map((patient) => {
-                        const isSelected = patient.id === currentPatient.id;
-                        const name = isSelected
-                          ? (patient.firstName || '').toLocaleLowerCase()
-                          : (patient.firstName || '').toLocaleLowerCase();
-                        return (
-                          <MenuItem
-                            selected={isSelected}
-                            value={patient.id}
-                            classes={{ selected: classes.menuSelected }}
-                            key={patient.id}
+                    <span>
+                      hi {!select && currentPatient.firstName} {!select && `:)`}
+                    </span>
+                    {select && (
+                      <AphSelect
+                        value={currentPatient.id}
+                        onChange={(e) => {
+                          window.location.href = clientRoutes.symptomsTracker();
+                          setCurrentPatientId(e.target.value as Patient['id']);
+                        }}
+                        classes={{
+                          root: classes.selectMenuRoot,
+                          selectMenu: classes.selectMenuItem,
+                        }}
+                        open={select}
+                        onClick={() => {
+                          setSelect(!select);
+                        }}
+                      >
+                        {allCurrentPatients.map((patient) => {
+                          const isSelected = patient.id === currentPatient.id;
+                          const name = isSelected
+                            ? (patient.firstName || '').toLocaleLowerCase()
+                            : (patient.firstName || '').toLocaleLowerCase();
+                          return (
+                            <MenuItem
+                              selected={isSelected}
+                              value={patient.id}
+                              classes={{ selected: classes.menuSelected }}
+                              key={patient.id}
+                            >
+                              {name}
+                            </MenuItem>
+                          );
+                        })}
+                        <MenuItem classes={{ selected: classes.menuSelected }}>
+                          <AphButton
+                            color="primary"
+                            classes={{ root: classes.addMemberBtn }}
+                            onClick={() => {
+                              setIsAddNewProfileDialogOpen(true);
+                            }}
                           >
-                            {name}
-                          </MenuItem>
-                        );
-                      })}
-                      <MenuItem classes={{ selected: classes.menuSelected }}>
-                        <AphButton
-                          color="primary"
-                          classes={{ root: classes.addMemberBtn }}
-                          onClick={() => {
-                            setIsAddNewProfileDialogOpen(true);
-                          }}
-                        >
-                          Add Member
-                        </AphButton>
-                      </MenuItem>
-                    </AphSelect>
+                            Add Member
+                          </AphButton>
+                        </MenuItem>
+                      </AphSelect>
+                    )}
                   </Typography>
                 ) : (
                   <Typography variant="h1">hello there!</Typography>
@@ -271,8 +287,12 @@ export const SymptomsTracker: React.FC = () => {
                 <div>
                   <p>How can we help you today? :)</p>
                   <div className={classes.buttonsWrapper}>
-                    <AphButton className={classes.activeButton}>MYSELF</AphButton>
-                    <AphButton>SOMEONE ELSE</AphButton>
+                    <Link to={clientRoutes.symptomsTracker()}>
+                      <AphButton>MYSELF</AphButton>
+                    </Link>
+                    {/* <Link to={clientRoutes.symptomsTracker()}> */}
+                    <AphButton onClick={() => setSelect(true)}>SOMEONE ELSE</AphButton>
+                    {/* </Link> */}
                   </div>
                 </div>
               </div>
