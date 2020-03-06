@@ -4,6 +4,7 @@ import { AudioCall } from '@aph/mobile-doctors/src/components/ConsultRoom/AudioC
 import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
+import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
 import { VideoCall } from '@aph/mobile-doctors/src/components/ConsultRoom/VideoCall';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import {
@@ -72,27 +73,23 @@ import {
   FlatList,
   Image,
   Keyboard,
-  KeyboardEvent,
   Platform,
   SafeAreaView,
   StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
-import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
 
-const { height, width } = Dimensions.get('window');
-let joinTimerNoShow: any;
-let missedCallTimer: any;
+const { width } = Dimensions.get('window');
+let joinTimerNoShow: NodeJS.Timeout;
+let missedCallTimer: NodeJS.Timeout;
 const styles = ConsultRoomScreenStyles;
 
 let connectionCount = 0;
-let timer = 900;
+const timer = 900;
 let intervalId: NodeJS.Timeout;
 let stoppedTimer: number;
 let timerId: NodeJS.Timeout;
@@ -283,7 +280,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     stopMissedCallTimer();
     missedCallTimer = setInterval(() => {
       timer = timer - 1;
-      console.log('timer missedCall', timer);
+      console.log('timer missedCallllll', timer);
       if (timer === 0) {
         stopMissedCallTimer();
         callback && callback();
@@ -380,7 +377,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       })
       .then((_data) => {
         //  setLoading(false);
-        setShowPopUp(true);
+        setShowPopUp(false);
         console.log('_data', _data);
         const text = {
           id: doctorId,
@@ -616,6 +613,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             case messageCodes.acceptedCallMsg:
               startTimer(0);
               setCallAccepted(true);
+              stopMissedCallTimer();
               break;
             case messageCodes.endCallMsg:
               setIsCall(false);
@@ -1381,6 +1379,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const imageOpen = () => {
+    console.log(url);
+
     return popupView(
       <Image
         style={{

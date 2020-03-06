@@ -8,15 +8,7 @@ import {
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import {
-  SafeAreaView,
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { SafeAreaView, StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
@@ -66,7 +58,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     if (response.length == 0) return [];
 
     return response.map((item) => {
-      //console.log('item', item);
       const isPdf = item.mime == 'application/pdf';
       const fileUri = item!.path || `folder/file.jpg`;
       const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
@@ -83,8 +74,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   const onClickTakePhoto = () => {
     setshowSpinner(true);
     ImagePicker.openCamera({
-      // width: 400,
-      // height: 400,
       cropping: props.isProfileImage ? true : false,
       hideBottomControls: true,
       width: props.isProfileImage ? 800 : undefined,
@@ -102,7 +91,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       })
       .catch((e: any) => {
         CommonBugFender('Image_Picker_UploadPrescription', e);
-        // aphConsole.log({ e });
         setshowSpinner(false);
       });
   };
@@ -145,37 +133,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const renderOrderSteps = () => {
     return (
-      <View
-        style={{
-          height: 101,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          backgroundColor: theme.colors.SKY_BLUE,
-        }}
-      >
-        <Text
-          style={{
-            paddingTop: 13,
-            paddingBottom: 12,
-            color: theme.colors.WHITE,
-            ...theme.fonts.IBMPlexSansMedium(14),
-          }}
-        >
-          {strings.appointments.order_medicine_steps}
-        </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            // justifyContent: 'space-between',
-            justifyContent: 'center',
-          }}
-        >
+      <View style={styles.orderstpes}>
+        <Text style={styles.steps}>{strings.appointments.order_medicine_steps}</Text>
+        <View style={styles.rowview}>
           <View style={styles.cardViewStyle}>
             <Text style={styles.cardTextStyle}>{strings.appointments.upload_prescr}</Text>
           </View>
           <View
             style={{
-              // alignItems: 'center',
               justifyContent: 'center',
             }}
           >
@@ -193,13 +158,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const renderCloseIcon = () => {
     return (
-      <View
-        style={{
-          alignSelf: 'flex-end',
-          backgroundColor: 'transparent',
-          marginBottom: 16,
-        }}
-      >
+      <View style={styles.close}>
         <TouchableOpacity onPress={() => props.onClickClose()}>
           <CrossPopup style={{ marginRight: 1 }} />
         </TouchableOpacity>
@@ -209,41 +168,15 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const renderHeader = () => {
     return (
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          borderTopRightRadius: 10,
-          borderTopLeftRadius: 10,
-          backgroundColor: theme.colors.WHITE,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingVertical: 23,
-          width: '100%',
-        }}
-      >
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(16),
-            color: theme.colors.LIGHT_BLUE,
-          }}
-        >
-          {props.heading}
-        </Text>
+      <View style={styles.header}>
+        <Text style={styles.head}>{props.heading}</Text>
       </View>
     );
   };
 
   const renderOptions = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          margin: 20,
-          marginHorizontal: 13,
-        }}
-      >
+      <View style={styles.options}>
         {!!props.optionTexts.camera && (
           <TouchableOpacity
             disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
@@ -324,17 +257,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         }}
       >
         <View style={styles.separatorStyle} />
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(12),
-            color: theme.colors.TEXT_LIGHT_BLUE,
-            paddingTop: 8,
-            paddingBottom: 16,
-            // paddingHorizontal: 20,
-          }}
-        >
-          {strings.appointments.upload_prescr_descr}
-        </Text>
+        <Text style={styles.terms}>{strings.appointments.upload_prescr_descr}</Text>
       </View>
     );
   };

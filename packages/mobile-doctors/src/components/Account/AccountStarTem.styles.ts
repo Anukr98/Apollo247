@@ -42,4 +42,34 @@ export default StyleSheet.create({
     shadowRadius: 20,
     elevation: 16,
   },
+  highView: {
+    color: theme.colors.darkBlueColor(),
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
+  highText: {
+    color: theme.colors.darkBlueColor(),
+    ...theme.fonts.IBMPlexSansBold(18),
+  },
+  formatView: {
+    marginTop: 8,
+    marginBottom: 7,
+    height: 1,
+    opacity: 0.1,
+  },
+  addDoctor: { flexDirection: 'row', margin: 20, marginTop: 7 },
+  selectCard: {
+    ...theme.viewStyles.whiteRoundedCornerCard,
+    margin: 20,
+    marginTop: 0,
+    borderRadius: 10,
+  },
+  rowView: { flexDirection: 'row', justifyContent: 'space-between' },
+  selectDoctor: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#02475b',
+    opacity: 0.4,
+    marginTop: 10,
+    marginBottom: 9,
+  },
+  icon: { alignItems: 'flex-end', alignSelf: 'flex-end' },
 });

@@ -189,7 +189,7 @@ export const HeroBanner: React.FC = () => {
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
           <Typography variant="h1">
-            <span title={"hi"}>hi</span>
+            <span title={'hi'}>hi</span>
             <AphSelect
               value={currentPatient.id}
               onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
@@ -219,7 +219,7 @@ export const HeroBanner: React.FC = () => {
                   onClick={() => {
                     setIsAddNewProfileDialogOpen(true);
                   }}
-                  title={"Add Member"}
+                  title={'Add Member'}
                 >
                   Add Member
                 </AphButton>
@@ -227,12 +227,12 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-            <Typography variant="h1">hello there!</Typography>
-          )}
+          <Typography variant="h1">hello there!</Typography>
+        )}
         <p>How can we help you today? :)</p>
         <OurServices />
-        <div className={classes.callEmergency}>
-          <span title={"Call 1066 in emergency"}>Call 1066 in emergency</span>
+        <div className={classes.callEmergency} title={'Call 1066 in emergency'}>
+          <span>Call 1066 in emergency</span>
           <span className={classes.callImg}>
             <img src={require('images/ic-emergency.svg')} alt="" />
           </span>
