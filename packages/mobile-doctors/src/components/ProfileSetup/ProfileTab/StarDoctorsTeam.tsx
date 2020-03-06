@@ -1,4 +1,5 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
+import StarDoctorsTeamStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam.styles';
 import { Add, Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
@@ -18,15 +19,14 @@ import {
   removeTeamDoctorFromStarTeam,
   removeTeamDoctorFromStarTeamVariables,
 } from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import StarDoctorsTeamStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam.styles';
 
 const styles = StarDoctorsTeamStyles;
 
@@ -155,16 +155,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
               key={i}
             >
               {formatSuggestionsText(drName, '')}
-              {i < array!.length - 1 ? (
-                <View
-                  style={{
-                    marginTop: 8,
-                    marginBottom: 7,
-                    height: 1,
-                    opacity: 0.1,
-                  }}
-                />
-              ) : null}
+              {i < array!.length - 1 ? <View style={styles.touchableView} /> : null}
             </TouchableOpacity>
           );
         })}
@@ -208,9 +199,8 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
           doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
             .associatedDoctor!.lastName || ''}`}
           experience={starDoctor!.associatedDoctor!.experience || ''}
-          specialization={profileData.specialty!.name.toLocaleUpperCase()} //{(starDoctor!.associatedDoctor!.qualification || '').toUpperCase()}
+          specialization={profileData.specialty!.name.toLocaleUpperCase()}
           education={starDoctor!.associatedDoctor!.qualification!}
-          // location={'Apollo Hospitals, Jubilee Hills'} //{starDoctor.location}
           location={getFormattedLocation(starDoctor)}
         />
       );
@@ -219,7 +209,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const renderAddDoctor = () => {
     return (
-      <View style={{ flexDirection: 'row', margin: 20, marginTop: 7 }}>
+      <View style={styles.addDoctView}>
         <Add />
         <TouchableOpacity onPress={() => setSelectDoctorVisible(!isSelectDoctorVisible)}>
           <Text style={styles.addDoctorText}>{strings.buttons.add_doct}</Text>
@@ -231,33 +221,13 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   const renderSelectDoctorField = () => {
     return (
       <View>
-        <View
-          style={{
-            ...theme.viewStyles.whiteRoundedCornerCard,
-            margin: 20,
-            marginTop: 0,
-            borderRadius: 10,
-            //marginBottom: 0,
-          }}
-        >
+        <View style={styles.selectDoctorFieldView}>
           <View style={{ margin: 20 }}>
             <Text style={styles.inputTextStyle}>{strings.account.add_doct_to_your_team}</Text>
             <TouchableOpacity onPress={() => onSelectStarDoctor(isDropdownOpen)}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    color: '#02475b',
-                    opacity: 0.4,
-                    marginTop: 10,
-                    marginBottom: 9,
-                  }}
-                >
-                  {selectedDoctor}
-                </Text>
-                <View style={{ alignItems: 'flex-end', alignSelf: 'flex-end' }}>
-                  {!isDropdownOpen ? <Down /> : <Up />}
-                </View>
+              <View style={styles.selectDoctView}>
+                <Text style={styles.seleDoctText}>{selectedDoctor}</Text>
+                <View style={styles.dropdownView}>{!isDropdownOpen ? <Down /> : <Up />}</View>
               </View>
             </TouchableOpacity>
             <View
