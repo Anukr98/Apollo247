@@ -283,7 +283,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     stopMissedCallTimer();
     missedCallTimer = setInterval(() => {
       timer = timer - 1;
-      console.log('timer missedCall', timer);
+      console.log('timer missedCallllll', timer);
       if (timer === 0) {
         stopMissedCallTimer();
         callback && callback();
@@ -380,7 +380,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       })
       .then((_data) => {
         //  setLoading(false);
-        setShowPopUp(true);
+        setShowPopUp(false);
         console.log('_data', _data);
         const text = {
           id: doctorId,
@@ -616,6 +616,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             case messageCodes.acceptedCallMsg:
               startTimer(0);
               setCallAccepted(true);
+              stopMissedCallTimer();
               break;
             case messageCodes.endCallMsg:
               setIsCall(false);
@@ -1381,6 +1382,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const imageOpen = () => {
+    console.log(url);
+
     return popupView(
       <Image
         style={{

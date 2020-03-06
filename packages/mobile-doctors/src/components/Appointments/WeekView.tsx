@@ -1,7 +1,6 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 import CalendarStrip from 'react-native-calendar-strip';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import WeekViewStyles from '@aph/mobile-doctors/src/components/Appointments/WeekView.styles';

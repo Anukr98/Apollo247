@@ -10,8 +10,7 @@ import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
@@ -22,17 +21,13 @@ const styles = MyFeesStyles;
 export interface ProfileProps
   extends NavigationScreenProps<{
     ProfileData: GetDoctorDetails_getDoctorDetails;
-
-    //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
-  //profileData: object;
   scrollViewRef: KeyboardAwareScrollView | null;
   onReload: () => void;
 }
 
 export const MyFees: React.FC<ProfileProps> = (props) => {
   const profileData = props.navigation.getParam('ProfileData');
-  console.log('p', profileData);
   const BankDetails = profileData!.packages![0];
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const [showHelpModel, setshowHelpModel] = useState(false);
@@ -40,17 +35,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
   const showHeaderView = () => {
     return (
       <Header
-        containerStyle={{
-          height: 50,
-          shadowColor: '#000000',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowRadius: 10,
-          shadowOpacity: 0.2,
-          elevation: 5,
-        }}
+        containerStyle={styles.headerview}
         leftIcons={[
           {
             icon: <BackArrow />,
@@ -113,34 +98,8 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
       <ScrollView bounces={false}>
         {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (
           <View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansSemiBold(16),
-                color: '#02475b',
-                marginBottom: 16,
-                marginLeft: 20,
-                marginTop: 20,
-              }}
-            >
-              {strings.account.consultation_fees}
-            </Text>
-            <View
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                marginLeft: 20,
-                marginRight: 20,
-                marginBottom: 32,
-                shadowColor: '#000000',
-                shadowOffset: {
-                  width: 0,
-                  height: 5,
-                },
-                shadowRadius: 10,
-                shadowOpacity: 0.2,
-                elevation: 5,
-              }}
-            >
+            <Text style={styles.fee}>{strings.account.consultation_fees}</Text>
+            <View style={styles.doctortype}>
               {feeprofileRowBold(
                 <Text>
                   <Text style={styles.feeeducation}>{strings.common.what_are_you}</Text>
@@ -176,38 +135,10 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
                 </View>
               )}
             </View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansSemiBold(16),
-                color: '#02475b',
-                marginBottom: 16,
-                marginLeft: 20,
-                //marginTop: 20,
-              }}
-            >
-              {strings.account.payment_details}
-            </Text>
-            <View
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                marginLeft: 20,
-                marginRight: 20,
-                marginBottom: 32,
-                shadowColor: '#000000',
-                shadowOffset: {
-                  width: 0,
-                  height: 5,
-                },
-                shadowRadius: 10,
-                shadowOpacity: 0.2,
-                elevation: 5,
-              }}
-            >
+            <Text style={styles.payment}>{strings.account.payment_details}</Text>
+            <View style={styles.paymentView}>
               {profileData.bankAccount!.length > 0 ? (
-                <View
-                  style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}
-                >
+                <View style={styles.rowview}>
                   <View style={{ flex: 1 }}>
                     {feeprofileRowbankname(
                       profileData.bankAccount![0]!.accountNumber,
@@ -246,7 +177,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
             </View>
           </View>
         ) : null}
-        <View style={{ marginLeft: 20, flexDirection: 'row', marginBottom: 10, marginRight: 20 }}>
+        <View style={styles.roundicon}>
           <View style={{ marginTop: 4 }}>
             <RoundChatIcon />
           </View>
@@ -254,16 +185,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
           <View style={{ marginLeft: 14 }}>
             <Text>
               <Text style={styles.descriptionview}>{strings.common.call}</Text>
-              <Text
-                style={{
-                  color: '#fc9916',
-                  ...theme.fonts.IBMPlexSansSemiBold(16),
-                  lineHeight: 22,
-                }}
-              >
-                {' '}
-                {strings.common.toll_free_num}{' '}
-              </Text>
+              <Text style={styles.free}> {strings.common.toll_free_num} </Text>
               <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
             </Text>
           </View>

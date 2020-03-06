@@ -18,4 +18,6 @@ export default StyleSheet.create({
     backgroundColor: '#ffffff',
     margin: 20,
   },
+  freenum: { marginLeft: 16, marginBottom: 32 },
+  call: { color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(18) },
 });

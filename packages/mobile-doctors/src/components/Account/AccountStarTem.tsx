@@ -88,7 +88,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        // Alert.alert(strings.common.error, errorMessage);
         Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
@@ -116,7 +115,6 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while removing Doctor', errorMessage, error);
-        // Alert.alert(strings.common.error, errorMessage);
         Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
       });
   };
@@ -124,14 +122,8 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
   const formatSuggestionsText = (text: string, searchKey: string) => {
     return (
       <Highlighter
-        style={{
-          color: theme.colors.darkBlueColor(),
-          ...theme.fonts.IBMPlexSansMedium(18),
-        }}
-        highlightStyle={{
-          color: theme.colors.darkBlueColor(),
-          ...theme.fonts.IBMPlexSansBold(18),
-        }}
+        style={styles.highView}
+        highlightStyle={styles.highText}
         searchWords={[searchKey]}
         textToHighlight={text}
       />
@@ -156,16 +148,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
               key={i}
             >
               {formatSuggestionsText(drName, '')}
-              {i < array!.length - 1 ? (
-                <View
-                  style={{
-                    marginTop: 8,
-                    marginBottom: 7,
-                    height: 1,
-                    opacity: 0.1,
-                  }}
-                />
-              ) : null}
+              {i < array!.length - 1 ? <View style={styles.formatView} /> : null}
             </TouchableOpacity>
           );
         })}
@@ -218,7 +201,7 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
 
   const renderAddDoctor = () => {
     return (
-      <View style={{ flexDirection: 'row', margin: 20, marginTop: 7 }}>
+      <View style={styles.addDoctor}>
         <Add />
         <TouchableOpacity onPress={() => setSelectDoctorVisible(!isSelectDoctorVisible)}>
           <Text style={styles.addDoctorText}>{strings.buttons.add_doct}</Text>
@@ -230,32 +213,13 @@ export const AccountStarTeam: React.FC<StarDoctorsTeamProps> = ({
   const renderSelectDoctorField = () => {
     return (
       <View>
-        <View
-          style={{
-            ...theme.viewStyles.whiteRoundedCornerCard,
-            margin: 20,
-            marginTop: 0,
-            borderRadius: 10,
-          }}
-        >
+        <View style={styles.selectCard}>
           <View style={{ margin: 20 }}>
             <Text style={styles.inputTextStyle}>{strings.account.add_doct_to_your_team}</Text>
             <TouchableOpacity onPress={() => onSelectStarDoctor(isDropdownOpen)}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    color: '#02475b',
-                    opacity: 0.4,
-                    marginTop: 10,
-                    marginBottom: 9,
-                  }}
-                >
-                  {selectedDoctor}
-                </Text>
-                <View style={{ alignItems: 'flex-end', alignSelf: 'flex-end' }}>
-                  {!isDropdownOpen ? <Down /> : <Up />}
-                </View>
+              <View style={styles.rowView}>
+                <Text style={styles.selectDoctor}>{selectedDoctor}</Text>
+                <View style={styles.icon}>{!isDropdownOpen ? <Down /> : <Up />}</View>
               </View>
             </TouchableOpacity>
             <View

@@ -57,14 +57,10 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [doctorName, setDoctorName] = useState<string>(
     (props.navigation.state.params && props.navigation.state.params.Firstname) || ''
   );
-  // const [DoctorId, setDoctorId] = useState<string>(
-  //   (props.navigation.state.params && props.navigation.state.params.DoctorId) || ''
-  // );
 
   const [date, setDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date>(new Date()); // to maintain a sync between week view change and calendar month
   const [isCalendarVisible, setCalendarVisible] = useState(false);
-  // const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [showNeedHelp, setshowNeedHelp] = useState(false);
   const [currentmonth, setCurrentMonth] = useState(monthsName[new Date().getMonth()]);
   const [getAppointments, setgetAppointments] = useState<
@@ -76,17 +72,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   useEffect(() => {
     console.log(doctorDetails, 'doctorDetailshi');
-
     setDoctorName((doctorDetails && doctorDetails.firstName) || '');
-    // setDoctorId((doctorDetails && doctorDetails!.id) || '');
-    // getLocalData()
-    //   .then((data) => {
-    //     console.log('data', data);
-    //     setDoctorName((data.doctorDetails! || {}).lastName);
-    //     setDoctorId((data.doctorDetails! || {}).id);
-    //   })
-    //   .catch(() => {});
-    // console.log('DoctirNAME', doctorName);
   }, [doctorDetails]);
 
   useEffect(() => {
@@ -131,8 +117,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        // getAppointments = data && data.getDoctorAppointments;
-        console.log('getAppointmentsApi', data, recordsDate);
         data && data.getDoctorAppointments && setgetAppointments(data.getDoctorAppointments);
       })
       .finally(() => {
@@ -142,19 +126,8 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const renderMonthSelection = () => {
     return (
-      <TouchableOpacity
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 12,
-          paddingBottom: 12,
-        }}
-        onPress={() => setCalendarVisible(!isCalendarVisible)}
-      >
-        <Text style={{ color: '#02475b', ...theme.fonts.IBMPlexSansBold(14), marginRight: 4 }}>
-          {currentmonth}
-        </Text>
+      <TouchableOpacity style={styles.month} onPress={() => setCalendarVisible(!isCalendarVisible)}>
+        <Text style={styles.currentmonth}>{currentmonth}</Text>
         {isCalendarVisible ? <Up /> : <Down />}
       </TouchableOpacity>
     );
@@ -246,32 +219,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   const renderDoctorGreeting = () => {
     return (
-      // <ProfileTabHeader
-      //   title={`hello dr. ${(doctorName || '').toLowerCase()} :)`}
-      //   description={`here’s your schedule for ${
-      //     moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
-      //       ? 'today'
-      //       : moment(date).format('MMM, DD')
-      //   }`}
-      //   activeTabIndex={0}/>
       <View style={{ backgroundColor: '#ffffff' }}>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansSemiBold(28),
-            color: '#02475b',
-            marginLeft: 20,
-            marginBottom: 2,
-          }}
-        >{`${strings.case_sheet.hello_dr} ${(doctorName || '').toLowerCase()} :)`}</Text>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(16),
-            color: '#0087ba',
-            marginLeft: 20,
-            marginBottom: 14,
-            lineHeight: 24,
-          }}
-        >{`${strings.appointments.here_your_schedule} ${
+        <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} ${(
+          doctorName || ''
+        ).toLowerCase()} :)`}</Text>
+        <Text style={styles.schedule}>{`${strings.appointments.here_your_schedule} ${
           moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
             ? 'today'
             : moment(date).format('MMM, DD')

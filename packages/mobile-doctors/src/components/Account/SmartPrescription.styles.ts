@@ -49,4 +49,16 @@ export default StyleSheet.create({
     padding: 20,
     ...theme.viewStyles.container,
   },
+  headerview: {
+    height: 50,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
+  },
+  commonview: { marginLeft: 0, marginTop: 9 },
 });

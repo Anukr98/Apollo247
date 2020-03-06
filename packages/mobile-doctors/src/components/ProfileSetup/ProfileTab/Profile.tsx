@@ -299,7 +299,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
                     doctorName={
                       profileData.doctorSecretary! && profileData.doctorSecretary!.secretary!.name
                     }
-                    experience={'SECRETARY | 15 YRS'}
+                    experience={'SECRETARY | 15'}
                     onRemove={(id) => {
                       removeSecretaryFromProgram(
                         profileData.doctorSecretary! && profileData.doctorSecretary!.secretary!.id
