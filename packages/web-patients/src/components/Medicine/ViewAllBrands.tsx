@@ -333,12 +333,12 @@ export const ViewAllBrands: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.viewAllBrands}>
           <div className={classes.breadcrumbs}>
-            <Link to={clientRoutes.medicines()}>
+            <a onClick={() => window.history.back()}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
-            </Link>
+            </a>
             <div className={classes.headerTitle}>Shop By Brand</div>
           </div>
           <div className={classes.filterHeader}>
