@@ -11,7 +11,6 @@ import {
 import { addMinutes, format, startOfToday } from 'date-fns/esm';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
-
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -107,7 +106,6 @@ const useStyles = makeStyles((theme: Theme) => {
         height: '85%',
       },
       '& .rbc-date-cell a': {
-        // pointerEvents: 'none',
         color: 'rgba(2, 71, 91, 0.6)',
         fontSize: 14,
         paddingRight: 15,
@@ -197,7 +195,6 @@ interface MonthEvent {
 const localizer = momentLocalizer(moment);
 const eventsAdapter = (data: GetDoctorAppointments) => {
   let eventList: MonthEvent[] = [];
-
   if (data && data.getDoctorAppointments) {
     eventList = (data.getDoctorAppointments.appointmentsHistory || []).map(
       (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {

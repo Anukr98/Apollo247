@@ -18,15 +18,12 @@ import {
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
 import { useQuery } from 'react-apollo-hooks';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   GetDoctorDetails_getDoctorDetails,
   GetDoctorDetails_getDoctorDetails_consultHours as consultHoursType,
 } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
 import Scrollbars from 'react-custom-scrollbars';
-import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
-import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import * as _ from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -127,15 +124,8 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 26,
       },
     },
-    nopionter: {
-      // pointerEvents: 'none',
-    },
   };
 });
-
-type consultHours = {
-  [key: number]: consultHoursType;
-};
 
 const dataAdapter = (
   appointmentData: GetDoctorAppointments | undefined,
@@ -153,22 +143,10 @@ const dataAdapter = (
 
   const filteredDay =
     consultHours &&
-    _.filter(consultHours, function(o) {
-      if (o && o.weekDay) {
-        return o.weekDay === selectedDay;
-      }
-    });
-
-  // let consultDuration = 15;
-
-  // if (Array.isArray(filteredDay)) {
-  //   consultDuration = filteredDay[0] && filteredDay[0].consultDuration ?;
-  // } else {
-  //   consultDuration = 15;
-  // }
-
-  // const consultDuration = 15;
-
+    _.filter(
+      consultHours,
+      (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+    );
   const appointments: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null)[] =
     appointmentData!.getDoctorAppointments!.appointmentsHistory || [];
   const newPatientsList: (string | null)[] | null = appointmentData!.getDoctorAppointments
@@ -185,7 +163,6 @@ const dataAdapter = (
         patientInfo,
         caseSheet,
       } = appointment!;
-      // console.log(doctorData, selectedDate);
 
       const startTime = getTime(new Date(appointmentDateTime));
       const consultDurationDay: any =
@@ -249,7 +226,6 @@ const getMonthRange = ({ start, end }: { start: string | Date; end: string | Dat
 export const Calendar: React.FC = () => {
   const today: Date = startOfToday();
   const classes = useStyles();
-  const client = useApolloClient();
   const [doctorData, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>();
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
@@ -260,8 +236,6 @@ export const Calendar: React.FC = () => {
     localStorage.setItem('currentUserId', currentUserId ? currentUserId : '');
   }
   const pageRefreshTimeInSeconds = 30;
-
-  //console.log(moment(today).format('MMMM'));
   const [range, setRange] = useState<{
     start: string | Date;
     end: string | Date;
@@ -274,48 +248,34 @@ export const Calendar: React.FC = () => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-
+  const { isSignedIn } = useAuth();
   const setStartOfMonthDate = ({ start, end }: { start: string | Date; end: string | Date }) => {
-    //setMonthSelected(moment(selectedDate).format('MMMM'));
     const increaseDate = new Date(start);
     const newDate = new Date(increaseDate.setMonth(increaseDate.getMonth() + 1));
     setSelectedDate(startOfMonth(newDate as Date));
   };
-  const getDoctorDetail = () => {
-    client
-      .query<GetDoctorDetails>({
-        query: GET_DOCTOR_DETAILS,
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        if (_data && _data.data && _data.data.getDoctorDetails)
-          setDoctorDetails(_data.data.getDoctorDetails);
-      })
-      .catch((e) => {
-        console.log('Error occured while fetching Doctor', e);
-      });
-  };
   useEffect(() => {
     if (selectedDate) {
-      getDoctorDetail();
+      setDoctorDetails(currentPatient);
     }
   }, [selectedDate]);
-  const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
-    variables: {
-      doctorId:
-        currentUserType === LoggedInUserType.SECRETARY
-          ? currentUserId
-            ? currentUserId
-            : localStorage.getItem('currentUserId')
-          : null,
-      startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
-      endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
-    },
-    fetchPolicy: 'no-cache',
-    pollInterval: pageRefreshTimeInSeconds * 1000,
-    notifyOnNetworkStatusChange: true,
-  });
-  // console.log('currentPatient', currentPatient!.displayName);
+  const { data, loading } = isSignedIn
+    ? useQuery(GET_DOCTOR_APPOINTMENTS, {
+        variables: {
+          doctorId:
+            currentUserType === LoggedInUserType.SECRETARY
+              ? currentUserId
+                ? currentUserId
+                : localStorage.getItem('currentUserId')
+              : null,
+          startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
+          endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
+        },
+        fetchPolicy: 'no-cache',
+        pollInterval: pageRefreshTimeInSeconds * 1000,
+        notifyOnNetworkStatusChange: true,
+      })
+    : { data: [], loading: false };
 
   return (
     <div className={classes.welcome}>
@@ -388,7 +348,6 @@ export const Calendar: React.FC = () => {
                   setMonthSelected(month);
                 }}
                 onMonthChange={(range) => {
-                  //console.log(range);
                   setStartOfMonthDate(range as { start: string; end: string });
                   setRange(getMonthRange(range as { start: string; end: string }));
                 }}

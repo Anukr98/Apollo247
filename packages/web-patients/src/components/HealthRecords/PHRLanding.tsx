@@ -22,6 +22,9 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations as HospitalizationsType,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { useAuth } from 'hooks/authHooks';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useMutation } from 'react-apollo-hooks';
+import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -57,6 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '11px 32px',
       color: '#02475b',
       opacity: 1,
+      textTransform: 'none',
     },
     tabSelected: {
       color: theme.palette.secondary.dark,
@@ -101,6 +105,10 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   );
   const { isSigningIn } = useAuth();
   const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
+  const [activeMedicalData, setActiveMedicalData] = useState<any | null>(null);
+  const [medicalError, setMedicalError] = useState<boolean>(false);
+  const [medicalRecordError, setMedicalRecordError] = useState<boolean>(false);
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   useEffect(() => {
     if (
@@ -194,9 +202,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         } else {
           setMedicalRecords([]);
         }
+        setMedicalRecordError(false);
       })
       .catch((error) => {
         alert(error);
+        setMedicalRecordError(true);
         setMedicalLoading(false);
       });
   };
@@ -220,9 +230,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           setHealthChecks([]);
           setHospitalizations([]);
         }
+        setMedicalError(false);
       })
       .catch((error) => {
         console.log(error);
+        setMedicalError(true);
         setMedicalLoading(false);
       });
   };
@@ -239,13 +251,43 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     });
   };
 
+  const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
+
+  const deleteReport = (id: string, type: string) => {
+    setMedicalLoading(true);
+    deleteReportMutation({
+      variables: { recordId: id },
+      fetchPolicy: 'no-cache',
+    })
+      .then((_data) => {
+        if (type === 'medical') {
+          const newRecords =
+            medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
+          setMedicalRecords(newRecords);
+        } else if (type === 'lab') {
+          const newRecords = labTests && labTests.filter((record: any) => record.id !== id);
+          setLabTests(newRecords);
+        } else if (type === 'health') {
+          const newRecords = healthChecks && healthChecks.filter((record: any) => record.id !== id);
+          setHealthChecks(newRecords);
+        } else if (type === 'hospital') {
+          const newRecords =
+            hospitalizations && hospitalizations.filter((record: any) => record.id !== id);
+          setHospitalizations(newRecords);
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while render Delete MedicalOrder', { e });
+      });
+  };
+
   useEffect(() => {
     if (!isSigningIn) {
       if (!medicalRecords) {
         setMedicalLoading(true);
         fetchData();
       }
-      if (!labTests || !healthChecks || !hospitalizations) {
+      if (!labTests && !healthChecks && !hospitalizations) {
         fetchTestData();
       }
     }
@@ -267,6 +309,9 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           mergeArray.push({ type: 'hospital', data: item });
         });
       const sortedData = sortByDate(mergeArray);
+      if (!isSmallScreen && sortedData && sortedData.length) {
+        setActiveMedicalData(sortedData[0]);
+      }
       setAllCombinedData(sortedData);
       setMedicalLoading(false);
     }
@@ -307,11 +352,12 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           {tabValue === 1 && (
             <TabContainer>
               <MedicalRecords
+                error={medicalError || medicalRecordError}
                 loading={medicalLoading}
-                setLoading={setMedicalLoading}
-                medicalRecords={medicalRecords}
-                setMedicalRecords={setMedicalRecords}
                 allCombinedData={allCombinedData}
+                activeData={activeMedicalData}
+                setActiveData={setActiveMedicalData}
+                deleteReport={deleteReport}
               />
             </TabContainer>
           )}

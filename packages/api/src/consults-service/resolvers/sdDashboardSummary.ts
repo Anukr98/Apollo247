@@ -9,8 +9,9 @@ import {
   PhrDocumentsSummary,
   DoctorFeeSummary,
   TRANSFER_INITIATED_TYPE,
+  PATIENT_TYPE,
 } from 'consults-service/entities';
-import { ConsultMode, WeekDay } from 'doctors-service/entities';
+import { ConsultMode, WeekDay, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -30,7 +31,7 @@ import _isEmpty from 'lodash/isEmpty';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
-import { format, differenceInMinutes } from 'date-fns';
+import { format, differenceInMinutes, isWithinInterval } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 
 export const sdDashboardSummaryTypeDefs = gql`
@@ -39,6 +40,15 @@ export const sdDashboardSummaryTypeDefs = gql`
     doctorName: String
     appointmentDateTime: Date
     totalConsultation: Int
+  }
+
+  enum PATIENT_TYPE {
+    NEW
+    REPEAT
+  }
+
+  type UpdatePatientTypeResult {
+    status: Boolean
   }
 
   type FeedbackSummaryResult {
@@ -76,6 +86,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
+    updatePatientType(doctorId: ID!): UpdatePatientTypeResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
     updateUtilizationCapacity(
@@ -96,6 +107,9 @@ type DashboardSummaryResult = {
   totalConsultation: number;
 };
 
+type UpdatePatientTypeResult = {
+  status: boolean;
+};
 type DoctorFeeSummaryResult = {
   status: boolean;
 };
@@ -206,6 +220,32 @@ const updatePhrDocSummary: Resolver<
   return { apptDocCount: docCount, medDocCount: prescritionCount };
 };
 
+const updatePatientType: Resolver<
+  null,
+  { doctorId: string; patientId: string },
+  ConsultServiceContext,
+  UpdatePatientTypeResult
+> = async (parent, args, context) => {
+  const { apptRepo, docRepo } = getRepos(context);
+  let prevPatientId = '0';
+
+  const doctorData = await docRepo.findById(args.doctorId);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const appointmentDetails = await apptRepo.getAppointmentsByDocId(args.doctorId);
+  if (appointmentDetails.length) {
+    appointmentDetails.forEach(async (appointmentData) => {
+      if (appointmentData.patientId != prevPatientId) {
+        prevPatientId = appointmentData.patientId;
+        await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
+      } else {
+        await apptRepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
+      }
+    });
+  }
+  return { status: true };
+};
+
 const updateSdSummary: Resolver<
   null,
   { summaryDate: Date; doctorId: string },
@@ -240,6 +280,38 @@ const updateSdSummary: Resolver<
           );
         });
         totalSlotsTime = difference / timeSlots[0].consultDuration;
+      }
+
+      const docsList = await docRepo.getAllDoctors('0');
+      let awayCount = 0;
+      let onlineCount = 0;
+      if (docsList.length > 0) {
+        docsList.map(async (doctor) => {
+          const weekDay = format(args.summaryDate, 'EEEE').toUpperCase();
+          const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+          if (timeSlots.length) {
+            timeSlots.forEach(async (timeSlot) => {
+              const currentTime = new Date();
+              const st = new Date(
+                format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.startTime.toString()
+              );
+              const ed = new Date(
+                format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.endTime.toString()
+              );
+              const betweenConsultHours = isWithinInterval(currentTime, {
+                start: st,
+                end: ed,
+              });
+              if (betweenConsultHours == true) {
+                if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.AWAY) {
+                  awayCount++;
+                } else if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE) {
+                  onlineCount++;
+                }
+              }
+            });
+          }
+        });
       }
 
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
@@ -324,6 +396,8 @@ const updateSdSummary: Resolver<
         audioConsultations: auidoCount,
         videoConsultations: videoCount,
         chatConsultations: chatCount,
+        noOfAwayDoctors: awayCount,
+        noOfOnlineDoctors: onlineCount,
         totalFollowUp: paidFollowUpCount + unpaidFollowUpCount,
         rescheduledByDoctor: reschduleCount,
         rescheduledByPatient: patientReschduleCount,
@@ -467,6 +541,7 @@ export const sdDashboardSummaryResolvers = {
     updateConsultRating,
     updateSpecialtyCount,
     updateUtilizationCapacity,
+    updatePatientType,
   },
   Query: {
     getopenTokFileUrl,

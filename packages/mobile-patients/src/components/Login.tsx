@@ -251,56 +251,57 @@ export const Login: React.FC<LoginProps> = (props) => {
     const eventAttributes: WebEngageEvents['Mobile Number Entered'] = { mobilenumber: phoneNumber };
     postWebEngageEvent('Mobile Number Entered', eventAttributes);
 
-    Keyboard.dismiss();
-    getNetStatus().then(async (status) => {
-      if (status) {
-        if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
-          null;
-        } else {
-          const isBlocked = await _getTimerData();
-          if (isBlocked) {
-            props.navigation.navigate(AppRoutes.OTPVerification, {
-              otpString,
-              phoneNumber: phoneNumber,
-            });
+      Keyboard.dismiss();
+      getNetStatus().then(async (status) => {
+        if (status) {
+          if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
+            null;
           } else {
-            CommonSetUserBugsnag(phoneNumber);
-            AsyncStorage.setItem('phoneNumber', phoneNumber);
-            setShowSpinner(true);
-
-            loginAPI('+91' + phoneNumber)
-              .then((confirmResult: any) => {
-                console.log(confirmResult, 'confirmResult');
-                setShowSpinner(false);
-
-                CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
-
-                console.log('confirmResult login', confirmResult);
-                try {
-                  signOut();
-                } catch (error) {}
-
-                props.navigation.navigate(AppRoutes.OTPVerification, {
-                  otpString,
-                  phoneNumber: phoneNumber,
-                  loginId: confirmResult.loginId,
-                });
-              })
-              .catch((error: Error) => {
-                console.log(error, 'error');
-                setShowSpinner(false);
-
-                CommonLogEvent('OTP_SEND_FAIL', error.message);
-                CommonBugFender('OTP_SEND_FAIL', error);
-                handleGraphQlError(error);
+            const isBlocked = await _getTimerData();
+            if (isBlocked) {
+              props.navigation.navigate(AppRoutes.OTPVerification, {
+                otpString,
+                phoneNumber: phoneNumber,
               });
+            } else {
+              CommonSetUserBugsnag(phoneNumber);
+              AsyncStorage.setItem('phoneNumber', phoneNumber);
+              setShowSpinner(true);
+
+              loginAPI('+91' + phoneNumber)
+                .then((confirmResult: any) => {
+                  console.log(confirmResult, 'confirmResult');
+                  setShowSpinner(false);
+
+                  CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
+
+                  console.log('confirmResult login', confirmResult);
+                  try {
+                    signOut();
+                  } catch (error) {}
+
+                  props.navigation.navigate(AppRoutes.OTPVerification, {
+                    otpString,
+                    phoneNumber: phoneNumber,
+                    loginId: confirmResult.loginId,
+                  });
+                })
+                .catch((error: Error) => {
+                  console.log(error, 'error');
+                  setShowSpinner(false);
+
+                  CommonLogEvent('OTP_SEND_FAIL', error.message);
+                  CommonBugFender('OTP_SEND_FAIL', error);
+                  // handleGraphQlError(error);
+                });
+            }
           }
+        } else {
+          setshowOfflinePopup(true);
+          setShowSpinner(false);
         }
-      } else {
-        setshowOfflinePopup(true);
-        setShowSpinner(false);
-      }
-    });
+      });
+    } catch (error) {}
   };
 
   const openWebView = () => {

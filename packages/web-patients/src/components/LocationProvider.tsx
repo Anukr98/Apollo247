@@ -49,7 +49,8 @@ export const LocationProvider: React.FC = (props) => {
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
           )
           .then((res) => {
-            const addrComponents = res.data.results[0].address_components || [];
+            const addrComponents =
+              (res && res.data && res.data.results && res.data.results[0].address_components) || [];
             const _pincode = (
               addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
             ).long_name;
@@ -81,7 +82,13 @@ export const LocationProvider: React.FC = (props) => {
       axios.get(url).then((res) => {
         if (res && res.data && res.data.results[0]) {
           const { lat, lng } = res.data.results[0].geometry.location;
-          const addrComponents = res.data.results[0].address_components || [];
+          const addrComponents =
+            (res &&
+              res.data &&
+              res.data.results &&
+              res.data.results.length > 0 &&
+              res.data.results[0].address_components) ||
+            [];
           const _pincode = (
             addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
           ).long_name;
@@ -90,11 +97,10 @@ export const LocationProvider: React.FC = (props) => {
           setCurrentPincode(_pincode);
         }
       });
-    } else {
-      if (!isSigningIn) {
-        locateCurrentLocation();
-      }
     }
+    // else if (!isSigningIn) {
+    //   locateCurrentLocation();
+    // }
   }, [currentLocation]);
 
   return (

@@ -172,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { isSigningIn, isSignedIn } = useAuth();
+  const { isSigningIn, isSignedIn, verifyOtpError, setVerifyOtpError } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
@@ -184,7 +184,7 @@ export const Header: React.FC = (props) => {
         <header className={classes.header} data-cypress="Header">
           <div className={classes.logo}>
             <Link to="/">
-              <img src={require('images/ic_logo.png')} />
+              <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
           {isSignedIn && (
@@ -195,7 +195,7 @@ export const Header: React.FC = (props) => {
           )}
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-              <a href={getAppStoreLink()} target="_blank">
+              <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
                 Download Apollo247 App
               </a>
             </div>
@@ -211,6 +211,7 @@ export const Header: React.FC = (props) => {
                 <Link
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
                   to={clientRoutes.myAccount()}
+                  title={'Profile'}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
@@ -223,10 +224,11 @@ export const Header: React.FC = (props) => {
                   {({ protectWithLoginPopup }) => (
                     <>
                       <div
-                        onClick={() =>
-                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
-                        }
+                        onClick={() => {
+                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup();
+                        }}
                         className={classes.loginLinks}
+                        title={'Login/SignUp'}
                       >
                         Login/SignUp
                       </div>
@@ -236,11 +238,12 @@ export const Header: React.FC = (props) => {
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
                         }
                         ref={avatarRef}
+                        title={'Login/SignUp'}
                       >
                         {isSigningIn ? (
                           <CircularProgress />
                         ) : (
-                          <img src={require('images/ic_account.svg')} />
+                          <img src={require('images/ic_account.svg')} title={'Login/SignUp'} />
                         )}
                       </div>
                     </>
@@ -257,9 +260,11 @@ export const Header: React.FC = (props) => {
                     const otpAfterCleaning = otp.replace(/,/g, '');
                     if (
                       mobileNumber.length === 0 ||
-                      (mobileNumber.length === 10 && otpAfterCleaning.length === 0)
+                      ((mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+                        otpAfterCleaning.length === 6)
                     ) {
                       setIsLoginPopupVisible(false);
+                      setVerifyOtpError(false);
                     }
                   }}
                   anchorOrigin={{

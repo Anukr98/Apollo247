@@ -114,7 +114,10 @@ export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
             type="submit"
             color="primary"
             classes={{ root: classes.button }}
-            onClick={() => props.onSubmitClick()}
+            onClick={() => {
+              props.onSubmitClick();
+              window.location.reload(true);
+            }}
           >
             Ok, Got it
           </AphButton>

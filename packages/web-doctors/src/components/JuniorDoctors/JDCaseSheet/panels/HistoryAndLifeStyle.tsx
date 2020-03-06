@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid } from '@material-ui/core';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -167,34 +167,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     gender,
   } = useContext(CaseSheetContextJrd);
 
-  // const [disablePastMedicalHistoryFocus, setDisablePastMedicalHistoryFocus] = useState(true);
-  // const [disablePastSurgicalHistoryFocus, setDisablePastSurgicalHistoryFocus] = useState(true);
-  // const [disableDrugAllergiesFocus, setDisableDrugAllergiesFocus] = useState(true);
-  // const [disableDietAllergiesFocus, setDisableDietAllergiesFocus] = useState(true);
-  // const [disableLifeStyleFocus, setDisableLifeStyleFocus] = useState(true);
-  // const [disableMenstrualHistoryFocus, setDisableMenstrualHistoryFocus] = useState(true);
-  // const [disableFamilyHistoryFocus, setDisableFamilyHistoryFocus] = useState(true);
-
-  // const pastMedicalHistoryElement = useRef<HTMLInputElement>(null);
-  // const pastSurgicalHistoryElement = useRef<HTMLInputElement>(null);
-  // const drugAllergiesElement = useRef<HTMLInputElement>(null);
-  // const dietAllergiesElement = useRef<HTMLInputElement>(null);
-  // const lifeStyleElement = useRef<HTMLInputElement>(null);
-  // const menstrualElement = useRef<HTMLInputElement>(null);
-  // const familyHistoryElement = useRef<HTMLInputElement>(null);
-
-  // useEffect(() => {
-
-  // }, [
-  //   pastMedicalHistoryElement,
-  //   pastSurgicalHistoryElement,
-  //   drugAllergiesElement,
-  //   dietAllergiesElement,
-  //   lifeStyleElement,
-  //   menstrualElement,
-  //   familyHistoryElement,
-  // ]);
-
   return (
     <Grid container spacing={1}>
       <Grid item sm={12}>
@@ -211,17 +183,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setPastMedicalHistory(e.target.value);
             }}
           />
-          {/* {caseSheetEdit && pastMedicalHistory !== '' && (
-            <div className={classes.boxActions}>
-              <AphButton
-                onClick={() => {
-                  setPastMedicalHistory('');
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -237,20 +198,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setPastSurgicalHistory(e.target.value);
             }}
-            // inputRef={pastSurgicalHistoryElement}
           />
-          {/* {caseSheetEdit && pastSurgicalHistory !== '' && (
-            <div className={classes.boxActions}>
-             
-              <AphButton
-                onClick={(e) => {
-                  setPastSurgicalHistory('');
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -266,20 +214,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setDrugAllergies(e.target.value);
             }}
-            // inputRef={drugAllergiesElement}
           />
-          {/* {caseSheetEdit && drugAllergies !== '' && (
-            <div className={classes.boxActions}>
-              
-              <AphButton
-                onClick={(e) => {
-                  setDrugAllergies('');
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -295,19 +230,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setDietAllergies(e.target.value);
             }}
-            // inputRef={dietAllergiesElement}
           />
-          {/* {caseSheetEdit && dietAllergies !== '' && (
-            <div className={classes.boxActions}>
-              <AphButton
-                onClick={(e) => {
-                  setDietAllergies('');
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          )} */}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -325,19 +248,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setLifeStyle(e.target.value);
             }}
-            // inputRef={lifeStyleElement}
           />
-          {/* {caseSheetEdit && lifeStyle !== '' && (
-            <div className={classes.boxActions}>
-              <AphButton
-                onClick={(e) => {
-                  setLifeStyle('');
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          )} */}
         </div>
       </Grid>
       {gender === Gender.FEMALE && (
@@ -356,19 +267,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               onChange={(e) => {
                 setMenstrualHistory(e.target.value);
               }}
-              // inputRef={menstrualElement}
             />
-            {/* {caseSheetEdit && menstrualHistory !== '' && (
-              <div className={classes.boxActions}>
-                <AphButton
-                  onClick={() => {
-                    setMenstrualHistory('');
-                  }}
-                >
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div>
-            )} */}
           </div>
         </Grid>
       )}
@@ -387,19 +286,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setFamilyHistory(e.target.value);
             }}
-            // inputRef={familyHistoryElement}
           />
-          {/* {caseSheetEdit && familyHistory !== '' && (
-            <div className={classes.boxActions}>
-              <AphButton
-                onClick={() => {
-                  setFamilyHistory('');
-                }}
-              >
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          )} */}
         </div>
       </Grid>
     </Grid>

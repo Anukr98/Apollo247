@@ -167,7 +167,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [followUpPanel, setFollowUpPanel] = useState<boolean>(props.startAppointment);
   const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
   const [vitals, setVitals] = useState<boolean>(props.startAppointment);
-  const { appointmentInfo } = useContext(CaseSheetContext);
 
   const items = [
     {

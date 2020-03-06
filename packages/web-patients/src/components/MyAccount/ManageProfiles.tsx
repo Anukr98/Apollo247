@@ -40,12 +40,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     profileCard: {
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
@@ -67,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '50%',
       overflow: 'hidden',
       '& img': {
-        maxWidth: 80,
+        maxHeight: 80,
       },
     },
     profileGroup: {
@@ -227,6 +221,7 @@ export const ManageProfiles: React.FC = (props) => {
                   setUpdatingPatientId(userId);
                   setIsMeClicked(accountDetails.relation === 'ME');
                 }}
+                title={'Update Profile'}
               >
                 <div className={classes.profileCard}>
                   <div className={classes.profileImg}>
@@ -264,12 +259,13 @@ export const ManageProfiles: React.FC = (props) => {
             setUpdatingPatientId('');
           }}
           color="primary"
+          title={'Add New Profile'}
         >
           Add New Profile
         </AphButton>
       </div>
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Profile'}
           {/* {updatingPatientId.length > 0 ? (

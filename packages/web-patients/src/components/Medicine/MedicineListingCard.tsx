@@ -15,12 +15,16 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       padding: 10,
       marginBottom: 10,
+      position: 'relative',
     },
     medicineStripDisabled: {
       backgroundColor: '#f7f8f5',
     },
     medicineStripWrap: {
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
     },
     medicineInformation: {
       paddingRight: 10,
@@ -43,6 +47,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#02475b',
       fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        flexGrow: 1,
+        paddingBottom: 5,
+        paddingRight: 24,
+      },
     },
     tabInfo: {
       fontSize: 10,
@@ -68,6 +77,16 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
       paddingTop: 12,
       paddingBottom: 11,
+      minWidth: 90,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+        borderRight: 'none',
+        flexGrow: 1,
+        textAlign: 'right',
+        paddingRight: 12,
+        borderTop: '1px solid rgba(2,71,91,0.2)',
+      },
       '& span': {
         fontWeight: 500,
       },
@@ -76,6 +95,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingTop: 8,
       paddingBottom: 8,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 15,
+        top: 8,
+      },
       '& button': {
         borderRadius: 0,
         boxShadow: 'none',
@@ -93,6 +117,15 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
       paddingTop: 4,
       paddingBottom: 4,
+      [theme.breakpoints.down('xs')]: {
+        borderLeft: 'none',
+        flexGrow: 1,
+        textAlign: 'left',
+        borderTop: '1px solid rgba(2,71,91,0.2)',
+      },
+      [theme.breakpoints.up('xs')]: {
+        minWidth: 130,
+      },
     },
     selectMenuItem: {
       backgroundColor: 'transparent',
@@ -123,7 +156,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const MedicineListingCard: React.FC = (props) => {
   const classes = useStyles({});
   const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
-  const options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x + 1);
+
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
@@ -191,7 +225,7 @@ export const MedicineListingCard: React.FC = (props) => {
                       ))}
                     </AphCustomDropdown>
                   </div>
-                  <div className={classes.medicinePrice}>{item.price}</div>
+                  <div className={classes.medicinePrice}>Rs.{item.price}</div>
                   <div className={classes.addToCart}>
                     <AphButton onClick={() => removeCartItem && removeCartItem(item.id)}>
                       <img

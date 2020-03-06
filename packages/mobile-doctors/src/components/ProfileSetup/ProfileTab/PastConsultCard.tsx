@@ -56,15 +56,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
             },
           ]}
         />
-        <View
-          style={{
-            height: 12,
-            width: 12,
-            borderRadius: 6,
-            margin: 2,
-            backgroundColor: theme.colors.SHARP_BLUE,
-          }}
-        />
+        <View style={styles.timeSlotTypeView} />
         <View
           style={[
             styles.verticalLine,
@@ -111,44 +103,20 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
 
   return (
     <ScrollView bounces={false}>
-      <View
-        style={{
-          flex: 1,
-          paddingBottom: 20,
-        }}
-      >
+      <View style={styles.mainView}>
         {props.data &&
           props.data.length > 0 &&
           props.data.map(
             (i, index, array) =>
               i && (
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: 'row',
-                    // justifyContent: 'center',
-                    // alignItems: 'center',
-                  }}
-                >
+                <View style={styles.dataView}>
                   {renderLeftTimeLineView(
                     i.appointmentDateTime,
                     index !== 0,
                     index !== array.length - 1
                   )}
                   <TouchableOpacity
-                    style={{
-                      flexDirection: 'row',
-                      borderRadius: 10,
-                      backgroundColor: theme.colors.WHITE,
-                      height: 50,
-                      alignItems: 'center',
-                      paddingRight: 10,
-                      paddingLeft: 18,
-                      marginVertical: 4.5,
-                      marginRight: 20,
-                      flex: 1,
-                      justifyContent: 'space-between',
-                    }}
+                    style={styles.leftTimeLintTouch}
                     onPress={() =>
                       props.navigation.navigate(AppRoutes.CaseSheetDetails, {
                         consultDetails: i,
@@ -156,11 +124,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                       })
                     }
                   >
-                    <Text
-                      style={{
-                        ...theme.viewStyles.text('M', 12, theme.colors.darkBlueColor(0.6), 1, 12),
-                      }}
-                    >
+                    <Text style={styles.TouchableText}>
                       {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
                     </Text>
                     <View style={{ flexDirection: 'row' }}>

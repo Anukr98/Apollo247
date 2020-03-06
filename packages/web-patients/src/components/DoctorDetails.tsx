@@ -215,6 +215,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [tabValue, setTabValue] = useState<number>(0);
+  const [isShownOnce, setIsShownOnce] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
@@ -266,7 +267,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         <div className={classes.container}>
           <div className={classes.doctorDetailsPage}>
             <div className={classes.breadcrumbs}>
-              <Link to={clientRoutes.doctorsLanding()}>
+              <Link to={clientRoutes.doctorsLanding()} title={'Back to doctors search'}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -296,11 +297,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     onClick={(e) => setIsPopoverOpen(true)}
                     color="primary"
                     className={classes.bookAppointment}
+                    title={' Book Appointment'}
                   >
                     Book Appointment
                   </AphButton>
                   <div className={classes.customScroll}>
-                    {isStarDoctor && (
+                    {!isPayrollDoctor && (
                       <>
                         <DoctorClinics doctorDetails={doctorDetails} />
                         <StarDoctorTeam doctorDetails={doctorDetails} />
@@ -314,7 +316,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           </div>
         </div>
         <div className={classes.flotingBtn}>
-          <AphButton onClick={(e) => setIsPopoverOpen(true)} color="primary">
+          <AphButton
+            onClick={(e) => setIsPopoverOpen(true)}
+            color="primary"
+            title={' Book Appointment'}
+          >
             Book Appointment
           </AphButton>
         </div>
@@ -345,6 +351,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     selected: classes.tabSelected,
                   }}
                   label="Consult Online"
+                  title={'Consult Online'}
                 />
               )}
 
@@ -355,6 +362,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     selected: classes.tabSelected,
                   }}
                   label="Visit Clinic"
+                  title="Visit Clinic"
                 />
               )}
             </Tabs>
@@ -365,6 +373,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   doctorDetails={doctorDetails}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                   isRescheduleConsult={false}
+                  tabValue={(tabValue: number) => setTabValue(tabValue)}
+                  setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
+                  isShownOnce={isShownOnce}
                 />
               </TabContainer>
             )}

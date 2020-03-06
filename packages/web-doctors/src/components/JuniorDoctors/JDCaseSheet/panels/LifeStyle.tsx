@@ -118,27 +118,6 @@ export const LifeStyle: React.FC = () => {
       ) : (
         <span>No data Found</span>
       )}
-      {/* {data.map((item, idx) => (
-        <Typography key={idx} className={classes.column} component="div">
-          <Typography component="h5" variant="h5" className={classes.header}>
-            {Object.keys(item)[0]}
-          </Typography>
-          <Typography component="div" className={classes.content}>
-            <List>
-              {!!Object.values(item).length &&
-                Object.values(item).map((text, i) => (
-                  <ListItem key={i}>
-                    <Fragment>
-                      <Typography component="p" className={classes.textContent}>
-                        {text}
-                      </Typography>
-                    </Fragment>
-                  </ListItem>
-                ))}
-            </List>
-          </Typography>
-        </Typography>
-      ))} */}
     </Typography>
   );
 };

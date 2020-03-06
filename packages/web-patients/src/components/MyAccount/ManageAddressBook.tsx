@@ -13,6 +13,7 @@ import {
 import { GET_PATIENT_ADDRESS_LIST } from 'graphql/profiles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { MascotWithMessage } from '../MascotWithMessage';
+import { Close } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -25,18 +26,19 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 0,
         boxShadow: 'none',
         backgroundColor: 'transparent',
+        minHeight: 'auto',
+      },
+      [theme.breakpoints.up(768)]: {
+        minHeight: 'calc(100vh - 195px)',
+      },
+      [theme.breakpoints.up(901)]: {
+        minHeight: 'calc(100vh - 154px)',
       },
     },
     bottomPopover: {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     sectionBody: {
       paddingBottom: 20,
@@ -52,14 +54,28 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     scrollBars: {
-      height: 'calc(100vh - 250px) !important',
       [theme.breakpoints.down('xs')]: {
-        height: '100% !important',
+        maxHeight: '100% !important',
+        '& >div': {
+          maxHeight: '100% !important',
+        },
         '& >div:nth-child(2)': {
           display: 'none',
         },
         '& >div:nth-child(3)': {
           display: 'none',
+        },
+      },
+      [theme.breakpoints.up(768)]: {
+        maxHeight: 'calc(100vh - 278px) !important',
+        '& >div': {
+          maxHeight: 'calc(100vh - 278px) !important',
+        },
+      },
+      [theme.breakpoints.up(901)]: {
+        maxHeight: 'calc(100vh - 236px) !important',
+        '& >div': {
+          maxHeight: 'calc(100vh - 236px) !important',
         },
       },
     },
@@ -112,6 +128,7 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars
         autoHide={true}
+        autoHeight
         className={classes.scrollBars}
         renderView={(props) =>
           isSmallScreen ? <div {...props} style={{ position: 'static' }} /> : <div {...props} />
@@ -122,12 +139,16 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton onClick={() => setIsAddAddressDialogOpen(true)} color="primary">
+        <AphButton
+          onClick={() => setIsAddAddressDialogOpen(true)}
+          color="primary"
+          title={'Add New Address'}
+        >
           Add New Address
         </AphButton>
       </div>
       <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
@@ -152,6 +173,7 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
           closeButtonLabel="OK"
           closeMascot={() => {
             setIsPopoverOpen(false);
+            setForceRefresh(false);
           }}
         />
       </Popover>

@@ -25,6 +25,7 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 const styles = AppointmentsListStyles;
 
@@ -52,15 +53,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       <NextAppointmentIcon />
     );
   };
-  // status == 'past' ? (
-  //   <PastAppointmentIcon />
-  // ) : status == 'missed' ? (
-  //   <MissedAppointmentIcon />
-  // ) : status == 'next' ? (
-  //   <NextAppointmentIcon />
-  // ) : (
-  //   <UpComingIcon />
-  // );
 
   const renderLeftTimeLineView = (
     status: string,
@@ -102,12 +94,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       return 'past';
     } else {
       return 'next';
-      // const appointemntTime = moment
-      //   .utc(appointment.appointmentDateTime)
-      //   .local()
-      //   .format('YYYY-MM-DD HH:mm:ss');
-      // if (moment(appointemntTime).isBefore()) return 'next';
-      // else return 'next';
     }
   };
 
@@ -124,12 +110,13 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return `${slotStartTime} ${consultDuration ? `- ${slotEndTime}` : ``}`;
   };
 
-  const showUpNext = (aptTime: string, index: number) => {
+  const showUpNext = (aptTime: string, index: number, status: STATUS) => {
     if (index === 0) upcomingNextRendered = false;
     if (
       new Date(aptTime) > new Date() &&
       !upcomingNextRendered &&
-      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') &&
+      status !== STATUS.COMPLETED
     ) {
       upcomingNextRendered = true;
       return true;
@@ -163,19 +150,12 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             })[0];
 
           const consultDuration = filterData ? filterData.consultDuration : 0;
-          const showNext = showUpNext(i.appointmentDateTime, index);
+          const showNext = showUpNext(i.appointmentDateTime, index, i.status);
 
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
+              <View style={styles.dataview}>
                 {renderLeftTimeLineView(
                   i.status,
                   index !== 0,
@@ -195,9 +175,26 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       ) > -1
                     ) {
                       setLoading && setLoading(true);
-                      if (i.status === STATUS.COMPLETED) {
-                        props.navigation.push(AppRoutes.PreviewPrescription, {
-                          id: i.id,
+                      if (
+                        i.status === STATUS.COMPLETED &&
+                        i.caseSheet
+                          .map((i) => ((i && i.sentToPatient) || '').toString())
+                          .includes('true')
+                      ) {
+                        const blobName = i.caseSheet
+                          .map((i) => i && i.blobName)
+                          .filter((i) => i !== null)[0];
+                        setLoading && setLoading(false);
+                        props.navigation.push(AppRoutes.RenderPdf, {
+                          uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+                          title: 'PRESCRIPTION',
+                          CTAs: [
+                            {
+                              title: 'PRESCRIPTION SENT',
+                              variant: 'white',
+                              onPress: () => {},
+                            },
+                          ],
                         });
                       } else {
                         props.navigation.push(AppRoutes.ConsultRoomScreen, {

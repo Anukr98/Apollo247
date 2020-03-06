@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Theme, Button, Avatar, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput, AphButton, AphTextField } from '@aph/web-ui-components';
-//import Pubnub from "pubnub";
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import moment from 'moment';
 import Scrollbars from 'react-custom-scrollbars';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { ApolloError } from 'apollo-client';
-
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -192,7 +190,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       marginLeft: 16,
       paddingTop: 8,
-      //display: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -233,7 +230,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sendBtn: {
       marginLeft: 16,
-      //display: 'none',
     },
     imageUpload: {
       overflow: 'hidden',
@@ -369,7 +365,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>(props.messages);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
-  // const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
@@ -381,9 +376,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { documentArray, setDocumentArray, patientDetails, appointmentInfo } = useContext(
     CaseSheetContext
   );
-
   const apolloClient = useApolloClient();
-  // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -411,31 +404,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
-  // const subscribekey: string = process.env.SUBSCRIBE_KEY
-  //   ? process.env.SUBSCRIBE_KEY
-  //   : "";
-  // const publishkey: string = process.env.PUBLISH_KEY
-  //   ? process.env.PUBLISH_KEY
-  //   : "";
-  // const config: Pubnub.PubnubConfig = {
-  //   subscribeKey: subscribekey,
-  //   publishKey: publishkey,
-  //   ssl: true
-  // };
   let leftComponent = 0;
   let rightComponent = 0;
   let jrDrComponent = 0;
-  //const pubnub = new Pubnub(config);
   const pubnub = props.pubnub;
-  //let insertText: MessagesObjectProps[] = [];
 
   const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
-
-  // const timerMinuts = Math.floor(startingTime / 60);
-  // const timerSeconds = startingTime - timerMinuts * 60;
-  // const timerLastMinuts = Math.floor(startingTime / 60);
-  // const timerLastSeconds = startingTime - timerMinuts * 60;
   const startIntervalTimer = (timer: number) => {
     setstartTimerAppoinmentt(true);
     timerIntervalId = setInterval(() => {
@@ -449,12 +424,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     timerIntervalId && clearInterval(timerIntervalId);
   };
   const srollToBottomAction = () => {
-    //setTimeout(() => {
     const scrollDiv = document.getElementById('scrollDiv');
     if (scrollDiv) {
       scrollDiv!.scrollIntoView();
     }
-    //}, 200);
   };
   const resetMessagesAction = () => {
     if (messageText === '') {
@@ -462,82 +435,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setMsg('');
     }
   };
-  // const isURL = (str: string) => {
-  //   const pattern = new RegExp(
-  //     '^(https?:\\/\\/)?' + // protocol
-  //     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-  //     '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-  //     '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-  //     '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-  //       '(\\#[-a-z\\d_]*)?$',
-  //     'i'
-  //   ); // fragment locator
-  //   return pattern.test(str);
-  // };
-  // useEffect(() => {
-  //   console.log(props.messages);
-  //   setMessages(props.messages);
-  // }, [props.messages]);
+
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
-  // useEffect(() => {
-  //   // pubnub.subscribe({
-  //   //   channels: [channel],
-  //   //   withPresence: true
-  //   // });
-  //   console.log(222222);
-  //   //getHistory(0);
 
-  //   // pubnub.addListener({
-  //   //   status(statusEvent: any) {},
-  //   //   message(message: any) {
-  //   //     insertText[insertText.length] = message.message;
-  //   //     console.log(message.message);
-  //   //     setMessages(() => [...insertText]);
-  //   //     if (
-  //   //       !showVideoChat &&
-  //   //       message.message.message !== videoCallMsg &&
-  //   //       message.message.message !== audioCallMsg &&
-  //   //       message.message.message !== stopcallMsg &&
-  //   //       message.message.message !== acceptcallMsg &&
-  //   //       message.message.message !== transferconsult &&
-  //   //       message.message.message !== rescheduleconsult &&
-  //   //       message.message.message !== followupconsult &&
-  //   //       message.message.message !== patientConsultStarted &&
-  //   //       message.message.message !== stopConsult &&
-  //   //       message.message.message !== firstMessage &&
-  //   //       message.message.message !== secondMessage &&
-  //   //       message.message.message !== covertVideoMsg &&
-  //   //       message.message.message !== covertAudioMsg &&
-  //   //       message.message.message !== cancelConsultInitiated
-  //   //     ) {
-  //   //       setIsNewMsg(true);
-  //   //     } else {
-  //   //       setIsNewMsg(false);
-  //   //     }
-  //   //     if (message.message && message.message.message === acceptcallMsg) {
-  //   //       setIsCallAccepted(true);
-  //   //     }
-  //   //     srollToBottomAction();
-  //   //     resetMessagesAction();
-  //   //     //getHistory(0);
-  //   //   }
-  //   // });
-  //   return function cleanup() {
-  //     clearInterval(timerIntervalId);
-  //     stopIntervalTimer();
-  //     //pubnub.unsubscribe({ channels: [channel] });
-  //   };
-  // }, [props.pubnub]);
   useEffect(() => {
     const lastMsg = props.lastMsg;
     if (lastMsg && lastMsg !== null) {
-      // insertText[insertText.length] = lastMsg.message;
-      // console.log(lastMsg.message);
-      // setMessages(() => [...insertText]);
       if (
         !showVideoChat &&
         lastMsg.message.message !== videoCallMsg &&
@@ -566,37 +473,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
       srollToBottomAction();
       resetMessagesAction();
-      //getHistory(0);
     }
   }, [props.lastMsg]);
-  // const getHistory = (timetoken: number) => {
-  //   pubnub.history(
-  //     {
-  //       channel: channel,
-  //       reverse: true,
-  //       count: 1000,
-  //       stringifiedTimeToken: true,
-  //       start: timetoken
-  //     },
-  //     (status: any, res: any) => {
-  //       const newmessage: MessagesObjectProps[] = messages;
-  //       res.messages.forEach((element: any, index: number) => {
-  //         //newmessage[index] = element.entry;
-  //         newmessage.push(element.entry);
-  //       });
-  //       insertText = newmessage;
-  //       //if (messages.length !== newmessage.length) {
-  //       setMessages(newmessage);
-  //       //}
-  //       const end: number = res.endTimeToken ? res.endTimeToken : 1;
-  //       if (res.messages.length == 100) {
-  //         getHistory(end);
-  //       }
-  //       resetMessagesAction();
-  //       //srollToBottomAction();
-  //     }
-  //   );
-  // };
 
   const sendMsg = (msgObject: any, isStoreInHistory: boolean) => {
     pubnub.publish(
@@ -614,7 +492,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const uploadfile = (url: string) => {
-    // console.log('ram');
     apolloClient
       .mutate<AddChatDocument, AddChatDocumentVariables>({
         mutation: ADD_CHAT_DOCUMENT,
@@ -623,7 +500,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .then((_data) => {
         if (_data && _data.data && _data.data.addChatDocument) {
-          // console.log('Document ', _data.data.addChatDocument);
           setDocumentArray((_data.data.addChatDocument as unknown) as appointmentDocument);
         }
       })
@@ -683,14 +559,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status: any, response: any) => {
         resetMessagesAction();
-        //srollToBottomAction();
-        // setTimeout(() => {
-        //   setMessageText('');
-        //   const scrollDiv = document.getElementById('scrollDiv');
-        //   if(scrollDiv){
-        //     scrollDiv!.scrollIntoView();
-        //   }
-        // }, 100);
       }
     );
   };
@@ -743,9 +611,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     ? 'You missed a video call'
                     : 'You missed a voice call'}
                 </span>
-                {/* {rowData.messageDate && (
-                  <span>{convertChatTime(rowData.messageDate)}</span>
-                )} */}
               </>
             ) : rowData.duration ? (
               <div>
@@ -757,9 +622,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 )}
               </div>
             ) : (
-              // <div>
-              //   <span>{getAutomatedMessage(rowData)}</span>
-              // </div>
               <div
                 className={`${classes.chatBubble} ${
                   rowData.message === documentUpload ? classes.chatImgBubble : ''
@@ -779,9 +641,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   </div>
                 )}
                 {rowData.message === documentUpload ? (
-                  // <div>
-                  //   <img src={rowData.url} alt={rowData.url} />
-                  // </div>
                   <div
                     onClick={() => {
                       setModalOpen(rowData.fileType === 'pdf' ? false : true);
@@ -970,21 +829,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 )}
               </div>
             ) : (
-              // <div>
-              //   {rowData.message === documentUpload ? (
-              //     <div style={{ width: '200px', height: 'auto' }}>
-              //       <a href={rowData.url} target="_blank">
-              //         <img
-              //           style={{ width: '200px', height: 'auto' }}
-              //           src={rowData.url}
-              //           alt={rowData.url}
-              //         />
-              //       </a>
-              //     </div>
-              //   ) : (
-              //     <span>{getAutomatedMessage(rowData)}</span>
-              //   )}
-              // </div>
               <div
                 className={`${classes.chatBubble} ${
                   rowData.message === documentUpload ? classes.chatImgBubble : ''
@@ -1040,9 +884,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </div>
       );
     }
-    // if (rowData.id !== patientId && rowData.id !== doctorId) {
-    //   return '';
-    // }
   };
   const messagessHtml =
     messages && messages.length > 0
@@ -1109,7 +950,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                                     throw error;
                                   });
                             const url = client.getBlobUrl(aphBlob && aphBlob.name);
-                            //const url = aphBlob.name;
                             const uploadObject = {
                               id: doctorId,
                               fileType: `${
@@ -1192,7 +1032,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <div className={classes.tableContent}>
               <div className={classes.modalWindow}>
                 <div className={classes.modalHeader}>
-                  {/* IMAGE001.JPG */}
                   <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
                     <img src={require('images/ic_round_clear.svg')} alt="" />
                   </div>

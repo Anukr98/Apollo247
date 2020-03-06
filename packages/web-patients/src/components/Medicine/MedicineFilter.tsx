@@ -280,9 +280,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           }}
           value={subtxt}
         />
-        <AphButton className={classes.refreshBtn}>
-          <img src={require('images/ic_refresh.svg')} alt="" />
-        </AphButton>
       </div>
       <div className={`${classes.filterSection}`}>
         <div className={classes.filterHeader}>
@@ -296,8 +293,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         </div>
         <Scrollbars className={classes.filterScroll} autoHide={true}>
           <div className={classes.customScroll}>
-            <div className={classes.filterBox}>
-              {locationUrl && locationUrl.includes('search-medicines') && (
+            {locationUrl && locationUrl.includes('search-medicines') && (
+              <div className={classes.filterBox}>
                 <span>
                   <div className={classes.filterType}>Categories</div>
 
@@ -400,8 +397,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                     </AphButton>
                   </div>
                 </span>
-              )}
-            </div>
+              </div>
+            )}
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Discount</div>
               <div className={classes.boxContent}>

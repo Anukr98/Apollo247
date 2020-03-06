@@ -110,12 +110,11 @@ export const MedicalTest = [
 
 export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props.activeData;
-
+  const { data, type } = props.activeData;
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
         Detailed Findings
@@ -130,31 +129,41 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  <div className={classes.cardTitle}>{detail.parameterName}</div>
+                  <div className={classes.cardTitle}>
+                    {type === 'lab' && !detail.setParameterName ? 'SUMMARY' : detail.parameterName}
+                  </div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
-                      <Grid item xs={6} sm={3}>
-                        <div className={classes.resultGroup}>
-                          <label>Result</label>
-                          <div className={`${classes.result} ${classes.resultError}`}>
-                            {detail.result}
-                          </div>
-                        </div>
-                      </Grid>
-                      <Grid item xs={6} sm={3}>
-                        <div className={classes.resultGroup}>
-                          <label>Units</label>
-                          <div className={classes.result}>{unit ? unit.value : detail.unit}</div>
-                        </div>
-                      </Grid>
-                      <Grid item xs={6} sm={3}>
-                        <div className={classes.resultGroup}>
-                          <label>Normal Range</label>
-                          <div className={`${classes.result}`}>
-                            {detail.minimum} - {detail.maximum}
-                          </div>
-                        </div>
-                      </Grid>
+                      {type === 'lab' && !detail.setParameterName ? (
+                        <div className={classes.result}>{detail.result || 'N/A'}</div>
+                      ) : (
+                        <>
+                          <Grid item xs={6} sm={3}>
+                            <div className={classes.resultGroup}>
+                              <label>Result</label>
+                              <div className={classes.result}>{detail.result || 'N/A'}</div>
+                            </div>
+                          </Grid>
+                          <Grid item xs={6} sm={3}>
+                            <div className={classes.resultGroup}>
+                              <label>Units</label>
+                              <div className={classes.result}>
+                                {unit ? unit.value : detail.unit || 'N/A'}
+                              </div>
+                            </div>
+                          </Grid>
+                          <Grid item xs={6} sm={3}>
+                            <div className={classes.resultGroup}>
+                              <label>Normal Range</label>
+                              <div className={`${classes.result}`}>
+                                {detail.minimum || detail.maximum
+                                  ? `${detail.minimum} - ${detail.maximum}`
+                                  : 'N/A'}
+                              </div>
+                            </div>
+                          </Grid>
+                        </>
+                      )}
                     </Grid>
                   </div>
                 </Grid>

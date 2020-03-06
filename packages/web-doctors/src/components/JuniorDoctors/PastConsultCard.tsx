@@ -1,11 +1,8 @@
-import { Theme, Avatar, Button, CircularProgress } from '@material-ui/core';
+import { Theme, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { format } from 'date-fns';
-import { Mutation } from 'react-apollo';
-import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
-import { ADD_TO_CONSULT_QUEUE } from 'graphql/consults';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -94,23 +91,6 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.title}>APPT DATE: {appointmentDateIST}</div>
       <div className={classes.cardGroup}>
-        {/* <Mutation<AddToConsultQueue, AddToConsultQueueVariables> mutation={ADD_TO_CONSULT_QUEUE}>
-          {(addToConsultQueue, { loading }) => (
-            <Button
-              variant="contained"
-              disabled={loading}
-              onClick={() =>
-                addToConsultQueue({
-                  variables: {
-                    appointmentId: appointment.id,
-                  },
-                })
-              }
-            >
-              {loading && <CircularProgress size={20} />} NEW
-            </Button>
-          )}
-        </Mutation> */}
         <div className={classes.cardImg}>
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />

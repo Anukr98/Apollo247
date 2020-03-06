@@ -103,7 +103,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [dateRange, setDateRange] = useState();
   const [chackedSingleValue, setChackedSingleValue] = useState();
   const [checked, setChecked] = useState(false);
-  const [listChecked, setListChecked] = useState(false);
   const [startEndList, setStartEndList] = useState();
   useEffect(() => {
     setStart(item ? format(item.start, 'yyyy-MM-dd') : '');
@@ -140,18 +139,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         (TodatTm[0] && TodatTm[0].length < 2 ? '0' + TodatTm[0] : TodatTm[0]) +
         '/' +
         (TodatTm[1] && TodatTm[1].length < 2 ? '0' + TodatTm[1] : TodatTm[1]);
-    console.log(
-      stTm[2] +
-        '/' +
-        (stTm[0] && stTm[0].length < 2 ? '0' + stTm[0] : stTm[0]) +
-        '/' +
-        (stTm[1] && stTm[1].length < 2 ? '0' + stTm[1] : stTm[1]),
-      TodatTm[2] +
-        '/' +
-        (TodatTm[0] && TodatTm[0].length < 2 ? '0' + TodatTm[0] : TodatTm[0]) +
-        '/' +
-        (TodatTm[1] && TodatTm[1].length < 2 ? '0' + TodatTm[1] : TodatTm[1])
-    );
     if (
       daySelected &&
       startTime &&
@@ -162,10 +149,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       invalidTime = true;
     }
   }
-
-  // let invalid = true;
   const [invalid, setInvalid] = useState(true);
-
   const handleSubmitComplete = () => {
     setStart('');
     setEnd('');
@@ -179,7 +163,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     setIsTimeValid(true);
     setIsallreadyInArray(true);
     setIsPastTime(true);
-
     if (dateRange && dateRange > 0) {
       setDateRange((dateRange.length = 0));
     }
@@ -294,7 +277,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
             minHeight: 'auto',
             paddingLeft: 10,
             paddingRight: 10,
-            // borderBottom: '1px solid rgba(1,71,91,0.2)',
             '&:last-child': {
               borderBottom: 'none',
             },
@@ -308,9 +290,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         backgroundColor: 'transparent !important',
         color: '#00b38e !important',
       },
-      checkbox: {
-        // width: '100%',
-      },
+      checkbox: {},
       deviderLine: {
         textAlign: 'center',
         marginTop: 35,
@@ -367,7 +347,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         marginBottom: 0,
         paddingBottom: 5,
       },
-
       fullRow: {
         width: '100%',
       },
@@ -422,8 +401,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const TextFieldComponent = (props: any) => {
     return <TextField {...props} disabled={true} />;
   };
-  var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
-  const [selectedDate, setSelectedDate] = React.useState(new Date('2019-10-17T21:11:54'));
+  const options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
   const [blockConsultHourDay, setBlockConsultHourDay] = useState(
     new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
   );
@@ -450,54 +428,38 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       ).getTime() + +(5.5 * 60 * 60 * 1000);
     return format(utcDate, 'p');
   };
-  // const convertTime = (time24: any) => {
-  //   const [sHours, minutes] = time24.match(/([0-9]{1,2}):([0-9]{2})/).slice(1);
-  //   const period = +sHours < 12 ? "AM" : "PM";
-  //   const hours = +sHours % 12 || 12;
-
-  //   return `${hours}:${minutes} ${period}`;
-  // };
   const findBlockSlot = (value: any) => {
     const selectedDay =
       (value && new Date(value).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()) ||
       new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-
     const consultHours = doctorSlot && doctorSlot.length > 0 && doctorSlot;
-
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
-        }
-      });
+      _.filter(
+        consultHours,
+        (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+      );
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
     setConsultHours(consultDurationDay);
   };
-
   const listOfStartEnd = (value: any) => {
     const selectedDay =
       (value && new Date(value).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()) ||
       new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-
     const consultHours = doctorSlot && doctorSlot.length > 0 && doctorSlot;
-
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
-        }
-      });
+      _.filter(
+        consultHours,
+        (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+      );
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
     const startTime =
       consultDurationDay && consultDurationDay.startTime ? consultDurationDay.startTime : '';
     const endTime = consultDurationDay.endTime;
-
     const [startHours, startMins] = startTime.split(':');
     let localhours = Number(startHours) + 5;
     let localMinuts = Number(startMins) + 30;
-
     if (localMinuts > 59) {
       localMinuts = Number(localMinuts) - 60;
       localhours = Number(localhours) + 1;
@@ -519,7 +481,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         localEndhours = 0;
       }
     }
-
     endDate.setHours(parseInt(localEndhours.toString(), 10));
     endDate.setMinutes(parseInt(localEndMinuts.toString(), 10));
     let obj = {
@@ -535,7 +496,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           }
         });
       let index = 0;
-      for (var i = 0; i < startEndList.length; i++) {
+      for (let i = 0; i < startEndList.length; i++) {
         if (new Date(startEndList[i].start).getDate() == new Date(obj.start).getDate()) {
           index = i;
         }
@@ -555,21 +516,17 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       setStartEndList(local2);
     }
   };
-
   const convertTocunsultBlockStartEndTime = (value: any) => {
     const selectedDay =
       (value && new Date(value).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()) ||
       new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-
     const consultHours = doctorSlot && doctorSlot.length > 0 && doctorSlot;
-
     const filteredDay =
       consultHours &&
-      _.filter(consultHours, function(o) {
-        if (o && o.weekDay) {
-          return o.weekDay === selectedDay;
-        }
-      });
+      _.filter(
+        consultHours,
+        (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+      );
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
     const startTime =
       consultDurationDay && consultDurationDay.startTime
@@ -579,7 +536,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       consultDurationDay && consultDurationDay.endTime
         ? convertFrom24To12Format(consultDurationDay && consultDurationDay.endTime)
         : '';
-    var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
     return startTime && endTime
       ? ` ${startTime} - ${endTime}  |  ${
           consultDurationDay && consultDurationDay.consultMode
@@ -614,27 +570,15 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
   const getDateRange = (startDate: any, stopDate: any) => {
     if (startDate && stopDate) {
-      var dateArray = [];
-      var currentDate = moment(startDate);
-      var endDate = moment(stopDate);
+      let dateArray = [];
+      let currentDate = moment(startDate);
+      let endDate = moment(stopDate);
       while (currentDate <= endDate) {
         dateArray.push(moment(currentDate).format('YYYY-MM-DD'));
         currentDate = moment(currentDate).add(1, 'days');
       }
       setDateRange(dateArray);
     }
-  };
-  const nextDate = () => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow;
-  };
-  const nextTODate = (val: any) => {
-    const today = new Date(val);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow;
   };
   const [isTimeValid, setIsTimeValid] = useState(true);
   const [isallreadyInArray, setIsallreadyInArray] = useState(true);
@@ -654,13 +598,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     if (new Date(start).getDate() === new Date().getDate()) {
       if (startTime && startTime.length > 0) {
         const [shours, smins] = startTime.split(':');
-        var startHour = shours;
-        var startMinute = smins;
-        var startTimeObject = new Date();
+        let startHour = shours;
+        let startMinute = smins;
+        let startTimeObject = new Date();
         startTimeObject.setHours(Number(startHour), Number(startMinute));
         const currentHours = new Date().getHours();
         const currentMinuts = new Date().getMinutes() + 1;
-        var currentTimeObject = new Date();
+        let currentTimeObject = new Date();
         currentTimeObject.setHours(Number(currentHours), Number(currentMinuts));
         if (startTimeObject < currentTimeObject) {
           setIsPastTime(false);
@@ -676,20 +620,17 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   useEffect(() => {
     if (startTime && endTime && startTime.length > 0 && endTime.length > 0) {
       const [shours, smins] = startTime.split(':');
-      var startHour = shours;
-      var startMinute = smins;
-      //  var startSecond = extractedStartSecond;
+      let startHour = shours;
+      let startMinute = smins;
       const [ehours, emins] = endTime.split(':');
-      var endHour = ehours;
-      var endMinute = Number(emins) - 1;
-      //  var endSecond = extractedEndSecond;
-
+      let endHour = ehours;
+      let endMinute = Number(emins) - 1;
       //Create date object and set the time to that
-      var startTimeObject = new Date();
+      let startTimeObject = new Date();
       startTimeObject.setHours(Number(startHour), Number(startMinute));
 
       //Create date object and set the time to that
-      var endTimeObject = new Date(startTimeObject);
+      let endTimeObject = new Date(startTimeObject);
       endTimeObject.setHours(Number(endHour), Number(endMinute));
 
       //Now we are ready to compare both the dates
@@ -703,27 +644,25 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   useEffect(() => {
     if (startTime && customTimeArray && startTime.length > 0 && customTimeArray.length > 0) {
       const [shours, smins] = startTime.split(':');
-      var startHour = shours;
-      var startMinute = smins;
-      var startTimeObject = new Date();
+      let startHour = shours;
+      let startMinute = smins;
+      let startTimeObject = new Date();
       startTimeObject.setHours(Number(startHour), Number(startMinute));
       customTimeArray.map((value: any) => {
         if (value && value.startTime && value.endTime) {
           const [arrayshours, arraysmins] = value.startTime.split(':');
-          var arraystartHour = arrayshours;
-          var arraystartMinute = arraysmins;
-          //  var startSecond = extractedStartSecond;
+          let arraystartHour = arrayshours;
+          let arraystartMinute = arraysmins;
           const [arrayehours, arrayemins] = value.endTime.split(':');
-          var arrayendHour = arrayehours;
-          var arrayendMinute = arrayemins;
-          //  var endSecond = extractedEndSecond;
+          let arrayendHour = arrayehours;
+          let arrayendMinute = arrayemins;
 
           //Create date object and set the time to that
-          var startArrayTimeObject = new Date();
+          let startArrayTimeObject = new Date();
           startArrayTimeObject.setHours(Number(arraystartHour), Number(arraystartMinute));
 
           //Create date object and set the time to that
-          var endArrayTimeObject = new Date(startTimeObject);
+          let endArrayTimeObject = new Date(startTimeObject);
           endArrayTimeObject.setHours(Number(arrayendHour), Number(arrayendMinute));
           if (startArrayTimeObject <= startTimeObject) {
             if (startTimeObject < endArrayTimeObject) {
@@ -736,9 +675,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           }
           if (endTime && startTime) {
             const [ehours, emins] = endTime.split(':');
-            var endHour = ehours;
-            var endMinute = emins;
-            var endTimeObject = new Date();
+            let endHour = ehours;
+            let endMinute = emins;
+            let endTimeObject = new Date();
             endTimeObject.setHours(Number(endHour), Number(endMinute));
 
             if (startTimeObject <= startArrayTimeObject) {
@@ -759,8 +698,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           }
         }
       });
-
-      //Now we are ready to compare both the dates
     }
   }, [startTime, endTime, customTimeArray]);
 
@@ -772,7 +709,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       setIsallreadyInArray(true);
       setIsPastTime(true);
       setIsPastTimeError(false);
-      // setIsOverlapError(false);
       setChecked(false);
     }
   }, [isOverlapError, customTimeArray]);
@@ -786,7 +722,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       setChecked(false);
       customTimeArray.length = 0;
       setChackedSingleValue('');
-      // setStartEndList([])
     } else if (
       durationSelected &&
       selectedBlockOption === 'consulthours' &&
@@ -859,7 +794,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
             value={selectedValue}
             onChange={(e) => {
               setSelectedValue((e.target as HTMLInputElement).value as RadioValues);
-
               setSelectedBlockOption(BlockOption.entireday);
               setIsTimeValid(true);
               setIsallreadyInArray(true);
@@ -1048,7 +982,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                 {start
                                   ? new Date(start).toLocaleDateString('en-AU', options)
                                   : getFormattedDate(new Date())}
-                                {/* {blockConsultHourDay} */}
                               </div>
                             ) : (
                               <p>You don't have any active consult hours on the selected day</p>
@@ -1066,7 +999,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                   onChange={() => {
                                     setChackedSingleValue(consultHours);
                                     setChecked(!checked);
-                                    // setInvalid(!invalid);
                                   }}
                                 />
                               </FormGroup>
@@ -1094,10 +1026,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                       <div className={classes.formDate}>
                                         {item
                                           ? new Date(item).toLocaleDateString('en-AU', options)
-                                          : getFormattedDate(new Date())}{' '}
-                                        {/* {convertIntoDay(item)} */}
+                                          : getFormattedDate(new Date())}
                                       </div>
-
                                       <FormGroup>
                                         <FormControlLabel
                                           disabled={
@@ -1122,7 +1052,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       </div>
                     )}
 
-                    {/* {daySelected && ( */}
                     <div className={classes.fullRow}>
                       <FormControlLabel
                         disabled={!start}
@@ -1279,56 +1208,10 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         </div>
                       )}
                     </div>
-                    {/* )} */}
                   </RadioGroup>
                 </div>
               </div>
-              {/* <TextField
-              onChange={(e) => { console.log(e.currentTarget.value); setStart(e.currentTarget.value) }}
-              value={start}
-              label="From"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              InputProps={{ style: { color: 'black' } }}
-              className={classes.datepicker}
-            /> */}
             </div>
-            {/* {!daySelected && (<div>
-            <div style={{ display: 'flex' }}>
-              <AphTextField
-                disabled={daySelected}
-                onChange={(e) => { console.log(e.currentTarget.value); setEnd(e.currentTarget.value) }}
-                value={end}
-                label="To"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                InputProps={{ style: { color: 'black' } }}
-                className={classes.datepicker}
-              />
-            </div>
-          </div>)} */}
-            {/* {daySelected && (
-            <TextField
-              onChange={(e) => setStartTime(e.currentTarget.value)}
-              value={startTime}
-              label="Start time"
-              type="time"
-              InputLabelProps={{ shrink: true }}
-              InputProps={{ style: { color: 'black ' } }}
-              className={classes.timepicker}
-            />
-          )}
-          {daySelected && (
-            <TextField
-              onChange={(e) => setEndTime(e.currentTarget.value)}
-              value={endTime}
-              label="End time"
-              type="time"
-              InputLabelProps={{ shrink: true }}
-              InputProps={{ style: { color: 'black', width: '100%' } }}
-              className={classes.timepicker}
-            />
-          )} */}
           </div>
           {isOverlapError && (
             <div style={{ color: 'red' }}>

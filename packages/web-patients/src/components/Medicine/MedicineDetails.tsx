@@ -314,18 +314,14 @@ export const MedicineDetails: React.FC = (props) => {
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
 
   const apiDetails = {
-    url: `${
-      process.env.NODE_ENV === 'production'
-        ? process.env.PHARMACY_MED_PROD_URL
-        : process.env.PHARMACY_MED_UAT_URL
-    }/popcsrchpdp_api.php`,
+    url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   };
 
   const getMedicineDetails = async (sku: string) => {
     await axios
       .post(
-        apiDetails.url,
+        apiDetails.url || '',
         { params: sku },
         {
           headers: {
@@ -487,7 +483,7 @@ export const MedicineDetails: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.medicineDetailsPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => (window.location.href = clientRoutes.medicines())}>
+                  <a onClick={() => window.history.back()}>
                     <div className={classes.backArrow}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                       <img

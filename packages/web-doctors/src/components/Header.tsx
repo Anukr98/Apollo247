@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -16,8 +16,9 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
-import { LoggedInUserType, DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
+import { LoggedInUserType, DOCTOR_ONLINE_STATUS, REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/profiles';
+import Pubnub from 'pubnub';
 import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
@@ -27,6 +28,7 @@ import IdleTimer from 'react-idle-timer';
 import ReactCountdownClock from 'react-countdown-clock';
 import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -175,7 +177,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Header: React.FC = (props) => {
   const classes = useStyles();
   const avatarRef = useRef(null);
-  const { currentPatient, signOut, isSigningIn, isSignedIn } = useAuth();
+  const { currentPatient, signOut, isSigningIn, isSignedIn, sessionClient } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [isHelpPopupOpen, setIsHelpPopupOpen] = React.useState(false);
   const [stickyPopup, setStickyPopup] = React.useState(true);
@@ -236,6 +238,80 @@ export const Header: React.FC = (props) => {
       onlineStatus: isOnline ? DOCTOR_ONLINE_STATUS.AWAY : DOCTOR_ONLINE_STATUS.ONLINE,
     },
   });
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
+    ssl: true,
+    uuid: REQUEST_ROLES.DOCTOR,
+  };
+  const pubnub = new Pubnub(config);
+  const sendNotification = (notificationText: string) => {
+    new Notification('Hi there!', {
+      body: notificationText,
+      icon: 'https://bit.ly/2DYqRrh',
+    });
+  };
+
+  useEffect(() => {
+    if (
+      isSignedIn &&
+      !isJuniorDoctor &&
+      !isAdminDoctor &&
+      !isSecretary &&
+      currentPatient &&
+      currentPatient.id
+    ) {
+      console.log(currentPatient.id);
+      pubnub.subscribe({
+        channels: [currentPatient.id],
+        withPresence: true,
+      });
+      pubnub.addListener({
+        message(message: any) {
+          if (Notification.permission === 'granted') {
+            // show notification here
+            sendNotification(message.message.message);
+          } else {
+            // request permission from user
+            Notification.requestPermission()
+              .then(function(p) {
+                if (p === 'granted') {
+                  // show notification here
+                  sendNotification(message.message.message);
+                } else {
+                  const logObject = {
+                    api: 'NotificationRequestPermission',
+                    doctorId: currentPatient!.id,
+                    doctorDisplayName: currentPatient!.displayName,
+                    currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                    error: 'Browser Notification Request Permission is Blocked',
+                  };
+
+                  sessionClient.notify(JSON.stringify(logObject));
+                  console.log('User blocked notifications.');
+                }
+              })
+              .catch(function(err) {
+                const logObject = {
+                  api: 'NotificationRequestPermission',
+                  doctorId: currentPatient!.id,
+                  doctorDisplayName: currentPatient!.displayName,
+                  currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+                  error: 'Error occuered in Notification Request Permissio in catch block',
+                };
+                sessionClient.notify(JSON.stringify(logObject));
+                console.error(err);
+              });
+          }
+        },
+      });
+      return () => {
+        pubnub.unsubscribe({ channels: [currentPatient.id] });
+      };
+    }
+  }, []);
   return (
     <header className={classes.header}>
       {!isJuniorDoctor &&

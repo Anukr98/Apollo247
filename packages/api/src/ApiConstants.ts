@@ -24,6 +24,7 @@ export enum ApiConstants {
   APPOINTMENT_REMINDER_15_TITLE = 'Appointment reminder',
   CLICK_HERE = ' Click here to fill your details now ',
   APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in {1} mins. :)',
+  VIRTUAL_REMINDER_15_BODY = 'Appointment Reminder: Your appointment with Dr {0} will start in 15 mins. :) ',
   APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're online and ready for your appointment.",
   PHYSICAL_APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
   PHYSICAL_APPOINTMENT_REMINDER_60_BODY = 'Hi {0}! Dr. {1} will see you in an hour. Please come down to {2}.',
@@ -43,6 +44,9 @@ export enum ApiConstants {
   PATIENT_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
   PATIENT_APPOINTMENT_RESCHEDULE_BODY = 'Hi {0}!  Your appointment {1} with Dr. {2} has been rescheduled  to {3}. ',
 
+  //appointment reschedule by patient
+  DOCTOR_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
+  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Hi Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
   JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
@@ -82,7 +86,7 @@ export enum ApiConstants {
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24X7',
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24X7. We're glad you're here! Consult online with our top Apollo doctors now!",
-  PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} and get your FREE Gift @Apollo Pharmacy retail store. Terms and Conditions Apply',
+  PATIENT_REGISTRATION_CODE_BODY = 'Hi {0}, Welcome to Apollo24|7. Use discount code {1} and get your FREE Gift @Apollo Pharmacy retail store in Chennai and Hyderabad. Terms and Conditions Apply',
 
   //book appointment sucessfull
   BOOK_APPOINTMENT_TITLE = 'Your appointment is confirmed',
@@ -97,6 +101,19 @@ export enum ApiConstants {
 
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_TITLE = 'Diagnostic test payment failed',
   DIAGNOSTIC_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
+  MEDICINE_ORDER_PAYMENT_FAILED_TITLE = 'Medicine order payment failed',
+  MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
+  SENT_BY_API = 'SENT_BY_API',
+  //case sheet submitted
+  CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you. View case sheet',
+  DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointments booked for today on Apollo24x7. Summary of appointments \nOnline Appointments : {2} \nPhysical Appointments : {3}',
+  FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
+  CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
+  DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctors successfully',
+  FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
+  PRESCRIPTION_READY_TITLE = 'Prescription ready',
+  PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
+
   /*** push-notification messages end here ***/
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,

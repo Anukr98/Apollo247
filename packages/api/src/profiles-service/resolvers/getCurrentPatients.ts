@@ -15,6 +15,13 @@ import { getConnection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { log, debugLog } from 'customWinstonLogger';
+import {
+  prismAuthenticationAsync,
+  prismGetUsersAsync,
+  addToPatientPrismQueue,
+  prismAuthentication,
+  prismGetUsers,
+} from 'helpers/prismCall';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -84,6 +91,11 @@ export const getCurrentPatientsTypeDefs = gql`
 
   type GetCurrentPatientsResult {
     patients: [Patient!]!
+  }
+
+  extend type Mutation {
+    registerPatients: GetCurrentPatientsResult
+    registerPatientsFromPrism: GetCurrentPatientsResult
   }
 
   extend type Query {
@@ -399,6 +411,7 @@ const getLoginPatients: Resolver<
 
   console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
@@ -409,6 +422,7 @@ const getLoginPatients: Resolver<
       return existingPatient || Patient.create(createOptions).save();
     });
   };
+
   let patientPromises: Object[] = [];
   if (uhids != null && uhids.response != null) {
     isPrismWorking = 1;
@@ -485,6 +499,171 @@ const getLoginPatients: Resolver<
   return { patients };
 };
 
+const registerPatients: Resolver<
+  null,
+  { appVersion: string; deviceType: DEVICE_TYPE },
+  ProfilesServiceContext,
+  GetCurrentPatientsResult
+> = async (parent, args, { mobileNumber, profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  let patients = await patientRepo.findByMobileNumber(mobileNumber);
+
+  //common function to check or insert patient
+  const findOrCreatePatient = (
+    findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
+    createOptions: Partial<Patient>
+  ): Promise<Patient> => {
+    return Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+    }).then((existingPatient) => {
+      return existingPatient || Patient.create(createOptions).save();
+    });
+  };
+  //end common function
+
+  //new user for 24X7
+  if (patients.length == 0) {
+    //prism authentication with logged in mobile number
+    const prismAuthToken: PrismGetAuthTokenResponse = await prismAuthenticationAsync(mobileNumber);
+
+    if (prismAuthToken.response === 'AbortError') {
+      console.log('error', prismAuthToken);
+      //add this to Patient prism Queue
+      const patientDetails = await findOrCreatePatient(
+        { uhid: '', mobileNumber, isActive: true },
+        {
+          firstName: '',
+          lastName: '',
+          gender: undefined,
+          mobileNumber,
+          uhid: '',
+          androidVersion: args.appVersion,
+          iosVersion: args.appVersion,
+        }
+      );
+      console.log('AbortError...', patientDetails);
+      addToPatientPrismQueue(patientDetails);
+    } else {
+      //call user data from PRISM
+      if (prismAuthToken.response) {
+        const uhids = await prismGetUsersAsync(mobileNumber, prismAuthToken.response);
+        console.log('uhids>>>>>>>>>>>', uhids);
+        let patientPromises: Object[] = [];
+        if (uhids.response!.recoveryMessage === 'AbortError') {
+          //add this to Patient prism Queue
+          const patientDetails = await findOrCreatePatient(
+            { uhid: '', mobileNumber, isActive: true },
+            {
+              firstName: '',
+              lastName: '',
+              gender: undefined,
+              mobileNumber,
+              uhid: '',
+              androidVersion: args.appVersion,
+              iosVersion: args.appVersion,
+            }
+          );
+          addToPatientPrismQueue(patientDetails);
+        } else if (uhids && uhids.response) {
+          patientPromises = uhids.response!.signUpUserData.map((data) => {
+            return findOrCreatePatient(
+              { uhid: data.UHID, mobileNumber, isActive: true },
+              {
+                firstName: data.userName,
+                lastName: '',
+                gender: undefined,
+                mobileNumber,
+                uhid: data.UHID,
+                androidVersion: args.appVersion,
+                iosVersion: args.appVersion,
+              }
+            );
+          });
+        } else {
+          patientPromises = [
+            findOrCreatePatient(
+              { uhid: '', mobileNumber, isActive: true },
+              {
+                firstName: '',
+                lastName: '',
+                gender: undefined,
+                mobileNumber,
+                uhid: '',
+                androidVersion: args.appVersion,
+                iosVersion: args.appVersion,
+              }
+            ),
+          ];
+        }
+        await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+          throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+            findOrCreateErrors,
+          });
+        });
+      }
+    }
+  }
+  patients = await patientRepo.findByMobileNumber(mobileNumber);
+  return { patients };
+};
+
+const registerPatientsFromPrism: Resolver<
+  null,
+  { mobileNumber: string },
+  ProfilesServiceContext,
+  GetCurrentPatientsResult
+> = async (parent, args, { profilesDb }) => {
+  const mobileNumber = args.mobileNumber;
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  let patients = await patientRepo.findByMobileNumber(mobileNumber);
+
+  //common function to check or insert patient
+  const findOrCreatePatient = (
+    findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
+    createOptions: Partial<Patient>
+  ): Promise<Patient> => {
+    return Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+    }).then((existingPatient) => {
+      return existingPatient || Patient.create(createOptions).save();
+    });
+  };
+  //end common function
+
+  //prism authentication with logged in mobile number
+  const prismAuthToken: PrismGetAuthTokenResponse = await prismAuthentication(mobileNumber);
+
+  //call user data from PRISM
+  if (prismAuthToken.response) {
+    const uhids = await prismGetUsers(mobileNumber, prismAuthToken.response);
+    console.log('uhids>>>>>>>>>>>', uhids);
+    let patientPromises: Object[] = [];
+    if (uhids && uhids.response) {
+      patientPromises = uhids.response!.signUpUserData.map((data) => {
+        return findOrCreatePatient(
+          { uhid: data.UHID, mobileNumber, isActive: true },
+          {
+            firstName: data.userName,
+            lastName: '',
+            gender: undefined,
+            mobileNumber,
+            uhid: data.UHID,
+          }
+        );
+      });
+    }
+    await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {
+        findOrCreateErrors,
+      });
+    });
+
+    patients = await patientRepo.findByMobileNumber(mobileNumber);
+  }
+
+  return { patients };
+};
+
 export const getCurrentPatientsResolvers = {
   Patient: {
     async __resolveReference(object: Patient) {
@@ -493,6 +672,10 @@ export const getCurrentPatientsResolvers = {
       const patientDetails = await patientsRepo.findOne({ where: { id: object.id } });
       return patientDetails;
     },
+  },
+  Mutation: {
+    registerPatients,
+    registerPatientsFromPrism,
   },
   Query: {
     getCurrentPatients,

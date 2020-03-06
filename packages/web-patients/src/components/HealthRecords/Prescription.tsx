@@ -17,6 +17,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
 } from '../../graphql/types/globalTypes';
 import { clientRoutes } from 'helpers/clientRoutes';
 import axios from 'axios';
@@ -100,11 +101,7 @@ type PrescriptionProps = {
 };
 
 const apiDetails = {
-  url: `${
-    process.env.NODE_ENV === 'production'
-      ? process.env.PHARMACY_MED_PROD_URL
-      : process.env.PHARMACY_MED_UAT_URL
-  }/popcsrchpdp_api.php`,
+  url: process.env.PHARMACY_MED_SEARCH_URL,
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
 };
 
@@ -203,10 +200,25 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
       window.location.href = clientRoutes.medicinesCart();
     }, 5000);
   };
+
+  const getFormattedUnit = (
+    unit: MEDICINE_CONSUMPTION_DURATION | null,
+    numberOfDays: string | null
+  ) => {
+    const daysCount = numberOfDays ? parseFloat(numberOfDays) : 0;
+    if (unit) {
+      if (daysCount === 1 || daysCount === 0) {
+        return (unit || '').toLowerCase().replace('s', '');
+      }
+      return (unit || '').toLowerCase().replace('s', '(s)');
+    }
+    return daysCount === 1 || daysCount === 0 ? 'day' : 'days';
+  };
+
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
         Prescription
@@ -226,9 +238,11 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                         prescription.medicineUnit.toLowerCase() +
                         ' (s)' +
                         ' '
-                      : 'Apply ' + prescription &&
-                        prescription.medicineUnit &&
-                        prescription.medicineUnit.toLowerCase() + ' '}
+                      : `Apply ${
+                          prescription && prescription.medicineUnit
+                            ? prescription.medicineUnit.toLowerCase()
+                            : ''
+                        } `}
 
                     {prescription.medicineFrequency! &&
                       prescription.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
@@ -271,16 +285,28 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                               }`
                           )
                       : ''}
-
-                    {prescription.medicineInstructions
-                      ? '\n' + prescription.medicineInstructions
-                      : ''}
-                    {prescription.medicineConsumptionDurationInDays == ''
+                    {prescription.medicineConsumptionDurationInDays == '' ||
+                    prescription.medicineConsumptionDurationInDays == '0'
                       ? ''
                       : prescription.medicineConsumptionDurationInDays &&
                         prescription.medicineConsumptionDurationInDays === '1'
-                      ? ' for ' + prescription.medicineConsumptionDurationInDays! + ' day'
-                      : ' for ' + prescription.medicineConsumptionDurationInDays! + ' days'}
+                      ? ` for ${prescription.medicineConsumptionDurationInDays} ${getFormattedUnit(
+                          prescription.medicineConsumptionDurationUnit,
+                          prescription.medicineConsumptionDurationInDays
+                        )} `
+                      : ` for ${prescription.medicineConsumptionDurationInDays} ${getFormattedUnit(
+                          prescription.medicineConsumptionDurationUnit,
+                          prescription.medicineConsumptionDurationInDays
+                        )} `}
+
+                    {prescription.medicineInstructions ? (
+                      <>
+                        <br />
+                        {prescription.medicineInstructions}
+                      </>
+                    ) : (
+                      ''
+                    )}
                   </div>
                 )}
               </Grid>

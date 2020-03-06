@@ -8,7 +8,7 @@ import {
 } from '@material-ui/core';
 import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription as DiagnosisType,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis as DiagnosisType,
 } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -91,7 +91,7 @@ export const Diagnosis: React.FC<DiagnosisProps> = (props) => {
   const classes = useStyles({});
   const caseSheetList = props.caseSheetList;
 
-  const diagnosticPrescriptions: DiagnosisType[] = [];
+  const diagnosisList: DiagnosisType[] = [];
 
   caseSheetList &&
     caseSheetList.length > 0 &&
@@ -99,26 +99,27 @@ export const Diagnosis: React.FC<DiagnosisProps> = (props) => {
       (caseSheet: CaseSheetType | null) =>
         caseSheet &&
         caseSheet.doctorType !== 'JUNIOR' &&
-        caseSheet.diagnosticPrescription &&
-        caseSheet.diagnosticPrescription.length > 0 &&
-        caseSheet.diagnosticPrescription.forEach(
-          (diagnosticPrescription: DiagnosisType | null) =>
-            diagnosticPrescription && diagnosticPrescriptions.push(diagnosticPrescription)
+        caseSheet.diagnosis &&
+        caseSheet.diagnosis.length > 0 &&
+        caseSheet.diagnosis.forEach(
+          (diagnosisObj: DiagnosisType | null) => diagnosisObj && diagnosisList.push(diagnosisObj)
         )
     );
 
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
         classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
       >
-        Diagnosis
+        Provisional Diagnosis
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
-        {diagnosticPrescriptions && diagnosticPrescriptions.length > 0 ? (
-          diagnosticPrescriptions.map((prescription: DiagnosisType) => (
-            <div className={classes.cardTitle}>{prescription.itemname}</div>
+        {diagnosisList && diagnosisList.length > 0 ? (
+          diagnosisList.map((prescription: DiagnosisType, idx: number) => (
+            <span className={classes.cardTitle}>{`${prescription.name}${
+              diagnosisList.length - 1 === idx ? '.' : ', '
+            }`}</span>
           ))
         ) : (
           <div className={classes.noWrapper}>No diagnosis</div>

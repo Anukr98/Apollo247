@@ -83,30 +83,35 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
   }
 
-  const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
-  if (updatePatient) {
-    if (updatePatient.uhid == '' || updatePatient.uhid == null) {
-      await patientRepo.createNewUhid(updatePatient.id);
-    }
-  }
-  const patient = await patientRepo.findById(updatePatient.id);
+  const patient = await patientRepo.findById(patientInput.id);
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  let regCode = '';
-  if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
-    const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
-    const getCode = await regCodeRepo.getCode();
-    regCode = getCode[0].registrationCode;
-    if (getCode.length > 0) {
-      await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+  const updatePatient = await updateEntity<Patient>(Patient, id, updateAttrs);
+  if (updatePatient) {
+    if (patient.uhid == '' || patient.uhid == null) {
+      await patientRepo.createNewUhid(updatePatient.id);
     }
   }
 
+  let regCode = '';
+  //if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
+  const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
+  //const getCode = await regCodeRepo.getCode();
+  const getCode = await regCodeRepo.updateCodeStatus('', patient);
+  if (getCode) {
+    /*const regCodeStatus = await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+    if (regCodeStatus) {
+      regCode = getCode[0].registrationCode;
+    }*/
+    regCode = getCode[0].registrationCode;
+  }
+  //}
+
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
   console.log(getPatientList, 'getPatientList for count');
-  if (updatePatient.relation == Relation.ME || getPatientList.length == 1 || regCode != '') {
+  if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
     //send registration success notification here
     sendPatientRegistrationNotification(patient, profilesDb, regCode);
   }

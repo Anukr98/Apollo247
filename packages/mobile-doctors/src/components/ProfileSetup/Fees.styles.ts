@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -76,4 +77,7 @@ export default StyleSheet.create({
       }
     ),
   },
+
+  roundCornorView: { marginHorizontal: 20, marginTop: 16, marginBottom: 20 },
+  cardView: { flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' },
 });

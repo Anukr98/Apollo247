@@ -260,19 +260,22 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   };
 
   const onPressLogout = () => {
-    signOut();
-    AsyncStorage.setItem('userLoggedIn', 'false');
-    AsyncStorage.setItem('multiSignUp', 'false');
-    AsyncStorage.setItem('signUp', 'false');
-    AsyncStorage.setItem('selectUserId', '');
-    AsyncStorage.removeItem('phoneNumber');
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
-      })
-    );
+    try {
+      signOut();
+      AsyncStorage.setItem('userLoggedIn', 'false');
+      AsyncStorage.setItem('multiSignUp', 'false');
+      AsyncStorage.setItem('signUp', 'false');
+      AsyncStorage.setItem('selectUserId', '');
+      AsyncStorage.removeItem('phoneNumber');
+      AsyncStorage.setItem('logginHappened', 'false');
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
+        })
+      );
+    } catch (error) {}
   };
 
   const client = useApolloClient();

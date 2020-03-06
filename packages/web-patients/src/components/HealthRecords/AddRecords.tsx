@@ -420,26 +420,25 @@ export const AddRecords: React.FC = (props) => {
     });
 
     let message = '';
-    if (uploadedDocuments.length === 0) {
-      message = 'Please Upload the file';
-    } else {
-      if (typeOfRecord !== '') {
-        if (typeOfRecord === MedicRecordType.TEST_REPORT) {
-          if (nameOfTest === '') {
-            message = 'Enter test name';
-          } else if (dateOfTest === '') {
-            message = 'Enter Date of Test';
-          }
-        } else if (typeOfRecord === MedicRecordType.PRESCRIPTION) {
-          if (doctorIssuedPrescription === '') {
-            message = 'Enter doctor name';
-          } else if (dateOfPrescription === '') {
-            message = 'Enter Date of Prescription';
-          }
+    // if (uploadedDocuments.length === 0) {
+    //   message = 'Please Upload the file';
+    // } else {
+    if (typeOfRecord !== '') {
+      if (typeOfRecord === MedicRecordType.TEST_REPORT) {
+        if (nameOfTest === '') {
+          message = 'Enter test name';
+        } else if (dateOfTest === '') {
+          message = 'Enter Date of Test';
         }
-      } else {
-        message = 'Select the Record Type';
+      } else if (typeOfRecord === MedicRecordType.PRESCRIPTION) {
+        if (doctorIssuedPrescription === '') {
+          message = 'Enter doctor name';
+        } else if (dateOfPrescription === '') {
+          message = 'Enter Date of Prescription';
+        }
       }
+    } else {
+      message = 'Select the Record Type';
     }
 
     message === '' &&
@@ -589,6 +588,7 @@ export const AddRecords: React.FC = (props) => {
         })
           .then(({ data }) => {
             setshowSpinner(false);
+            window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
           .catch((e) => {
             setshowSpinner(false);
@@ -664,7 +664,7 @@ export const AddRecords: React.FC = (props) => {
               <div className={classes.customScroll}>
                 <ExpansionPanel className={classes.panelRoot} defaultExpanded={true}>
                   <ExpansionPanelSummary
-                    expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+                    expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
                     classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
                   >
                     {'Documents Uploaded'}
@@ -767,7 +767,7 @@ export const AddRecords: React.FC = (props) => {
                 </ExpansionPanel>
                 <ExpansionPanel className={classes.panelRoot} defaultExpanded={true}>
                   <ExpansionPanelSummary
-                    expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+                    expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
                     classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
                   >
                     Record Details
@@ -898,7 +898,7 @@ export const AddRecords: React.FC = (props) => {
                   onChange={handleChange('report')}
                 >
                   <ExpansionPanelSummary
-                    expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+                    expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
                     classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
                   >
                     Report Details (Optional)

@@ -2,7 +2,6 @@ import React, { useEffect, useContext } from 'react';
 import { Theme, FormHelperText } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle, AphDialog } from '@aph/web-ui-components';
-
 import { isEmpty, trim } from 'lodash';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms } from 'graphql/types/GetJuniorDoctorCaseSheet';
@@ -237,7 +236,7 @@ export const Symptoms: React.FC = (props) => {
           val: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
           index: number
         ) => {
-          if (val.symptom && val.symptom.trim().toLowerCase() === symptom.trim().toLowerCase()) {
+          if (val.symptom && trim(val.symptom).toLowerCase() === trim(symptom).toLowerCase()) {
             duplicate = isUpdate ? idxValue !== index : true;
           }
         }
@@ -251,26 +250,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    }
-    // else if (isEmpty(trim(since))) {
-    //   setErrorState({
-    //     ...errorState,
-    //     symptomError: false,
-    //     sinceError: true,
-    //     howOfftenError: false,
-    //     severityError: false,
-    //   });
-    // }
-    // else if (isEmpty(trim(howOften))) {
-    //   setErrorState({
-    //     ...errorState,
-    //     symptomError: false,
-    //     sinceError: false,
-    //     howOfftenError: true,
-    //     severityError: false,
-    //   });
-    // }
-    else if (isEmpty(trim(severity))) {
+    } else if (isEmpty(trim(severity))) {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -311,11 +291,9 @@ export const Symptoms: React.FC = (props) => {
           symptom: symptom,
           details: details,
         };
-        const x = symptoms;
-        x!.push(inputParams);
-        console.log(inputParams, 'object');
-        console.log(x, 'array');
-        setSymptoms(x);
+        const symptomList = symptoms;
+        symptomList!.push(inputParams);
+        setSymptoms(symptomList);
       }
       setIsUpdate(false);
       setIsDialogOpen(false);
@@ -352,7 +330,9 @@ export const Symptoms: React.FC = (props) => {
           {symptoms &&
             symptoms!.map(
               (item, idx) =>
-                item!.symptom!.trim() !== '' && (
+                item &&
+                item.symptom &&
+                trim(item.symptom) !== '' && (
                   <div key={idx} className={classes.listItem}>
                     <div className={classes.symtomHeading}>
                       {item!.symptom}
@@ -376,16 +356,16 @@ export const Symptoms: React.FC = (props) => {
                       </AphButton>
                     </div>
                     <div className={classes.symtomContent}>
-                      {item.since && item.since.trim() !== '' && (
+                      {item.since && trim(item.since) !== '' && (
                         <div className={classes.symtomType}>Since: {item.since}</div>
                       )}
-                      {item.howOften && item.howOften.trim() !== '' && (
+                      {item.howOften && trim(item.howOften) !== '' && (
                         <div className={classes.symtomType}>How Often : {item.howOften}</div>
                       )}
-                      {item.severity && item.severity.trim() !== '' && (
+                      {item.severity && trim(item.severity) !== '' && (
                         <div className={classes.symtomType}>Severity: {item.severity}</div>
                       )}
-                      {item.details && item.details.trim() !== '' && (
+                      {item.details && trim(item.details) !== '' && (
                         <div className={classes.symtomType}>Details: {item.details}</div>
                       )}
                     </div>

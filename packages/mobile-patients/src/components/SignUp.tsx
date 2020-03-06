@@ -41,6 +41,7 @@ import {
   Relation,
   Gender,
   UpdatePatientInput,
+  DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
@@ -183,7 +184,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
-      getPatientApiCall();
+      // getPatientApiCall();
     }
   }, [currentPatient]);
 
@@ -430,9 +431,32 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       const formatDate = Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                       console.log('signup currentPatient', currentPatient);
 
+                      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+                      const item = JSON.parse(retrievedItem);
+
+                      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+                      let allPatients;
+
+                      if (callByPrism === 'true') {
+                        allPatients =
+                          item && item.data && item.data.getCurrentPatients
+                            ? item.data.getCurrentPatients.patients
+                            : null;
+                      } else {
+                        allPatients =
+                          item && item.data && item.data.getPatientByMobileNumber
+                            ? item.data.getPatientByMobileNumber.patients
+                            : null;
+                      }
+
+                      const mePatient = allPatients
+                        ? allPatients.find((patient: any) => patient.relation === Relation.ME) ||
+                          allPatients[0]
+                        : null;
+
                       const patientsDetails: UpdatePatientInput = {
-                        id: currentPatient ? currentPatient.id : '',
-                        mobileNumber: currentPatient ? currentPatient.mobileNumber : '',
+                        id: mePatient.id,
+                        mobileNumber: mePatient.mobileNumber,
                         firstName: firstName.trim(),
                         lastName: lastName.trim(),
                         relation: Relation.ME,
@@ -457,50 +481,50 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   }}
                 >
                   {data
-                    ? (setVerifyingPhoneNumber(false),
+                    ? (console.log('data', data.updatePatient.patient),
+                      getPatientApiCall(),
                       _postWebEngageEvent(),
-                      console.log('data', data.updatePatient.patient),
-                      getPatientByPrism(),
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', 'false'),
                       CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       setTimeout(() => {
-                        props.navigation.dispatch(
-                          StackActions.reset({
-                            index: 0,
-                            key: null,
-                            actions: [
-                              NavigationActions.navigate({
-                                routeName: AppRoutes.ConsultRoom,
-                              }),
-                            ],
-                          })
-                        );
+                        setVerifyingPhoneNumber(false),
+                          props.navigation.dispatch(
+                            StackActions.reset({
+                              index: 0,
+                              key: null,
+                              actions: [
+                                NavigationActions.navigate({
+                                  routeName: AppRoutes.ConsultRoom,
+                                }),
+                              ],
+                            })
+                          );
                       }, 500))
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                   {error
-                    ? (setVerifyingPhoneNumber(false),
-                      signOut(),
-                      handleGraphQlError(error),
+                    ? (signOut(),
+                      // handleGraphQlError(error),
                       console.log('updatePatient error', error),
                       AsyncStorage.setItem('userLoggedIn', 'false'),
                       AsyncStorage.setItem('multiSignUp', 'false'),
                       AsyncStorage.setItem('signUp', 'false'),
                       CommonLogEvent(AppRoutes.SignUp, 'Error going back to login'),
                       setTimeout(() => {
-                        props.navigation.dispatch(
-                          StackActions.reset({
-                            index: 0,
-                            key: null,
-                            actions: [
-                              NavigationActions.navigate({
-                                routeName: AppRoutes.Login,
-                              }),
-                            ],
-                          })
-                        );
+                        setVerifyingPhoneNumber(false),
+                          props.navigation.dispatch(
+                            StackActions.reset({
+                              index: 0,
+                              key: null,
+                              actions: [
+                                NavigationActions.navigate({
+                                  routeName: AppRoutes.Login,
+                                }),
+                              ],
+                            })
+                          );
                       }, 0))
                     : null}
                 </Button>

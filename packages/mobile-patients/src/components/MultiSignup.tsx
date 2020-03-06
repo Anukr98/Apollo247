@@ -31,7 +31,11 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { Relation, UpdatePatientInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  Relation,
+  UpdatePatientInput,
+  DEVICE_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updatePatientVariables,
   updatePatient,
@@ -124,17 +128,18 @@ export interface MultiSignupProps extends NavigationScreenProps {}
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { analytics, signOut, getPatientByPrism } = useAuth();
+  const { analytics, signOut, getPatientApiCall } = useAuth();
   const [profiles, setProfiles] = useState<GetCurrentPatients_getCurrentPatients_patients[] | null>(
     []
   );
   const [discriptionText, setDiscriptionText] = useState<string>('');
   const [showText, setShowText] = useState<boolean>(false);
   const [verifyingPhoneNumber, setVerifyingPhoneNumber] = useState<boolean>(false);
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
   const [referredBy, setReferredBy] = useState<string>();
   const [referral, setReferral] = useState<string>('');
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
+  const [allCurrentPatients, setAllCurrentPatients] = useState<any>();
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -160,15 +165,39 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (allCurrentPatients && allCurrentPatients.length) {
-      if (!allCurrentPatients[0].relation) allCurrentPatients[0].relation = Relation.ME;
+    async function fetchData() {
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem);
+
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+      let allPatients;
+
+      if (callByPrism === 'true') {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+      } else {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+      }
+
+      setAllCurrentPatients(allPatients);
+
+      if (allPatients && allPatients.length) {
+        if (!allPatients[0].relation) allPatients[0].relation = Relation.ME;
+      }
+      setProfiles(allPatients ? allPatients : []);
+      if (allPatients && allPatients.length > 0) {
+        setShowText(true);
+      }
+      AsyncStorage.setItem('multiSignUp', 'true');
     }
-    setProfiles(allCurrentPatients ? allCurrentPatients : []);
-    if (allCurrentPatients && allCurrentPatients.length > 0) {
-      setShowText(true);
-    }
-    AsyncStorage.setItem('multiSignUp', 'true');
-  }, [allCurrentPatients]);
+
+    fetchData();
+  }, []);
 
   // useEffect(() => {
   //   setProfiles(allCurrentPatients ? allCurrentPatients : []);
@@ -415,7 +444,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
                       const patientsDetails: UpdatePatientInput = {
-                        id: profile.id || '',
+                        id: profile.id,
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
                         referralCode: (profile.relation == Relation.ME && referral) || null,
                       };
@@ -432,48 +461,48 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               }}
             >
               {data
-                ? (setVerifyingPhoneNumber(false),
-                  console.log('data', data.updatePatient.patient),
-                  getPatientByPrism(),
+                ? (console.log('data', data.updatePatient.patient),
+                  getPatientApiCall(),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
                   setTimeout(() => {
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [
-                          NavigationActions.navigate({
-                            routeName: AppRoutes.ConsultRoom,
-                          }),
-                        ],
-                      })
-                    );
+                    setVerifyingPhoneNumber(false),
+                      props.navigation.dispatch(
+                        StackActions.reset({
+                          index: 0,
+                          key: null,
+                          actions: [
+                            NavigationActions.navigate({
+                              routeName: AppRoutes.ConsultRoom,
+                            }),
+                          ],
+                        })
+                      );
                   }, 500))
                 : null}
               {error
-                ? (setVerifyingPhoneNumber(false),
-                  signOut(),
-                  handleGraphQlError(error),
+                ? (signOut(),
+                  // handleGraphQlError(error),
                   console.log('updatePatient error', error),
                   AsyncStorage.setItem('userLoggedIn', 'false'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('signUp', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
                   setTimeout(() => {
-                    props.navigation.dispatch(
-                      StackActions.reset({
-                        index: 0,
-                        key: null,
-                        actions: [
-                          NavigationActions.navigate({
-                            routeName: AppRoutes.Login,
-                          }),
-                        ],
-                      })
-                    );
+                    setVerifyingPhoneNumber(false),
+                      props.navigation.dispatch(
+                        StackActions.reset({
+                          index: 0,
+                          key: null,
+                          actions: [
+                            NavigationActions.navigate({
+                              routeName: AppRoutes.Login,
+                            }),
+                          ],
+                        })
+                      );
                   }, 0))
                 : null}
             </Button>

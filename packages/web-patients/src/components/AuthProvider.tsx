@@ -35,6 +35,7 @@ export interface AuthContextProps {
   isSendingOtp: boolean;
   verifyOtp: ((otp: string, loginId: string) => Promise<unknown>) | null;
   verifyOtpError: boolean;
+  setVerifyOtpError: ((verifyOtpError: boolean) => void) | null;
   isVerifyingOtp: boolean;
   signInError: boolean;
   isSigningIn: boolean;
@@ -67,6 +68,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   verifyOtp: null,
   verifyOtpError: false,
+  setVerifyOtpError: null,
   isVerifyingOtp: false,
 
   signInError: false,
@@ -370,6 +372,7 @@ export const AuthProvider: React.FC = (props) => {
 
             verifyOtp,
             verifyOtpError,
+            setVerifyOtpError,
             isVerifyingOtp,
 
             hasAuthToken,
