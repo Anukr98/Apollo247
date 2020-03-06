@@ -19,12 +19,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const renderCard = (title: string, children: Element) => (
     <SquareCardWithTitle title={title} containerStyle={{ marginTop: 16 }}>
-      <View
-        style={[
-          theme.viewStyles.whiteRoundedCornerCard,
-          { marginHorizontal: 20, marginTop: 16, marginBottom: 20 },
-        ]}
-      >
+      <View style={[theme.viewStyles.whiteRoundedCornerCard, styles.roundCornorView]}>
         {children}
       </View>
     </SquareCardWithTitle>
@@ -116,7 +111,7 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
         strings.account.payment_details,
         <View>
           {Feedata.bankAccount!.length > 0 ? (
-            <View style={{ flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' }}>
+            <View style={styles.cardView}>
               <View style={{ flex: 1 }}>
                 {feeprofileRowbankname(
                   Feedata.bankAccount![0]!.accountNumber,
