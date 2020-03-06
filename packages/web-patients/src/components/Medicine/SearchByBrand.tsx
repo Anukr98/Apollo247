@@ -200,7 +200,7 @@ export const SearchByBrand: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.medicines())}>
+            <a onClick={() => window.history.back()}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
