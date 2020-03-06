@@ -75,19 +75,32 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
     setDoctorName((doctorDetails && doctorDetails.firstName) || '');
   }, [doctorDetails]);
 
+  const isPastDate = (date: Date) => {
+    return moment(moment(date).format('YYYY-MM-DD')).isBefore(
+      moment(new Date()).format('YYYY-MM-DD')
+    );
+  };
+
   useEffect(() => {
     let timerId: NodeJS.Timeout;
     getAppointmentsApi();
-    timerId = setInterval(() => {
-      getAppointmentsApi();
-    }, intervalTime);
+    if (!isPastDate(date)) {
+      console.log('future dates', date, new Date());
+      timerId = setInterval(() => {
+        getAppointmentsApi();
+      }, intervalTime);
+    }
     const _didFocusSubscription = props.navigation.addListener('didFocus', () => {
       console.log('didFocus');
       getAppointmentsApi();
       timerId && clearInterval(timerId);
-      timerId = setInterval(() => {
-        getAppointmentsApi();
-      }, intervalTime);
+      if (!isPastDate(date)) {
+        console.log('future dates222222', date, new Date());
+
+        timerId = setInterval(() => {
+          getAppointmentsApi();
+        }, intervalTime);
+      }
     });
 
     const _willBlurSubscription = props.navigation.addListener('willBlur', () => {

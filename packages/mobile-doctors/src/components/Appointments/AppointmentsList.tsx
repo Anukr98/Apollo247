@@ -109,12 +109,13 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return `${slotStartTime} ${consultDuration ? `- ${slotEndTime}` : ``}`;
   };
 
-  const showUpNext = (aptTime: string, index: number) => {
+  const showUpNext = (aptTime: string, index: number, status: STATUS) => {
     if (index === 0) upcomingNextRendered = false;
     if (
       new Date(aptTime) > new Date() &&
       !upcomingNextRendered &&
-      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') &&
+      status !== STATUS.COMPLETED
     ) {
       upcomingNextRendered = true;
       return true;
@@ -148,7 +149,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             })[0];
 
           const consultDuration = filterData ? filterData.consultDuration : 0;
-          const showNext = showUpNext(i.appointmentDateTime, index);
+          const showNext = showUpNext(i.appointmentDateTime, index, i.status);
 
           return (
             <>
