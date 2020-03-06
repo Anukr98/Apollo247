@@ -52,15 +52,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       <NextAppointmentIcon />
     );
   };
-  // status == 'past' ? (
-  //   <PastAppointmentIcon />
-  // ) : status == 'missed' ? (
-  //   <MissedAppointmentIcon />
-  // ) : status == 'next' ? (
-  //   <NextAppointmentIcon />
-  // ) : (
-  //   <UpComingIcon />
-  // );
 
   const renderLeftTimeLineView = (
     status: string,
@@ -102,12 +93,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       return 'past';
     } else {
       return 'next';
-      // const appointemntTime = moment
-      //   .utc(appointment.appointmentDateTime)
-      //   .local()
-      //   .format('YYYY-MM-DD HH:mm:ss');
-      // if (moment(appointemntTime).isBefore()) return 'next';
-      // else return 'next';
     }
   };
 
@@ -168,14 +153,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
+              <View style={styles.dataview}>
                 {renderLeftTimeLineView(
                   i.status,
                   index !== 0,

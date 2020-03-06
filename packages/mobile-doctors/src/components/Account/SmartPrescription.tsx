@@ -72,7 +72,7 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Alert, SafeAreaView, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { searchDiagnostic_searchDiagnostic } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostic';
 import SmartPrescriptionStyles from '@aph/mobile-doctors/src/components/Account/SmartPrescription.styles';
@@ -213,11 +213,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     tempTestArray: searchDiagnostic_searchDiagnostic[]
   ) => {
     console.log('updateTestId-----', updateTestId, 'updateTestName-----', updateTestName);
-    // tempTestArray.push(tempTestArray);
-    // const AddingTest = tempTestArray
-    //   .map((ele) => ele.itemname)
-    //   .filter((i) => i !== '')
-    //   .join(',');
+
     const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
     console.log('AddingTest---', AddingTest);
 
@@ -251,17 +247,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   const showHeaderView = () => {
     return (
       <Header
-        containerStyle={{
-          height: 50,
-          shadowColor: '#000000',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowRadius: 10,
-          shadowOpacity: 0.2,
-          elevation: 5,
-        }}
+        containerStyle={styles.headerview}
         leftIcons={[
           {
             icon: <BackArrow />,
@@ -304,7 +290,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
           <AddIconLabel
             label={strings.smartPrescr.add_medicine}
-            style={{ marginLeft: 0, marginTop: 9 }}
+            style={styles.commonview}
             onPress={() => {
               setDataMed(undefined);
               setIsAddMedicine(true);
@@ -341,7 +327,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
           <AddIconLabel
             label={strings.smartPrescr.add_test}
-            style={{ marginLeft: 0, marginTop: 9 }}
+            style={styles.commonview}
             onPress={() => setIsTest(true)}
           />
         </View>
@@ -382,7 +368,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
           <AddIconLabel
             label={strings.smartPrescr.add_advice}
-            style={{ marginLeft: 0, marginTop: 9 }}
+            style={styles.commonview}
             onPress={() => {
               setfavAdviceId('');
               setfavAdviceInstruction('');
@@ -517,37 +503,13 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         Alert.alert(strings.common.error, strings.smartPrescr.update_med_error);
       });
   };
-  // -----------------------Buttons view------------
-  // const renderButtonsView = () => {
-  //   return (
-  //     <BottomButtons
-  //       whiteButtontitle={strings.buttons.cancel}
-  //       cancelFun={() => {
-  //         console.log('cancel');
-  //       }}
-  //       yellowButtontitle={strings.buttons.save}
-  //       successFun={() => {
-  //         console.log('successFun');
-  //       }}
-  //       viewStyles={{
-  //         backgroundColor: '#f7f7f7',
-  //         marginTop: 10,
-  //       }}
-  //     />
-  //   );
-  // };
 
   const AddFavouriteTest = (
     searchTestVal: string,
     tempTestArray: searchDiagnostic_searchDiagnostic[]
   ) => {
-    // const AddingTest = tempTestArray
-    //   .map((ele) => ele.itemname)
-    //   .filter((i) => i !== '')
-    //   .join(',');
     const AddingTest = tempTestArray!.map((ele: string) => ele).join(',');
     console.log('AddingTest---', AddingTest);
-
     if (searchTestVal != '') {
       setLoading(true);
       client

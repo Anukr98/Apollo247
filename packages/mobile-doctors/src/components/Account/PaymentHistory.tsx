@@ -1,6 +1,6 @@
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, DotIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { StyleSheet, View, Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { NavigationScreenProps, ScrollView, SafeAreaView } from 'react-navigation';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import React, { useState } from 'react';
@@ -13,7 +13,6 @@ import PaymentHistoryStyles from '@aph/mobile-doctors/src/components/Account/Pay
 const styles = PaymentHistoryStyles;
 
 export interface PaymentHistoryProps extends NavigationScreenProps<{}> {
-  //profileData: object;
   scrollViewRef: KeyboardAwareScrollView | null;
   onReload: () => void;
 }
@@ -46,17 +45,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
   const showHeaderView = () => {
     return (
       <Header
-        containerStyle={{
-          height: 50,
-          shadowColor: '#000000',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowRadius: 10,
-          shadowOpacity: 0.2,
-          elevation: 5,
-        }}
+        containerStyle={styles.headerview}
         leftIcons={[
           {
             icon: <BackArrow />,
@@ -79,7 +68,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
   const BodyView = () => {
     return (
       <View style={styles.cardView}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={styles.rowview}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.leftSmallText}>Appointment Details : </Text>
             <Text style={styles.leftMidiumText}> 6th June, 2019</Text>
@@ -87,7 +76,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
 
           <Text style={styles.rupeesStyle}>Rs. 100</Text>
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={styles.rowview}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={styles.leftSmallText}>Appointment ID : </Text>
             <Text style={styles.leftMidiumText}> 12345</Text>
@@ -98,30 +87,30 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
         <View style={styles.underline} />
 
         <View style={{ flexDirection: 'row', flex: 1 }}>
-          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+          <View style={styles.commonview}>
             <Text style={styles.leftSmallText}>Fee </Text>
             <Text style={[styles.nameStyles, { marginLeft: -3 }]}> Rs. 499</Text>
           </View>
-          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+          <View style={styles.commonview}>
             <Text style={styles.leftSmallText}> </Text>
             <Text style={styles.nameStyles}>-</Text>
           </View>
 
-          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+          <View style={styles.commonview}>
             <Text style={styles.leftSmallText}>Commission </Text>
             <Text style={styles.nameStyles}> Rs. 50</Text>
           </View>
 
-          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+          <View style={styles.commonview}>
             <Text style={styles.leftSmallText}> </Text>
             <Text style={styles.nameStyles}>-</Text>
           </View>
 
-          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+          <View style={styles.commonview}>
             <Text style={styles.leftSmallText}>Discount </Text>
             <Text style={styles.nameStyles}> Rs. 50</Text>
           </View>
-          <View style={{ flexDirection: 'column', marginRight: 5 }}>
+          <View style={styles.commonview}>
             <Text style={styles.leftSmallText}> </Text>
             <Text style={styles.nameStyles}>=</Text>
           </View>
@@ -152,20 +141,8 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = (props) => {
               data={statementFreqency}
               selectedItem={selectedFrequency}
               setselectedItem={setSelectedFrequency}
-              //  isSelected={selectedItem?<Selected/> : <UnSelected/>}
-            >
-              {/* {selectedFrequency && 
-  console.log("Sannn");
-  
-} 
- */}
-            </RadioButtons>
+            ></RadioButtons>
           </View>
-          {/* <View>
-            {statementFreqency.map((item, i) => (
-              <Text>item</Text>
-            ))}
-          </View> */}
 
           <View></View>
           <View style={{ marginTop: 20 }}>

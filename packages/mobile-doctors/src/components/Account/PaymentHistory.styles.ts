@@ -58,4 +58,17 @@ export default StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(15),
   },
+  headerview: {
+    height: 50,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
+  },
+  rowview: { flexDirection: 'row', justifyContent: 'space-between' },
+  commonview: { flexDirection: 'column', marginRight: 5 },
 });

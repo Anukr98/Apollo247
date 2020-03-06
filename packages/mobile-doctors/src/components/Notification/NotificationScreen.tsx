@@ -4,9 +4,8 @@ import {
   PlaceHolderDoctor,
   PlaceHolderDoctors,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import NotificationScreenStyles from '@aph/mobile-doctors/src/components/Notification/NotificationScreen.styles';

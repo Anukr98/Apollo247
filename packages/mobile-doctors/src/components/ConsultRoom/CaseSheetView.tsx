@@ -117,6 +117,7 @@ import {
   NavigationScreenProps,
 } from 'react-navigation';
 import CaseSheetViewStyles from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView.styles';
+import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 
 const { width } = Dimensions.get('window');
 
@@ -651,7 +652,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={styles.footerButtonsContainersave}>
               <Button
                 title={strings.buttons.start_consult}
-                disabled={!enableConsultButton}
+                // disabled={!enableConsultButton}
                 buttonIcon={<Start />}
                 onPress={() => {
                   setShowButtons(true);

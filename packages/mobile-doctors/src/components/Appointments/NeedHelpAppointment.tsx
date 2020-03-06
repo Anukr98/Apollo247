@@ -2,7 +2,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, Text, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import NeedHelpAppointmentStyles from '@aph/mobile-doctors/src/components/Appointments/NeedHelpAppointment.styles';
@@ -33,13 +33,10 @@ export const NeedHelpAppointment: React.FC<NeedHelpAppointmentProps> = (props) =
         <View style={styles.mainview}>
           <Text style={styles.descriptionview}>{strings.need_help.dont_worry_we_are_here}</Text>
         </View>
-        <View style={{ marginLeft: 16, marginBottom: 32 }}>
+        <View style={styles.freenum}>
           <Text style={styles.descriptionview}>
             {strings.common.call}
-            <Text style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(18) }}>
-              {' '}
-              {strings.common.toll_free_num}{' '}
-            </Text>
+            <Text style={styles.call}> {strings.common.toll_free_num} </Text>
             {strings.need_help.reach_an_expert}
           </Text>
         </View>
