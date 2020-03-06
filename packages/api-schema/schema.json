@@ -18125,8 +18125,8 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "kind": "OBJECT",
+              "name": "GetCurrentPatientsResult",
               "ofType": null
             },
             "isDeprecated": false,

@@ -1592,6 +1592,66 @@ const getDeliveryChargesLineItem = () => {
   };
 };
 
+//prism queue
+app.get('/getPrismData', (req, res) => {
+  let queueMessage = '';
+  const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
+  const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
+  azureServiceBus.receiveSubscriptionMessage(
+    process.env.AZURE_SERVICE_BUS_QUEUE_NAME_PATIENTS,
+    process.env.AZURE_SERVICE_BUS_SUBSCRIBER_PATIENTS,
+    { isPeekLock: false },
+    (subscriptionError, result) => {
+      if (subscriptionError) {
+        console.log('read error', subscriptionError);
+        res.send({
+          status: 'failed',
+          reason: subscriptionError,
+          code: '10001',
+        });
+      } else {
+        console.log('message from topic', result.body);
+        queueMessage = result.body;
+        const queueDetails = queueMessage.split(':');
+        axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+        console.log(queueDetails, ':Pism get patient details');
+        axios({
+          url: process.env.API_URL,
+          method: 'post',
+          data: {
+            query: `
+            mutation {
+              registerPatientsFromPrism(mobileNumber:${queueDetails[1]}) {
+                Patients {
+                  id                  
+                    mobileNumber
+                    firstName
+                    lastName
+                    emailAddress
+                    dateOfBirth                  
+                }
+              }
+            }
+          `,
+          },
+        })
+          .then(async (response) => {
+            if (response) {
+              console.log(
+                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
+                '======prism response======='
+              );
+            }
+          })
+          .catch((error) => {
+            // no need to explicitly saying details about error for clients.
+            console.log(error);
+          });
+      }
+    }
+  );
+});
+
 app.listen(PORT, () => {
   console.log('Running on ' + PORT);
 });
