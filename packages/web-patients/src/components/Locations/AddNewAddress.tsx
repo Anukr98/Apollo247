@@ -369,6 +369,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     alert(error);
                   });
           }}
+          title={'save'}
         >
           {mutationLoading ? <CircularProgress size={20} /> : 'Save'}
         </AphButton>

@@ -221,6 +221,7 @@ export const ManageProfiles: React.FC = (props) => {
                   setUpdatingPatientId(userId);
                   setIsMeClicked(accountDetails.relation === 'ME');
                 }}
+                title={'Update Profile'}
               >
                 <div className={classes.profileCard}>
                   <div className={classes.profileImg}>
@@ -258,12 +259,13 @@ export const ManageProfiles: React.FC = (props) => {
             setUpdatingPatientId('');
           }}
           color="primary"
+          title={'Add New Profile'}
         >
           Add New Profile
         </AphButton>
       </div>
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Profile'}
           {/* {updatingPatientId.length > 0 ? (

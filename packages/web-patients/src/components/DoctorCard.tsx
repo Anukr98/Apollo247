@@ -317,7 +317,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }}
             className={classes.bottomAction}
           >
-            <AphButton fullWidth color="primary" className={classes.button}>
+            <AphButton fullWidth color="primary" className={classes.button} title={'Consult Now'}>
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (

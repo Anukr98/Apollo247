@@ -259,6 +259,7 @@ export const AppLocations: React.FC = (props) => {
         className={classes.locationWrap}
         ref={locationRef}
         onClick={() => setIsLocationPopoverOpen(true)}
+        title={'Location'}
       >
         <img
           className={`${classes.locationIcon} ${classes.iconDesktop}`}

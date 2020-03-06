@@ -579,6 +579,7 @@ export const Appointments: React.FC = (props) => {
                               onClick={() => {
                                 history.push(clientRoutes.doctorsLanding());
                               }}
+                              title={'Book an Appointment'}
                             >
                               Book an Appointment
                             </AphButton>
@@ -613,6 +614,7 @@ export const Appointments: React.FC = (props) => {
                               onClick={() => {
                                 history.push(clientRoutes.doctorsLanding());
                               }}
+                              title={'Book an Appointment'}
                             >
                               Book an Appointment
                             </AphButton>
@@ -639,6 +641,7 @@ export const Appointments: React.FC = (props) => {
                 setIsConfirmedPopoverOpen(false);
                 history.push(clientRoutes.appointments());
               }}
+              title={'Close'}
             />
           )}
         />
