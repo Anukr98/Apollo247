@@ -305,11 +305,9 @@ const updateSdSummary: Resolver<
               if (betweenConsultHours == true) {
                 if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.AWAY) {
                   awayCount++;
-                  console.log('Doctor Away Status Count ', awayCount);
                   awayCount = awayCount;
                 } else if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE) {
                   onlineCount++;
-                  console.log('Doctor Online Status Count', onlineCount);
                   onlineCount = onlineCount;
                 }
               }
