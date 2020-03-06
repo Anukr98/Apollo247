@@ -303,9 +303,9 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
         {/* <TouchableOpacity onPress={() => {}}>
             <SpeakerOn style={{ width: 60, height: 60 }} />
           </TouchableOpacity> */}
-        <TouchableOpacity onPress={props.onVideoToggle}>
+        {/* <TouchableOpacity onPress={props.onVideoToggle}>
           {props.showVideo === true ? <VideoOnIcon /> : <VideoOffIcon />}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {renderMuteIcon()}
         <TouchableOpacity onPress={props.onPressEndCall}>
           <EndCallIcon />

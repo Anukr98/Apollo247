@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import styles from '@aph/mobile-doctors/src/components/ui/AddInstructionPopUp.styles';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  BackHandler,
+  Dimensions,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
   ScrollView,
-  Dimensions,
   Text,
   TextInput,
-  BackHandler,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
-import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,48 +40,15 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
 
   const renderHeader = () => {
     return (
-      <View
-        style={[
-          {
-            ...theme.viewStyles.cardContainer,
-            borderTopRightRadius: 10,
-            borderTopLeftRadius: 10,
-            backgroundColor: theme.colors.WHITE,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingVertical: 18,
-            width: width - 60,
-            flexDirection: 'row',
-          },
-        ]}
-      >
-        <Text
-          style={{
-            ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE, 1, undefined, 0.5),
-            marginLeft: 20,
-            marginRight: 20,
-          }}
-        >
-          {strings.smartPrescr.fav_advice}
-        </Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headeText}>{strings.smartPrescr.fav_advice}</Text>
       </View>
     );
   };
 
   const renderButtons = () => {
     return (
-      <View
-        style={[
-          theme.viewStyles.cardContainer,
-          {
-            width: '100%',
-            flexDirection: 'row',
-            padding: 16,
-            borderBottomEndRadius: 10,
-            borderBottomStartRadius: 10,
-          },
-        ]}
-      >
+      <View style={styles.buttonView}>
         <Button
           title={strings.buttons.cancel}
           variant={'white'}
@@ -109,17 +76,7 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
           placeholder={strings.smartPrescr.fav_advice_placeholder}
           textAlignVertical={'top'}
           placeholderTextColor={theme.colors.placeholderTextColor}
-          style={{
-            borderWidth: 2,
-            borderRadius: 10,
-            height: 80,
-            paddingLeft: 12,
-            paddingRight: 12,
-            paddingBottom: 12,
-            paddingTop: 12,
-            borderColor: theme.colors.APP_GREEN,
-            ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
-          }}
+          style={styles.inputStyles}
           multiline={true}
           value={value}
           onChangeText={(value) => setValue(value)}
@@ -129,19 +86,7 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
     );
   };
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        zIndex: 5,
-        elevation: 500,
-      }}
-    >
+    <View style={styles.mainView}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
@@ -161,29 +106,12 @@ export const AddInstructionPopUp: React.FC<AddInstructionPopUpProps> = (props) =
               onPress={() => {
                 props.onClose();
               }}
-              style={{
-                marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 50,
-                backgroundColor: 'white',
-                height: 28,
-                width: 28,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 14,
-                marginRight: 0,
-                marginBottom: 8,
-              }}
+              style={styles.touchableStyles}
             >
-              <Remove style={{ width: 28, height: 28 }} />
+              <Remove style={styles.removeIconStyle} />
             </TouchableOpacity>
           </View>
-          <View
-            style={{
-              ...theme.viewStyles.cardContainer,
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-              borderRadius: 10,
-              maxHeight: '85%',
-            }}
-          >
+          <View style={styles.dataView}>
             {renderHeader()}
             <ScrollView bounces={false}>{renderInput()}</ScrollView>
             {renderButtons()}

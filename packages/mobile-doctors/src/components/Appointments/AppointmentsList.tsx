@@ -53,15 +53,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       <NextAppointmentIcon />
     );
   };
-  // status == 'past' ? (
-  //   <PastAppointmentIcon />
-  // ) : status == 'missed' ? (
-  //   <MissedAppointmentIcon />
-  // ) : status == 'next' ? (
-  //   <NextAppointmentIcon />
-  // ) : (
-  //   <UpComingIcon />
-  // );
 
   const renderLeftTimeLineView = (
     status: string,
@@ -103,12 +94,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       return 'past';
     } else {
       return 'next';
-      // const appointemntTime = moment
-      //   .utc(appointment.appointmentDateTime)
-      //   .local()
-      //   .format('YYYY-MM-DD HH:mm:ss');
-      // if (moment(appointemntTime).isBefore()) return 'next';
-      // else return 'next';
     }
   };
 
@@ -125,12 +110,13 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return `${slotStartTime} ${consultDuration ? `- ${slotEndTime}` : ``}`;
   };
 
-  const showUpNext = (aptTime: string, index: number) => {
+  const showUpNext = (aptTime: string, index: number, status: STATUS) => {
     if (index === 0) upcomingNextRendered = false;
     if (
       new Date(aptTime) > new Date() &&
       !upcomingNextRendered &&
-      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD')
+      moment(new Date(aptTime)).format('YYYY-MM-DD') === moment(new Date()).format('YYYY-MM-DD') &&
+      status !== STATUS.COMPLETED
     ) {
       upcomingNextRendered = true;
       return true;
@@ -164,19 +150,12 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             })[0];
 
           const consultDuration = filterData ? filterData.consultDuration : 0;
-          const showNext = showUpNext(i.appointmentDateTime, index);
+          const showNext = showUpNext(i.appointmentDateTime, index, i.status);
 
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
+              <View style={styles.dataview}>
                 {renderLeftTimeLineView(
                   i.status,
                   index !== 0,

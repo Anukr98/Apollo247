@@ -84,14 +84,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     if (!getDoctorDetails.firstName) return null;
     return (
       <View>
-        <Text
-          style={{
-            color: '#02475b',
-            ...theme.fonts.IBMPlexSansSemiBold(18),
-            marginLeft: 20,
-            marginTop: 12,
-          }}
-        >
+        <Text style={styles.profile}>
           {strings.common.dr} {getDoctorDetails.firstName} {getDoctorDetails.lastName}
         </Text>
       </View>
@@ -101,15 +94,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     if (!getDoctorDetails.registrationNumber) return null;
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
-        <Text
-          style={{
-            color: '#0087ba',
-            ...theme.fonts.IBMPlexSansMedium(12),
-            marginLeft: 20,
-            marginTop: 2,
-            marginBottom: 12,
-          }}
-        >
+        <Text style={styles.mci}>
           {strings.account.mci_num} : {getDoctorDetails.registrationNumber}
         </Text>
       </View>
@@ -118,7 +103,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
 
   const renderData = () => {
     return (
-      <View style={{ marginTop: 16 }}>
+      <View style={{ marginVertical: 16 }}>
         {arrayData.map((item) => (
           <View style={[styles.cardContainer]}>
             <TouchableOpacity
@@ -126,18 +111,10 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                 props.navigation.navigate(item.navigation, item.navigationParams);
               }}
             >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  marginBottom: 10,
-                  marginTop: 10,
-                  marginLeft: 20,
-                  alignItems: 'center',
-                }}
-              >
+              <View style={styles.iconview}>
                 {item.icon}
                 <Text style={styles.headingText}>{item.label}</Text>
-                <View style={{ alignItems: 'flex-end', flex: 1, marginRight: 20 }}>
+                <View style={styles.righticon}>
                   <RightIcon />
                 </View>
               </View>
@@ -173,19 +150,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                   ) : (
                     <UserPlaceHolder style={styles.imageStyle} />
                   )}
-                  <View
-                    style={{
-                      backgroundColor: '#ffffff',
-                      shadowColor: '#000000',
-                      shadowOffset: {
-                        width: 0,
-                        height: 5,
-                      },
-                      shadowRadius: 10,
-                      shadowOpacity: 0.2,
-                      elevation: 5,
-                    }}
-                  >
+                  <View style={styles.shadow}>
                     {renderProfileData(doctorDetails)}
                     {renderMciNumberData(doctorDetails)}
                   </View>

@@ -110,8 +110,7 @@ export const MedicalTest = [
 
 export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props.activeData;
-
+  const { data, type } = props.activeData;
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -131,23 +130,25 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
               return (
                 <Grid item xs={12} sm={12}>
                   <div className={classes.cardTitle}>
-                    {detail.setParameter ? detail.parameterName : 'SUMMARY'}
+                    {type === 'lab' && !detail.setParameterName ? 'SUMMARY' : detail.parameterName}
                   </div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
-                      {detail.setParameter ? (
+                      {type === 'lab' && !detail.setParameterName ? (
+                        <div className={classes.result}>{detail.result || 'N/A'}</div>
+                      ) : (
                         <>
                           <Grid item xs={6} sm={3}>
                             <div className={classes.resultGroup}>
                               <label>Result</label>
-                              <div className={classes.result}>{detail.result}</div>
+                              <div className={classes.result}>{detail.result || 'N/A'}</div>
                             </div>
                           </Grid>
                           <Grid item xs={6} sm={3}>
                             <div className={classes.resultGroup}>
                               <label>Units</label>
                               <div className={classes.result}>
-                                {unit ? unit.value : detail.unit}
+                                {unit ? unit.value : detail.unit || 'N/A'}
                               </div>
                             </div>
                           </Grid>
@@ -155,13 +156,13 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                             <div className={classes.resultGroup}>
                               <label>Normal Range</label>
                               <div className={`${classes.result}`}>
-                                {detail.minimum} - {detail.maximum}
+                                {detail.minimum || detail.maximum
+                                  ? `${detail.minimum} - ${detail.maximum}`
+                                  : 'N/A'}
                               </div>
                             </div>
                           </Grid>
                         </>
-                      ) : (
-                        <div className={classes.result}>{detail.result}</div>
                       )}
                     </Grid>
                   </div>

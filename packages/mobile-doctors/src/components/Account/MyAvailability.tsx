@@ -22,7 +22,7 @@ import { format } from 'date-fns';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import MyAvailabilityStyles from '@aph/mobile-doctors/src/components/Account/MyAvailability.styles';
@@ -32,10 +32,7 @@ const styles = MyAvailabilityStyles;
 export interface ProfileProps
   extends NavigationScreenProps<{
     ProfileData: GetDoctorDetails_getDoctorDetails;
-
-    //navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   }> {
-  //profileData: object;
   scrollViewRef: KeyboardAwareScrollView | null;
   onReload: () => void;
 }
@@ -87,13 +84,10 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while searching for Doctors', errorMessage, error);
-        // Alert.alert('Error', errorMessage);
       });
   };
 
-  const onAddBlockCalendar = (data) => {
-    console.log(data, 'dj');
-
+  const onAddBlockCalendar = (data: any) => {
     setblockedCalendar(data);
   };
 
@@ -119,7 +113,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         index;
       })
       .catch((err) => {
-        CommonBugFender('REMOVE_BLOCKED_CALENDAR_ITEM_Myavailability', e);
+        CommonBugFender('REMOVE_BLOCKED_CALENDAR_ITEM_Myavailability', err);
         console.log(err, 'err REMOVE_BLOCKED_CALENDAR_ITEM');
         setshowSpinner(false);
       });
@@ -128,17 +122,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
   const showHeaderView = () => {
     return (
       <Header
-        containerStyle={{
-          height: 50,
-          shadowColor: '#000000',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowRadius: 10,
-          shadowOpacity: 0.2,
-          elevation: 5,
-        }}
+        containerStyle={styles.headerview}
         leftIcons={[
           {
             icon: <BackArrow />,
@@ -164,57 +148,14 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
         <ScrollView bounces={false}>
           {profileData!.doctorType == 'STAR_APOLLO' || profileData!.doctorType == 'APOLLO' ? (
             <View>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansSemiBold(16),
-                  color: '#02475b',
-                  marginBottom: 16,
-                  marginLeft: 20,
-                  marginTop: 20,
-                }}
-              >
-                {strings.account.consultation_type}
-              </Text>
-              <View
-                style={{
-                  backgroundColor: '#fff',
-                  borderRadius: 10,
-                  marginLeft: 20,
-                  marginRight: 20,
-                  marginBottom: 32,
-                  shadowColor: '#000000',
-                  shadowOffset: {
-                    width: 0,
-                    height: 5,
-                  },
-                  shadowRadius: 10,
-                  shadowOpacity: 0.2,
-                  elevation: 5,
-                }}
-              >
+              <Text style={styles.type}>{strings.account.consultation_type}</Text>
+              <View style={styles.typeView}>
                 <Text style={styles.consultDescText}>{strings.account.what_type_of_consult}</Text>
-                <Text
-                  style={{
-                    marginLeft: 20,
-                    marginTop: 8,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    color: '#02475b',
-                    marginBottom: 20,
-                    textTransform: 'capitalize',
-                  }}
-                >
+                <Text style={styles.commonType}>
                   {strings.common.physical}, {strings.common.online}
                 </Text>
               </View>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansSemiBold(16),
-                  color: '#02475b',
-                  marginLeft: 20,
-                }}
-              >
-                {strings.account.consult_hours}
-              </Text>
+              <Text style={styles.hours}>{strings.account.consult_hours}</Text>
               <View style={{ marginLeft: 20, marginRight: 20 }}>
                 {profileData.consultHours!.map(
                   (i, idx) =>
@@ -226,16 +167,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                         //isAvailableForPhysicalConsultation={i!.consultType}
                         key={idx}
                         type="fixed"
-                        containerStyle={{
-                          shadowColor: '#000000',
-                          shadowOffset: {
-                            width: 0,
-                            height: 5,
-                          },
-                          shadowRadius: 10,
-                          shadowOpacity: 0.2,
-                          elevation: 5,
-                        }}
+                        containerStyle={styles.card}
                       />
                     )
                 )}
@@ -244,16 +176,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
           ) : null}
 
           <View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansSemiBold(16),
-                color: '#02475b',
-                marginLeft: 20,
-                marginTop: 32,
-              }}
-            >
-              {strings.account.blocked_calendar}
-            </Text>
+            <Text style={styles.block}>{strings.account.blocked_calendar}</Text>
             {blockedCalendar.length ? (
               <View style={{ marginLeft: 20, marginRight: 20 }}>
                 {blockedCalendar.map((item, index) => (
@@ -296,7 +219,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
             />
           </View>
 
-          <View style={{ margin: 20, flexDirection: 'row', marginBottom: 10 }}>
+          <View style={styles.rowview}>
             <View style={{ marginTop: 4 }}>
               <RoundChatIcon />
             </View>
@@ -304,16 +227,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
             <View style={{ marginLeft: 14 }}>
               <Text>
                 <Text style={styles.descriptionview}>{strings.common.call}</Text>
-                <Text
-                  style={{
-                    color: '#fc9916',
-                    ...theme.fonts.IBMPlexSansSemiBold(16),
-                    lineHeight: 22,
-                  }}
-                >
-                  {' '}
-                  {strings.common.toll_free_num}{' '}
-                </Text>
+                <Text style={styles.freenum}> {strings.common.toll_free_num} </Text>
                 <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
               </Text>
             </View>

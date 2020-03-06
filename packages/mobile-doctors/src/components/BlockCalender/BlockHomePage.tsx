@@ -2,7 +2,6 @@ import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-doctors/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
-  AddPlus,
   BackArrow,
   DropdownGreen,
   Remove,
@@ -22,9 +21,9 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { ConsultMode, BlockMultipleItems } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { ConsultMode } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   ConvertDateToWeekDay,
   ConvertDateTimeToUtc,
@@ -36,7 +35,6 @@ import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { AddBlockedCalendarItemVariables } from '@aph/mobile-doctors/src/graphql/types/AddBlockedCalendarItem';
 import BlockHomePageStyles from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage.styles';
 
 const { width } = Dimensions.get('window');
@@ -119,7 +117,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const client = useApolloClient();
-  const todayDate = new Date().toISOString().split('T')[0];
 
   const getStartDayConsults = (startDate: Date) => {
     return consultHours
@@ -175,23 +172,10 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
 
   const SaveBlockCalendar = () => {
     setshowSpinner(true);
-    const date = startDate ? startDate.toISOString() : '';
     let variables: any = {
       doctorId: doctorDetails ? doctorDetails.id : '',
     };
     if (selectedBlockOption === blockOptions[0].key) {
-      // let endDateTime;
-      // if (selectedDay === daysArray[0].key && startDate) {
-      //   endDateTime = moment(date.split('T')[0] + '23:59:00', 'YYYY-MM-DDHH:mm:ss').toISOString();
-      // } else {
-      //   endDateTime = endDate
-      //     ? moment(
-      //         endDate.toISOString().split('T')[0] + '12:59:00',
-      //         'YYYY-MM-DDhh:mm:ss'
-      //       ).toISOString()
-      //     : //moment(endDate.toISOString().split('T')[0] + ' 23:59', 'YYYY-MM-DD HH:MM').toISOString()
-      //       '';
-      // }
       variables = {
         ...variables,
         start: moment(startDate)
@@ -288,7 +272,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           setshowSpinner(false);
           CommonBugFender('Add_Blocked_Multiple_Calender_Item_BlockHomePage', err);
           console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
-          // setshowSpinner(false);
           showErrorMessage(err);
         });
     }
@@ -345,7 +328,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         <TouchableOpacity
           onPress={() => {
             if (isSelected) {
-              selected = selected.filter((i) => i.start !== item.start);
+              selected = selected.filter((i: any) => i.start !== item.start);
             } else {
               selected.push(item);
             }
@@ -356,30 +339,11 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
         >
           {isSelected ? <Selected /> : <UnSelected />}
         </TouchableOpacity>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
-            marginLeft: 22,
-          }}
-        >
+        <Text style={styles.startend}>
           {moment(item.start).format('hh:mm A')} - {moment(item.end).format('hh:mm A')}
         </Text>
-        <View
-          style={{
-            borderRightWidth: 1,
-            borderColor: theme.colors.LIGHT_BLUE,
-            marginHorizontal: 14,
-            marginVertical: 2,
-          }}
-        />
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
-            textTransform: 'capitalize',
-          }}
-        >
-          {item.consultMode}
-        </Text>
+        <View style={styles.consultview} />
+        <Text style={styles.consulttext}>{item.consultMode}</Text>
       </View>
     );
   };
@@ -410,14 +374,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
 
     return (
       <View>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 0.5, undefined, 0.02),
-            marginTop: 32,
-          }}
-        >
-          {strings.block_homepage.which_would_block}
-        </Text>
+        <Text style={styles.block}>{strings.block_homepage.which_would_block}</Text>
         <RadioButtons
           data={blockOptions}
           selectedItem={selectedBlockOption}
@@ -451,14 +408,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                     if (consults.length)
                       return (
                         <View>
-                          <View
-                            style={{
-                              borderBottomColor: 'rgba(0,0,0,0.2)',
-                              borderBottomWidth: 1,
-                              paddingBottom: 7,
-                              marginBottom: 12,
-                            }}
-                          >
+                          <View style={styles.mainview}>
                             <Text style={theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE)}>
                               {moment(date).format('ddd, DD/MM/YYYY')}
                             </Text>
@@ -503,15 +453,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
                         maximumDate={item.end}
                       />
                     </View>
-                    <View
-                      style={{
-                        width: 40,
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        marginHorizontal: 16,
-                        paddingBottom: 7,
-                      }}
-                    >
+                    <View style={styles.iphen}>
                       <Text style={theme.viewStyles.text('M', 20, theme.colors.SHARP_BLUE)}>-</Text>
                     </View>
                     <View style={{ flex: 1 }}>
@@ -566,18 +508,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   const renderHeader = () => {
     return (
       <Header
-        containerStyle={{
-          height: 50,
-          shadowColor: '#808080',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowOpacity: 0.5,
-          shadowRadius: 8,
-          elevation: 16,
-          backgroundColor: colors.CARD_BG,
-        }}
+        containerStyle={styles.header}
         leftIcons={[
           {
             icon: <BackArrow />,
@@ -597,7 +528,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
 
   const getDates = (startDate: Date, endDate: Date) => {
     const all = getDateArray(startDate, endDate);
-    console.log(all, 'allallllllllllll');
     setAllDates(all);
   };
 

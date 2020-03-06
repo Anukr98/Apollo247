@@ -16,6 +16,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import styles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/CaseSheetDetails.styles';
 
 export interface CaseSheetDetailsProps extends NavigationScreenProps {
   consultDetails: GetCaseSheet_getCaseSheet_pastAppointments;
@@ -61,9 +62,6 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
   };
 
   const renderChiefComplaints = () => {
-    // const data = consultDetails.caseSheet.filter(
-    //   (item: any) => item.doctorType !== DoctorType.JUNIOR
-    // );
     const symptoms = caseSheet.length > 0 ? caseSheet[0].symptoms : null;
     if (symptoms)
       return (
@@ -76,11 +74,9 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           {symptoms.map(
             (item) =>
               item && (
-                <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
-                  <Text style={theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE)}>
-                    {item.symptom}
-                  </Text>
-                  <Text style={theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE)}>
+                <View style={styles.symptomView}>
+                  <Text style={styles.symptomText}>{item.symptom}</Text>
+                  <Text style={styles.symptomdetails}>
                     {`${strings.common.since}: ${item.since}\n${strings.common.how_often}: ${item.howOften}\n ${strings.common.severity}: ${item.severity}`}
                   </Text>
                 </View>
@@ -128,19 +124,8 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
 
   const renderLabelDesc = (label?: string, description?: string) => (
     <View>
-      {label && (
-        <Text style={theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.6))}>{label}</Text>
-      )}
-      {description && (
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 1, 20),
-            marginBottom: 20,
-          }}
-        >
-          {description}
-        </Text>
-      )}
+      {label && <Text style={styles.lablestyle}>{label}</Text>}
+      {description && <Text style={styles.descrText}>{description}</Text>}
     </View>
   );
 
@@ -202,9 +187,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           containerStyle={{ marginVertical: 10 }}
         >
           <View style={{ marginHorizontal: 16 }}>
-            <Text style={theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE, 1, 20)}>
-              {caseSheet[0].notes}
-            </Text>
+            <Text style={styles.caseSheetNote}>{caseSheet[0].notes}</Text>
           </View>
         </CollapseCard>
       );
@@ -220,16 +203,14 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         <View style={{ marginHorizontal: 16 }}>
           {renderLabelDesc(strings.case_sheet.diagonsed_medical_condi)}
           {caseSheet.length > 0 && (
-            <View
-              style={{ marginTop: 10, marginBottom: 20, flexDirection: 'row', flexWrap: 'wrap' }}
-            >
+            <View style={styles.caseSheetDescrView}>
               {caseSheet[0].diagnosticPrescription
                 ? caseSheet[0].diagnosticPrescription.map(
                     (item) =>
                       item && (
                         <CapsuleView
                           diseaseName={item.itemname || ''}
-                          containerStyle={{ marginRight: 12, marginBottom: 12 }}
+                          containerStyle={styles.capsuleContainer}
                         />
                       )
                   )
@@ -248,7 +229,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         onPress={() => setshowMP(!showMP)}
         containerStyle={{ marginVertical: 10 }}
       >
-        <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
+        <View style={styles.MPView}>
           {renderLabelDesc(strings.common.medicines)}
           {caseSheet.length > 0 &&
             caseSheet[0].medicinePrescription &&
@@ -256,9 +237,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
               (item) =>
                 item && (
                   <View>
-                    <Text style={theme.viewStyles.text('B', 14, theme.colors.LIGHT_BLUE)}>
-                      {item.medicineName}
-                    </Text>
+                    <Text style={styles.medicineName}>{item.medicineName}</Text>
                   </View>
                 )
             )}
@@ -275,7 +254,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         onPress={() => setshowTP(!showTP)}
         containerStyle={{ marginVertical: 10 }}
       >
-        <View style={{ marginHorizontal: 16, marginBottom: 20 }}>{renderLabelDesc('Tests')}</View>
+        <View style={styles.TPview}>{renderLabelDesc('Tests')}</View>
       </CollapseCard>
     );
   };
@@ -288,10 +267,8 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         onPress={() => setshowReferral(!showReferral)}
         containerStyle={{ marginVertical: 10 }}
       >
-        <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
-          <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE) }}>
-            {strings.case_sheet.pulmologist}
-          </Text>
+        <View style={styles.referralView}>
+          <Text style={styles.referralText}>{strings.case_sheet.pulmologist}</Text>
         </View>
       </CollapseCard>
     );
@@ -306,25 +283,12 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
       >
         {renderHeader()}
         <ScrollView bounces={false} style={{ zIndex: 1 }}>
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
-              marginTop: 15,
-              marginHorizontal: 20,
-              marginBottom: 4,
-            }}
-          >{`${strings.case_sheet.submitted_by} ${doctorDetails ? doctorDetails!.firstName : ''} ${
-            strings.case_sheet.on
-          } ${moment(consultDetails.appointmentDateTime).format('DD/MM/YYYY')} at\n${moment(
-            consultDetails.appointmentDateTime
-          ).format('hh.mm A')}`}</Text>
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 14, theme.colors.darkBlueColor(0.6)),
-              marginHorizontal: 20,
-              marginBottom: 6,
-            }}
-          >
+          <Text style={styles.scrollViewText}>{`${strings.case_sheet.submitted_by} ${
+            doctorDetails ? doctorDetails!.firstName : ''
+          } ${strings.case_sheet.on} ${moment(consultDetails.appointmentDateTime).format(
+            'DD/MM/YYYY'
+          )} at\n${moment(consultDetails.appointmentDateTime).format('hh.mm A')}`}</Text>
+          <Text style={styles.apptId}>
             {strings.case_sheet.appt_id}: {consultDetails.id}
           </Text>
           {renderChiefComplaints()}

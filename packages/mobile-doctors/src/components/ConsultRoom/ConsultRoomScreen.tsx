@@ -4,6 +4,7 @@ import { AudioCall } from '@aph/mobile-doctors/src/components/ConsultRoom/AudioC
 import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
+import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
 import { VideoCall } from '@aph/mobile-doctors/src/components/ConsultRoom/VideoCall';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import {
@@ -72,30 +73,29 @@ import {
   FlatList,
   Image,
   Keyboard,
-  KeyboardEvent,
   Platform,
   SafeAreaView,
   StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
-import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 
-const { height, width } = Dimensions.get('window');
-let joinTimerNoShow: any;
-let missedCallTimer: any;
+const { width } = Dimensions.get('window');
+let joinTimerNoShow: NodeJS.Timeout;
+let missedCallTimer: NodeJS.Timeout;
 const styles = ConsultRoomScreenStyles;
 
 let connectionCount = 0;
-let timer = 900;
+const timer = 900;
 let intervalId: NodeJS.Timeout;
 let stoppedTimer: number;
 let timerId: NodeJS.Timeout;
+let callhandelBack: boolean = true;
 
 // let joinTimerId: any;
 // let diffInHours: number;
@@ -196,7 +196,33 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
     getCaseSheetAPI();
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
+    };
   }, []);
+
+  const backDataFunctionality = () => {
+    try {
+      console.log(callhandelBack, 'is back called');
+      if (callhandelBack) {
+        props.navigation.pop();
+        return true;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.log(error, 'error');
+    }
+  };
 
   const createCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
@@ -283,7 +309,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     stopMissedCallTimer();
     missedCallTimer = setInterval(() => {
       timer = timer - 1;
-      console.log('timer missedCall', timer);
+      console.log('timer missedCallllll', timer);
       if (timer === 0) {
         stopMissedCallTimer();
         callback && callback();
@@ -380,7 +406,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       })
       .then((_data) => {
         //  setLoading(false);
-        setShowPopUp(true);
+        setShowPopUp(false);
         console.log('_data', _data);
         const text = {
           id: doctorId,
@@ -604,6 +630,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const messageText = message.message;
         if (message.isTyping) {
           const audioVideoMethod = () => {
+            callhandelBack = true;
             addMessages(message);
             setIsCall(false);
             setIsAudioCall(false);
@@ -616,6 +643,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             case messageCodes.acceptedCallMsg:
               startTimer(0);
               setCallAccepted(true);
+              stopMissedCallTimer();
               break;
             case messageCodes.endCallMsg:
               setIsCall(false);
@@ -821,7 +849,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             position: 'absolute',
             opacity: 0.41,
           }}
-        ></View>
+        />
         <View
           style={{
             marginHorizontal: 40,
@@ -868,6 +896,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 return;
               }
               //need to work form here
+              callhandelBack = false;
               setIsAudioCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
@@ -938,6 +967,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (isAudioCall) {
                 return;
               }
+              callhandelBack = false;
               setIsCall(true);
               setShowPopUp(false);
               setHideStatusBar(true);
@@ -955,7 +985,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 },
                 (status, response) => {
                   if (response) {
-                    startNoShow(45, () => {
+                    startMissedCallTimer(45, () => {
                       stopAllCalls();
                       if (missedCallCounter < 2) {
                         setMissedCallCounter(missedCallCounter + 1);
@@ -963,6 +993,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                         callAbandonmentCall();
                       }
                     });
+                    // startNoShow(45, () => {
+                    //   stopAllCalls();
+                    //   if (missedCallCounter < 2) {
+                    //     setMissedCallCounter(missedCallCounter + 1);
+                    //   } else {
+                    //     callAbandonmentCall();
+                    //   }
+                    // });
                   }
                 }
               );
@@ -1174,7 +1212,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 <BackArrow />
               </View>
             ),
-            onPress: () => props.navigation.pop(),
+            onPress: () => callhandelBack && props.navigation.pop(),
           },
         ]}
         middleText={strings.consult_room.consult_room}
@@ -1371,6 +1409,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             <CrossPopup
               style={{
                 marginRight: 1,
+                height: 28,
+                width: 28,
               }}
             />
           </TouchableOpacity>
@@ -1381,6 +1421,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const imageOpen = () => {
+    console.log(url);
+
     return popupView(
       <Image
         style={{

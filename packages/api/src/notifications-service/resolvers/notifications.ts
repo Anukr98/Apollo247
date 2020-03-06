@@ -124,7 +124,10 @@ export enum NotificationType {
   PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
   PATIENT_NO_SHOW = 'PATIENT_NO_SHOW',
   ACCEPT_RESCHEDULED_APPOINTMENT = 'ACCEPT_RESCHEDULED_APPOINTMENT',
+  RESCHEDULE_APPOINTMENT_BY_PATIENT = 'RESCHEDULE_APPOINTMENT_BY_PATIENT',
   PRESCRIPTION_READY = 'PRESCRIPTION_READY',
+  VIRTUAL_REMINDER_15 = 'VIRTUAL_REMINDER_15',
+  APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL = 'APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL',
 }
 
 export enum APPT_CALL_TYPE {
@@ -146,6 +149,7 @@ export enum NotificationPriority {
 type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
+  doctorNotification?: boolean;
 };
 
 type CartPushNotificationInput = {
@@ -598,14 +602,35 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;*/
 
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT
+  ) {
+    notificationTitle = ApiConstants.DOCTOR_APPOINTMENT_RESCHEDULE_TITLE;
+    notificationBody = ApiConstants.DOCTOR_APPOINTMENT_RESCHEDULE_BODY.replace(
+      '{0}',
+      doctorDetails.firstName
+    );
+    notificationBody = notificationBody.replace('{1}', appointment.displayId.toString());
+    notificationBody = notificationBody.replace(
+      '{2}',
+      patientDetails.firstName + ' ' + patientDetails.lastName
+    );
+    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
+    //Send Browser Notification
+    sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
     notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
       .replace('{1}', doctorDetails.firstName)
       .replace('{2}', appointment.id)
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
-    notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+    let smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
+
+    smsLink = notificationBody + smsLink;
+    //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
+    sendNotificationSMS(patientDetails.mobileNumber, smsLink);
   }
 
   //initialize firebaseadmin
@@ -1071,6 +1096,63 @@ export async function sendReminderNotification(
       },
     };
   } else if (
+    pushNotificationInput.notificationType ==
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+  ) {
+    notificationTitle = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_TITLE;
+    notificationBody = ApiConstants.APPOINTMENT_CASESHEET_REMINDER_15_BODY;
+    notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Reminder_Appointment_Casesheet_15',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+    if (pushNotificationInput.doctorNotification) {
+      const doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS.replace(
+        '{0}',
+        patientDetails.firstName
+      );
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+      sendBrowserNotitication(doctorDetails.id, doctorSMS);
+    }
+  } else if (pushNotificationInput.notificationType == NotificationType.VIRTUAL_REMINDER_15) {
+    notificationTitle = ApiConstants.APPOINTMENT_REMINDER_15_TITLE;
+    notificationBody = ApiConstants.VIRTUAL_REMINDER_15_BODY;
+    notificationBody = notificationBody.replace('{0}', doctorDetails.firstName);
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'Reminder_Appointment_15',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+    if (pushNotificationInput.doctorNotification) {
+      const doctorSMS = ApiConstants.DOCTOR_APPOINTMENT_REMINDER_15_SMS.replace(
+        '{0}',
+        patientDetails.firstName
+      );
+      sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
+      sendBrowserNotitication(doctorDetails.id, doctorSMS);
+    }
+  } else if (
     pushNotificationInput.notificationType == NotificationType.PATIENT_APPOINTMENT_RESCHEDULE
   ) {
     notificationTitle = ApiConstants.PATIENT_APPOINTMENT_RESCHEDULE_TITLE;
@@ -1137,7 +1219,9 @@ export async function sendReminderNotification(
     notificationBody = ApiConstants.APPOINTMENT_REMINDER_15_TITLE + ' ' + notificationBody;
   }
   if (
-    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15
+    pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
+    pushNotificationInput.notificationType ==
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     const smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
     notificationBody = notificationBody + ApiConstants.CLICK_HERE + smsLink;

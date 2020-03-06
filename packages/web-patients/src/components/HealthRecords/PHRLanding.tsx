@@ -23,6 +23,8 @@ import {
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { useAuth } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useMutation } from 'react-apollo-hooks';
+import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -249,6 +251,36 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     });
   };
 
+  const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
+
+  const deleteReport = (id: string, type: string) => {
+    setMedicalLoading(true);
+    deleteReportMutation({
+      variables: { recordId: id },
+      fetchPolicy: 'no-cache',
+    })
+      .then((_data) => {
+        if (type === 'medical') {
+          const newRecords =
+            medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
+          setMedicalRecords(newRecords);
+        } else if (type === 'lab') {
+          const newRecords = labTests && labTests.filter((record: any) => record.id !== id);
+          setLabTests(newRecords);
+        } else if (type === 'health') {
+          const newRecords = healthChecks && healthChecks.filter((record: any) => record.id !== id);
+          setHealthChecks(newRecords);
+        } else if (type === 'hospital') {
+          const newRecords =
+            hospitalizations && hospitalizations.filter((record: any) => record.id !== id);
+          setHospitalizations(newRecords);
+        }
+      })
+      .catch((e) => {
+        console.log('Error occured while render Delete MedicalOrder', { e });
+      });
+  };
+
   useEffect(() => {
     if (!isSigningIn) {
       if (!medicalRecords) {
@@ -320,14 +352,12 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
           {tabValue === 1 && (
             <TabContainer>
               <MedicalRecords
+                error={medicalError || medicalRecordError}
                 loading={medicalLoading}
-                setLoading={setMedicalLoading}
-                medicalRecords={medicalRecords}
-                setMedicalRecords={setMedicalRecords}
                 allCombinedData={allCombinedData}
                 activeData={activeMedicalData}
                 setActiveData={setActiveMedicalData}
-                error={medicalError || medicalRecordError}
+                deleteReport={deleteReport}
               />
             </TabContainer>
           )}

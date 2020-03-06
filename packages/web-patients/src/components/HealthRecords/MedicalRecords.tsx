@@ -9,8 +9,6 @@ import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useMutation } from 'react-apollo-hooks';
-import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 
@@ -307,14 +305,12 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type MedicalRecordProps = {
-  medicalRecords: any;
   allCombinedData: any;
-  setMedicalRecords: (medicalRecords: any) => void;
   loading: boolean;
-  setLoading: (loading: boolean) => void;
   setActiveData: (activeData: any) => void;
   activeData: any;
   error: boolean;
+  deleteReport: (id: string, type: string) => void;
 };
 
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
@@ -323,29 +319,22 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
 
-  const {
-    medicalRecords,
-    allCombinedData,
-    loading,
-    setLoading,
-    setMedicalRecords,
-    activeData,
-    setActiveData,
-    error,
-  } = props;
+  const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
-  const getFormattedDate = (combinedData: any) => {
+  const getFormattedDate = (combinedData: any, type: string) => {
     switch (combinedData.type) {
       case 'medical':
-        return moment(new Date()).format('DD/MM/YYYY') ===
-          moment(new Date(combinedData.data.testDate)).format('DD/MM/YYYY') ? (
+        return type === 'title' &&
+          moment(new Date()).format('DD/MM/YYYY') ===
+            moment(new Date(combinedData.data.testDate)).format('DD/MM/YYYY') ? (
           <span>Today , {moment(new Date(combinedData.data.testDate)).format('DD MMM YYYY')}</span>
         ) : (
           <span>{moment(new Date(combinedData.data.testDate)).format('DD MMM YYYY')}</span>
         );
       case 'lab':
-        return moment(new Date()).format('DD/MM/YYYY') ===
-          moment(new Date(combinedData.data.labTestDate)).format('DD/MM/YYYY') ? (
+        return type === 'title' &&
+          moment(new Date()).format('DD/MM/YYYY') ===
+            moment(new Date(combinedData.data.labTestDate)).format('DD/MM/YYYY') ? (
           <span>
             Today , {moment(new Date(combinedData.data.labTestDate)).format('DD MMM YYYY')}
           </span>
@@ -353,8 +342,9 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           <span>{moment(new Date(combinedData.data.labTestDate)).format('DD MMM YYYY')}</span>
         );
       case 'hospital':
-        return moment(new Date()).format('DD/MM/YYYY') ===
-          moment(new Date(combinedData.data.dateOfHospitalization)).format('DD/MM/YYYY') ? (
+        return type === 'title' &&
+          moment(new Date()).format('DD/MM/YYYY') ===
+            moment(new Date(combinedData.data.dateOfHospitalization)).format('DD/MM/YYYY') ? (
           <span>
             Today ,{' '}
             {moment(new Date(combinedData.data.dateOfHospitalization)).format('DD MMM YYYY')}
@@ -365,8 +355,9 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           </span>
         );
       case 'health':
-        return moment(new Date()).format('DD/MM/YYYY') ===
-          moment(new Date(combinedData.data.appointmentDate)).format('DD/MM/YYYY') ? (
+        return type === 'title' &&
+          moment(new Date()).format('DD/MM/YYYY') ===
+            moment(new Date(combinedData.data.appointmentDate)).format('DD/MM/YYYY') ? (
           <span>
             Today , {moment(new Date(combinedData.data.appointmentDate)).format('DD MMM YYYY')}
           </span>
@@ -423,24 +414,6 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     return <div>Error while fetching the medical records</div>;
   }
 
-  const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
-
-  const deleteReport = (id: string) => {
-    deleteReportMutation({
-      variables: { recordId: id },
-      fetchPolicy: 'no-cache',
-    })
-      .then((_data) => {
-        setLoading(true);
-        const newRecords =
-          medicalRecords && medicalRecords.filter((record: any) => record.id !== id);
-        setMedicalRecords(newRecords);
-      })
-      .catch((e) => {
-        console.log('Error occured while render Delete MedicalOrder', { e });
-      });
-  };
-
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -475,17 +448,17 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    <span>{getFormattedDate(combinedData)}</span>
+                    <span>{getFormattedDate(combinedData, 'title')}</span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
                     name={getName(combinedData)}
                     source={getSource(combinedData)}
+                    type={combinedData.type}
                     id={combinedData.data.id}
                     isActiveCard={
                       activeData && activeData.data && activeData.data === combinedData.data
                     }
-                    setLoading={setLoading}
                   />
                 </div>
               ))}
@@ -550,7 +523,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                   <div className={classes.cbcDetails}>
                     <div className={classes.reportsDetails}>
                       <label>Check-up Date</label>
-                      <p>{getFormattedDate(activeData)}</p>
+                      <p>{getFormattedDate(activeData, 'checkUp')}</p>
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Source</label>

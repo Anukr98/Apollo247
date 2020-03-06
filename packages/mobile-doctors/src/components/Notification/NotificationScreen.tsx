@@ -1,15 +1,14 @@
+import NotificationScreenStyles from '@aph/mobile-doctors/src/components/Notification/NotificationScreen.styles';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
   PlaceHolderDoctor,
   PlaceHolderDoctors,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import NotificationScreenStyles from '@aph/mobile-doctors/src/components/Notification/NotificationScreen.styles';
+import React from 'react';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const notifications = [
   {
@@ -83,7 +82,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     );
   };
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <SafeAreaView style={styles.scrollArea}>
       {showHeaderView()}
       <ScrollView bounces={false}>{renderNotificationsListView()}</ScrollView>
     </SafeAreaView>

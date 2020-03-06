@@ -81,6 +81,13 @@ const useStyles = makeStyles((theme: Theme) => {
     rightArrow: {
       marginLeft: 'auto',
     },
+    specialityDetails: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#02475b',
+      opacity: 0.6,
+      paddingTop: 5,
+    },
   });
 });
 
@@ -144,7 +151,8 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                   specialityDetails && specialityDetails.specialistSingularTerm;
                 const specialityPlural =
                   specialityDetails && specialityDetails.specialistPluralTerm;
-                // const title = `${specialityName}_${specialitySingular}_${specialityPlural}`;
+                const userFriendlyName =
+                  specialityDetails && specialityDetails.userFriendlyNomenclature;
                 const title = specialityName;
                 return (
                   <Mutation<SaveSearch, SaveSearchVariables>
@@ -176,7 +184,10 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                             src={specialityDetails.image || ''}
                             className={classes.bigAvatar}
                           />
-                          <span>{specialityDetails.name}</span>
+                          <div>
+                            <div>{specialityDetails.name}</div>
+                            <div className={classes.specialityDetails}>{userFriendlyName}</div>
+                          </div>
                           <span className={classes.rightArrow}>
                             <img src={require('images/ic_arrow_right.svg')} />
                           </span>

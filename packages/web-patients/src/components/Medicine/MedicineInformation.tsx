@@ -279,7 +279,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
-  const addToCartRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
@@ -328,16 +327,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .post(
         apiDetails.deliveryUrl || '',
         {
-          params: {
-            postalcode: pinCode,
-            ordertype: 'pharma',
-            lookup: [
-              {
-                sku: params.sku,
-                qty: 1,
-              },
-            ],
-          },
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: params.sku,
+              qty: 1,
+            },
+          ],
         },
         {
           headers: {

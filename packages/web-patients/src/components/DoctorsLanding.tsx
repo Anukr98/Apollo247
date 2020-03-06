@@ -350,8 +350,8 @@ export const DoctorsLanding: React.FC = (props) => {
             <Header />
             <div className={classes.container}>
               <div className={classes.doctorListingPage}>
-                <div className={classes.breadcrumbs}>
-                  <Link to={clientRoutes.welcome()}>
+                <div className={classes.breadcrumbs} title={'Back to home page'}>
+                  <a onClick={() => window.history.back()}>
                     <div className={classes.backArrow}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                       <img
@@ -359,7 +359,7 @@ export const DoctorsLanding: React.FC = (props) => {
                         src={require('images/ic_back_white.svg')}
                       />
                     </div>
-                  </Link>
+                  </a>
                   Doctors / Specialities
                   {specialitySelected.length > 0 && (
                     <AphButton

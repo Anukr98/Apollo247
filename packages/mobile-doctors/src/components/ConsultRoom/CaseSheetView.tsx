@@ -4,7 +4,7 @@ import {
   setMedicineList,
   setSysmptonsList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
-import CaseSheetViewStyles from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView.styles';
+import { styles } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView.styles';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
@@ -118,8 +118,6 @@ import {
 } from 'react-navigation';
 
 const { width } = Dimensions.get('window');
-
-const styles = CaseSheetViewStyles;
 
 interface DataPair {
   key: string;
@@ -666,13 +664,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     //console.log({ Appintmentdatetimeconsultpage });
     return (
       <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
-        <View style={{}}>
+        <View>
           {!showButtons ? (
             <View style={styles.footerButtonsContainersave}>
               <Button
                 title={strings.buttons.start_consult}
-                disabled={!enableConsultButton}
-                buttonIcon={<Start />}
+                // disabled={!enableConsultButton}
+                buttonIcon={<Start style={{ right: 10 }} />}
                 onPress={() => {
                   setShowButtons(true);
                   props.onStartConsult();
