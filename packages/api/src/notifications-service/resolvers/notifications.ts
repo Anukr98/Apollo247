@@ -124,6 +124,7 @@ export enum NotificationType {
   PHYSICAL_APPT_1 = 'PHYSICAL_APPT_1',
   PATIENT_NO_SHOW = 'PATIENT_NO_SHOW',
   ACCEPT_RESCHEDULED_APPOINTMENT = 'ACCEPT_RESCHEDULED_APPOINTMENT',
+  RESCHEDULE_APPOINTMENT_BY_PATIENT = 'RESCHEDULE_APPOINTMENT_BY_PATIENT',
   PRESCRIPTION_READY = 'PRESCRIPTION_READY',
   VIRTUAL_REMINDER_15 = 'VIRTUAL_REMINDER_15',
   APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL = 'APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL',
@@ -601,14 +602,35 @@ export async function sendNotification(
     smsLink = notificationBody + smsLink;*/
 
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT
+  ) {
+    notificationTitle = ApiConstants.DOCTOR_APPOINTMENT_RESCHEDULE_TITLE;
+    notificationBody = ApiConstants.DOCTOR_APPOINTMENT_RESCHEDULE_BODY.replace(
+      '{0}',
+      doctorDetails.firstName
+    );
+    notificationBody = notificationBody.replace('{1}', appointment.displayId.toString());
+    notificationBody = notificationBody.replace(
+      '{2}',
+      patientDetails.firstName + ' ' + patientDetails.lastName
+    );
+    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
+    sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
+    //Send Browser Notification
+    sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
     notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
       .replace('{1}', doctorDetails.firstName)
       .replace('{2}', appointment.id)
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
-    notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+    let smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
+
+    smsLink = notificationBody + smsLink;
+    //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
+    sendNotificationSMS(patientDetails.mobileNumber, smsLink);
   }
 
   //initialize firebaseadmin
