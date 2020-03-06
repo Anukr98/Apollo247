@@ -147,7 +147,7 @@ export default StyleSheet.create({
     paddingBottom: 20,
     marginHorizontal: 20,
     flexDirection: 'row',
-    width: '50%',
+    width: '80%',
     alignSelf: 'center',
     alignItems: 'center',
   },

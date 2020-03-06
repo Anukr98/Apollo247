@@ -37,6 +37,7 @@ import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
 import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
+import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,7 +126,8 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
           <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
           <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
-          <AuthRouted exact path={clientRoutes.symptomsTracker()} component={SymptomsTracker} />
+          <AuthRouted exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
+          <AuthRouted exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
         </Switch>
       </div>
     </Scrollbars>

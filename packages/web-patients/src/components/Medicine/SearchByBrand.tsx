@@ -123,11 +123,7 @@ type Params = { id: string };
 export const SearchByBrand: React.FC = (props) => {
   const classes = useStyles({});
   const apiDetails = {
-    url: `${
-      process.env.NODE_ENV === 'production'
-        ? process.env.PHARMACY_MED_PROD_URL
-        : process.env.PHARMACY_MED_UAT_URL
-    }/categoryproducts_api.php`,
+    url: process.env.PHARMACY_MED_CATEGORY_LIST,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
@@ -141,7 +137,7 @@ export const SearchByBrand: React.FC = (props) => {
     if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
       axios
         .post(
-          apiDetails.url,
+          apiDetails.url || '',
           {
             category_id: params.id,
             page_id: 1,
@@ -153,10 +149,10 @@ export const SearchByBrand: React.FC = (props) => {
             },
           }
         )
-        .then((res) => {
-          if (res && res.data && res.data.products) {
-            setData(res.data.products);
-            setMedicineListFiltered(res.data.products);
+        .then(({ data }) => {
+          if (data && data.products) {
+            setData(data.products);
+            setMedicineListFiltered(data.products);
           }
         })
         .catch((e) => {});
@@ -204,7 +200,7 @@ export const SearchByBrand: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.medicines())}>
+            <a onClick={() => window.history.back()}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />

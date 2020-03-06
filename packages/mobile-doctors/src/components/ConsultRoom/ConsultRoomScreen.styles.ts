@@ -14,7 +14,7 @@ export default StyleSheet.create({
     shadowColor: '#000000',
     shadowRadius: 2,
     shadowOpacity: 0.2,
-    elevation: 10,
+    elevation: 0,
     backgroundColor: 'white',
   },
   imageStyle: {
@@ -41,5 +41,13 @@ export default StyleSheet.create({
     backgroundColor: '#0087ba',
     marginLeft: 38,
     borderRadius: 10,
+  },
+  positionAbsolute: {
+    position: 'absolute',
+    flex: 1,
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
   },
 });

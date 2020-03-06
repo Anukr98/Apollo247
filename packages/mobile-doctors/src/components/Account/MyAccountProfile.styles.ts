@@ -121,4 +121,43 @@ export default StyleSheet.create({
     color: '#0087ba',
     lineHeight: 24,
   },
+  helpview: {
+    flexDirection: 'row',
+    marginLeft: 20,
+    marginRight: 20,
+    marginTop: 12,
+  },
+  helptext: {
+    color: '#fc9916',
+    ...theme.fonts.IBMPlexSansSemiBold(16),
+    lineHeight: 22,
+  },
+  mobileview: {
+    margin: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 5,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
+  },
+  mobileText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#01475b',
+    marginRight: 12,
+    marginLeft: 20,
+    marginTop: 16,
+    marginBottom: 18,
+  },
+  photourl: { overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 },
+  login: {
+    ...theme.fonts.IBMPlexSansSemiBold(16),
+    letterSpacing: 0.06,
+    color: '#02475b',
+    marginLeft: 20,
+  },
 });

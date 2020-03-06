@@ -7,7 +7,7 @@ import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import axios, { AxiosResponse, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -279,7 +279,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
-  const addToCartRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
@@ -290,11 +289,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
 
   const apiDetails = {
-    url: `${
-      process.env.NODE_ENV === 'production'
-        ? process.env.PHARMACY_MED_PROD_URL
-        : process.env.PHARMACY_MED_UAT_URL
-    }/popcsrchprdsubt_api.php`,
+    url: process.env.PHARMACY_MED_INFO_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
     deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
@@ -303,7 +298,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const fetchSubstitutes = async () => {
     await axios
       .post(
-        apiDetails.url,
+        apiDetails.url || '',
         { params: params.sku },
         {
           headers: {
@@ -326,28 +321,50 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchDeliveryTime = async () => {
+    const CancelToken = axios.CancelToken;
+    let cancelGetDeliveryTimeApi: Canceler | undefined;
     await axios
       .post(
         apiDetails.deliveryUrl || '',
         {
-          params: {
-            postalcode: pinCode,
-            ordertype: 'pharma',
-            lookup: [
-              {
-                sku: params.sku,
-                qty: 1,
-              },
-            ],
-          },
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: params.sku,
+              qty: 1,
+            },
+          ],
         },
         {
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
-      .then((res: any) => setDeliveryTime(res.tat.deliveryDate))
+      .then((res: AxiosResponse) => {
+        try {
+          if (res && res.data) {
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              setDeliveryTime(res.data.tat[0].deliverydate);
+            } else if (typeof res.data === 'string') {
+              console.log(res.data);
+            } else if (typeof res.data.errorMSG === 'string') {
+              console.log(res.data.errorMSG);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })
       .catch((error: any) => alert(error));
   };
 
@@ -389,7 +406,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   }}
                   ref={subDrugsRef}
                 >
-                  <span>Pick from 9 available substitutes</span>
+                  <span>Pick from {substitutes.length} available substitutes</span>
                 </div>
               </>
             )}

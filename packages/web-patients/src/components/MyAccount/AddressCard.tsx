@@ -30,12 +30,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     addressType: {
       position: 'absolute',
@@ -96,6 +90,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
             setIsEditAddressDialogOpen(true);
             setCurrentAddress(address);
           }}
+          title={'Update Address'}
         >
           <div className={classes.addressType}>
             {address.addressType === PATIENT_ADDRESS_TYPE.OTHER
@@ -103,8 +98,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
               : address.addressType}
           </div>
           {address.addressLine1}
-          <br /> {address.addressLine2}
-          <br /> {address.zipcode}
+          <br /> {`${address.addressLine2} - ${address.zipcode}`}
         </div>
       </Grid>
     );
@@ -114,7 +108,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
     <Grid container spacing={1}>
       {addressDivs}
       <AphDialog open={isEditAddressDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsEditAddressDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsEditAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           Edit Address
           <div
@@ -122,7 +116,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
             ref={deleteAddRef}
             className={classes.moreIcon}
           >
-            <img src={require('images/ic_more.svg')} alt="" />
+            <img src={require('images/ic_more.svg')} alt="" title={'Delete Address'} />
           </div>
         </AphDialogTitle>
         <AddNewAddress

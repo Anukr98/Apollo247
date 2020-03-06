@@ -235,7 +235,8 @@ const bookAppointment: Resolver<
     appointmentInput.appointmentDateTime,
     appointmentInput.appointmentType,
     appointmentInput.doctorId,
-    doctorsDb
+    doctorsDb,
+    appointmentInput.hospitalId
   );
 
   // if (checkHours === CONSULTFLAG.OUTOFBUFFERTIME) {

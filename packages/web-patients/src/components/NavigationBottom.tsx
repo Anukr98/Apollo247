@@ -72,7 +72,7 @@ export const NavigationBottom: React.FC = (props) => {
     <BottomNavigation showLabels className={classes.root}>
       <BottomNavigationAction
         component={Link}
-        label="Consult Room"
+        label="Appointments"
         icon={<img src={require('images/bottom-nav/ic_appointments.svg')} />}
         to={clientRoutes.appointments()}
         className={currentPath === clientRoutes.appointments() ? classes.activeMenu : ''}

@@ -62,6 +62,7 @@ export const PatientsOverview: React.FC = () => {
     GetPatientFutureAppointmentCountVariables
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT, {
     variables: { patientId: currentPatient ? currentPatient.id : '' },
+    ssr: currentPatient && currentPatient.id ? true : false,
     fetchPolicy: 'no-cache',
   });
 
@@ -77,7 +78,7 @@ export const PatientsOverview: React.FC = () => {
       <Grid spacing={2} container>
         <Grid item xs={12} sm={6}>
           <Link to={clientRoutes.appointments()}>
-            <div className={classes.card}>
+            <div className={classes.card} title={'View upcoming appointments'}>
               <div className={classes.totalConsults}>
                 {loading ? <CircularProgress size={10} /> : activeAppointments}
               </div>

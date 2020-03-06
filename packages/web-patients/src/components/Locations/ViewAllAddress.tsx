@@ -71,15 +71,12 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface ViewAllAddressProps {
-  addresses: GetPatientAddressList_getPatientAddressList_addressList[];
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const classes = useStyles({});
-  const { deliveryAddressId, setDeliveryAddressId } = useShoppingCart();
-
-  const { addresses } = props;
+  const { deliveryAddressId, setDeliveryAddressId, deliveryAddresses } = useShoppingCart();
 
   const disableSubmit = deliveryAddressId === '';
 
@@ -91,7 +88,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
             <div className={classes.root}>
               <div className={classes.addressGroup}>
                 <ul>
-                  {addresses.map((addressDetails, index) => {
+                  {deliveryAddresses.map((addressDetails, index) => {
                     const addressId = addressDetails.id;
                     const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
                     return (

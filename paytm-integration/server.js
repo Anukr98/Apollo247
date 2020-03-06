@@ -119,6 +119,66 @@ app.get('/invokeApptReminder', (req, res) => {
     });
 });
 
+app.get('/invokeFollowUpNotification', (req, res) => {
+  const requestJSON = {
+    query: 'query { sendFollowUpNotification }',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data.data.sendFollowUpNotification, 'notifications response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-followUpNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendFollowUpNotification +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
+app.get('/invokeDailyAppointmentSummary', (req, res) => {
+  const requestJSON = {
+    query: 'query { sendDailyAppointmentSummary }',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data.data.sendDailyAppointmentSummary, 'notifications response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dailyAppointmentSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendDailyAppointmentSummary +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
 app.get('/invokePhysicalApptReminder', (req, res) => {
   const requestJSON = {
     query:
@@ -174,7 +234,6 @@ app.get('/getCmToken', (req, res) => {
         req.query.phoneNumber
     )
     .then((response) => {
-      console.log('respose', response);
       res.send({
         status: 'success',
         message: response.data.message,
@@ -192,11 +251,6 @@ app.get('/getCmToken', (req, res) => {
 });
 
 app.get('/consulttransaction', (req, res) => {
-  console.log(req.query.CompleteResponse, req.query.ORDERID);
-  console.log(req.query.BANKTXNID);
-  console.log(req.query.STATUS);
-  console.log(req.query.TXNAMOUNT);
-  console.log(req.query.TXNDATE);
   /*save response in apollo24x7*/
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
   const date = new Date(new Date().toUTCString()).toISOString();
@@ -411,10 +465,6 @@ app.get('/paymed', (req, res) => {
   req.session.amount = stripTags(req.query.amount);
   req.session.source = stripTags(req.query.source);
 
-  // console.log(
-  //   'source', req.session.source
-  // );
-
   // if there is any invalid source throw error.
   if (requestedSources.indexOf(req.session.source) < 0) {
     // fake source. through error.
@@ -497,8 +547,6 @@ app.post('/paymed-response', (req, res) => {
   const token = req.session.token;
   const date = new Date(new Date().toUTCString()).toISOString();
   const reqSource = req.session.source;
-
-  // console.log('payload is....', payload);
 
   /* make success and failure response */
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
@@ -1576,7 +1624,9 @@ const isDeliveryChargeApplicable = (totalAmountPaid) => {
   if (totalAmountPaid === null || totalAmountPaid === '' || isNaN(totalAmountPaid)) {
     totalAmountPaid = 0;
   }
-  return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+
+  //return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+  return parseFloat(totalAmountPaid) < 200 ? true : false;
 };
 
 //returns constant response object

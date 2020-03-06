@@ -111,6 +111,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       paddingTop: 10,
     },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
   };
 });
 
@@ -209,7 +214,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                         )
                     )
                   ) : isLoading ? (
-                    <CircularProgress />
+                    <CircularProgress className={classes.loader} />
                   ) : (
                     'No available Coupons'
                   )}

@@ -45,8 +45,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     notificationBtn: {
-      display: 'none',
-      // display: 'inline-block',
+      // display: 'none',
+      display: 'inline-block',
       padding: '33px 20px 31px 20px',
       fontSize: 13,
       fontWeight: 600,
@@ -150,12 +150,14 @@ export const Navigation: React.FC = (props) => {
       <Link
         className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
         to={clientRoutes.appointments()}
+        title={"Appointments"}
       >
         Appointments
       </Link>
       <Link
         to={clientRoutes.healthRecords()}
         className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+        title={"Health Records"}
       >
         Health Records
       </Link>
@@ -163,10 +165,11 @@ export const Navigation: React.FC = (props) => {
         to={clientRoutes.medicines()}
         className={
           currentPath === clientRoutes.medicines() ||
-          currentPath === clientRoutes.prescriptionsLanding()
+            currentPath === clientRoutes.prescriptionsLanding()
             ? classes.menuItemActive
             : ''
         }
+        title={"Medicines"}
       >
         Medicines
       </Link>
@@ -178,16 +181,18 @@ export const Navigation: React.FC = (props) => {
         tabIndex={0}
         className={`${classes.notificationBtn} ${
           currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-        }`}
+          }`}
+        title={"cart"}
       >
         <span>
-          <img src={require('images/ic_cart.svg')} alt="Cart" />
+          <img src={require('images/ic_cart.svg')} alt="Cart" title={"cart"}
+          />
           <span className={classes.itemCount}>{cartItems.length || 0}</span>
         </span>
       </div>
-      <div className={`${classes.notificationBtn}`}>
+      {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />
-      </div>
+      </div> */}
       <Popover
         open={isCartPopoverOpen}
         anchorEl={cartPopoverRef.current}

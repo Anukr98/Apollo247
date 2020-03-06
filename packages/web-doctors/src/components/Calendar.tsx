@@ -18,15 +18,12 @@ import {
   GetDoctorAppointments_getDoctorAppointments_appointmentsHistory,
 } from 'graphql/types/GetDoctorAppointments';
 import { useQuery } from 'react-apollo-hooks';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   GetDoctorDetails_getDoctorDetails,
   GetDoctorDetails_getDoctorDetails_consultHours as consultHoursType,
 } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
 import Scrollbars from 'react-custom-scrollbars';
-import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
-import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import * as _ from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -127,15 +124,8 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 26,
       },
     },
-    nopionter: {
-      // pointerEvents: 'none',
-    },
   };
 });
-
-type consultHours = {
-  [key: number]: consultHoursType;
-};
 
 const dataAdapter = (
   appointmentData: GetDoctorAppointments | undefined,
@@ -173,7 +163,6 @@ const dataAdapter = (
         patientInfo,
         caseSheet,
       } = appointment!;
-      // console.log(doctorData, selectedDate);
 
       const startTime = getTime(new Date(appointmentDateTime));
       const consultDurationDay: any =
@@ -237,7 +226,6 @@ const getMonthRange = ({ start, end }: { start: string | Date; end: string | Dat
 export const Calendar: React.FC = () => {
   const today: Date = startOfToday();
   const classes = useStyles();
-  const client = useApolloClient();
   const [doctorData, setDoctorDetails] = useState<GetDoctorDetails_getDoctorDetails | null>();
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
@@ -248,8 +236,6 @@ export const Calendar: React.FC = () => {
     localStorage.setItem('currentUserId', currentUserId ? currentUserId : '');
   }
   const pageRefreshTimeInSeconds = 30;
-
-  //console.log(moment(today).format('MMMM'));
   const [range, setRange] = useState<{
     start: string | Date;
     end: string | Date;
@@ -362,7 +348,6 @@ export const Calendar: React.FC = () => {
                   setMonthSelected(month);
                 }}
                 onMonthChange={(range) => {
-                  //console.log(range);
                   setStartOfMonthDate(range as { start: string; end: string });
                   setRange(getMonthRange(range as { start: string; end: string }));
                 }}

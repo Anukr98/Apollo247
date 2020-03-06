@@ -14,8 +14,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
-
-//import { sendSMS } from 'notifications-service/resolvers/notifications';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
@@ -23,7 +21,6 @@ import { addMilliseconds, format } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import _ from 'lodash';
 import { DoctorType } from 'doctors-service/entities';
-//import { sendNotificationSMS } from 'profiles-service/resolvers/login';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
