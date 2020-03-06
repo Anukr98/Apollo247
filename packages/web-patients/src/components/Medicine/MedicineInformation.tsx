@@ -384,7 +384,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x + 1);
+  console.log(data);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -410,7 +411,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             )}
-            {data.is_in_stock && (
+            {data.is_in_stock ? (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
@@ -438,7 +439,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   )}
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         </Scrollbars>
       </div>

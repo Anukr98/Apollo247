@@ -166,7 +166,7 @@ export interface MedicineListscardProps {
 export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
   const classes = useStyles({});
   const { addCartItem, removeCartItem, updateCartItemQty, cartItems } = useShoppingCart();
-  const options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x + 1);
 
   const [selectedPackedQty] = React.useState(1);
 
