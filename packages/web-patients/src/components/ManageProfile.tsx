@@ -85,6 +85,7 @@ export const ManageProfile: React.FC = (props) => {
             className={classes.mascotCircle}
             ref={mascotRef}
             onClick={() => (isProtected ? protectWithLoginPopup() : setIsPopoverOpen(true))}
+            title={'Need Help?'}
           >
             <img src={require('images/ic-mascot.png')} alt="" />
             {isSigningIn && (
