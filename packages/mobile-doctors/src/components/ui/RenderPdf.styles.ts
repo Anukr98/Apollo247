@@ -43,8 +43,9 @@ export default StyleSheet.create({
   },
   ctaContainer: {
     flexDirection: 'row',
-    marginHorizontal: 20,
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
   stickyBottomStyle: {
     ...theme.viewStyles.cardContainer,

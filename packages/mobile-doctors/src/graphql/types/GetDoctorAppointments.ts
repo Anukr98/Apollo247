@@ -18,6 +18,8 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
   status: string | null;
   doctorType: DoctorType | null;
+  sentToPatient: boolean | null;
+  blobName: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo_addressList {
