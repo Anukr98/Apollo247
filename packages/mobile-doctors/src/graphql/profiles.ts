@@ -125,6 +125,8 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           }
           status
           doctorType
+          sentToPatient
+          blobName
         }
         patientInfo {
           id
@@ -493,6 +495,7 @@ export const GET_CASESHEET = gql`
           displayId
           rescheduleCount
           rescheduleCountByDoctor
+          appointmentType
         }
         createdDoctorProfile {
           doctorType

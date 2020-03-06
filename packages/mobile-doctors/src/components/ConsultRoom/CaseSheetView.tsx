@@ -259,6 +259,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const setData = () => {
     const caseSheet = props.caseSheet;
+    if (g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED) {
+      setShowEditPreviewButtons(true);
+      prescriptionView();
+    }
+    //   setShowEditPreviewButtons(!g(caseSheet, 'caseSheetDetails', 'sentToPatient'));
     setCaseSheetData(caseSheet || undefined);
     setPastList(g(caseSheet, 'pastAppointments') || null);
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
@@ -513,28 +518,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     }
   };
   const prescriptionView = () => {
-    props.navigation.navigate(AppRoutes.RenderPdf, {
-      uri: prescriptionPdf,
-      title: 'PRESCRIPTION',
-      CTAs: [
-        {
-          title: 'EDIT CASE SHEET',
-          variant: 'white',
-          onPress: () => {
-            props.navigation.pop();
-          },
+    if (patientDetails) {
+      const age = moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true) || -1;
+      props.navigation.navigate(AppRoutes.PreviewPrescription, {
+        appointmentDetails: {
+          patient: `${(patientDetails.firstName || '').trim()} ${(
+            patientDetails.lastName || ''
+          ).trim()} | ${patientDetails.gender || '-'} | ${
+            age > -1 ? Math.round(age).toString() : '-'
+          }`,
+          vitals: medicalHistory
+            ? `Weight: ${medicalHistory.weight || '-'} | Height: ${medicalHistory.height ||
+                '-'} | BP: ${medicalHistory.bp ||
+                '-'} | Temperature: ${medicalHistory.temperature || '-'} `
+            : '',
+          uhid: patientDetails.uhid,
+          appId: displayId,
+          date: moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY'),
+          type: g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentType'),
         },
-        {
-          title: 'SEND TO PATIENT',
-          variant: 'orange',
-          onPress: () => {
-            props.onStopConsult();
-            sendToPatientAction();
-            followUpMessage();
-          },
+        complaints: symptonsData,
+        diagnosis: diagnosisData,
+        medicine: medicinePrescriptionData,
+        tests: tests.filter((i) => i.isSelected).map((i) => i.itemname),
+        advice: addedAdvices.map((i) => i.value),
+        // followUp: null,
+        onEditPress: () => {
+          props.setCaseSheetEdit(true);
+          setShowEditPreviewButtons(true);
+          props.navigation.pop();
         },
-      ],
-    });
+        onSendPress: () => {
+          props.onStopConsult();
+          sendToPatientAction();
+          followUpMessage();
+          props.navigation.popToTop();
+        },
+      });
+    }
   };
 
   const endConsult = () => {
