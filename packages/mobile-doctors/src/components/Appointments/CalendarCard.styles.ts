@@ -18,7 +18,6 @@ export default StyleSheet.create({
   },
   doctorNameStyles: {
     flex: 1,
-    // paddingTop: 12,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#02475b',
@@ -55,5 +54,11 @@ export default StyleSheet.create({
   placeHolderLoading: {
     alignItems: 'center',
     backgroundColor: 'transparent',
+  },
+  container: {
+    height: 'auto',
+    width: 'auto',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
   },
 });
