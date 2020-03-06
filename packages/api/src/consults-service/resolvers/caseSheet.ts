@@ -599,7 +599,7 @@ const modifyCaseSheet: Resolver<
   const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const juniorDoctorDetails = await doctorRepository.findById(getCaseSheetData.doctorId);
+  const juniorDoctorDetails = await doctorRepository.findById(getCaseSheetData.createdDoctorId);
   const seniorDoctorDetails = await doctorRepository.findById(
     getCaseSheetData.appointment.doctorId
   );
