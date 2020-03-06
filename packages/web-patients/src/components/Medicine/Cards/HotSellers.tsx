@@ -156,7 +156,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+
+  const itemIndexInCart = (item: MedicineProduct) => {
+    const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
+    return index;
+  };
 
   return (
     <div className={classes.root}>
@@ -183,35 +188,45 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
                   </div>
                   <div className={classes.addToCart}>
-                    <AphButton
-                      onClick={() => {
-                        const cartItem: MedicineCartItem = {
-                          description: hotSeller.description,
-                          id: hotSeller.id,
-                          image: hotSeller.image,
-                          is_in_stock: hotSeller.is_in_stock,
-                          is_prescription_required: hotSeller.is_prescription_required,
-                          name: hotSeller.name,
-                          price: hotSeller.price,
-                          sku: hotSeller.sku,
-                          special_price: hotSeller.special_price,
-                          small_image: hotSeller.small_image,
-                          status: hotSeller.status,
-                          thumbnail: hotSeller.thumbnail,
-                          type_id: hotSeller.type_id,
-                          mou: hotSeller.mou,
-                          quantity: 1,
-                        };
-                        const index = cartItems.findIndex((item) => item.id === cartItem.id);
-                        if (index >= 0) {
-                          updateCartItem && updateCartItem(cartItem);
-                        } else {
-                          addCartItem && addCartItem(cartItem);
-                        }
-                      }}
-                    >
-                      Add To Cart
-                    </AphButton>
+                    {itemIndexInCart(hotSeller) === -1 ? (
+                      <AphButton
+                        onClick={() => {
+                          const cartItem: MedicineCartItem = {
+                            description: hotSeller.description,
+                            id: hotSeller.id,
+                            image: hotSeller.image,
+                            is_in_stock: hotSeller.is_in_stock,
+                            is_prescription_required: hotSeller.is_prescription_required,
+                            name: hotSeller.name,
+                            price: hotSeller.price,
+                            sku: hotSeller.sku,
+                            special_price: hotSeller.special_price,
+                            small_image: hotSeller.small_image,
+                            status: hotSeller.status,
+                            thumbnail: hotSeller.thumbnail,
+                            type_id: hotSeller.type_id,
+                            mou: hotSeller.mou,
+                            quantity: 1,
+                          };
+                          const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                          if (index >= 0) {
+                            updateCartItem && updateCartItem(cartItem);
+                          } else {
+                            addCartItem && addCartItem(cartItem);
+                          }
+                        }}
+                      >
+                        Add To Cart
+                      </AphButton>
+                    ) : (
+                      <AphButton
+                        onClick={() => {
+                          removeCartItem && removeCartItem(hotSeller.id);
+                        }}
+                      >
+                        Remove
+                      </AphButton>
+                    )}
                   </div>
                 </div>
               </div>
