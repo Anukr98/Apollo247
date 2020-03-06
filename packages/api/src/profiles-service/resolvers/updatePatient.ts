@@ -98,12 +98,14 @@ const updatePatient: Resolver<
   let regCode = '';
   //if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
   const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
-  const getCode = await regCodeRepo.getCode();
-  if (getCode.length > 0) {
-    const regCodeStatus = await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
+  //const getCode = await regCodeRepo.getCode();
+  const getCode = await regCodeRepo.updateCodeStatus('', patient);
+  if (getCode) {
+    /*const regCodeStatus = await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
     if (regCodeStatus) {
       regCode = getCode[0].registrationCode;
-    }
+    }*/
+    regCode = getCode[0].registrationCode;
   }
   //}
 

@@ -6,7 +6,21 @@ export class RegistrationCodesRepository extends Repository<RegistrationCodes> {
   async updateCodeStatus(id: string, patient: Patient) {
     const checkRow = await this.find({ where: { patient } });
     if (checkRow.length == 0) {
-      return this.update(id, { codeStatus: REGISTRATION_CODES_STATUS.SENT, patient });
+      const regCodeData = await this.find({
+        where: { codeStatus: REGISTRATION_CODES_STATUS.NOT_SENT },
+        take: 1,
+        order: { createdDate: 'ASC' },
+      });
+      if (regCodeData.length > 0) {
+        this.update(regCodeData[0].id, {
+          codeStatus: REGISTRATION_CODES_STATUS.SENT,
+          patient,
+          updatedDate: new Date(),
+        });
+        return regCodeData;
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
