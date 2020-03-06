@@ -132,6 +132,9 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       .then(({ data }) => {
         data && data.getDoctorAppointments && setgetAppointments(data.getDoctorAppointments);
       })
+      .catch((err) => {
+        setgetAppointments(undefined);
+      })
       .finally(() => {
         setshowSpinner(false);
       });
