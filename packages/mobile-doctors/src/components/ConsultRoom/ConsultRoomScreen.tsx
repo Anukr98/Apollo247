@@ -819,7 +819,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             position: 'absolute',
             opacity: 0.41,
           }}
-        ></View>
+        />
         <View
           style={{
             marginHorizontal: 40,
@@ -1369,6 +1369,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             <CrossPopup
               style={{
                 marginRight: 1,
+                height: 28,
+                width: 28,
               }}
             />
           </TouchableOpacity>
