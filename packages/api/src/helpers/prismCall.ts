@@ -2,9 +2,10 @@ import AbortController from 'abort-controller';
 import { PrismGetAuthTokenResponse, PrismGetUsersResponse } from 'types/prism';
 import { ServiceBusService } from 'azure-sb';
 import { Patient } from 'profiles-service/entities';
+import { log } from 'customWinstonLogger';
 
 const prismTimeoutMillSeconds = process.env.PRISM_TIMEOUT_IN_MILLISECONDS
-  ? parseInt(process.env.PRISM_TIMEOUT_IN_MILLISECONDS)
+  ? Number(process.env.PRISM_TIMEOUT_IN_MILLISECONDS)
   : 3000;
 const controller = new AbortController();
 const timeout = setTimeout(() => {
@@ -25,15 +26,34 @@ export async function prismAuthenticationAsync(
   };
 
   const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+    'registerPatients-prismAuthenticationAsync()->API_CALL_STARTING',
+    '',
+    ''
+  );
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
         return data;
-        console.log('data', data);
+        log(
+          'profileServiceLogger',
+          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+          'registerPatients-prismAuthenticationAsync()->RECIEVED_DATA',
+          '',
+          JSON.stringify(data)
+        );
       },
       (err) => {
-        console.log(err, '////////////////////////////////');
+        log(
+          'profileServiceLogger',
+          `API_CALL_ERROR: ${apiUrl}`,
+          'registerPatients-prismAuthenticationAsync()->ERROR',
+          '',
+          JSON.stringify(err)
+        );
         if (err.name === 'AbortError') {
           return { response: 'AbortError' };
         }
@@ -55,16 +75,35 @@ export async function prismGetUsersAsync(
   };
 
   const apiUrl = `${prismBaseUrl}/getusers?authToken=${authToken}&mobile=${mobileNumber}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+    'registerPatients-prismGetUsersAsync()->API_CALL_STARTING',
+    '',
+    ''
+  );
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
         return data;
-        console.log('data', data);
+        log(
+          'profileServiceLogger',
+          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+          'registerPatients-prismGetUsersAsync()->RECIEVED_DATA',
+          '',
+          JSON.stringify(data)
+        );
       },
       (err) => {
+        log(
+          'profileServiceLogger',
+          `API_CALL_ERROR: ${apiUrl}`,
+          'registerPatients-prismGetUsersAsync()->ERROR',
+          '',
+          JSON.stringify(err)
+        );
         if (err.name === 'AbortError') {
-          console.log(err);
           return { response: { recoveryMessage: 'AbortError' } };
         }
       }
@@ -83,15 +122,34 @@ export async function prismAuthentication(
   };
 
   const apiUrl = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+    'registerPatients-prismAuthentication()->API_CALL_STARTING',
+    '',
+    ''
+  );
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
         return data;
-        console.log('data', data);
+        log(
+          'profileServiceLogger',
+          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+          'registerPatients-prismAuthentication()->RECIEVED_DATA',
+          '',
+          JSON.stringify(data)
+        );
       },
       (err) => {
-        console.log(err, '////////////////////////////////');
+        log(
+          'profileServiceLogger',
+          `API_CALL_ERROR: ${apiUrl}`,
+          'registerPatients-prismAuthentication()->ERROR',
+          '',
+          JSON.stringify(err)
+        );
       }
     );
 }
@@ -106,21 +164,46 @@ export async function prismGetUsers(
   };
 
   const apiUrl = `${prismBaseUrl}/getusers?authToken=${authToken}&mobile=${mobileNumber}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+    'registerPatients-prismGetUser()->API_CALL_STARTING',
+    '',
+    ''
+  );
   return await fetch(apiUrl, prismHeaders)
     .then((res) => res.json())
     .then(
       (data) => {
         return data;
-        console.log('data', data);
+        log(
+          'profileServiceLogger',
+          `EXTERNAL_API_CALL_PRISM: ${apiUrl}`,
+          'registerPatients-prismGetUsers()->RECIEVED_DATA',
+          '',
+          JSON.stringify(data)
+        );
       },
       (err) => {
-        console.log(err);
+        log(
+          'profileServiceLogger',
+          `API_CALL_ERROR: ${apiUrl}`,
+          'registerPatients-prismGetUsersAsync()->ERROR',
+          '',
+          JSON.stringify(err)
+        );
       }
     );
 }
 
 export async function addToPatientPrismQueue(patientDetails: Patient) {
-  console.log('addToPatientPrismQueue');
+  log(
+    'profileServiceLogger',
+    `addedToPatientPrismQueue`,
+    'addedToPatientPrismQueue',
+    '',
+    JSON.stringify(patientDetails)
+  );
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
   const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME_PATIENTS
@@ -128,15 +211,53 @@ export async function addToPatientPrismQueue(patientDetails: Patient) {
     : '';
   azureServiceBus.createTopicIfNotExists(queueName, (topicError) => {
     if (topicError) {
-      console.log('topic create error', topicError);
+      log(
+        'profileServiceLogger',
+        `topicError: ${JSON.stringify(topicError)}`,
+        'topic create error',
+        '',
+        JSON.stringify(patientDetails)
+      );
     }
-    console.log('connected to topic', queueName);
+
+    log(
+      'profileServiceLogger',
+      `connected to topic: ${JSON.stringify(queueName)}`,
+      'topic create error',
+      '',
+      JSON.stringify(patientDetails)
+    );
     const message = 'PRISM_USER_DETAILS:' + patientDetails.mobileNumber;
     azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
       if (sendMsgError) {
-        console.log('send message error', sendMsgError);
+        log(
+          'profileServiceLogger',
+          `sendMsgError: ${JSON.stringify(sendMsgError)}`,
+          'send Azure Bus message errorr',
+          '',
+          JSON.stringify(patientDetails)
+        );
       }
       console.log('message sent to topic');
+      log(
+        'profileServiceLogger',
+        `message sent to topic`,
+        'message sent to topic',
+        '',
+        JSON.stringify(patientDetails)
+      );
     });
   });
 }
+
+//common function to check or insert patient
+export async function findOrCreatePatient(
+  findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
+  createOptions: Partial<Patient>
+): Promise<Patient> {
+  const existingPatient = await Patient.findOne({
+    where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+  });
+  return existingPatient || Patient.create(createOptions).save();
+}
+//end common function
