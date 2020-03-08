@@ -82,7 +82,12 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
-  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
+
+  const itemIndexInCart = (item: MedicineProduct) => {
+    const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
+    return index;
+  };
 
   return (
     <Grid container spacing={2}>
@@ -103,36 +108,47 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 )}
               </div>
               {product.is_in_stock ? (
-                <AphButton
-                  className={classes.addToCartBtn}
-                  onClick={() => {
-                    const cartItem: MedicineCartItem = {
-                      description: product.description,
-                      id: product.id,
-                      image: product.image,
-                      is_in_stock: product.is_in_stock,
-                      is_prescription_required: product.is_prescription_required,
-                      name: product.name,
-                      price: product.price,
-                      sku: product.sku,
-                      special_price: product.special_price,
-                      small_image: product.small_image,
-                      status: product.status,
-                      thumbnail: product.thumbnail,
-                      type_id: product.type_id,
-                      mou: product.mou,
-                      quantity: 1,
-                    };
-                    const index = cartItems.findIndex((item) => item.id === cartItem.id);
-                    if (index >= 0) {
-                      updateCartItem && updateCartItem(cartItem);
-                    } else {
-                      addCartItem && addCartItem(cartItem);
-                    }
-                  }}
-                >
-                  Add To Cart
-                </AphButton>
+                itemIndexInCart(product) === -1 ? (
+                  <AphButton
+                    className={classes.addToCartBtn}
+                    onClick={() => {
+                      const cartItem: MedicineCartItem = {
+                        description: product.description,
+                        id: product.id,
+                        image: product.image,
+                        is_in_stock: product.is_in_stock,
+                        is_prescription_required: product.is_prescription_required,
+                        name: product.name,
+                        price: product.price,
+                        sku: product.sku,
+                        special_price: product.special_price,
+                        small_image: product.small_image,
+                        status: product.status,
+                        thumbnail: product.thumbnail,
+                        type_id: product.type_id,
+                        mou: product.mou,
+                        quantity: 1,
+                      };
+                      const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                      if (index >= 0) {
+                        updateCartItem && updateCartItem(cartItem);
+                      } else {
+                        addCartItem && addCartItem(cartItem);
+                      }
+                    }}
+                  >
+                    Add To Cart
+                  </AphButton>
+                ) : (
+                  <AphButton
+                    className={classes.addToCartBtn}
+                    onClick={() => {
+                      removeCartItem && removeCartItem(product.id);
+                    }}
+                  >
+                    Remove
+                  </AphButton>
+                )
               ) : (
                 <span>Out of stock</span>
               )}
