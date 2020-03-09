@@ -43,6 +43,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { loginAPI } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import WebEngage from 'react-native-webengage';
 
 const { height, width } = Dimensions.get('window');
 
@@ -127,6 +128,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
+  const webengage = new WebEngage();
 
   useEffect(() => {
     try {
@@ -247,9 +249,15 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const onClickOkay = () => {
-    CommonLogEvent(AppRoutes.Login, 'Login clicked');
-    const eventAttributes: WebEngageEvents['Mobile Number Entered'] = { mobilenumber: phoneNumber };
-    postWebEngageEvent('Mobile Number Entered', eventAttributes);
+    try {
+      webengage.user.login(`+91${phoneNumber}`);
+      CommonLogEvent(AppRoutes.Login, 'Login clicked');
+      setTimeout(() => {
+        const eventAttributes: WebEngageEvents['Mobile Number Entered'] = {
+          mobilenumber: phoneNumber,
+        };
+        postWebEngageEvent('Mobile Number Entered', eventAttributes);
+      }, 3000);
 
       Keyboard.dismiss();
       getNetStatus().then(async (status) => {
