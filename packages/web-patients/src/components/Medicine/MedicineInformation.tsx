@@ -163,18 +163,18 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     medicinePrice: {
-      fontSize: 14,
+      fontSize: 13,
       color: '#02475b',
       letterSpacing: 0.3,
       fontWeight: 'bold',
-      width: '50%',
       textAlign: 'right',
+      marginLeft: 'auto',
     },
     leftGroup: {
-      width: '50%',
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: 500,
+      width: 98,
     },
     medicinePack: {
       color: '#02475b',
@@ -260,7 +260,7 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 0.6,
     },
     regularPrice: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: 500,
       color: '#01475b',
       opacity: 0.6,
