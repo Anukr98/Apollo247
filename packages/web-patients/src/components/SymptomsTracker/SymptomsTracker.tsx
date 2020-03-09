@@ -203,7 +203,7 @@ export const SymptomsTracker: React.FC = () => {
   const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [select, setSelect] = useState<boolean>(false);
+  const [selectCurrentUser, setSelectCurrentUser] = useState<boolean>(false);
 
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
@@ -233,9 +233,10 @@ export const SymptomsTracker: React.FC = () => {
                 {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
                   <Typography variant="h1">
                     <span>
-                      hi {!select && currentPatient.firstName} {!select && `:)`}
+                      hi {!selectCurrentUser && currentPatient.firstName}{' '}
+                      {!selectCurrentUser && `:)`}
                     </span>
-                    {select && (
+                    {selectCurrentUser && (
                       <AphSelect
                         value={currentPatient.id}
                         onChange={(e) => {
@@ -246,9 +247,9 @@ export const SymptomsTracker: React.FC = () => {
                           root: classes.selectMenuRoot,
                           selectMenu: classes.selectMenuItem,
                         }}
-                        open={select}
+                        open={selectCurrentUser}
                         onClick={() => {
-                          setSelect(!select);
+                          setSelectCurrentUser(!selectCurrentUser);
                         }}
                       >
                         {allCurrentPatients.map((patient) => {
@@ -291,7 +292,7 @@ export const SymptomsTracker: React.FC = () => {
                       <AphButton>MYSELF</AphButton>
                     </Link>
                     {/* <Link to={clientRoutes.symptomsTracker()}> */}
-                    <AphButton onClick={() => setSelect(true)}>SOMEONE ELSE</AphButton>
+                    <AphButton onClick={() => setSelectCurrentUser(true)}>SOMEONE ELSE</AphButton>
                     {/* </Link> */}
                   </div>
                 </div>
