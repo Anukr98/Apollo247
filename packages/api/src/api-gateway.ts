@@ -177,6 +177,7 @@ export type Resolver<Parent, Args, Context, Result> = (
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
           return {
             parsingDidStart(requestContext) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const internalContext = (requestContext.context as any) as GatewayContext;
 
               logger.log({
@@ -187,6 +188,7 @@ export type Resolver<Parent, Args, Context, Result> = (
               });
             },
             didEncounterErrors(requestContext) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const internalContext = (requestContext.context as any) as GatewayContext;
               requestContext.errors.forEach((error) => {
                 logger.log(
