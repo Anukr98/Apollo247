@@ -230,7 +230,9 @@ export const MedicineListingCard: React.FC = (props) => {
                       ))}
                     </AphCustomDropdown>
                   </div>
-                  <div className={classes.medicinePrice}>Rs.{item.price}</div>
+                  <div className={classes.medicinePrice}>
+                    Rs. {item.special_price || item.price}
+                  </div>
                   <div className={classes.addToCart}>
                     <AphButton onClick={() => removeCartItem && removeCartItem(item.id)}>
                       <img
