@@ -4,6 +4,7 @@ import {
   setMedicineList,
   setSysmptonsList,
 } from '@aph/mobile-doctors/src/components/ApiCall';
+import { styles } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView.styles';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
 import { SymptonsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/SymptonsCard';
@@ -41,6 +42,7 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
   END_APPOINTMENT_SESSION,
@@ -95,20 +97,18 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState, Dispatch } from 'react';
+import React, { Dispatch, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   NavigationParams,
@@ -116,14 +116,10 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import CaseSheetViewStyles from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView.styles';
-import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 
 const { width } = Dimensions.get('window');
 
-const styles = CaseSheetViewStyles;
-
-interface dataPair {
+interface DataPair {
   key: string;
   value: string;
 }
@@ -263,6 +259,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const setData = () => {
     const caseSheet = props.caseSheet;
+    if (
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED &&
+      !g(caseSheet, 'caseSheetDetails', 'sentToPatient')
+    ) {
+      setShowEditPreviewButtons(true);
+      prescriptionView();
+    }
+    //   setShowEditPreviewButtons(!g(caseSheet, 'caseSheetDetails', 'sentToPatient'));
     setCaseSheetData(caseSheet || undefined);
     setPastList(g(caseSheet, 'pastAppointments') || null);
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
@@ -517,28 +521,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     }
   };
   const prescriptionView = () => {
-    props.navigation.navigate(AppRoutes.RenderPdf, {
-      uri: prescriptionPdf,
-      title: 'PRESCRIPTION',
-      CTAs: [
-        {
-          title: 'EDIT CASE SHEET',
-          variant: 'white',
-          onPress: () => {
-            props.navigation.pop();
-          },
+    if (patientDetails) {
+      const age = moment().diff(patientDetails && patientDetails.dateOfBirth, 'years', true) || -1;
+      props.navigation.navigate(AppRoutes.PreviewPrescription, {
+        appointmentDetails: {
+          patient: `${(patientDetails.firstName || '').trim()} ${(
+            patientDetails.lastName || ''
+          ).trim()} | ${patientDetails.gender || '-'} | ${
+            age > -1 ? Math.round(age).toString() : '-'
+          }`,
+          vitals: medicalHistory
+            ? `Weight: ${medicalHistory.weight || '-'} | Height: ${medicalHistory.height ||
+                '-'} | BP: ${medicalHistory.bp ||
+                '-'} | Temperature: ${medicalHistory.temperature || '-'} `
+            : '',
+          uhid: patientDetails.uhid,
+          appId: displayId,
+          date: moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY'),
+          type: g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentType'),
         },
-        {
-          title: 'SEND TO PATIENT',
-          variant: 'orange',
-          onPress: () => {
-            props.onStopConsult();
-            sendToPatientAction();
-            followUpMessage();
-          },
+        complaints: symptonsData,
+        diagnosis: diagnosisData,
+        medicine: medicinePrescriptionData,
+        tests: tests.filter((i) => i.isSelected).map((i) => i.itemname),
+        advice: addedAdvices.map((i) => i.value),
+        // followUp: null,
+        onEditPress: () => {
+          props.setCaseSheetEdit(true);
+          setShowEditPreviewButtons(true);
+          props.navigation.pop();
         },
-      ],
-    });
+        onSendPress: () => {
+          props.onStopConsult();
+          sendToPatientAction();
+          followUpMessage();
+          props.navigation.popToTop();
+        },
+      });
+    }
   };
 
   const endConsult = () => {
@@ -647,13 +667,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     //console.log({ Appintmentdatetimeconsultpage });
     return (
       <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
-        <View style={{}}>
+        <View>
           {!showButtons ? (
             <View style={styles.footerButtonsContainersave}>
               <Button
                 title={strings.buttons.start_consult}
                 // disabled={!enableConsultButton}
-                buttonIcon={<Start />}
+                buttonIcon={<Start style={{ right: 10 }} />}
                 onPress={() => {
                   setShowButtons(true);
                   props.onStartConsult();

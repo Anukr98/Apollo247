@@ -156,13 +156,19 @@ const useStyles = makeStyles((theme: Theme) => {
 export const MedicineListingCard: React.FC = (props) => {
   const classes = useStyles({});
   const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
-  const options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x + 1);
+
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
       {cartItems &&
-        cartItems.map((item, index) => (
-          <div key={item.id} className={classes.medicineStrip}>
+        cartItems.map((item) => (
+          <div
+            key={item.id}
+            className={`${classes.medicineStrip} ${
+              item.is_in_stock ? '' : classes.medicineStripDisabled
+            }`}
+          >
             <div className={classes.medicineStripWrap}>
               <div className={classes.medicineInformation}>
                 <div className={classes.medicineIcon}>

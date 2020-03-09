@@ -1,6 +1,7 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Availability } from '@aph/mobile-doctors/src/components/ProfileSetup/Availability';
 import { Fees } from '@aph/mobile-doctors/src/components/ProfileSetup/Fees';
+import ProfileSetupStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileSetup.styles';
 import { Profile } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
@@ -16,8 +17,10 @@ import {
   saveDoctorDeviceTokenVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveDoctorDeviceToken';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { setProfileFlowDone } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -27,15 +30,12 @@ import {
   Dimensions,
   Platform,
   SafeAreaView,
-  StyleSheet,
   View,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import ProfileSetupStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileSetup.styles';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 
 //import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
 
@@ -154,9 +154,9 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
                   )
                 );
               })
-              .catch((e: string) => {
-                CommonBugFender('Save_Doctor_Device_Token', e);
-                console.log('Error occured while calling device token', e);
+              .catch((error) => {
+                CommonBugFender('Save_Doctor_Device_Token', error);
+                console.log('Error occured while calling device token', error);
               });
           }
         }
@@ -200,7 +200,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         })
         .catch((error) => {
           console.log(error);
-          CommonBugFender('Get_Doctor_Details_reload', e);
+          CommonBugFender('Get_Doctor_Details_reload', error);
           setReloading(false);
         });
     // client
@@ -412,9 +412,10 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         >
           {renderHeader}
           {loading ? (
-            <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>
-              <ActivityIndicator size="large" color="green" />
-            </View>
+            // <View style={{ flex: 1, alignSelf: 'center', marginTop: height / 3 }}>
+            //   <ActivityIndicator size="large" color="green" />
+            // </View>
+            <Spinner />
           ) : (
             !!doctorDetails && (
               <>

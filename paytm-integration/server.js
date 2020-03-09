@@ -1647,20 +1647,24 @@ app.get('/getPrismData', (req, res) => {
   let queueMessage = '';
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
   const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
+  console.log(
+    'AZURE_SERVICE_BUS_SUBSCRIBER_PATIENTS::',
+    process.env.AZURE_SERVICE_BUS_SUBSCRIBER_PATIENTS
+  );
   azureServiceBus.receiveSubscriptionMessage(
     process.env.AZURE_SERVICE_BUS_QUEUE_NAME_PATIENTS,
     process.env.AZURE_SERVICE_BUS_SUBSCRIBER_PATIENTS,
     { isPeekLock: false },
     (subscriptionError, result) => {
       if (subscriptionError) {
-        console.log('read error', subscriptionError);
+        console.log('read error getPrismData', subscriptionError);
         res.send({
           status: 'failed',
           reason: subscriptionError,
           code: '10001',
         });
       } else {
-        console.log('message from topic', result.body);
+        console.log('message from topic getPrismData', result.body);
         queueMessage = result.body;
         const queueDetails = queueMessage.split(':');
         axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';

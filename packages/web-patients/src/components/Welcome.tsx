@@ -22,7 +22,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: '#f7f8f5',
       overflow: 'hidden',
-      marginBottom: 20,
     },
   };
 });

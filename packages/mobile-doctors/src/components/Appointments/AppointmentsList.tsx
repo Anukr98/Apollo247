@@ -25,6 +25,7 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 const styles = AppointmentsListStyles;
 
@@ -174,9 +175,26 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                       ) > -1
                     ) {
                       setLoading && setLoading(true);
-                      if (i.status === STATUS.COMPLETED) {
-                        props.navigation.push(AppRoutes.PreviewPrescription, {
-                          id: i.id,
+                      if (
+                        i.status === STATUS.COMPLETED &&
+                        i.caseSheet
+                          .map((i) => ((i && i.sentToPatient) || '').toString())
+                          .includes('true')
+                      ) {
+                        const blobName = i.caseSheet
+                          .map((i) => i && i.blobName)
+                          .filter((i) => i !== null)[0];
+                        setLoading && setLoading(false);
+                        props.navigation.push(AppRoutes.RenderPdf, {
+                          uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+                          title: 'PRESCRIPTION',
+                          CTAs: [
+                            {
+                              title: 'PRESCRIPTION SENT',
+                              variant: 'white',
+                              onPress: () => {},
+                            },
+                          ],
                         });
                       } else {
                         props.navigation.push(AppRoutes.ConsultRoomScreen, {

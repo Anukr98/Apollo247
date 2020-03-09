@@ -11,7 +11,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   PATIENT_TYPE,
 } from 'consults-service/entities';
-import { ConsultMode, WeekDay } from 'doctors-service/entities';
+import { ConsultMode, WeekDay, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -31,7 +31,7 @@ import _isEmpty from 'lodash/isEmpty';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
-import { format, differenceInMinutes } from 'date-fns';
+import { format, differenceInMinutes, isWithinInterval } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 
 export const sdDashboardSummaryTypeDefs = gql`
@@ -282,6 +282,38 @@ const updateSdSummary: Resolver<
         totalSlotsTime = difference / timeSlots[0].consultDuration;
       }
 
+      const docsList = await docRepo.getAllDoctors('0');
+      let awayCount = 0;
+      let onlineCount = 0;
+      if (docsList.length > 0) {
+        docsList.map(async (doctor) => {
+          const weekDay = format(args.summaryDate, 'EEEE').toUpperCase();
+          const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+          if (timeSlots.length) {
+            timeSlots.forEach(async (timeSlot) => {
+              const currentTime = new Date();
+              const st = new Date(
+                format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.startTime.toString()
+              );
+              const ed = new Date(
+                format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.endTime.toString()
+              );
+              const betweenConsultHours = isWithinInterval(currentTime, {
+                start: st,
+                end: ed,
+              });
+              if (betweenConsultHours == true) {
+                if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.AWAY) {
+                  awayCount++;
+                } else if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE) {
+                  onlineCount++;
+                }
+              }
+            });
+          }
+        });
+      }
+
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,
         args.summaryDate,
@@ -364,6 +396,8 @@ const updateSdSummary: Resolver<
         audioConsultations: auidoCount,
         videoConsultations: videoCount,
         chatConsultations: chatCount,
+        noOfAwayDoctors: awayCount,
+        noOfOnlineDoctors: onlineCount,
         totalFollowUp: paidFollowUpCount + unpaidFollowUpCount,
         rescheduledByDoctor: reschduleCount,
         rescheduledByPatient: patientReschduleCount,

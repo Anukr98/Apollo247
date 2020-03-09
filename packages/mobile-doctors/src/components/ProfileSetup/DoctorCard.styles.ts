@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -86,4 +87,6 @@ export default StyleSheet.create({
     backgroundColor: '#fff',
     marginLeft: 150,
   },
+  doctorImgView: { flexDirection: 'row', marginBottom: 16 },
+  doctorCardView: { overflow: 'hidden', borderRadius: 10, flex: 1 },
 });

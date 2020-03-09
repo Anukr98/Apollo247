@@ -4,7 +4,7 @@ import { Dimensions, StyleSheet } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-export default StyleSheet.create({
+export const styles = StyleSheet.create({
   casesheetView: {
     width: '100%',
     ...theme.viewStyles.container,
@@ -13,13 +13,11 @@ export default StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(20),
     marginLeft: 20,
-    // marginBottom: 8,
   },
   agetext: {
     color: 'rgba(2, 71, 91, 0.8)',
     ...theme.fonts.IBMPlexSansMedium(16),
     marginLeft: 15,
-    // marginTop: 4,
   },
   understatusline: {
     borderStyle: 'solid',
@@ -53,15 +51,12 @@ export default StyleSheet.create({
   appid: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: '#02475b',
-    // marginBottom: 8,
   },
   appdate: {
     ...theme.fonts.IBMPlexSansSemiBold(14),
     color: '#02475b',
   },
-  contentContainer: {
-    // paddingVertical: 20,
-  },
+  contentContainer: {},
   underlineend: {
     borderStyle: 'solid',
     borderWidth: 0.5,
@@ -128,13 +123,8 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
   footerButtonsContainer: {
-    // zIndex: -1,
     justifyContent: 'center',
-    paddingTop: 20,
-    paddingBottom: 20,
-    marginLeft: 10,
-    marginRight: 10,
-    marginHorizontal: 20,
+    paddingTop: 5,
     flexDirection: 'row',
     width: '100%',
     alignSelf: 'center',
@@ -143,9 +133,7 @@ export default StyleSheet.create({
   footerButtonsContainersave: {
     zIndex: -1,
     justifyContent: 'center',
-    paddingTop: 20,
-    paddingBottom: 20,
-    marginHorizontal: 20,
+    paddingTop: 5,
     flexDirection: 'row',
     width: '80%',
     alignSelf: 'center',

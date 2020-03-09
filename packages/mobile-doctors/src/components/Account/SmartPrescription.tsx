@@ -214,7 +214,6 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
   ) => {
     console.log('updateTestId-----', updateTestId, 'updateTestName-----', updateTestName);
 
-
     // tempTestArray.push(tempTestArray);
     // const AddingTest = tempTestArray
     //   .map((ele) => ele.itemname)
@@ -510,7 +509,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       });
   };
 
- const AddFavouriteTest = (
+  const AddFavouriteTest = (
     searchTestVal: string,
     tempTestArray: searchDiagnostic_searchDiagnostic[]
   ) => {
@@ -668,12 +667,14 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       )}
       <SafeAreaView style={theme.viewStyles.container}>
         <View>{showHeaderView()}</View>
-        <ScrollView bounces={false} contentContainerStyle={{ padding: 20 }}>
-          {FavoriteMedicines()}
-          {FavoriteTests()}
-          {FavoriteAdvice()}
-          {/* {renderButtonsView()} */}
-        </ScrollView>
+        {!loading && (
+          <ScrollView bounces={false} contentContainerStyle={{ padding: 20 }}>
+            {FavoriteMedicines()}
+            {FavoriteTests()}
+            {FavoriteAdvice()}
+            {/* {renderButtonsView()} */}
+          </ScrollView>
+        )}
       </SafeAreaView>
       {loading && <Spinner />}
       {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}

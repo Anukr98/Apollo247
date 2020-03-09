@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, APPOINTMENT_TYPE } from "./globalTypes";
+import { Gender, Relation, STATUS, APPOINTMENT_TYPE, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -79,6 +79,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   displayId: string;
   rescheduleCount: number;
   rescheduleCountByDoctor: number;
+  appointmentType: APPOINTMENT_TYPE;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty {

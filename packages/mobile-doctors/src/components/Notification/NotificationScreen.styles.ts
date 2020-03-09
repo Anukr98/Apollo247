@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
@@ -29,4 +30,5 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0f4f5',
   },
+  scrollArea: { flex: 1, backgroundColor: '#f7f7f7' },
 });

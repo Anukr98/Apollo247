@@ -120,7 +120,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
             <div key={index} className={classes.card}>
               <Link
                 className={classes.cardLink}
-                to={clientRoutes.searchByMedicine('Deals-of-the-day', deal.category_id)}
+                to={clientRoutes.searchByMedicine('deals-of-the-day', deal.category_id)}
               >
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>

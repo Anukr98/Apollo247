@@ -150,6 +150,7 @@ type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
   doctorNotification?: boolean;
+  blobName?: string;
 };
 
 type CartPushNotificationInput = {
@@ -737,6 +738,7 @@ export async function sendNotification(
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
         content: notificationBody,
+        file_id: pushNotificationInput.blobName,
       },
     };
   }
@@ -1831,31 +1833,52 @@ const sendDailyAppointmentSummary: Resolver<null, {}, NotificationsServiceContex
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctors = await doctorRepo.getAllDoctors('0');
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  doctors.forEach(async (doctor) => {
-    const appointments = await appointmentRepo.getDoctorAppointments(
-      doctor.id,
-      new Date(),
-      new Date()
-    );
-    let onlineAppointments = 0;
-    let physicalAppointments = 0;
-    appointments.forEach((appointment) => {
-      if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-        physicalAppointments++;
-      } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-        onlineAppointments++;
+  const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
+    let doctorsCount = 0;
+    doctors.forEach(async (doctor, index, array) => {
+      const appointments = await appointmentRepo.getDoctorAppointments(
+        doctor.id,
+        new Date(),
+        new Date()
+      );
+      let onlineAppointments = 0;
+      let physicalAppointments = 0;
+      appointments.forEach((appointment) => {
+        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+          physicalAppointments++;
+        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+          onlineAppointments++;
+        }
+      });
+      const totalAppointments = onlineAppointments + physicalAppointments;
+      if (totalAppointments > 0) {
+        doctorsCount++;
+        let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
+          '{0}',
+          doctor.firstName
+        ).replace('{1}', totalAppointments.toString());
+        const onlineAppointmentsText =
+          onlineAppointments > 0
+            ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
+            : '';
+        const physicalAppointmentsText =
+          physicalAppointments > 0
+            ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
+            : '';
+        messageBody += onlineAppointmentsText + physicalAppointmentsText;
+        sendBrowserNotitication(doctor.id, messageBody);
+        sendNotificationSMS(doctor.mobileNumber, messageBody);
+      }
+      if (index + 1 === array.length) {
+        resolve(doctorsCount);
       }
     });
-    const totalAppointments = onlineAppointments + physicalAppointments;
-    const messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace('{0}', doctor.firstName)
-      .replace('{1}', totalAppointments.toString())
-      .replace('{2}', onlineAppointments.toString())
-      .replace('{3}', physicalAppointments.toString());
-    sendBrowserNotitication(doctor.id, messageBody);
-    sendNotificationSMS(doctor.mobileNumber, messageBody);
   });
 
-  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', doctors.length.toString());
+  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace(
+    '{0}',
+    countOfNotifications.toString()
+  );
 };
 
 const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, string> = async (

@@ -103,7 +103,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
 
   const renderData = () => {
     return (
-      <View style={{ marginTop: 16 }}>
+      <View style={{ marginVertical: 16 }}>
         {arrayData.map((item) => (
           <View style={[styles.cardContainer]}>
             <TouchableOpacity
