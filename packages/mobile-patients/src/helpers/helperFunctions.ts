@@ -31,6 +31,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import WebEngage from 'react-native-webengage';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -715,11 +716,17 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
     });
 };
 
+const webengage = new WebEngage();
+
 export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes: Object) => {
-  // TODO: implementation
-  console.log('\n********* WebEngageEvent Start *********\n');
-  console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
-  console.log('\n********* WebEngageEvent End *********\n');
+  try {
+    console.log('\n********* WebEngageEvent Start *********\n');
+    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
+    console.log('\n********* WebEngageEvent End *********\n');
+    webengage.track(eventName, attributes);
+  } catch (error) {
+    console.log('********* Unable to post WebEngageEvent *********', { error });
+  }
 };
 
 export const postwebEngageAddToCartEvent = ({

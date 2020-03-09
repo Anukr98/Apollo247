@@ -12,6 +12,7 @@ import {
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
+  ShoppingCartItem,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -166,6 +167,16 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
         'Prescription Needed?': uploadPrescriptionRequired,
+        'Cart Items': cartItems.map(
+          (item) =>
+            ({
+              id: item.id,
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              specialPrice: item.specialPrice,
+            } as ShoppingCartItem)
+        ),
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
       postWebEngageEvent('Cart Viewed', eventAttributes);

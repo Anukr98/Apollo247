@@ -1,4 +1,4 @@
-type YesOrNo = 'Yes' | 'No';
+type YesOrNo = { value: 'Yes' | 'No' };
 
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
@@ -15,7 +15,7 @@ export interface WebEngageEvents {
     Email: string;
     'Referral Code'?: string;
   };
-  'Number of Profiles fetched': number;
+  'Number of Profiles fetched': { count: number };
 
   // ********** PharmacyEvents ********** \\
 
@@ -67,6 +67,7 @@ export interface WebEngageEvents {
     'Net after discount': number;
     'Prescription Needed?': boolean;
     'Cart ID'?: string;
+    'Cart Items': object[];
   };
   'Procced To Pay Clicked': {
     'Total items in cart': number;
@@ -128,7 +129,7 @@ export interface WebEngageEvents {
     experience: number;
     'language known': string; //Comma separated values
     Hospital: string;
-    'Available in': number;
+    'Available in': string;
   };
   'Consult Now clicked': {
     name: string;
@@ -136,7 +137,7 @@ export interface WebEngageEvents {
     experience: number;
     'language known': string; // Comma separated values
     Hospital: string;
-    'Available in': number;
+    'Available in': string;
     Source: 'List' | 'Profile'; // List/Profile
     'Patient Name': string;
     'Patient UHID': string;
@@ -145,6 +146,7 @@ export interface WebEngageEvents {
     Gender: string;
     'Mobile Number': number;
     'Customer ID': string;
+    slot: string;
   };
   // confirm the type of data for the below
   'Schedule for Later clicked': {
@@ -161,8 +163,17 @@ export interface WebEngageEvents {
     Gender: string;
     'Mobile Number': number;
     'Customer ID': string;
+    slot: string;
   };
-  'Slot Selected': string;
+  'Slot Selected': {
+    slot: string;
+    doctorName: string;
+    specialisation: string;
+    experience: number;
+    'language known': string; // Comma separated values
+    hospital: string;
+    consultType: 'clinic' | 'online';
+  };
   'Coupon Applied': {
     CouponCode: string;
     Discount: number;

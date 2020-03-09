@@ -343,7 +343,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickOk = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
-    const eventAttributes: WebEngageEvents['OTP Entered'] = 'Yes';
+    const eventAttributes: WebEngageEvents['OTP Entered'] = { value: 'Yes' };
     postWebEngageEvent('OTP Entered', eventAttributes);
 
     try {
@@ -515,7 +515,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
-        const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = 'Yes';
+        const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = { value: 'Yes' };
         postWebEngageEvent('Pre Apollo Customer', eventAttributes);
         navigateTo(AppRoutes.MultiSignup);
       } else {
@@ -524,7 +524,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       }
     } else {
       if (mePatient.firstName == '') {
-        const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = 'No';
+        const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = { value: 'No' };
         postWebEngageEvent('Pre Apollo Customer', eventAttributes);
         navigateTo(AppRoutes.SignUp);
       } else {

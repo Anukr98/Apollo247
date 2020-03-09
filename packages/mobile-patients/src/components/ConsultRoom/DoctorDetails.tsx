@@ -289,12 +289,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     availableInMin: number
   ) => {
     const eventAttributes: WebEngageEvents['Doctor profile viewed for consultation'] = {
-      name: doctorDetails.fullName!,
-      specialisation: doctorDetails.specialization!,
+      name: g(doctorDetails, 'fullName')!,
+      specialisation: g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
       experience: Number(doctorDetails.experience!),
-      'language known': doctorDetails.languages!,
+      'language known': g(doctorDetails, 'languages') || 'NA',
       Hospital: g(doctorDetails, 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'Available in': availableInMin,
+      'Available in': (availableInMin && `${availableInMin} minute(s)`) || '',
     };
     postWebEngageEvent('Doctor profile viewed for consultation', eventAttributes);
   };

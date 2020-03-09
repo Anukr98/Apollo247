@@ -27,7 +27,11 @@ import {
   UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { SavePrescriptionMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  formatAddress,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -141,12 +145,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
   const postwebEngageSubmitPrescriptionEvent = (orderId: string) => {
     const deliveryAddress = addresses.find((item) => item.zipcode == pinCode);
-    const deliveryAddressLine =
-      (deliveryAddress &&
-        [deliveryAddress.addressLine1, deliveryAddress.addressLine2]
-          .filter((val) => val)
-          .join(', ')) ||
-      '';
+    const deliveryAddressLine = (deliveryAddress && formatAddress(deliveryAddress)) || '';
     const eventAttributes: WebEngageEvents['Submit Prescription'] = {
       'Order ID': orderId,
       'Delivery type': deliveryAddressId ? 'home' : 'store pickup',

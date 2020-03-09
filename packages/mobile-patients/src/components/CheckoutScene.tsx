@@ -34,6 +34,7 @@ import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  formatAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -209,24 +210,20 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const postwebEngageCheckoutCompletedEvent = (orderAutoId: string) => {
     const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
     const store = storeId && stores.find((item) => item.storeid == storeId);
-    const shippingInformation = addr
-      ? [addr.addressLine1, addr.addressLine2].filter((val) => val).join(', ')
-      : store
-      ? store.address
-      : '';
+    const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
     const eventAttributes: WebEngageEvents['Checkout completed'] = {
       'Order ID': orderAutoId,
       'Order Type': 'Cart',
       'Prescription Required': uploadPrescriptionRequired,
-      'Prescription Added': true,
+      'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
       'Shipping information': shippingInformation, // (Home/Store address)
       'Total items in cart': cartItems.length,
       'Grand Total': cartTotal + deliveryCharges,
-      'Total Discount %': cartTotal,
+      'Total Discount %': Number(((couponDiscount / cartTotal) * 100).toFixed(2)),
       'Discount Amount': couponDiscount,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Payment status': 0,
+      'Payment status': 1,
     };
     postWebEngageEvent('Checkout completed', eventAttributes);
   };

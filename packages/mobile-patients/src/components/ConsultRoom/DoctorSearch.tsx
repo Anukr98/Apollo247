@@ -31,7 +31,12 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
-import { getNetStatus, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  isValidSearch,
+  postWebEngageEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -60,6 +65,7 @@ import {
 import moment from 'moment';
 import { getDoctorsBySpecialtyAndFilters } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { width } = Dimensions.get('window');
 
@@ -289,8 +295,24 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       });
   };
 
+  const postwebEngageSearchEvent = (searchInput: string) => {
+    const eventAttributes: WebEngageEvents['Start Consultation Search'] = {
+      'Find a Doctor': searchInput,
+      'Track Symptoms': '',
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent('Start Consultation Search', eventAttributes);
+  };
+
   const fetchSearchData = (searchTextString: string = searchText) => {
     if (searchTextString.length > 2) {
+      postwebEngageSearchEvent(searchTextString);
       setisSearching(true);
       client
         .query<SearchDoctorAndSpecialtyByName>({
