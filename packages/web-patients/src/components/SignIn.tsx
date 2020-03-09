@@ -268,6 +268,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                       focusPreviousInput();
                     }
                   }}
+                  title={'Please enter the otp'}
                 />
               </Grid>
             ))}
@@ -298,6 +299,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 setDisableResendOtpButton(true);
                 setDisableResendOtpButtonCounter(30);
               }}
+              title={'Request resend otp'}
             >
               Resend OTP
             </Button>
@@ -318,6 +320,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                   }
                 });
               }}
+              title={'Login'}
             >
               {isSigningIn || isSendingOtp || isVerifyingOtp ? (
                 <AphCircularProgress color="inherit" />
@@ -406,6 +409,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
                             </InputAdornment>
                           }
                           value={mobileNumber}
+                          title={'Please enter mobile number'}
                         />
                         <FormHelperText
                           component="div"
@@ -429,6 +433,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
                     aria-label="Sign in"
                     // disabled={Boolean(errors.mobileNumber) || !dirty}
                     disabled={!isMobileNumberValid(mobileNumber)}
+                    title={'Login'}
                   >
                     {isSendingOtp ? (
                       <AphCircularProgress color="inherit" />

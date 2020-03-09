@@ -225,13 +225,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     <div className={classes.root}>
       <div
         className={classes.topContent}
-        title={
-          doctorDetails.fullName
-            ? doctorDetails.fullName
-            : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                _toLower(doctorDetails.lastName)
-              )}`
-        }
         onClick={() => (window.location.href = clientRoutes.doctorDetails(doctorId))}
       >
         <Avatar
@@ -240,6 +233,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             doctorDetails.thumbnailUrl && doctorDetails.thumbnailUrl !== ''
               ? doctorDetails.thumbnailUrl
               : require('images/no_photo_icon_round.svg')
+          }
+          title={
+            doctorDetails.fullName
+              ? doctorDetails.fullName
+              : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+                  _toLower(doctorDetails.lastName)
+                )}`
           }
           className={classes.doctorAvatar}
         />
@@ -254,7 +254,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           ) : ( */}
           {availabilityMarkup()}
           {/* )} */}
-          <div className={classes.doctorName}>
+          <div
+            className={classes.doctorName}
+            title={
+              doctorDetails.fullName
+                ? doctorDetails.fullName
+                : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+                    _toLower(doctorDetails.lastName)
+                  )}`
+            }
+          >
             {doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
@@ -262,20 +271,23 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 )}`}
           </div>
           <div className={classes.doctorType}>
-            {doctorDetails.specialty ? doctorDetails.specialty.name : null}
-            <span className={classes.doctorExp}>
+            <span title={'Specialty'}>
+              {' '}
+              {doctorDetails.specialty ? doctorDetails.specialty.name : null}
+            </span>
+            <span className={classes.doctorExp} title={'Experiance'}>
               {doctorDetails.experience}{' '}
               {doctorDetails && parseInt(doctorDetails.experience || '1', 10) > 1 ? 'YRS' : 'YEAR'}
             </span>
           </div>
-          <div className={classes.doctorspecialty}>
+          <div className={classes.doctorspecialty} title={'Specialty'}>
             <p>
               {doctorDetails &&
                 doctorDetails.specialty &&
                 doctorDetails.specialty.userFriendlyNomenclature}
             </p>
           </div>
-          <div className={classes.doctorDetails}>
+          <div className={classes.doctorDetails} title={'Location'}>
             <p>{doctorDetails.qualification}</p>
             {
               <p>
@@ -317,7 +329,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }}
             className={classes.bottomAction}
           >
-            <AphButton fullWidth color="primary" className={classes.button} title={'Consult Now'}>
+            <AphButton
+              fullWidth
+              color="primary"
+              className={classes.button}
+              title={
+                getDiffInMinutes() > 0 && getDiffInMinutes() <= 60
+                  ? 'Consult now'
+                  : 'Book appointments'
+              }
+            >
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (

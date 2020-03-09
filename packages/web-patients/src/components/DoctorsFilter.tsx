@@ -389,6 +389,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                       }}
                       key={_uniqueId('cityName_')}
                       disabled={disableFilters}
+                      title={'Select city'}
                     >
                       {filterCityName}
                     </AphButton>

@@ -239,7 +239,7 @@ export const HeroBanner: React.FC = () => {
         </div>
       </div>
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Add New Member</AphDialogTitle>
         <AddNewProfile
           closeHandler={(isAddNewProfileDialogOpen: boolean) =>

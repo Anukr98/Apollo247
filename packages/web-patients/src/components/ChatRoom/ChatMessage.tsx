@@ -67,7 +67,7 @@ export const ChatMessage: React.FC = (props) => {
         <AphButton classes={{ root: classes.button }}>Cancel Consult</AphButton>
       </div>
       <AphDialog className={classes.modalDialog} open={isDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Reschedule</AphDialogTitle>
         <RescheduleMessage />
       </AphDialog>
