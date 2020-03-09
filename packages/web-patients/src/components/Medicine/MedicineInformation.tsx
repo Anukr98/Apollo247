@@ -365,7 +365,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           console.log(error);
         }
       })
-      .catch((error: any) => alert(error));
+      .catch((error: any) => console.log(error));
   };
 
   useEffect(() => {
