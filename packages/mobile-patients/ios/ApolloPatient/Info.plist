@@ -125,6 +125,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
@@ -141,5 +142,11 @@
 	<string>Light</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>WEGLicenseCode</key>
+	<string>in~~c2ab3529</string>
+	<key>WEGLogLevel</key>
+	<string>VERBOSE</string>
+	<key>WEGManualIntegration</key>
+	<true/>
 </dict>
 </plist>
