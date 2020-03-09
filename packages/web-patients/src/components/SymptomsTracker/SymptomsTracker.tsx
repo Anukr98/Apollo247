@@ -185,7 +185,7 @@ const useStyles = makeStyles((theme: Theme) => {
           },
         },
       },
-      '& hover': {
+      '& :active ': {
         color: '#fff !important',
         backgroundColor: '#fcb716 !important',
       },
@@ -296,7 +296,12 @@ export const SymptomsTracker: React.FC = () => {
                       <AphButton>MYSELF</AphButton>
                     </Link>
                     {/* <Link to={clientRoutes.symptomsTracker()}> */}
-                    <AphButton onClick={() => setSelectCurrentUser(true)}>SOMEONE ELSE</AphButton>
+                    <AphButton
+                      onClick={() => setSelectCurrentUser(true)}
+                      className={selectCurrentUser ? classes.activeButton : ''}
+                    >
+                      SOMEONE ELSE
+                    </AphButton>
                     {/* </Link> */}
                   </div>
                 </div>
