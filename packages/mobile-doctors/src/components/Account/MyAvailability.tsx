@@ -163,7 +163,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                       <ConsultationHoursCard
                         days={i.weekDay}
                         timing={fromatConsultationHours(i.startTime, i.endTime)}
-                        isAvailableForOnlineConsultation={i.consultMode.toLocaleLowerCase()}
+                        consultMode={i.consultMode}
                         //isAvailableForPhysicalConsultation={i!.consultType}
                         key={idx}
                         type="fixed"

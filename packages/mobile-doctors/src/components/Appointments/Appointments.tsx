@@ -263,12 +263,12 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
               // getAppointmentsApi(today);
             },
           },
-          {
-            icon: <DotIcon />,
-            onPress: () => {
-              // setDropdownVisible(true);
-            },
-          },
+          // {
+          //   icon: <DotIcon />,
+          //   onPress: () => {
+          //     // setDropdownVisible(true);
+          //   },
+          // },
         ]}
       />
     );

@@ -1219,6 +1219,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         textStyles={{
           marginTop: 10,
+          marginLeft: 37,
         }}
         rightIcons={[
           {
@@ -1234,8 +1235,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             ),
             onPress: () => {
               setHideView(!hideView);
-              setActiveTabIndex(tabsData[1].title);
-              startConsult && isAfter && setShowPopUp(true);
+              if (startConsult && isAfter) {
+                setActiveTabIndex(tabsData[1].title);
+                setShowPopUp(true);
+              }
             },
           },
           {
