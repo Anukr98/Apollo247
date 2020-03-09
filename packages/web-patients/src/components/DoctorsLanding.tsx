@@ -186,6 +186,7 @@ const searchObject: SearchObject = {
   language: [],
   dateSelected: '',
   specialtyName: '',
+  prakticeSpecialties: '',
 };
 
 export const DoctorsLanding: React.FC = (props) => {
@@ -196,10 +197,12 @@ export const DoctorsLanding: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
   const failedStatus = urlParams.get('status') ? String(urlParams.get('status')) : null;
-
+  const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
-  const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [disableFilters, setDisableFilters] = useState<boolean>(
+    prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? false : true
+  );
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
@@ -229,6 +232,7 @@ export const DoctorsLanding: React.FC = (props) => {
         gender: [],
         language: [],
         dateSelected: '',
+        prakticeSpecialties: '',
       });
       setShowSearchAndPastSearch(false);
     }
@@ -361,16 +365,17 @@ export const DoctorsLanding: React.FC = (props) => {
                     </div>
                   </a>
                   Doctors / Specialities
-                  {specialitySelected.length > 0 && (
-                    <AphButton
-                      className={classes.filterBtn}
-                      onClick={() => {
-                        setShowResponsiveFilter(true);
-                      }}
-                    >
-                      <img src={require('images/ic_filter.svg')} alt="" />
-                    </AphButton>
-                  )}
+                  {specialitySelected.length > 0 ||
+                    (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 && (
+                      <AphButton
+                        className={classes.filterBtn}
+                        onClick={() => {
+                          setShowResponsiveFilter(true);
+                        }}
+                      >
+                        <img src={require('images/ic_filter.svg')} alt="" />
+                      </AphButton>
+                    ))}
                 </div>
                 <div className={classes.doctorListingSection}>
                   <DoctorsFilter
@@ -394,11 +399,17 @@ export const DoctorsLanding: React.FC = (props) => {
                   />
                   <div className={classes.searchSection}>
                     {!loading ? (
-                      specialitySelected.length > 0 ? (
+                      specialitySelected.length > 0 ||
+                      (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) ? (
                         <DoctorsListing
                           filter={filterOptions}
                           specialityName={specialityNames[0]}
                           specialityId={derivedSpecialityId}
+                          prakticeSDKSpecialties={
+                            prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0
+                              ? prakticeSDKSpecialties
+                              : ''
+                          }
                         />
                       ) : (
                         <Scrollbars

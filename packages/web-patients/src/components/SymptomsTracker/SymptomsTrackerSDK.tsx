@@ -141,7 +141,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       color: '#02475b',
       letterSpacing: 0.33,
-      textTransform: 'uppercase',
+      textTransform: 'capitalize',
       paddingTop: 7,
       paddingBottom: 6,
       paddingLeft: 4,
@@ -293,9 +293,6 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
                   localStorage.setItem('symptomTracker', specialitiesEncoded);
                   setIsRedirect(true);
                   props.setDoctorPopOver(true);
-                  // if (isRedirect) {
-                  //   history.push(clientRoutes.doctorsLanding());
-                  // }
                 }
               }
             }}
@@ -311,6 +308,7 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 export const SymptomsTrackerSDK: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const isMediumScreen = useMediaQuery('(max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [showPopup, setShowPopup] = useState(true);
@@ -318,7 +316,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
-  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
       ? moment()
@@ -331,169 +328,168 @@ export const SymptomsTrackerSDK: React.FC = () => {
   return (
     <div className={classes.root}>
       <Header />
-      <div className={classes.container}>
-        <div className={classes.pageContainer}>
-          <div className={classes.pageHeader}>
-            <Link to={clientRoutes.symptomsTrackerFor()}>
-              <div className={classes.backArrow}>
-                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
-            </Link>
-            Consult a doctor
-          </div>
-          <Scrollbars
-            autoHide={true}
-            autoHeight
-            autoHeightMin={
-              isSmallScreen
-                ? 'calc(100vh - 135px)'
-                : isMediumScreen
-                ? 'calc(100vh - 205px)'
-                : 'calc(100vh - 155px)'
-            }
-          >
-            <div className={classes.subHeader}>
-              <div className={classes.leftCol}></div>
-              <div className={classes.rightCol}>
-                <div className={classes.profileDropdown}>
-                  For
-                  <AphCustomDropdown
-                    classes={{ selectMenu: classes.selectMenuItem }}
-                    value={currentPatient && currentPatient.id}
-                    onChange={(e) => {
-                      setCurrentPatientId(e.target.value as Patient['id']);
-                    }}
-                  >
-                    {allCurrentPatients &&
-                      allCurrentPatients.length > 0 &&
-                      currentPatient &&
-                      allCurrentPatients.map((patient) => {
-                        const isSelected = patient && patient.id === currentPatient.id;
-                        const name = isSelected
-                          ? (patient.firstName || '').toLocaleLowerCase()
-                          : (patient.firstName || '').toLocaleLowerCase();
-                        return (
-                          <MenuItem
-                            selected={isSelected}
-                            value={patient.id}
-                            classes={{ selected: classes.menuSelected }}
-                            key={patient.id}
-                          >
-                            {name}
-                          </MenuItem>
-                        );
-                      })}
-                    <MenuItem classes={{ selected: classes.menuSelected }}>
-                      <AphButton
-                        color="primary"
-                        classes={{ root: classes.addMemberBtn }}
-                        onClick={() => {
-                          setIsAddNewProfileDialogOpen(true);
-                        }}
-                      >
-                        Add Member
-                      </AphButton>
-                    </MenuItem>
-                  </AphCustomDropdown>
+      {currentPatient && currentPatient.id.length > 0 && (
+        <div className={classes.container}>
+          <div className={classes.pageContainer}>
+            <div className={classes.pageHeader}>
+              <Link to={clientRoutes.symptomsTrackerFor()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </Link>
+              Consult a doctor
+            </div>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMin={
+                isSmallScreen
+                  ? 'calc(100vh - 135px)'
+                  : isMediumScreen
+                  ? 'calc(100vh - 205px)'
+                  : 'calc(100vh - 155px)'
+              }
+            >
+              <div className={classes.subHeader}>
+                <div className={classes.leftCol}></div>
+                <div className={classes.rightCol}>
+                  <div className={classes.profileDropdown}>
+                    For
+                    <AphCustomDropdown
+                      classes={{ selectMenu: classes.selectMenuItem }}
+                      value={currentPatient && currentPatient.id}
+                      onChange={(e) => {
+                        setCurrentPatientId(e.target.value as Patient['id']);
+                      }}
+                    >
+                      {allCurrentPatients &&
+                        allCurrentPatients.length > 0 &&
+                        currentPatient &&
+                        allCurrentPatients.map((patient) => {
+                          const isSelected = patient && patient.id === currentPatient.id;
+                          const name = (patient.firstName || '').toLocaleLowerCase();
+                          return (
+                            <MenuItem
+                              selected={isSelected}
+                              value={patient.id}
+                              classes={{ selected: classes.menuSelected }}
+                              key={patient.id}
+                            >
+                              {name}
+                            </MenuItem>
+                          );
+                        })}
+                      <MenuItem classes={{ selected: classes.menuSelected }}>
+                        <AphButton
+                          color="primary"
+                          classes={{ root: classes.addMemberBtn }}
+                          onClick={() => {
+                            setIsAddNewProfileDialogOpen(true);
+                          }}
+                        >
+                          Add Member
+                        </AphButton>
+                      </MenuItem>
+                    </AphCustomDropdown>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={classes.symptomsTracker}>
-              <NavigatorSDK
-                clientId={process.env.PRAKTICE_SDK_KEY}
-                key={currentPatient && currentPatient.id}
-                patientAge={patientAge}
-                patientGender={patientGender}
-                sdkContainerStyle={customContainerStyle}
-                showDocBtn={() => (
-                  <CustomComponent
-                    // setDoctorPopOver={(flag: boolean) => setDoctorPopOver()}
-                    setDoctorPopOver={setDoctorPopOver}
-                    doctorPopover={doctorPopover}
-                    stopRedirect={stopRedirect}
-                  />
-                )}
-              />
-            </div>
-          </Scrollbars>
-        </div>
 
-        <Popover
-          open={showPopup}
-          anchorEl={anchorEl}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
+              <div className={classes.symptomsTracker}>
+                <NavigatorSDK
+                  clientId={process.env.PRAKTICE_SDK_KEY}
+                  key={currentPatient && currentPatient.id}
+                  patientAge={patientAge}
+                  patientGender={patientGender}
+                  sdkContainerStyle={customContainerStyle}
+                  showDocBtn={() => (
+                    <CustomComponent
+                      setDoctorPopOver={setDoctorPopOver}
+                      doctorPopover={doctorPopover}
+                      stopRedirect={stopRedirect}
+                    />
+                  )}
+                />
               </div>
-              <div className={classes.contentGroup}>
-                <Typography variant="h3">Hi! :)</Typography>
-                <p>Please pick or type the symptom most closely relating to your condition</p>
-                <div className={classes.bottomActions}>
-                  <AphButton
-                    color="primary"
-                    classes={{ root: classes.addMemberBtn }}
-                    onClick={() => {
-                      setShowPopup(false);
-                    }}
-                  >
-                    OK, GOT It
-                  </AphButton>
+            </Scrollbars>
+          </div>
+
+          <Popover
+            open={showPopup}
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            classes={{ paper: classes.bottomPopover }}
+          >
+            <div className={classes.successPopoverWindow}>
+              <div className={classes.windowWrap}>
+                <div className={classes.mascotIcon}>
+                  <img src={require('images/ic-mascot.png')} alt="" />
+                </div>
+                <div className={classes.contentGroup}>
+                  <Typography variant="h3">Hi! :)</Typography>
+                  <p>Please pick or type the symptom most closely relating to your condition</p>
+                  <div className={classes.bottomActions}>
+                    <AphButton
+                      color="primary"
+                      classes={{ root: classes.addMemberBtn }}
+                      onClick={() => {
+                        setShowPopup(false);
+                      }}
+                    >
+                      OK, GOT It
+                    </AphButton>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Popover>
-        <Popover
-          open={doctorPopover}
-          anchorEl={anchorEl}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
-              </div>
-              <div className={classes.contentGroup}>
-                <Typography variant="h3">Hi! :)</Typography>
-                <p>We're finding the earliest available general physican for you</p>
-                <div className={classes.bottomActions}>
-                  <AphButton
-                    color="primary"
-                    classes={{ root: classes.addMemberBtn }}
-                    onClick={() => {
-                      setDoctorPopOver(false);
-                      setStopRedirect('stop');
-                      // history.push(clientRoutes.doctorsLanding());
-                    }}
-                  >
-                    NO, WAIT
-                  </AphButton>
+          </Popover>
+          <Popover
+            open={doctorPopover}
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            classes={{ paper: classes.bottomPopover }}
+          >
+            <div className={classes.successPopoverWindow}>
+              <div className={classes.windowWrap}>
+                <div className={classes.mascotIcon}>
+                  <img src={require('images/ic-mascot.png')} alt="" />
+                </div>
+                <div className={classes.contentGroup}>
+                  <Typography variant="h3">Hi! :)</Typography>
+                  <p>We're finding the earliest available doctors for you</p>
+                  <div className={classes.bottomActions}>
+                    <AphButton
+                      color="primary"
+                      classes={{ root: classes.addMemberBtn }}
+                      onClick={() => {
+                        setDoctorPopOver(false);
+                        setStopRedirect('stop');
+                      }}
+                    >
+                      NO, WAIT
+                    </AphButton>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Popover>
-      </div>
+          </Popover>
+        </div>
+      )}
       {isSignedIn && <NavigationBottom />}
     </div>
   );
