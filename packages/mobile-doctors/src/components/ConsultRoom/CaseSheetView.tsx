@@ -259,7 +259,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const setData = () => {
     const caseSheet = props.caseSheet;
-    if (g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED) {
+    if (
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED &&
+      !g(caseSheet, 'caseSheetDetails', 'sentToPatient')
+    ) {
       setShowEditPreviewButtons(true);
       prescriptionView();
     }

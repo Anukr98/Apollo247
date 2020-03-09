@@ -436,28 +436,26 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             onChange={(e) => {
                               const inputValue = e.target.value;
                               setReferralCode(inputValue.toUpperCase());
-                            }}
-                            inputProps={{ type: 'text', maxLength: 9 }}
-                            onBlur={() => {
-                              if (referralCode.length > 0) {
-                                const alphabets = referralCode.substr(0, 4);
-                                const digits = referralCode.substr(4, 5);
+                              if (inputValue.length > 0) {
+                                const alphabets = inputValue.substr(0, 4);
+                                const digits = inputValue.substr(4, 4);
                                 const isValidReferralCode =
                                   /^[a-zA-Z]+$/.test(alphabets) &&
                                   alphabets.length === 4 &&
                                   /^\d+$/.test(digits) &&
-                                  digits.length === 5;
+                                  digits.length === 4;
                                 setIsValidReferralCode(isValidReferralCode);
                               }
                             }}
+                            inputProps={{ type: 'text', maxLength: 8 }}
                           />
-                          {!isValidReferralCode ? (
+                          {!isValidReferralCode && referralCode.length === 8 ? (
                             <FormHelperText
                               className={classes.errorMessage}
                               component="div"
                               error={true}
                             >
-                              Referral code should start with 4 alphabets follwed by 5 digits.
+                              Referral code should start with 4 alphabets follwed by 4 digits.
                             </FormHelperText>
                           ) : (
                             ''

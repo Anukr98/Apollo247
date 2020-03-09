@@ -966,9 +966,9 @@ const updatePatientPrescriptionSentStatus: Resolver<
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
+      blobName: getCaseSheetData.blobName,
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
-
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,

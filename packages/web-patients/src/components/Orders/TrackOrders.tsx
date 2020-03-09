@@ -268,6 +268,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               selected: classes.tabSelected,
             }}
             label="Track Order"
+            title={'Open track orders'}
           />
           <Tab
             classes={{
@@ -275,6 +276,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               selected: classes.tabSelected,
             }}
             label="Order Summary"
+            title={'Open order summary'}
           />
         </Tabs>
         {tabValue === 0 && (
@@ -325,7 +327,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         )}
       </div>
       <AphDialog open={isCancelOrderDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Cancel Order</AphDialogTitle>
         <CancelOrder
           setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
@@ -333,7 +335,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         />
       </AphDialog>
       <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Return Order</AphDialogTitle>
         <ReturnOrder
           setIsReturnOrderDialogOpen={setIsReturnOrderDialogOpen}

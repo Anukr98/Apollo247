@@ -1,8 +1,8 @@
 //
-//  File.swift
-//  ApolloPatient
+//  OTInstall.swift
+//  ApolloDoctor
 //
-//  Created by Nirosha Kayala on 1/2/20.
+//  Created by Nirosha Kayala on 3/6/20.
 //  Copyright © 2020 Facebook. All rights reserved.
 //
 

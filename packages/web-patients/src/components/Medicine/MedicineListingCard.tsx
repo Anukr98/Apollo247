@@ -162,8 +162,13 @@ export const MedicineListingCard: React.FC = (props) => {
     <div className={classes.root}>
       {/** medice card normal state */}
       {cartItems &&
-        cartItems.map((item, index) => (
-          <div key={item.id} className={classes.medicineStrip}>
+        cartItems.map((item) => (
+          <div
+            key={item.id}
+            className={`${classes.medicineStrip} ${
+              item.is_in_stock ? '' : classes.medicineStripDisabled
+            }`}
+          >
             <div className={classes.medicineStripWrap}>
               <div className={classes.medicineInformation}>
                 <div className={classes.medicineIcon}>

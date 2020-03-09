@@ -278,7 +278,7 @@ export const SymptomsTracker: React.FC = () => {
               </div>
             </Scrollbars>
             <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-              <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} />
+              <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
               <AphDialogTitle>Add New Member</AphDialogTitle>
               <AddNewProfile
                 closeHandler={(isAddNewProfileDialogOpen: boolean) =>

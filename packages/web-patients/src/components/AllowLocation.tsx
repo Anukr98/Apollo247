@@ -66,7 +66,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
             props.setIsLocationPopoverOpen(true);
             props.setDetectBy && props.setDetectBy('manual');
           }}
-          title={"Enter Manualy"}
+          title={'Enter Manualy'}
         >
           Enter Manualy
         </AphButton>
@@ -77,11 +77,11 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
             props.setDetectBy && props.setDetectBy('auto');
             locateCurrentLocation();
           }}
-          title={"Allow Auto Detect"}
+          title={'Allow Auto Detect'}
         >
           Allow Auto Detect
         </AphButton>
       </div>
-    </div >
+    </div>
   );
 };
