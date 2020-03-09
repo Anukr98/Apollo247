@@ -738,6 +738,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               props.navigation.navigate(AppRoutes.ChatRoom, {
                                 data: item,
                                 callType: '',
+                                prescription: '',
                               });
                             }
                           }}
@@ -765,6 +766,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             props.navigation.navigate(AppRoutes.ChatRoom, {
                               data: item,
                               callType: '',
+                              prescription: '',
                             });
                           }
                         }}

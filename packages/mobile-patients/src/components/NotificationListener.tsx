@@ -71,7 +71,8 @@ type CustomNotificationType =
   | 'Registration_Success'
   | 'Patient_Cancel_Appointment'
   | 'Patient_Noshow_Reschedule_Appointment'
-  | 'Appointment_Canceled';
+  | 'Appointment_Canceled'
+  | 'PRESCRIPTION_READY';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -162,7 +163,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
   const showChatRoomAlert = (
     data: { content: string; appointmentId: string } | any,
-    notificationType: CustomNotificationType
+    notificationType: CustomNotificationType,
+    prescription: string
   ) => {
     const description = data.content;
     const appointmentId = data.appointmentId;
@@ -179,7 +181,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           text: 'CONSULT ROOM',
           onPress: () => {
             hideAphAlert!();
-            getAppointmentData(appointmentId, notificationType, '');
+            getAppointmentData(appointmentId, notificationType, '', prescription);
           },
           type: 'orange-button',
         },
@@ -214,7 +216,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'call_started' ||
       notificationType === 'Appointment_Canceled' ||
       notificationType === 'Patient_Noshow_Reschedule_Appointment' ||
-      notificationType === 'Reschedule_Appointment'
+      notificationType === 'Reschedule_Appointment' ||
+      notificationType === 'PRESCRIPTION_READY'
     ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
@@ -254,7 +257,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   console.log(
                     `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
                   );
-                  getAppointmentData(data.appointmentId, notificationType, '');
+                  getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
                 type: 'orange-button',
               },
@@ -331,7 +334,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   console.log(
                     `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
                   );
-                  getAppointmentData(data.appointmentId, notificationType, '');
+                  getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
                 type: 'orange-button',
               },
@@ -469,7 +472,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 type: 'orange-button',
                 onPress: () => {
                   console.log('data.appointmentId', data.appointmentId);
-                  getAppointmentData(data.appointmentId, notificationType, '');
+                  getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
               },
             ],
@@ -498,12 +501,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'Reminder_Appointment_15': // 15 min, case sheet present
         {
-          showChatRoomAlert(data, 'Reminder_Appointment_15');
+          showChatRoomAlert(data, 'Reminder_Appointment_15', '');
         }
         break;
       case 'Reminder_Appointment_Casesheet_15': // 15 min, no case sheet
         {
-          showChatRoomAlert(data, 'Reminder_Appointment_Casesheet_15');
+          showChatRoomAlert(data, 'Reminder_Appointment_Casesheet_15', '');
         }
         break;
 
@@ -521,6 +524,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             } will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor`,
             unDismissable: true,
           });
+        }
+        break;
+
+      case 'PRESCRIPTION_READY': // 15 min, no case sheet
+        {
+          showChatRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
 
@@ -717,7 +726,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                     text: 'CONSULT ROOM',
                     type: 'orange-button',
                     onPress: () => {
-                      getAppointmentData(appointmentId, notificationType, callType);
+                      getAppointmentData(appointmentId, notificationType, callType, '');
                     },
                   },
                 ],
@@ -741,7 +750,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   const getAppointmentData = (
     appointmentId: string,
     notificationType: CustomNotificationType,
-    callType: string
+    callType: string,
+    prescription: string
   ) => {
     aphConsole.log('getAppointmentData', appointmentId, notificationType, callType);
     setLoading && setLoading(true);
@@ -786,13 +796,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               notificationType == 'call_started' ||
               notificationType == 'chat_room' ||
               notificationType == 'Reminder_Appointment_15' ||
-              notificationType == 'Reminder_Appointment_Casesheet_15'
+              notificationType == 'Reminder_Appointment_Casesheet_15' ||
+              notificationType == 'PRESCRIPTION_READY'
             ) {
               try {
                 if (appointmentData[0]!.doctorInfo !== null) {
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],
                     callType: callType,
+                    prescription: prescription,
                   });
                 }
               } catch (error) {}
