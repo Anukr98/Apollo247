@@ -10,7 +10,7 @@ import _compact from 'lodash/compact';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
-import { format, addDays } from 'date-fns';
+// import { format, addDays } from 'date-fns';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConsultMode } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -292,6 +292,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
 
+  // console.log('loading state.....', loading);
+
   // if (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) {
   //   apiVairables['specialty'] = '';
   //   apiVairables['specialtyName'] =
@@ -513,7 +515,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             <div className={classes.circlularProgress}>
               <CircularProgress />
             </div>
-          )}{' '}
+          )}
         </>
       )}
     </div>

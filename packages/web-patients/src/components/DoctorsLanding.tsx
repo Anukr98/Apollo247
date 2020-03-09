@@ -7,9 +7,6 @@ import { PastSearches } from 'components/PastSearches';
 import { Specialities } from 'components/Specialities';
 import { DoctorCard } from 'components/DoctorCard';
 import { DoctorsListing } from 'components/DoctorsListing';
-import _uniqueId from 'lodash/uniqueId';
-import _map from 'lodash/map';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { SearchObject } from 'components/DoctorsFilter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
@@ -17,13 +14,14 @@ import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { Link } from 'react-router-dom';
 import { AphButton } from '@aph/web-ui-components';
 import {
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _find from 'lodash/find';
+import _uniqueId from 'lodash/uniqueId';
+import _map from 'lodash/map';
 import { MascotWithMessage } from './MascotWithMessage';
 import { LocationContext } from './LocationProvider';
 
@@ -335,7 +333,7 @@ export const DoctorsLanding: React.FC = (props) => {
       ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       : [];
 
-  // console.log(filteredSpecialties);
+  console.log('in Doctors Landing.......');
 
   if (
     !loading &&
@@ -355,7 +353,14 @@ export const DoctorsLanding: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.doctorListingPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => window.history.back()}>
+                  <a
+                    onClick={() => {
+                      window.history.back();
+                      if (localStorage.getItem('symptomTracker')) {
+                        localStorage.removeItem('symptomTracker');
+                      }
+                    }}
+                  >
                     <div className={classes.backArrow} title={'Back to home page'}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                       <img
@@ -381,7 +386,7 @@ export const DoctorsLanding: React.FC = (props) => {
                   <DoctorsFilter
                     handleFilterOptions={(filterOptions) => setFilterOptions(filterOptions)}
                     existingFilters={filterOptions}
-                    disableFilters={disableFilters}
+                    disableFilters={disableFilters || loading}
                     showError={showError}
                     showNormal={(showSearchAndPastSearch) => {
                       setShowSearchAndPastSearch(showSearchAndPastSearch);
