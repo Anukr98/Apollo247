@@ -7,9 +7,6 @@ import { PastSearches } from 'components/PastSearches';
 import { Specialities } from 'components/Specialities';
 import { DoctorCard } from 'components/DoctorCard';
 import { DoctorsListing } from 'components/DoctorsListing';
-import _uniqueId from 'lodash/uniqueId';
-import _map from 'lodash/map';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { SearchObject } from 'components/DoctorsFilter';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
@@ -17,13 +14,14 @@ import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { Link } from 'react-router-dom';
 import { AphButton } from '@aph/web-ui-components';
 import {
   SearchDoctorAndSpecialtyByNameVariables,
   SearchDoctorAndSpecialtyByName,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _find from 'lodash/find';
+import _uniqueId from 'lodash/uniqueId';
+import _map from 'lodash/map';
 import { MascotWithMessage } from './MascotWithMessage';
 import { LocationContext } from './LocationProvider';
 
@@ -186,6 +184,7 @@ const searchObject: SearchObject = {
   language: [],
   dateSelected: '',
   specialtyName: '',
+  prakticeSpecialties: '',
 };
 
 export const DoctorsLanding: React.FC = (props) => {
@@ -196,10 +195,12 @@ export const DoctorsLanding: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
   const failedStatus = urlParams.get('status') ? String(urlParams.get('status')) : null;
-
+  const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
-  const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [disableFilters, setDisableFilters] = useState<boolean>(
+    prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? false : true
+  );
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
@@ -229,6 +230,7 @@ export const DoctorsLanding: React.FC = (props) => {
         gender: [],
         language: [],
         dateSelected: '',
+        prakticeSpecialties: '',
       });
       setShowSearchAndPastSearch(false);
     }
@@ -331,7 +333,7 @@ export const DoctorsLanding: React.FC = (props) => {
       ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       : [];
 
-  // console.log(filteredSpecialties);
+  console.log('in Doctors Landing.......');
 
   if (
     !loading &&
@@ -351,7 +353,14 @@ export const DoctorsLanding: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.doctorListingPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => window.history.back()}>
+                  <a
+                    onClick={() => {
+                      window.history.back();
+                      if (localStorage.getItem('symptomTracker')) {
+                        localStorage.removeItem('symptomTracker');
+                      }
+                    }}
+                  >
                     <div className={classes.backArrow} title={'Back to home page'}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                       <img
@@ -361,22 +370,23 @@ export const DoctorsLanding: React.FC = (props) => {
                     </div>
                   </a>
                   Doctors / Specialities
-                  {specialitySelected.length > 0 && (
-                    <AphButton
-                      className={classes.filterBtn}
-                      onClick={() => {
-                        setShowResponsiveFilter(true);
-                      }}
-                    >
-                      <img src={require('images/ic_filter.svg')} alt="" />
-                    </AphButton>
-                  )}
+                  {specialitySelected.length > 0 ||
+                    (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 && (
+                      <AphButton
+                        className={classes.filterBtn}
+                        onClick={() => {
+                          setShowResponsiveFilter(true);
+                        }}
+                      >
+                        <img src={require('images/ic_filter.svg')} alt="" />
+                      </AphButton>
+                    ))}
                 </div>
                 <div className={classes.doctorListingSection}>
                   <DoctorsFilter
                     handleFilterOptions={(filterOptions) => setFilterOptions(filterOptions)}
                     existingFilters={filterOptions}
-                    disableFilters={disableFilters}
+                    disableFilters={disableFilters || loading}
                     showError={showError}
                     showNormal={(showSearchAndPastSearch) => {
                       setShowSearchAndPastSearch(showSearchAndPastSearch);
@@ -394,11 +404,17 @@ export const DoctorsLanding: React.FC = (props) => {
                   />
                   <div className={classes.searchSection}>
                     {!loading ? (
-                      specialitySelected.length > 0 ? (
+                      specialitySelected.length > 0 ||
+                      (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) ? (
                         <DoctorsListing
                           filter={filterOptions}
                           specialityName={specialityNames[0]}
                           specialityId={derivedSpecialityId}
+                          prakticeSDKSpecialties={
+                            prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0
+                              ? prakticeSDKSpecialties
+                              : ''
+                          }
                         />
                       ) : (
                         <Scrollbars
