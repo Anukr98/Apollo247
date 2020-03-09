@@ -129,7 +129,7 @@ interface ApplyCouponProps {
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
 
-  // const [selectCouponCode, setSelectCouponCode] = useState<string>('');
+  const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<
     (getCoupons_getCoupons_coupons | null)[]
   >([]);
@@ -169,20 +169,26 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                <div className={classes.pinSearch}>
-                  <AphTextField value={props.couponCode} placeholder="CouponCode" />
-                  <div className={classes.pinActions}>
-                    {props.couponCode.length > 0 ? (
-                      <div className={classes.tickMark}>
-                        <img src={require('images/ic_tickmark.svg')} alt="" />
-                      </div>
-                    ) : (
-                      <AphButton className={classes.searchBtn}>
-                        <img src={require('images/ic_send.svg')} alt="" />
-                      </AphButton>
-                    )}
+                {availableCoupons.length > 0 && (
+                  <div className={classes.pinSearch}>
+                    <AphTextField
+                      value={selectCouponCode}
+                      onChange={(e) => setSelectCouponCode(e.target.value)}
+                      placeholder="CouponCode"
+                    />
+                    <div className={classes.pinActions}>
+                      {props.couponCode.length > 0 ? (
+                        <div className={classes.tickMark}>
+                          <img src={require('images/ic_tickmark.svg')} alt="" />
+                        </div>
+                      ) : (
+                        <AphButton className={classes.searchBtn}>
+                          <img src={require('images/ic_send.svg')} alt="" />
+                        </AphButton>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
                 {/* <div className={classes.pinErrorMsg}>Invalid Coupon Code</div> */}
                 <div className={classes.sectionHeader}>Coupons For You</div>
                 <ul>
@@ -205,7 +211,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                                 </span>
                               }
                               onChange={() => {
-                                // setSelectCouponCode(couponDetails.code);
+                                setSelectCouponCode(couponDetails.code);
                                 props.setCouponCode(couponDetails.code);
                               }}
                               disabled={props.cartValue < 200}
