@@ -14,8 +14,6 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AphCustomDropdown } from '@aph/web-ui-components';
 import { AphButton } from '@aph/web-ui-components';
-import { MascotWithMessage } from '../MascotWithMessage';
-import { AphSelect } from '@aph/web-ui-components';
 import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
@@ -318,13 +316,19 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [showPopup, setShowPopup] = useState(true);
   const [doctorPopover, setDoctorPopOver] = useState(false);
   const [stopRedirect, setStopRedirect] = useState('continue');
-  const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  const patientAge: string = moment()
-    .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
-    .toString();
-  const patientGender = currentPatient && currentPatient.gender;
+  const patientAge =
+    currentPatient && currentPatient.dateOfBirth
+      ? moment()
+          .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
+          .toString()
+      : '';
+  const patientGender =
+    currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : '';
+
+  console.log(patientAge, patientGender);
 
   return (
     <div className={classes.root}>
@@ -400,8 +404,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
             <div className={classes.symptomsTracker}>
               <NavigatorSDK
                 clientId={process.env.PRAKTICE_SDK_KEY}
-                patientAge="30"
-                patientGender="male"
+                key={currentPatient && currentPatient.id}
+                patientAge={patientAge}
+                patientGender={patientGender}
                 sdkContainerStyle={customContainerStyle}
                 showDocBtn={() => (
                   <CustomComponent
