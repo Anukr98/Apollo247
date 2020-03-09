@@ -207,7 +207,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                     </div>
                   </div>
                 </Link>
-                {medicine.is_in_stock && (
+                {medicine.is_in_stock ? (
                   <div className={classes.cartRight}>
                     {itemIndexInCart(medicine) !== -1 ? (
                       <>
@@ -299,7 +299,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           ))
