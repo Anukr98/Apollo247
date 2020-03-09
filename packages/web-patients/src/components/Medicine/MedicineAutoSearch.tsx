@@ -123,9 +123,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchBtnDisabled: {
       opacity: 0.5,
-      '& img': {
-        filter: 'grayscale(100%)',
-      },
     },
     progressLoader: {
       textAlign: 'center',
