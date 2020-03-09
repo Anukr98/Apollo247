@@ -387,18 +387,21 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
             <AphButton
               className={filter === 'ALL' ? classes.buttonActive : ''}
               onClick={() => setFilter('ALL')}
+              title={'View all consults'}
             >
               All Consults
             </AphButton>
             <AphButton
               className={filter === 'ONLINE' ? classes.buttonActive : ''}
               onClick={() => setFilter('ONLINE')}
+              title={'View online consults'}
             >
               Online
             </AphButton>
             <AphButton
               className={filter === 'PHYSICAL' ? classes.buttonActive : ''}
               onClick={() => setFilter('PHYSICAL')}
+              title={'View physical consults'}
             >
               Physical
             </AphButton>

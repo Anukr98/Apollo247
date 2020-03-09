@@ -549,6 +549,7 @@ export const Appointments: React.FC = (props) => {
                   selected: classes.tabSelected,
                 }}
                 label="Active"
+                title={'Active appointments'}
               />
               <Tab
                 classes={{
@@ -556,6 +557,7 @@ export const Appointments: React.FC = (props) => {
                   selected: classes.tabSelected,
                 }}
                 label="Past"
+                title={'Past appointments'}
               />
             </Tabs>
 

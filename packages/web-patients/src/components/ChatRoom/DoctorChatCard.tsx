@@ -80,7 +80,7 @@ export const DoctorChatCard: React.FC<DoctorChatCardProps> = (props) => {
         <AphButton onClick={() => setIsDialogOpen(true)}>Choose Another Doctor</AphButton>
       </div>
       <AphDialog open={isDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Choose Doctor</AphDialogTitle>
         <ChooseDoctor />
       </AphDialog>

@@ -350,9 +350,9 @@ export const DoctorsLanding: React.FC = (props) => {
             <Header />
             <div className={classes.container}>
               <div className={classes.doctorListingPage}>
-                <div className={classes.breadcrumbs} title={'Back to home page'}>
+                <div className={classes.breadcrumbs}>
                   <a onClick={() => window.history.back()}>
-                    <div className={classes.backArrow}>
+                    <div className={classes.backArrow} title={'Back to home page'}>
                       <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                       <img
                         className={classes.whiteArrow}
