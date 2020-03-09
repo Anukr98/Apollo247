@@ -16,4 +16,5 @@ export default StyleSheet.create({
     fontSize: 15,
     color: '#003646',
   },
+  receivecall: { marginLeft: 20, marginBottom: 32 },
 });

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet, Platform } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -30,7 +31,7 @@ export default StyleSheet.create({
     marginBottom: 26,
     paddingTop: 16,
     paddingBottom: 15,
-    //position: Platform.OS == 'android' ? 'relative' : 'absolute',
+
     top: 0,
     zIndex: 2,
     width: '80%',
@@ -42,5 +43,31 @@ export default StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 20,
     elevation: 16,
+  },
+  addDoctView: {
+    flexDirection: 'row',
+    margin: 20,
+    marginTop: 7,
+  },
+  selectDoctorFieldView: {
+    ...theme.viewStyles.whiteRoundedCornerCard,
+    margin: 20,
+    marginTop: 0,
+    borderRadius: 10,
+  },
+  seleDoctText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#02475b',
+    opacity: 0.4,
+    marginTop: 10,
+    marginBottom: 9,
+  },
+  selectDoctView: { flexDirection: 'row', justifyContent: 'space-between' },
+  dropdownView: { alignItems: 'flex-end', alignSelf: 'flex-end' },
+  touchableView: {
+    marginTop: 8,
+    marginBottom: 7,
+    height: 1,
+    opacity: 0.1,
   },
 });

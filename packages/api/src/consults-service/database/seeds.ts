@@ -1,7 +1,6 @@
 import { connect } from 'consults-service/database/connect';
 import { buildAppointment } from 'consults-service/database/factories/appointmentFactory';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { getConnection } from 'typeorm';
 import _times from 'lodash/times';
 import _random from 'lodash/random';
@@ -20,7 +19,6 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
   await consultsDb.synchronize();
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
   console.log('Building and saving records...');

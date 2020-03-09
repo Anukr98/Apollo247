@@ -15,7 +15,6 @@ import { getConnection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { log, debugLog } from 'customWinstonLogger';
-import AbortController from 'abort-controller';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -87,17 +86,13 @@ export const getCurrentPatientsTypeDefs = gql`
     patients: [Patient!]!
   }
 
-  extend type Mutation {
-    registerPatients: String
-  }
-
   extend type Query {
     getCurrentPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
     getLoginPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
   }
 `;
 
-type GetCurrentPatientsResult = {
+export type GetCurrentPatientsResult = {
   patients: Object[] | null;
 };
 
@@ -404,6 +399,7 @@ const getLoginPatients: Resolver<
 
   console.log(uhids, 'uhid', isPrismWorking);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
@@ -414,6 +410,7 @@ const getLoginPatients: Resolver<
       return existingPatient || Patient.create(createOptions).save();
     });
   };
+
   let patientPromises: Object[] = [];
   if (uhids != null && uhids.response != null) {
     isPrismWorking = 1;
@@ -490,40 +487,6 @@ const getLoginPatients: Resolver<
   return { patients };
 };
 
-const registerPatients: Resolver<
-  null,
-  { appVersion: string; deviceType: DEVICE_TYPE },
-  ProfilesServiceContext,
-  string
-> = async (parent, args, { mobileNumber, profilesDb }) => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, 10);
-  const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
-  const prismBaseUrl = prismUrl + '/data';
-
-  const url = `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`;
-
-  await fetch(url, { signal: controller.signal })
-    .then((res) => res.json())
-    .then(
-      (data) => {
-        console.log(data);
-      },
-      (err) => {
-        if (err.name === 'AbortError') {
-          // request was aborted
-          console.log('-----------------------AbortError--------------------------------');
-        }
-      }
-    )
-    .finally(() => {
-      clearTimeout(timeout);
-    });
-  return 'Test';
-};
-
 export const getCurrentPatientsResolvers = {
   Patient: {
     async __resolveReference(object: Patient) {
@@ -533,9 +496,7 @@ export const getCurrentPatientsResolvers = {
       return patientDetails;
     },
   },
-  Mutation: {
-    registerPatients,
-  },
+
   Query: {
     getCurrentPatients,
     getLoginPatients,

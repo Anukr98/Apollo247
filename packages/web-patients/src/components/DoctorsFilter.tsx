@@ -317,6 +317,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         }}
         value={searchKeyword}
         error={showError}
+        title={'Search doctors or specialities'}
       />
       {showError ? (
         <FormHelperText className={classes.helpText} component="div" error={showError}>
@@ -388,6 +389,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                       }}
                       key={_uniqueId('cityName_')}
                       disabled={disableFilters}
+                      title={'Select city'}
                     >
                       {filterCityName}
                     </AphButton>
@@ -438,6 +440,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                   onClick={(e) => {
                     setDateSelected('');
                     !disableFilters ? setShowCalendar(showCalendar ? false : true) : false;
+                    setAvailability([]);
                   }}
                 >
                   <img
@@ -446,6 +449,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                         ? require('images/ic_calendar_close.svg')
                         : require('images/ic_calendar_show.svg')
                     }
+                    title={'Calendar'}
                   />
                 </div>
               </div>

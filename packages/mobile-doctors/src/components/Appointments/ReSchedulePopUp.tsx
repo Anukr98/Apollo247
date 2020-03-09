@@ -32,9 +32,10 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+
 import { divideSlots, timeTo12HrFormat } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+
 const { width } = Dimensions.get('window');
 
 const styles = ReSchedulePopUpStyles;
@@ -353,11 +354,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
     return (
       <View>
         <TabsComponent
-          style={{
-            backgroundColor: theme.colors.CARD_BG,
-            borderBottomWidth: 0.5,
-            borderBottomColor: 'rgba(2, 71, 91, 0.3)',
-          }}
+          style={styles.tab}
           data={timings}
           onChange={(selectedtiming: string) => {
             setselectedtiming(selectedtiming);
@@ -391,13 +388,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
                     ));
                   } else {
                     return (
-                      <Text
-                        style={{
-                          ...theme.fonts.IBMPlexSansMedium(14),
-                          color: '#0087ba',
-                          paddingTop: 16,
-                        }}
-                      >
+                      <Text style={styles.slot}>
                         {`${
                           strings.appointments.appointment_is_not_available
                         } ${selectedtiming.toLowerCase()} ${strings.appointments.slot}`}
@@ -462,21 +453,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
 
   const renderHeader = () => {
     return (
-      <View
-        style={[
-          {
-            ...theme.viewStyles.cardContainer,
-            zIndex: 1,
-            borderTopRightRadius: 10,
-            borderTopLeftRadius: 10,
-            backgroundColor: theme.colors.WHITE,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingVertical: 18,
-            width: '100%',
-          },
-        ]}
-      >
+      <View style={[styles.header]}>
         <Text
           style={{
             ...theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE, 1, undefined, 0.5),
@@ -489,19 +466,7 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
   };
 
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        zIndex: 5,
-        elevation: 500,
-      }}
-    >
+    <View style={styles.mainview}>
       <View
         style={{
           paddingHorizontal: 30,
@@ -517,43 +482,15 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
             onPress={() => {
               props.onClose();
             }}
-            style={{
-              marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 50,
-              backgroundColor: 'white',
-              height: 28,
-              width: 28,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 14,
-              marginRight: 0,
-              marginBottom: 8,
-            }}
+            style={styles.icon}
           >
             <Remove style={{ width: 28, height: 28 }} />
           </TouchableOpacity>
         </View>
-        <View
-          style={{
-            ...theme.viewStyles.cardContainer,
-            backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            borderRadius: 10,
-            maxHeight: '85%',
-          }}
-        >
+        <View style={styles.headerMainView}>
           {renderHeader()}
           <ScrollView bounces={false}>{showSlot ? renderSlotView() : renderMainView()}</ScrollView>
-          <View
-            style={{
-              ...theme.viewStyles.cardContainer,
-              marginTop: 0,
-              paddingHorizontal: 20,
-              paddingVertical: 20,
-              borderBottomLeftRadius: 10,
-              borderBottomRightRadius: 10,
-            }}
-          >
-            {showSlot ? renderSlotButton() : renderMainButton()}
-          </View>
+          <View style={styles.card}>{showSlot ? renderSlotButton() : renderMainButton()}</View>
         </View>
       </View>
     </View>

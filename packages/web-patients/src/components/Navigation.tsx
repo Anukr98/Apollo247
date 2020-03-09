@@ -45,8 +45,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     notificationBtn: {
-      display: 'none',
-      // display: 'inline-block',
+      // display: 'none',
+      display: 'inline-block',
       padding: '33px 20px 31px 20px',
       fontSize: 13,
       fontWeight: 600,
@@ -150,12 +150,14 @@ export const Navigation: React.FC = (props) => {
       <Link
         className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
         to={clientRoutes.appointments()}
+        title={'View appointments'}
       >
         Appointments
       </Link>
       <Link
         to={clientRoutes.healthRecords()}
         className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+        title={'View health records'}
       >
         Health Records
       </Link>
@@ -167,6 +169,7 @@ export const Navigation: React.FC = (props) => {
             ? classes.menuItemActive
             : ''
         }
+        title={'Medicines'}
       >
         Medicines
       </Link>
@@ -179,15 +182,16 @@ export const Navigation: React.FC = (props) => {
         className={`${classes.notificationBtn} ${
           currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
         }`}
+        title={'cart'}
       >
         <span>
-          <img src={require('images/ic_cart.svg')} alt="Cart" />
+          <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
           <span className={classes.itemCount}>{cartItems.length || 0}</span>
         </span>
       </div>
-      <div className={`${classes.notificationBtn}`}>
+      {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />
-      </div>
+      </div> */}
       <Popover
         open={isCartPopoverOpen}
         anchorEl={cartPopoverRef.current}
@@ -207,7 +211,7 @@ export const Navigation: React.FC = (props) => {
               <img src={require('images/ic_medicines.png')} alt="Medicine Cart" />
             </div>
             <div className={classes.cartTypeInfo}>
-              <div className={classes.cartType}>
+              <div className={classes.cartType} title={'View medicines'}>
                 <span>Medicines</span>
                 <span>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
@@ -221,7 +225,7 @@ export const Navigation: React.FC = (props) => {
               <img src={require('images/ic_tests.svg')} alt="Tests Cart" />
             </div>
             <div className={classes.cartTypeInfo}>
-              <div className={classes.cartType}>
+              <div className={classes.cartType} title={'View tests'}>
                 <span>Tests</span>
                 <span>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />

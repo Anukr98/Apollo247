@@ -168,18 +168,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
       let allPatients;
 
-      if (callByPrism === 'true') {
-        allPatients =
-          item && item.data && item.data.getCurrentPatients
-            ? item.data.getCurrentPatients.patients
-            : null;
-        setMobileAPICalled && setMobileAPICalled(true);
-      } else {
+      if (callByPrism === 'false') {
         allPatients =
           item && item.data && item.data.getPatientByMobileNumber
             ? item.data.getPatientByMobileNumber.patients
             : null;
         setMobileAPICalled && setMobileAPICalled(false);
+      } else {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+        setMobileAPICalled && setMobileAPICalled(true);
       }
 
       const mePatient = allPatients

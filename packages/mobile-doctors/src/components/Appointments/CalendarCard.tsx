@@ -59,12 +59,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
       <View style={styles.newtagWrapperStyle}>
         <TagCard
           label={strings.appointments.new}
-          containerStyle={{
-            height: 'auto',
-            width: 'auto',
-            paddingHorizontal: 6,
-            paddingVertical: 3,
-          }}
+          containerStyle={styles.container}
           labelStyle={{
             ...theme.fonts.IBMPlexSansBold(8),
           }}
@@ -74,25 +69,15 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
   };
   const renderSlotTiming = (timeSlotType: Appointments['timeslottype'], timing: string) => {
     const formatTiming = (timing: string, type: Appointments['timeslottype']) =>
-      // `${type == 'missed' ? 'MISSED: ' : type == 'up-next' ? 'UP NEXT: ' : ''}${timing}`;
       `${props.showNext ? strings.appointments.up_next : ''}${timing}`;
     return (
       <Text
         style={[
           {
             color: props.showNext ? '#ff748e' : '#0087ba',
-            // : timeSlotType == 'past' || timeSlotType == 'next'
-            // ? '#0087ba'
-            // : '#890000',
-            //   : timeSlotType == 'missed'
-            //   ? '#890000'
-            //   : '#ff748e',
             lineHeight: 18,
             marginRight: 20,
           },
-          // timeSlotType == 'past'
-          //   ? theme.fonts.IBMPlexSansMedium(12)
-          //   : theme.fonts.IBMPlexSansBold(12),
           theme.fonts.IBMPlexSansBold(12),
         ]}
       >
@@ -104,7 +89,6 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
     props.status == 'past' || props.status == 'missed'
       ? {
           borderColor: props.status == 'missed' ? '#e50000' : 'rgba(2, 71, 91, 0.1)',
-          // borderColor: 'rgba(2, 71, 91, 0.1)',
           borderWidth: 1,
           backgroundColor: '#f0f4f5',
         }

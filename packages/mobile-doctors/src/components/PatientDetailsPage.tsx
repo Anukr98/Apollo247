@@ -353,37 +353,38 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <SafeAreaView style={[theme.viewStyles.container]}>
-        <ScrollView bounces={false}>
-          {renderPatientImage()}
-          <View style={[styles.shadowview, { marginTop: -20 }]}>
-            <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 20 }}>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansSemiBold(18),
-                    color: theme.colors.SHARP_BLUE,
-                    marginBottom: 2,
-                    marginRight: 15,
-                  }}
-                >
-                  {PatientInfo && PatientInfo.firstName}
-                </Text>
-              </View>
-              {PatientInfo && PatientInfo.uhid && (
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(12),
-                    color: 'rgba(2, 71, 91, 0.8)',
-                    marginLeft: 14,
-                    marginBottom: 8,
-                  }}
-                >
-                  {strings.case_sheet.uhid}: {PatientInfo.uhid}
-                </Text>
-              )}
+      {!showSpinner && (
+        <SafeAreaView style={[theme.viewStyles.container]}>
+          <ScrollView bounces={false}>
+            {renderPatientImage()}
+            <View style={[styles.shadowview, { marginTop: -20 }]}>
+              <View style={{ flexDirection: 'row', marginTop: 12, marginHorizontal: 20 }}>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      ...theme.fonts.IBMPlexSansSemiBold(18),
+                      color: theme.colors.SHARP_BLUE,
+                      marginBottom: 2,
+                      marginRight: 15,
+                    }}
+                  >
+                    {PatientInfo && PatientInfo.firstName}
+                  </Text>
+                </View>
+                {PatientInfo && PatientInfo.uhid && (
+                  <Text
+                    style={{
+                      ...theme.fonts.IBMPlexSansMedium(12),
+                      color: 'rgba(2, 71, 91, 0.8)',
+                      marginLeft: 14,
+                      marginBottom: 8,
+                    }}
+                  >
+                    {strings.case_sheet.uhid}: {PatientInfo.uhid}
+                  </Text>
+                )}
 
-              {/* <View
+                {/* <View
               style={{
                 height: 16,
                 borderWidth: 0.5,
@@ -401,23 +402,23 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             >
               {todayYear - dateOfBirth}, {PatientInfo.gender}
             </Text> */}
-            </View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(12),
-                color: theme.colors.LIGHT_BLUE,
-                marginBottom: 12,
-                marginLeft: 20,
-              }}
-            >
-              {age > -1 ? Math.round(age).toString() : '-'}
-              {PatientInfo && PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
-              {PatientInfo && PatientInfo.addressList && PatientInfo.addressList.length > 0
-                ? `, ${PatientInfo.addressList[0].city}`
-                : ''}
-            </Text>
+              </View>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                  color: theme.colors.LIGHT_BLUE,
+                  marginBottom: 12,
+                  marginLeft: 20,
+                }}
+              >
+                {age > -1 ? Math.round(age).toString() : '-'}
+                {PatientInfo && PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
+                {PatientInfo && PatientInfo.addressList && PatientInfo.addressList.length > 0
+                  ? `, ${PatientInfo.addressList[0].city}`
+                  : ''}
+              </Text>
 
-            {/* <View
+              {/* <View
             style={{
               borderRadius: 5,
               backgroundColor: '#f0f4f5',
@@ -511,24 +512,24 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
               </Text>
             </View>
           </View> */}
-          </View>
-          <View>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
-                margin: 16,
-              }}
-            >
-              {strings.case_sheet.past_consultations}
-            </Text>
-            <PastConsultCard
-              data={pastList}
-              navigation={props.navigation}
-              patientDetails={patientDetails}
-            />
-            {/* <ScrollView bounces={false}>
+            </View>
+            <View>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(17),
+                  lineHeight: 24,
+                  color: '#01475b',
+                  margin: 16,
+                }}
+              >
+                {strings.case_sheet.past_consultations}
+              </Text>
+              <PastConsultCard
+                data={pastList}
+                navigation={props.navigation}
+                patientDetails={patientDetails}
+              />
+              {/* <ScrollView bounces={false}>
             {pastList.map((apmnt: any, i: any) => {
               return (
                 <View style={{ marginLeft: 16, marginRight: 20, marginBottom: 0 }}>
@@ -536,7 +537,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 </View>
               );
             })} */}
-            {/* {_data!.map((_doctor, i, array) => {
+              {/* {_data!.map((_doctor, i, array) => {
               return (
                 <View
                   style={{
@@ -556,10 +557,11 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                 </View>
               );
             })} */}
-            {/* </ScrollView> */}
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+              {/* </ScrollView> */}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      )}
       {showSpinner && <Spinner />}
     </View>
   );

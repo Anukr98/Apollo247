@@ -5,7 +5,6 @@ export default StyleSheet.create({
   container: {
     alignItems: 'flex-start',
     justifyContent: 'center',
-    // paddingLeft: 20,
   },
   mainView: {
     padding: 20,
@@ -112,5 +111,33 @@ export default StyleSheet.create({
     color: theme.colors.LIGHT_BLUE,
     lineHeight: 16,
     letterSpacing: 0.06,
+  },
+  headerview: {
+    height: 50,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    elevation: 5,
+  },
+  online: {
+    paddingTop: 15,
+    flexDirection: 'row',
+  },
+  fullconsult: { marginLeft: 15, marginTop: 10, flex: 1 },
+  physical: { flexDirection: 'row', marginTop: 4, flex: 1 },
+  rowview: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+  },
+  payment: {
+    marginTop: 20,
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
 });

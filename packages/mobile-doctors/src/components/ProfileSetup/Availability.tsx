@@ -1,13 +1,12 @@
+import AvailabilityStyles from '@aph/mobile-doctors/src/components/ProfileSetup/Availability.styles';
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 import { AddPlus, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { format } from 'date-fns';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
-import AvailabilityStyles from '@aph/mobile-doctors/src/components/ProfileSetup/Availability.styles';
 
 const styles = AvailabilityStyles;
 
@@ -35,16 +34,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
       {profileData.delegateNumber ? (
         <SquareCardWithTitle title="Consultation Type" containerStyle={{ marginTop: 0 }}>
           <Text style={styles.consultDescText}>{strings.account.what_type_of_consult}</Text>
-          <Text
-            style={{
-              marginLeft: 20,
-              marginTop: 8,
-              ...theme.fonts.IBMPlexSansMedium(16),
-              color: '#02475b',
-              marginBottom: 20,
-              textTransform: 'capitalize',
-            }}
-          >
+          <Text style={styles.consultTypeText}>
             {strings.common.physical}, {strings.common.online}
           </Text>
           {/* <View style={styles.consultTypeSelection}>
@@ -76,7 +66,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
       ) : null}
       <SquareCardWithTitle
         title={strings.account.consult_hours}
-        containerStyle={{ marginTop: 16, paddingBottom: 16 }}
+        containerStyle={styles.squareCardContainer}
       >
         {profileData.consultHours!.map((i, idx) => (
           <ConsultationHoursCard
@@ -99,22 +89,12 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         >
           <Text style={styles.consultDescText}>Enter your preferred consult hours</Text>
         </View> */}
-        <TouchableOpacity
-          style={{ flexDirection: 'row', marginTop: 18, marginLeft: 20, alignItems: 'center' }}
-        >
+        <TouchableOpacity style={styles.addTouchable}>
           <AddPlus />
-          <Text
-            style={{
-              ...theme.viewStyles.yellowTextStyle,
-              fontSize: 14,
-              marginLeft: 8,
-            }}
-          >
-            {strings.account.add_consult_hours}
-          </Text>
+          <Text style={styles.addTextStyle}>{strings.account.add_consult_hours}</Text>
         </TouchableOpacity>
       </SquareCardWithTitle>
-      <View style={{ margin: 20, flexDirection: 'row', marginBottom: -10 }}>
+      <View style={styles.roundChaticon}>
         <View style={{ marginTop: 4 }}>
           <RoundChatIcon />
         </View>
@@ -122,12 +102,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         <View style={{ marginLeft: 14 }}>
           <Text>
             <Text style={styles.descriptionview}>{strings.common.call}</Text>
-            <Text
-              style={{ color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 }}
-            >
-              {' '}
-              {strings.common.toll_free_num}{' '}
-            </Text>
+            <Text style={styles.tollfreeText}> {strings.common.toll_free_num} </Text>
             <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
           </Text>
         </View>

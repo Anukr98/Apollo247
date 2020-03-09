@@ -1,4 +1,5 @@
 import { DoctorCard } from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard';
+import ProfileStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile.styles';
 import { StarDoctorsTeam } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/StarDoctorsTeam';
 import { Down, Star, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
@@ -22,14 +23,11 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/removeSecretary';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import ProfileStyles from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/Profile.styles';
 
 const styles = ProfileStyles;
 
@@ -101,32 +99,13 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
   const renderSelectDoctorField = () => {
     return (
       <View>
-        <View
-          style={{
-            ...theme.viewStyles.whiteRoundedCornerCard,
-            margin: 20,
-            marginTop: 0,
-            borderRadius: 10,
-          }}
-        >
+        <View style={styles.selectDoctorView}>
           <View style={{ margin: 20 }}>
             <Text style={styles.inputTextStyle}>{strings.account.Please_select_the_secretary}</Text>
             <TouchableOpacity onPress={() => onSelectStarDoctor(isDropdownOpen)}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    color: '#02475b',
-                    opacity: 0.4,
-                    marginTop: 10,
-                    marginBottom: 9,
-                  }}
-                >
-                  {selectedDoctor}
-                </Text>
-                <View style={{ alignItems: 'flex-end', alignSelf: 'flex-end' }}>
-                  {!isDropdownOpen ? <Down /> : <Up />}
-                </View>
+              <View style={styles.selectDoctor}>
+                <Text style={styles.selectDoctText}>{selectedDoctor}</Text>
+                <View style={styles.dropDownView}>{!isDropdownOpen ? <Down /> : <Up />}</View>
               </View>
             </TouchableOpacity>
             <View
@@ -141,14 +120,8 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
   const formatSuggestionsText = (text: string, searchKey: string) => {
     return (
       <Highlighter
-        style={{
-          color: theme.colors.darkBlueColor(),
-          ...theme.fonts.IBMPlexSansMedium(18),
-        }}
-        highlightStyle={{
-          color: theme.colors.darkBlueColor(),
-          ...theme.fonts.IBMPlexSansBold(18),
-        }}
+        style={styles.suggestionTextStyle}
+        highlightStyle={styles.highlighstyle}
         searchWords={[searchKey]}
         textToHighlight={text}
       />
@@ -165,16 +138,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
               key={i}
             >
               {formatSuggestionsText(_doctor.name, '')}
-              {i < array!.length - 1 ? (
-                <View
-                  style={{
-                    marginTop: 8,
-                    marginBottom: 7,
-                    height: 1,
-                    opacity: 0.1,
-                  }}
-                />
-              ) : null}
+              {i < array!.length - 1 ? <View style={styles.doctorNameView} /> : null}
             </TouchableOpacity>
           );
         })}
@@ -239,7 +203,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
     <View style={styles.container}>
       <SquareCardWithTitle title={strings.account.your_profile} containerStyle={{ marginTop: 0 }}>
         <View style={styles.cardView}>
-          <View style={{ overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 }}>
+          <View style={styles.profileDateView}>
             {profileData!.photoUrl ? (
               <Image style={styles.imageview} source={{ uri: profileData!.photoUrl }} />
             ) : (
@@ -299,7 +263,7 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
                     doctorName={
                       profileData.doctorSecretary! && profileData.doctorSecretary!.secretary!.name
                     }
-                    experience={'SECRETARY | 15 YRS'}
+                    experience={'SECRETARY | 15'}
                     onRemove={(id) => {
                       removeSecretaryFromProgram(
                         profileData.doctorSecretary! && profileData.doctorSecretary!.secretary!.id

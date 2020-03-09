@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet, Platform } from 'react-native';
 
 import { ifIphoneX } from 'react-native-iphone-x-helper';
@@ -96,4 +97,34 @@ export default StyleSheet.create({
     flexDirection: 'column',
     marginLeft: 16,
   },
+  selectDoctorView: {
+    ...theme.viewStyles.whiteRoundedCornerCard,
+    margin: 20,
+    marginTop: 0,
+    borderRadius: 10,
+  },
+  selectDoctText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#02475b',
+    opacity: 0.4,
+    marginTop: 10,
+    marginBottom: 9,
+  },
+  doctorNameView: {
+    marginTop: 8,
+    marginBottom: 7,
+    height: 1,
+    opacity: 0.1,
+  },
+  profileDateView: { overflow: 'hidden', borderTopRightRadius: 10, borderTopLeftRadius: 10 },
+  highlighstyle: {
+    color: theme.colors.darkBlueColor(),
+    ...theme.fonts.IBMPlexSansBold(18),
+  },
+  suggestionTextStyle: {
+    color: theme.colors.darkBlueColor(),
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
+  dropDownView: { alignItems: 'flex-end', alignSelf: 'flex-end' },
+  selectDoctor: { flexDirection: 'row', justifyContent: 'space-between' },
 });

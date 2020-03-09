@@ -265,6 +265,14 @@ export const ApploLogo: React.FC<IconProps> = (props) => (
   />
 );
 
+export const ApploLogo2: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 50, width: 63, resizeMode: 'contain' }}
+    {...props}
+    source={require('../../images/apollo/ic_logo.png')}
+  />
+);
+
 export const RoundIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={smResizeMode}

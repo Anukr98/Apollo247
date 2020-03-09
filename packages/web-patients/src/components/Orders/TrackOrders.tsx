@@ -11,6 +11,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
 import { GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails } from 'graphql/types/GetMedicineOrderDetails';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,6 +30,12 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       marginLeft: 20,
       marginRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        margin: 0,
+        padding: 15,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     headerActions: {
       marginLeft: 'auto',
@@ -50,6 +57,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 10,
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        margin: 0,
+      },
     },
     customScroll: {
       padding: 20,
@@ -106,6 +116,27 @@ const useStyles = makeStyles((theme: Theme) => {
     rootTabContainer: {
       padding: 0,
     },
+    headerBackArrow: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+      },
+      '& button': {
+        display: 'none',
+        boxShadow: 'none',
+        minWidth: 'auto',
+        MozBoxShadow: 'none',
+        padding: 0,
+        marginRight: 15,
+        '& img': {
+          verticalAlign: 'middle',
+        },
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+        },
+      },
+    },
   };
 });
 
@@ -127,6 +158,8 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const moreActionsopen = Boolean(moreActionsDialog);
   const [noOrderDetails, setNoOrderDetails] = useState<boolean>(false);
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setMoreActionsDialog(event.currentTarget);
@@ -171,6 +204,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
+        <div className={classes.headerBackArrow}>
+          <AphButton>
+            <img src={require('images/ic_back.svg')} />
+          </AphButton>
+        </div>
         {props.orderAutoId !== 0 && props.orderAutoId > 0 && (
           <>
             <div className={classes.orderId}>
@@ -230,6 +268,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               selected: classes.tabSelected,
             }}
             label="Track Order"
+            title={'Open track orders'}
           />
           <Tab
             classes={{
@@ -237,11 +276,22 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
               selected: classes.tabSelected,
             }}
             label="Order Summary"
+            title={'Open order summary'}
           />
         </Tabs>
         {tabValue === 0 && (
           <TabContainer>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMax={
+                isMediumScreen
+                  ? 'calc(100vh - 276px)'
+                  : isSmallScreen
+                  ? 'calc(100vh - 96px)'
+                  : 'calc(100vh - 250px)'
+              }
+            >
               <div className={classes.customScroll}>
                 {noOrderDetails ? (
                   'No Order is Found'
@@ -254,7 +304,17 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         )}
         {tabValue === 1 && (
           <TabContainer>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 276px)'}>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMax={
+                isMediumScreen
+                  ? 'calc(100vh - 276px)'
+                  : isSmallScreen
+                  ? 'calc(100vh - 96px)'
+                  : 'calc(100vh - 250px)'
+              }
+            >
               <div className={classes.customScroll}>
                 {noOrderDetails ? (
                   'No Order is Found'
@@ -267,7 +327,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         )}
       </div>
       <AphDialog open={isCancelOrderDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsCancelOrderDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Cancel Order</AphDialogTitle>
         <CancelOrder
           setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
@@ -275,7 +335,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         />
       </AphDialog>
       <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsReturnOrderDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Return Order</AphDialogTitle>
         <ReturnOrder
           setIsReturnOrderDialogOpen={setIsReturnOrderDialogOpen}

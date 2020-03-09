@@ -135,6 +135,7 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
                 <AphButton
                   className={classes.trackBtn}
                   onClick={() => (window.location.href = clientRoutes.yourOrders())}
+                  title={'Open track orders'}
                 >
                   Track Order
                 </AphButton>

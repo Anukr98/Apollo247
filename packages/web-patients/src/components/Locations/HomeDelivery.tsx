@@ -11,6 +11,7 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
+import axios, { AxiosResponse, Canceler } from 'axios';
 
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
@@ -19,7 +20,7 @@ import {
   GetPatientAddressList_getPatientAddressList_addressList,
 } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -36,6 +37,29 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#01475b',
       },
+    },
+    deliveryTimeGroup: {
+      margin: 10,
+      marginTop: 0,
+      borderTop: '0.5px solid rgba(2,71,91,0.2)',
+      paddingTop: 10,
+    },
+    deliveryTimeGroupWrap: {
+      display: 'flex',
+      backgroundColor: theme.palette.common.white,
+      padding: 10,
+      borderRadius: 5,
+    },
+    deliveryTime: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#01475b',
+    },
+    deliveryDate: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: '#01475b',
+      marginLeft: 'auto',
     },
     radioLabel: {
       margin: 0,
@@ -98,6 +122,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const apiDetails = {
+  url: process.env.PHARMACY_MED_INFO_URL,
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
+  deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
+};
+
 export const HomeDelivery: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
@@ -106,6 +137,7 @@ export const HomeDelivery: React.FC = (props) => {
     deliveryAddressId,
     deliveryAddresses,
     setDeliveryAddresses,
+    cartItems,
   } = useShoppingCart();
   const { isSigningIn } = useAuth();
   const client = useApolloClient();
@@ -115,8 +147,12 @@ export const HomeDelivery: React.FC = (props) => {
   );
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [renderAddresses, setRenderAddresses] = React.useState<boolean>(false);
+  const [isError, setIsError] = React.useState<boolean>(false);
+  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
+  const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
+
   const getAddressDetails = () => {
+    setIsLoading(true);
     client
       .query<GetPatientAddressList, GetPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESSES_LIST,
@@ -131,21 +167,80 @@ export const HomeDelivery: React.FC = (props) => {
           _data.data.getPatientAddressList &&
           _data.data.getPatientAddressList.addressList
         ) {
-          setDeliveryAddresses &&
-            setDeliveryAddresses(_data.data.getPatientAddressList.addressList.reverse());
-          setDeliveryAddressId &&
-            setDeliveryAddressId(_data.data.getPatientAddressList.addressList[0].id);
+          const addresses = _data.data.getPatientAddressList.addressList.reverse();
+          if (addresses && addresses.length > 0) {
+            setDeliveryAddresses && setDeliveryAddresses(addresses);
+            !deliveryAddressId && setDeliveryAddressId && setDeliveryAddressId(addresses[0].id);
+            if (cartItems.length > 0) {
+              fetchDeliveryTime();
+            }
+          } else {
+            setDeliveryAddresses && setDeliveryAddresses([]);
+          }
+          setIsLoading(false);
+          setIsError(false);
         }
       })
       .catch((e) => {
+        setIsLoading(false);
+        setIsError(true);
         console.log('Error occured while fetching Doctor', e);
       });
   };
+
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
       getAddressDetails();
     }
-  }, [currentPatient, isAddAddressDialogOpen]);
+  }, [currentPatient, deliveryAddressId]);
+
+  const fetchDeliveryTime = async () => {
+    const selectedAddress = deliveryAddresses.find((address) => address.id == deliveryAddressId);
+    const lookUp = cartItems.map((item: MedicineCartItem) => {
+      return { sku: item.id, qty: item.quantity };
+    });
+    setDeliveryLoading(true);
+    await axios
+      .post(
+        apiDetails.deliveryUrl || '',
+        {
+          postalcode: selectedAddress ? selectedAddress.zipcode : '',
+          ordertype: 'pharma',
+          lookup: lookUp,
+        },
+        {
+          headers: {
+            Authentication: apiDetails.deliveryAuthToken,
+          },
+        }
+      )
+      .then((res: AxiosResponse) => {
+        try {
+          if (res && res.data) {
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              setDeliveryTime(res.data.tat[0].deliverydate);
+            } else if (typeof res.data === 'string') {
+              console.log(res.data);
+            } else if (typeof res.data.errorMSG === 'string') {
+              console.log(res.data.errorMSG);
+            }
+          }
+          setDeliveryLoading(false);
+        } catch (error) {
+          setDeliveryLoading(false);
+          console.log(error);
+        }
+      })
+      .catch((error: any) => alert(error));
+  };
+
+  if (isError) {
+    return <p>Error while fetching addresses.</p>;
+  }
 
   return (
     <div className={classes.root}>
@@ -194,33 +289,37 @@ export const HomeDelivery: React.FC = (props) => {
           </AphButton>
         ) : null}
       </div>
+      {deliveryTime !== '' && (
+        <div className={classes.deliveryTimeGroup}>
+          <div className={classes.deliveryTimeGroupWrap}>
+            <span className={classes.deliveryTime}>Delivery Time</span>
+            <span className={classes.deliveryDate}>
+              {deliveryLoading ? <CircularProgress size={22} /> : deliveryTime}
+            </span>
+          </div>
+        </div>
+      )}
 
       <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
           </div>
           Add New Address
         </AphDialogTitle>
-        <AddNewAddress
-          setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
-          setRenderAddresses={setRenderAddresses}
-        />
+        <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
       </AphDialog>
 
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
           </div>
           Select Delivery Address
         </AphDialogTitle>
-        <ViewAllAddress
-          addresses={deliveryAddresses}
-          setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
-        />
+        <ViewAllAddress setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen} />
       </AphDialog>
     </div>
   );

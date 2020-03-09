@@ -38,7 +38,6 @@ export default StyleSheet.create({
     letterSpacing: 0.35,
   },
   cardViewStyle: {
-    // width: 136,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(2, 71, 91, 0.2)',
@@ -49,5 +48,53 @@ export default StyleSheet.create({
     color: theme.colors.WHITE,
     ...theme.fonts.IBMPlexSansSemiBold(9),
     textAlign: 'center',
+  },
+  orderstpes: {
+    height: 101,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    backgroundColor: theme.colors.SKY_BLUE,
+  },
+  steps: {
+    paddingTop: 13,
+    paddingBottom: 12,
+    color: theme.colors.WHITE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  rowview: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  close: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
+  },
+  header: {
+    ...theme.viewStyles.cardContainer,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 23,
+    width: '100%',
+  },
+  head: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  options: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    margin: 20,
+    marginHorizontal: 13,
+  },
+  terms: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.TEXT_LIGHT_BLUE,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
 });

@@ -189,11 +189,12 @@ export const HeroBanner: React.FC = () => {
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
           <Typography variant="h1">
-            <span>hi</span>
+            <span title={'hi'}>hi</span>
             <AphSelect
               value={currentPatient.id}
               onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+              title={currentPatient.firstName || ''}
             >
               {allCurrentPatients.map((patient) => {
                 // const isSelected = patient.id === currentPatient.id;
@@ -205,6 +206,7 @@ export const HeroBanner: React.FC = () => {
                     value={patient.id}
                     classes={{ selected: classes.menuSelected }}
                     key={patient.id}
+                    title={name || ''}
                   >
                     {name}
                   </MenuItem>
@@ -217,6 +219,7 @@ export const HeroBanner: React.FC = () => {
                   onClick={() => {
                     setIsAddNewProfileDialogOpen(true);
                   }}
+                  title={'Add Member'}
                 >
                   Add Member
                 </AphButton>
@@ -228,7 +231,7 @@ export const HeroBanner: React.FC = () => {
         )}
         <p>How can we help you today? :)</p>
         <OurServices />
-        <div className={classes.callEmergency}>
+        <div className={classes.callEmergency} title={'Call 1066 in emergency'}>
           <span>Call 1066 in emergency</span>
           <span className={classes.callImg}>
             <img src={require('images/ic-emergency.svg')} alt="" />
@@ -236,7 +239,7 @@ export const HeroBanner: React.FC = () => {
         </div>
       </div>
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Add New Member</AphDialogTitle>
         <AddNewProfile
           closeHandler={(isAddNewProfileDialogOpen: boolean) =>

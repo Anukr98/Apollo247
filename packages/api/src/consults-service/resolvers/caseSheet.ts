@@ -43,6 +43,13 @@ import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/p
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
 import { differenceInSeconds } from 'date-fns';
+import { ApiConstants } from 'ApiConstants';
+import {
+  sendNotificationSMS,
+  sendNotification,
+  sendBrowserNotitication,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export type DiagnosisJson = {
   name: string;
@@ -591,7 +598,11 @@ const modifyCaseSheet: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
-
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const juniorDoctorDetails = await doctorRepository.findById(getCaseSheetData.createdDoctorId);
+  const seniorDoctorDetails = await doctorRepository.findById(
+    getCaseSheetData.appointment.doctorId
+  );
   if (!(inputArguments.symptoms === undefined)) {
     if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
       throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);
@@ -765,7 +776,14 @@ const modifyCaseSheet: Resolver<
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
-
+  if (juniorDoctorDetails && seniorDoctorDetails) {
+    const messageBody = ApiConstants.CASESHEET_SUBMITTED_BODY.replace(
+      '{0}',
+      seniorDoctorDetails.firstName
+    ).replace('{1}', juniorDoctorDetails.firstName);
+    sendNotificationSMS(seniorDoctorDetails.mobileNumber, messageBody);
+    sendBrowserNotitication(seniorDoctorDetails.id, messageBody);
+  }
   return getCaseSheetData;
 };
 
@@ -945,7 +963,12 @@ const updatePatientPrescriptionSentStatus: Resolver<
       patientData,
       patientsDb
     );
-
+    const pushNotificationInput = {
+      appointmentId: getCaseSheetData.appointment.id,
+      notificationType: NotificationType.PRESCRIPTION_READY,
+      blobName: getCaseSheetData.blobName,
+    };
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,

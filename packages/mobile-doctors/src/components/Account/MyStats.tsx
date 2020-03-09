@@ -3,7 +3,7 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, SafeAreaView, ScrollView } from 'react-navigation';
 import Pie from 'react-native-pie';
@@ -26,17 +26,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
   const showHeaderView = () => {
     return (
       <Header
-        containerStyle={{
-          height: 50,
-          shadowColor: '#000000',
-          shadowOffset: {
-            width: 0,
-            height: 5,
-          },
-          shadowRadius: 10,
-          shadowOpacity: 0.2,
-          elevation: 5,
-        }}
+        containerStyle={styles.headerview}
         leftIcons={[
           {
             icon: <BackArrow />,
@@ -79,21 +69,11 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
 
   const GetOnlineCharts = () => {
     return (
-      // <View style={styles.container}>
-      <View
-        style={{
-          paddingTop: 15,
-          flexDirection: 'row',
-        }}
-      >
+      <View style={styles.online}>
         <View>
           <Pie
             radius={25}
             innerRadius={15}
-            // // percentage={[60, 40]}
-
-            // series={test1Arr}
-            // colors={test2Arr}
             sections={[
               {
                 percentage: 60,
@@ -108,7 +88,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
             strokeCap={'butt'}
           />
         </View>
-        <View style={{ marginLeft: 15, marginTop: 10, flex: 1 }}>
+        <View style={styles.fullconsult}>
           <View style={{ flexDirection: 'row' }}>
             <View
               style={[
@@ -127,7 +107,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
               </Text>
             </View>
           </View>
-          <View style={{ flexDirection: 'row', marginTop: 4, flex: 1 }}>
+          <View style={styles.physical}>
             <View
               style={[
                 {
@@ -147,22 +127,11 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
           </View>
         </View>
       </View>
-      // </View>
     );
   };
   const GetFollowupCharts = () => {
     return (
-      // <View style={styles.container}>
-      <View
-        style={{
-          paddingTop: 15,
-          flexDirection: 'row',
-
-          // width: 160,
-          //   alignItems: 'flex-start',
-          // backgroundColor: 'brown',
-        }}
-      >
+      <View style={styles.online}>
         <Pie
           radius={25}
           innerRadius={15}
@@ -179,7 +148,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
           dividerSize={1}
           strokeCap={'butt'}
         />
-        <View style={{ marginLeft: 15, marginTop: 10, flex: 1 }}>
+        <View style={styles.fullconsult}>
           <View style={{ flexDirection: 'row' }}>
             <View
               style={[
@@ -212,13 +181,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
                 styles.circleStyle,
               ]}
             ></View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-start',
-              }}
-            >
+            <View style={styles.rowview}>
               <Text style={styles.chartText}>
                 20 Follow-up Patients |{' '}
                 <Text
@@ -236,7 +199,6 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
           </View>
         </View>
       </View>
-      // </View>
     );
   };
 
@@ -258,14 +220,7 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
             {GetFollowupCharts()}
           </View>
         </View>
-        <View
-          style={{
-            marginTop: 20,
-            alignItems: 'flex-end',
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-          }}
-        >
+        <View style={styles.payment}>
           <Text
             style={styles.paymentTextStyle}
             onPress={() => {
@@ -276,7 +231,6 @@ export const MyStats: React.FC<MyStatsProps> = (props) => {
           >
             {'View Payment History'}
           </Text>
-          {/* <ArrowRight /> */}
         </View>
       </View>
     );

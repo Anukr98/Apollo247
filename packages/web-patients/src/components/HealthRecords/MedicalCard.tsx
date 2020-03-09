@@ -103,10 +103,11 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicalCardProps = {
   name: string;
+  source: string;
+  type: string;
   isActiveCard: boolean;
-  deleteReport: (id: string) => void;
+  deleteReport: (id: string, type: string) => void;
   id: string;
-  setLoading: (loading: boolean) => void;
 };
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
@@ -118,10 +119,11 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{props.name}</div>
         </div>
-        <div className={classes.moreIcon}>
+        {/* <div className={classes.moreIcon}>
           <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
-        </div>
+        </div> */}
       </div>
+      {props.source && props.source !== '-' && <div>{props.source}</div>}
       <AphDialog
         open={showPopup}
         disableBackdropClick
@@ -146,8 +148,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
-              props.setLoading(true);
-              props.deleteReport(props.id);
+              props.deleteReport(props.id, props.type);
               setShowPopup(false);
             }}
             autoFocus

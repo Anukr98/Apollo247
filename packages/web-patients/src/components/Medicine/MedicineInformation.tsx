@@ -7,7 +7,7 @@ import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import axios, { AxiosResponse, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -279,7 +279,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
-  const addToCartRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
@@ -322,28 +321,50 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchDeliveryTime = async () => {
+    const CancelToken = axios.CancelToken;
+    let cancelGetDeliveryTimeApi: Canceler | undefined;
     await axios
       .post(
         apiDetails.deliveryUrl || '',
         {
-          params: {
-            postalcode: pinCode,
-            ordertype: 'pharma',
-            lookup: [
-              {
-                sku: params.sku,
-                qty: 1,
-              },
-            ],
-          },
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: params.sku,
+              qty: 1,
+            },
+          ],
         },
         {
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
-      .then((res: any) => setDeliveryTime(res.tat.deliveryDate))
+      .then((res: AxiosResponse) => {
+        try {
+          if (res && res.data) {
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              setDeliveryTime(res.data.tat[0].deliverydate);
+            } else if (typeof res.data === 'string') {
+              console.log(res.data);
+            } else if (typeof res.data.errorMSG === 'string') {
+              console.log(res.data.errorMSG);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })
       .catch((error: any) => alert(error));
   };
 
@@ -363,7 +384,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x + 1);
+  console.log(data);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -385,11 +407,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   }}
                   ref={subDrugsRef}
                 >
-                  <span>Pick from 9 available substitutes</span>
+                  <span>Pick from {substitutes.length} available substitutes</span>
                 </div>
               </>
             )}
-            {data.is_in_stock && (
+            {data.is_in_stock ? (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
@@ -417,7 +439,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   )}
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         </Scrollbars>
       </div>
@@ -455,7 +477,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             ) : (
-              <div className={classes.medicineNoStock}>Out Of Stock</div>
+              <div className={classes.leftGroup}>
+                <div className={classes.medicineNoStock}>Out Of Stock</div>
+              </div>
             )}
             <div className={classes.medicinePrice}>
               {data.special_price && (

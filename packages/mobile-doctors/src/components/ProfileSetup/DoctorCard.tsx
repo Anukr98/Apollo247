@@ -39,9 +39,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   return (
     <View style={styles.doctorView}>
       <TouchableOpacity activeOpacity={1} onPress={() => isMenuHidden && setisMenuHidden(false)}>
-        <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+        <View style={styles.doctorCardView}>
+          <View style={styles.doctorCardView}>
+            <View style={styles.doctorImgView}>
               <View style={styles.imageView}>
                 <Image source={require('../../images/doctor/rahul.png')} />
               </View>

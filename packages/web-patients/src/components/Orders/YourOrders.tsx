@@ -12,15 +12,25 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       paddingLeft: 0,
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        paddingRight: 0,
+      },
     },
     leftSection: {
       width: 'calc(100% - 328px)',
       paddingRight: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: 'auto',
+      },
     },
     rightSection: {
       width: 328,
       backgroundColor: theme.palette.common.white,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: 'auto',
+      },
     },
     sectionHeader: {
       color: '#02475b',
@@ -33,6 +43,18 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       marginLeft: 20,
       marginRight: 15,
+    },
+    mobileOverlay: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        backgroundColor: '#f7f8f5',
+        zIndex: 991,
+        height: '100%',
+      },
     },
     count: {
       marginLeft: 'auto',
@@ -85,7 +107,7 @@ export const YourOrders: React.FC = (props) => {
         <div className={classes.sectionHeader}>Your Orders</div>
         <OrderCard orderAutoId={orderAutoId} setOrderAutoId={setOrderAutoId} />
       </div>
-      <div className={classes.rightSection}>
+      <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
         <TrackOrders orderAutoId={orderAutoId} />
       </div>
       <Popover
