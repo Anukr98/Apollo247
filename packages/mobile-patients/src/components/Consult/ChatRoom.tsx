@@ -257,6 +257,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ? props.navigation.state.params!.callType
     : '';
 
+  const prescription = props.navigation.state.params!.prescription
+    ? props.navigation.state.params!.prescription
+    : '';
+
   let dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
@@ -482,6 +486,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       callhandelBack = false;
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+    }
+
+    if (prescription) {
+      // write code for opening prescripiton
     }
   }, []);
 

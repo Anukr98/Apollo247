@@ -618,6 +618,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
                     callType: '',
+                    prescription: '',
                   });
                   // setConsultStarted(true);
                 }}
