@@ -2,6 +2,7 @@ import {
   aphConsole,
   formatAddress,
   handleGraphQlError,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
@@ -11,6 +12,7 @@ import {
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
+  ShoppingCartItem,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -52,6 +54,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -153,6 +156,32 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const { locationDetails } = useAppCommonData();
+
+  useEffect(() => {
+    if (cartItems.length) {
+      const eventAttributes: WebEngageEvents['Cart Viewed'] = {
+        'Total items in cart': cartItems.length,
+        'Sub Total': cartTotal,
+        'Delivery charge': deliveryCharges,
+        'Coupon code used': coupon ? coupon.code : '',
+        'Total Discount': couponDiscount,
+        'Net after discount': grandTotal,
+        'Prescription Needed?': uploadPrescriptionRequired,
+        'Cart Items': cartItems.map(
+          (item) =>
+            ({
+              id: item.id,
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              specialPrice: item.specialPrice,
+            } as ShoppingCartItem)
+        ),
+        // 'Cart ID': '', // since we don't have cartId before placing order
+      };
+      postWebEngageEvent('Cart Viewed', eventAttributes);
+    }
+  }, []);
 
   useEffect(() => {
     if (!(locationDetails && locationDetails.pincode)) {
@@ -374,6 +403,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
+  const postwebEngageProductClickedEvent = ({ name, id }: ShoppingCartItem) => {
+    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+      'product name': name,
+      'product id': id,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': '',
+      Source: 'List',
+      'Section Name': 'CART',
+    };
+    postWebEngageEvent('Product Clicked', eventAttributes);
+  };
+
   const renderItemsInCart = () => {
     const cartItemsCount =
       cartItems.length > 10 || cartItems.length == 0
@@ -417,6 +460,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               containerStyle={medicineCardContainerStyle}
               key={medicine.id}
               onPress={() => {
+                postwebEngageProductClickedEvent(medicine);
                 CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
                   sku: medicine.id,
@@ -975,7 +1019,24 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
+  const postwebEngageProceedToPayEvent = () => {
+    const eventAttributes: WebEngageEvents['Procced To Pay Clicked'] = {
+      'Total items in cart': cartItems.length,
+      'Sub Total': cartTotal,
+      'Delivery charge': deliveryCharges,
+      'Net after discount': grandTotal,
+      'Prescription Needed?': uploadPrescriptionRequired,
+      // 'Cart ID': '', // since we don't have cartId before placing order
+      'Mode of Delivery': selectedTab === tabs[0].title ? 'Home' : 'Pickup',
+      'Delivery Date Time':
+        selectedTab === tabs[0].title && moment(deliveryTime).isValid ? deliveryTime : undefined, // Optional (only if Home)
+      'Pin Code': pinCode,
+    };
+    postWebEngageEvent('Procced To Pay Clicked', eventAttributes);
+  };
+
   const onPressProceedToPay = () => {
+    postwebEngageProceedToPayEvent();
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
       props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });

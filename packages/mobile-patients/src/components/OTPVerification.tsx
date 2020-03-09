@@ -15,7 +15,7 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -47,6 +47,7 @@ import { BottomPopUp } from './ui/BottomPopUp';
 import moment from 'moment';
 import { verifyOTP, resendOTP } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
@@ -342,6 +343,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const onClickOk = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
+    const eventAttributes: WebEngageEvents['OTP Entered'] = { value: 'Yes' };
+    postWebEngageEvent('OTP Entered', eventAttributes);
+
     try {
       Keyboard.dismiss();
 
@@ -511,6 +515,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
     if (mePatient && mePatient.uhid && mePatient.uhid !== '') {
       if (mePatient.relation == null) {
+        const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = { value: 'Yes' };
+        postWebEngageEvent('Pre Apollo Customer', eventAttributes);
         navigateTo(AppRoutes.MultiSignup);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
@@ -518,6 +524,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       }
     } else {
       if (mePatient.firstName == '') {
+        const eventAttributes: WebEngageEvents['Pre Apollo Customer'] = { value: 'No' };
+        postWebEngageEvent('Pre Apollo Customer', eventAttributes);
         navigateTo(AppRoutes.SignUp);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');

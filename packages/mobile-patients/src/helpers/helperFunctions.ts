@@ -4,6 +4,7 @@ import {
   getPackageData,
   getPlaceInfoByLatLng,
   GooglePlacesType,
+  MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -29,6 +30,8 @@ import {
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import WebEngage from 'react-native-webengage';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -711,4 +714,38 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
         return -1;
       return 0;
     });
+};
+
+const webengage = new WebEngage();
+
+export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes: Object) => {
+  try {
+    console.log('\n********* WebEngageEvent Start *********\n');
+    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
+    console.log('\n********* WebEngageEvent End *********\n');
+    webengage.track(eventName, attributes);
+  } catch (error) {
+    console.log('********* Unable to post WebEngageEvent *********', { error });
+  }
+};
+
+export const postwebEngageAddToCartEvent = ({
+  sku,
+  name,
+  category_id,
+  price,
+  special_price,
+}: MedicineProduct) => {
+  const eventAttributes: WebEngageEvents['Add to cart'] = {
+    'product name': name,
+    'product id': sku,
+    Brand: '',
+    'Brand ID': '',
+    'category name': '',
+    'category ID': category_id,
+    Price: price,
+    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+    Quantity: 1,
+  };
+  postWebEngageEvent('Add to cart', eventAttributes);
 };
