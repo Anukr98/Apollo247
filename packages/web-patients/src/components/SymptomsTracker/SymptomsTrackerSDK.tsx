@@ -18,6 +18,7 @@ import { MascotWithMessage } from '../MascotWithMessage';
 import { AphSelect } from '@aph/web-ui-components';
 import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -320,6 +321,10 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
+  const patientAge: string = moment()
+    .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
+    .toString();
+  const patientGender = currentPatient && currentPatient.gender;
 
   return (
     <div className={classes.root}>
@@ -351,14 +356,11 @@ export const SymptomsTrackerSDK: React.FC = () => {
               <div className={classes.rightCol}>
                 <div className={classes.profileDropdown}>
                   For
-                  <AphSelect
+                  <AphCustomDropdown
+                    classes={{ selectMenu: classes.selectMenuItem }}
                     value={currentPatient && currentPatient.id}
                     onChange={(e) => {
                       setCurrentPatientId(e.target.value as Patient['id']);
-                    }}
-                    classes={{
-                      root: classes.selectMenuRoot,
-                      selectMenu: classes.selectMenuItem,
                     }}
                   >
                     {allCurrentPatients &&
@@ -391,24 +393,14 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         Add Member
                       </AphButton>
                     </MenuItem>
-                  </AphSelect>
-                  <AphCustomDropdown classes={{ selectMenu: classes.selectMenuItem }}>
-                    <MenuItem
-                      classes={{
-                        root: classes.menuRoot,
-                        selected: classes.menuSelected,
-                      }}
-                    >
-                      Mallesh
-                    </MenuItem>
                   </AphCustomDropdown>
                 </div>
               </div>
             </div>
             <div className={classes.symptomsTracker}>
               <NavigatorSDK
-                clientId="A6A375AF-A374-41F6-8EA5-C2E8B3239FAC"
-                patientAge={30}
+                clientId={process.env.PRAKTICE_SDK_KEY}
+                patientAge="30"
                 patientGender="male"
                 sdkContainerStyle={customContainerStyle}
                 showDocBtn={() => (

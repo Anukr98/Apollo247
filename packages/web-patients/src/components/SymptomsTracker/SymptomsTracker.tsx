@@ -185,6 +185,10 @@ const useStyles = makeStyles((theme: Theme) => {
           },
         },
       },
+      '& hover': {
+        color: '#fff !important',
+        backgroundColor: '#fcb716 !important',
+      },
     },
     activeButton: {
       color: '#fff !important',
