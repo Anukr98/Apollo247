@@ -293,7 +293,9 @@ export const SymptomsTracker: React.FC = () => {
                   <p>How can we help you today? :)</p>
                   <div className={classes.buttonsWrapper}>
                     <Link to={clientRoutes.symptomsTracker()}>
-                      <AphButton>MYSELF</AphButton>
+                      <AphButton className={!selectCurrentUser ? classes.activeButton : ''}>
+                        MYSELF
+                      </AphButton>
                     </Link>
                     {/* <Link to={clientRoutes.symptomsTracker()}> */}
                     <AphButton
