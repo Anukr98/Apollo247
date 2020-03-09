@@ -124,6 +124,7 @@ import {
   endCallSessionAppointment,
   getAppointmentDataDetails,
   getPrismUrls,
+  sendNotificationToDoctor,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -460,6 +461,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
+    SendNotificationToDoctorAPI();
     // requestToJrDoctor();
     // updateSessionAPI();
   }, []);
@@ -492,6 +494,60 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       // write code for opening prescripiton
     }
   }, []);
+
+  const SendNotificationToDoctorAPI = async () => {
+    try {
+         console.log('appointmentData.status', appointmentData.status);
+
+    if (appointmentData.status !== STATUS.COMPLETED) return;
+    const saveAppointment = [
+      {
+        appointmentId: appointmentData.id,
+        date: moment().format('YYYY-MM-DD'),
+      },
+    ];
+    console.log('saveAppointment', saveAppointment);
+
+    const storedAppointmentData = (await AsyncStorage.getItem('saveAppointment')) || '';
+    const saveAppointmentData = storedAppointmentData ? JSON.parse(storedAppointmentData) : '';
+    console.log('saveAppointmentData', saveAppointmentData);
+
+    if (saveAppointmentData) {
+      const result = saveAppointmentData.filter((obj: any) => {
+        return obj.appointmentId === appointmentData.id;
+      });
+      console.log('saveAppointmentData', saveAppointmentData);
+
+      if (result.length > 0) {
+        if (result[0].appointmentId === appointmentData.id) {
+          if (result[0].date !== saveAppointment[0].date) {
+            sendNotificationToDoctor(client, appointmentData.id)
+              .then((data) => {
+                console.log('data', data);
+              })
+              .catch((error) => {
+                console.log('error', error);
+              });
+
+            const index = saveAppointmentData.findIndex(
+              (project: any) => project.appointmentId === appointmentData.id
+            );
+            saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
+            AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
+          }
+        }
+      } else {
+        saveAppointmentData.push(saveAppointment[0]);
+        AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
+      }
+    } else {
+      AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointment));
+    }
+    } catch (error) {
+      
+    }
+ 
+  };
 
   const client = useApolloClient();
 
@@ -1132,11 +1188,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       presence: (presenceEvent) => {
         if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-        console.log(
-          'presenceEvent',
-          presenceEvent,
-          +' ' + APPOINTMENT_TYPE.PHYSICAL + ' ' + appointmentData.appointmentType
-        );
+        // console.log(
+        //   'presenceEvent',
+        //   presenceEvent,
+        //   +' ' + APPOINTMENT_TYPE.PHYSICAL + ' ' + appointmentData.appointmentType
+        // );
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -1343,7 +1399,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('ChatRoom_APIForUpdateAppointmentData', error);
+        CommonBugFender('ChatRoom_APIForUpdateAppointmentData', e);
         abondmentStarted = false;
         console.log('Error APIForUpdateAppointmentData ', e);
       });
