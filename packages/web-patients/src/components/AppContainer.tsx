@@ -39,6 +39,8 @@ import { LocationProvider } from 'components/LocationProvider';
 import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
 import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
 import { Help } from 'components/Help/Help';
+import { TestsLanding } from 'components/Tests/TestsLanding';
+import { TestDetails } from 'components/Tests/TestDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,6 +131,8 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
           <AuthRouted exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
           <AuthRouted exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
+          <AuthRouted exact path={clientRoutes.tests()} component={TestsLanding} />
+          <AuthRouted exact path={clientRoutes.testDetails()} component={TestDetails} />
         </Switch>
         <Help />
       </div>

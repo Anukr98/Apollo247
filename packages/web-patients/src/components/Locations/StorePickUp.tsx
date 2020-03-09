@@ -278,7 +278,7 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
         </div>
       )}
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="Store Pick Up" />

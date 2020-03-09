@@ -397,7 +397,11 @@ export const MedicineLanding: React.FC = (props) => {
                       <div className={classes.prescriptionGroup}>
                         <div>
                           <div className={classes.groupTitle}>Have a prescription ready?</div>
-                          <AphButton color="primary" onClick={() => setIsUploadPreDialogOpen(true)}>
+                          <AphButton
+                            color="primary"
+                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            title={'Upload Prescription'}
+                          >
                             Upload Prescription
                           </AphButton>
                         </div>
@@ -407,7 +411,9 @@ export const MedicineLanding: React.FC = (props) => {
                       </div>
                       <div className={classes.consultLink}>
                         Don’t have a prescription? Don’t worry!
-                        <Link to={clientRoutes.doctorsLanding()}>Consult a Doctor</Link>
+                        <Link to={clientRoutes.doctorsLanding()} title={'Consult a doctor'}>
+                          Consult a Doctor
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -415,6 +421,7 @@ export const MedicineLanding: React.FC = (props) => {
                     <Link
                       className={`${classes.serviceType} ${classes.textVCenter}`}
                       to={clientRoutes.yourOrders()}
+                      title={'Open your orders'}
                     >
                       <span className={classes.serviceIcon}>
                         <img src={require('images/ic_tablets.svg')} alt="" />
@@ -502,7 +509,7 @@ export const MedicineLanding: React.FC = (props) => {
         </div>
       </Popover>
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
         <UploadPrescription
           closeDialog={() => {
@@ -512,7 +519,7 @@ export const MedicineLanding: React.FC = (props) => {
         />
       </AphDialog>
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
