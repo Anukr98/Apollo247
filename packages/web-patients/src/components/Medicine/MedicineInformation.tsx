@@ -407,7 +407,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   }}
                   ref={subDrugsRef}
                 >
-                  <span>Pick from {substitutes.length} available substitutes</span>
+                  <span>
+                    Pick from {substitutes.length} available
+                    {substitutes.length === 1 ? ' substitute' : ' substitutes'}
+                  </span>
                 </div>
               </>
             )}
