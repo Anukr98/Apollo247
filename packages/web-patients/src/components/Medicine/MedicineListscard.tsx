@@ -251,7 +251,9 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             ))}
                           </AphCustomDropdown>
                         </div>
-                        <div className={classes.medicinePrice}> Rs.{medicine.price}</div>
+                        <div className={classes.medicinePrice}>
+                          Rs. {medicine.special_price || medicine.price}
+                        </div>
                         <div className={classes.addToCart}>
                           <AphButton>
                             <img
