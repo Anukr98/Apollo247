@@ -328,8 +328,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const patientGender =
     currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : '';
 
-  console.log(patientAge, patientGender);
-
   return (
     <div className={classes.root}>
       <Header />
