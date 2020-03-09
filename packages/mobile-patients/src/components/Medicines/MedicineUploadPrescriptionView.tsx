@@ -17,6 +17,8 @@ import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponent
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -267,7 +269,16 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
             paddingBottom: 16,
             textAlign: 'right',
           }}
-          onPress={() => setShowPopup(true)}
+          onPress={() => {
+            if (!isTest) {
+              // since this component being used in two places hence condition isTest
+              const eventAttributes: WebEngageEvents['Upload Prescription Clicked'] = {
+                Source: 'Cart',
+              };
+              postWebEngageEvent('Upload Prescription Clicked', eventAttributes);
+            }
+            setShowPopup(true);
+          }}
         >
           ADD MORE PRESCRIPTIONS
         </Text>

@@ -34,6 +34,8 @@ import {
   isEmptyObject,
   handleGraphQlError,
   doRequestAndAccessLocation,
+  postWebEngageEvent,
+  postwebEngageAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -57,6 +59,7 @@ import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import Geolocation from '@react-native-community/geolocation';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -376,15 +379,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   }, [deliveryTime, deliveryError]);
 
-  const onAddCartItem = ({
-    sku,
-    mou,
-    name,
-    price,
-    special_price,
-    is_prescription_required,
-    thumbnail,
-  }: MedicineProduct) => {
+  const onAddCartItem = (item: MedicineProduct) => {
+    const { sku, mou, name, price, special_price, is_prescription_required, thumbnail } = item;
     addCartItem!({
       id: sku,
       mou,
@@ -400,6 +396,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       thumbnail: thumbnail,
       isInStock: true,
     });
+    postwebEngageAddToCartEvent(item);
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
@@ -606,6 +603,25 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
                   updateQuantityCartItem(medicineDetails);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
+
+                  const eventAttributes: WebEngageEvents['Buy Now'] = {
+                    'product name': medicineDetails.name,
+                    'product id': medicineDetails.sku,
+                    Brand: '',
+                    'Brand ID': '',
+                    'category name': '',
+                    'category ID': medicineDetails.category_id,
+                    Price: medicineDetails.price,
+                    'Discounted Price':
+                      typeof medicineDetails.special_price == 'string'
+                        ? Number(medicineDetails.special_price)
+                        : medicineDetails.special_price,
+                    Quantity:
+                      typeof selectedQuantity == 'string'
+                        ? Number(selectedQuantity)
+                        : selectedQuantity,
+                  };
+                  postWebEngageEvent('Buy Now', eventAttributes);
                   props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
                 }}
                 title="BUY NOW"

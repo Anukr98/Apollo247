@@ -54,6 +54,7 @@ import {
 import { TabHeader } from '../ui/TabHeader';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '../../strings/AppConfig';
+import WebEngage from 'react-native-webengage';
 
 const { width } = Dimensions.get('window');
 
@@ -261,6 +262,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const onPressLogout = () => {
     try {
+      const webengage = new WebEngage();
+      webengage.user.logout();
       signOut();
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');

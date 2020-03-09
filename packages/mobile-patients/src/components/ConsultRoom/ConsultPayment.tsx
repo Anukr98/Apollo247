@@ -18,8 +18,12 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getParameterByName } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getParameterByName,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -37,6 +41,7 @@ export interface ConsultPaymentProps extends NavigationScreenProps {
   doctorName: string;
   appointmentId: string;
   price: number;
+  webEngageEventAttributes: WebEngageEvents['Consultation booked'];
 }
 {
 }
@@ -45,6 +50,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   const price = props.navigation.getParam('price');
   const appointmentId = props.navigation.getParam('appointmentId');
   const doctorName = props.navigation.getParam('doctorName');
+  const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
@@ -76,6 +82,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
 
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    postWebEngageEvent('Consultation booked', webEngageEventAttributes);
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({

@@ -10,7 +10,11 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getNetStatus, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  handleGraphQlError,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -38,6 +42,8 @@ import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { loginAPI } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import WebEngage from 'react-native-webengage';
 
 const { height, width } = Dimensions.get('window');
 
@@ -122,6 +128,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const { setLoading } = useUIElements();
+  const webengage = new WebEngage();
 
   useEffect(() => {
     try {
@@ -243,7 +250,14 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const onClickOkay = () => {
     try {
+      webengage.user.login(`+91${phoneNumber}`);
       CommonLogEvent(AppRoutes.Login, 'Login clicked');
+      setTimeout(() => {
+        const eventAttributes: WebEngageEvents['Mobile Number Entered'] = {
+          mobilenumber: phoneNumber,
+        };
+        postWebEngageEvent('Mobile Number Entered', eventAttributes);
+      }, 3000);
 
       Keyboard.dismiss();
       getNetStatus().then(async (status) => {
