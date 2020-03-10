@@ -1691,10 +1691,7 @@ app.get('/getPrismData', (req, res) => {
         })
           .then(async (response) => {
             if (response) {
-              console.log(
-                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
-                '======prism response======='
-              );
+              console.log(response, '======prism response=======');
             }
           })
           .catch((error) => {
