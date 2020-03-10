@@ -1676,7 +1676,7 @@ app.get('/getPrismData', (req, res) => {
             query: `
             mutation {
               registerPatientsFromPrism(mobileNumber:${queueDetails[1]}) {
-                Patients {
+                patients {
                   id                  
                     mobileNumber
                     firstName
@@ -1696,7 +1696,7 @@ app.get('/getPrismData', (req, res) => {
           })
           .catch((error) => {
             // no need to explicitly saying details about error for clients.
-            console.log(error);
+            console.log('======prism error response=======', error);
           });
       }
     }
