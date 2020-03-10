@@ -1675,7 +1675,7 @@ app.get('/getPrismData', (req, res) => {
           data: {
             query: `
             mutation {
-              registerPatientsFromPrism(mobileNumber:${queueDetails[1]}) {
+              registerPatientsFromPrism(mobileNumber:"${queueDetails[1]}") {
                 patients {
                   id                  
                     mobileNumber
