@@ -143,6 +143,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   const [isUploading, setIsUploading] = useState(false);
 
+  const toBase64 = (file: any) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+
   return (
     <div className={classes.root}>
       <div className={classes.orderSteps}>
@@ -191,11 +201,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                             });
                           if (aphBlob && aphBlob.name) {
                             const url = client.getBlobUrl(aphBlob.name);
-                            setPrescriptionUploaded &&
-                              setPrescriptionUploaded({
-                                imageUrl: url,
-                                name: aphBlob.name,
-                              });
+                            toBase64(file).then((res: any) => {
+                              setPrescriptionUploaded &&
+                                setPrescriptionUploaded({
+                                  imageUrl: url,
+                                  name: aphBlob.name,
+                                  fileType: fileExtension.toLowerCase(),
+                                  baseFormat: res,
+                                });
+                            });
                             const currentUrl = window.location.href;
                             if (currentUrl.endsWith('/medicines')) {
                               window.location.href = clientRoutes.medicinesCart();

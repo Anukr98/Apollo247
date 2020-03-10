@@ -42,6 +42,8 @@ export interface StoreAddresses {
 export interface PrescriptionFormat {
   name: string | null;
   imageUrl: string | null;
+  fileType: string;
+  baseFormat: string;
 }
 
 export interface MedicineCartContextProps {
@@ -108,6 +110,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const defPresObject = {
     name: '',
     imageUrl: '',
+    fileType: '',
+    baseFormat: '',
   };
   const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>(
     localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems') || '') : []
@@ -228,9 +232,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
-  const cartTotal: MedicineCartContextProps['cartTotal'] = cartItems.reduce(
-    (currTotal, currItem) => currTotal + currItem.quantity * currItem.price,
-    0
+  const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
+    cartItems
+      .reduce(
+        (currTotal, currItem) =>
+          currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price),
+        0
+      )
+      .toFixed(2)
   );
 
   const clearCartInfo = () => {
