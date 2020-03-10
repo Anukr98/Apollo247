@@ -130,6 +130,16 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const apiDetails = {
+  url: process.env.PHARMACY_MED_CATEGORY_LIST,
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+};
+const apiDetailsText = {
+  url: process.env.PHARMACY_MED_SEARCH_URL,
+};
+type Params = { searchMedicineType: string; searchText: string };
+
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [priceFilter, setPriceFilter] = useState();
@@ -141,18 +151,14 @@ export const SearchByMedicine: React.FC = (props) => {
   const [sortBy, setSortBy] = useState<string>('');
 
   const getTitle = () => {
-    return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
+    if (params.searchMedicineType.includes('-')) {
+      return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
+    } else if (params.searchMedicineType.includes('_')) {
+      return _replace(params.searchMedicineType, '_', ' & ');
+    }
+    return params.searchMedicineType;
   };
-  type Params = { searchMedicineType: string; searchText: string };
 
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_CATEGORY_LIST,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
-  };
-  const apiDetailsText = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
-  };
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
 
