@@ -211,7 +211,7 @@ export const Header: React.FC = (props) => {
                 <Link
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
                   to={clientRoutes.myAccount()}
-                  title={'Profile'}
+                  title={'Control profile'}
                 >
                   {isSigningIn ? (
                     <CircularProgress />

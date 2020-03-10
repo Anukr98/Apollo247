@@ -512,7 +512,7 @@ export const MedicineCart: React.FC = (props) => {
   // if the total is less than 200 +20 is added.
   const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   const grossValue = cartTotal - discountAmount;
-  const deliveryCharges = grossValue > 200 ? -20 : grossValue > 0 ? 20 : 0;
+  const deliveryCharges = grossValue > 200 || grossValue <= 0 ? 0 : 20;
   const totalAmount = (grossValue + deliveryCharges).toFixed(2);
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
@@ -623,6 +623,7 @@ export const MedicineCart: React.FC = (props) => {
                 onClick={() => {
                   window.location.href = clientRoutes.medicines();
                 }}
+                title={'Add items to cart'}
               >
                 Add Items
               </AphButton>
@@ -743,6 +744,7 @@ export const MedicineCart: React.FC = (props) => {
                       selected: classes.tabSelected,
                     }}
                     label="Home Delivery"
+                    title={'Choose home delivery'}
                   />
                   <Tab
                     classes={{
@@ -750,6 +752,7 @@ export const MedicineCart: React.FC = (props) => {
                       selected: classes.tabSelected,
                     }}
                     label="Store Pick Up"
+                    title={'Choose store pick up'}
                   />
                 </Tabs>
                 {tabValue === 0 && (
@@ -834,6 +837,7 @@ export const MedicineCart: React.FC = (props) => {
             fullWidth
             disabled={disableSubmit || !isPaymentButtonEnable}
             className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+            title={'Proceed to pay bill'}
           >
             Proceed to pay — RS. {totalAmount}
           </AphButton>
@@ -841,7 +845,7 @@ export const MedicineCart: React.FC = (props) => {
       </div>
 
       <AphDialog open={checkoutDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} />
+        <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Checkout</AphDialogTitle>
         <div className={classes.shadowHide}>
           <div className={classes.dialogContent}>
@@ -893,7 +897,7 @@ export const MedicineCart: React.FC = (props) => {
       </AphDialog>
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
         <UploadPrescription
           closeDialog={() => {
@@ -904,7 +908,7 @@ export const MedicineCart: React.FC = (props) => {
       </AphDialog>
 
       <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsApplyCouponDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Apply Coupon</AphDialogTitle>
         <ApplyCoupon
           setCouponCode={setCouponCode}
@@ -917,7 +921,7 @@ export const MedicineCart: React.FC = (props) => {
       </AphDialog>
 
       <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} />
+        <AphDialogClose onClick={() => setIsEPrescriptionOpen(false)} title={'Close'} />
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>

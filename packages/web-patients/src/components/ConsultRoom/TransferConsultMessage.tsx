@@ -120,7 +120,7 @@ export const TransferConsultMessage: React.FC = (props) => {
         <AphButton color="primary">Accept</AphButton>
       </div>
       <AphDialog open={isDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Choose Doctor</AphDialogTitle>
         <ChooseDoctor />
       </AphDialog>

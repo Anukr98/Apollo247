@@ -150,14 +150,14 @@ export const Navigation: React.FC = (props) => {
       <Link
         className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
         to={clientRoutes.appointments()}
-        title={'Appointments'}
+        title={'View appointments'}
       >
         Appointments
       </Link>
       <Link
         to={clientRoutes.healthRecords()}
         className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
-        title={'Health Records'}
+        title={'View health records'}
       >
         Health Records
       </Link>
@@ -211,7 +211,7 @@ export const Navigation: React.FC = (props) => {
               <img src={require('images/ic_medicines.png')} alt="Medicine Cart" />
             </div>
             <div className={classes.cartTypeInfo}>
-              <div className={classes.cartType}>
+              <div className={classes.cartType} title={'View medicines'}>
                 <span>Medicines</span>
                 <span>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
@@ -225,7 +225,7 @@ export const Navigation: React.FC = (props) => {
               <img src={require('images/ic_tests.svg')} alt="Tests Cart" />
             </div>
             <div className={classes.cartTypeInfo}>
-              <div className={classes.cartType}>
+              <div className={classes.cartType} title={'View tests'}>
                 <span>Tests</span>
                 <span>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />

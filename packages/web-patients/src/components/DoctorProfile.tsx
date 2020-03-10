@@ -482,9 +482,13 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             <img src={profileImage || require('images/no_photo.png')} alt={firstName || ''} />
           </div>
           <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>{fullName}</div>
+            <div className={classes.doctorName} title={'Doctor Name'}>
+              {fullName}
+            </div>
             <div className={classes.specialits}>
-              {speciality} <span className={classes.lineDivider}>|</span> {experience} Yrs
+              <span title={'Speciality'}>{speciality}</span>{' '}
+              <span className={classes.lineDivider}>|</span>{' '}
+              <span title={'Experience'}>{experience} Yrs</span>
               <div className={classes.shareIcon} title={'Share info'}>
                 <img src={require('images/ic-share-green.svg')} alt="" />
               </div>

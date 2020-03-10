@@ -188,7 +188,7 @@ export const MedicineListingCard: React.FC = (props) => {
                   </div>
                 </div>
               </div>
-              {item.is_in_stock && (
+              {item.is_in_stock ? (
                 <div className={classes.cartRight}>
                   <div className={classes.medicinePack}>
                     QTY :
@@ -230,7 +230,9 @@ export const MedicineListingCard: React.FC = (props) => {
                       ))}
                     </AphCustomDropdown>
                   </div>
-                  <div className={classes.medicinePrice}>Rs.{item.price}</div>
+                  <div className={classes.medicinePrice}>
+                    Rs. {Number(item.special_price).toFixed(2) || item.price.toFixed(2)}
+                  </div>
                   <div className={classes.addToCart}>
                     <AphButton onClick={() => removeCartItem && removeCartItem(item.id)}>
                       <img
@@ -241,7 +243,7 @@ export const MedicineListingCard: React.FC = (props) => {
                     </AphButton>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         ))}

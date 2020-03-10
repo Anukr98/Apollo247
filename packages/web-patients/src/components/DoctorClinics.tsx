@@ -157,7 +157,7 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
           <div className={classes.sectionHeader}>
             <span>{`Dr. ${firstName}'s`} location for physical visits</span>
           </div>
-          <Grid className={classes.gridContainer} container spacing={2}>
+          <Grid className={classes.gridContainer} container spacing={2} title={'Hospital location'}>
             {_map(clinics, (clinicDetails) => {
               return (
                 <Grid item xs={12} sm={12} md={12} lg={6} key={_uniqueId('avagr_')}>

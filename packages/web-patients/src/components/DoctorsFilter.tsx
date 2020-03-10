@@ -188,6 +188,7 @@ export interface SearchObject {
   language: string[] | null;
   dateSelected: string;
   specialtyName: string;
+  prakticeSpecialties: string | null;
 }
 
 export interface DoctorsFilterProps {
@@ -200,6 +201,7 @@ export interface DoctorsFilterProps {
   manageFilter: (disableFilters: boolean) => void;
   showResponsiveFilter: boolean;
   setShowResponsiveFilter: (showResponsiveFilter: boolean) => void;
+  prakticeSpecialties?: '';
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
@@ -258,6 +260,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     language: language,
     dateSelected: dateSelected,
     specialtyName: selectedSpecialtyName,
+    prakticeSpecialties: '',
   };
 
   // we should keep the previous value and render only when prop changes to prevent infinite renders.
@@ -300,6 +303,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         placeholder="Search doctors or specialities"
         onChange={(event) => {
           if (isValidSearch(event.target.value)) {
+            if (localStorage.getItem('symptomTracker')) {
+              localStorage.removeItem('symptomTracker');
+              emptyFilters(true);
+            }
             if (
               selectedSpecialtyName !== '' &&
               selectedSpecialtyName !== event.currentTarget.value
@@ -389,6 +396,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                       }}
                       key={_uniqueId('cityName_')}
                       disabled={disableFilters}
+                      title={'Select city'}
                     >
                       {filterCityName}
                     </AphButton>

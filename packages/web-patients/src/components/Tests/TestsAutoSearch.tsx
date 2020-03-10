@@ -123,6 +123,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchBtnDisabled: {
       opacity: 0.5,
+      '& img': {
+        filter: 'grayscale(100%)',
+      },
     },
     progressLoader: {
       textAlign: 'center',
@@ -131,7 +134,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineAutoSearch: React.FC = (props) => {
+export const TestsAutoSearch: React.FC = (props) => {
   const classes = useStyles({});
   const apiDetails = {
     url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -175,7 +178,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.medicineSearchForm}>
         <AphTextField
-          placeholder="Search meds, brands and more"
+          placeholder="Search test and packages"
           className={classes.searchInput}
           onChange={(e) => {
             setSearchText(e.target.value);
@@ -190,7 +193,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
           disabled={searchText.length < 3}
           className={classes.searchBtn}
           onClick={() =>
-            (window.location.href = clientRoutes.searchByMedicine('search-medicines', searchText))
+            (window.location.href = clientRoutes.searchByTest('search-medicines', searchText))
           }
           classes={{
             disabled: classes.searchBtnDisabled,
@@ -211,7 +214,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
               <ul>
                 {searchMedicines.map((medicine) => (
                   <li key={medicine.id}>
-                    <Link to={clientRoutes.medicineDetails(medicine.sku)}>
+                    <Link to={clientRoutes.testDetails()}>
                       <div className={classes.medicineImg}>
                         {medicine.is_prescription_required ? (
                           <img src={require('images/ic_tablets_rx.svg')} alt="" />

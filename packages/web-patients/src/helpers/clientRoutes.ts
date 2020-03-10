@@ -33,6 +33,10 @@ export const clientRoutes = {
   addressBook: () => '/address-book',
   symptomsTrackerFor: () => '/track-symptoms-for',
   symptomsTracker: () => '/track-symptoms',
+  tests: () => '/tests',
+  testDetails: () => `/test-details`,
+  searchByTest: (searchMedicineType: string, searchText: string) =>
+    `/${searchMedicineType}/${searchText}`,
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
