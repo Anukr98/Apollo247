@@ -25,7 +25,7 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format } from 'date-fns';
+import { addMilliseconds, format, differenceInHours } from 'date-fns';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -257,7 +257,7 @@ const createAppointmentSession: Resolver<
     createAppointmentSessionInput.appointmentId
   );
 
-  if (apptSessionDets) {
+  if (apptSessionDets && differenceInHours(apptSessionDets.createdDate, new Date()) <= 24) {
     if (
       createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
       apptDetails.status != STATUS.IN_PROGRESS
