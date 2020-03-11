@@ -464,3 +464,9 @@ export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
     }
   }
 `;
+
+export const SEND_HELP_EMAIL = gql`
+  query SendHelpEmail($helpEmailInput: HelpEmailInput) {
+    sendHelpEmail(helpEmailInput: $helpEmailInput)
+  }
+`;

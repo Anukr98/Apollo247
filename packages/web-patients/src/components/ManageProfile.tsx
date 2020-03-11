@@ -75,7 +75,10 @@ export const ManageProfile: React.FC = (props) => {
 
   const hasExistingProfile =
     allCurrentPatients && allCurrentPatients.some((p) => !_isEmpty(p.uhid));
+
   const defaultNewProfile = allCurrentPatients ? currentPatient || allCurrentPatients[0] : null;
+
+  // console.log(hasExistingProfile, defaultNewProfile, '-----------');
 
   return (
     <ProtectedWithLoginPopup>
