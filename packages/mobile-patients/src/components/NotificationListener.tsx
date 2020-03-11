@@ -249,8 +249,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'call_started' ||
       notificationType === 'Appointment_Canceled' ||
       notificationType === 'Patient_Noshow_Reschedule_Appointment' ||
-      notificationType === 'Reschedule_Appointment' ||
-      notificationType === 'PRESCRIPTION_READY'
+      notificationType === 'Reschedule_Appointment'
+      // notificationType === 'PRESCRIPTION_READY'
     ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
@@ -566,7 +566,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'PRESCRIPTION_READY': // 15 min, no case sheet
         {
-          showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
+          // showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
 
@@ -833,8 +833,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               notificationType == 'call_started' ||
               notificationType == 'chat_room' ||
               notificationType == 'Reminder_Appointment_15' ||
-              notificationType == 'Reminder_Appointment_Casesheet_15' ||
-              notificationType == 'PRESCRIPTION_READY'
+              notificationType == 'Reminder_Appointment_Casesheet_15'
+              // notificationType == 'PRESCRIPTION_READY'
             ) {
               try {
                 if (appointmentData[0]!.doctorInfo !== null) {
