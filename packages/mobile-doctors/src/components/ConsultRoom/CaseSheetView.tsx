@@ -39,6 +39,7 @@ import {
   ToogleOff,
   ToogleOn,
   UserPlaceHolder,
+  Video,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
@@ -153,8 +154,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   // const PatientInfoData = props.navigation.getParam('PatientInfoAll');
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   console.log(Appintmentdatetimeconsultpage, 'Appintmentdatetimeconsultpage');
-  const dateIsAfterconsult = moment(Appintmentdatetimeconsultpage).isAfter(moment(new Date()));
-  console.log(dateIsAfterconsult, 'dateIsAfterconsult');
+  // const dateIsAfterconsult = moment(Appintmentdatetimeconsultpage).isAfter(moment(new Date()));
+  // console.log(dateIsAfterconsult, 'dateIsAfterconsult');
   const AppId = props.navigation.getParam('AppId');
   const stastus = props.navigation.getParam('AppointmentStatus');
   const [
@@ -1171,7 +1172,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <DiagnosicsCard
                       diseaseName={showdata.itemname}
                       icon={
-                        dateIsAfterconsult && (
+                        caseSheetEdit && (
                           <TouchableOpacity
                             onPress={() => {
                               // removeDiagnosticPresecription(showdata, i);
@@ -1381,7 +1382,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                               medicinePrescriptionData === null ||
                               medicinePrescriptionData === undefined
                             ) {
-                              dateIsAfterconsult &&
+                              caseSheetEdit &&
                                 setMedicinePrescriptionData([
                                   ...(medicinePrescriptionData || []),
                                   {
@@ -1410,7 +1411,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       >
                         <View style={[styles.dataCardsStyle, { marginVertical: 4 }]}>
                           {renderMedicineDetails(med)}
-                          {dateIsAfterconsult && (
+                          {caseSheetEdit && (
                             <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
                           )}
                         </View>
@@ -1945,57 +1946,62 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <View>
         {pastList &&
           pastList.map((i, index, array) => {
-            return (
-              <>
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: 'row',
-                    // justifyContent: 'center',
-                    // alignItems: 'center',
-                  }}
-                >
-                  {renderLeftTimeLineView(index !== 0, index !== array.length - 1)}
-                  <TouchableOpacity
-                    activeOpacity={1}
+            if (i)
+              return (
+                <>
+                  <View
                     style={{
-                      borderWidth: 1,
-                      borderColor: theme.colors.darkBlueColor(0.2),
-                      flexDirection: 'row',
-                      borderRadius: 10,
-                      backgroundColor: theme.colors.WHITE,
-                      height: 50,
-                      alignItems: 'center',
-                      paddingRight: 10,
-                      paddingLeft: 18,
-                      marginVertical: 4.5,
-                      marginRight: 20,
                       flex: 1,
-                      justifyContent: 'space-between',
+                      flexDirection: 'row',
+                      // justifyContent: 'center',
+                      // alignItems: 'center',
                     }}
-                    // onPress={() =>
-                    //   props.navigation.navigate(AppRoutes.CaseSheetDetails, {
-                    //     consultDetails: i,
-                    //     patientDetails: props.patientDetails,
-                    //   })
-                    // }
                   >
-                    <Text
+                    {renderLeftTimeLineView(index !== 0, index !== array.length - 1)}
+                    <TouchableOpacity
+                      activeOpacity={1}
                       style={{
-                        ...theme.viewStyles.text('M', 12, theme.colors.darkBlueColor(0.6), 1, 12),
+                        borderWidth: 1,
+                        borderColor: theme.colors.darkBlueColor(0.2),
+                        flexDirection: 'row',
+                        borderRadius: 10,
+                        backgroundColor: theme.colors.WHITE,
+                        height: 50,
+                        alignItems: 'center',
+                        paddingRight: 10,
+                        paddingLeft: 18,
+                        marginVertical: 4.5,
+                        marginRight: 20,
+                        flex: 1,
+                        justifyContent: 'space-between',
                       }}
+                      // onPress={() =>
+                      //   props.navigation.navigate(AppRoutes.CaseSheetDetails, {
+                      //     consultDetails: i,
+                      //     patientDetails: props.patientDetails,
+                      //   })
+                      // }
                     >
-                      {moment(i ? i.appointmentDateTime : '').format('D MMMM, HH:MM A')}
-                    </Text>
-                    <View style={{ flexDirection: 'row' }}>
-                      <View style={{ marginRight: 24 }}>
-                        <Audio />
+                      <Text
+                        style={theme.viewStyles.text(
+                          'M',
+                          12,
+                          theme.colors.darkBlueColor(0.6),
+                          1,
+                          12
+                        )}
+                      >
+                        {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
+                      </Text>
+                      <View style={{ flexDirection: 'row' }}>
+                        <View style={{ marginRight: 24 }}>
+                          {i.appointmentType === APPOINTMENT_TYPE.ONLINE ? <Video /> : <Audio />}
+                        </View>
                       </View>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </>
-            );
+                    </TouchableOpacity>
+                  </View>
+                </>
+              );
           })}
       </View>
     );
@@ -2198,7 +2204,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
-                        dateIsAfterconsult
+                        caseSheetEdit
                           ? selectedAdviceAction({ key: item.id, value: item.instruction }, 'a')
                           : null;
                       }}
@@ -2212,7 +2218,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         >
                           {item.instruction}
                         </Text>
-                        {dateIsAfterconsult && (
+                        {caseSheetEdit && (
                           <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
                         )}
                       </View>
@@ -2374,8 +2380,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  console.log(caseSheetEdit, 'caseSheetEdit');
-
   return (
     <View style={styles.casesheetView}>
       <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
@@ -2391,7 +2395,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {renderDiagnosisView()}
           {renderMedicinePrescription()}
           {renderDiagonisticPrescription()}
-          {/* {renderTestPrescription()} */}
           {renderAdviceInstruction()}
           {renderFollowUpView()}
 
@@ -2414,8 +2417,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 />
               </View>
             </View>
-            {/* {loading ? <Loader flex1 /> : null} */}
-            {/* {renderButtonsView()} */}
           </View>
           {showPopUp && CallPopUp()}
           {ShowAddTestPopup && renderAddTestPopup()}

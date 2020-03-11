@@ -47,9 +47,7 @@ export interface ProfileProps
 export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
   const client = useApolloClient();
   const profileData = props.navigation.getParam('ProfileData');
-  const [phoneNumber, setPhoneNumber] = useState<string>(
-    (profileData.delegateNumber || '').substring(3)
-  );
+  const [phoneNumber, setPhoneNumber] = useState<string>(profileData.delegateNumber || '');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { doctorDetails, setDoctorDetails } = useAuth();
   const [isLoading, setIsLoading] = useState<boolean>(false);

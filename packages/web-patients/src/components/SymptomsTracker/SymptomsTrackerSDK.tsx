@@ -317,7 +317,11 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
               onClick={async () => {
                 const queryResponse = await $Generator({ type: 'showSpeciality' });
                 let specialities = [];
-                if (queryResponse && queryResponse.specialists && queryResponse.specialists.length) {
+                if (
+                  queryResponse &&
+                  queryResponse.specialists &&
+                  queryResponse.specialists.length
+                ) {
                   specialities = queryResponse.specialists.map((item: { speciality: string }) =>
                     item.speciality.trim()
                   );
@@ -353,8 +357,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
       ? moment()
-        .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
-        .toString()
+          .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
+          .toString()
       : '';
   const patientGender =
     currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : '';
@@ -381,8 +385,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 isSmallScreen
                   ? 'calc(100vh - 135px)'
                   : isMediumScreen
-                    ? 'calc(100vh - 205px)'
-                    : 'calc(100vh - 155px)'
+                  ? 'calc(100vh - 205px)'
+                  : 'calc(100vh - 155px)'
               }
             >
               <div className={classes.subHeader}>

@@ -1,7 +1,8 @@
-import { AppRegistry, YellowBox } from 'react-native';
-import { name as appName } from './app.json';
+import 'react-native-gesture-handler';
 import { AppContainer } from '@aph/mobile-doctors/src/components/AppContainer';
 import { Client, Configuration } from 'bugsnag-react-native';
+import { AppRegistry, YellowBox } from 'react-native';
+import { name as appName } from './app.json';
 
 if (__DEV__) {
   import('./ReactotronConfig').then(() => console.log('Reactotron Configured'));

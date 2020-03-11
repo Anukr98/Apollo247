@@ -150,8 +150,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultRoomScreen]: {
     screen: ConsultRoomScreen,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
-
   [AppRoutes.CaseSheetView]: {
     screen: CaseSheetView,
   },

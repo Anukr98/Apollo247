@@ -24,6 +24,7 @@ import _uniqueId from 'lodash/uniqueId';
 import _map from 'lodash/map';
 import { MascotWithMessage } from './MascotWithMessage';
 import { LocationContext } from './LocationProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -355,7 +356,8 @@ export const DoctorsLanding: React.FC = (props) => {
                 <div className={classes.breadcrumbs}>
                   <a
                     onClick={() => {
-                      window.history.back();
+                      // window.history.back();
+                      window.location.href = clientRoutes.welcome();
                       if (localStorage.getItem('symptomTracker')) {
                         localStorage.removeItem('symptomTracker');
                       }
