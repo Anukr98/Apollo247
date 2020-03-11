@@ -38,7 +38,6 @@ import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
 import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
 import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
-import { Help } from 'components/Help/Help';
 import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
 import { YourOrders } from 'components/Tests/YourOrders';
@@ -69,9 +68,11 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
+
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
   }, [signInError]);
+
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
       <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
@@ -140,7 +141,6 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.searchByTest()} component={SearchByTest} />
           <AuthRouted exact path={clientRoutes.ordersMessage()} component={OrdersMessage} />
         </Switch>
-        {/* <Help /> */}
       </div>
     </Scrollbars>
   );

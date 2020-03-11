@@ -1,7 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Theme, Typography, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
+import { SEND_HELP_EMAIL } from 'graphql/profiles';
+import { SendHelpEmail, SendHelpEmailVariables } from 'graphql/types/SendHelpEmail';
+import { generalHelpSections } from 'helpers/feedbackHelpers';
+import _map from 'lodash/map';
+import _find from 'lodash/find';
+import { useMutation } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,11 +118,44 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    submitBtn: {
+      backgroundColor: '#fcb716',
+      color: '#fff',
+    },
+    submitDisable: {
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      opacity: 0.5,
+    },
   };
 });
 
-export const HelpForm: React.FC = (props) => {
+const helpCategories = _map(generalHelpSections, 'category');
+const defaultSelectedCategory = '';
+
+interface HelpSectionProps {
+  category: string;
+  options: string[];
+}
+
+interface HelpFormProps {
+  submitStatus: (status: boolean) => void;
+  closeHelpForm: () => void;
+}
+
+export const HelpForm: React.FC<HelpFormProps> = (props) => {
   const classes = useStyles();
+  const { submitStatus, closeHelpForm } = props;
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>(defaultSelectedCategory);
+  const [selectedReason, setSelectedReason] = useState<string>('');
+  const [mutationLoading, setMutationLoading] = useState<boolean>(false);
+  const [comments, setComments] = useState<string>('');
+  const reasonsList = _find(generalHelpSections, (helpSection: HelpSectionProps) => {
+    return helpSection.category === selectedCategoryName;
+  });
+  const disableSubmit = !(selectedCategoryName.length > 0 && selectedReason.length > 0);
+  const { currentPatient } = useAllCurrentPatients();
+  const helpSectionMutation = useMutation<SendHelpEmail, SendHelpEmailVariables>(SEND_HELP_EMAIL);
 
   return (
     <div className={classes.root}>
@@ -128,39 +169,115 @@ export const HelpForm: React.FC = (props) => {
             <div className={classes.formRow}>
               <label>What do you need help with?</label>
               <div className={classes.buttonGroup}>
-                <AphButton color="secondary" className={classes.buttonActive}>
-                  Pharmacy
-                </AphButton>
-                <AphButton color="secondary">Online Consult</AphButton>
-                <AphButton color="secondary">Health Records</AphButton>
-                <AphButton color="secondary">Physical Consult</AphButton>
-                <AphButton color="secondary">Something else</AphButton>
+                {helpCategories.map((categoryName) => {
+                  return (
+                    <AphButton
+                      key={categoryName}
+                      color="secondary"
+                      className={categoryName === selectedCategoryName ? classes.buttonActive : ''}
+                      value={categoryName}
+                      onClick={(e) => {
+                        const categoryName = e.currentTarget.value;
+                        setSelectedCategoryName(categoryName);
+                        setSelectedReason('');
+                      }}
+                    >
+                      {categoryName}
+                    </AphButton>
+                  );
+                })}
               </div>
             </div>
             <div className={classes.formRow}>
               <label>Please select a reason that best matches your query</label>
               <div className={classes.selectRoot}>
-                <AphSelect>
-                  <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
-                    Reason 01
-                  </MenuItem>
-                  <MenuItem value={2}>Reason 02</MenuItem>
-                  <MenuItem value={3}>Reason 03</MenuItem>
+                <AphSelect
+                  onChange={(e) => {
+                    const reason = e.target.value as string;
+                    setSelectedReason(reason);
+                  }}
+                  value={selectedReason}
+                >
+                  {reasonsList &&
+                    reasonsList.options &&
+                    reasonsList.options.map((reasonName: string) => {
+                      return (
+                        <MenuItem
+                          value={reasonName}
+                          classes={{ selected: classes.menuSelected }}
+                          key={reasonName}
+                        >
+                          {reasonName}
+                        </MenuItem>
+                      );
+                    })}
                 </AphSelect>
               </div>
             </div>
             <div className={classes.formRow}>
               <label>any other comments (optional)?</label>
               <div className={classes.inputRoot}>
-                <AphTextField placeholder="Write your query here…" />
+                <AphTextField
+                  placeholder="Write your query here…"
+                  value={comments}
+                  onChange={(e) => {
+                    setComments(e.target.value);
+                  }}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
       <div className={classes.bottomActions}>
-        <AphButton>Reset</AphButton>
-        <AphButton color="primary">Submit</AphButton>
+        <AphButton
+          onClick={() => {
+            setSelectedReason('');
+            setSelectedCategoryName(defaultSelectedCategory);
+            setComments('');
+          }}
+        >
+          Reset
+        </AphButton>
+        <AphButton
+          color="primary"
+          disabled={disableSubmit || mutationLoading}
+          className={classes.submitBtn}
+          classes={{
+            disabled: classes.submitDisable,
+          }}
+          onClick={() => {
+            setMutationLoading(true);
+            const apiVariables = {
+              helpEmailInput: {
+                category: selectedCategoryName,
+                reason: selectedReason,
+                comments: comments,
+                patientId: currentPatient && currentPatient.id,
+              },
+            };
+            helpSectionMutation({
+              variables: {
+                ...apiVariables,
+              },
+            })
+              .then((response) => {
+                const status =
+                  response && response.data && response.data.sendHelpEmail
+                    ? response.data.sendHelpEmail
+                    : '';
+                if (status === 'Success') {
+                  closeHelpForm();
+                  submitStatus(true);
+                }
+              })
+              .catch(() => {
+                window.alert('An error occurred while processing your request');
+              });
+          }}
+        >
+          {mutationLoading ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
+        </AphButton>
       </div>
     </div>
   );
