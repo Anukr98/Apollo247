@@ -606,7 +606,7 @@ export async function sendNotification(
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
     notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
       .replace('{1}', doctorDetails.firstName)
-      .replace('{2}', appointment.id)
+      .replace('{2}', appointment.displayId.toString())
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
     notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
     sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
