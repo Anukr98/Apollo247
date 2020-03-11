@@ -356,13 +356,6 @@ export const Header: React.FC = (props) => {
                           classes.menuItemActive}`}
                         src={require('images/ic_help.svg')}
                       />
-                      {/* <span>
-                        <img
-                          className={classes.userActiveDark}
-                          onClick={() => setIsDialogOpen(true)}
-                          src={require('images/ic_account.svg')}
-                        />
-                      </span> */}
                     </div>
                   ) : (
                     <div>
@@ -423,14 +416,6 @@ export const Header: React.FC = (props) => {
                           </Link>
                         </span>
                       )}
-
-                      {/* <span>
-                        <img
-                          className={classes.userActiveDark}
-                          onClick={() => setIsDialogOpen(true)}
-                          src={require('images/ic_account.svg')}
-                        />
-                      </span> */}
                     </div>
                   )
                 ) : !isSecretary ? (

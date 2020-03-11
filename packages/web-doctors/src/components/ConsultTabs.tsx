@@ -720,6 +720,17 @@ export const ConsultTabs: React.FC = () => {
           ) {
             setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
           }
+          // -------------------------------------------------------------- //
+          navigator.mediaDevices
+            .getUserMedia({ audio: true, video: false })
+            .then(function(stream) {
+              console.log('Got stream', stream);
+            })
+            .catch(function(err) {
+              alert('Please give camera & mic permission to go for Consult');
+              console.log('GUM failed with error', err);
+            });
+          // -------------------------------------------------------------- //
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;

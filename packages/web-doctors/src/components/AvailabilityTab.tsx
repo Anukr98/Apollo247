@@ -296,7 +296,6 @@ interface AvailabilityTabProps {
 export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext, onBack }) => {
   const classes = useStyles();
   const data = values;
-  const [showOperatingHoursForm, setShowOperatingHoursForm] = useState<boolean>(false);
 
   return (
     <div className={classes.ProfileContainer}>

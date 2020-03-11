@@ -14,7 +14,7 @@ import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
   GET_DOCTOR_DETAILS,
@@ -25,7 +25,6 @@ import {
   RemoveTeamDoctorFromStarTeam,
   RemoveTeamDoctorFromStarTeamVariables,
 } from 'graphql/types/RemoveTeamDoctorFromStarTeam';
-
 import {
   MakeTeamDoctorActive,
   MakeTeamDoctorActiveVariables,
@@ -223,7 +222,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
@@ -329,8 +327,6 @@ export interface StarDoctorCardProps {
 }
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const { doctor, currentDocId } = props;
-  //const moreButttonRef = useRef(null);
-  //const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
@@ -777,10 +773,8 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
       }
     }
   }, []);
-
   const doctorProfile = userDetails;
 
-  //const numStarDoctors = starDoctors.length;
   return (
     <div className={classes.ProfileContainer}>
       {doctorProfile && (

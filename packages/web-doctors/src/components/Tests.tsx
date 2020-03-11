@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Chip, Theme, MenuItem, Paper, Button } from '@material-ui/core';
+import { Typography, Theme, MenuItem, Paper, Button } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
-import { Grid, FormHelperText, Modal, CircularProgress, Tabs, Tab } from '@material-ui/core';
-import { AphDialogTitle, AphSelect } from '@aph/web-ui-components';
-import deburr from 'lodash/deburr';
+import { Grid, Modal, CircularProgress, Tabs, Tab } from '@material-ui/core';
+import { AphDialogTitle } from '@aph/web-ui-components';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
@@ -14,9 +13,7 @@ import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
-import { AphDialog, AphDialogClose } from '@aph/web-ui-components';
-import Scrollbars from 'react-custom-scrollbars';
-
+import { AphDialog } from '@aph/web-ui-components';
 import {
   GET_DOCTOR_FAVOURITE_TEST_LIST,
   ADD_DOCTOR_FAVOURITE_TEST,
@@ -407,17 +404,12 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Tests: React.FC = () => {
   const classes = useStyles({});
   const [searchInput, setSearchInput] = useState('');
-  // const { favouriteTests: selectedValues, setFavouriteTests: setSelectedValues } = useContext(
-  //   CaseSheetContext
-  // );
   const [selectedValues, setSelectedValues] = useState();
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
-  const { caseSheetEdit, patientDetails } = useContext(CaseSheetContext);
+  const { patientDetails } = useContext(CaseSheetContext);
   const [updateText, setUpdateText] = useState('');
   const [updateId, setUpdateId] = useState('');
-  const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
-  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
 
   const fetchDignostic = async (value: string) => {
     client
@@ -447,7 +439,6 @@ export const Tests: React.FC = () => {
             });
         });
         suggestions = filterVal;
-        const length = 0;
         if (suggestions && suggestions.length) {
           setLengthOfSuggestions(suggestions.length);
         }
@@ -460,16 +451,6 @@ export const Tests: React.FC = () => {
   };
   const getSuggestions = (value: string) => {
     return suggestions;
-  };
-  // const [modalStyle] = React.useState(getModalStyle);
-  const [open, setOpen] = React.useState(false);
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
   };
   const [tabValue, setTabValue] = useState<number>(0);
 
@@ -548,7 +529,6 @@ export const Tests: React.FC = () => {
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const [showAddOtherTests, setShowAddOtherTests] = useState<boolean>(false);
   const [otherDiagnostic, setOtherDiagnostic] = useState('');
-  const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
   const [lengthOfSuggestions, setLengthOfSuggestions] = useState<number>(1);
   const [isUpdate, setIsUpdate] = useState(false);
 
@@ -566,10 +546,7 @@ export const Tests: React.FC = () => {
     });
   };
 
-  function renderSuggestion(
-    suggestion: any | null,
-    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-  ) {
+  function renderSuggestion(suggestion: any | null, { query }: Autosuggest.RenderSuggestionParams) {
     const matches = match(suggestion!.itemName, query);
     const parts = parse(suggestion!.itemName, matches);
 
@@ -595,7 +572,6 @@ export const Tests: React.FC = () => {
       )
     );
   }
-
   const [testLoader, setTestLoader] = useState<boolean>(false);
   const [isSmartTestsDialogOpen, setIsSmartTestsDialogOpen] = React.useState<boolean>(false);
   const getTest = () => {
@@ -627,7 +603,6 @@ export const Tests: React.FC = () => {
       });
   };
   const handleDelete = (item: any, idx: number) => {
-    // suggestions.splice(0, 0, item);
     deleteTest(idx);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
@@ -698,14 +673,10 @@ export const Tests: React.FC = () => {
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.fullWidth}>
-        {/* <Typography component="h5" variant="h5">
-          Tests
-        </Typography> */}
         {testLoader ? (
           <CircularProgress className={classes.loader} />
         ) : (
           <Typography component="div" className={classes.listContainer}>
-            {/* <div className={classes.card}> */}
             <ul className={classes.addedList}>
               {selectedValues !== null &&
                 selectedValues &&
@@ -731,15 +702,7 @@ export const Tests: React.FC = () => {
                           </span>
                         </li>
                       )
-                    : //   <Chip
-                      //     className={classes.othersBtn}
-                      //     key={idx}
-                      //     label={item!.itemName}
-                      //     onDelete={() => handleDelete(item, idx)}
-                      //     deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                      //   />
-                      // )
-                      item.itemname &&
+                    : item.itemname &&
                       item.itemname!.trim() !== '' && (
                         <li key={idx}>
                           {item!.itemname}
@@ -758,13 +721,6 @@ export const Tests: React.FC = () => {
                             />
                           </span>
                         </li>
-                        // <Chip
-                        //   className={classes.othersBtn}
-                        //   key={idx}
-                        //   label={item!.itemname}
-                        //   onDelete={() => handleDelete(item, idx)}
-                        //   deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
-                        // />
                       )
                 )}
             </ul>
@@ -773,18 +729,6 @@ export const Tests: React.FC = () => {
       </Typography>
       <Typography component="div" className={classes.textFieldContainer}>
         {!showAddCondition && (
-          // <AphButton
-          //   className={classes.btnAddDoctor}
-          //   variant="contained"
-          //   color="primary"
-          //   onClick={() => {
-          //     showAddConditionHandler(true);
-
-          //   }}
-          // >
-          //   <img src={require('images/ic_dark_plus.svg')} alt="" />
-          //   <div>ADD TESTS</div>
-          // </AphButton>
           <AphButton
             variant="contained"
             className={classes.btnAddDoctor}
