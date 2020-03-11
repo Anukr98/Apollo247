@@ -495,6 +495,27 @@ export interface PatientProfileInput {
   mobileNumber: string;
 }
 
+export interface PrescriptionMedicineInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patinetAddressId?: string | null;
+  prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
+  appointmentId?: string | null;
+  isEprescription?: number | null;
+  payment?: PrescriptionMedicinePaymentDetails | null;
+}
+
+export interface PrescriptionMedicinePaymentDetails {
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid?: number | null;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;

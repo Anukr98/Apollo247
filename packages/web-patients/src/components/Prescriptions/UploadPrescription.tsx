@@ -177,7 +177,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 <input
                   type="file"
                   onChange={async (e) => {
-                    setIsUploading(false);
                     const fileNames = e.target.files;
                     if (fileNames && fileNames.length > 0) {
                       const file = fileNames[0] || null;
@@ -210,11 +209,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                                   baseFormat: res,
                                 });
                             });
-                            const currentUrl = window.location.href;
-                            if (currentUrl.endsWith('/medicines')) {
-                              window.location.href = clientRoutes.medicinesCart();
-                            }
-                            props.closeDialog();
+                            setTimeout(() => {
+                              setIsUploading(false);
+                              const currentUrl = window.location.href;
+                              if (currentUrl.endsWith('/medicines')) {
+                                window.location.href = clientRoutes.medicinesCart();
+                              }
+                              props.closeDialog();
+                            }, 3000);
                           }
                         }
                       } else {
@@ -237,10 +239,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   </label>
                 )}
               </div>
-              <div className={classes.uploadCard}>
+              {/* <div className={classes.uploadCard}>
                 <img src={require('images/ic_gallery.svg')} alt="" />
                 <p>Camera</p>
-              </div>
+              </div> */}
 
               <div
                 className={classes.uploadCard}

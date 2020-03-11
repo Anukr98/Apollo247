@@ -200,6 +200,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           id
           salutation
           firstName
+          fullName
           lastName
           displayName
           experience
@@ -448,6 +449,18 @@ export const DELETE_PATIENT_MEDICAL_RECORD = gql`
   mutation deletePatientMedicalRecord($recordId: ID!) {
     deletePatientMedicalRecord(recordId: $recordId) {
       status
+    }
+  }
+`;
+
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
+  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
+    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
+      status
+      orderId
+      orderAutoId
+      errorCode
+      errorMessage
     }
   }
 `;

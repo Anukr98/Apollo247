@@ -7,14 +7,22 @@ import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
 import { Checkout } from 'components/Cart/Checkout';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import {
+  useShoppingCart,
+  PrescriptionFormat,
+  EPrescription,
+} from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
 import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
-import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
+import {
+  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_PAYMENT_TYPE,
+  UPLOAD_FILE_TYPES,
+} from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
@@ -24,6 +32,8 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { EPrescriptionCard } from '../Prescriptions/EPrescriptionCard';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
+import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -439,10 +449,10 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export interface PrescriptionFormat {
-  name: string | null;
-  imageUrl: string | null;
-}
+// export interface PrescriptionFormat {
+//   name: string | null;
+//   imageUrl: string | null;
+// }
 
 export const MedicineCart: React.FC = (props) => {
   const classes = useStyles({});
@@ -450,15 +460,13 @@ export const MedicineCart: React.FC = (props) => {
     storePickupPincode,
     deliveryAddressId,
     clearCartInfo,
-    phrPrescriptionData,
-    setPhrPrescriptionData,
     prescriptions,
     setPrescriptions,
     cartItems,
     cartTotal,
-    medicineOrderData,
-    setMedicineOrderData,
     deliveryAddresses,
+    ePrescriptionData,
+    setEPrescriptionData,
   } = useShoppingCart();
 
   const [tabValue, setTabValue] = useState<number>(0);
@@ -474,6 +482,7 @@ export const MedicineCart: React.FC = (props) => {
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const { currentPincode } = useContext(LocationContext);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
+  const [uploadingFiles, setUploadingFiles] = React.useState<boolean>(false);
 
   const removeImagePrescription = (fileName: string) => {
     const finalPrescriptions =
@@ -483,23 +492,10 @@ export const MedicineCart: React.FC = (props) => {
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const removePrescription = (id: string, type: string) => {
-    switch (type) {
-      case 'consults':
-        phrPrescriptionData &&
-          phrPrescriptionData.length > 0 &&
-          setPhrPrescriptionData &&
-          setPhrPrescriptionData(phrPrescriptionData.filter((data) => data.id !== id));
-        break;
-      case 'medicineOrder':
-        medicineOrderData &&
-          medicineOrderData.length > 0 &&
-          setMedicineOrderData &&
-          setMedicineOrderData(medicineOrderData.filter((data) => data.id !== id));
-        break;
-      default:
-        break;
-    }
+  const removePrescription = (id: string) => {
+    ePrescriptionData &&
+      setEPrescriptionData &&
+      setEPrescriptionData(ePrescriptionData.filter((data) => data.id !== id));
   };
 
   const { currentPatient } = useAllCurrentPatients();
@@ -595,11 +591,102 @@ export const MedicineCart: React.FC = (props) => {
       });
   };
 
+  const uploadDocumentMutation = useMutation(UPLOAD_DOCUMENT);
+  const savePrescriptionMutation = useMutation(SAVE_PRESCRIPTION_MEDICINE_ORDER);
+
+  const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
+    savePrescriptionMutation({
+      variables,
+    })
+      .then(({ data }) => {
+        console.log(data);
+        clearCartInfo && clearCartInfo();
+        setTimeout(() => {
+          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+        }, 3000);
+      })
+      .catch((e) => {
+        console.log({ e });
+        alert(`Something went wrong, please try later.`);
+      })
+      .finally(() => {
+        // setLoading!(false);
+      });
+  };
+
+  const uploadMultipleFiles = (prescriptions: PrescriptionFormat[]) => {
+    console.log(prescriptions);
+    return Promise.all(
+      prescriptions.map((item: PrescriptionFormat) => {
+        const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
+        return uploadDocumentMutation({
+          fetchPolicy: 'no-cache',
+          variables: {
+            UploadDocumentInput: {
+              base64FileInput: baseFormatSplitArry[1],
+              category: 'HealthChecks',
+              fileType:
+                item.fileType == 'jpg'
+                  ? UPLOAD_FILE_TYPES.JPEG
+                  : item.fileType == 'png'
+                  ? UPLOAD_FILE_TYPES.PNG
+                  : item.fileType == 'pdf'
+                  ? UPLOAD_FILE_TYPES.PDF
+                  : UPLOAD_FILE_TYPES.JPEG,
+              patientId: currentPatient && currentPatient.id,
+            },
+          },
+        });
+      })
+    );
+  };
+
+  const onPressSubmit = async () => {
+    if (prescriptions && prescriptions.length > 0) {
+      setUploadingFiles(true);
+      uploadMultipleFiles(prescriptions)
+        .then((data) => {
+          const uploadUrlscheck = data.map(({ data }: any) =>
+            data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
+          );
+          const filtered = uploadUrlscheck.filter(function(el) {
+            return el != null;
+          });
+          const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
+          const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
+          const ePresUrls =
+            ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
+          const ePresPrismIds =
+            ePrescriptionData &&
+            ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
+          const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
+            prescriptionMedicineInput: {
+              patientId: (currentPatient && currentPatient.id) || '',
+              medicineDeliveryType: deliveryAddressId
+                ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+                : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+              shopId: deliveryAddressId || '0',
+              appointmentId: '',
+              patinetAddressId: deliveryAddressId || '',
+              prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
+              prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
+              isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+            },
+          };
+          submitPrescriptionMedicineOrder(prescriptionMedicineInput);
+        })
+        .catch((e) => {
+          console.log(e);
+          setUploadingFiles(false);
+          alert(e);
+        });
+    }
+  };
+
   const isPaymentButtonEnable =
     (cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
-    (phrPrescriptionData && phrPrescriptionData.length > 0) ||
-    (medicineOrderData && medicineOrderData.length > 0) ||
+    (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
 
   return (
@@ -630,19 +717,16 @@ export const MedicineCart: React.FC = (props) => {
             </div>
             {cartItems.length > 0 ||
             (prescriptions && prescriptions.length > 0) ||
-            (phrPrescriptionData && phrPrescriptionData.length > 0) ||
-            (medicineOrderData && medicineOrderData.length > 0) ? (
+            (ePrescriptionData && ePrescriptionData.length > 0) ? (
               <>
                 <MedicineListingCard />
                 {uploadPrescriptionRequired >= 0 ||
                 (prescriptions && prescriptions.length > 0) ||
-                (phrPrescriptionData && phrPrescriptionData.length > 0) ||
-                (medicineOrderData && medicineOrderData.length > 0) ? (
+                (ePrescriptionData && ePrescriptionData.length > 0) ? (
                   <>
                     <div className={classes.sectionHeader}>Upload Prescription</div>
                     {(prescriptions && prescriptions.length > 0) ||
-                    (phrPrescriptionData && phrPrescriptionData.length > 0) ||
-                    (medicineOrderData && medicineOrderData.length > 0) ? (
+                    (ePrescriptionData && ePrescriptionData.length > 0) ? (
                       <div className={classes.uploadedPreList}>
                         {prescriptions &&
                           prescriptions.length > 0 &&
@@ -660,24 +744,19 @@ export const MedicineCart: React.FC = (props) => {
                               />
                             );
                           })}
-                        {phrPrescriptionData &&
-                          phrPrescriptionData.length > 0 &&
-                          phrPrescriptionData.map((prescription) => (
+                        {ePrescriptionData &&
+                          ePrescriptionData.length > 0 &&
+                          ePrescriptionData.map((prescription: EPrescription) => (
                             <EPrescriptionCard
                               prescription={prescription}
                               removePrescription={removePrescription}
                             />
                           ))}
-                        {medicineOrderData &&
-                          medicineOrderData.length > 0 &&
-                          medicineOrderData.map((medicineOrder) => (
-                            <EPrescriptionCard
-                              medicineOrder={medicineOrder}
-                              removePrescription={removePrescription}
-                            />
-                          ))}
                         <div className={classes.uploadMore}>
-                          <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>
+                          <AphButton
+                            disabled={uploadingFiles}
+                            onClick={() => setIsUploadPreDialogOpen(true)}
+                          >
                             Upload More
                           </AphButton>
                         </div>
@@ -773,73 +852,89 @@ export const MedicineCart: React.FC = (props) => {
                 )}
               </div>
             </div>
-            <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
-              <span>Total Charges</span>
-            </div>
-            {isPaymentButtonEnable && (
-              <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
-                {couponCode === '' ? (
-                  <div
-                    onClick={() => setIsApplyCouponDialogOpen(true)}
-                    className={`${classes.serviceType} ${classes.textVCenter}`}
-                  >
-                    <span className={classes.serviceIcon}>
-                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                    </span>
-                    <span className={classes.linkText}>Apply Coupon</span>
-                    <span className={classes.rightArrow}>
-                      <img src={require('images/ic_arrow_right.svg')} alt="" />
-                    </span>
-                  </div>
-                ) : (
-                  <div className={`${classes.serviceType} ${classes.textVCenter}`}>
-                    <span className={classes.serviceIcon}>
-                      <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
-                    </span>
-                    <span className={classes.linkText}>Coupon Applied</span>
-                    <span className={classes.rightArrow}>
-                      <img src={require('images/ic_tickmark.svg')} alt="" />
-                    </span>
+            {cartItems && cartItems.length > 0 && (
+              <>
+                <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
+                  <span>Total Charges</span>
+                </div>
+                {isPaymentButtonEnable && (
+                  <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
+                    {couponCode === '' ? (
+                      <div
+                        onClick={() => setIsApplyCouponDialogOpen(true)}
+                        className={`${classes.serviceType} ${classes.textVCenter}`}
+                      >
+                        <span className={classes.serviceIcon}>
+                          <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                        </span>
+                        <span className={classes.linkText}>Apply Coupon</span>
+                        <span className={classes.rightArrow}>
+                          <img src={require('images/ic_arrow_right.svg')} alt="" />
+                        </span>
+                      </div>
+                    ) : (
+                      <div className={`${classes.serviceType} ${classes.textVCenter}`}>
+                        <span className={classes.serviceIcon}>
+                          <img src={require('images/ic_coupon.svg')} alt="Coupon Icon" />
+                        </span>
+                        <span className={classes.linkText}>Coupon Applied</span>
+                        <span className={classes.rightArrow}>
+                          <img src={require('images/ic_tickmark.svg')} alt="" />
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+                <div className={`${classes.sectionGroup}`}>
+                  <div className={classes.priceSection}>
+                    <div className={classes.topSection}>
+                      <div className={classes.priceRow}>
+                        <span>Subtotal</span>
+                        <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
+                      </div>
+                      <div className={classes.priceRow}>
+                        <span>Delivery Charges</span>
+                        <span className={classes.priceCol}>
+                          {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className={classes.bottomSection}>
+                      <div className={classes.priceRow}>
+                        <span>To Pay</span>
+                        <span className={classes.totalPrice}>
+                          {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
-            <div className={`${classes.sectionGroup}`}>
-              <div className={classes.priceSection}>
-                <div className={classes.topSection}>
-                  <div className={classes.priceRow}>
-                    <span>Subtotal</span>
-                    <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
-                  </div>
-                  <div className={classes.priceRow}>
-                    <span>Delivery Charges</span>
-                    <span className={classes.priceCol}>
-                      {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
-                    </span>
-                  </div>
-                </div>
-                <div className={classes.bottomSection}>
-                  <div className={classes.priceRow}>
-                    <span>To Pay</span>
-                    <span className={classes.totalPrice}>
-                      {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </Scrollbars>
         <div className={classes.checkoutBtn}>
           <AphButton
-            onClick={() => setCheckoutDialogOpen(true)}
+            onClick={() => {
+              if (cartItems && cartItems.length > 0) {
+                setCheckoutDialogOpen(true);
+              } else if (prescriptions && prescriptions.length > 0) {
+                onPressSubmit();
+              }
+            }}
             color="primary"
             fullWidth
-            disabled={disableSubmit || !isPaymentButtonEnable}
+            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
             className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
             title={'Proceed to pay bill'}
           >
-            Proceed to pay — RS. {totalAmount}
+            {cartItems && cartItems.length > 0 ? (
+              `Proceed to pay — RS. ${totalAmount}`
+            ) : uploadingFiles ? (
+              <CircularProgress size={22} color="secondary" />
+            ) : (
+              'Submit Prescription'
+            )}
           </AphButton>
         </div>
       </div>
