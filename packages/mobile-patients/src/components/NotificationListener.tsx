@@ -23,7 +23,11 @@ import {
   GetMedicineOrderDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  handleGraphQlError,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -189,6 +193,35 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     });
   };
 
+  const showConsultDetailsRoomAlert = (
+    data: { content: string; appointmentId: string } | any,
+    notificationType: CustomNotificationType,
+    prescription: string
+  ) => {
+    const description = data.content;
+    const appointmentId = data.appointmentId;
+    showAphAlert!({
+      title: ' ',
+      description,
+      CTAs: [
+        {
+          text: 'DISMISS',
+          onPress: () => hideAphAlert!(),
+          type: 'white-button',
+        },
+        {
+          text: 'CONSULT ROOM',
+          // text: 'CONSULT DETAILS',
+          onPress: () => {
+            hideAphAlert!();
+            getAppointmentData(appointmentId, notificationType, '', prescription);
+          },
+          type: 'orange-button',
+        },
+      ],
+    });
+  };
+
   const showContentAlert = (
     data:
       | { content: string; appointmentId: string /*patientName, doctorName, android_channel_id*/ }
@@ -229,6 +262,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       )
         return;
     }
+
+    // if (notificationType === 'PRESCRIPTION_READY') {
+    //   if (currentScreenName === AppRoutes.ConsultDetails) return;
+    // }
 
     aphConsole.log('processNotification after return statement');
 
@@ -529,7 +566,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'PRESCRIPTION_READY': // 15 min, no case sheet
         {
-          showChatRoomAlert(data, 'PRESCRIPTION_READY', 'true');
+          showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
 
@@ -809,6 +846,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 }
               } catch (error) {}
             }
+            // else if (notificationType == 'PRESCRIPTION_READY') {
+            //   try {
+            // props.navigation.navigate(AppRoutes.ConsultDetails, {
+            //   CaseSheet: g(appointmentData[0], 'id'),
+            //   DoctorInfo: g(appointmentData[0], 'doctorInfo'),
+            //   PatientId: g(appointmentData[0], 'patientId'),
+            //   appointmentType: g(appointmentData[0], 'appointmentType'),
+            //   DisplayId: g(appointmentData[0], 'displayId'),
+            //   // BlobName: AppConfig.Configuration.DOCUMENT_BASE_URL.concat(g(appointmentData[0], ''));
+            // });
+            // } catch (error) {}
+            // }
           }
         } catch (error) {
           CommonBugFender('NotificationListener_getAppointmentData_try', error);
