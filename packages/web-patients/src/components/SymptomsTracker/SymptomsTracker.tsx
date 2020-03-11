@@ -314,12 +314,17 @@ export const SymptomsTracker: React.FC = () => {
                     )}
                   </Typography>
                 ) : (
-                    <Typography variant="h1">hello there!</Typography>
-                  )}
+                  <Typography variant="h1">hello there!</Typography>
+                )}
                 <div>
                   <p>Who is the patient today?</p>
                   <div className={classes.buttonsWrapper}>
-                    <Link className={`${classes.mySelfBtn} ${!selectCurrentUser ? classes.activeButton : ''}`} to={clientRoutes.symptomsTracker()}>
+                    <Link
+                      className={`${classes.mySelfBtn} ${
+                        !selectCurrentUser ? classes.activeButton : ''
+                      }`}
+                      to={clientRoutes.symptomsTracker()}
+                    >
                       Myself
                     </Link>
                     <AphButton
