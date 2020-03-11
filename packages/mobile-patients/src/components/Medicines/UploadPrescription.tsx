@@ -143,13 +143,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       })
     );
   };
-  const postwebEngageSubmitPrescriptionEvent = (orderId: string) => {
+  const postwebEngageSubmitPrescriptionEvent = (orderId: number) => {
     const deliveryAddress = addresses.find((item) => item.zipcode == pinCode);
     const deliveryAddressLine = (deliveryAddress && formatAddress(deliveryAddress)) || '';
     const eventAttributes: WebEngageEvents['Submit Prescription'] = {
-      'Order ID': orderId,
+      'Order ID': `${orderId}`,
       'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
-      'Store id': Number(storeId) || undefined, //(incase of store delivery)
+      StoreId: storeId, // incase of store delivery
       'Delivery address': deliveryAddressLine,
       Pincode: pinCode,
     };
@@ -164,8 +164,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       })
       .then(({ data }) => {
         console.log({ data });
-        const { errorCode, orderId } = g(data, 'SavePrescriptionMedicineOrder')! || {};
-        postwebEngageSubmitPrescriptionEvent(orderId);
+        const { errorCode, orderAutoId } = g(data, 'SavePrescriptionMedicineOrder') || {};
+        postwebEngageSubmitPrescriptionEvent(orderAutoId);
         if (errorCode) {
           renderErrorAlert(`Something went wrong, unable to place order.`);
           return;
