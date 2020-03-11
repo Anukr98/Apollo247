@@ -37,6 +37,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
+import { DoctorType } from '../../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -74,6 +75,7 @@ type TimeArray = {
 }[];
 
 export interface ConsultOnlineProps {
+  source: 'List' | 'Profile';
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   date: Date;
   setDate: (arg0: Date) => void;
@@ -272,13 +274,23 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   };
 
   const postConsultNowOrScheduleLaterEvent = (type: 'now' | 'later') => {
-    const eventAttributes: WebEngageEvents['Schedule for Later clicked'] = {
+    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: WebEngageEvents['Consult- Schedule for Later clicked'] = {
       name: g(props.doctor, 'fullName')!,
       specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
       experience: Number(g(props.doctor, 'experience')!),
-      'language known': g(props.doctor, 'languages')!,
-      Hospital: g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
-      Source: 'Profile',
+      'language known': g(props.doctor, 'languages')! || 'NA',
+      Hospital:
+        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
+      Source: props.source,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -289,12 +301,12 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       slot: NextAvailableSlot,
     };
     if (type == 'now') {
-      (eventAttributes as WebEngageEvents['Consult Now clicked'])[
+      (eventAttributes as WebEngageEvents['Consult- Consult Now clicked'])[
         'Available in'
       ] = `${availableInMin} minute(s)`;
-      postWebEngageEvent('Consult Now clicked', eventAttributes);
+      postWebEngageEvent('Consult- Consult Now clicked', eventAttributes);
     } else {
-      postWebEngageEvent('Schedule for Later clicked', eventAttributes);
+      postWebEngageEvent('Consult- Schedule for Later clicked', eventAttributes);
     }
   };
 
@@ -422,7 +434,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             ]}
             onPress={() => {
               postConsultNowOrScheduleLaterEvent('now');
-              CommonLogEvent(AppRoutes.DoctorDetails, 'Consult Now clicked');
+              CommonLogEvent(AppRoutes.DoctorDetails, 'Consult- Consult Now clicked');
               setselectedCTA(onlineCTA[0]);
               props.setisConsultOnline(true);
               // props.setselectedTimeSlot('');

@@ -41,7 +41,7 @@ export interface ConsultPaymentProps extends NavigationScreenProps {
   doctorName: string;
   appointmentId: string;
   price: number;
-  webEngageEventAttributes: WebEngageEvents['Consultation booked'];
+  webEngageEventAttributes: WebEngageEvents['Consult- Consultation booked'];
 }
 {
 }
@@ -82,7 +82,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
 
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    postWebEngageEvent('Consultation booked', webEngageEventAttributes);
+    postWebEngageEvent('Consult- Consultation booked', webEngageEventAttributes);
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({

@@ -19,7 +19,7 @@ export interface WebEngageEvents {
 
   // ********** PharmacyEvents ********** \\
 
-  Search: { keyword: string };
+  Search: { keyword: string; 'Buy Medicines': boolean; Medicines: boolean };
   'Product Clicked': {
     'product name': string;
     'product id': string; // (SKUID)
@@ -90,7 +90,7 @@ export interface WebEngageEvents {
   'Submit Prescription': {
     'Order ID': string | number;
     'Delivery type': 'home' | 'store pickup';
-    'Store id'?: number; //(incase of store delivery)
+    'Store id'?: string; //(incase of store delivery)
     'Delivery address'?: string;
     Pincode: string | number;
   };
@@ -112,9 +112,10 @@ export interface WebEngageEvents {
 
   // ********** ConsultEvents ********** \\
 
-  'Start Consultation Search': {
-    'Find a Doctor': string;
-    'Track Symptoms': string;
+  'Consult- Start Consultation Search': {
+    'Find a Doctor': boolean;
+    'Track Symptoms': boolean;
+    'Book an Appointment': boolean;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -123,7 +124,7 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
-  'Doctor profile viewed for consultation': {
+  'Consult- Doctor profile viewed for consultation': {
     name: string;
     specialisation: string;
     experience: number;
@@ -131,13 +132,14 @@ export interface WebEngageEvents {
     Hospital: string;
     'Available in': string;
   };
-  'Consult Now clicked': {
+  'Consult- Consult Now clicked': {
     name: string;
     specialisation: string;
     experience: number;
     'language known': string; // Comma separated values
     Hospital: string;
     'Available in': string;
+    'Book an Appointment'?: boolean; // need to pass only when user clicked on book appointment button from details screen
     Source: 'List' | 'Profile'; // List/Profile
     'Patient Name': string;
     'Patient UHID': string;
@@ -149,7 +151,7 @@ export interface WebEngageEvents {
     slot: string;
   };
   // confirm the type of data for the below
-  'Schedule for Later clicked': {
+  'Consult- Schedule for Later clicked': {
     name: string;
     specialisation: string;
     experience: number;
@@ -165,7 +167,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     slot: string;
   };
-  'Slot Selected': {
+  'Consult- Slot Selected': {
     slot: string;
     doctorName: string;
     specialisation: string;
@@ -174,14 +176,14 @@ export interface WebEngageEvents {
     hospital: string;
     consultType: 'clinic' | 'online';
   };
-  'Coupon Applied': {
+  'Consult- Coupon Applied': {
     CouponCode: string;
-    Discount: number;
-    RevisedAmount: number;
+    Discount?: number;
+    RevisedAmount?: number;
+    'Coupon Applied': boolean;
   };
-  'Pay Button Clicked': {
+  'Consult- Pay Button Clicked': {
     Amount: number;
-    'Consultation ID': string;
     'Doctor Name': string;
     'Doctor City': string;
     'Type of Doctor': string;
@@ -197,15 +199,17 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Patient UHID': string;
+    consultType: 'clinic' | 'online';
   };
-  'Consultation booked': {
+  'Consult- Consultation booked': {
+    'Consultation ID': string;
     name: string;
     specialisation: string;
     category: string;
     time: Date | string;
     type: 'online' | 'clinic';
     'clinic name': string;
-    'clinic address': string;
+    'clinic address': string; // whole address
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;

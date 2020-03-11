@@ -154,8 +154,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     sectionName: string
   ) => {
     const eventAttributes: WebEngageEvents['Category Clicked'] = {
-      'category name': categoryId,
-      'category ID': categoryName,
+      'category name': categoryName,
+      'category ID': categoryId,
       'Section Name': sectionName,
       Source: 'Home',
     };

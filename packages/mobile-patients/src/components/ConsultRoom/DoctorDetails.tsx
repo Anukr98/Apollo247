@@ -288,15 +288,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorDetails: getDoctorDetailsById_getDoctorDetailsById,
     availableInMin: number
   ) => {
-    const eventAttributes: WebEngageEvents['Doctor profile viewed for consultation'] = {
+    const doctorClinics = (doctorDetails.doctorHospital || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+    const eventAttributes: WebEngageEvents['Consult- Doctor profile viewed for consultation'] = {
       name: g(doctorDetails, 'fullName')!,
       specialisation: g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
       experience: Number(doctorDetails.experience!),
       'language known': g(doctorDetails, 'languages') || 'NA',
-      Hospital: g(doctorDetails, 'doctorHospital', '0' as any, 'facility', 'name')!,
+      Hospital:
+        doctorClinics.length > 0 && doctorDetails.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
       'Available in': (availableInMin && `${availableInMin} minute(s)`) || '',
     };
-    postWebEngageEvent('Doctor profile viewed for consultation', eventAttributes);
+    postWebEngageEvent('Consult- Doctor profile viewed for consultation', eventAttributes);
   };
 
   const todayDate = new Date().toISOString().slice(0, 10);
