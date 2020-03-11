@@ -19,7 +19,6 @@ const useStyles = makeStyles((theme: Theme) => {
         top: 74,
         zIndex: 999,
         background: '#fff',
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       },
     },
     medicineSearchForm: {
@@ -38,6 +37,7 @@ const useStyles = makeStyles((theme: Theme) => {
           backgroundColor: '#f7f8f5',
           padding: '15px 33px 15px 12px',
           borderBottom: '2px solid transparent',
+          borderRadius: 5,
           '&:focus': {
             backgroundColor: '#fff',
             borderBottom: '2px solid #00b38e',

@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         padding: 0,
         boxShadow: 'none',
+        backgroundColor: 'transparent',
       },
     },
     medicineTopGroup: {
@@ -74,8 +75,10 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         padding: '20px 20px 0 20px',
-        backgroundColor: '#f7f8f5',
-        marginTop: 20,
+        marginTop: 68,
+      },
+      [theme.breakpoints.down(457)]: {
+        marginTop: 85,
       },
     },
     medicineSection: {
@@ -100,18 +103,22 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        padding: 16,
+        borderRadius: 10,
       },
     },
     textVCenter: {
       alignItems: 'center',
       minHeight: 54,
-      paddingBottom: 10,
     },
     serviceIcon: {
       marginRight: 10,
       '& img': {
         maxWidth: 24,
         verticalAlign: 'middle',
+      },
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 16,
       },
     },
     rightArrow: {
@@ -147,7 +154,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         marginTop: 0,
-        paddingTop: 8,
+        borderRadius: 0,
+        position: 'absolute',
+        top: 160,
+        width: '100%',
+        padding: '16px 20px',
       },
     },
     allProductsList: {
@@ -176,21 +187,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 8,
       marginBottom: 10,
       display: 'flex',
-    },
-    windowWrap: {
-      width: 368,
-      borderRadius: 10,
-      paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
-    },
-    mascotIcon: {
-      position: 'absolute',
-      right: 12,
-      top: -40,
-      '& img': {
-        maxWidth: 72,
-      },
     },
     bannerInfo: {
       [theme.breakpoints.down('xs')]: {
@@ -259,45 +255,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: 'transparent',
       },
-    },
-    mascotCircle: {
-      cursor: 'pointer',
-      [theme.breakpoints.up(768)]: {
-        marginLeft: 'auto',
-        marginBottom: 12,
-        marginRight: 15,
-      },
-      [theme.breakpoints.up(1134)]: {
-        marginLeft: 'auto',
-        position: 'fixed',
-        bottom: 0,
-        right: 0,
-      },
-      '& img': {
-        maxWidth: 72,
-        maxHeight: 72,
-        verticalAlign: 'middle',
-      },
-    },
-    bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
-      right: '20px !important',
-      bottom: '20px !important',
-      left: 'auto !important',
-      top: 'auto !important',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
-    },
-    successPopoverWindow: {
-      display: 'flex',
-      marginRight: 5,
-      marginBottom: 5,
     },
   };
 });
@@ -394,7 +351,7 @@ export const TestsLanding: React.FC = (props) => {
                       to={clientRoutes.testOrders()}
                     >
                       <span className={classes.serviceIcon}>
-                        <img src={require('images/ic_tablets.svg')} alt="" />
+                        <img src={require('images/ic_tests_icon.svg')} alt="" />
                       </span>
                       <span className={classes.linkText}>Your Orders</span>
                       <span className={classes.rightArrow}>
@@ -430,35 +387,6 @@ export const TestsLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <div className={classes.mascotCircle} ref={mascotRef} onClick={() => setIsPopoverOpen(true)}>
-        <img src={require('images/ic-mascot.png')} alt="" />
-      </div>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <AllowLocation
-              setIsLocationPopoverOpen={setIsLocationPopoverOpen}
-              setIsPopoverOpen={setIsPopoverOpen}
-              isPopoverOpen={isPopoverOpen}
-            />
-          </div>
-        </div>
-      </Popover>
       <NavigationBottom />
     </div>
   );
