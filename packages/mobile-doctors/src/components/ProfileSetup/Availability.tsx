@@ -72,7 +72,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
           <ConsultationHoursCard
             days={i!.weekDay}
             timing={fromatConsultationHours(i!.startTime, i!.endTime)}
-            isAvailableForOnlineConsultation={i!.consultMode.toLocaleLowerCase()}
+            consultMode={i!.consultMode}
             //isAvailableForPhysicalConsultation={i!.consultType}
             key={idx}
             type="fixed"
@@ -89,10 +89,10 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
         >
           <Text style={styles.consultDescText}>Enter your preferred consult hours</Text>
         </View> */}
-        <TouchableOpacity style={styles.addTouchable}>
+        {/* <TouchableOpacity style={styles.addTouchable}>
           <AddPlus />
           <Text style={styles.addTextStyle}>{strings.account.add_consult_hours}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </SquareCardWithTitle>
       <View style={styles.roundChaticon}>
         <View style={{ marginTop: 4 }}>
