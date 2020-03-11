@@ -605,7 +605,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   .then((response) => {
                     closeHandler(false);
                     successHandler(true);
-                    // console.log(response);
+                    window.location.reload();
                   })
                   .catch((e) => {
                     setMutationLoading(false);
