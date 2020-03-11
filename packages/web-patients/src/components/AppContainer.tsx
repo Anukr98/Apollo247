@@ -140,7 +140,7 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.searchByTest()} component={SearchByTest} />
           <AuthRouted exact path={clientRoutes.ordersMessage()} component={OrdersMessage} />
         </Switch>
-        <Help />
+        {/* <Help /> */}
       </div>
     </Scrollbars>
   );
