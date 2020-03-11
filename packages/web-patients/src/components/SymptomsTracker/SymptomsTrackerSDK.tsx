@@ -189,6 +189,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent',
       paddingBottom: 0,
       paddingRight: 0,
+      fontWeight: 'bold',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -457,7 +458,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img src={require('images/ic-mascot.png')} alt="" />
                 </div>
                 <div className={classes.contentGroup}>
-                  <Typography variant="h3">Hi! :)</Typography>
+                  <Typography variant="h3">hi! :)</Typography>
                   <p>Please pick or type the symptom most closely relating to your condition</p>
                   <div className={classes.bottomActions}>
                     <AphButton
@@ -467,7 +468,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         setShowPopup(false);
                       }}
                     >
-                      OK, GOT It
+                      OK, GOT IT
                     </AphButton>
                   </div>
                 </div>
@@ -493,7 +494,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img src={require('images/ic-mascot.png')} alt="" />
                 </div>
                 <div className={classes.contentGroup}>
-                  <Typography variant="h3">Hi! :)</Typography>
+                  <Typography variant="h3">relax :)</Typography>
                   <p>We're finding the earliest available doctors for you</p>
                   <div className={classes.bottomActions}>
                     <AphButton
