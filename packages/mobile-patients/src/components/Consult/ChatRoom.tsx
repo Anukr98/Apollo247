@@ -135,7 +135,7 @@ import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumen
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { ChatQuestions } from './ChatQuestions';
 import { FeedbackPopup } from '../FeedbackPopup';
-import { g } from '../../helpers/helperFunctions';
+import { g, callPermissions } from '../../helpers/helperFunctions';
 import { useUIElements } from '../UIElementsProvider';
 import {
   cancelAppointment,
@@ -475,20 +475,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     console.log('callType', callType);
-    if (callType === 'VIDEO') {
-      setOnSubscribe(true);
-      callhandelBack = false;
-      setIsAudio(false);
-      InCallManager.startRingtone('_BUNDLE_');
-      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
-    } else if (callType === 'AUDIO') {
-      setIsAudio(true);
-      setOnSubscribe(true);
-      callhandelBack = false;
-      InCallManager.startRingtone('_BUNDLE_');
-      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+    if (callType) {
+      callPermissions(() => {
+        if (callType === 'VIDEO') {
+          setOnSubscribe(true);
+          setIsAudio(false);
+          InCallManager.startRingtone('_BUNDLE_');
+          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        } else if (callType === 'AUDIO') {
+          setOnSubscribe(true);
+          setIsAudio(true);
+          callhandelBack = false;
+          InCallManager.startRingtone('_BUNDLE_');
+          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        }
+      });
     }
-
     if (prescription) {
       // write code for opening prescripiton
     }
@@ -806,10 +808,52 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+  const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('nextAppState :' + nextAppState, abondmentStarted);
       // handleCallTheEdSessionAPI();
+    } else if (nextAppState === 'active') {
+      const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
+      if (permissionSettings && permissionSettings === 'true') {
+        callPermissions(() => {
+          if (callType) {
+            if (callType === 'VIDEO') {
+              setOnSubscribe(true);
+              setIsAudio(false);
+              InCallManager.startRingtone('_BUNDLE_');
+              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+            } else if (callType === 'AUDIO') {
+              setOnSubscribe(true);
+              setIsAudio(true);
+              callhandelBack = false;
+              InCallManager.startRingtone('_BUNDLE_');
+              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+            }
+          } else {
+            if (onSubscribe) {
+              setOnSubscribe(false);
+              stopTimer();
+              startTimer(0);
+              setCallAccepted(true);
+              setHideStatusBar(true);
+              setChatReceived(false);
+              Keyboard.dismiss();
+              InCallManager.stopRingtone();
+              InCallManager.stop();
+              changeAudioStyles();
+              setConvertVideo(false);
+              changeVideoStyles();
+              setDropdownVisible(false);
+              if (token) {
+                PublishAudioVideo();
+              } else {
+                APICallAgain();
+              }
+            }
+          }
+        });
+        AsyncStorage.removeItem('permissionHandler');
+      }
     }
   };
 
@@ -4965,24 +5009,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             position: 'absolute',
           }}
           onPress={() => {
-            setOnSubscribe(false);
-            stopTimer();
-            startTimer(0);
-            setCallAccepted(true);
-            setHideStatusBar(true);
-            setChatReceived(false);
-            Keyboard.dismiss();
-            InCallManager.stopRingtone();
-            InCallManager.stop();
-            changeAudioStyles();
-            setConvertVideo(false);
-            changeVideoStyles();
-            setDropdownVisible(false);
-            if (token) {
-              PublishAudioVideo();
-            } else {
-              APICallAgain();
-            }
+            callPermissions(() => {
+              setOnSubscribe(false);
+              stopTimer();
+              startTimer(0);
+              setCallAccepted(true);
+              setHideStatusBar(true);
+              setChatReceived(false);
+              Keyboard.dismiss();
+              InCallManager.stopRingtone();
+              InCallManager.stop();
+              changeAudioStyles();
+              setConvertVideo(false);
+              changeVideoStyles();
+              setDropdownVisible(false);
+              if (token) {
+                PublishAudioVideo();
+              } else {
+                APICallAgain();
+              }
+            });
           }}
         >
           <PickCallIcon
