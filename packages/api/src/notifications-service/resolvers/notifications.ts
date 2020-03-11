@@ -1628,7 +1628,11 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
-  notificationBody = notificationBody.replace('{2}', orderTat);
+  const atOrederDateTime = 'at ' + orderDetails.orderDateTime;
+  const inTatHours = 'in ' + orderTat + 'hours';
+  if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
+    notificationBody = notificationBody.replace('{2}', atOrederDateTime);
+  notificationBody = notificationBody.replace('{2}', inTatHours);
   console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {
