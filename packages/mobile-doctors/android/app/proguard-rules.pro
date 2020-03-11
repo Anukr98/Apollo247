@@ -18,3 +18,7 @@
 -keep class com.google.firebase.** { *; }
 -ignorewarnings
 -keep class com.facebook.hermes.unicode.** { *; }
+-keep class com.opentok.** { *; }
+-keep class org.webrtc.** { *; }
+-keep class com.facebook.react.devsupport.** { *; }
+-dontwarn com.facebook.react.devsupport.**
