@@ -1130,10 +1130,11 @@ export const ConsultTabs: React.FC = () => {
         setUrlToPatient(true);
       })
       .catch((e) => {
+        console.log(casesheetInfo.getCaseSheet.patientDetails.firstName);
         const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          casesheetInfo.getCaseSheet.patientDetails.firstName +
           ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+          casesheetInfo.getCaseSheet.patientDetails.lastName;
         const logObject = {
           api: 'UpdatePatientPrescriptionSentStatus',
           inputParam: JSON.stringify({
@@ -1153,7 +1154,7 @@ export const ConsultTabs: React.FC = () => {
         };
 
         sessionClient.notify(JSON.stringify(logObject));
-        setError('Error occured while sending prescription to patient');
+        alert('Error occured while sending prescription to patient');
         console.log('Error occured while sending prescription to patient', e);
         setSaving(false);
       });
