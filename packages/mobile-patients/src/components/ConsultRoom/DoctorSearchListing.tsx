@@ -35,6 +35,7 @@ import {
   g,
   getNetStatus,
   postWebEngageEvent,
+  callPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -345,7 +346,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       fetchSpecialityFilterData(filterMode, FilterData, latlng);
       setcurrentLocation(locationDetails.displayName);
     }
-
+    callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
