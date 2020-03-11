@@ -13,7 +13,7 @@ import _isEmpty from 'lodash/isEmpty';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { AsyncStorage, Platform, Alert } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
 import {
   getNetStatus,
@@ -30,6 +30,7 @@ import {
 } from '../graphql/types/getPatientByMobileNumber';
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(

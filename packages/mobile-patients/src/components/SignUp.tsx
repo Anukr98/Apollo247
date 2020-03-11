@@ -18,7 +18,6 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-  AsyncStorage,
   BackHandler,
   Platform,
   KeyboardAvoidingView,
@@ -55,6 +54,7 @@ import {
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { height } = Dimensions.get('window');
 

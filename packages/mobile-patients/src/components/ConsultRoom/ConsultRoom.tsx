@@ -47,7 +47,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   ImageBackground,
   Linking,
@@ -72,6 +71,7 @@ import { ListCard } from '../ui/ListCard';
 import KotlinBridge from '../../KotlinBridge';
 import { GenerateTokenforCM } from '../../helpers/apiCalls';
 import { useUIElements } from '../UIElementsProvider';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { Vitals } = NativeModules;
 

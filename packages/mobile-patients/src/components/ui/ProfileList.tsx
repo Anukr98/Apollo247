@@ -1,16 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import {
-  Dimensions,
-  View,
-  Text,
-  StyleSheet,
-  AsyncStorage,
-  ViewStyle,
-  StyleProp,
-  TextStyle,
-} from 'react-native';
+import { Dimensions, View, Text, StyleSheet, ViewStyle, StyleProp, TextStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -27,6 +18,7 @@ import { useShoppingCart } from '../ShoppingCartProvider';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { useUIElements } from '../UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {

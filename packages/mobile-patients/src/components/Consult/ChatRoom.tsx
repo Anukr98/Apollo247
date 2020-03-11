@@ -79,7 +79,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
-  AsyncStorage,
   Dimensions,
   FlatList,
   Keyboard,
@@ -145,6 +144,8 @@ import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
 import { colors } from '../../theme/colors';
+import AsyncStorage from '@react-native-community/async-storage';
+
 // import { WebView } from 'react-native-webview';
 
 const { ExportDeviceToken } = NativeModules;

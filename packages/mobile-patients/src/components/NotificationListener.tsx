@@ -33,7 +33,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
@@ -42,6 +42,7 @@ import { FEEDBACKTYPE, DoctorType } from '../graphql/types/globalTypes';
 import { FeedbackPopup } from './FeedbackPopup';
 import { MedicalIcon } from './ui/Icons';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {

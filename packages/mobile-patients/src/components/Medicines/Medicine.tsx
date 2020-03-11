@@ -55,7 +55,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Keyboard,
   ListRenderItemInfo,
@@ -72,6 +71,7 @@ import {
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
