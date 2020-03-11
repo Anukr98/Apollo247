@@ -208,6 +208,16 @@ const useStyles = makeStyles((theme: Theme) => {
     bottomActions: {
       textAlign: 'right',
     },
+    bottomButtons: {
+      display: 'flex',
+    },
+    loaderImg: {
+      marginLeft: 'auto',
+      '& img': {
+        maxWidth: 76,
+        verticalAlign: 'middle',
+      },
+    },
     selectMenuRoot: {
       paddingRight: 55,
       '& svg': {
@@ -496,7 +506,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 <div className={classes.contentGroup}>
                   <Typography variant="h3">relax :)</Typography>
                   <p>We're finding the earliest available doctors for you</p>
-                  <div className={classes.bottomActions}>
+                  <div className={classes.bottomButtons}>
                     <AphButton
                       color="primary"
                       classes={{ root: classes.addMemberBtn }}
@@ -507,6 +517,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
                     >
                       NO, WAIT
                     </AphButton>
+                    <div className={classes.loaderImg}>
+                      <img src={require('images/ic_loader@3x.png')} alt="" />
+                    </div>
                   </div>
                 </div>
               </div>

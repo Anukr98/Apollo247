@@ -190,6 +190,28 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fcb716 !important',
       },
     },
+    mySelfBtn: {
+      color: '#fcb716',
+      minWidth: 201,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      textTransform: 'uppercase',
+      backgroundColor: '#fff',
+      marginRight: 16,
+      display: 'inline-block',
+      textAlign: 'center',
+      padding: '9px 13px 9px 13px',
+      fontSize: 13,
+      fontWeight: 'bold',
+      borderRadius: 5,
+      lineHeight: '22px',
+      [theme.breakpoints.down(767)]: {
+        minWidth: 'auto',
+        width: '50%',
+      },
+      [theme.breakpoints.down(340)]: {
+        marginRight: 5,
+      },
+    },
     activeButton: {
       color: '#fff !important',
       backgroundColor: '#fcb716 !important',
@@ -292,24 +314,20 @@ export const SymptomsTracker: React.FC = () => {
                     )}
                   </Typography>
                 ) : (
-                  <Typography variant="h1">hello there!</Typography>
-                )}
+                    <Typography variant="h1">hello there!</Typography>
+                  )}
                 <div>
                   <p>Who is the patient today?</p>
                   <div className={classes.buttonsWrapper}>
-                    <Link to={clientRoutes.symptomsTracker()}>
-                      <AphButton className={!selectCurrentUser ? classes.activeButton : ''}>
-                        MYSELF
-                      </AphButton>
+                    <Link className={`${classes.mySelfBtn} ${!selectCurrentUser ? classes.activeButton : ''}`} to={clientRoutes.symptomsTracker()}>
+                      Myself
                     </Link>
-                    {/* <Link to={clientRoutes.symptomsTracker()}> */}
                     <AphButton
                       onClick={() => setSelectCurrentUser(true)}
                       className={selectCurrentUser ? classes.activeButton : ''}
                     >
-                      SOMEONE ELSE
+                      Someone else
                     </AphButton>
-                    {/* </Link> */}
                   </div>
                 </div>
               </div>

@@ -297,6 +297,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomActions: {
       paddingTop: 15,
+      paddingBottom: 15,
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
       display: 'flex',
       '& button': {
@@ -486,8 +487,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                        item.key
-                      )}
+                          item.key
+                        )}
                     </div>
                     {item.value}
                   </div>
