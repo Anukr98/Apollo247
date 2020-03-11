@@ -372,9 +372,13 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           ? Gender['MALE']
           : Gender['OTHER'],
       Email: email.trim(),
-      'Referral Code': referral || undefined,
     };
-    postWebEngageEvent('Mobile Number Entered', eventAttributes);
+    if (referral) {
+      // only send if referral has a value
+      eventAttributes['Referral Code'] = referral;
+    }
+
+    postWebEngageEvent('Registration Done', eventAttributes);
   };
   return (
     <View style={{ flex: 1 }}>

@@ -296,7 +296,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const postwebEngageSearchEvent = (searchInput: string) => {
-    const eventAttributes: WebEngageEvents['Start Consultation Search'] = {
+    const eventAttributes: WebEngageEvents['Consult- Start Consultation Search'] = {
       'Find a Doctor': searchInput,
       'Track Symptoms': '',
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -307,7 +307,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
     };
-    postWebEngageEvent('Start Consultation Search', eventAttributes);
+    postWebEngageEvent('Consult- Start Consultation Search', eventAttributes);
   };
 
   const fetchSearchData = (searchTextString: string = searchText) => {
