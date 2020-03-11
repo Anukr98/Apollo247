@@ -1,18 +1,16 @@
+import HeaderStyles from '@aph/mobile-doctors/src/components/ui/Header.styles';
+import { BackArrow, Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,
-  StyleSheet,
   Text,
   TextProps,
+  TextStyle,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
   ViewStyle,
-  TextStyle,
 } from 'react-native';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { BackArrow, Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
-import HeaderStyles from '@aph/mobile-doctors/src/components/ui/Header.styles';
 
 const styles = HeaderStyles;
 
@@ -84,6 +82,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
                 key={i}
                 style={{
                   marginRight: i !== leftIcons.length - 1 ? iconMarginRight || 12 : 0,
+                  paddingVertical: 5,
                 }}
               >
                 {icon.icon}
