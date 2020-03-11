@@ -857,7 +857,7 @@ export const MedicineCart: React.FC = (props) => {
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
                   <span>Total Charges</span>
                 </div>
-                {isPaymentButtonEnable && (
+                {/* {isPaymentButtonEnable && (
                   <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
                     {couponCode === '' ? (
                       <div
@@ -884,7 +884,7 @@ export const MedicineCart: React.FC = (props) => {
                       </div>
                     )}
                   </div>
-                )}
+                )} */}
                 <div className={`${classes.sectionGroup}`}>
                   <div className={classes.priceSection}>
                     <div className={classes.topSection}>

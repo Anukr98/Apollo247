@@ -253,7 +253,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const params = useParams<Params>();
   const locationUrl = window.location.href;
   const [subtxt, setSubtxt] = useState<string>(
-    params.searchMedicineType === 'search-medicines' ? params.searchText : ''
+    params.searchMedicineType === 'search-medicines'
+      ? params.searchText
+      : localStorage.getItem('searchText') || ''
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
@@ -332,6 +334,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         <AphTextField
           placeholder="Search med, brands and more"
           onChange={(e) => {
+            localStorage.setItem('searchText', e.target.value);
             setSubtxt(e.target.value);
           }}
           value={subtxt}
