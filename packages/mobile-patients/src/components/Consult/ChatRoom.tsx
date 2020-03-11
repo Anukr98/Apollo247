@@ -461,7 +461,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
-    SendNotificationToDoctorAPI();
     // requestToJrDoctor();
     // updateSessionAPI();
   }, []);
@@ -497,56 +496,64 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const SendNotificationToDoctorAPI = async () => {
     try {
-         console.log('appointmentData.status', appointmentData.status);
+      console.log('appointmentData.status', appointmentData.status);
 
-    if (appointmentData.status !== STATUS.COMPLETED) return;
-    const saveAppointment = [
-      {
-        appointmentId: appointmentData.id,
-        date: moment().format('YYYY-MM-DD'),
-      },
-    ];
-    console.log('saveAppointment', saveAppointment);
+      if (appointmentData.status !== STATUS.COMPLETED) return;
+      const saveAppointment = [
+        {
+          appointmentId: appointmentData.id,
+          date: moment().format('YYYY-MM-DD'),
+        },
+      ];
+      console.log('saveAppointment', saveAppointment);
 
-    const storedAppointmentData = (await AsyncStorage.getItem('saveAppointment')) || '';
-    const saveAppointmentData = storedAppointmentData ? JSON.parse(storedAppointmentData) : '';
-    console.log('saveAppointmentData', saveAppointmentData);
+      const storedAppointmentData = (await AsyncStorage.getItem('saveAppointment')) || '';
+      const saveAppointmentData = storedAppointmentData ? JSON.parse(storedAppointmentData) : '';
+      console.log('saveAppointmentDataAsyncStorage', saveAppointmentData);
 
-    if (saveAppointmentData) {
-      const result = saveAppointmentData.filter((obj: any) => {
-        return obj.appointmentId === appointmentData.id;
-      });
-      console.log('saveAppointmentData', saveAppointmentData);
+      if (saveAppointmentData) {
+        const result = saveAppointmentData.filter((obj: any) => {
+          return obj.appointmentId === appointmentData.id;
+        });
+        console.log('saveAppointmentDataresult', saveAppointmentData);
 
-      if (result.length > 0) {
-        if (result[0].appointmentId === appointmentData.id) {
-          if (result[0].date !== saveAppointment[0].date) {
-            sendNotificationToDoctor(client, appointmentData.id)
-              .then((data) => {
-                console.log('data', data);
-              })
-              .catch((error) => {
-                console.log('error', error);
-              });
-
-            const index = saveAppointmentData.findIndex(
-              (project: any) => project.appointmentId === appointmentData.id
-            );
-            saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
-            AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
+        if (result.length > 0) {
+          if (result[0].appointmentId === appointmentData.id) {
+            if (result[0].date !== saveAppointment[0].date) {
+              sendDcotorChatNotification();
+              const index = saveAppointmentData.findIndex(
+                (project: any) => project.appointmentId === appointmentData.id
+              );
+              saveAppointmentData[index].date = moment().format('YYYY-MM-DD');
+              // saveAppointmentData[index].date = moment()
+              //   .startOf('day')
+              //   .add(1, 'd')
+              //   .format('YYYY-MM-DD');
+              AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
+            }
           }
+        } else {
+          sendDcotorChatNotification();
+          saveAppointmentData.push(saveAppointment[0]);
+          AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
         }
       } else {
-        saveAppointmentData.push(saveAppointment[0]);
-        AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointmentData));
+        sendDcotorChatNotification();
+        AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointment));
       }
-    } else {
-      AsyncStorage.setItem('saveAppointment', JSON.stringify(saveAppointment));
-    }
-    } catch (error) {
-      
-    }
- 
+    } catch (error) {}
+  };
+
+  const sendDcotorChatNotification = () => {
+    console.log('sendNotificationToDoctor api called');
+
+    sendNotificationToDoctor(client, appointmentData.id)
+      .then((data) => {
+        console.log('sendNotificationToDoctordata', data);
+      })
+      .catch((error) => {
+        console.log('sendNotificationToDoctorerror', error);
+      });
   };
 
   const client = useApolloClient();
@@ -1885,6 +1892,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const addMessages = (message: Pubnub.MessageEvent) => {
     console.log('addMessages', message);
     // console.log('startConsultjr', message.message.message);
+
+    SendNotificationToDoctorAPI();
 
     if (message.message.id !== patientId) {
       stopCallAbondmentTimer();
