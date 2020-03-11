@@ -190,7 +190,7 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!medicineList && Number(paramSearchText) > 0) {
+    if (!medicineList && Number(paramSearchText) > 0 && !localStorage.getItem('searchText')) {
       setIsLoading(true);
       axios
         .post(
