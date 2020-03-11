@@ -2,9 +2,9 @@ import { AccountStarTeam } from '@aph/mobile-doctors/src/components/Account/Acco
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
+import { HelpView } from '@aph/mobile-doctors/src/components/ui/HelpView';
 import {
   BackArrow,
-  RoundChatIcon,
   RoundIcon,
   Star,
   UserPlaceHolder,
@@ -23,6 +23,7 @@ import {
   UpdateDelegateNumberVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateDelegateNumber';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -31,7 +32,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import MyAccountProfileStyles from '../../components/Account/MyAccountProfile.styles';
 
 const styles = MyAccountProfileStyles;
@@ -188,23 +188,6 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
       return false;
     }
   };
-
-  const renderHelpView = () => {
-    return (
-      <View style={styles.helpview}>
-        <View style={{ marginTop: 4 }}>
-          <RoundChatIcon />
-        </View>
-        <View style={{ marginLeft: 14 }}>
-          <Text>
-            <Text style={styles.descriptionview}>{strings.common.call}</Text>
-            <Text style={styles.helptext}> {strings.common.toll_free_num} </Text>
-            <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
-          </Text>
-        </View>
-      </View>
-    );
-  };
   const renderMobilePhoneView = () => {
     return (
       <View style={styles.mobileview}>
@@ -310,7 +293,7 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
             <View>
               <Text style={styles.login}>{strings.account.secretay_login}</Text>
               {renderMobilePhoneView()}
-              {renderHelpView()}
+              <HelpView />
               {isLoading ? <Loader flex1 /> : null}
               {renderButtonsView()}
             </View>

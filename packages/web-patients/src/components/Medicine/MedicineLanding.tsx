@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Popover, CircularProgress } from '@material-ui/core';
+import { Theme, Popover, CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
@@ -20,7 +20,7 @@ import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -283,6 +283,36 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    bottomActions: {
+      paddingTop: 15,
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      display: 'flex',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        fontWeight: 'bold',
+        color: '#fc9916',
+        padding: 0,
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
+      },
+    },
+    trackBtn: {
+      marginLeft: 'auto',
+    },
     mascotIcon: {
       position: 'absolute',
       right: 12,
@@ -298,7 +328,10 @@ export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
   const { currentPatient } = useAllCurrentPatients();
-  const params = useParams<{ orderAutoId: string; orderStatus: string }>();
+  const params = useParams<{
+    orderAutoId: string;
+    orderStatus: string;
+  }>();
   if (params.orderStatus === 'success') {
     localStorage.removeItem('cartItems');
     localStorage.removeItem('dp');
@@ -310,8 +343,11 @@ export const MedicineLanding: React.FC = (props) => {
   const [showPopup, setShowPopup] = React.useState<boolean>(
     window.location.pathname === '/medicines/added-to-cart'
   );
+  const [showPrescriptionPopup, setShowPrescriptionPopup] = useState<boolean>(
+    params.orderAutoId && params.orderAutoId === 'prescription' ? true : false
+  );
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
-    params.orderStatus && params.orderStatus.length > 0 ? true : false
+    params.orderStatus && params.orderAutoId !== 'prescription' ? true : false
   );
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
@@ -505,6 +541,44 @@ export const MedicineLanding: React.FC = (props) => {
               orderStatus={params.orderStatus}
               setShowOrderPopup={setShowOrderPopup}
             />
+          </div>
+        </div>
+      </Popover>
+      {/* showPrescriptionPopup */}
+      <Popover
+        open={showPrescriptionPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <Typography variant="h2">yay!</Typography>
+              <p>
+                Your prescriptions have been submitted successfully. We will notify you when the
+                items are in your cart. If we need any clarificaitons, we will call you within 1
+                hour.
+              </p>
+              <div className={classes.bottomActions}>
+                <AphButton
+                  className={classes.trackBtn}
+                  onClick={() => setShowPrescriptionPopup(false)}
+                >
+                  Okay
+                </AphButton>
+              </div>
+            </div>
           </div>
         </div>
       </Popover>

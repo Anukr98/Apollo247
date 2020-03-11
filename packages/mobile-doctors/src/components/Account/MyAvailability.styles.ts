@@ -9,13 +9,6 @@ export default StyleSheet.create({
     marginTop: 16,
     marginHorizontal: 20,
   },
-  descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#0087ba',
-    lineHeight: 24,
-    //marginTop: 20,
-  },
-  //
   cardContainerStyle: {
     ...theme.viewStyles.whiteRoundedCornerCard,
     marginTop: 16,
@@ -100,11 +93,5 @@ export default StyleSheet.create({
     color: '#02475b',
     marginLeft: 20,
     marginTop: 32,
-  },
-  rowview: { margin: 20, flexDirection: 'row', marginBottom: 10 },
-  freenum: {
-    color: '#fc9916',
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-    lineHeight: 22,
   },
 });

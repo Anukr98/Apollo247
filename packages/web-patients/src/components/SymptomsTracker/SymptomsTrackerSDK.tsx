@@ -163,12 +163,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     successPopoverWindow: {
       display: 'flex',
@@ -195,6 +189,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent',
       paddingBottom: 0,
       paddingRight: 0,
+      fontWeight: 'bold',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -220,6 +215,25 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 30,
       },
     },
+    showBtnActions: {
+      marginTop: '1rem',
+      position: 'absolute',
+      right: 20,
+      top: 0,
+      zIndex: 9,
+      [theme.breakpoints.down(767)]: {
+        position: 'fixed',
+        top: 'auto',
+        bottom: 0,
+        marginTop: 0,
+        zIndex: 991,
+        padding: 11,
+        width: '100%',
+        left: 0,
+        backgroundColor: '#dcdfce',
+        textAlign: 'center',
+      },
+    },
   };
 });
 
@@ -240,6 +254,12 @@ const customContainerStyle = {
     marginBottom: 0,
     marginLeft: -5,
     marginRight: -5,
+  },
+  selectedSymptomsStyle: {
+    position: 'relative',
+    '& span': {
+      position: 'absolute',
+    },
   },
   search_button: {
     margin: 0,
@@ -264,6 +284,7 @@ interface CustomComponentProps {
   stopRedirect: string;
 }
 export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
+  const classes = useStyles({});
   const [isRedirect, setIsRedirect] = useState(false);
 
   useEffect(() => {
@@ -279,26 +300,29 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
     <Route
       render={({ history }) => {
         return (
-          <AphButton
-            title="show speciality"
-            onClick={async () => {
-              const queryResponse = await $Generator({ type: 'showSpeciality' });
-              let specialities = [];
-              if (queryResponse && queryResponse.specialists && queryResponse.specialists.length) {
-                specialities = queryResponse.specialists.map((item: { speciality: string }) =>
-                  item.speciality.trim()
-                );
-                if (specialities.length > 0) {
-                  const specialitiesEncoded = encodeURI(specialities.join(','));
-                  localStorage.setItem('symptomTracker', specialitiesEncoded);
-                  setIsRedirect(true);
-                  props.setDoctorPopOver(true);
+          <div className={classes.showBtnActions}>
+            <AphButton
+              title="show speciality"
+              color="primary"
+              onClick={async () => {
+                const queryResponse = await $Generator({ type: 'showSpeciality' });
+                let specialities = [];
+                if (queryResponse && queryResponse.specialists && queryResponse.specialists.length) {
+                  specialities = queryResponse.specialists.map((item: { speciality: string }) =>
+                    item.speciality.trim()
+                  );
+                  if (specialities.length > 0) {
+                    const specialitiesEncoded = encodeURI(specialities.join(','));
+                    localStorage.setItem('symptomTracker', specialitiesEncoded);
+                    setIsRedirect(true);
+                    props.setDoctorPopOver(true);
+                  }
                 }
-              }
-            }}
-          >
-            Show Doctors
-          </AphButton>
+              }}
+            >
+              Show Doctors
+            </AphButton>
+          </div>
         );
       }}
     ></Route>
@@ -319,8 +343,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
       ? moment()
-          .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
-          .toString()
+        .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
+        .toString()
       : '';
   const patientGender =
     currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : '';
@@ -347,8 +371,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 isSmallScreen
                   ? 'calc(100vh - 135px)'
                   : isMediumScreen
-                  ? 'calc(100vh - 205px)'
-                  : 'calc(100vh - 155px)'
+                    ? 'calc(100vh - 205px)'
+                    : 'calc(100vh - 155px)'
               }
             >
               <div className={classes.subHeader}>
@@ -434,7 +458,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img src={require('images/ic-mascot.png')} alt="" />
                 </div>
                 <div className={classes.contentGroup}>
-                  <Typography variant="h3">Hi! :)</Typography>
+                  <Typography variant="h3">hi! :)</Typography>
                   <p>Please pick or type the symptom most closely relating to your condition</p>
                   <div className={classes.bottomActions}>
                     <AphButton
@@ -444,7 +468,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         setShowPopup(false);
                       }}
                     >
-                      OK, GOT It
+                      OK, GOT IT
                     </AphButton>
                   </div>
                 </div>
@@ -470,7 +494,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img src={require('images/ic-mascot.png')} alt="" />
                 </div>
                 <div className={classes.contentGroup}>
-                  <Typography variant="h3">Hi! :)</Typography>
+                  <Typography variant="h3">relax :)</Typography>
                   <p>We're finding the earliest available doctors for you</p>
                   <div className={classes.bottomActions}>
                     <AphButton

@@ -1,11 +1,11 @@
 import AvailabilityStyles from '@aph/mobile-doctors/src/components/ProfileSetup/Availability.styles';
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
-import { AddPlus, RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { HelpView } from '@aph/mobile-doctors/src/components/ui/HelpView';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { format } from 'date-fns';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
 
 const styles = AvailabilityStyles;
@@ -94,19 +94,7 @@ export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
           <Text style={styles.addTextStyle}>{strings.account.add_consult_hours}</Text>
         </TouchableOpacity> */}
       </SquareCardWithTitle>
-      <View style={styles.roundChaticon}>
-        <View style={{ marginTop: 4 }}>
-          <RoundChatIcon />
-        </View>
-
-        <View style={{ marginLeft: 14 }}>
-          <Text>
-            <Text style={styles.descriptionview}>{strings.common.call}</Text>
-            <Text style={styles.tollfreeText}> {strings.common.toll_free_num} </Text>
-            <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
-          </Text>
-        </View>
-      </View>
+      <HelpView styles={{ marginBottom: -10 }} />
     </View>
   );
 };
