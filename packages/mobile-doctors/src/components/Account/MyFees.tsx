@@ -1,20 +1,15 @@
+import MyFeesStyles from '@aph/mobile-doctors/src/components/Account/MyFees.styles';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import {
-  BackArrow,
-  Down,
-  RoundChatIcon,
-  RoundIcon,
-  Up,
-} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { HelpView } from '@aph/mobile-doctors/src/components/ui/HelpView';
+import { BackArrow, Down, RoundIcon, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import MyFeesStyles from '@aph/mobile-doctors/src/components/Account/MyFees.styles';
 
 const styles = MyFeesStyles;
 
@@ -177,19 +172,7 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
             </View>
           </View>
         ) : null}
-        <View style={styles.roundicon}>
-          <View style={{ marginTop: 4 }}>
-            <RoundChatIcon />
-          </View>
-
-          <View style={{ marginLeft: 14 }}>
-            <Text>
-              <Text style={styles.descriptionview}>{strings.common.call}</Text>
-              <Text style={styles.free}> {strings.common.toll_free_num} </Text>
-              <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
-            </Text>
-          </View>
-        </View>
+        <HelpView />
       </ScrollView>
       {showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null}
     </SafeAreaView>

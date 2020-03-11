@@ -46,6 +46,16 @@ export interface PrescriptionFormat {
   baseFormat: string;
 }
 
+export interface EPrescription {
+  id: string;
+  uploadedUrl: string;
+  forPatient: string;
+  date: string;
+  medicines: string;
+  doctorName: string;
+  prismPrescriptionFileId: string;
+}
+
 export interface MedicineCartContextProps {
   itemsStr: string | null;
   cartItems: MedicineCartItem[];
@@ -70,12 +80,10 @@ export interface MedicineCartContextProps {
   addMultipleCartItems: ((items: MedicineCartItem[]) => void) | null;
   prescriptions: PrescriptionFormat[] | null;
   setPrescriptions: ((prescriptions: PrescriptionFormat[] | null) => void) | null;
-  phrPrescriptionData: Prescription[] | null;
-  setPhrPrescriptionData: ((phrPrescriptionData: Prescription[] | null) => void) | null;
-  setMedicineOrderData: ((medicineOrderData: MedicineOrder[] | null) => void) | null;
-  medicineOrderData: MedicineOrder[] | null;
   setPrescriptionUploaded: ((prescriptionUploaded: PrescriptionFormat | null) => void) | null;
   prescriptionUploaded: PrescriptionFormat | null;
+  ePrescriptionData: EPrescription[] | null;
+  setEPrescriptionData: ((ePrescriptionData: EPrescription[] | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -98,10 +106,8 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   addMultipleCartItems: null,
   prescriptions: null,
   setPrescriptions: null,
-  phrPrescriptionData: null,
-  setPhrPrescriptionData: null,
-  setMedicineOrderData: null,
-  medicineOrderData: null,
+  ePrescriptionData: null,
+  setEPrescriptionData: null,
   prescriptionUploaded: null,
   setPrescriptionUploaded: null,
 });
@@ -142,21 +148,15 @@ export const MedicinesCartProvider: React.FC = (props) => {
       ? JSON.parse(localStorage.getItem('prescriptions') || '')
       : []
   );
-  const [phrPrescriptionData, setPhrPrescriptionData] = React.useState<
-    MedicineCartContextProps['phrPrescriptionData']
-  >(
-    localStorage.getItem('phrPrescriptionData')
-      ? JSON.parse(localStorage.getItem('phrPrescriptionData') || '')
-      : []
-  );
   const [prescriptionUploaded, setPrescriptionUploaded] = React.useState<PrescriptionFormat | null>(
     defPresObject
   );
-  const [medicineOrderData, setMedicineOrderData] = React.useState<
-    MedicineCartContextProps['medicineOrderData']
+
+  const [ePrescriptionData, setEPrescriptionData] = React.useState<
+    MedicineCartContextProps['ePrescriptionData']
   >(
-    localStorage.getItem('medicineOrderData')
-      ? JSON.parse(localStorage.getItem('medicineOrderData') || '')
+    localStorage.getItem('ePrescriptionData')
+      ? JSON.parse(localStorage.getItem('ePrescriptionData') || '')
       : []
   );
 
@@ -177,13 +177,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setPrescriptions && setPrescriptions(finalPrescriptions);
       }
     }
-    if (medicineOrderData) {
-      localStorage.setItem('medicineOrderData', JSON.stringify(medicineOrderData));
+    if (ePrescriptionData) {
+      localStorage.setItem('ePrescriptionData', JSON.stringify(ePrescriptionData));
     }
-    if (phrPrescriptionData) {
-      localStorage.setItem('phrPrescriptionData', JSON.stringify(phrPrescriptionData));
-    }
-  }, [prescriptionUploaded, medicineOrderData, phrPrescriptionData]);
+  }, [prescriptionUploaded, ePrescriptionData]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     setCartItems([...cartItems, itemToAdd]);
@@ -271,13 +268,11 @@ export const MedicinesCartProvider: React.FC = (props) => {
         clearCartInfo,
         addMultipleCartItems,
         prescriptions,
-        setPhrPrescriptionData,
         setPrescriptions,
-        phrPrescriptionData,
-        setMedicineOrderData,
-        medicineOrderData,
         prescriptionUploaded,
         setPrescriptionUploaded,
+        ePrescriptionData,
+        setEPrescriptionData,
       }}
     >
       {props.children}
@@ -305,11 +300,9 @@ export const useShoppingCart = () => ({
   clearCartInfo: useShoppingCartContext().clearCartInfo,
   addMultipleCartItems: useShoppingCartContext().addMultipleCartItems,
   prescriptions: useShoppingCartContext().prescriptions,
-  setPhrPrescriptionData: useShoppingCartContext().setPhrPrescriptionData,
   setPrescriptions: useShoppingCartContext().setPrescriptions,
-  phrPrescriptionData: useShoppingCartContext().phrPrescriptionData,
-  setMedicineOrderData: useShoppingCartContext().setMedicineOrderData,
-  medicineOrderData: useShoppingCartContext().medicineOrderData,
   prescriptionUploaded: useShoppingCartContext().prescriptionUploaded,
   setPrescriptionUploaded: useShoppingCartContext().setPrescriptionUploaded,
+  setEPrescriptionData: useShoppingCartContext().setEPrescriptionData,
+  ePrescriptionData: useShoppingCartContext().ePrescriptionData,
 });

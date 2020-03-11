@@ -76,6 +76,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   id: string;
   salutation: Salutation | null;
   firstName: string;
+  fullName: string | null;
   lastName: string;
   displayName: string | null;
   experience: string | null;
