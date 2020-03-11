@@ -152,6 +152,9 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   // const PatientInfoData = props.navigation.getParam('PatientInfoAll');
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
+  console.log(Appintmentdatetimeconsultpage, 'Appintmentdatetimeconsultpage');
+  const dateIsAfterconsult = moment(Appintmentdatetimeconsultpage).isAfter(moment(new Date()));
+  console.log(dateIsAfterconsult, 'dateIsAfterconsult');
   const AppId = props.navigation.getParam('AppId');
   const stastus = props.navigation.getParam('AppointmentStatus');
   const [
@@ -672,7 +675,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={styles.footerButtonsContainersave}>
               <Button
                 title={strings.buttons.start_consult}
-                // disabled={!enableConsultButton}
+                disabled={!enableConsultButton}
                 buttonIcon={<Start style={{ right: 10 }} />}
                 onPress={() => {
                   setShowButtons(true);
@@ -1168,14 +1171,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <DiagnosicsCard
                       diseaseName={showdata.itemname}
                       icon={
-                        <TouchableOpacity
-                          onPress={() => {
-                            // removeDiagnosticPresecription(showdata, i);
-                            setTests([...tests, { ...showdata, isSelected: true }]);
-                          }}
-                        >
-                          <Green />
-                        </TouchableOpacity>
+                        dateIsAfterconsult && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              // removeDiagnosticPresecription(showdata, i);
+                              setTests([...tests, { ...showdata, isSelected: true }]);
+                            }}
+                          >
+                            <Green />
+                          </TouchableOpacity>
+                        )
                       }
                     />
                   </View>
@@ -1376,25 +1381,26 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                               medicinePrescriptionData === null ||
                               medicinePrescriptionData === undefined
                             ) {
-                              setMedicinePrescriptionData([
-                                ...(medicinePrescriptionData || []),
-                                {
-                                  id: med.id,
-                                  externalId: med.externalId,
-                                  medicineName: med.medicineName,
-                                  medicineDosage: med.medicineDosage,
-                                  medicineToBeTaken: med.medicineToBeTaken,
-                                  medicineInstructions: med.medicineInstructions,
-                                  medicineTimings: med.medicineTimings,
-                                  medicineUnit: med.medicineUnit,
-                                  medicineConsumptionDurationInDays:
-                                    med.medicineConsumptionDurationInDays,
-                                  medicineConsumptionDuration: med.medicineConsumptionDuration,
-                                  medicineFrequency: med.medicineFrequency,
-                                  medicineConsumptionDurationUnit:
-                                    med.medicineConsumptionDurationUnit,
-                                } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                              ]);
+                              dateIsAfterconsult &&
+                                setMedicinePrescriptionData([
+                                  ...(medicinePrescriptionData || []),
+                                  {
+                                    id: med.id,
+                                    externalId: med.externalId,
+                                    medicineName: med.medicineName,
+                                    medicineDosage: med.medicineDosage,
+                                    medicineToBeTaken: med.medicineToBeTaken,
+                                    medicineInstructions: med.medicineInstructions,
+                                    medicineTimings: med.medicineTimings,
+                                    medicineUnit: med.medicineUnit,
+                                    medicineConsumptionDurationInDays:
+                                      med.medicineConsumptionDurationInDays,
+                                    medicineConsumptionDuration: med.medicineConsumptionDuration,
+                                    medicineFrequency: med.medicineFrequency,
+                                    medicineConsumptionDurationUnit:
+                                      med.medicineConsumptionDurationUnit,
+                                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                ]);
                             }
                             setSelectedMedicinesId(
                               [...selectedMedicinesId, compareId || ''].filter((i) => i !== '')
@@ -1404,7 +1410,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       >
                         <View style={[styles.dataCardsStyle, { marginVertical: 4 }]}>
                           {renderMedicineDetails(med)}
-                          <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                          {dateIsAfterconsult && (
+                            <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                          )}
                         </View>
                       </TouchableOpacity>
                     );
@@ -2190,7 +2198,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
-                        selectedAdviceAction({ key: item.id, value: item.instruction }, 'a');
+                        dateIsAfterconsult
+                          ? selectedAdviceAction({ key: item.id, value: item.instruction }, 'a')
+                          : null;
                       }}
                     >
                       <View style={styles.dataCardsStyle}>
@@ -2202,7 +2212,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         >
                           {item.instruction}
                         </Text>
-                        <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                        {dateIsAfterconsult && (
+                          <Green style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                        )}
                       </View>
                     </TouchableOpacity>
                   )
