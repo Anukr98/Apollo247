@@ -118,9 +118,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#890000',
       fontWeight: 500,
     },
-    itemSelected: {
-      backgroundColor: '#f7f8f5',
-    },
     searchBtnDisabled: {
       opacity: 0.5,
       '& img': {
@@ -192,9 +189,7 @@ export const TestsAutoSearch: React.FC = (props) => {
         <AphButton
           disabled={searchText.length < 3}
           className={classes.searchBtn}
-          onClick={() =>
-            (window.location.href = clientRoutes.searchByTest('search-medicines', searchText))
-          }
+          onClick={() => (window.location.href = clientRoutes.searchByTest())}
           classes={{
             disabled: classes.searchBtnDisabled,
           }}

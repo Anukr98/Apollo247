@@ -391,7 +391,7 @@ export const TestsLanding: React.FC = (props) => {
                   <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
                     <Link
                       className={`${classes.serviceType} ${classes.textVCenter}`}
-                      to={clientRoutes.yourOrders()}
+                      to={clientRoutes.testOrders()}
                     >
                       <span className={classes.serviceIcon}>
                         <img src={require('images/ic_tablets.svg')} alt="" />

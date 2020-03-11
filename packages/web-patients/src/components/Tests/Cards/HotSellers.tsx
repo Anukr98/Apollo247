@@ -155,23 +155,25 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
+        <Link to={clientRoutes.testDetails()}>
+          <div className={classes.card}>
+            <div className={classes.cardWrap}>
+              <div className={classes.productIcon}>
+                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
               </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
+              <div className={classes.productTitle}>Liver Function Test</div>
+              <div className={classes.bottomSection}>
+                <div className={classes.priceGroup}>
+                  <span className={classes.regularPrice}>(Rs. 125)</span>
+                  <span>Rs. 124 </span>
+                </div>
+                <div className={classes.addToCart}>
+                  <AphButton>Add To Cart</AphButton>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Link>
         <div className={classes.card}>
           <div className={classes.cardWrap}>
             <div className={classes.productIcon}>

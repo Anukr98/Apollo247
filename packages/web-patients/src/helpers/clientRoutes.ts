@@ -35,8 +35,9 @@ export const clientRoutes = {
   symptomsTracker: () => '/track-symptoms',
   tests: () => '/tests',
   testDetails: () => `/test-details`,
-  searchByTest: (searchMedicineType: string, searchText: string) =>
-    `/${searchMedicineType}/${searchText}`,
+  searchByTest: () => `/test-list`,
+  testOrders: () => '/test-orders',
+  ordersMessage: () => '/orders-message',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
