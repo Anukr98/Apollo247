@@ -17,6 +17,15 @@ export class AppointmentsSessionRepository extends Repository<AppointmentSession
     return this.update(id, { patientToken, updatedDate: new Date() });
   }
 
+  updateDoctorAppointmentSession(doctorToken: string, id: string, sessionId: string) {
+    return this.update(id, {
+      doctorToken,
+      sessionId,
+      consultStartDateTime: new Date(),
+      updatedDate: new Date(),
+    });
+  }
+
   getAppointmentSession(appointment: string) {
     return this.findOne({ where: { appointment } });
   }
