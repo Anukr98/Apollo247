@@ -64,12 +64,10 @@ const saveOrderConfirmation: Resolver<
     orderConfirmationInput.ordersResult.orderNo
   );
   if (!orderDetails) {
-    console.log('11111111111111');
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
-    console.log('222222222222222222');
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
