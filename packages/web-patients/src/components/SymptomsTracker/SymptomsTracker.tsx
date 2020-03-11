@@ -244,7 +244,9 @@ export const SymptomsTracker: React.FC = () => {
                       <AphSelect
                         value={currentPatient.id}
                         onChange={(e) => {
-                          window.location.href = clientRoutes.symptomsTracker();
+                          if (e.target.value) {
+                            window.location.href = clientRoutes.symptomsTracker();
+                          }
                           setCurrentPatientId(e.target.value as Patient['id']);
                         }}
                         classes={{
@@ -267,12 +269,15 @@ export const SymptomsTracker: React.FC = () => {
                               value={patient.id}
                               classes={{ selected: classes.menuSelected }}
                               key={patient.id}
+                              onClick={() => {
+                                setSelectCurrentUser(!selectCurrentUser);
+                              }}
                             >
                               {name}
                             </MenuItem>
                           );
                         })}
-                        <MenuItem classes={{ selected: classes.menuSelected }}>
+                        <MenuItem classes={{ selected: classes.menuSelected }} key="addMember">
                           <AphButton
                             color="primary"
                             classes={{ root: classes.addMemberBtn }}
