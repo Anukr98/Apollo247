@@ -121,6 +121,10 @@ const useStyles = makeStyles((theme: Theme) => {
     submitBtn: {
       backgroundColor: '#fcb716',
       color: '#fff',
+      '&:hover': {
+        backgroundColor: '#fcb716',
+        color: '#fff',
+      },
     },
     submitDisable: {
       backgroundColor: '#fcb716',
