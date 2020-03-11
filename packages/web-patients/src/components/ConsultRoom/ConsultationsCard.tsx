@@ -366,7 +366,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       setCurrentDoctorName(fullName);
                       setCurrentApptTime(
                         moment(appointmentDetails.appointmentDateTime).format(
-                          'MMMM DD,YYYY [at] LT'
+                          'MMMM DD, YYYY [at] LT'
                         )
                       );
                     }
@@ -481,7 +481,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       </div>
 
       <AphDialog open={isScheduledAppPopoverOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsScheduledAppPopoverOpen(false)} />
+        <AphDialogClose onClick={() => setIsScheduledAppPopoverOpen(false)} title={'Close'} />
         <AphDialogTitle>Scheduled Appointment</AphDialogTitle>
         <div className={classes.messageBox}>
           <p>
@@ -496,7 +496,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       </AphDialog>
 
       <AphDialog open={isAppDetailsPopoverOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAppDetailsPopoverOpen(false)} />
+        <AphDialogClose onClick={() => setIsAppDetailsPopoverOpen(false)} title={'Close'} />
         <AphDialogTitle>Appointment Details</AphDialogTitle>
         <div className={classes.messageBox}>
           <p className={classes.textCenter}>

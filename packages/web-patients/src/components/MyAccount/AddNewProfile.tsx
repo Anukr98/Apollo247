@@ -357,7 +357,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
           <Scrollbars autoHide={true} autoHeight autoHeightMax={'48vh'}>
             <div className={classes.customScrollBar}>
               <div className={classes.profileForm}>
-                <div className={classes.uploadImage}>
+                <div className={classes.uploadImage} title={'Upload Profile'}>
                   <input
                     accept="image/*"
                     className={classes.uploadInput}
@@ -554,7 +554,11 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
           </Scrollbars>
         </div>
         <div className={classes.dialogActions}>
-          <AphButton onClick={() => closeHandler(false)} disabled={isProfileDelete}>
+          <AphButton
+            onClick={() => closeHandler(false)}
+            disabled={isProfileDelete}
+            title={'Cancel'}
+          >
             Cancel
           </AphButton>
           <AphButton
@@ -601,7 +605,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   .then((response) => {
                     closeHandler(false);
                     successHandler(true);
-                    // console.log(response);
+                    window.location.reload();
                   })
                   .catch((e) => {
                     setMutationLoading(false);
@@ -614,6 +618,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
               root: classes.saveButton,
               disabled: !disableSubmitButton ? classes.saveBtnDisable : '',
             }}
+            title={'save'}
           >
             {mutationLoading ? <CircularProgress size={20} /> : 'Save'}
           </AphButton>

@@ -184,7 +184,7 @@ export const Header: React.FC = (props) => {
         <header className={classes.header} data-cypress="Header">
           <div className={classes.logo}>
             <Link to="/">
-              <img src={require('images/ic_logo.png')} />
+              <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
           {isSignedIn && (
@@ -195,7 +195,7 @@ export const Header: React.FC = (props) => {
           )}
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-              <a href={getAppStoreLink()} target="_blank">
+              <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
                 Download Apollo247 App
               </a>
             </div>
@@ -211,6 +211,7 @@ export const Header: React.FC = (props) => {
                 <Link
                   className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
                   to={clientRoutes.myAccount()}
+                  title={'Control profile'}
                 >
                   {isSigningIn ? (
                     <CircularProgress />
@@ -227,6 +228,7 @@ export const Header: React.FC = (props) => {
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup();
                         }}
                         className={classes.loginLinks}
+                        title={'Login/SignUp'}
                       >
                         Login/SignUp
                       </div>
@@ -236,11 +238,12 @@ export const Header: React.FC = (props) => {
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
                         }
                         ref={avatarRef}
+                        title={'Login/SignUp'}
                       >
                         {isSigningIn ? (
                           <CircularProgress />
                         ) : (
-                          <img src={require('images/ic_account.svg')} />
+                          <img src={require('images/ic_account.svg')} title={'Login/SignUp'} />
                         )}
                       </div>
                     </>

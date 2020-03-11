@@ -1,13 +1,13 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover } from '@material-ui/core';
+import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import axios, { AxiosResponse, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -163,18 +163,18 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     medicinePrice: {
-      fontSize: 14,
+      fontSize: 13,
       color: '#02475b',
       letterSpacing: 0.3,
       fontWeight: 'bold',
-      width: '50%',
       textAlign: 'right',
+      marginLeft: 'auto',
     },
     leftGroup: {
-      width: '50%',
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: 500,
+      width: 98,
     },
     medicinePack: {
       color: '#02475b',
@@ -260,7 +260,7 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 0.6,
     },
     regularPrice: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: 500,
       color: '#01475b',
       opacity: 0.6,
@@ -276,10 +276,10 @@ type MedicineInformationProps = {
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
+  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const subDrugsRef = useRef(null);
-  const addToCartRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [substitutes, setSubstitutes] = React.useState<MedicineProductDetails[] | null>(null);
@@ -287,7 +287,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
-  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
+  const [updateMutationLoading, setUpdateMutationLoading] = useState<boolean>(false);
+  const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -322,29 +323,51 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchDeliveryTime = async () => {
+    const CancelToken = axios.CancelToken;
+    let cancelGetDeliveryTimeApi: Canceler | undefined;
     await axios
       .post(
         apiDetails.deliveryUrl || '',
         {
-          params: {
-            postalcode: pinCode,
-            ordertype: 'pharma',
-            lookup: [
-              {
-                sku: params.sku,
-                qty: 1,
-              },
-            ],
-          },
+          postalcode: pinCode,
+          ordertype: 'pharma',
+          lookup: [
+            {
+              sku: params.sku,
+              qty: 1,
+            },
+          ],
         },
         {
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
-      .then((res: any) => setDeliveryTime(res.tat.deliveryDate))
-      .catch((error: any) => alert(error));
+      .then((res: AxiosResponse) => {
+        try {
+          if (res && res.data) {
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              setDeliveryTime(res.data.tat[0].deliverydate);
+            } else if (typeof res.data === 'string') {
+              console.log(res.data);
+            } else if (typeof res.data.errorMSG === 'string') {
+              console.log(res.data.errorMSG);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })
+      .catch((error: any) => console.log(error));
   };
 
   useEffect(() => {
@@ -363,7 +386,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
-  const options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x + 1);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -385,11 +408,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   }}
                   ref={subDrugsRef}
                 >
-                  <span>Pick from {substitutes.length} available substitutes</span>
+                  <span>
+                    Pick from {substitutes.length} available
+                    {substitutes.length === 1 ? ' substitute' : ' substitutes'}
+                  </span>
                 </div>
               </>
             )}
-            {data.is_in_stock && (
+            {data.is_in_stock ? (
               <>
                 <div className={classes.sectionTitle}>Check Delivery Time</div>
                 <div className={classes.deliveryInfo}>
@@ -417,7 +443,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   )}
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         </Scrollbars>
       </div>
@@ -455,7 +481,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             ) : (
-              <div className={classes.medicineNoStock}>Out Of Stock</div>
+              <div className={classes.leftGroup}>
+                <div className={classes.medicineNoStock}>Out Of Stock</div>
+              </div>
             )}
             <div className={classes.medicinePrice}>
               {data.special_price && (
@@ -470,7 +498,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           {data.is_in_stock ? (
             <>
               <AphButton
+                disabled={addMutationLoading || updateMutationLoading}
                 onClick={() => {
+                  setAddMutationLoading(true);
                   const cartItem: MedicineCartItem = {
                     description: data.description,
                     id: data.id,
@@ -489,14 +519,22 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     quantity: medicineQty,
                   };
                   applyCartOperations(cartItem);
-                  window.location.href = clientRoutes.medicinesLandingViewCart();
+                  setTimeout(() => {
+                    window.location.href = clientRoutes.medicinesLandingViewCart();
+                  }, 3000);
                 }}
               >
-                Add To Cart
+                {addMutationLoading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  'Add To Cart'
+                )}
               </AphButton>
               <AphButton
                 color="primary"
+                disabled={addMutationLoading || updateMutationLoading}
                 onClick={() => {
+                  setUpdateMutationLoading(true);
                   const cartItem: MedicineCartItem = {
                     description: data.description,
                     id: data.id,
@@ -515,21 +553,29 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     quantity: medicineQty,
                   };
                   applyCartOperations(cartItem);
-                  window.location.href = clientRoutes.medicinesCart();
+                  setTimeout(() => {
+                    window.location.href = clientRoutes.medicinesCart();
+                  }, 3000);
                 }}
               >
-                Buy Now
+                {updateMutationLoading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  'Buy Now'
+                )}
               </AphButton>
             </>
-          ) : (
-            <AphButton
-              fullWidth
-              className={classes.notifyBtn}
-              onClick={() => setIsPopoverOpen(true)}
-            >
-              Notify when in stock
-            </AphButton>
-          )}
+          ) : null
+          // (
+          //   <AphButton
+          //     fullWidth
+          //     className={classes.notifyBtn}
+          //     onClick={() => setIsPopoverOpen(true)}
+          //   >
+          //     Notify when in stock
+          //   </AphButton>
+          // )
+          }
         </div>
       </div>
 

@@ -154,6 +154,10 @@ import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
+import {
+  registerPatientsTypeDefs,
+  registerPatientsResolvers,
+} from 'profiles-service/resolvers/registerPatients';
 
 (async () => {
   await connect();
@@ -351,6 +355,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: verifyLoginOtpTypeDefs,
         resolvers: verifyLoginOtpResolvers,
+      },
+      {
+        typeDefs: registerPatientsTypeDefs,
+        resolvers: registerPatientsResolvers,
       },
     ]),
     plugins: [

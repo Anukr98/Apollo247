@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { Theme, MenuItem } from '@material-ui/core';
+import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
@@ -71,6 +71,55 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: 10,
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
+    },
+    selectMenuRoot: {
+      paddingRight: 55,
+      '& svg': {
+        color: '#00b38e',
+        fontSize: 30,
+      },
+    },
+    selectMenuItem: {
+      color: theme.palette.secondary.dark,
+      fontSize: 50,
+      fontWeight: 600,
+      lineHeight: '66px',
+      paddingTop: 2,
+      paddingBottom: 7,
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 30,
+        lineHeight: '46px',
+      },
+      backgroundColor: 'transparent',
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+    menuPopover: {
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
+      '& ul': {
+        padding: '10px 20px',
+        '& li': {
+          fontSize: 16,
+          fontWeight: 500,
+          color: '#01475b',
+          minHeight: 'auto',
+          paddingLeft: 0,
+          paddingRight: 0,
+          borderBottom: '1px solid rgba(1,71,91,0.2)',
+          textTransform: 'capitalize',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+        },
+      },
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      color: '#00b38e !important',
     },
     filterType: {
       color: '#02475b',
@@ -183,9 +232,14 @@ interface MedicineFilterProps {
   setPriceFilter?: (priceFilter: priceFilter) => void;
   setFilterData?: (filterData: []) => void;
   setDiscountFilter?: (discountFilter: discountFilter) => void;
+  setSortBy?: (sortValue: string) => void;
 }
 
 type Params = { searchMedicineType: string; searchText: string };
+
+export type SortByOptions = 'A-Z' | 'Z-A' | 'Price-H-L' | 'Price-L-H' | '';
+
+const sortingOptions = ['A-Z', 'Z-A', 'Price-H-L', 'Price-L-H'];
 
 export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const classes = useStyles({});
@@ -205,6 +259,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [toPrice, setToPrice] = useState();
   const [fromDiscount, setFromDiscount] = useState<string>('0');
   const [toDiscount, setToDiscount] = useState<string>('100');
+  const [sortValue, setSortValue] = useState<string>('');
 
   useEffect(() => {
     if (subtxt.length > 0 && subtxt !== params.searchText) {
@@ -259,6 +314,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       props.setFilterData(selectedCatagerys);
     }
 
+    props.setSortBy(sortValue);
     props.setPriceFilter(obj);
     props.setDiscountFilter(discountObj);
   };
@@ -280,9 +336,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           }}
           value={subtxt}
         />
-        <AphButton className={classes.refreshBtn}>
-          <img src={require('images/ic_refresh.svg')} alt="" />
-        </AphButton>
       </div>
       <div className={`${classes.filterSection}`}>
         <div className={classes.filterHeader}>
@@ -296,8 +349,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         </div>
         <Scrollbars className={classes.filterScroll} autoHide={true}>
           <div className={classes.customScroll}>
-            <div className={classes.filterBox}>
-              {locationUrl && locationUrl.includes('search-medicines') && (
+            {locationUrl && locationUrl.includes('search-medicines') && (
+              <div className={classes.filterBox}>
                 <span>
                   <div className={classes.filterType}>Categories</div>
 
@@ -400,8 +453,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                     </AphButton>
                   </div>
                 </span>
-              )}
-            </div>
+              </div>
+            )}
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Discount</div>
               <div className={classes.boxContent}>
@@ -442,6 +495,44 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                 </div>
               </div>
             </div>
+            <div className={classes.filterBox}>
+              <div className={classes.filterType}>Sort by</div>
+              <div className={classes.boxContent}>
+                <div className={classes.filterBy}>
+                  <AphSelect
+                    value={sortValue !== '' ? sortValue : 'Select sort by'}
+                    onChange={(e) => setSortValue(e.target.value as SortByOptions)}
+                    classes={{
+                      root: classes.selectMenuRoot,
+                      selectMenu: classes.selectMenuItem,
+                    }}
+                    MenuProps={{
+                      classes: { paper: classes.menuPopover },
+                      anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                  >
+                    {sortingOptions.map((option) => {
+                      return (
+                        <MenuItem
+                          value={option}
+                          classes={{ selected: classes.menuSelected }}
+                          key={option}
+                        >
+                          {option}
+                        </MenuItem>
+                      );
+                    })}
+                  </AphSelect>
+                </div>
+              </div>
+            </div>
           </div>
         </Scrollbars>
       </div>
@@ -458,3 +549,18 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     </div>
   );
 };
+
+// const getDescription = (value: SortByOptions) => {
+//   switch (value) {
+//     case 'A-Z':
+//       return 'Products Name A-Z';
+//     case 'Z-A':
+//       return 'Products Name Z-A';
+//     case 'Price-H-L':
+//       return 'Price: High To Low';
+//     case 'Price-L-H':
+//       return 'Price: Low To High';
+//     default:
+//       return 'Please Select';
+//   }
+// };

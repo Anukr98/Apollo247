@@ -185,11 +185,14 @@ export const MyProfile: React.FC = (props) => {
                   currentPath === clientRoutes.myAccount() ? classes.menuActive : ''
                 }`}
                 to={clientRoutes.myAccount()}
+                title={'Manage Profiles'}
               >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_manageprofile.svg')} alt="" />
                 </span>
-                <span className={classes.linkText}>Manage Profiles</span>
+                <span className={classes.linkText} title={'Manage Profiles'}>
+                  Manage Profiles
+                </span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
@@ -201,11 +204,14 @@ export const MyProfile: React.FC = (props) => {
                   currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
                 }`}
                 to={clientRoutes.addressBook()}
+                title={'Address Book'}
               >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_location.svg')} alt="" />
                 </span>
-                <span className={classes.linkText}>Address Book</span>
+                <span className={classes.linkText} title={'Address Book'}>
+                  Address Book
+                </span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
@@ -238,12 +244,14 @@ export const MyProfile: React.FC = (props) => {
                 </span>
               </Link>
             </div> */}
-            <div className={`${classes.sectionGroup}`} onClick={() => signOut()}>
+            <div className={`${classes.sectionGroup}`} onClick={() => signOut()} title={'Logout'}>
               <div className={`${classes.serviceType} ${classes.textVCenter}`}>
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_logout.svg')} alt="" />
                 </span>
-                <span className={classes.linkText}>Logout</span>
+                <span className={classes.linkText} title={'Logout'}>
+                  Logout
+                </span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
@@ -263,11 +271,14 @@ export const MyProfile: React.FC = (props) => {
                       currentPath === clientRoutes.myAccount() ? classes.menuActive : ''
                     }`}
                     to={clientRoutes.myAccount()}
+                    title={'Manage Profiles'}
                   >
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_manageprofile.svg')} alt="" />
                     </span>
-                    <span className={classes.linkText}>Manage Profiles</span>
+                    <span className={classes.linkText} title={'Manage Profiles'}>
+                      Manage Profiles
+                    </span>
                     <span className={classes.rightArrow}>
                       <img src={require('images/ic_arrow_right.svg')} alt="" />
                     </span>
@@ -279,11 +290,14 @@ export const MyProfile: React.FC = (props) => {
                       currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
                     }`}
                     to={clientRoutes.addressBook()}
+                    title={'Address Book'}
                   >
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_location.svg')} alt="" />
                     </span>
-                    <span className={classes.linkText}>Address Book</span>
+                    <span className={classes.linkText} title={'Address Book'}>
+                      Address Book
+                    </span>
                     <span className={classes.rightArrow}>
                       <img src={require('images/ic_arrow_right.svg')} alt="" />
                     </span>
@@ -316,12 +330,18 @@ export const MyProfile: React.FC = (props) => {
                 </span>
               </Link>
             </div> */}
-                <div className={`${classes.sectionGroup}`} onClick={() => signOut()}>
+                <div
+                  className={`${classes.sectionGroup}`}
+                  onClick={() => signOut()}
+                  title={'Logout'}
+                >
                   <div className={`${classes.serviceType} ${classes.textVCenter}`}>
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_logout.svg')} alt="" />
                     </span>
-                    <span className={classes.linkText}>Logout</span>
+                    <span className={classes.linkText} title={'Logout'}>
+                      Logout
+                    </span>
                     <span className={classes.rightArrow}>
                       <img src={require('images/ic_arrow_right.svg')} alt="" />
                     </span>

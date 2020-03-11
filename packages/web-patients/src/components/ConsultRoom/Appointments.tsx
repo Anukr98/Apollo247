@@ -549,6 +549,7 @@ export const Appointments: React.FC = (props) => {
                   selected: classes.tabSelected,
                 }}
                 label="Active"
+                title={'Active appointments'}
               />
               <Tab
                 classes={{
@@ -556,6 +557,7 @@ export const Appointments: React.FC = (props) => {
                   selected: classes.tabSelected,
                 }}
                 label="Past"
+                title={'Past appointments'}
               />
             </Tabs>
 
@@ -579,6 +581,7 @@ export const Appointments: React.FC = (props) => {
                               onClick={() => {
                                 history.push(clientRoutes.doctorsLanding());
                               }}
+                              title={'Book an Appointment'}
                             >
                               Book an Appointment
                             </AphButton>
@@ -613,6 +616,7 @@ export const Appointments: React.FC = (props) => {
                               onClick={() => {
                                 history.push(clientRoutes.doctorsLanding());
                               }}
+                              title={'Book an Appointment'}
                             >
                               Book an Appointment
                             </AphButton>
@@ -639,6 +643,7 @@ export const Appointments: React.FC = (props) => {
                 setIsConfirmedPopoverOpen(false);
                 history.push(clientRoutes.appointments());
               }}
+              title={'Close'}
             />
           )}
         />

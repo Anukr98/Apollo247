@@ -547,6 +547,19 @@ const bookRescheduleAppointment: Resolver<
     );
     console.log(notificationResult, 'appt rescheduled notification');
   }
+  if ((bookRescheduleAppointmentInput.initiatedBy = TRANSFER_INITIATED_TYPE.PATIENT)) {
+    const pushNotificationInput = {
+      appointmentId: bookRescheduleAppointmentInput.appointmentId,
+      notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
+    };
+    const notificationResult = await sendNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
+    console.log(notificationResult, 'appt rescheduled notification');
+  }
   return { appointmentDetails };
 };
 

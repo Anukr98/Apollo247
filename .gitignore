@@ -6,3 +6,4 @@ assets/logs
 packages/api/kaleyra-logs/SMS-RESPONSE.LOG
 packages/api/debug-logs/doctors-search.log
 *.log
+paytm-integration/env

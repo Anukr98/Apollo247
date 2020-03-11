@@ -13,7 +13,6 @@ export default StyleSheet.create({
     zIndex: 2,
     top: 0,
     width: '100%',
-    // height: 'auto',
   },
 
   menuDropdown: {
@@ -62,5 +61,26 @@ export default StyleSheet.create({
         elevation: 12,
       },
     }),
+  },
+  month: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 12,
+  },
+  currentmonth: { color: '#02475b', ...theme.fonts.IBMPlexSansBold(14), marginRight: 4 },
+  doctorname: {
+    ...theme.fonts.IBMPlexSansSemiBold(28),
+    color: '#02475b',
+    marginLeft: 20,
+    marginBottom: 2,
+  },
+  schedule: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: '#0087ba',
+    marginLeft: 20,
+    marginBottom: 14,
+    lineHeight: 24,
   },
 });

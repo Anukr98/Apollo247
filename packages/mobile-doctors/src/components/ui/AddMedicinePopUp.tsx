@@ -4,6 +4,7 @@ import {
   MedicineProductDetails,
   searchMedicineApi,
 } from '@aph/mobile-doctors/src/components/ApiCall';
+import AddMedicinePopUpStyles from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
 import {
@@ -13,6 +14,8 @@ import {
   Remove,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import {
   MEDICINE_CONSUMPTION_DURATION,
@@ -22,31 +25,26 @@ import {
   MEDICINE_UNIT,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
+  formatInt,
   isValidSearch,
   nameFormater,
-  formatInt,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
+  BackHandler,
   Dimensions,
   FlatList,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  BackHandler,
 } from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
-import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import AddMedicinePopUpStyles from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp.styles';
 
 const { width } = Dimensions.get('window');
 
@@ -222,21 +220,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
 
   const renderHeader = () => {
     return (
-      <View
-        style={[
-          {
-            ...theme.viewStyles.cardContainer,
-            borderTopRightRadius: 10,
-            borderTopLeftRadius: 10,
-            backgroundColor: theme.colors.WHITE,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingVertical: 18,
-            width: width - 60,
-            flexDirection: 'row',
-          },
-        ]}
-      >
+      <View style={styles.headerStyles}>
         {medName ? (
           <TouchableOpacity
             onPress={() => {
@@ -246,18 +230,12 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               setMedName('');
               setMedicineSelected(undefined);
             }}
-            style={{ left: 16, position: 'absolute' }}
+            style={styles.touchableStyles}
           >
-            <BackArrow style={{ width: 24, height: 15 }} />
+            <BackArrow style={styles.backArrowIcon} />
           </TouchableOpacity>
         ) : null}
-        <Text
-          style={{
-            ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE, 1, undefined, 0.5),
-            marginLeft: medName ? 60 : 20,
-            marginRight: 20,
-          }}
-        >
+        <Text style={[styles.medNameStyles, { marginLeft: medName ? 60 : 20 }]}>
           {medName ? medName : strings.smartPrescr.add_medicine}
         </Text>
       </View>
@@ -266,18 +244,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
 
   const renderButtons = () => {
     return (
-      <View
-        style={[
-          theme.viewStyles.cardContainer,
-          {
-            width: '100%',
-            flexDirection: 'row',
-            padding: 16,
-            borderBottomEndRadius: 10,
-            borderBottomStartRadius: 10,
-          },
-        ]}
-      >
+      <View style={styles.buttonView}>
         <Button
           title={strings.buttons.cancel}
           variant={'white'}
@@ -324,25 +291,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const renderMedicineType = () => {
     return (
       <View style={{ margin: 16 }}>
-        <Text
-          style={{ ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT), paddingBottom: 8 }}
-        >
-          {renderType === 1 ? 'Take' : 'Apply'}
-        </Text>
-        <View
-          style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-end' }}
-        >
+        <Text style={styles.medTypeViewText}>{renderType === 1 ? 'Take' : 'Apply'}</Text>
+        <View style={styles.medTypeView}>
           {renderType === 1 && (
             <TextInput
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(18),
-                width: (width - 100) / 2,
-                color: '#01475b',
-                paddingBottom: 4,
-                borderBottomWidth: 2,
-                borderColor: theme.colors.APP_GREEN,
-                paddingTop: 0,
-              }}
+              style={styles.textInputStyles}
               placeholder=""
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={take}
@@ -354,26 +307,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           <MaterialMenu
             options={renderType === 1 ? typeTakeArray : renderType === 2 ? typeApplyArray : []}
             selectedText={typeDrop.key}
-            menuContainerStyle={{
-              alignItems: 'flex-end',
-              marginLeft: 0,
-              marginTop: 0,
-              width: width - 100,
-            }}
+            menuContainerStyle={styles.materialContainer}
             onPress={(item) => {
               setTypeDrop(item);
             }}
-            selectedTextStyle={{
-              ...theme.viewStyles.text('M', 16, '#00b38e'),
-              alignSelf: 'flex-start',
-            }}
-            itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-            itemContainer={{
-              height: 44.8,
-              marginHorizontal: 12,
-              width: width,
-              maxWidth: width - 130,
-            }}
+            selectedTextStyle={styles.selTextStyle}
+            itemTextStyle={styles.textItemStyle}
+            itemContainer={styles.itemContainerStyle}
             bottomPadding={{ paddingBottom: 10 }}
           >
             <View
@@ -383,27 +323,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               }}
             >
               <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: renderType === 1 ? (width - 110) / 2 : width - 90,
-                  borderBottomWidth: 2,
-                  paddingTop: 0,
-                  borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-                }}
+                style={[
+                  styles.MtextView,
+                  { width: renderType === 1 ? (width - 110) / 2 : width - 90 },
+                ]}
               >
-                <Text
-                  style={[
-                    { color: '#01475b', ...theme.fonts.IBMPlexSansMedium(18), paddingBottom: 4 },
-                    // typeofRecord !== undefined
-                    //   ? { textTransform: 'capitalize' }
-                    //   : styles.placeholderStyle,
-                  ]}
-                >
-                  {typeDrop && typeDrop.value}
-                </Text>
-                <View style={[{ flex: 1, alignItems: 'flex-end', marginRight: 10 }]}>
+                <Text style={styles.dropValueText}>{typeDrop && typeDrop.value}</Text>
+                <View style={styles.dropDownGreenView}>
                   <DropdownGreen />
                 </View>
               </View>
@@ -413,71 +339,26 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         <MaterialMenu
           options={takeTime}
           selectedText={takeDrop.key}
-          menuContainerStyle={{
-            alignItems: 'flex-end',
-            marginLeft: 10,
-            marginTop: 20,
-            width: width - 100,
-          }}
+          menuContainerStyle={styles.menuContainerStyle}
           onPress={(item) => {
             setTakeDrop(item);
           }}
-          selectedTextStyle={{
-            ...theme.viewStyles.text('M', 16, '#00b38e'),
-            alignSelf: 'flex-start',
-          }}
-          itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-          itemContainer={{
-            height: 44.8,
-            marginHorizontal: 12,
-            width: width,
-            maxWidth: width - 130,
-          }}
+          selectedTextStyle={styles.seleTextStyle}
+          itemTextStyle={styles.itemTextStyle}
+          itemContainer={styles.MaterialitemContainerStyle}
           bottomPadding={{ paddingBottom: 10 }}
         >
-          <View
-            style={{
-              flexDirection: 'row',
-              marginBottom: 10,
-              marginTop: 16,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: width - 90,
-                borderBottomWidth: 2,
-                paddingTop: 0,
-                borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-              }}
-            >
-              <Text
-                style={[
-                  { color: '#01475b', ...theme.fonts.IBMPlexSansMedium(18), paddingBottom: 4 },
-                ]}
-              >
-                {takeDrop.value}
-              </Text>
-              <View style={[{ flex: 1, alignItems: 'flex-end', marginRight: 10 }]}>
+          <View style={styles.dropDownValueView}>
+            <View style={styles.dropdownView}>
+              <Text style={styles.takeDropdownText}>{takeDrop.value}</Text>
+              <View style={styles.dropdownGreenView}>
                 <DropdownGreen />
               </View>
             </View>
           </View>
         </MaterialMenu>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
-            paddingBottom: 8,
-            marginTop: 12,
-          }}
-        >
-          {strings.smartPrescr.for}
-        </Text>
-        <View
-          style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-end' }}
-        >
+        <Text style={styles.forLable}>{strings.smartPrescr.for}</Text>
+        <View style={styles.forInputView}>
           <TextInput
             style={[styles.inputStyle, { width: (width - 100) / 2 }]}
             placeholder=""
@@ -489,59 +370,26 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           <MaterialMenu
             options={forTimeArray}
             selectedText={forTimeDrop.key}
-            menuContainerStyle={{ alignItems: 'flex-end', marginLeft: (width - 110) / 2 - 130 }}
+            menuContainerStyle={styles.MMContainer}
             onPress={(item) => {
               setForTimeDrop(item);
             }}
-            selectedTextStyle={{
-              ...theme.viewStyles.text('M', 16, '#00b38e'),
-              alignSelf: 'flex-start',
-            }}
-            itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-            itemContainer={{ height: 44.8, marginHorizontal: 12, width: (width - 110) / 2 - 60 }}
+            selectedTextStyle={styles.MMseleStyle}
+            itemTextStyle={styles.MMitemText}
+            itemContainer={styles.MMitemContainer}
             bottomPadding={{ paddingBottom: 0 }}
           >
-            <View
-              style={{
-                flexDirection: 'row',
-                marginLeft: 15,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: (width - 110) / 2,
-                  borderBottomWidth: 2,
-                  paddingTop: 0,
-                  borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-                }}
-              >
-                <Text
-                  style={[
-                    { color: '#01475b', ...theme.fonts.IBMPlexSansMedium(18), paddingBottom: 4 },
-                    // typeofRecord !== undefined
-                    //   ? { textTransform: 'capitalize' }
-                    //   : styles.placeholderStyle,
-                  ]}
-                >
-                  {forTimeDrop.value}
-                </Text>
-                <View style={[{ flex: 1, alignItems: 'flex-end', marginRight: 10 }]}>
+            <View style={styles.forDropView}>
+              <View style={styles.forDropTextView}>
+                <Text style={styles.forDropText}>{forTimeDrop.value}</Text>
+                <View style={styles.dropDownGreenView}>
                   <DropdownGreen />
                 </View>
               </View>
             </View>
           </MaterialMenu>
         </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            width: width - 90,
-            marginTop: 10,
-          }}
-        >
+        <View style={styles.chipCardView}>
           <ChipViewCard
             title={strings.smartPrescr.after_food}
             isChecked={afterFoodValue}
@@ -564,22 +412,8 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             textSelectedStyle={styles.chipSelectedTextStyle}
           />
         </View>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
-            marginTop: 12,
-          }}
-        >
-          {strings.smartPrescr.in_the}
-        </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            width: width - 90,
-            marginTop: 0,
-            flexWrap: 'wrap',
-          }}
-        >
+        <Text style={styles.inTheText}>{strings.smartPrescr.in_the}</Text>
+        <View style={styles.sessionsView}>
           <ChipViewCard
             title={strings.smartPrescr.morning}
             isChecked={morningValue}
@@ -637,27 +471,10 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             textSelectedStyle={styles.chipSelectedTextStyle}
           />
         </View>
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
-            paddingBottom: 8,
-            marginTop: 10,
-          }}
-        >
-          {strings.smartPrescr.additional_instru}
-        </Text>
+        <Text style={styles.additionalInstrLabel}>{strings.smartPrescr.additional_instru}</Text>
         <TextInput
           placeholder={strings.smartPrescr.type_here}
-          style={{
-            borderWidth: 2,
-            borderRadius: 10,
-            height: 80,
-            paddingLeft: 12,
-            paddingRight: 12,
-            paddingBottom: 12,
-            paddingTop: 12,
-            borderColor: theme.colors.APP_GREEN,
-          }}
+          style={styles.additionalInstrInputstyle}
           placeholderTextColor={theme.colors.placeholderTextColor}
           textAlignVertical={'top'}
           multiline={true}
@@ -673,12 +490,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
     return (
       <View>
         {medDetailLoading ? (
-          <ActivityIndicator
-            animating={true}
-            size="large"
-            color="green"
-            style={{ paddingTop: 20 }}
-          />
+          // <ActivityIndicator
+          //   animating={true}
+          //   size="large"
+          //   color="green"
+          //   style={{ paddingTop: 20 }}
+          // />
+          <Spinner />
         ) : (
           renderMedicineType()
         )}
@@ -774,18 +592,15 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         }}
       >
         <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            borderBottomWidth: 1,
-            paddingVertical: 13,
-            borderColor:
-              medList.length - 1 !== index ? theme.colors.SEPARATOR_LINE : theme.colors.CLEAR,
-          }}
+          style={[
+            styles.medicineListView,
+            {
+              borderColor:
+                medList.length - 1 !== index ? theme.colors.SEPARATOR_LINE : theme.colors.CLEAR,
+            },
+          ]}
         >
-          <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE), flex: 0.9 }}>
-            {item.name}
-          </Text>
+          <Text style={styles.medicineListText}>{item.name}</Text>
           <AddPlus />
         </View>
       </TouchableOpacity>
@@ -806,12 +621,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         />
         <View>
           {listLoader ? (
-            <ActivityIndicator
-              animating={true}
-              size="large"
-              color="green"
-              style={{ paddingTop: 20 }}
-            />
+            // <ActivityIndicator
+            //   animating={true}
+            //   size="large"
+            //   color="green"
+            //   style={{ paddingTop: 20 }}
+            // />
+            <Spinner />
           ) : (
             <FlatList
               data={medList}
@@ -824,19 +640,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   };
 
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        zIndex: 5,
-        elevation: 500,
-      }}
-    >
+    <View style={styles.mainView}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
@@ -856,29 +660,12 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               onPress={() => {
                 props.onClose();
               }}
-              style={{
-                marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 50,
-                backgroundColor: 'white',
-                height: 28,
-                width: 28,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 14,
-                marginRight: 0,
-                marginBottom: 8,
-              }}
+              style={styles.touchableCloseIcon}
             >
-              <Remove style={{ width: 28, height: 28 }} />
+              <Remove style={styles.closeIcon} />
             </TouchableOpacity>
           </View>
-          <View
-            style={{
-              ...theme.viewStyles.cardContainer,
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-              borderRadius: 10,
-              maxHeight: '85%',
-            }}
-          >
+          <View style={styles.contenteView}>
             {renderHeader()}
             <ScrollView bounces={false}>
               {medName ? renderMedicineDetails() : renderMedicineSearchList()}

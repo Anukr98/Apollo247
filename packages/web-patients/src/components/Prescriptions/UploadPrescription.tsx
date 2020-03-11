@@ -5,7 +5,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { PrescriptionFormat } from 'components/Cart/MedicineCart';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -132,14 +133,25 @@ const client = new AphStorageClient(
 );
 
 interface UploadPrescriptionProps {
-  setPrescriptionUrls: (prescription: PrescriptionFormat) => void;
   closeDialog: () => void;
   setIsEPrescriptionOpen: (isEPrescriptionOpen: boolean) => void;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const classes = useStyles({});
+  const { setPrescriptionUploaded } = useShoppingCart();
+
   const [isUploading, setIsUploading] = useState(false);
+
+  const toBase64 = (file: any) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = (error) => reject(error);
+    });
 
   return (
     <div className={classes.root}>
@@ -189,10 +201,19 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                             });
                           if (aphBlob && aphBlob.name) {
                             const url = client.getBlobUrl(aphBlob.name);
-                            props.setPrescriptionUrls({
-                              imageUrl: url,
-                              name: aphBlob.name,
+                            toBase64(file).then((res: any) => {
+                              setPrescriptionUploaded &&
+                                setPrescriptionUploaded({
+                                  imageUrl: url,
+                                  name: aphBlob.name,
+                                  fileType: fileExtension.toLowerCase(),
+                                  baseFormat: res,
+                                });
                             });
+                            const currentUrl = window.location.href;
+                            if (currentUrl.endsWith('/medicines')) {
+                              window.location.href = clientRoutes.medicinesCart();
+                            }
                             props.closeDialog();
                           }
                         }
@@ -215,6 +236,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                     <p>Choose from gallery</p>
                   </label>
                 )}
+              </div>
+              <div className={classes.uploadCard}>
+                <img src={require('images/ic_gallery.svg')} alt="" />
+                <p>Camera</p>
               </div>
 
               <div

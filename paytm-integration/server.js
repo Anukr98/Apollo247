@@ -119,6 +119,66 @@ app.get('/invokeApptReminder', (req, res) => {
     });
 });
 
+app.get('/invokeFollowUpNotification', (req, res) => {
+  const requestJSON = {
+    query: 'query { sendFollowUpNotification }',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data.data.sendFollowUpNotification, 'notifications response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-followUpNotifications.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendFollowUpNotification +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
+app.get('/invokeDailyAppointmentSummary', (req, res) => {
+  const requestJSON = {
+    query: 'query { sendDailyAppointmentSummary }',
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      console.log(response.data.data.sendDailyAppointmentSummary, 'notifications response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dailyAppointmentSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendDailyAppointmentSummary +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+});
+
 app.get('/invokePhysicalApptReminder', (req, res) => {
   const requestJSON = {
     query:
@@ -1564,7 +1624,9 @@ const isDeliveryChargeApplicable = (totalAmountPaid) => {
   if (totalAmountPaid === null || totalAmountPaid === '' || isNaN(totalAmountPaid)) {
     totalAmountPaid = 0;
   }
-  return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+
+  //return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
+  return parseFloat(totalAmountPaid) < 200 ? true : false;
 };
 
 //returns constant response object
@@ -1579,6 +1641,67 @@ const getDeliveryChargesLineItem = () => {
     Status: true,
   };
 };
+
+//prism queue
+app.get('/getPrismData', (req, res) => {
+  let queueMessage = '';
+  const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
+  const azureServiceBus = azure.createServiceBusService(serviceBusConnectionString);
+  console.log(
+    'AZURE_SERVICE_BUS_SUBSCRIBER_PATIENTS::',
+    process.env.AZURE_SERVICE_BUS_SUBSCRIBER_PATIENTS
+  );
+  azureServiceBus.receiveSubscriptionMessage(
+    process.env.AZURE_SERVICE_BUS_QUEUE_NAME_PATIENTS,
+    process.env.AZURE_SERVICE_BUS_SUBSCRIBER_PATIENTS,
+    { isPeekLock: false },
+    (subscriptionError, result) => {
+      if (subscriptionError) {
+        console.log('read error getPrismData', subscriptionError);
+        res.send({
+          status: 'failed',
+          reason: subscriptionError,
+          code: '10001',
+        });
+      } else {
+        console.log('message from topic getPrismData', result.body);
+        queueMessage = result.body;
+        const queueDetails = queueMessage.split(':');
+        axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+        console.log(queueDetails, ':Pism get patient details');
+        axios({
+          url: process.env.API_URL,
+          method: 'post',
+          data: {
+            query: `
+            mutation {
+              registerPatientsFromPrism(mobileNumber:"${queueDetails[1]}") {
+                patients {
+                  id                  
+                    mobileNumber
+                    firstName
+                    lastName
+                    emailAddress
+                    dateOfBirth                  
+                }
+              }
+            }
+          `,
+          },
+        })
+          .then(async (response) => {
+            if (response) {
+              console.log(response, '======prism response=======');
+            }
+          })
+          .catch((error) => {
+            // no need to explicitly saying details about error for clients.
+            console.log('======prism error response=======', error);
+          });
+      }
+    }
+  );
+});
 
 app.listen(PORT, () => {
   console.log('Running on ' + PORT);

@@ -10,7 +10,7 @@ import _compact from 'lodash/compact';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
-import { format, addDays } from 'date-fns';
+// import { format, addDays } from 'date-fns';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConsultMode } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -158,10 +158,10 @@ interface DoctorsListingProps {
   filter: SearchObject;
   specialityName: string;
   specialityId: string;
-  specialitySingular: string;
-  specialityPlural: string;
+  prakticeSDKSpecialties?: string;
 }
 
+let availableNow = {};
 const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
   const availabilityArray: String[] = [];
   const today = moment(new Date())
@@ -169,7 +169,13 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
-      if (value === 'today') {
+      if (value === 'now') {
+        availableNow = {
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
+        };
+      } else if (value === 'today') {
         availabilityArray.push(today);
       } else if (value === 'tomorrow') {
         availabilityArray.push(
@@ -209,7 +215,7 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
-  const { filter, specialityName, specialityId, specialityPlural, specialitySingular } = props;
+  const { filter, specialityName, specialityId, prakticeSDKSpecialties } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const { currentPatient } = useAllCurrentPatients();
   const [tabValue, setTabValue] = useState('All Consults');
@@ -251,15 +257,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     });
   }
 
-  let availableNow = {};
-  if (filter.availability && filter.availability.includes('now')) {
-    availableNow = {
-      availableNow: moment(new Date())
-        .utc()
-        .format('YYYY-MM-DD hh:mm'),
-    };
-  }
-
   let geolocation = {} as any;
   if (currentLat && currentLong) {
     geolocation['geolocation'] = {
@@ -270,7 +267,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const apiVairables = {
     patientId: currentPatient ? currentPatient.id : '',
-    specialty: specialityId,
+    specialty: prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? '' : specialityId,
     city: filter.cityName,
     experience: expRange,
     availability: convertAvailabilityToDate(filter.availability || [], filter.dateSelected),
@@ -278,24 +275,33 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     gender: filter.gender,
     language: filter.language,
     ...availableNow,
-    // availableNow:
-    //   filter.availability && filter.availability.findIndex((v) => v == 'now') >= 0
-    //     ?
-    //     // format(new Date(), 'yyyy-MM-dd HH:mm')
-    //     moment(new Date())
-    //       .utc()
-    //       .format('YYYY-MM-DD hh:mm')
-    //     : '',
     geolocation: {
       latitude: currentLat && currentLat.length > 0 ? parseFloat(currentLat) : 0,
       longitude: currentLong && currentLong.length > 0 ? parseFloat(currentLong) : 0,
     },
+    specialtyName:
+      prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0
+        ? decodeURI(prakticeSDKSpecialties).split(',')
+        : [],
+    specialtySearchType:
+      prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? 'NAME' : 'ID',
   };
 
   const { data, loading, refetch } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
     variables: { filterInput: apiVairables },
     fetchPolicy: 'no-cache',
   });
+
+  // console.log('loading state.....', loading);
+
+  // if (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) {
+  //   apiVairables['specialty'] = '';
+  //   apiVairables['specialtyName'] =
+  //     prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0
+  //       ? decodeURI(prakticeSDKSpecialties).split(',')
+  //       : [];
+  //   apiVairables['specialtySearchType'] = 'NAME';
+  // }
 
   useEffect(() => {
     if (currentLat || currentLong) {
@@ -310,25 +316,35 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   let doctorsList = [];
 
-  // const specialistPluralTerm =
-  //   data &&
-  //   data.getDoctorsBySpecialtyAndFilters &&
-  //   data.getDoctorsBySpecialtyAndFilters.specialty &&
-  //   data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
-  //     ? data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
-  //     : '';
   const doctorsNextAvailability =
     data &&
     data.getDoctorsBySpecialtyAndFilters &&
     data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
+
   const doctorsAvailability =
     data &&
     data.getDoctorsBySpecialtyAndFilters &&
     data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
+
+  const specialistPlural =
+    data &&
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.specialty &&
+    data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
+      ? data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
+      : '';
+
+  const specialitySingular =
+    data &&
+    data.getDoctorsBySpecialtyAndFilters &&
+    data.getDoctorsBySpecialtyAndFilters.specialty &&
+    data.getDoctorsBySpecialtyAndFilters.specialty.specialistSingularTerm
+      ? data.getDoctorsBySpecialtyAndFilters.specialty.specialistSingularTerm
+      : '';
 
   const consultErrorMessage = () => {
     const selectedConsultName =
@@ -393,14 +409,13 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   }
 
   // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
-
   return (
     <div className={classes.root}>
       <div className={classes.sectionHead} ref={mascotRef}>
         <div className={classes.pageHeader}>
           <div className={classes.headerTitle}>
             <h2 className={classes.title}>Okay!</h2>
-            Here are our best {specialityPlural}
+            {specialistPlural ? `Here are our best ${specialistPlural}` : ''}
           </div>
           <div className={classes.filterSection}>
             {_map(consultOptions, (consultName, consultType) => {
@@ -417,6 +432,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
                   }}
                   value={consultType}
                   key={_uniqueId('cbutton_')}
+                  title={'View ' + consultName}
                 >
                   {consultName}
                 </AphButton>
@@ -499,7 +515,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             <div className={classes.circlularProgress}>
               <CircularProgress />
             </div>
-          )}{' '}
+          )}
         </>
       )}
     </div>

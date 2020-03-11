@@ -13,6 +13,7 @@ import {
 import { GET_PATIENT_ADDRESS_LIST } from 'graphql/profiles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { MascotWithMessage } from '../MascotWithMessage';
+import { Close } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -38,12 +39,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     sectionBody: {
       paddingBottom: 20,
@@ -144,12 +139,16 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton onClick={() => setIsAddAddressDialogOpen(true)} color="primary">
+        <AphButton
+          onClick={() => setIsAddAddressDialogOpen(true)}
+          color="primary"
+          title={'Add New Address'}
+        >
           Add New Address
         </AphButton>
       </div>
       <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} />
+        <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}

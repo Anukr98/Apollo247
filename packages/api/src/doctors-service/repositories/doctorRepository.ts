@@ -264,6 +264,7 @@ export class DoctorRepository extends Repository<Doctor> {
             //checking availability for pre-defined days
             if (
               process.env.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS &&
+              // eslint-disable-next-line radix
               counter >= parseInt(process.env.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS)
             ) {
               onlineSlot = '';
@@ -298,6 +299,7 @@ export class DoctorRepository extends Repository<Doctor> {
             //checking availability for pre-defined days
             if (
               process.env.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS &&
+              // eslint-disable-next-line radix
               counter >= parseInt(process.env.MAX_DOCTOR_AVAILABILITY_CHECK_DAYS)
             ) {
               physicalSlot = '';

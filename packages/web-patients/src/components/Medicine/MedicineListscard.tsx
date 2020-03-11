@@ -166,7 +166,7 @@ export interface MedicineListscardProps {
 export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
   const classes = useStyles({});
   const { addCartItem, removeCartItem, updateCartItemQty, cartItems } = useShoppingCart();
-  const options = Array.from(Array(20), (_, x) => x);
+  const options = Array.from(Array(20), (_, x) => x + 1);
 
   const [selectedPackedQty] = React.useState(1);
 
@@ -185,7 +185,12 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
       <div className={classes.root}>
         {props.medicineList && props.medicineList.length > 0 ? (
           props.medicineList.map((medicine: MedicineProduct, idx: number) => (
-            <div key={medicine.id} className={classes.medicineStrip}>
+            <div
+              key={medicine.id}
+              className={`${classes.medicineStrip} ${
+                medicine.is_in_stock ? '' : classes.medicineStripDisabled
+              }`}
+            >
               <div className={classes.medicineStripWrap}>
                 <Link to={clientRoutes.medicineDetails(medicine.sku)}>
                   <div className={classes.medicineInformation}>
@@ -202,7 +207,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                     </div>
                   </div>
                 </Link>
-                {medicine.is_in_stock && (
+                {medicine.is_in_stock ? (
                   <div className={classes.cartRight}>
                     {itemIndexInCart(medicine) !== -1 ? (
                       <>
@@ -246,7 +251,9 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             ))}
                           </AphCustomDropdown>
                         </div>
-                        <div className={classes.medicinePrice}> Rs.{medicine.price}</div>
+                        <div className={classes.medicinePrice}>
+                          Rs. {medicine.special_price || medicine.price}
+                        </div>
                         <div className={classes.addToCart}>
                           <AphButton>
                             <img
@@ -292,7 +299,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           ))

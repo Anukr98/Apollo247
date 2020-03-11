@@ -5,7 +5,7 @@ import {
 } from 'profiles-service/database/factories/patientFactory';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { SearchHistoryRepository } from 'profiles-service/repositories/searchHistoryRepository';
+
 import { getConnection } from 'typeorm';
 import _times from 'lodash/times';
 import _random from 'lodash/random';
@@ -23,7 +23,6 @@ import _random from 'lodash/random';
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-  const searchHistoryRepo = profilesDb.getCustomRepository(SearchHistoryRepository);
 
   console.log('Building and saving records...');
 

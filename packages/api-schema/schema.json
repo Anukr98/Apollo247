@@ -2470,6 +2470,53 @@
             "deprecationReason": null
           },
           {
+            "name": "sendDailyAppointmentSummary",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sendFollowUpNotification",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sendChatMessageToDoctor",
+            "description": null,
+            "args": [
+              {
+                "name": "appointmentId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "SendChatMessageToDoctorResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "sendEmailMessage",
             "description": null,
             "args": [],
@@ -18117,21 +18164,32 @@
       },
       {
         "kind": "OBJECT",
-        "name": "Mutation",
+        "name": "SendChatMessageToDoctorResult",
         "description": null,
         "fields": [
           {
-            "name": "registerPatients",
+            "name": "status",
             "description": null,
             "args": [],
             "type": {
               "kind": "SCALAR",
-              "name": "String",
+              "name": "Boolean",
               "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
-          },
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "Mutation",
+        "description": null,
+        "fields": [
           {
             "name": "updatePatient",
             "description": null,
@@ -19275,6 +19333,41 @@
                 "name": "DiagnosticOrderCancelResult",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "registerPatients",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "GetCurrentPatientsResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "registerPatientsFromPrism",
+            "description": null,
+            "args": [
+              {
+                "name": "mobileNumber",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "GetCurrentPatientsResult",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null

@@ -462,6 +462,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       : classes.disabledButton
                   }`}
                   disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
+                  title={' Consult Now'}
                 >
                   Consult Now
                 </AphButton>
@@ -476,6 +477,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       ? classes.buttonActive
                       : ''
                   }`}
+                  title={' Schedule For Later'}
                 >
                   Schedule For Later
                 </AphButton>
@@ -655,6 +657,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 ? classes.buttonDisable
                 : ''
             }
+            title={'Pay'}
           >
             {mutationLoading ? (
               <CircularProgress size={22} color="secondary" />

@@ -277,7 +277,6 @@ export const LocationSearch: React.FC = (props) => {
     }
     return 'No location';
   };
-
   return (
     <div className={classes.userLocation}>
       <Helmet>
@@ -289,11 +288,13 @@ export const LocationSearch: React.FC = (props) => {
         className={classes.locationWrap}
         ref={locationRef}
         onClick={() => setIsLocationPopoverOpen(true)}
+        title={selectedAddress}
       >
         <img
           className={`${classes.locationIcon} ${classes.iconDesktop}`}
           src={require('images/ic_location_on.svg')}
           alt=""
+          title={selectedAddress}
         />
         <span className={classes.selectedLocation}>
           {!isPopoverOpen && selectedAddress.length > 0
@@ -306,6 +307,7 @@ export const LocationSearch: React.FC = (props) => {
           className={`${classes.locationIcon} ${classes.iconMobile}`}
           src={require('images/ic_location_on.svg')}
           alt=""
+          title={selectedAddress}
         />
       </div>
       <Popover
@@ -332,11 +334,21 @@ export const LocationSearch: React.FC = (props) => {
         >
           {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => (
             <div className={classes.locationPopWrap}>
-              <label className={classes.inputLabel}>Current Location</label>
+              <label className={classes.inputLabel} title={'Current Location'}>
+                Current Location
+              </label>
               <div className={classes.searchInput}>
-                <AphTextField type="search" placeholder="Search Places..." {...getInputProps()} />
+                <AphTextField
+                  type="search"
+                  placeholder="Search Places..."
+                  {...getInputProps()}
+                  onKeyDown={(e) => {
+                    e.key === 'Enter' && e.preventDefault();
+                  }}
+                  title={'Search Places...'}
+                />
                 <div className={classes.popLocationIcon}>
-                  <img src={require('images/ic-location.svg')} alt="" />
+                  <img src={require('images/ic-location.svg')} alt="" title={'Location'} />
                 </div>
               </div>
               <div className={classes.locationAutoComplete}>

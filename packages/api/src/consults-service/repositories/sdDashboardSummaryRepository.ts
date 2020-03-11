@@ -223,7 +223,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         .getMany();
     }
   }
-
   async getCallsCount(doctorId: string, callType: string, appointmentDate: Date) {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
@@ -241,6 +240,10 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       })
       .andWhere('appointment_call_details."callType" = :callType', { callType })
       .andWhere('appointment."doctorId" = :doctorId', { doctorId })
+      .andWhere('appointment.status not in(:status1,:status2)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+      })
       .groupBy('appointment_call_details."appointmentId"')
       .getRawMany();
     if (callDetails && callDetails.length > 0) {
