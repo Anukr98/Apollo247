@@ -151,12 +151,14 @@ export const SearchByMedicine: React.FC = (props) => {
   const [sortBy, setSortBy] = useState<string>('');
 
   const getTitle = () => {
+    let title = params.searchMedicineType;
     if (params.searchMedicineType.includes('-')) {
-      return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
-    } else if (params.searchMedicineType.includes('_')) {
-      return _replace(params.searchMedicineType, '_', ' & ');
+      title = _replace(title, '-', ' ');
     }
-    return params.searchMedicineType;
+    if (params.searchMedicineType.includes('_')) {
+      title = _replace(title, '_', ' & ');
+    }
+    return title;
   };
 
   const params = useParams<Params>();
@@ -346,7 +348,7 @@ export const SearchByMedicine: React.FC = (props) => {
               </div>
             </a>
             <div>
-              {getTitle()}({medicineListFiltered && medicineListFiltered.length})
+              {getTitle()} ({medicineListFiltered && medicineListFiltered.length})
             </div>
             <AphButton className={classes.filterBtn}>
               <img src={require('images/ic_filter.svg')} alt="" />
