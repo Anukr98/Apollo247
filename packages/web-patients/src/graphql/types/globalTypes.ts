@@ -395,6 +395,13 @@ export interface Geolocation {
   longitude: number;
 }
 
+export interface HelpEmailInput {
+  category?: string | null;
+  reason?: string | null;
+  comments?: string | null;
+  patientId?: string | null;
+}
+
 export interface MedicineCartInput {
   quoteId?: string | null;
   shopId?: string | null;
