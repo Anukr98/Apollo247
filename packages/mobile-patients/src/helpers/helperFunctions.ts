@@ -742,7 +742,7 @@ export const postwebEngageAddToCartEvent = ({
     Brand: '',
     'Brand ID': '',
     'category name': '',
-    'category ID': category_id,
+    'category ID': category_id || '',
     Price: price,
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,

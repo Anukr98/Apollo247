@@ -90,7 +90,7 @@ export interface WebEngageEvents {
   'Submit Prescription': {
     'Order ID': string | number;
     'Delivery type': 'home' | 'store pickup';
-    'Store id'?: string; //(incase of store delivery)
+    StoreId?: string; //(incase of store delivery)
     'Delivery address'?: string;
     Pincode: string | number;
   };
