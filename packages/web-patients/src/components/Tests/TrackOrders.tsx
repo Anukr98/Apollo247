@@ -113,9 +113,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e',
       height: 4,
     },
-    rootTabContainer: {
-      padding: 0,
-    },
     headerBackArrow: {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',

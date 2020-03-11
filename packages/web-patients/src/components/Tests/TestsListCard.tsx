@@ -22,9 +22,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 10,
       position: 'relative',
     },
-    medicineStripDisabled: {
-      backgroundColor: '#f7f8f5',
-    },
     medicineStripWrap: {
       display: 'flex',
       [theme.breakpoints.down('xs')]: {

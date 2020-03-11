@@ -23,28 +23,6 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 'auto',
       },
     },
-    filterSection: {
-      padding: '20px 5px 0 10px',
-      paddingTop: 15,
-      [theme.breakpoints.down('xs')]: {
-        position: 'absolute',
-        top: -52,
-        zIndex: 999,
-        backgroundColor: '#f0f1ec',
-        width: '100%',
-        padding: 0,
-        display: 'none',
-      },
-    },
-    customScroll: {
-      width: '100%',
-      paddingLeft: 10,
-      paddingRight: 15,
-      paddingBottom: 10,
-      [theme.breakpoints.down('xs')]: {
-        padding: '0 0 10px 0',
-      },
-    },
     searchInput: {
       paddingLeft: 20,
       paddingRight: 20,
@@ -61,12 +39,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       minWidth: 'auto',
     },
-    boxContent: {
-      paddingTop: 5,
-      '& button:last-child': {
-        marginRight: 0,
-      },
-    },
     button: {
       marginRight: 5,
       marginTop: 5,
@@ -74,65 +46,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e !important',
       letterSpacing: -0.27,
       borderRadius: 10,
-    },
-    buttonActive: {
-      backgroundColor: '#00b38e',
-      color: theme.palette.common.white + '!important',
-      '&:hover': {
-        backgroundColor: '#00b38e',
-        color: theme.palette.common.white + '!important',
-      },
-    },
-    filterBy: {
-      display: 'flex',
-      color: '#02475b',
-      fontSize: 12,
-      alignItems: 'center',
-      paddingTop: 5,
-      '& >div': {
-        backgroundColor: theme.palette.common.white,
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-        borderRadius: 10,
-        padding: '5px 10px',
-        paddingTop: 0,
-        '& input': {
-          fontSize: 12,
-          padding: '5px 0',
-        },
-      },
-      '& span': {
-        paddingLeft: 10,
-        paddingRight: 10,
-      },
-    },
-    filterHeader: {
-      backgroundColor: '#fff',
-      padding: 16,
-      fontSize: 13,
-      fontWeight: 500,
-      alignItems: 'center',
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      marginBottom: 5,
-      display: 'none',
-      '& button': {
-        boxShadow: 'none',
-        padding: 0,
-        minWidth: 'auto',
-      },
-      '& >span': {
-        width: 'calc(100% - 48px)',
-        textAlign: 'center',
-      },
-    },
-    filterScroll: {
-      height: 'calc(100vh - 330px) !important',
-      [theme.breakpoints.down(992)]: {
-        height: 'calc(100vh - 370px) !important',
-      },
-      [theme.breakpoints.down('xs')]: {
-        height: 'calc(100vh - 155px) !important',
-        marginBottom: 90,
-      },
     },
     bottomActions: {
       padding: '10px 20px 0 20px',
