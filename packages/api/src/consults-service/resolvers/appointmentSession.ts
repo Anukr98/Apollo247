@@ -258,7 +258,6 @@ const createAppointmentSession: Resolver<
   );
 
   console.log('apptSessionDets::', apptSessionDets);
-  console.log('differenceInHours', differenceInHours(new Date(), apptSessionDets!.createdDate));
   if (apptSessionDets && differenceInHours(new Date(), apptSessionDets.createdDate) <= 23) {
     if (
       createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
