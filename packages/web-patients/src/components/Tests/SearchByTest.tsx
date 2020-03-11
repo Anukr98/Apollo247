@@ -24,12 +24,12 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#f7f8f5',
         paddingBottom: 20,
         position: 'absolute',
         top: 0,
         zIndex: 999,
         width: '100%',
+        backgroundColor: '#f0f1ec',
       },
     },
     breadcrumbs: {
@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         paddingLeft: 20,
         paddingRight: 20,
-        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: 'none',
         textAlign: 'center',
       },
     },
@@ -135,7 +135,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         backgroundColor: '#f7f8f5',
-        paddingBottom: 60,
       },
     },
     customScroll: {
@@ -144,7 +143,8 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 15,
       paddingBottom: 10,
       [theme.breakpoints.down('xs')]: {
-        paddingBottom: 80,
+        paddingBottom: 0,
+        padding: '25px 20px 80px 20px',
       },
     },
     testsList: {
@@ -158,7 +158,7 @@ const useStyles = makeStyles((theme: Theme) => {
         height: 'calc(100vh - 245px) !important',
       },
       [theme.breakpoints.down('xs')]: {
-        height: 'calc(100vh - 190px) !important',
+        height: 'auto !important',
       },
     },
   };
@@ -190,17 +190,27 @@ export const SearchByTest: React.FC = (props) => {
           </div>
           <div className={classes.medicineDetailsGroup}>
             <div className={classes.medicineSection}>
-              <Scrollbars
+              {/* <Scrollbars
                 className={classes.scrollResponsive}
                 autoHide={true}
                 autoHeight
                 autoHeightMin={'calc(100vh - 215px'}
-              >
-                <TestFilter />
-              </Scrollbars>
+              > */}
+              <TestFilter />
+              {/* </Scrollbars> */}
             </div>
             <div className={`${classes.searchSection}`}>
-              <Scrollbars className={classes.scrollBar} autoHide={true}>
+              <Scrollbars
+                className={classes.scrollBar}
+                autoHide={true}
+                renderView={(props) =>
+                  isSmallScreen ? (
+                    <div {...props} style={{ position: 'static' }} />
+                  ) : (
+                    <div {...props} />
+                  )
+                }
+              >
                 <div className={classes.customScroll}>
                   <TestsListCard medicineList={medicineListFiltered} isLoading={isLoading} />
                 </div>
@@ -209,7 +219,7 @@ export const SearchByTest: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <NavigationBottom />
+      {/* <NavigationBottom /> */}
     </div>
   );
 };

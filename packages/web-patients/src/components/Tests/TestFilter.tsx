@@ -27,17 +27,26 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 20,
       position: 'relative',
+      display: 'flex',
       '& input': {
         paddingRight: 30,
       },
     },
-    refreshBtn: {
-      position: 'absolute',
-      right: 20,
-      top: 6,
-      boxShadow: 'none',
+    searchBtn: {
+      marginLeft: 'auto',
       padding: 0,
+      boxShadow: 'none',
+      backgroundColor: 'transparent !important',
       minWidth: 'auto',
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        right: 20,
+        top: 6,
+        boxShadow: 'none',
+        padding: 0,
+      },
     },
     button: {
       marginRight: 5,
@@ -46,12 +55,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e !important',
       letterSpacing: -0.27,
       borderRadius: 10,
-    },
-    bottomActions: {
-      padding: '10px 20px 0 20px',
-      position: 'absolute',
-      bottom: 0,
-      width: '100%',
     },
   });
 });
@@ -160,18 +163,8 @@ export const TestFilter: React.FC<TestFilterProps> = (props: any) => {
           }}
           value={subtxt}
         />
-        <AphButton className={classes.refreshBtn}>
-          <img src={require('images/ic_refresh.svg')} alt="" />
-        </AphButton>
-      </div>
-      <div className={classes.bottomActions}>
-        <AphButton
-          color="primary"
-          disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
-          fullWidth
-          onClick={(e) => filterByPriceAndCategory()}
-        >
-          Apply Filters
+        <AphButton className={classes.searchBtn}>
+          <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>
     </div>

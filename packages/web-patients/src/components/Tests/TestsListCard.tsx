@@ -24,9 +24,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineStripWrap: {
       display: 'flex',
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-      },
     },
     medicineInformation: {
       paddingRight: 10,
@@ -37,10 +34,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
-      [theme.breakpoints.down('xs')]: {
-        paddingLeft: 45,
-        paddingTop: 5,
-      },
     },
     medicineIcon: {
       paddingRight: 10,
@@ -83,14 +76,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 11,
       minWidth: 90,
       textAlign: 'center',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
-        borderRight: 'none',
-        flexGrow: 1,
-        textAlign: 'right',
-        paddingRight: 12,
-        borderTop: '1px solid rgba(2,71,91,0.2)',
-      },
       '& span': {
         fontWeight: 500,
       },
@@ -99,11 +84,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingTop: 8,
       paddingBottom: 8,
-      [theme.breakpoints.down('xs')]: {
-        position: 'absolute',
-        right: 15,
-        top: 8,
-      },
       '& button': {
         borderRadius: 0,
         boxShadow: 'none',

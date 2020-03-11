@@ -27,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
         top: 0,
         zIndex: 999,
         width: '100%',
+        borderRadius: 0,
       },
     },
     breadcrumbs: {
@@ -63,6 +64,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         marginTop: 50,
+        paddingBottom: 150,
       },
     },
     medicineDetailsHeader: {
@@ -146,8 +148,7 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
       [theme.breakpoints.down(768)]: {
-        display: 'flex',
-        padding: '20px 0 0 0',
+        padding: 20,
         backgroundColor: '#f7f8f5',
       },
     },
@@ -173,9 +174,6 @@ const useStyles = makeStyles((theme: Theme) => {
     productBasicInfo: {
       '& h2': {
         marginTop: 0,
-      },
-      [theme.breakpoints.down('xs')]: {
-        paddingLeft: 115,
       },
     },
     productDetailed: {
@@ -302,15 +300,13 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         backgroundColor: '#f7f8f5',
-        paddingBottom: 60,
+        position: 'fixed',
+        bottom: 0,
       },
     },
     customScroll: {
       width: '100%',
       paddingBottom: 10,
-      [theme.breakpoints.down('xs')]: {
-        paddingBottom: 80,
-      },
     },
     substitutes: {
       backgroundColor: '#f7f8f5',
@@ -322,12 +318,32 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 16,
       textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-        boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+        borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+        borderRadius: 0,
+        backgroundColor: 'transparent',
       },
     },
     addToCart: {
-      width: '100%',
+      [theme.breakpoints.down('xs')]: {
+        margin: 'auto',
+        textAlign: 'center',
+      },
+      '& button': {
+        width: '100%',
+        [theme.breakpoints.down('xs')]: {
+          minWidth: 240,
+          width: 'auto',
+        },
+      },
+    },
+    tabsWrapper: {
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginLeft: -20,
+        marginRight: -20,
+        padding: 20,
+        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
     },
     testsList: {
       color: '#0087ba',
@@ -400,25 +416,27 @@ export const TestDetails: React.FC = (props) => {
                   </Tabs>
                   {tabValue === 0 && (
                     <TabContainer>
-                      <div className={classes.testsList}>
-                        <span>1.</span>
-                        <span>Test a</span>
-                      </div>
-                      <div className={classes.testsList}>
-                        <span>2.</span>
-                        <span>Test a</span>
-                      </div>
-                      <div className={classes.testsList}>
-                        <span>3.</span>
-                        <span>Test a</span>
-                      </div>
-                      <div className={classes.testsList}>
-                        <span>4.</span>
-                        <span>Test a</span>
-                      </div>
-                      <div className={classes.testsList}>
-                        <span>5.</span>
-                        <span>Test a</span>
+                      <div className={classes.tabsWrapper}>
+                        <div className={classes.testsList}>
+                          <span>1.</span>
+                          <span>Test a</span>
+                        </div>
+                        <div className={classes.testsList}>
+                          <span>2.</span>
+                          <span>Test a</span>
+                        </div>
+                        <div className={classes.testsList}>
+                          <span>3.</span>
+                          <span>Test a</span>
+                        </div>
+                        <div className={classes.testsList}>
+                          <span>4.</span>
+                          <span>Test a</span>
+                        </div>
+                        <div className={classes.testsList}>
+                          <span>5.</span>
+                          <span>Test a</span>
+                        </div>
                       </div>
                     </TabContainer>
                   )}
@@ -440,16 +458,15 @@ export const TestDetails: React.FC = (props) => {
               >
                 <div className={classes.customScroll}>
                   <div className={classes.substitutes}>Rs. 6,500 </div>
-                  <AphButton className={classes.addToCart} color="primary">
-                    Add to Cart
-                  </AphButton>
+                  <div className={classes.addToCart}>
+                    <AphButton color="primary">Add to Cart</AphButton>
+                  </div>
                 </div>
               </Scrollbars>
             </div>
           </div>
         </div>
       </div>
-      <NavigationBottom />
     </div>
   );
 };
