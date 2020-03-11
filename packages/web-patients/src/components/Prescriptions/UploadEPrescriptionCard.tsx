@@ -9,14 +9,22 @@ import { GET_PAST_CONSULTS_PRESCRIPTIONS } from 'graphql/profiles';
 import {
   getPatientPastConsultsAndPrescriptions,
   getPatientPastConsultsAndPrescriptionsVariables,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Consults,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheet,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, EPrescription } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { DoctorType } from 'graphql/types/globalTypes';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+
+const client = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -112,20 +120,15 @@ type EPrescriptionCardProps = {
   setIsEPrescriptionOpen?: (isEPrescriptionOpen: boolean) => void;
 };
 
-let selectedPrescriptions: Prescription[] = [];
-let selectedMedicalRecords: MedicineOrder[] = [];
+let selectedEPrescriptionRecords: EPrescription[] = [];
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
-  const {
-    setPhrPrescriptionData,
-    phrPrescriptionData,
-    medicineOrderData,
-    setMedicineOrderData,
-  } = useShoppingCart();
+  const { ePrescriptionData, setEPrescriptionData } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
-  const [pastPrescriptions, setPastPrescriptions] = useState<Prescription[] | null>(null);
-  const [pastMedicalOrders, setPastMedicalOrders] = useState<MedicineOrder[] | null>(null);
+  const [pastPrescriptions, setPastPrescriptions] = useState<any[] | null>(null);
+  const [pastMedicalOrders, setPastMedicalOrders] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const patientPastConsultAndPrescriptionMutation = useMutation<
     getPatientPastConsultsAndPrescriptions,
@@ -140,19 +143,14 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   });
 
   useEffect(() => {
-    if (phrPrescriptionData && phrPrescriptionData.length > 0) {
-      selectedPrescriptions = phrPrescriptionData;
+    if (ePrescriptionData && ePrescriptionData.length > 0) {
+      selectedEPrescriptionRecords = ePrescriptionData;
     }
-  }, [phrPrescriptionData]);
-
-  useEffect(() => {
-    if (medicineOrderData && medicineOrderData.length > 0) {
-      selectedMedicalRecords = medicineOrderData;
-    }
-  }, [medicineOrderData]);
+  }, [ePrescriptionData]);
 
   useEffect(() => {
     if (!pastPrescriptions || !pastMedicalOrders) {
+      setLoading(true);
       patientPastConsultAndPrescriptionMutation()
         .then(({ data }: any) => {
           if (
@@ -167,12 +165,17 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               setPastMedicalOrders(
                 data.getPatientPastConsultsAndPrescriptions.medicineOrders || []
               );
+            setLoading(false);
           } else {
+            setLoading(false);
             setPastPrescriptions([]);
             setPastMedicalOrders([]);
           }
         })
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          console.log(e);
+          setLoading(false);
+        });
     }
   }, [pastPrescriptions, pastMedicalOrders]);
 
@@ -186,102 +189,149 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .map((item) => item!.medicineName)
       .join(', ');
 
+  const getCaseSheet = (caseSheet: CaseSheet[]) =>
+    caseSheet!.find(
+      (item) =>
+        item!.doctorType == DoctorType.STAR_APOLLO ||
+        item!.doctorType == DoctorType.APOLLO ||
+        item!.doctorType == DoctorType.PAYROLL
+    )!;
+
+  const formattedEPrescriptions =
+    pastMedicalOrders &&
+    pastMedicalOrders
+      .map(
+        (item: any) =>
+          ({
+            id: item!.id,
+            date: moment(item!.quoteDateTime).format(DATE_FORMAT),
+            uploadedUrl: item!.prescriptionImageUrl,
+            doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) ||
+              ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            medicines: getMedicines(item!.medicineOrderLineItems! || []),
+            prismPrescriptionFileId: item!.prismPrescriptionFileId,
+          } as any)
+      )
+      .concat(
+        pastPrescriptions &&
+          pastPrescriptions.map((item: any) => ({
+            id: item!.id,
+            date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
+            uploadedUrl: item.caseSheet
+              ? client.getBlobUrl(
+                  (getCaseSheet(item!.caseSheet) || { blobName: '' }).blobName || ''
+                )
+              : '',
+            doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            medicines: (
+              (getCaseSheet(item!.caseSheet) || { medicinePrescription: [] })
+                .medicinePrescription || []
+            )
+              .map((item) => item!.medicineName)
+              .join(', '),
+          }))
+      )
+      .filter((item: any) => !!item.uploadedUrl)
+      .sort(
+        (a: any, b: any) =>
+          moment(b.date, DATE_FORMAT)
+            .toDate()
+            .getTime() -
+          moment(a.date, DATE_FORMAT)
+            .toDate()
+            .getTime()
+      );
+
+  const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
+
+  const prescriptionOlderThan6months =
+    formattedEPrescriptions &&
+    formattedEPrescriptions.filter((item: any) => {
+      const prescrTime = moment(item.date, DATE_FORMAT);
+      const currTime = moment(new Date());
+      const diff = currTime.diff(prescrTime, 'days');
+      return diff > PRESCRIPTION_VALIDITY_IN_DAYS ? true : false;
+    });
+
+  const prescriptionUpto6months =
+    formattedEPrescriptions &&
+    formattedEPrescriptions.filter((item: any) => {
+      const prescrTime = moment(item.date, DATE_FORMAT);
+      const currTime = moment(new Date());
+      const diff = currTime.diff(prescrTime, 'days');
+      return diff <= PRESCRIPTION_VALIDITY_IN_DAYS ? true : false;
+    });
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
   return (
     <div className={classes.root}>
       <div className={classes.tabsWrapper}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(45vh)'}>
-          {pastPrescriptions &&
-            pastPrescriptions.length > 0 &&
-            pastPrescriptions.map((pastPrescription: Prescription) => (
+          {prescriptionUpto6months &&
+            prescriptionUpto6months.length > 0 &&
+            prescriptionUpto6months.map((pastPrescription: EPrescription) => (
               <div className={classes.prescriptionGroup}>
                 <div className={classes.imgThumb}>
                   <img src={require('images/ic_prescription.svg')} alt="" />
                 </div>
                 <div>
-                  <div>
-                    {pastPrescription.doctorInfo
-                      ? `${pastPrescription.doctorInfo.salutation} ${pastPrescription.doctorInfo.firstName}`
-                      : null}
-                  </div>
+                  <div>{pastPrescription.doctorName}</div>
                   <div className={classes.priscriptionInfo}>
                     <span className={classes.name}>
                       {currentPatient && currentPatient.firstName}
                     </span>
                     <span className={classes.date}>
-                      {moment(pastPrescription.appointmentDateTime).format(DATE_FORMAT)}
-                    </span>
-                    <span>
-                      {pastPrescription.caseSheet &&
-                        pastPrescription.caseSheet.length > 0 &&
-                        pastPrescription.caseSheet.map((caseSheet) =>
-                          caseSheet && caseSheet.symptoms
-                            ? caseSheet.symptoms.map(
-                                (symptomData) =>
-                                  symptomData &&
-                                  symptomData.symptom && <span>{symptomData.symptom}, </span>
-                              )
-                            : null
-                        )}
+                      {moment(pastPrescription.date).format(DATE_FORMAT)}
                     </span>
                   </div>
                 </div>
                 <AphCheckbox
                   onChange={() => {
-                    selectedPrescriptions.push(pastPrescription);
+                    selectedEPrescriptionRecords.push(pastPrescription);
                   }}
                   className={classes.checkbox}
                   color="primary"
                 />
               </div>
             ))}
-          {pastMedicalOrders && pastMedicalOrders.length > 0 ? (
-            pastMedicalOrders.map((medicalOrder: MedicineOrder) => (
+          {prescriptionOlderThan6months &&
+            prescriptionOlderThan6months.length > 0 &&
+            prescriptionOlderThan6months.map((pastPrescription: EPrescription) => (
               <div className={classes.prescriptionGroup}>
                 <div className={classes.imgThumb}>
                   <img src={require('images/ic_prescription.svg')} alt="" />
                 </div>
                 <div>
-                  {`Meds Rx ${medicalOrder.id &&
-                    medicalOrder.id.substring(0, medicalOrder.id.indexOf('-'))}`}
+                  <div>{pastPrescription.doctorName}</div>
                   <div className={classes.priscriptionInfo}>
                     <span className={classes.name}>
                       {currentPatient && currentPatient.firstName}
                     </span>
                     <span className={classes.date}>
-                      {moment(medicalOrder.quoteDateTime).format(DATE_FORMAT)}
-                    </span>
-                    <span>
-                      {medicalOrder && medicalOrder.medicineOrderLineItems && (
-                        <div className={classes.patientHistory}>
-                          {medicalOrder.medicineOrderLineItems.length > 0 &&
-                            getMedicines(medicalOrder.medicineOrderLineItems)}
-                        </div>
-                      )}
+                      {moment(pastPrescription.date).format(DATE_FORMAT)}
                     </span>
                   </div>
                 </div>
                 <AphCheckbox
-                  onChange={() => selectedMedicalRecords.push(medicalOrder)}
+                  onChange={() => {
+                    selectedEPrescriptionRecords.push(pastPrescription);
+                  }}
                   className={classes.checkbox}
                   color="primary"
                 />
               </div>
-            ))
-          ) : (
-            <div className={classes.circularProgressWrapper}>
-              <CircularProgress />
-            </div>
-          )}
+            ))}
         </Scrollbars>
         <div className={classes.uploadButtonWrapper}>
           <AphButton
             onClick={() => {
-              const finalPrescription = selectedPrescriptions;
-              phrPrescriptionData && finalPrescription.concat(phrPrescriptionData);
-              setPhrPrescriptionData && setPhrPrescriptionData(finalPrescription);
-              const finalMedicineOrderData = selectedMedicalRecords;
-              medicineOrderData && finalMedicineOrderData.concat(medicineOrderData);
-              setMedicineOrderData && setMedicineOrderData(finalMedicineOrderData);
+              const finalEprescriptions = selectedEPrescriptionRecords;
+              setEPrescriptionData && setEPrescriptionData(finalEprescriptions);
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
               const currentUrl = window.location.href;
               if (currentUrl.endsWith('/medicines')) {

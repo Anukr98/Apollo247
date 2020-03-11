@@ -123,13 +123,6 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
                 </div>
                 <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
               </div>
-              {/* <div className={classes.orderBody}>Delivery By: 27 July 2019</div>
-          <div className={classes.remindMe}>
-            <span>Remind me to take medicines</span>
-            <span>
-              <AphCheckbox />
-            </span>
-          </div> */}
               <div className={classes.bottomActions}>
                 <AphButton>View Invoice</AphButton>
                 <AphButton
