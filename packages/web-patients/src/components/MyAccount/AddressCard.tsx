@@ -23,6 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       position: 'relative',
       paddingRight: 125,
+      wordBreak: 'break-word',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         paddingRight: 16,
@@ -150,7 +151,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
               .then(() => {
                 setIsPopoverOpen(true);
               })
-              .catch(() => {});
+              .catch(() => { });
           }}
         >
           Delete Address
