@@ -26,6 +26,7 @@ import {
 import { usePrevious } from 'hooks/reactCustomHooks';
 import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 import moment from 'moment';
+import { CouponCode } from 'components/Coupon/CouponCode';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -234,8 +235,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const doctorName =
     doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.firstName
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.firstName
       ? doctorDetails.getDoctorDetailsById.firstName
       : '';
 
@@ -246,9 +247,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const hospitalId =
     doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
-    doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
+      doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
       ? doctorDetails.getDoctorDetailsById.doctorHospital[0].facility.id
       : '';
 
@@ -460,7 +461,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                         ? classes.buttonActive
                         : ''
                       : classes.disabledButton
-                  }`}
+                    }`}
                   disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
                   title={' Consult Now'}
                 >
@@ -476,7 +477,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     showCalendar || scheduleLater || !consultNowAvailable
                       ? classes.buttonActive
                       : ''
-                  }`}
+                    }`}
                   title={' Schedule For Later'}
                 >
                   Schedule For Later
@@ -485,11 +486,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               {showCalendar || scheduleLater || !consultNowAvailable ? (
                 ''
               ) : (
-                <p className={classes.consultNowInfo}>
-                  Please note that after booking, you will need to download the Apollo 247 app to
-                  continue with your consultation.
+                  <p className={classes.consultNowInfo}>
+                    Please note that after booking, you will need to download the Apollo 247 app to
+                    continue with your consultation.
                 </p>
-              )}
+                )}
             </div>
           )}
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
@@ -506,7 +507,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       showCalendar || scheduleLater || !consultNowAvailable
                         ? classes.showCalendar
                         : ''
-                    }`}
+                      }`}
                     ref={calendarRef}
                   >
                     <AphCalendar
@@ -517,36 +518,37 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 </Grid>
                 <Grid item sm={6} xs={12}>
                   {morningSlots.length > 0 ||
-                  afternoonSlots.length > 0 ||
-                  eveningSlots.length > 0 ||
-                  lateNightSlots.length > 0 ? (
-                    <div
-                      className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-                        showCalendar || scheduleLater || !consultNowAvailable
-                          ? classes.showTimeSlot
-                          : ''
-                      }`}
-                    >
-                      <DayTimeSlots
-                        morningSlots={morningSlots}
-                        afternoonSlots={afternoonSlots}
-                        eveningSlots={eveningSlots}
-                        latenightSlots={lateNightSlots}
-                        doctorName={doctorName}
-                        timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
-                      />
-                    </div>
-                  ) : (
-                    <div className={classes.consultGroup}>
-                      <div className={classes.noSlotsAvailable}>
-                        Oops! No slots available with Dr. {doctorName} :(
+                    afternoonSlots.length > 0 ||
+                    eveningSlots.length > 0 ||
+                    lateNightSlots.length > 0 ? (
+                      <div
+                        className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                          showCalendar || scheduleLater || !consultNowAvailable
+                            ? classes.showTimeSlot
+                            : ''
+                          }`}
+                      >
+                        <DayTimeSlots
+                          morningSlots={morningSlots}
+                          afternoonSlots={afternoonSlots}
+                          eveningSlots={eveningSlots}
+                          latenightSlots={lateNightSlots}
+                          doctorName={doctorName}
+                          timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                        />
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className={classes.consultGroup}>
+                        <div className={classes.noSlotsAvailable}>
+                          Oops! No slots available with Dr. {doctorName} :(
+                      </div>
+                      </div>
+                    )}
                 </Grid>
               </Grid>
             </>
           )}
+          <CouponCode />
           <p className={classes.consultGroup}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am
@@ -568,9 +570,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 doctorId: doctorId,
                 newDateTimeslot: new Date(
                   `${apiDateFormat} ${
-                    timeSelected !== ''
-                      ? timeSelected.padStart(5, '0')
-                      : slotAvailableNext.padStart(5, '0')
+                  timeSelected !== ''
+                    ? timeSelected.padStart(5, '0')
+                    : slotAvailableNext.padStart(5, '0')
                   }:00`
                 ).toISOString(),
                 initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
@@ -586,87 +588,87 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           </AphButton>
         </div>
       ) : (
-        <div className={classes.bottomActions}>
-          <AphButton
-            color="primary"
-            disabled={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
-            }
-            onClick={() => {
-              let appointmentDateTime = '';
-              if (scheduleLater || !consultNowAvailable) {
-                const dateForScheduleLater =
-                  dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
-                const appointmentDateTimeString = new Date(
-                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
-                );
-                appointmentDateTime = moment.utc(appointmentDateTimeString).format();
-              } else {
-                appointmentDateTime = consultNowSlotTime;
+          <div className={classes.bottomActions}>
+            <AphButton
+              color="primary"
+              disabled={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
               }
-              // console.log(appointmentDateTime, 'appt time is....', scheduleLater);
-              // console.log(appointmentDateTime, 'appt date and time.....');
+              onClick={() => {
+                let appointmentDateTime = '';
+                if (scheduleLater || !consultNowAvailable) {
+                  const dateForScheduleLater =
+                    dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
+                  const appointmentDateTimeString = new Date(
+                    `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
+                  );
+                  appointmentDateTime = moment.utc(appointmentDateTimeString).format();
+                } else {
+                  appointmentDateTime = consultNowSlotTime;
+                }
+                // console.log(appointmentDateTime, 'appt time is....', scheduleLater);
+                // console.log(appointmentDateTime, 'appt date and time.....');
 
-              setMutationLoading(true);
-              paymentMutation({
-                variables: {
-                  bookAppointment: {
-                    patientId: currentPatient ? currentPatient.id : '',
-                    doctorId: doctorId,
-                    appointmentDateTime: appointmentDateTime,
-                    appointmentType: APPOINTMENT_TYPE.ONLINE,
-                    hospitalId: hospitalId,
+                setMutationLoading(true);
+                paymentMutation({
+                  variables: {
+                    bookAppointment: {
+                      patientId: currentPatient ? currentPatient.id : '',
+                      doctorId: doctorId,
+                      appointmentDateTime: appointmentDateTime,
+                      appointmentType: APPOINTMENT_TYPE.ONLINE,
+                      hospitalId: hospitalId,
+                    },
                   },
-                },
-              })
-                .then((res: any) => {
-                  disableSubmit = false;
-                  if (
-                    res &&
-                    res.data &&
-                    res.data.bookAppointment &&
-                    res.data.bookAppointment.appointment
-                  ) {
-                    const pgUrl = `${
-                      process.env.CONSULT_PG_BASE_URL
-                    }/consultpayment?appointmentId=${
-                      res.data.bookAppointment.appointment.id
-                    }&patientId=${
-                      currentPatient ? currentPatient.id : ''
-                    }&price=${onlineConsultationFees}&source=WEB`;
-                    window.location.href = pgUrl;
-                    // setMutationLoading(false);
-                    // setIsDialogOpen(true);
-                  }
                 })
-                .catch((errorResponse) => {
-                  alert(errorResponse);
-                  disableSubmit = false;
-                  setMutationLoading(false);
-                });
-            }}
-            className={
-              disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (scheduleLater && consultNowSlotTime === '')
-                ? classes.buttonDisable
-                : ''
-            }
-            title={'Pay'}
-          >
-            {mutationLoading ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              `PAY Rs. ${onlineConsultationFees}`
-            )}
-          </AphButton>
-        </div>
-      )}
+                  .then((res: any) => {
+                    disableSubmit = false;
+                    if (
+                      res &&
+                      res.data &&
+                      res.data.bookAppointment &&
+                      res.data.bookAppointment.appointment
+                    ) {
+                      const pgUrl = `${
+                        process.env.CONSULT_PG_BASE_URL
+                        }/consultpayment?appointmentId=${
+                        res.data.bookAppointment.appointment.id
+                        }&patientId=${
+                        currentPatient ? currentPatient.id : ''
+                        }&price=${onlineConsultationFees}&source=WEB`;
+                      window.location.href = pgUrl;
+                      // setMutationLoading(false);
+                      // setIsDialogOpen(true);
+                    }
+                  })
+                  .catch((errorResponse) => {
+                    alert(errorResponse);
+                    disableSubmit = false;
+                    setMutationLoading(false);
+                  });
+              }}
+              className={
+                disableSubmit ||
+                  mutationLoading ||
+                  isDialogOpen ||
+                  (scheduleLater && consultNowSlotTime === '')
+                  ? classes.buttonDisable
+                  : ''
+              }
+              title={'Pay'}
+            >
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                  `PAY Rs. ${onlineConsultationFees}`
+                )}
+            </AphButton>
+          </div>
+        )}
       <AphDialog
         open={isDialogOpen}
         disableBackdropClick
