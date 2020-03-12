@@ -34,6 +34,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -449,11 +450,6 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-// export interface PrescriptionFormat {
-//   name: string | null;
-//   imageUrl: string | null;
-// }
-
 export const MedicineCart: React.FC = (props) => {
   const classes = useStyles({});
   const {
@@ -478,11 +474,11 @@ export const MedicineCart: React.FC = (props) => {
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
 
-  const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
-  const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const { currentPincode } = useContext(LocationContext);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [uploadingFiles, setUploadingFiles] = React.useState<boolean>(false);
+
+  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
 
   const removeImagePrescription = (fileName: string) => {
     const finalPrescriptions =
@@ -513,7 +509,9 @@ export const MedicineCart: React.FC = (props) => {
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
   const disableSubmit = deliveryAddressId === '';
-  const uploadPrescriptionRequired = cartItems.findIndex((v) => v.is_prescription_required === '1');
+  const uploadPrescriptionRequired = cartItems.findIndex(
+    (v) => Number(v.is_prescription_required) === 1
+  );
 
   const cartItemsForApi =
     cartItems.length > 0
@@ -526,8 +524,8 @@ export const MedicineCart: React.FC = (props) => {
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             prescriptionImageUrl: '',
-            mou: parseInt(cartItemDetails.mou, 10),
-            isMedicine: cartItemDetails.is_prescription_required ? '1' : '0',
+            mou: parseInt(cartItemDetails.mou),
+            isMedicine: null,
           };
         })
       : [];
@@ -546,12 +544,15 @@ export const MedicineCart: React.FC = (props) => {
               ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
               : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
           estimatedAmount: parseFloat(totalAmount),
-          devliveryCharges: 0,
-          prescriptionImageUrl:
-            prescriptions &&
-            Array.prototype.map
-              .call(prescriptions, (presDetails) => presDetails.imageUrl)
-              .toString(),
+          devliveryCharges: deliveryCharges,
+          prescriptionImageUrl: [
+            ...prescriptions!.map((item) => item.imageUrl),
+            ...ePrescriptionData!.map((item) => item.uploadedUrl),
+          ].join(','),
+          prismPrescriptionFileId: [
+            ...ePrescriptionData!.map((item) => item.prismPrescriptionFileId),
+          ].join(','),
+          orderTat: deliveryAddressId && moment(deliveryTime).isValid() ? deliveryTime : '',
           items: cartItemsForApi,
         },
       },
@@ -560,7 +561,7 @@ export const MedicineCart: React.FC = (props) => {
 
   const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
 
-  const placeOrder = (orderId: string) => {
+  const placeOrder = (orderId: string, orderAutoId: number) => {
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
         orderId: orderId,
@@ -588,6 +589,9 @@ export const MedicineCart: React.FC = (props) => {
       })
       .catch((e) => {
         window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
+      })
+      .finally(() => {
+        setMutationLoading(false);
       });
   };
 
@@ -615,7 +619,6 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const uploadMultipleFiles = (prescriptions: PrescriptionFormat[]) => {
-    console.log(prescriptions);
     return Promise.all(
       prescriptions.map((item: PrescriptionFormat) => {
         const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
@@ -754,14 +757,14 @@ export const MedicineCart: React.FC = (props) => {
                           ))}
                         <div className={classes.uploadMore}>
                           <AphButton
-                            disabled={uploadingFiles}
+                            disabled={uploadingFiles || mutationLoading}
                             onClick={() => setIsUploadPreDialogOpen(true)}
                           >
                             Upload More
                           </AphButton>
                         </div>
                       </div>
-                    ) : (
+                    ) : uploadPrescriptionRequired >= 0 ? (
                       <div className={classes.uploadPrescription}>
                         <div className={classes.prescriptionRow}>
                           <span>
@@ -785,7 +788,7 @@ export const MedicineCart: React.FC = (props) => {
                           </Link>
                         </div>
                       </div>
-                    )}
+                    ) : null}
                   </>
                 ) : null}
               </>
@@ -836,7 +839,7 @@ export const MedicineCart: React.FC = (props) => {
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    <HomeDelivery />
+                    <HomeDelivery setDeliveryTime={setDeliveryTime} deliveryTime={deliveryTime} />
                   </TabContainer>
                 )}
                 {tabValue === 1 && (
@@ -968,10 +971,7 @@ export const MedicineCart: React.FC = (props) => {
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                        setOrderAutoId(orderAutoId);
-                        setAmountPaid(amountPaid);
-                        placeOrder(orderId);
-                        setMutationLoading(false);
+                        placeOrder(orderId, orderAutoId);
                       }
                     }
                   })
@@ -985,7 +985,11 @@ export const MedicineCart: React.FC = (props) => {
               disabled={disablePayButton}
               className={paymentMethod === '' || mutationLoading ? classes.buttonDisable : ''}
             >
-              {mutationLoading ? <CircularProgress /> : `Pay - RS. ${totalAmount}`}
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                `Pay - RS. ${totalAmount}`
+              )}
             </AphButton>
           </div>
         </div>
