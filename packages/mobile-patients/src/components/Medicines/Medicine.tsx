@@ -7,13 +7,12 @@ import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   DropdownGreen,
-  FileBig,
   InjectionIcon,
   MedicineIcon,
   MedicineRxIcon,
+  PrescriptionPad,
   SearchSendIcon,
   SyrupBottleIcon,
-  PrescriptionPad,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -22,8 +21,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { GET_MEDICINE_ORDERS_LIST, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -41,7 +40,12 @@ import {
   MedicinePageAPiResponse,
   MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  isValidSearch,
+  postWebEngageEvent,
+  postwebEngageAddToCartEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -51,10 +55,11 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Keyboard,
   ListRenderItemInfo,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -62,11 +67,11 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -125,6 +130,37 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     lastSavedTimestamp: number;
     data: MedicinePageAPiResponse;
   } | null;
+
+  const postwebEngageProductClickedEvent = (
+    { name, sku, category_id }: MedicineProduct,
+    sectionName: string
+  ) => {
+    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+      'product name': name,
+      'product id': sku,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': category_id,
+      Source: 'Home',
+      'Section Name': sectionName,
+    };
+    postWebEngageEvent('Product Clicked', eventAttributes);
+  };
+
+  const postwebEngageCategoryClickedEvent = (
+    categoryId: string,
+    categoryName: string,
+    sectionName: string
+  ) => {
+    const eventAttributes: WebEngageEvents['Category Clicked'] = {
+      'category name': categoryName,
+      'category ID': categoryId,
+      'Section Name': sectionName,
+      Source: 'Home',
+    };
+    postWebEngageEvent('Category Clicked', eventAttributes);
+  };
 
   useEffect(() => {
     if (currentPatient && profile && profile.id !== currentPatient.id) {
@@ -359,6 +395,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </Text>
           <Button
             onPress={() => {
+              const eventAttributes: WebEngageEvents['Upload Prescription Clicked'] = {
+                Source: 'Home',
+              };
+              postWebEngageEvent('Upload Prescription Clicked', eventAttributes);
               setShowPopop(true);
             }}
             style={{ width: 'auto' }}
@@ -488,7 +528,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               ...theme.viewStyles.card(12, 0),
               elevation: 10,
               flexDirection: 'row',
-              width: 152,
+              width: 156,
               height: 68,
             },
             style,
@@ -532,11 +572,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             return renderCatalogCard(
               item.title,
               `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-              () =>
+              () => {
+                postwebEngageCategoryClickedEvent(
+                  item.category_id,
+                  item.title,
+                  'SHOP BY HEALTH AREAS'
+                );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
                   title: `${item.title || 'Products'}`.toUpperCase(),
-                }),
+                });
+              },
               {
                 marginHorizontal: 4,
                 marginTop: 16,
@@ -566,6 +612,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  postwebEngageCategoryClickedEvent(item.category_id, 'Banner', 'DEALS OF THE DAY');
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
                     title: 'DEALS OF THE DAY',
@@ -692,7 +739,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       image,
       thumbnail,
     } = data.item;
-    const addToCart = () =>
+
+    const addToCart = () => {
       addCartItem!({
         id: sku,
         mou: mou,
@@ -708,6 +756,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         thumbnail,
         isInStock: true,
       });
+      postwebEngageAddToCartEvent(data.item);
+    };
+
     const removeFromCart = () => removeCartItem!(sku);
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
 
@@ -722,7 +773,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         : undefined,
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
-      onPress: () => props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku }),
+      onPress: () => {
+        postwebEngageProductClickedEvent(data.item, 'HOT SELLERS');
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
+      },
       style: {
         marginHorizontal: 4,
         marginTop: 16,
@@ -764,11 +818,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             return renderCatalogCard(
               item.title,
               `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-              () =>
+              () => {
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, 'SHOP BY CATEGORY');
+
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
                   title: `${item.title || 'Products'}`.toUpperCase(),
-                }),
+                });
+              },
               {
                 marginHorizontal: 4,
                 marginTop: 16,
@@ -812,11 +869,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }`;
             return renderBrandCard(
               imgUrl,
-              () =>
+              () => {
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, 'SHOP BY BRAND');
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
                   title: `${item.title || 'Products'}`.toUpperCase(),
-                }),
+                });
+              },
               {
                 marginHorizontal: 4,
                 marginTop: 16,
@@ -853,6 +912,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setMedicineList([]);
         return;
       }
+      const eventAttributes: WebEngageEvents['Search'] = { keyword: _searchText };
+      postWebEngageEvent('Search', eventAttributes);
+
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {
@@ -1121,6 +1183,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       : undefined;
     return renderSearchSuggestionItem({
       onPress: () => {
+        postwebEngageProductClickedEvent(item, 'HOME SEARCH');
         CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
         savePastSeacrh(`${item.id}`, item.name).catch((e) => {});
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {

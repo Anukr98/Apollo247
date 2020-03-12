@@ -19,11 +19,11 @@ import {
   TextStyle,
   TouchableOpacity,
   View,
-  AsyncStorage,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { height } = Dimensions.get('window');
 

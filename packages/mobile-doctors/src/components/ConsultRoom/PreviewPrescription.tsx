@@ -119,16 +119,18 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           {complaints &&
             complaints.map((i) => {
               if (i) {
+                const description = [
+                  i.since ? `Since: ${i.since}` : '',
+                  i.howOften ? `How often: ${i.howOften}` : '',
+                  i.severity ? `Severity: ${i.severity}` : '',
+                  i.details ? `Details: ${i.details}` : '',
+                ]
+                  .filter((d) => d !== '')
+                  .join(' | ');
                 return (
                   <View style={styles.itemContainer}>
                     {renderSubHeading(i.symptom || '')}
-                    {renderDescription(
-                      `${i.since ? `Since: ${i.since} | ` : ''}${
-                        i.howOften ? `How often: ${i.howOften} | ` : ''
-                      }${i.severity ? `Severity: ${i.severity} | ` : ''}${
-                        i.details ? `Details: ${i.details}` : ''
-                      }`
-                    )}
+                    {renderDescription(description)}
                   </View>
                 );
               }
@@ -331,8 +333,8 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         {complaints && renderComplaints()}
         {diagnosis && renderDiagnosis()}
         {medicine && renderMedicine()}
-        {tests && renderTest()}
-        {advice && renderAdvice()}
+        {tests && tests.length > 0 && renderTest()}
+        {advice && advice.length > 0 && renderAdvice()}
         {followUp && renderFollowUp()}
         {renderDisclamer()}
         <View style={styles.paddingView} />

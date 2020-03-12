@@ -358,18 +358,18 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     <Text style={styles.labelStyle}>{item.parameterName}</Text>
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <Text style={styles.labelTextStyle}>Result</Text>
                       <Text style={styles.valuesTextStyle}>{item.result}</Text>
                     </View>
-                    <View>
+                    <View style={{ flex: 0.5 }}>
                       <Text style={styles.labelTextStyle}>Units</Text>
                       <Text style={styles.valuesTextStyle}>{unit ? unit.value : item.unit}</Text>
                     </View>
-                    <View>
+                    <View style={{ flex: 0.7 }}>
                       <Text style={styles.labelTextStyle}>Normal Range</Text>
                       <Text style={styles.valuesTextStyle}>
-                        {item.minimum} - {item.maximum}
+                        {item.range ? item.range : `${item.minimum || ''} - ${item.maximum || ''}`}
                       </Text>
                     </View>
                   </View>

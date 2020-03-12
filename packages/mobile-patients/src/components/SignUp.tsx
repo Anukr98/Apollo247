@@ -18,7 +18,6 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-  AsyncStorage,
   BackHandler,
   Platform,
   KeyboardAvoidingView,
@@ -50,7 +49,12 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { height } = Dimensions.get('window');
 
@@ -157,8 +161,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   //   /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
 
   const _setEmail = (value: string) => {
-    setEmail(value);
-    setEmailValidation(isSatisfyingEmailRegex(value));
+    const trimmedValue = (value || '').trim();
+    setEmail(trimmedValue);
+    setEmailValidation(isSatisfyingEmailRegex(trimmedValue));
   };
 
   const _setFirstName = (value: string) => {
@@ -354,6 +359,27 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
+  const _postWebEngageEvent = () => {
+    const eventAttributes: WebEngageEvents['Registration Done'] = {
+      'Customer ID': currentPatient ? currentPatient.id : '',
+      'Customer First Name': firstName.trim(),
+      'Customer Last Name': lastName.trim(),
+      'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+      Gender:
+        gender === 'Female'
+          ? Gender['FEMALE']
+          : gender === 'Male'
+          ? Gender['MALE']
+          : Gender['OTHER'],
+      Email: email.trim(),
+    };
+    if (referral) {
+      // only send if referral has a value
+      eventAttributes['Referral Code'] = referral;
+    }
+
+    postWebEngageEvent('Registration Done', eventAttributes);
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
@@ -461,6 +487,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   {data
                     ? (console.log('data', data.updatePatient.patient),
                       getPatientApiCall(),
+                      _postWebEngageEvent(),
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', 'false'),

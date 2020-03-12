@@ -586,7 +586,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   },
                 })
                   .then(() => {
-                    setCurrentPatientId(selectedPatientId);
+                    // setCurrentPatientId(selectedPatientId);
                     // localStorage.removeItem('currentUser');
                     closeHandler(false);
                     successHandler(true);

@@ -4,12 +4,13 @@
 //
 'use strict';
 
-import { Dimensions, Platform, AsyncStorage } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
 import { aphConsole } from '../helpers/helperFunctions';
 import { AppConfig } from '../strings/AppConfig';
 import { Client } from 'bugsnag-react-native';
 import { DEVICE_TYPE } from '../graphql/types/globalTypes';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const bugsnag = new Client();
 const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';

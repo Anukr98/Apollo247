@@ -1,14 +1,5 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import {
-  ScrollView,
-  StyleProp,
-  StyleSheet,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { ScrollView, StyleProp, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Menu, { MenuItem } from 'react-native-material-menu';
 import MaterialMenuStyles from '@aph/mobile-doctors/src/components/ui/MaterialMenu.styles';
 

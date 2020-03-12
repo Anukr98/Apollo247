@@ -17,6 +17,7 @@
 #import "RNFirebaseNotifications.h"
 #import "RNFirebaseMessaging.h"
 #import <React/RCTLinkingManager.h>
+#import <WebEngage/WebEngage.h>
 
 @implementation AppDelegate
 
@@ -58,6 +59,8 @@
       NSLog( @"SUGGESTIONS: %@ - %@", error.localizedRecoveryOptions, error.localizedRecoverySuggestion );
     }
   }];
+  
+  [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
 }
@@ -134,6 +137,30 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
+}
+
+#pragma mark WebEngage
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler{
+    
+    NSLog(@"center: %@, notification: %@", center, notification);
+    
+    [WEGManualIntegration userNotificationCenter:center willPresentNotification:notification];
+    
+    completionHandler(UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionSound | UNNotificationPresentationOptionBadge);
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+didReceiveNotificationResponse:(UNNotificationResponse *)response
+         withCompletionHandler:(void (^)(void))completionHandler {
+    
+    NSLog(@"center: %@, response: %@", center, response);
+    
+    [WEGManualIntegration userNotificationCenter:center didReceiveNotificationResponse:response];
+    
+    completionHandler();
 }
 
 @end

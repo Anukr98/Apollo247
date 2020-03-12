@@ -7,8 +7,9 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Alert, AsyncStorage } from 'react-native';
+import { Alert } from 'react-native';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface ShoppingCartItem {
   id: string;

@@ -4,6 +4,7 @@ import {
   getPackageData,
   getPlaceInfoByLatLng,
   GooglePlacesType,
+  MedicineProduct,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -13,7 +14,8 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
-import { Alert, AsyncStorage, Dimensions, Platform } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import { Alert, Dimensions, Platform } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
@@ -28,6 +30,8 @@ import {
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import WebEngage from 'react-native-webengage';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -342,7 +346,7 @@ export function g(obj: any, ...props: string[]) {
 export const getNetStatus = async () => {
   const status = await NetInfo.fetch()
     .then((connectionInfo) => {
-      //console.log(connectionInfo, 'connectionInfo');
+      // console.log(connectionInfo, 'connectionInfo');
       return connectionInfo.isConnected && connectionInfo.isInternetReachable;
     })
     .catch((e) => {
@@ -458,7 +462,26 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
             getlocationData(resolve, reject);
           }
         } else {
-          reject('Unable to get location.');
+          if (response === 'restricted' && Platform.OS === 'ios') {
+            Alert.alert('Location', 'Enable location access form settings', [
+              {
+                text: 'Cancle',
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'false');
+                },
+              },
+              {
+                text: 'Ok',
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'true');
+                  Permissions.openSettings();
+                },
+              },
+            ]);
+            resolve(undefined);
+          } else {
+            reject('Unable to get location.');
+          }
         }
       })
       .catch((e) => {
@@ -691,4 +714,38 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
         return -1;
       return 0;
     });
+};
+
+const webengage = new WebEngage();
+
+export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes: Object) => {
+  try {
+    console.log('\n********* WebEngageEvent Start *********\n');
+    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
+    console.log('\n********* WebEngageEvent End *********\n');
+    webengage.track(eventName, attributes);
+  } catch (error) {
+    console.log('********* Unable to post WebEngageEvent *********', { error });
+  }
+};
+
+export const postwebEngageAddToCartEvent = ({
+  sku,
+  name,
+  category_id,
+  price,
+  special_price,
+}: MedicineProduct) => {
+  const eventAttributes: WebEngageEvents['Add to cart'] = {
+    'product name': name,
+    'product id': sku,
+    Brand: '',
+    'Brand ID': '',
+    'category name': '',
+    'category ID': category_id || '',
+    Price: price,
+    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+    Quantity: 1,
+  };
+  postWebEngageEvent('Add to cart', eventAttributes);
 };

@@ -776,7 +776,11 @@ const modifyCaseSheet: Resolver<
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
-  if (juniorDoctorDetails && seniorDoctorDetails) {
+  if (
+    juniorDoctorDetails &&
+    seniorDoctorDetails &&
+    getCaseSheetData.doctorType == DoctorType.JUNIOR
+  ) {
     const messageBody = ApiConstants.CASESHEET_SUBMITTED_BODY.replace(
       '{0}',
       seniorDoctorDetails.firstName

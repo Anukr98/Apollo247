@@ -510,7 +510,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   // return;
                                   try {
                                     location = await doRequestAndAccessLocation();
-                                    setLocationDetails!(location);
+                                    location && setLocationDetails!(location);
                                   } catch (error) {
                                     setGlobalLoading!(false);
                                     Alert.alert(
