@@ -1,3 +1,5 @@
+import BlockHomePageStyles from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage.styles';
+import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-doctors/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
@@ -10,32 +12,28 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { RadioButtons } from '@aph/mobile-doctors/src/components/ui/RadioButtons';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
   ADD_BLOCKED_CALENDAR_ITEM,
   BLOCK_MULTIPLE_CALENDAR_ITEMS,
 } from '@aph/mobile-doctors/src/graphql/profiles';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import { colors } from '@aph/mobile-doctors/src/theme/colors';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import moment from 'moment';
-import React, { useState, useEffect } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { ConsultMode } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
-  ConvertDateToWeekDay,
   ConvertDateTimeToUtc,
+  ConvertDateToWeekDay,
   FormatDateToString,
   getDateArray,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import BlockHomePageStyles from '@aph/mobile-doctors/src/components/BlockCalender/BlockHomePage.styles';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { width } = Dimensions.get('window');
 
@@ -170,25 +168,65 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     props.navigation.goBack();
   };
 
+  const callBlockMultipleCalendar = (variables) => {
+    client
+      .mutate({
+        mutation: BLOCK_MULTIPLE_CALENDAR_ITEMS,
+        variables: { blockCalendarInputs: variables },
+      })
+      .then((res) => {
+        setshowSpinner(false);
+        console.log(res, 'res BLOCK_MULTIPLE_CALENDAR_ITEMS');
+        navigateWithData(res);
+      })
+      .catch((err) => {
+        setshowSpinner(false);
+        console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
+        // setshowSpinner(false);
+        showErrorMessage(err);
+      });
+  };
+
   const SaveBlockCalendar = () => {
     setshowSpinner(true);
-    let variables: any = {
+    const date = startDate
+      ? FormatDateToString(startDate) === FormatDateToString(new Date())
+        ? moment(new Date())
+            .add(1, 'minute')
+            .toISOString()
+        : moment(startDate)
+            .startOf('day')
+            .toISOString()
+      : '';
+    let variables = {
       doctorId: doctorDetails ? doctorDetails.id : '',
     };
     if (selectedBlockOption === blockOptions[0].key) {
+      let endDateTime;
+      if (selectedDay === daysArray[0].key && startDate) {
+        endDateTime = moment(startDate)
+          .endOf('day')
+          .toISOString(); //moment(date.split('T')[0] + '23:59:00', 'YYYY-MM-DDHH:mm:ss').toISOString();
+      } else {
+        endDateTime = endDate
+          ? moment(endDate)
+              .endOf('day')
+              .toISOString()
+          : //  moment(
+            //     endDate.toISOString().split('T')[0] + '12:59:00',
+            //     'YYYY-MM-DDhh:mm:ss'
+            //   ).toISOString()
+            //moment(endDate.toISOString().split('T')[0] + ' 23:59', 'YYYY-MM-DD HH:MM').toISOString()
+            '';
+      }
       variables = {
         ...variables,
-        start: moment(startDate)
-          .startOf('day')
-          .toISOString(),
-        end: moment(startDate)
-          .startOf('day')
-          .add(23, 'h')
-          .add(59, 'm')
-          .toISOString(), // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
+        start: date,
+        end: endDateTime, // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
         reason: selectedReason.key,
       };
       console.log(variables, 'variables');
+
       client
         .mutate({
           mutation: ADD_BLOCKED_CALENDAR_ITEM,
@@ -200,7 +238,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           navigateWithData(res);
         })
         .catch((err) => {
-          CommonBugFender('Add_Blocked_Calender_Item_BlockHomePage', err);
           setshowSpinner(false);
           console.log(err, 'err ADD_BLOCKED_CALENDAR_ITEM');
           showErrorMessage(err);
@@ -213,8 +250,9 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
           reason: '',
           itemDetails: selectedConsultations,
         };
+        callBlockMultipleCalendar(variables);
       } else {
-        let consults: ({ start: string; end: string } | undefined | null)[] = [];
+        let consults: any[] = [];
         if (daysArray[0].key === selectedDay && startDate) {
           const date = FormatDateToString(startDate);
 
@@ -225,57 +263,203 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
               moment(item.end).format('HH:mm:ss'),
               'moment(item.start)'
             );
-            if (item.start && item.end) {
-              return {
-                start: item.start.toISOString(),
-                end: item.end.toISOString(),
-              };
-            }
-          });
-        } else if (daysArray[1].key === selectedDay && startDate && endDate) {
-          AllDates.forEach((date) => {
-            const array = customTime.map((item) => {
-              return {
-                start: ConvertDateTimeToUtc(
-                  FormatDateToString(date),
-                  moment(item.start).format('HH:mm:ss')
-                ),
-                end: ConvertDateTimeToUtc(
-                  FormatDateToString(date),
-                  moment(item.end).format('HH:mm:ss')
-                ),
-              };
-            });
 
-            consults.concat(array);
+            // return {
+            //   start: ConvertDateTimeToUtc(date, moment(item.start).format('HH:mm:ss')),
+            //   end: ConvertDateTimeToUtc(date, moment(item.end).format('HH:mm:ss')),
+            // };
+            return {
+              start: moment(
+                date + moment(item.start).format('HH:mm:ss'),
+                'YYYY-MM-DDHH:mm:ss'
+              ).toISOString(),
+              end: moment(
+                date + moment(item.end).format('HH:mm:ss'),
+                'YYYY-MM-DDHH:mm:ss'
+              ).toISOString(),
+            };
+          });
+          console.log(consults, 'consults111');
+          variables = {
+            ...variables,
+            reason: '',
+            itemDetails: consults,
+          };
+          callBlockMultipleCalendar(variables);
+        } else if (daysArray[1].key === selectedDay && startDate && endDate) {
+          const promiseObject = new Promise((resolve, reject) => {
+            AllDates.forEach((date) => {
+              const array = customTime.map((item) => {
+                // return {
+                //   start: ConvertDateTimeToUtc(
+                //     FormatDateToString(date),
+                //     moment(item.start).format('HH:mm:ss')
+                //   ),
+                //   end: ConvertDateTimeToUtc(
+                //     FormatDateToString(date),
+                //     moment(item.end).format('HH:mm:ss')
+                //   ),
+                // };
+                return {
+                  start: moment(
+                    FormatDateToString(date) + moment(item.start).format('HH:mm:ss'),
+                    'YYYY-MM-DDHH:mm:ss'
+                  ).toISOString(),
+                  end: moment(
+                    FormatDateToString(date) + moment(item.end).format('HH:mm:ss'),
+                    'YYYY-MM-DDHH:mm:ss'
+                  ).toISOString(),
+                };
+              });
+              console.log(array, 'array consults2222');
+
+              consults.push(...array);
+              console.log(consults, 'consults2222');
+              resolve();
+            });
+          });
+          promiseObject.then(() => {
+            variables = {
+              ...variables,
+              reason: '',
+              itemDetails: consults,
+            };
+            console.log(variables, 'variables consults2222');
+
+            callBlockMultipleCalendar(variables);
           });
         }
-        console.log(consults, 'consults customTime', customTime);
-        variables = {
-          ...variables,
-          reason: '',
-          itemDetails: consults,
-        };
+
+        // console.log(consults, 'consults customTime', customTime);
+        // variables = {
+        //   ...variables,
+        //   reason: '',
+        //   itemDetails: consults,
+        // };
       }
-      console.log(variables, selectedConsultations, 'itemDetails');
-      client
-        .mutate({
-          mutation: BLOCK_MULTIPLE_CALENDAR_ITEMS,
-          variables: { blockCalendarInputs: variables },
-        })
-        .then((res) => {
-          setshowSpinner(false);
-          console.log(res, 'res BLOCK_MULTIPLE_CALENDAR_ITEMS');
-          navigateWithData(res);
-        })
-        .catch((err) => {
-          setshowSpinner(false);
-          CommonBugFender('Add_Blocked_Multiple_Calender_Item_BlockHomePage', err);
-          console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
-          showErrorMessage(err);
-        });
+      // console.log(variables, selectedConsultations, 'itemDetails');
+      // callBlockMultipleCalendar(variables);
     }
   };
+
+  // const SaveBlockCalendar = () => {
+  //   setshowSpinner(true);
+  //   let variables: any = {
+  //     doctorId: doctorDetails ? doctorDetails.id : '',
+  //   };
+  //   if (selectedBlockOption === blockOptions[0].key) {
+  //     variables = {
+  //       ...variables,
+  //       start: moment(startDate)
+  //         .startOf('day')
+  //         .toISOString(),
+  //       end: moment(startDate)
+  //         .startOf('day')
+  //         .add(23, 'h')
+  //         .add(59, 'm')
+  //         .toISOString(), // selectedDay === daysArray[0].key ? date : endDate ? endDate.toISOString() : '',
+  //       reason: selectedReason.key,
+  //     };
+  //     console.log(variables, 'variables');
+  //     client
+  //       .mutate({
+  //         mutation: ADD_BLOCKED_CALENDAR_ITEM,
+  //         variables: variables,
+  //       })
+  //       .then((res) => {
+  //         setshowSpinner(false);
+  //         console.log(res, 'res ADD_BLOCKED_CALENDAR_ITEM');
+  //         navigateWithData(res);
+  //       })
+  //       .catch((err) => {
+  //         CommonBugFender('Add_Blocked_Calender_Item_BlockHomePage', err);
+  //         setshowSpinner(false);
+  //         console.log(err, 'err ADD_BLOCKED_CALENDAR_ITEM');
+  //         showErrorMessage(err);
+  //       });
+  //   } else {
+  //     console.log(selectedConsultations, consultHours, 'consultHours');
+  //     if (selectedBlockOption === blockOptions[1].key) {
+  //       variables = {
+  //         ...variables,
+  //         reason: '',
+  //         itemDetails: selectedConsultations,
+  //       };
+  //     } else {
+  //       let consults: ({ start: string; end: string } | undefined | null)[] = [];
+  //       if (daysArray[0].key === selectedDay && startDate) {
+  //         const date = FormatDateToString(startDate);
+  //         console.log(startDate, date, 'startDate');
+
+  //         consults = customTime.map((item) => {
+  //           console.log(
+  //             date,
+  //             moment(item.start).format('HH:mm:ss'),
+  //             moment(item.end).format('HH:mm:ss'),
+  //             'moment(item.start)'
+  //           );
+  //           if (item.start && item.end) {
+  //             // return {
+  //             //   start: item.start.toISOString(),
+  //             //   end: item.end.toISOString(),
+  //             // };
+  //             return {
+  //               start: moment(
+  //                 date + moment(item.start).format('HH:mm:ss'),
+  //                 'YYYY-MM-DDHH:mm:ss'
+  //               ).toISOString(),
+  //               end: moment(
+  //                 date + moment(item.end).format('HH:mm:ss'),
+  //                 'YYYY-MM-DDHH:mm:ss'
+  //               ).toISOString(),
+  //             };
+  //           }
+  //         });
+  //         console.log(consults, 'consults');
+  //       } else if (daysArray[1].key === selectedDay && startDate && endDate) {
+  //         AllDates.forEach((date) => {
+  //           const array = customTime.map((item) => {
+  //             return {
+  //               start: ConvertDateTimeToUtc(
+  //                 FormatDateToString(date),
+  //                 moment(item.start).format('HH:mm:ss')
+  //               ),
+  //               end: ConvertDateTimeToUtc(
+  //                 FormatDateToString(date),
+  //                 moment(item.end).format('HH:mm:ss')
+  //               ),
+  //             };
+  //           });
+
+  //           consults.concat(array);
+  //         });
+  //       }
+  //       console.log(consults, 'consults customTime', customTime);
+  //       variables = {
+  //         ...variables,
+  //         reason: '',
+  //         itemDetails: consults,
+  //       };
+  //     }
+  //     console.log(variables, selectedConsultations, 'itemDetails');
+  //     client
+  //       .mutate({
+  //         mutation: BLOCK_MULTIPLE_CALENDAR_ITEMS,
+  //         variables: { blockCalendarInputs: variables },
+  //       })
+  //       .then((res) => {
+  //         setshowSpinner(false);
+  //         console.log(res, 'res BLOCK_MULTIPLE_CALENDAR_ITEMS');
+  //         navigateWithData(res);
+  //       })
+  //       .catch((err) => {
+  //         setshowSpinner(false);
+  //         CommonBugFender('Add_Blocked_Multiple_Calender_Item_BlockHomePage', err);
+  //         console.log(err, 'err BLOCK_MULTIPLE_CALENDAR_ITEMS');
+  //         showErrorMessage(err);
+  //       });
+  //   }
+  // };
 
   console.log(startDayConsults, 'startDayConsults', consultHours);
 
@@ -370,7 +554,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   };
 
   const renderBlockOptions = () => {
-    console.log(customTime, 'vmdfio');
+    console.log(customTime, 'customTime');
 
     return (
       <View>
@@ -528,6 +712,8 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
 
   const getDates = (startDate: Date, endDate: Date) => {
     const all = getDateArray(startDate, endDate);
+    console.log(all, 'alllllllllll');
+
     setAllDates(all);
   };
 
