@@ -255,7 +255,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           values,
           setFieldValue,
         }: // handleSubmit,
-          FormikProps<FormValues>) => {
+        FormikProps<FormValues>) => {
           const showError = (fieldName: keyof FormValues) =>
             !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
           const requiredFields: (keyof FormValues)[] = [
@@ -312,8 +312,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.firstName}
                             </FormHelperText>
                           ) : (
-                              ''
-                            )}
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
@@ -342,8 +342,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.lastName}
                             </FormHelperText>
                           ) : (
-                              ''
-                            )}
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
@@ -373,8 +373,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.dateOfBirth}
                             </FormHelperText>
                           ) : (
-                              ''
-                            )}
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
@@ -392,7 +392,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                                   value={gender}
                                   className={`${classes.genderBtns} ${
                                     values.gender === gender ? classes.btnActive : ''
-                                    }`}
+                                  }`}
                                   onClick={(e) =>
                                     setFieldValue('gender', e.currentTarget.value as Gender)
                                   }
@@ -432,8 +432,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               {errors.emailAddress}
                             </FormHelperText>
                           ) : (
-                              ''
-                            )}
+                            ''
+                          )}
                         </FormControl>
                       )}
                     />
@@ -441,7 +441,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                     <div className={classes.referralCodeWrapper}>
                       <img src={require('images/ic_gift.svg')} alt="" />
                       <div className={classes.enterCode}>
-                        <div className={classes.labelText}>Do You Have A Referral Code? (Optional)</div>
+                        <div className={classes.labelText}>
+                          Do You Have A Referral Code? (Optional)
+                        </div>
                         <FormControl className={classes.refFormControl} fullWidth>
                           <AphTextField
                             className={classes.inputField}
@@ -472,8 +474,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               Referral code should start with 4 alphabets followed by 4 digits.
                             </FormHelperText>
                           ) : (
-                              ''
-                            )}
+                            ''
+                          )}
                           <img
                             className={classes.tickIcon}
                             src={require('images/ic_check_white.svg')}

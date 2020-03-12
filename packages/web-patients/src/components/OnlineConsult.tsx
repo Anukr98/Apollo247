@@ -26,6 +26,7 @@ import {
 import { usePrevious } from 'hooks/reactCustomHooks';
 import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 import moment from 'moment';
+import { CouponCode } from 'components/Coupon/CouponCode';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -547,6 +548,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </Grid>
             </>
           )}
+          <CouponCode />
           <p className={classes.consultGroup}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am
