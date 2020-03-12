@@ -142,6 +142,8 @@
 	<string>Light</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>WEGEnvironment</key>
+	<string>IN</string>
 	<key>WEGLicenseCode</key>
 	<string>in~~c2ab3529</string>
 	<key>WEGLogLevel</key>
