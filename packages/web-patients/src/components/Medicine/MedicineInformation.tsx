@@ -422,6 +422,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   <div className={classes.deliveryTimeGroup}>
                     <AphTextField
                       placeholder="Enter Pin Code"
+                      inputProps={{
+                        maxLength: 6,
+                        type: 'text',
+                      }}
                       onChange={(e) => setPinCode(e.target.value)}
                     />
                     <AphButton
