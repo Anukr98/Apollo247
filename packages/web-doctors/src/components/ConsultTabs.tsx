@@ -393,6 +393,7 @@ export const ConsultTabs: React.FC = () => {
   const [lastMsg, setLastMsg] = useState<any>(null);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
+  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -725,9 +726,10 @@ export const ConsultTabs: React.FC = () => {
             .getUserMedia({ audio: true, video: false })
             .then(function(stream) {
               console.log('Got stream', stream);
+              setCameraMicPermission(true);
             })
             .catch(function(err) {
-              alert('Please give camera & mic permission to go for Consult');
+              setCameraMicPermission(false);
               console.log('GUM failed with error', err);
             });
           // -------------------------------------------------------------- //
@@ -1572,6 +1574,7 @@ export const ConsultTabs: React.FC = () => {
                 lastMsg={lastMsg}
                 presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
+                hasCameraMicPermission={hasCameraMicPermission}
               />
               <div>
                 <div
