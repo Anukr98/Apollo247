@@ -267,6 +267,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               'blobName'
             )}`
           );
+          followUpMessage(
+            `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+              _data,
+              'data',
+              'updatePatientPrescriptionSentStatus',
+              'blobName'
+            )}`
+          );
+          props.navigation.popToTop();
         }
       })
       .catch((e) => {});
@@ -471,9 +480,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       dietAllergies: medicalHistory ? medicalHistory.dietAllergies : '',
       drugAllergies: medicalHistory ? medicalHistory.drugAllergies : '',
       height: medicalHistory ? medicalHistory.height : '',
-      menstrualHistory: medicalHistory ? medicalHistory.menstrualHistory : '',
-      pastMedicalHistory: medicalHistory ? medicalHistory.pastMedicalHistory : '',
-      pastSurgicalHistory: medicalHistory ? medicalHistory.pastSurgicalHistory : '',
+      menstrualHistory: medicalHistory ? medicalHistory.menstrualHistory || '' : '',
+      pastMedicalHistory: medicalHistory ? medicalHistory.pastMedicalHistory || '' : '',
+      pastSurgicalHistory: medicalHistory ? medicalHistory.pastSurgicalHistory || '' : '',
       temperature: medicalHistory ? medicalHistory.temperature : '',
       weight: medicalHistory ? medicalHistory.weight : '',
       bp: medicalHistory ? medicalHistory.bp : '',
@@ -514,36 +523,31 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           });
       });
   };
-  const followUpMessage = () => {
-    if (followup && followupDays) {
-      const followupObj = {
-        appointmentId: AppId,
-        folloupDateTime: followup
-          ? moment(
-              g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
-                new Date()
-            )
-              .add(Number(followupDays), 'd')
-              .format('YYYY-MM-DD')
-          : '',
-        doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
-        caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
-        doctorInfo: doctorDetails,
-        pdfUrl: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-          caseSheetData,
-          'caseSheetDetails',
-          'blobName'
-        )}`,
-      };
-      props.messagePublish &&
-        props.messagePublish({
-          id: followupObj.doctorId,
-          message: messageCodes.followupconsult,
-          transferInfo: followupObj,
-          messageDate: new Date(),
-          sentBy: REQUEST_ROLES.DOCTOR,
-        });
-    }
+  const followUpMessage = (pdf?: string) => {
+    const followupObj = {
+      appointmentId: AppId,
+      folloupDateTime: followup
+        ? moment(
+            g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
+          )
+            .add(Number(followupDays), 'd')
+            .format('YYYY-MM-DD')
+        : '',
+      doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+      caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
+      doctorInfo: doctorDetails,
+      pdfUrl: pdf || prescriptionPdf,
+    };
+    console.log(followupObj, 'followupObj');
+
+    props.messagePublish &&
+      props.messagePublish({
+        id: followupObj.doctorId,
+        message: messageCodes.followupconsult,
+        transferInfo: followupObj,
+        messageDate: new Date(),
+        sentBy: REQUEST_ROLES.DOCTOR,
+      });
   };
   const prescriptionView = () => {
     if (patientDetails) {
@@ -579,8 +583,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         onSendPress: () => {
           props.onStopConsult();
           sendToPatientAction();
-          followUpMessage();
-          props.navigation.popToTop();
         },
       });
     }
@@ -802,11 +804,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         <SymptonsCard
                           diseaseName={showdata.symptom}
                           onPressIcon={() =>
+                            caseSheetEdit &&
                             setSymptonsData([
                               ...symptonsData.filter((i) => i && i.symptom !== showdata.symptom),
                             ])
                           }
                           onPressEditIcon={() =>
+                            caseSheetEdit &&
                             props.overlayDisplay(
                               <AddSymptomPopUp
                                 data={showdata}
@@ -822,7 +826,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                               />
                             )
                           }
-                          icon={<GreenRemove style={{ height: 20, width: 20 }} />}
+                          icon={caseSheetEdit && <GreenRemove style={{ height: 20, width: 20 }} />}
                           days={
                             showdata.since
                               ? `${strings.common.since} : ${showdata.since}`
@@ -838,7 +842,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                               ? `${strings.common.severity} :${showdata.severity}`
                               : undefined
                           }
-                          editIcon={<Edit style={{ height: 20, width: 20 }} />}
+                          editIcon={caseSheetEdit && <Edit style={{ height: 20, width: 20 }} />}
                           details={
                             showdata.details
                               ? `${strings.common.details} :${showdata.details}`
@@ -919,7 +923,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             multiline={multiline}
             textAlignVertical={multiline ? 'top' : undefined}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-            onChange={(text) => onChange && onChange(text.nativeEvent.text)}
+            onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
           />
         </View>
       </View>
@@ -1112,7 +1116,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <TextInput
               style={[styles.symptomsText, { marginRight: 12 }]}
               multiline={true}
-              onChangeText={(juniordoctornotes) => setJuniorDoctorNotes(juniordoctornotes)}
+              onChangeText={(juniordoctornotes) =>
+                caseSheetEdit && false && setJuniorDoctorNotes(juniordoctornotes)
+              }
               editable={false}
             >
               {juniordoctornotes}
@@ -1140,7 +1146,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   icon={
                     <TouchableOpacity
                       onPress={() => {
-                        setTests(tests.filter((i) => i.itemname !== item.itemname));
+                        caseSheetEdit &&
+                          setTests(tests.filter((i) => i.itemname !== item.itemname));
                       }}
                     >
                       <CheckboxSelected
@@ -1284,34 +1291,35 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
-                        props.overlayDisplay(
-                          <AddMedicinePopUp
-                            data={showdata}
-                            onClose={() => props.overlayDisplay(null)}
-                            onAddnew={(data) => {
-                              console.log(medicinePrescriptionData, selectedMedicinesId);
+                        caseSheetEdit &&
+                          props.overlayDisplay(
+                            <AddMedicinePopUp
+                              data={showdata}
+                              onClose={() => props.overlayDisplay(null)}
+                              onAddnew={(data) => {
+                                console.log(medicinePrescriptionData, selectedMedicinesId);
 
-                              setMedicinePrescriptionData([
-                                ...(medicinePrescriptionData.filter(
-                                  (
-                                    i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
-                                  ) =>
-                                    ((i || {}).externalId || (i || {}).id) !==
-                                    (data.externalId || data.id)
-                                ) || []),
-                                data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                              ]);
-                              setSelectedMedicinesId(
-                                [
-                                  ...selectedMedicinesId.filter(
-                                    (i) => i !== (data.externalId || data.id)
-                                  ),
-                                  data.externalId || '',
-                                ].filter((i) => i !== '')
-                              );
-                            }}
-                          />
-                        );
+                                setMedicinePrescriptionData([
+                                  ...(medicinePrescriptionData.filter(
+                                    (
+                                      i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                    ) =>
+                                      ((i || {}).externalId || (i || {}).id) !==
+                                      (data.externalId || data.id)
+                                  ) || []),
+                                  data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                ]);
+                                setSelectedMedicinesId(
+                                  [
+                                    ...selectedMedicinesId.filter(
+                                      (i) => i !== (data.externalId || data.id)
+                                    ),
+                                    data.externalId || '',
+                                  ].filter((i) => i !== '')
+                                );
+                              }}
+                            />
+                          );
                       }}
                     >
                       <View
@@ -1324,19 +1332,21 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            if (!isSelected) {
-                              setSelectedMedicinesId(
-                                [
-                                  ...selectedMedicinesId,
-                                  showdata.externalId || showdata.id || '',
-                                ].filter((i) => i !== '')
-                              );
-                            } else {
-                              setSelectedMedicinesId([
-                                ...selectedMedicinesId.filter(
-                                  (i) => i != (showdata.externalId || showdata.id)
-                                ),
-                              ]);
+                            if (caseSheetEdit) {
+                              if (!isSelected) {
+                                setSelectedMedicinesId(
+                                  [
+                                    ...selectedMedicinesId,
+                                    showdata.externalId || showdata.id || '',
+                                  ].filter((i) => i !== '')
+                                );
+                              } else {
+                                setSelectedMedicinesId([
+                                  ...selectedMedicinesId.filter(
+                                    (i) => i != (showdata.externalId || showdata.id)
+                                  ),
+                                ]);
+                              }
                             }
                           }}
                         >
@@ -1543,7 +1553,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               </Text>
               {!switchValue ? (
                 <View>
-                  <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
+                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
                     <View>
                       <ToogleOff />
                     </View>
@@ -1551,7 +1561,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 </View>
               ) : (
                 <View>
-                  <TouchableOpacity onPress={() => setSwitchValue(!switchValue)}>
+                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
                     <View>
                       <ToogleOn />
                     </View>
@@ -1766,6 +1776,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           <DiagnosisCard
                             diseaseName={showdata.name || ''}
                             onPressIcon={() =>
+                              caseSheetEdit &&
                               setDiagnosisData(
                                 diagnosisData.filter(
                                   (
@@ -2355,7 +2366,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               ? addedAdvices.map((item) => (
                   <TouchableOpacity
                     activeOpacity={1}
-                    onPress={() => selectedAdviceAction(item, 'd')}
+                    onPress={() => caseSheetEdit && selectedAdviceAction(item, 'd')}
                   >
                     <View style={styles.dataCardsStyle}>
                       <Text
