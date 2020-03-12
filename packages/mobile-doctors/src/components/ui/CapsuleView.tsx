@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { theme } from '../../theme/theme';
+import { StyleProp, Text, View, ViewStyle } from 'react-native';
 import CapsuleViewStyles from '@aph/mobile-doctors/src/components/ui/CapsuleView.styles';
 
 const styles = CapsuleViewStyles;

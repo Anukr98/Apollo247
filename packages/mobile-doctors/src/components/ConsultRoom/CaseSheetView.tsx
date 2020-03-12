@@ -108,6 +108,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -148,6 +149,9 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   caseSheet: GetCaseSheet_getCaseSheet | null | undefined;
   caseSheetEdit: boolean;
   setCaseSheetEdit: Dispatch<React.SetStateAction<boolean>>;
+  showEditPreviewButtons: boolean;
+  setShowEditPreviewButtons: Dispatch<React.SetStateAction<boolean>>;
+  getdetails: () => void;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -157,7 +161,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   // const dateIsAfterconsult = moment(Appintmentdatetimeconsultpage).isAfter(moment(new Date()));
   // console.log(dateIsAfterconsult, 'dateIsAfterconsult');
   const AppId = props.navigation.getParam('AppId');
-  const stastus = props.navigation.getParam('AppointmentStatus');
+  const [stastus, setStatus] = useState<STATUS | undefined>(
+    props.navigation.getParam('AppointmentStatus')
+  );
   const [
     patientDetails,
     setPatientDetails,
@@ -230,12 +236,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const { doctorDetails } = useAuth();
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
-  const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
-
+  const [yesorno, setyesorno] = useState<boolean>(false);
   const client = useApolloClient();
 
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
-  const { caseSheetEdit } = props;
+  const {
+    caseSheetEdit,
+    setCaseSheetEdit,
+    showEditPreviewButtons,
+    setShowEditPreviewButtons,
+  } = props;
+  console.log(props.caseSheetEdit, 'caseSheetEdit');
 
   const sendToPatientAction = () => {
     client
@@ -270,7 +281,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       setShowEditPreviewButtons(true);
       prescriptionView();
     }
-    //   setShowEditPreviewButtons(!g(caseSheet, 'caseSheetDetails', 'sentToPatient'));
+    //   showEditPreviewButtons=!g(caseSheet, 'caseSheetDetails', 'sentToPatient'));
     setCaseSheetData(caseSheet || undefined);
     setPastList(g(caseSheet, 'pastAppointments') || null);
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
@@ -479,10 +490,16 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .then((_data) => {
         setLoading && setLoading(false);
-        console.log('_data', _data);
+        console.log('savecasesheet', _data);
         const result = _data.data!.modifyCaseSheet;
         console.log('UpdateCaseSheetData', result);
-        Alert.alert(strings.alerts.update_cs, strings.alerts.successfully_updated);
+        setStatus(g(_data, 'data', 'modifyCaseSheet', 'appointment', 'status'));
+        // showAphAlert &&
+        //   showAphAlert({
+        //     title: strings.alerts.update_cs,
+        //     description: strings.alerts.successfully_updated,
+        //   });
+        props.getdetails();
       })
       .catch((e) => {
         setLoading && setLoading(false);
@@ -490,7 +507,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while adding Doctor', errorMessage, error);
-        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
+        showAphAlert &&
+          showAphAlert({
+            title: strings.common.uh_oh,
+            description: strings.common.oops_msg,
+          });
       });
   };
   const followUpMessage = () => {
@@ -567,68 +588,47 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const endConsult = () => {
     setLoading && setLoading(true);
-    saveDetails();
-    props.overlayDisplay(
-      <ChoicePopUp
-        onClose={() => {
-          props.overlayDisplay(null);
-        }}
-        headingText={`You’re ending your consult with ${g(
-          caseSheetData,
-          'patientDetails',
-          'firstName'
-        ) || 'patient'}.`}
-        CTAs={[
-          {
-            title: 'PREVIEW PRESCRIPTION',
-            variant: 'orange',
-            onPress: () => {
-              client
-                .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-                  mutation: END_APPOINTMENT_SESSION,
-                  variables: {
-                    endAppointmentSessionInput: {
-                      appointmentId: AppId,
-                      status: STATUS.COMPLETED,
-                    },
-                  },
-                  fetchPolicy: 'no-cache',
-                })
-                .then((_data) => {
-                  setLoading && setLoading(false);
-                  props.overlayDisplay(null);
-                  prescriptionView();
-                  // endCallNotification();
-                  const text = {
-                    id: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
-                    message: '^^#appointmentComplete',
-                    isTyping: true,
-                    messageDate: new Date(),
-                    sentBy: REQUEST_ROLES.DOCTOR,
-                  };
-                  props.messagePublish && props.messagePublish(text);
-                })
-                .catch((e) => {
-                  setLoading && setLoading(false);
-                  props.overlayDisplay(null);
-                  console.log('Error occured while End casesheet', e);
-                  const error = JSON.parse(JSON.stringify(e));
-                  const errorMessage = error && error.message;
-                  console.log('Error occured while End casesheet', errorMessage, error);
-                  Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
-                });
-            },
+    client
+      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+        mutation: END_APPOINTMENT_SESSION,
+        variables: {
+          endAppointmentSessionInput: {
+            appointmentId: AppId,
+            status: STATUS.COMPLETED,
           },
-          {
-            title: 'EDIT CASE SHEET',
-            variant: 'white',
-            onPress: () => {
-              props.overlayDisplay(null);
-            },
-          },
-        ]}
-      />
-    );
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        console.log(_data, 'EndAppointmentSession');
+        setCaseSheetEdit(false);
+        setLoading && setLoading(false);
+        props.overlayDisplay(null);
+        prescriptionView();
+        setShowEditPreviewButtons(true);
+        // endCallNotification();
+        const text = {
+          id: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+          message: '^^#appointmentComplete',
+          isTyping: true,
+          messageDate: new Date(),
+          sentBy: REQUEST_ROLES.DOCTOR,
+        };
+        props.messagePublish && props.messagePublish(text);
+      })
+      .catch((e) => {
+        setLoading && setLoading(false);
+        props.overlayDisplay(null);
+        console.log('Error occured while End casesheet', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while End casesheet', errorMessage, error);
+        showAphAlert &&
+          showAphAlert({
+            title: strings.common.uh_oh,
+            description: strings.common.oops_msg,
+          });
+      });
   };
 
   const [enableConsultButton, setEnableConsultButton] = useState(false);
@@ -697,7 +697,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 title={strings.buttons.end_consult}
                 buttonIcon={<End />}
                 onPress={() => {
-                  endConsult();
+                  setyesorno(true);
                 }}
                 style={styles.buttonendStyle}
               />
@@ -764,6 +764,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Button
             title={'PREVIEW PRESCRIPTION'}
             onPress={() => {
+              saveDetails();
               prescriptionView();
             }}
             style={styles.buttonendStyle}
@@ -1370,43 +1371,92 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          const compareId = med.externalId || med.id;
-                          if (selectedMedicinesId.findIndex((i) => i === compareId) < 0) {
-                            if (
-                              (medicinePrescriptionData &&
-                                medicinePrescriptionData.findIndex(
-                                  (
-                                    i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
-                                  ) => ((i || {}).externalId || (i || {}).id) === compareId
-                                ) < 0) ||
-                              medicinePrescriptionData === null ||
-                              medicinePrescriptionData === undefined
-                            ) {
-                              caseSheetEdit &&
-                                setMedicinePrescriptionData([
-                                  ...(medicinePrescriptionData || []),
-                                  {
-                                    id: med.id,
-                                    externalId: med.externalId,
-                                    medicineName: med.medicineName,
-                                    medicineDosage: med.medicineDosage,
-                                    medicineToBeTaken: med.medicineToBeTaken,
-                                    medicineInstructions: med.medicineInstructions,
-                                    medicineTimings: med.medicineTimings,
-                                    medicineUnit: med.medicineUnit,
-                                    medicineConsumptionDurationInDays:
-                                      med.medicineConsumptionDurationInDays,
-                                    medicineConsumptionDuration: med.medicineConsumptionDuration,
-                                    medicineFrequency: med.medicineFrequency,
-                                    medicineConsumptionDurationUnit:
-                                      med.medicineConsumptionDurationUnit,
-                                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                                ]);
-                            }
-                            setSelectedMedicinesId(
-                              [...selectedMedicinesId, compareId || ''].filter((i) => i !== '')
-                            );
-                          }
+                          props.overlayDisplay(
+                            <AddMedicinePopUp
+                              data={
+                                {
+                                  id: med.id,
+                                  externalId: med.externalId,
+                                  medicineName: med.medicineName,
+                                  medicineDosage: med.medicineDosage,
+                                  medicineToBeTaken: med.medicineToBeTaken,
+                                  medicineInstructions: med.medicineInstructions,
+                                  medicineTimings: med.medicineTimings,
+                                  medicineUnit: med.medicineUnit,
+                                  medicineConsumptionDurationInDays:
+                                    med.medicineConsumptionDurationInDays,
+                                  medicineConsumptionDuration: med.medicineConsumptionDuration,
+                                  medicineFrequency: med.medicineFrequency,
+                                  medicineConsumptionDurationUnit:
+                                    med.medicineConsumptionDurationUnit,
+                                } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+                              }
+                              onClose={() => props.overlayDisplay(null)}
+                              onAddnew={(data) => {
+                                console.log(medicinePrescriptionData, selectedMedicinesId);
+                                if (medicinePrescriptionData) {
+                                  setMedicinePrescriptionData([
+                                    ...(medicinePrescriptionData.filter(
+                                      (
+                                        i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                      ) =>
+                                        ((i || {}).externalId || (i || {}).id) !==
+                                        (data.externalId || data.id)
+                                    ) || []),
+                                    data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                  ]);
+                                } else {
+                                  setMedicinePrescriptionData([
+                                    data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                  ]);
+                                }
+                                setSelectedMedicinesId(
+                                  [
+                                    ...selectedMedicinesId.filter(
+                                      (i) => i !== (data.externalId || data.id)
+                                    ),
+                                    data.externalId || data.id || '',
+                                  ].filter((i) => i !== '')
+                                );
+                              }}
+                            />
+                          );
+
+                          //   if (
+                          //     (medicinePrescriptionData &&
+                          //       medicinePrescriptionData.findIndex(
+                          //         (
+                          //           i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                          //         ) => ((i || {}).externalId || (i || {}).id) === compareId
+                          //       ) < 0) ||
+                          //     medicinePrescriptionData === null ||
+                          //     medicinePrescriptionData === undefined
+                          //   ) {
+                          //     caseSheetEdit &&
+                          //       setMedicinePrescriptionData([
+                          //         ...(medicinePrescriptionData || []),
+                          //         {
+                          //           id: med.id,
+                          //           externalId: med.externalId,
+                          //           medicineName: med.medicineName,
+                          //           medicineDosage: med.medicineDosage,
+                          //           medicineToBeTaken: med.medicineToBeTaken,
+                          //           medicineInstructions: med.medicineInstructions,
+                          //           medicineTimings: med.medicineTimings,
+                          //           medicineUnit: med.medicineUnit,
+                          //           medicineConsumptionDurationInDays:
+                          //             med.medicineConsumptionDurationInDays,
+                          //           medicineConsumptionDuration: med.medicineConsumptionDuration,
+                          //           medicineFrequency: med.medicineFrequency,
+                          //           medicineConsumptionDurationUnit:
+                          //             med.medicineConsumptionDurationUnit,
+                          //         } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                          //       ]);
+                          //   }
+                          //   setSelectedMedicinesId(
+                          //     [...selectedMedicinesId, compareId || ''].filter((i) => i !== '')
+                          //   );
+                          // }
                         }}
                       >
                         <View style={[styles.dataCardsStyle, { marginVertical: 4 }]}>
@@ -2140,7 +2190,136 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
+  const renderyesorno = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: width,
+          backgroundColor: 'transparent',
+          position: 'absolute',
+          elevation: 2000,
+        }}
+      >
+        <View
+          style={{
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: width,
+            backgroundColor: 'black',
+            position: 'absolute',
+            opacity: 0.41,
+          }}
+        ></View>
+        <View
+          style={{
+            marginHorizontal: 40,
+            marginTop: 112,
+            height: 289,
+            borderRadius: 10,
+            backgroundColor: 'white',
+          }}
+        >
+          <TouchableOpacity onPress={() => setyesorno(false)} style={{ height: 40 }}>
+            <ClosePopup
+              style={{ width: 24, height: 24, top: 16, position: 'absolute', right: 16 }}
+            />
+          </TouchableOpacity>
 
+          <Text
+            style={{
+              marginHorizontal: 20,
+              marginTop: 21,
+              color: '#02475b',
+              ...theme.fonts.IBMPlexSansSemiBold(20),
+            }}
+          >
+            {'Are you sure you want to end your consult? '}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setyesorno(false);
+              setLoading && setLoading(true);
+              saveDetails();
+              endConsult();
+            }}
+          >
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginTop: 32,
+                backgroundColor: '#fc9916',
+                height: 40,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View style={{ flexDirection: 'row' }}>
+                <Text
+                  style={{
+                    marginLeft: 8,
+                    color: 'white',
+                    lineHeight: 24,
+                    ...theme.fonts.IBMPlexSansBold(13),
+                  }}
+                >
+                  {'YES'}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setyesorno(false);
+            }}
+          >
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginTop: 12,
+                backgroundColor: '#fc9916',
+                height: 40,
+                borderRadius: 5,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View style={{ flexDirection: 'row' }}>
+                <Text
+                  style={{
+                    marginLeft: 8,
+                    color: 'white',
+                    lineHeight: 24,
+                    ...theme.fonts.IBMPlexSansBold(13),
+                  }}
+                >
+                  {'NO'}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+          <Text
+            style={{
+              color: '#02475b',
+              ...theme.fonts.IBMPlexSansSemiBold(12),
+              textAlign: 'center',
+              margin: 5,
+            }}
+          >
+            After ending the consult you will get the option to preview/edit case sheet and send
+            prescription to the patient
+          </Text>
+        </View>
+      </View>
+    );
+  };
   const selectedAdviceAction = (advice: DataPair, action: 'a' | 'd') => {
     if (action === 'a') {
       if (
@@ -2381,56 +2560,61 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
 
   return (
-    <View style={styles.casesheetView}>
-      <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
-        <ScrollView bounces={false} style={{ zIndex: 1 }}>
-          <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
-          {renderPatientImage()}
-          {renderBasicProfileDetails(displayId, Appintmentdatetimeconsultpage)}
-          {renderSymptonsView()}
-          {renderVitals()}
-          {renderPatientHistoryLifestyle()}
-          {renderPatientHealthWallet()}
-          {renderJuniorDoctorNotes()}
-          {renderDiagnosisView()}
-          {renderMedicinePrescription()}
-          {renderDiagonisticPrescription()}
-          {renderAdviceInstruction()}
-          {renderFollowUpView()}
+    <SafeAreaView style={styles.casesheetView}>
+      <View style={styles.casesheetView}>
+        <KeyboardAwareScrollView style={{ flex: 1 }} bounces={false}>
+          <ScrollView bounces={false} style={{ zIndex: 1 }}>
+            <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
+            {renderPatientImage()}
+            {renderBasicProfileDetails(displayId, Appintmentdatetimeconsultpage)}
+            {renderSymptonsView()}
+            {renderVitals()}
+            {renderPatientHistoryLifestyle()}
+            {renderPatientHealthWallet()}
+            {renderJuniorDoctorNotes()}
+            {renderDiagnosisView()}
+            {renderMedicinePrescription()}
+            {renderDiagonisticPrescription()}
+            {renderAdviceInstruction()}
+            {renderFollowUpView()}
 
-          <View style={{ zIndex: -1 }}>
-            {/* {renderOtherInstructionsView()} */}
-            <View style={styles.underlineend} />
+            <View style={{ zIndex: -1 }}>
+              {/* {renderOtherInstructionsView()} */}
+              <View style={styles.underlineend} />
 
-            <View style={styles.inputBorderView}>
-              <View style={{ margin: 16 }}>
-                <Text style={styles.notes}>{strings.case_sheet.personal_note}</Text>
-                <TextInput
-                  placeholder={strings.case_sheet.note_placeholder}
-                  textAlignVertical={'top'}
-                  placeholderTextColor={theme.colors.placeholderTextColor}
-                  style={styles.inputView}
-                  multiline={true}
-                  value={doctorNotes}
-                  onChangeText={(value) => setDoctorNotes(value)}
-                  autoCorrect={true}
-                />
+              <View style={styles.inputBorderView}>
+                <View style={{ margin: 16 }}>
+                  <Text style={styles.notes}>{strings.case_sheet.personal_note}</Text>
+                  <TextInput
+                    placeholder={strings.case_sheet.note_placeholder}
+                    textAlignVertical={'top'}
+                    placeholderTextColor={theme.colors.placeholderTextColor}
+                    style={styles.inputView}
+                    multiline={true}
+                    value={doctorNotes}
+                    onChangeText={(value) => setDoctorNotes(value)}
+                    autoCorrect={true}
+                  />
+                </View>
               </View>
             </View>
-          </View>
-          {showPopUp && CallPopUp()}
-          {ShowAddTestPopup && renderAddTestPopup()}
-          <View style={{ height: 80 }} />
-        </ScrollView>
-      </KeyboardAwareScrollView>
-      {showEditPreviewButtons
-        ? renderEditPreviewButtons()
-        : stastus == STATUS.COMPLETED
-        ? renderCompletedButtons()
-        : moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
-          stastus == 'IN_PROGRESS'
-        ? renderButtonsView()
-        : null}
-    </View>
+
+            {showPopUp && CallPopUp()}
+            {ShowAddTestPopup && renderAddTestPopup()}
+
+            <View style={{ height: 80 }} />
+          </ScrollView>
+        </KeyboardAwareScrollView>
+        {showEditPreviewButtons
+          ? renderEditPreviewButtons()
+          : stastus == STATUS.COMPLETED
+          ? renderCompletedButtons()
+          : moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
+            stastus == 'IN_PROGRESS'
+          ? renderButtonsView()
+          : null}
+      </View>
+      {yesorno && renderyesorno()}
+    </SafeAreaView>
   );
 };

@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacityProps, TouchableOpacity } from 'react-native';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { View, Text, TouchableOpacityProps, TouchableOpacity } from 'react-native';
 
 import { ArrowRight } from '@aph/mobile-doctors/src/components/ui/Icons';
 import SmartPrescriptionCardStyles from '@aph/mobile-doctors/src/components/ui/SmartPrescriptionCard.styles';

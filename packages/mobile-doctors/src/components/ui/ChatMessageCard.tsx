@@ -1,14 +1,5 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextStyle,
-  View,
-  ViewStyle,
-  ImageSourcePropType,
-} from 'react-native';
+import { StyleProp, Text, TextStyle, View, ViewStyle, ImageSourcePropType } from 'react-native';
 import ChatMessageCardStyles from '@aph/mobile-doctors/src/components/ui/ChatMessageCard.styles';
 
 const styles = ChatMessageCardStyles;

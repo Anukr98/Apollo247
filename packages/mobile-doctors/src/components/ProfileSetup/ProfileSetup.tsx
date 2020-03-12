@@ -24,23 +24,11 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  ActivityIndicator,
-  AsyncStorage,
-  Dimensions,
-  Platform,
-  SafeAreaView,
-  View,
-} from 'react-native';
+import { AsyncStorage, Platform, SafeAreaView, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-
-//import { isMobileNumberValid } from '@aph/universal/src/aphValidators';
-
-// const isMobileNumberValid = (n: string) => true;
-const { height } = Dimensions.get('window');
 
 const styles = ProfileSetupStyles;
 
@@ -69,16 +57,10 @@ export interface ProfileSetupProps extends NavigationScreenProps {}
 export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [modelvisible, setmodelvisible] = useState(false);
-  // const [phoneNumber, setPhoneNumber] = useState<string>('');
-  // const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const [isReloading, setReloading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const client = useApolloClient();
-  const {
-    // setDoctorDetails: setDoctorDetailsToContext,
-    doctorDetails,
-    getDoctorDetailsApi,
-  } = useAuth();
+  const { doctorDetails, getDoctorDetailsApi } = useAuth();
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   const fireBaseFCM = async () => {
@@ -162,33 +144,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
         }
       });
   };
-  useEffect(() => {
-    // setLoading(true);
-    // client
-    //   .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-    //   .then((_data) => {
-    //     const result = _data.data.getDoctorDetails;
-    //     console.log('getDoctorProfile', _data!);
-    //     try {
-    //       setDoctorDetails(result);
-    //       setDoctorDetailsToContext && setDoctorDetailsToContext(result);
-    //     } catch (e) {
-    //       console.log('Unable to set DoctorDetails');
-    //     }
-    //     setGetDoctorProfile(result);
-    //     setLoading(false);
-    //   })
-    //   .catch((e) => {
-    //     setLoading(false);
-    //     const error = JSON.parse(JSON.stringify(e));
-    //     console.log('Error occured while fetching Doctor profile', error);
-    //   });
-  }, []);
-
-  // const [
-  //   getDoctorProfile,
-  //   setGetDoctorProfile,
-  // ] = useState<GetDoctorDetails_getDoctorDetails | null>(null);
 
   const onReload = () => {
     setReloading(true);
@@ -203,20 +158,6 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
           CommonBugFender('Get_Doctor_Details_reload', error);
           setReloading(false);
         });
-    // client
-    //   .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
-    //   .then((_data) => {
-    //     const result = _data.data.getDoctorDetails;
-    //     setGetDoctorProfile(result);
-    //     console.log('GET_DOCTOR_DETAILS', result);
-    //     setReloading(false);
-    //   })
-    //   .catch((e) => {
-    //     console.log('Error occured while adding Doctor', e);
-    //     CommonBugFender('GET_DOCTOR_DETAILS', e);
-    //     setReloading(false);
-    //     Alert.alert('Error', 'Error occured while reloading data');
-    //   });
   };
 
   const renderHeader = (
