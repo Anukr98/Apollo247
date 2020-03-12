@@ -476,14 +476,12 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           ) : (
                             ''
                           )}
-                          {isValidReferralCode && referralCode.length === 8 ? (
+                          {isValidReferralCode && referralCode.length === 8 && (
                             <img
                               className={classes.tickIcon}
                               src={require('images/ic_check_white.svg')}
                               alt=""
                             />
-                          ) : (
-                            ''
                           )}
                         </FormControl>
                       </div>
