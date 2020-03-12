@@ -474,14 +474,13 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               Referral code should start with 4 alphabets followed by 4 digits.
                             </FormHelperText>
                           ) : (
-                            ''
-                          )}
-                          {isValidReferralCode && referralCode.length === 8 && (
-                            <img
-                              className={classes.tickIcon}
-                              src={require('images/ic_check_white.svg')}
-                              alt=""
-                            />
+                            referralCode.length === 8 && (
+                              <img
+                                className={classes.tickIcon}
+                                src={require('images/ic_check_white.svg')}
+                                alt=""
+                              />
+                            )
                           )}
                         </FormControl>
                       </div>
