@@ -93,7 +93,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     actions: {
-      padding: '0 20px 20px 20px',
+      padding: '0 0 20px 0',
       display: 'flex',
     },
     button: {
@@ -151,20 +151,20 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
             </div>
           </>
         ) : (
-            <>
-              <Typography variant="h2">uh oh.. :(</Typography>
-              <p>Your payment wasn’t successful due to bad network connectivity. Please try again.</p>
-              <div className={classes.actions}>
-                <AphButton
-                  onClick={() => props.setShowOrderPopup(false)}
-                  color="primary"
-                  classes={{ root: classes.button }}
-                >
-                  OK, GOT IT
-                </AphButton>
-              </div>
-            </>
-          )}
+          <>
+            <Typography variant="h2">uh oh.. :(</Typography>
+            <p>Your payment wasn’t successful due to bad network connectivity. Please try again.</p>
+            <div className={classes.actions}>
+              <AphButton
+                onClick={() => props.setShowOrderPopup(false)}
+                color="primary"
+                classes={{ root: classes.button }}
+              >
+                OK, GOT IT
+              </AphButton>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
