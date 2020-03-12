@@ -4,7 +4,6 @@ import {
   ImageSourcePropType,
   ImageStyle,
   StyleProp,
-  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
@@ -12,8 +11,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
-import { Star } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { type } from 'os';
 import DoctorCardStyles from '@aph/mobile-doctors/src/components/ui/DoctorCard.styles';
 
 const styles = DoctorCardStyles;
