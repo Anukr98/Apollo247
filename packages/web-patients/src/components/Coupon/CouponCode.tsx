@@ -88,13 +88,13 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 16,
       '& img': {
         verticalAlign: 'middle',
-      }
+      },
     },
     tickMark: {
       marginLeft: 'auto',
       '& img': {
         verticalAlign: 'middle',
-      }
+      },
     },
     successMsg: {
       fontSize: 16,

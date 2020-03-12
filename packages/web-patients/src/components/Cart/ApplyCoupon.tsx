@@ -182,10 +182,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                          <AphButton className={classes.searchBtn}>
-                            <img src={require('images/ic_send.svg')} alt="" />
-                          </AphButton>
-                        )}
+                        <AphButton className={classes.searchBtn}>
+                          <img src={require('images/ic_send.svg')} alt="" />
+                        </AphButton>
+                      )}
                     </div>
                   </div>
                 )}
@@ -222,8 +222,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                        'No available Coupons'
-                      )}
+                    'No available Coupons'
+                  )}
                 </ul>
               </div>
             </div>

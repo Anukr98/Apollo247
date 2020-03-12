@@ -206,15 +206,15 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const currentTime = new Date().getTime();
   const doctorName =
     doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.firstName
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.firstName
       ? doctorDetails.getDoctorDetailsById.firstName
       : '';
 
   const physicalConsultationFees =
     doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.physicalConsultationFees
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.physicalConsultationFees
       ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
       : '';
 
@@ -266,9 +266,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       let a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadian(fromLatitude)) *
-        Math.cos(toRadian(toLatitude)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+          Math.cos(toRadian(toLatitude)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
       let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       let d = R * c;
       return `${d.toFixed(2)} km`;
@@ -360,8 +360,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const defaultClinicAddress =
     clinics.length > 0 && clinics[0] && clinics[0].facility
       ? `${clinics[0].facility.streetLine1 ? clinics[0].facility.streetLine1 : ''} ${
-      clinics[0].facility.streetLine2 ? `${clinics[0].facility.streetLine2}` : ''
-      } ${clinics[0].facility.streetLine3 ? `${clinics[0].facility.streetLine3}` : ''}`
+          clinics[0].facility.streetLine2 ? `${clinics[0].facility.streetLine2}` : ''
+        } ${clinics[0].facility.streetLine3 ? `${clinics[0].facility.streetLine3}` : ''}`
       : '';
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
@@ -427,22 +427,22 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   </div>
                 </div>
                 {morningSlots.length > 0 ||
-                  afternoonSlots.length > 0 ||
-                  eveningSlots.length > 0 ||
-                  lateNightSlots.length > 0 ? (
-                    <DayTimeSlots
-                      morningSlots={morningSlots}
-                      afternoonSlots={afternoonSlots}
-                      eveningSlots={eveningSlots}
-                      latenightSlots={lateNightSlots}
-                      doctorName={doctorName}
-                      timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
-                    />
-                  ) : (
-                    <div className={classes.noSlotsAvailable}>
-                      Oops! No slots available with Dr. {doctorName} :(
+                afternoonSlots.length > 0 ||
+                eveningSlots.length > 0 ||
+                lateNightSlots.length > 0 ? (
+                  <DayTimeSlots
+                    morningSlots={morningSlots}
+                    afternoonSlots={afternoonSlots}
+                    eveningSlots={eveningSlots}
+                    latenightSlots={lateNightSlots}
+                    doctorName={doctorName}
+                    timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                  />
+                ) : (
+                  <div className={classes.noSlotsAvailable}>
+                    Oops! No slots available with Dr. {doctorName} :(
                   </div>
-                  )}
+                )}
               </div>
             </Grid>
           </Grid>
@@ -490,9 +490,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                 ) {
                   const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
                     res.data.bookAppointment.appointment.id
-                    }&patientId=${
+                  }&patientId=${
                     currentPatient ? currentPatient.id : ''
-                    }&price=${physicalConsultationFees}&source=WEB`;
+                  }&price=${physicalConsultationFees}&source=WEB`;
                   window.location.href = pgUrl;
                   // setMutationLoading(false);
                   // setIsDialogOpen(true);
@@ -512,8 +512,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           {mutationLoading ? (
             <CircularProgress size={22} color="secondary" />
           ) : (
-              `PAY Rs. ${physicalConsultationFees}`
-            )}
+            `PAY Rs. ${physicalConsultationFees}`
+          )}
         </AphButton>
       </div>
       <AphDialog
