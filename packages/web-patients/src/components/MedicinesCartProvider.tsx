@@ -175,6 +175,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         const finalPrescriptions = [...prescriptions, prescriptionUploaded];
         localStorage.setItem('prescriptions', JSON.stringify(finalPrescriptions));
         setPrescriptions && setPrescriptions(finalPrescriptions);
+        setPrescriptionUploaded(defPresObject);
       }
     }
     if (ePrescriptionData) {
@@ -240,11 +241,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
   );
 
   const clearCartInfo = () => {
+    localStorage.setItem('prescriptions', JSON.stringify([]));
     setCartItems([]);
     setDeliveryAddressId('');
     setStores([]);
     setDeliveryAddresses([]);
     setStorePickupPincode('');
+    setPrescriptions([]);
+    setEPrescriptionData([]);
   };
 
   return (

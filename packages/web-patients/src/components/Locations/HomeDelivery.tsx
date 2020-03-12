@@ -129,7 +129,12 @@ const apiDetails = {
   deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
 };
 
-export const HomeDelivery: React.FC = (props) => {
+type HomeDeliveryProps = {
+  setDeliveryTime: (deliveryTime: string) => void;
+  deliveryTime: string;
+};
+
+export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -139,6 +144,7 @@ export const HomeDelivery: React.FC = (props) => {
     setDeliveryAddresses,
     cartItems,
   } = useShoppingCart();
+  const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
   const client = useApolloClient();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
@@ -148,7 +154,6 @@ export const HomeDelivery: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isError, setIsError] = React.useState<boolean>(false);
-  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
 
   const getAddressDetails = () => {
