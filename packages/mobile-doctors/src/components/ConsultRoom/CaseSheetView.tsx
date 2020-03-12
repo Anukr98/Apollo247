@@ -1371,43 +1371,92 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          const compareId = med.externalId || med.id;
-                          if (selectedMedicinesId.findIndex((i) => i === compareId) < 0) {
-                            if (
-                              (medicinePrescriptionData &&
-                                medicinePrescriptionData.findIndex(
-                                  (
-                                    i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
-                                  ) => ((i || {}).externalId || (i || {}).id) === compareId
-                                ) < 0) ||
-                              medicinePrescriptionData === null ||
-                              medicinePrescriptionData === undefined
-                            ) {
-                              caseSheetEdit &&
-                                setMedicinePrescriptionData([
-                                  ...(medicinePrescriptionData || []),
-                                  {
-                                    id: med.id,
-                                    externalId: med.externalId,
-                                    medicineName: med.medicineName,
-                                    medicineDosage: med.medicineDosage,
-                                    medicineToBeTaken: med.medicineToBeTaken,
-                                    medicineInstructions: med.medicineInstructions,
-                                    medicineTimings: med.medicineTimings,
-                                    medicineUnit: med.medicineUnit,
-                                    medicineConsumptionDurationInDays:
-                                      med.medicineConsumptionDurationInDays,
-                                    medicineConsumptionDuration: med.medicineConsumptionDuration,
-                                    medicineFrequency: med.medicineFrequency,
-                                    medicineConsumptionDurationUnit:
-                                      med.medicineConsumptionDurationUnit,
-                                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                                ]);
-                            }
-                            setSelectedMedicinesId(
-                              [...selectedMedicinesId, compareId || ''].filter((i) => i !== '')
-                            );
-                          }
+                          props.overlayDisplay(
+                            <AddMedicinePopUp
+                              data={
+                                {
+                                  id: med.id,
+                                  externalId: med.externalId,
+                                  medicineName: med.medicineName,
+                                  medicineDosage: med.medicineDosage,
+                                  medicineToBeTaken: med.medicineToBeTaken,
+                                  medicineInstructions: med.medicineInstructions,
+                                  medicineTimings: med.medicineTimings,
+                                  medicineUnit: med.medicineUnit,
+                                  medicineConsumptionDurationInDays:
+                                    med.medicineConsumptionDurationInDays,
+                                  medicineConsumptionDuration: med.medicineConsumptionDuration,
+                                  medicineFrequency: med.medicineFrequency,
+                                  medicineConsumptionDurationUnit:
+                                    med.medicineConsumptionDurationUnit,
+                                } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+                              }
+                              onClose={() => props.overlayDisplay(null)}
+                              onAddnew={(data) => {
+                                console.log(medicinePrescriptionData, selectedMedicinesId);
+                                if (medicinePrescriptionData) {
+                                  setMedicinePrescriptionData([
+                                    ...(medicinePrescriptionData.filter(
+                                      (
+                                        i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                                      ) =>
+                                        ((i || {}).externalId || (i || {}).id) !==
+                                        (data.externalId || data.id)
+                                    ) || []),
+                                    data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                  ]);
+                                } else {
+                                  setMedicinePrescriptionData([
+                                    data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                  ]);
+                                }
+                                setSelectedMedicinesId(
+                                  [
+                                    ...selectedMedicinesId.filter(
+                                      (i) => i !== (data.externalId || data.id)
+                                    ),
+                                    data.externalId || data.id || '',
+                                  ].filter((i) => i !== '')
+                                );
+                              }}
+                            />
+                          );
+
+                          //   if (
+                          //     (medicinePrescriptionData &&
+                          //       medicinePrescriptionData.findIndex(
+                          //         (
+                          //           i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                          //         ) => ((i || {}).externalId || (i || {}).id) === compareId
+                          //       ) < 0) ||
+                          //     medicinePrescriptionData === null ||
+                          //     medicinePrescriptionData === undefined
+                          //   ) {
+                          //     caseSheetEdit &&
+                          //       setMedicinePrescriptionData([
+                          //         ...(medicinePrescriptionData || []),
+                          //         {
+                          //           id: med.id,
+                          //           externalId: med.externalId,
+                          //           medicineName: med.medicineName,
+                          //           medicineDosage: med.medicineDosage,
+                          //           medicineToBeTaken: med.medicineToBeTaken,
+                          //           medicineInstructions: med.medicineInstructions,
+                          //           medicineTimings: med.medicineTimings,
+                          //           medicineUnit: med.medicineUnit,
+                          //           medicineConsumptionDurationInDays:
+                          //             med.medicineConsumptionDurationInDays,
+                          //           medicineConsumptionDuration: med.medicineConsumptionDuration,
+                          //           medicineFrequency: med.medicineFrequency,
+                          //           medicineConsumptionDurationUnit:
+                          //             med.medicineConsumptionDurationUnit,
+                          //         } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                          //       ]);
+                          //   }
+                          //   setSelectedMedicinesId(
+                          //     [...selectedMedicinesId, compareId || ''].filter((i) => i !== '')
+                          //   );
+                          // }
                         }}
                       >
                         <View style={[styles.dataCardsStyle, { marginVertical: 4 }]}>
