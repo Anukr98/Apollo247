@@ -46,7 +46,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
-  AsyncStorage,
   Dimensions,
   Image,
   Keyboard,
@@ -62,6 +61,7 @@ import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
 import { getRelations } from '../../helpers/helperFunctions';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -564,18 +564,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         }}
         leftIcon={'backArrow'}
         title={isEdit ? 'EDIT PROFILE' : 'ADD NEW PROFILE'}
-        rightComponent={
-          isEdit ? (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                setDeleteProfile(true);
-              }}
-            >
-              <More />
-            </TouchableOpacity>
-          ) : null
-        }
+        rightComponent={null}
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     );

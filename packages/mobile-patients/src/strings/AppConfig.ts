@@ -13,7 +13,7 @@ enum AppEnv {
   VAPT = 'VAPT',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
@@ -88,7 +88,7 @@ const ConfigurationDev = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
@@ -99,8 +99,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '1.521',
-  Android_Version: '1.521',
+  iOS_Version: '1.711',
+  Android_Version: '1.711',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
@@ -120,7 +120,7 @@ const ConfigurationQA = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
@@ -131,8 +131,8 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.611',
-  Android_Version: '1.611',
+  iOS_Version: '1.712',
+  Android_Version: '1.712',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -152,7 +152,7 @@ const ConfigurationProd = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
@@ -184,7 +184,7 @@ const ConfigurationPERFORM = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
@@ -216,7 +216,7 @@ const ConfigurationVAPT = {
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
   DELIVERY_CHARGES: 25,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',

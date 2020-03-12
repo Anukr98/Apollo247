@@ -28,7 +28,6 @@ import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Image,
   NativeScrollEvent,
@@ -54,6 +53,8 @@ import {
 import { TabHeader } from '../ui/TabHeader';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '../../strings/AppConfig';
+import WebEngage from 'react-native-webengage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -261,6 +262,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const onPressLogout = () => {
     try {
+      const webengage = new WebEngage();
+      webengage.user.logout();
       signOut();
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
@@ -327,7 +330,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         >
           <View
             style={{
-              height: 200,
+              minHeight: 200,
               alignItems: 'center',
               // justifyContent: 'center',
               overflow: 'hidden',
@@ -344,13 +347,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                   const { height, width } = value.nativeEvent.source;
                   setImgHeight(height * (winWidth / width));
                 }}
-                style={{ width: '100%', minHeight: imgHeight, height: 'auto' }}
+                style={{ width: winWidth, height: winWidth }}
                 resizeMode={'contain'}
               />
             ) : (
               <Image
                 source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
-                style={{ top: 10, height: 140, width: '100%' }}
+                style={{ top: 10, height: 200, width: '100%' }}
                 resizeMode={'contain'}
               />
             )}

@@ -1,7 +1,7 @@
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 import { g, doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDoctorsBySpecialtyAndFilters } from '../graphql/types/getDoctorsBySpecialtyAndFilters';
 
@@ -120,7 +120,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         if (location) {
           doRequestAndAccessLocation()
             .then((response) => {
-              _setLocationDetails(response);
+              response && _setLocationDetails(response);
             })
             .catch((e) => {
               CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage', e);

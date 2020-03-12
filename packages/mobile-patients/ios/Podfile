@@ -80,6 +80,8 @@ target 'ApolloPatient' do
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
+  pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
+  pod 'WebEngage'
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
 

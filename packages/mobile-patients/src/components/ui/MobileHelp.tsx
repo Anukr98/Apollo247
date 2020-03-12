@@ -8,7 +8,7 @@ import {
   SendHelpEmail,
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { handleGraphQlError, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NeedHelp } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -32,6 +32,7 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -133,6 +134,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [mobileFollowup, setMobileFollowup] = useState<boolean>(false);
   const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     setSelectedQuery('');
@@ -277,7 +279,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     );
   };
 
-  const submit = (category: string, reason: string, comments: string) =>
+  const submit = (category: string, reason: string, comments: string, patientId: string) =>
     client.query<SendHelpEmail, SendHelpEmailVariables>({
       query: SEND_HELP_EMAIL,
       variables: {
@@ -285,13 +287,14 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
           category,
           reason,
           comments,
+          patientId,
         },
       },
     });
 
   const onSubmit = () => {
     setShowSpinner(true);
-    submit(helpCategory, selectedQuery, comment)
+    submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'))
       .then(() => {
         setShowSpinner(false);
         setMobileFollowup(true);

@@ -1,11 +1,12 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import React from 'react';
-import { View, AsyncStorage } from 'react-native';
+import { View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface MyAccountProps extends NavigationScreenProps {}
 

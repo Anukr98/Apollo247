@@ -28,7 +28,6 @@ import moment, { Moment } from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Image,
   NativeScrollEvent,
@@ -54,6 +53,7 @@ import { TabHeader } from '../ui/TabHeader';
 import { TabsComponent } from '../ui/TabsComponent';
 import { useUIElements } from '../UIElementsProvider';
 import { getPatientAllAppointments } from '../../graphql/types/getPatientAllAppointments';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   nameTextContainerStyle: {
@@ -738,6 +738,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               props.navigation.navigate(AppRoutes.ChatRoom, {
                                 data: item,
                                 callType: '',
+                                prescription: '',
                               });
                             }
                           }}
@@ -765,6 +766,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             props.navigation.navigate(AppRoutes.ChatRoom, {
                               data: item,
                               callType: '',
+                              prescription: '',
                             });
                           }
                         }}
