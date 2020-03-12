@@ -249,13 +249,15 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   };
   const [selectedCatagerys, setSelectedCatagerys] = useState(['']);
   const [selected, setSelected] = useState<boolean>(false);
-
+  const pastSearchValue = localStorage.getItem('searchText');
   const params = useParams<Params>();
   const locationUrl = window.location.href;
   const [subtxt, setSubtxt] = useState<string>(
-    params.searchMedicineType === 'search-medicines'
+    pastSearchValue && pastSearchValue.length > 0
+      ? pastSearchValue
+      : params.searchMedicineType === 'search-medicines'
       ? params.searchText
-      : localStorage.getItem('searchText') || ''
+      : ''
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
@@ -264,7 +266,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [sortValue, setSortValue] = useState<string>('');
 
   useEffect(() => {
-    if (subtxt.length > 0 && subtxt !== params.searchText) {
+    if (subtxt.length > 0) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);
