@@ -1,14 +1,5 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-  ScrollView,
-} from 'react-native';
+import { StyleProp, Text, TouchableOpacity, View, ViewStyle, ScrollView } from 'react-native';
 import DropDownStyles from '@aph/mobile-doctors/src/components/ui/DropDown.styles';
 
 const styles = DropDownStyles;

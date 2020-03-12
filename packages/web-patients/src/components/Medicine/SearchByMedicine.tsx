@@ -170,7 +170,7 @@ export const SearchByMedicine: React.FC = (props) => {
       .post(
         apiDetailsText.url,
         {
-          params: paramSearchText,
+          params: localStorage.getItem('searchText') || paramSearchText,
         },
         {
           headers: {

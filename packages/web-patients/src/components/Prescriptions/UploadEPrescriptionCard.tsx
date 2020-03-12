@@ -329,8 +329,13 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
         </Scrollbars>
         <div className={classes.uploadButtonWrapper}>
           <AphButton
+            disabled={
+              (!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
+              (!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0))
+            }
             onClick={() => {
               const finalEprescriptions = selectedEPrescriptionRecords;
+              selectedEPrescriptionRecords = [];
               setEPrescriptionData && setEPrescriptionData(finalEprescriptions);
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
               const currentUrl = window.location.href;

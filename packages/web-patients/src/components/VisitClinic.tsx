@@ -24,6 +24,7 @@ import _forEach from 'lodash/forEach';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import { usePrevious } from 'hooks/reactCustomHooks';
 import { LocationContext } from 'components/LocationProvider';
+import { CouponCode } from 'components/Coupon/CouponCode';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -445,6 +446,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               </div>
             </Grid>
           </Grid>
+          <CouponCode />
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am

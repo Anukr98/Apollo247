@@ -22,7 +22,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { MedicineProduct, searchMedicineApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  isValidSearch,
+  postWebEngageEvent,
+  postwebEngageAddToCartEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -45,6 +50,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { WebEngageEvents } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -236,6 +242,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         setMedicineList([]);
         return;
       }
+      const eventAttributes: WebEngageEvents['Search'] = { keyword: _searchText };
+      postWebEngageEvent('Search', eventAttributes);
+
       setShowMatchingMedicines(true);
       setIsLoading(true);
       searchMedicineApi(_searchText)
@@ -267,15 +276,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       },
     });
 
-  const onAddCartItem = ({
-    sku,
-    mou,
-    name,
-    price,
-    special_price,
-    is_prescription_required,
-    thumbnail,
-  }: MedicineProduct) => {
+  const onAddCartItem = (item: MedicineProduct) => {
+    const { sku, mou, name, price, special_price, is_prescription_required, thumbnail } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
@@ -294,6 +296,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       thumbnail,
       isInStock: true,
     });
+    postwebEngageAddToCartEvent(item);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -548,6 +551,20 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     );
   };
 
+  const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
+    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+      'product name': name,
+      'product id': sku,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': category_id,
+      Source: 'List',
+      'Section Name': 'SEARCH',
+    };
+    postWebEngageEvent('Product Clicked', eventAttributes);
+  };
+
   const renderMedicineCard = (
     medicine: MedicineProduct,
     index: number,
@@ -571,6 +588,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
+          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,

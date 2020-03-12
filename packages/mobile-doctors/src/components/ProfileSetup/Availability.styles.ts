@@ -29,4 +29,8 @@ export default StyleSheet.create({
     fontSize: 14,
     marginLeft: 8,
   },
+  roundChaticon: { margin: 20, flexDirection: 'row', marginBottom: -10 },
+  tollfreeText: { color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 },
+  icon: { margin: 20, flexDirection: 'row', marginBottom: -10 },
+  num: { color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 },
 });

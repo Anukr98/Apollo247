@@ -9,9 +9,10 @@ import { g, getBuildEnvironment } from '@aph/mobile-patients/src/helpers/helperF
 import { db } from '@aph/mobile-patients/src/strings/FirebaseConfig';
 import moment from 'moment';
 import React from 'react';
-import { Alert, AsyncStorage, BackAndroid, Platform, Text, TextInput } from 'react-native';
+import { Alert, BackAndroid, Platform, Text, TextInput } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const postToFirebase = (
   currentPatients: string | null,
@@ -41,14 +42,14 @@ const postToFirebase = (
     environment: getBuildEnvironment(),
   };
   console.log('crash payload ---', { payload });
-  db.ref('ApolloCrashes/')
-    .push(payload)
-    .then((data) => {
-      console.log('data ', { data });
-    })
-    .catch((error) => {
-      console.log('error ', { error });
-    });
+  // db.ref('ApolloCrashes/')
+  //   .push(payload)
+  //   .then((data) => {
+  //     console.log('data ', { data });
+  //   })
+  //   .catch((error) => {
+  //     console.log('error ', { error });
+  //   });
 };
 
 const reporter = (error: string, type: 'JS' | 'Native') => {

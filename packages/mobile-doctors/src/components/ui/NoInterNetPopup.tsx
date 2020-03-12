@@ -1,7 +1,6 @@
 import { BottomPopUp } from '@aph/mobile-doctors/src/components/ui/BottomPopUp';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { Text, TouchableOpacity, View } from 'react-native';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import NoInterNetPopupStyles from '@aph/mobile-doctors/src/components/ui/NoInterNetPopup.styles';
 

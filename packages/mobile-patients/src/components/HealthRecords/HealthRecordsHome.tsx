@@ -406,9 +406,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setDisplayAddProfile={() => {}}
           unsetloaderDisplay={true}
         ></ProfileList>
-        <Text style={styles.descriptionTextStyle}>
-          {'Find all your health record & prescription in one place.'}
-        </Text>
+        <Text style={styles.descriptionTextStyle}>{strings.health_records_home.description}</Text>
       </View>
     );
   };

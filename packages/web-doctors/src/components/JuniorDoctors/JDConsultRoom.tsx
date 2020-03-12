@@ -430,6 +430,7 @@ export const JDConsultRoom: React.FC = () => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const client = useApolloClient();
+  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(false);
 
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
@@ -795,6 +796,18 @@ export const JDConsultRoom: React.FC = () => {
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
             );
           }
+          // -------------------------------------------------------------- //
+          navigator.mediaDevices
+            .getUserMedia({ audio: true, video: false })
+            .then(function(stream) {
+              console.log('Got stream', stream);
+              setCameraMicPermission(true);
+            })
+            .catch(function(err) {
+              setCameraMicPermission(false);
+              console.log('GUM failed with error', err);
+            });
+          // -------------------------------------------------------------- //
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -1371,6 +1384,7 @@ export const JDConsultRoom: React.FC = () => {
                     endCallNotificationAction={(callId: boolean) =>
                       endCallNotificationAction(callId)
                     }
+                    hasCameraMicPermission={hasCameraMicPermission}
                   />
                 )}
                 <div className={classes.contentGroup}>
