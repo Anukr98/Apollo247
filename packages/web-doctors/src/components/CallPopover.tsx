@@ -189,6 +189,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 400,
       color: 'red',
     },
+    consultTest: {
+      position: 'relative',
+      width: '50%',
+    },
     timeLeft: {
       fontSize: 12,
       fontWeight: 500,
@@ -197,6 +201,14 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       top: -1,
       display: 'none',
+    },
+    permission: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: 'red',
+      textTransform: 'initial',
+      position: 'absolute',
+      bottom: -15,
     },
     backArrow: {
       cursor: 'pointer',
@@ -768,6 +780,7 @@ interface CallPopoverProps {
   sessionClient: any;
   lastMsg: any;
   presenceEventObject: any;
+  hasCameraMicPermission: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -1743,14 +1756,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </div>
           </Link>
         </div>
-        CONSULT ROOM &nbsp;
-        <span className={classes.timeLeft}>
+        <div className={classes.consultTest}>
+          CONSULT ROOM
+          {!props.hasCameraMicPermission && (
+            <div className={classes.permission}>Note: Please allow access to Camera & Mic.</div>
+          )}
+        </div>
+        {/* <span className={classes.timeLeft}>
           {props.startAppointment
             ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
                 seconds.toString().length < 2 ? '0' + seconds : seconds
               }`
             : getTimerText()}
-        </span>
+        </span> */}
         <div className={classes.consultButtonContainer}>
           <span>
             {props.appointmentStatus === STATUS.COMPLETED &&
