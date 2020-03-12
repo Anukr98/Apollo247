@@ -333,8 +333,8 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         {complaints && renderComplaints()}
         {diagnosis && renderDiagnosis()}
         {medicine && renderMedicine()}
-        {tests && renderTest()}
-        {advice && renderAdvice()}
+        {tests && tests.length > 0 && renderTest()}
+        {advice && advice.length > 0 && renderAdvice()}
         {followUp && renderFollowUp()}
         {renderDisclamer()}
         <View style={styles.paddingView} />
