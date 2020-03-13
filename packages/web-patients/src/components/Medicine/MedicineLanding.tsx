@@ -341,9 +341,9 @@ export const MedicineLanding: React.FC = (props) => {
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
-  const [showPopup, setShowPopup] = React.useState<boolean>(
-    window.location.pathname === '/medicines/added-to-cart'
-  );
+  // const [showPopup, setShowPopup] = React.useState<boolean>(
+  //   window.location.pathname === '/medicines/added-to-cart'
+  // );
   const [showPrescriptionPopup, setShowPrescriptionPopup] = useState<boolean>(
     params.orderAutoId && params.orderAutoId === 'prescription' ? true : false
   );
@@ -488,8 +488,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                        item.key
-                      )}
+                          item.key
+                        )}
                     </div>
                     {item.value}
                   </div>
@@ -498,7 +498,7 @@ export const MedicineLanding: React.FC = (props) => {
           )}
         </div>
       </div>
-      <Popover
+      {/* <Popover
         open={showPopup}
         anchorEl={addToCartRef.current}
         anchorOrigin={{
@@ -519,7 +519,7 @@ export const MedicineLanding: React.FC = (props) => {
             <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
           </div>
         </div>
-      </Popover>
+      </Popover> */}
       <Popover
         open={showOrderPopup}
         anchorEl={addToCartRef.current}

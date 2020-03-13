@@ -272,6 +272,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
+  setShowPopup: (showPopup: boolean) => void;
 };
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
@@ -375,6 +376,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       fetchSubstitutes();
     }
   }, [substitutes]);
+
+  const itemIndexInCart = (item: MedicineProduct) => {
+    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
+  };
 
   const applyCartOperations = (cartItem: MedicineCartItem) => {
     const index = cartItems.findIndex((item) => item.id === cartItem.id);
@@ -485,10 +490,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             ) : (
-              <div className={classes.leftGroup}>
-                <div className={classes.medicineNoStock}>Out Of Stock</div>
-              </div>
-            )}
+                <div className={classes.leftGroup}>
+                  <div className={classes.medicineNoStock}>Out Of Stock</div>
+                </div>
+              )}
             <div className={classes.medicinePrice}>
               {data.special_price && (
                 <span className={classes.regularPrice}>(Rs. {data.price})</span>
@@ -523,17 +528,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     quantity: medicineQty,
                   };
                   applyCartOperations(cartItem);
-                  setTimeout(() => {
-                    window.location.href = clientRoutes.medicinesLandingViewCart();
-                  }, 3000);
+                  setAddMutationLoading(false);
+                  props.setShowPopup(true);
                 }}
-              >
-                {addMutationLoading ? (
-                  <CircularProgress size={22} color="secondary" />
-                ) : (
-                  'Add To Cart'
-                )}
+              > {addMutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : itemIndexInCart(data) !== -1 ? 'Added To Cart' : 'Add To Cart'}
               </AphButton>
+
               <AphButton
                 color="primary"
                 disabled={addMutationLoading || updateMutationLoading}
@@ -565,20 +567,20 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 {updateMutationLoading ? (
                   <CircularProgress size={22} color="secondary" />
                 ) : (
-                  'Buy Now'
-                )}
+                    'Buy Now'
+                  )}
               </AphButton>
             </>
           ) : null
-          // (
-          //   <AphButton
-          //     fullWidth
-          //     className={classes.notifyBtn}
-          //     onClick={() => setIsPopoverOpen(true)}
-          //   >
-          //     Notify when in stock
-          //   </AphButton>
-          // )
+            // (
+            //   <AphButton
+            //     fullWidth
+            //     className={classes.notifyBtn}
+            //     onClick={() => setIsPopoverOpen(true)}
+            //   >
+            //     Notify when in stock
+            //   </AphButton>
+            // )
           }
         </div>
       </div>
