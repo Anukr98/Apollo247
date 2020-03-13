@@ -77,7 +77,12 @@ interface ViewAllAddressProps {
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const classes = useStyles({});
-  const { deliveryAddressId, setDeliveryAddressId, deliveryAddresses } = useShoppingCart();
+  const {
+    deliveryAddressId,
+    setDeliveryAddressId,
+    deliveryAddresses,
+    setStoreAddressId,
+  } = useShoppingCart();
 
   const disableSubmit = deliveryAddressId === '';
 
@@ -102,6 +107,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                           label={address}
                           onChange={() => {
                             setDeliveryAddressId && setDeliveryAddressId(addressId);
+                            setStoreAddressId && setStoreAddressId('');
                           }}
                         />
                       </li>

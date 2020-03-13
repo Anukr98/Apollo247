@@ -72,6 +72,8 @@ export interface MedicineCartContextProps {
   setStores: ((stores: StoreAddresses[]) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((deliveryAddressId: string) => void) | null;
+  storeAddressId: string;
+  setStoreAddressId: ((deliveryAddressId: string) => void) | null;
   deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[];
   setDeliveryAddresses:
     | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
@@ -100,6 +102,8 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setStores: null,
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+  setStoreAddressId: null,
+  storeAddressId: '',
   deliveryAddresses: [],
   setDeliveryAddresses: null,
   clearCartInfo: null,
@@ -136,6 +140,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const [deliveryAddressId, setDeliveryAddressId] = useState<
     MedicineCartContextProps['deliveryAddressId']
   >('');
+
+  const [storeAddressId, setStoreAddressId] = useState<MedicineCartContextProps['storeAddressId']>(
+    ''
+  );
 
   const [deliveryAddresses, setDeliveryAddresses] = useState<
     MedicineCartContextProps['deliveryAddresses']
@@ -244,6 +252,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     localStorage.setItem('prescriptions', JSON.stringify([]));
     setCartItems([]);
     setDeliveryAddressId('');
+    setStoreAddressId('');
     setStores([]);
     setDeliveryAddresses([]);
     setStorePickupPincode('');
@@ -267,6 +276,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setStores,
         deliveryAddressId,
         setDeliveryAddressId,
+        setStoreAddressId,
+        storeAddressId,
         deliveryAddresses,
         setDeliveryAddresses,
         clearCartInfo,
@@ -299,6 +310,8 @@ export const useShoppingCart = () => ({
   setStores: useShoppingCartContext().setStores,
   deliveryAddressId: useShoppingCartContext().deliveryAddressId,
   setDeliveryAddressId: useShoppingCartContext().setDeliveryAddressId,
+  setStoreAddressId: useShoppingCartContext().setStoreAddressId,
+  storeAddressId: useShoppingCartContext().storeAddressId,
   deliveryAddresses: useShoppingCartContext().deliveryAddresses,
   setDeliveryAddresses: useShoppingCartContext().setDeliveryAddresses,
   clearCartInfo: useShoppingCartContext().clearCartInfo,

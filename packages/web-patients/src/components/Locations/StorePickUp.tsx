@@ -116,10 +116,11 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
 
   const {
     setStorePickupPincode,
-    deliveryAddressId,
-    setDeliveryAddressId,
+    setStoreAddressId,
+    storeAddressId,
     stores,
     setStores,
+    setDeliveryAddressId,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [pincodeError, setPincodeError] = useState<boolean>(false);
@@ -128,6 +129,7 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
   );
   const [pincode, setPincode] = useState<string | null>(props.pincode);
   const { currentLat, currentLong, setCurrentPincode } = useContext(LocationContext);
+  const [storeAddress, setStoreAddress] = useState<any | null>(null);
 
   let showAddress = 0;
 
@@ -146,6 +148,16 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
         if (data && data.Stores) {
           const storesData = data.Stores;
           if (storesData && storesData[0] && storesData[0].message !== 'Data Not Available') {
+            if (storeAddressId) {
+              setStoreAddress(
+                storesData.find((address: any) => address.storeid === storeAddressId) ||
+                  storesData[0]
+              );
+            } else {
+              setStoreAddress(storesData[0]);
+              setDeliveryAddressId && setDeliveryAddressId('');
+              setStoreAddressId && setStoreAddressId(storesData[0].storeid);
+            }
             setStores && setStores(storesData);
             setPincodeError(false);
           } else {
@@ -191,7 +203,7 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
   };
 
   useEffect(() => {
-    if (pincode && pincode.length === 6 && stores.length === 0) {
+    if (pincode && pincode.length === 6) {
       setLoading(true);
       getPharmacyAddresses(pincode);
     } else if (!pincode && pincode !== '') {
@@ -232,27 +244,20 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
 
       {!loading ? (
         <ul>
-          {stores.length > 0 ? (
-            stores.map((addressDetails, index) => {
-              const storeAddress = addressDetails.address.replace(' -', ' ,');
-              showAddress++;
-              return showAddress < 3 ? (
-                <li key={index}>
-                  <FormControlLabel
-                    checked={deliveryAddressId === addressDetails.storeid}
-                    className={classes.radioLabel}
-                    value={addressDetails.storeid}
-                    control={<AphRadio color="primary" />}
-                    label={storeAddress}
-                    onChange={() => {
-                      setDeliveryAddressId && setDeliveryAddressId(addressDetails.storeid);
-                    }}
-                  />
-                </li>
-              ) : (
-                ''
-              );
-            })
+          {stores.length > 0 && storeAddress && storeAddress.storeid ? (
+            <li>
+              <FormControlLabel
+                checked={true}
+                className={classes.radioLabel}
+                value={storeAddress.storeid}
+                control={<AphRadio color="primary" />}
+                label={storeAddress ? storeAddress.address.replace(' -', ' ,') : ''}
+                onChange={() => {
+                  setStoreAddressId && setStoreAddressId(storeAddress.storeid);
+                  setDeliveryAddressId && setDeliveryAddressId('');
+                }}
+              />
+            </li>
           ) : (
             <>
               {pincodeError && (
@@ -297,6 +302,7 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
                   loading={loading}
                   setLoading={setLoading}
                   setPincode={setPincode}
+                  setStoreAddress={setStoreAddress}
                 />
               </div>
             </Scrollbars>
@@ -305,8 +311,8 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
             <AphButton
               color="primary"
               fullWidth
-              disabled={deliveryAddressId === ''}
-              className={deliveryAddressId === '' ? classes.buttonDisable : ''}
+              disabled={storeAddressId === ''}
+              className={storeAddressId === '' ? classes.buttonDisable : ''}
               onClick={() => setIsViewAllAddressDialogOpen(false)}
             >
               SAVE AND USE
