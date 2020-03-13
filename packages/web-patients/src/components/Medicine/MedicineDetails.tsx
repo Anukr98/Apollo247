@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Theme, Tabs, Tab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -297,6 +297,37 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       paddingLeft: 20,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 
@@ -312,7 +343,6 @@ export const MedicineDetails: React.FC = (props) => {
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string }>();
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
-
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,

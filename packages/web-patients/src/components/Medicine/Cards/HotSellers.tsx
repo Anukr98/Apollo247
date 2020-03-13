@@ -224,14 +224,14 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         Add To Cart
                       </AphButton>
                     ) : (
-                        <AphButton
-                          onClick={() => {
-                            removeCartItem && removeCartItem(hotSeller.id);
-                          }}
-                        >
-                          Remove
+                      <AphButton
+                        onClick={() => {
+                          removeCartItem && removeCartItem(hotSeller.id);
+                        }}
+                      >
+                        Remove
                       </AphButton>
-                      )}
+                    )}
                   </div>
                 </div>
               </div>
