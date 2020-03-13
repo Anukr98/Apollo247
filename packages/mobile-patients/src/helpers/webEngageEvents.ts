@@ -273,4 +273,94 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
+
+  // ********** Diagnostic ********** \\
+
+  'Diagnostic Search': {
+    'Search Text': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  'Featured Test Clicked': {
+    'Product name': string;
+    'Product id (SKUID)': string;
+    Source: string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  'Diagnostic Add to cart': {
+    'Product name': string;
+    'Product id (SKUID)': string;
+    Price: number;
+    'Discounted Price': number;
+    Quantity: number;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  'Browse Package': {
+    'Package Name': string;
+    Category: string;
+    Source: 'Home' | 'List';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  'Diagnostic Cart Viewed': {
+    'Total items in cart': Number;
+    'Sub Total': Number;
+    'Coupon code used': String;
+    'Total Discount': Number;
+    'Net after discount': Number;
+    'Prescription Needed?': Boolean;
+    'Cart ID': String;
+  };
+
+  'Where to collect Sample from': {
+    Type: 'Home Visit' | 'Clinic Visit';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  // 'Procced To Pay Clicked': {
+  //   'Total items in cart': Number;
+  //   'Sub Total': Number;
+  //   'Delivery charge': Number;
+  //   'Net after discount': Number;
+  //   'Prescription Needed?': Boolean;
+  //   'Cart ID': string;
+  //   'Mode of Delivery': String;
+  // };
+
+  // 'Payment Initiated': {
+  //   'Payment mode': 'COD';
+  //   Amount: String;
+  // };
 }
