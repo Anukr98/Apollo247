@@ -124,7 +124,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fcb716',
       color: '#fff',
       opacity: 0.5,
-    }
+    },
   };
 });
 
@@ -227,23 +227,23 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       )
       .concat(
         pastPrescriptions &&
-        pastPrescriptions.map((item: any) => ({
-          id: item!.id,
-          date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
-          uploadedUrl: item.caseSheet
-            ? client.getBlobUrl(
-              (getCaseSheet(item!.caseSheet) || { blobName: '' }).blobName || ''
+          pastPrescriptions.map((item: any) => ({
+            id: item!.id,
+            date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
+            uploadedUrl: item.caseSheet
+              ? client.getBlobUrl(
+                  (getCaseSheet(item!.caseSheet) || { blobName: '' }).blobName || ''
+                )
+              : '',
+            doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            medicines: (
+              (getCaseSheet(item!.caseSheet) || { medicinePrescription: [] })
+                .medicinePrescription || []
             )
-            : '',
-          doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
-          forPatient: (currentPatient && currentPatient.firstName) || '',
-          medicines: (
-            (getCaseSheet(item!.caseSheet) || { medicinePrescription: [] })
-              .medicinePrescription || []
-          )
-            .map((item) => item!.medicineName)
-            .join(', '),
-        }))
+              .map((item) => item!.medicineName)
+              .join(', '),
+          }))
       )
       .filter((item: any) => !!item.uploadedUrl)
       .sort(
@@ -277,7 +277,11 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     });
 
   if (loading) {
-    return <div className={classes.circularProgressWrapper}><CircularProgress /></div>;
+    return (
+      <div className={classes.circularProgressWrapper}>
+        <CircularProgress />
+      </div>
+    );
   }
 
   return (
