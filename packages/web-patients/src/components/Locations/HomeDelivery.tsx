@@ -71,6 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         fontWeight: 500,
         color: '#01475b',
+        wordBreak: 'break-word',
       },
     },
     bottomActions: {
@@ -278,8 +279,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           )}
         </ul>
       ) : (
-        <>{isLoading ? <CircularProgress /> : null}</>
-      )}
+          <>{isLoading ? <CircularProgress /> : null}</>
+        )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (
