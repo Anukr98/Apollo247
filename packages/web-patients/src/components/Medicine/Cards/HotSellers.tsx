@@ -67,6 +67,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       opacity: 0.6,
       paddingRight: 5,
+      textDecoration: 'line-through',
     },
     addToCart: {
       paddingTop: 8,
@@ -223,14 +224,14 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         Add To Cart
                       </AphButton>
                     ) : (
-                      <AphButton
-                        onClick={() => {
-                          removeCartItem && removeCartItem(hotSeller.id);
-                        }}
-                      >
-                        Remove
+                        <AphButton
+                          onClick={() => {
+                            removeCartItem && removeCartItem(hotSeller.id);
+                          }}
+                        >
+                          Remove
                       </AphButton>
-                    )}
+                      )}
                   </div>
                 </div>
               </div>
