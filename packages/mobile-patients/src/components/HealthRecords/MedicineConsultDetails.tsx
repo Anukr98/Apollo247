@@ -47,6 +47,8 @@ import { useUIElements } from '../UIElementsProvider';
 import { RenderPdf } from '../ui/RenderPdf';
 import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
+import { WebEngageEvents } from '../../helpers/webEngageEvents';
+import { postWebEngageEvent, g } from '../../helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -467,6 +469,20 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
               onPress={() => {
                 addToCart();
                 CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
+
+                const eventAttributes: WebEngageEvents['Reorder Medicines'] = {
+                  'Patient Name': `${g(currentPatient, 'firstName')} ${g(
+                    currentPatient,
+                    'lastName'
+                  )}`,
+                  'Patient UHID': g(currentPatient, 'uhid'),
+                  Relation: g(currentPatient, 'relation'),
+                  Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+                  Gender: g(currentPatient, 'gender'),
+                  'Mobile Number': g(currentPatient, 'mobileNumber'),
+                  'Customer ID': g(currentPatient, 'id'),
+                };
+                postWebEngageEvent('Reorder Medicines', eventAttributes);
               }}
             />
           </View>

@@ -218,4 +218,59 @@ export interface WebEngageEvents {
     'Mobile Number': number;
     'Customer ID': string;
   };
+
+  // ********** Health Records ********** \\
+
+  'Consult & RX': {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  'Medical Records': {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  'Add Record': {
+    Source: 'Consult & RX' | 'Medical Records'; // List/Profile
+  };
+
+  'Upload Prescription': {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  'Upload Photo': {
+    Source: 'Take Photo' | 'Gallery'; // List/Profile
+  };
+
+  'Items Clicked': {
+    Source: 'Consult & RX' | 'Medical Records'; // List/Profile
+    Type: 'Prescription' | 'Test Result';
+  };
+
+  'Reorder Medicines': {
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
 }
