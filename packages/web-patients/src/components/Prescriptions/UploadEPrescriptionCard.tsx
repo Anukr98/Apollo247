@@ -45,12 +45,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       display: 'flex',
       backgroundColor: '#fff',
-      margin: '10px 20px 0 20px',
+      margin: '10px 20px 10px 20px',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       padding: 10,
       borderRadius: 5,
       '&:nth-child(1)': {
-        margin: '15px 20px 0 20px',
+        margin: '15px 20px 10px 20px',
       },
       '&:last-child': {
         padding: '12px 15px 15px 15px',
@@ -104,6 +104,13 @@ const useStyles = makeStyles((theme: Theme) => {
     uploadPrescription: {
       width: '100%',
       borderRadius: 10,
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      padding: '9px 8px',
+      '&:hover': {
+        backgroundColor: '#fcb716',
+        color: '#fff',
+      },
     },
     uploadButtonWrapper: {
       padding: '0 20px',
@@ -112,6 +119,11 @@ const useStyles = makeStyles((theme: Theme) => {
     circularProgressWrapper: {
       textAlign: 'center',
       margin: '10px 0 0 0',
+    },
+    uploadBtnDisable: {
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      opacity: 0.5,
     },
   };
 });
@@ -265,7 +277,11 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     });
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div className={classes.circularProgressWrapper}>
+        <CircularProgress />
+      </div>
+    );
   }
 
   return (
@@ -344,6 +360,9 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               }
             }}
             className={classes.uploadPrescription}
+            classes={{
+              disabled: classes.uploadBtnDisable,
+            }}
             color="primary"
           >
             Upload
