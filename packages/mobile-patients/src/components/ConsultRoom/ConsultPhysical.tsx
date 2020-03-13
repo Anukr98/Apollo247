@@ -30,7 +30,6 @@ import Axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   PermissionsAndroid,
   Platform,
   StyleSheet,
@@ -50,6 +49,7 @@ import {
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { useUIElements } from '../UIElementsProvider';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   optionsView: {

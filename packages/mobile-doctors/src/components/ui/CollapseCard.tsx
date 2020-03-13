@@ -1,15 +1,6 @@
 import { Down, Up } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import CollapseCardStyles from '@aph/mobile-doctors/src/components/ui/CollapseCard.styles';
 
 const styles = CollapseCardStyles;

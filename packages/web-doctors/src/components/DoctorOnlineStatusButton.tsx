@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Button } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef } from 'react';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import {
   UpdateDoctorOnlineStatus,
@@ -12,9 +12,6 @@ import { Mutation } from 'react-apollo';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
-import { useCurrentPatient } from 'hooks/authHooks';
-import { AphLinearProgress } from '@aph/web-ui-components';
-
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -76,11 +73,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
   const classes = useStyles();
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 3;
-
-  const currentDoctor = useCurrentPatient();
-
   const [jrdNoFillDialog, setJrdNoFillDialog] = useState(false);
-
   const ActiveQueueConsultValues = Number(
     localStorage && localStorage.getItem('activeConsultQueueCount')
   );

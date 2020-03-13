@@ -11,6 +11,7 @@ import {
   GET_PATIENT_APPOINTMENTS,
   LOGIN,
   VERIFY_LOGIN_OTP,
+  SEND_CHAT_MESSAGE_TO_DOCTOR,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
 import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
@@ -36,6 +37,10 @@ import moment from 'moment';
 import { LoginVariables, Login } from '../graphql/types/Login';
 import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verifyLoginOtp';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  sendChatMessageToDoctor,
+  sendChatMessageToDoctorVariables,
+} from '../graphql/types/sendChatMessageToDoctor';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -240,6 +245,30 @@ export const getAppointments = (
       })
       .then((data) => {
         res(data.data.getPatinetAppointments);
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getAppointments', e);
+        rej(e);
+      });
+  });
+};
+
+export const sendNotificationToDoctor = (
+  client: ApolloClient<object>,
+  appointmentId: string | null | undefined
+) => {
+  return new Promise((res, rej) => {
+    const inputData = {
+      appointmentId: appointmentId,
+    };
+    client
+      .query<sendChatMessageToDoctor, sendChatMessageToDoctorVariables>({
+        query: SEND_CHAT_MESSAGE_TO_DOCTOR,
+        fetchPolicy: 'no-cache',
+        variables: inputData,
+      })
+      .then((data) => {
+        res(data.data);
       })
       .catch((e) => {
         CommonBugFender('clientCalls_getAppointments', e);

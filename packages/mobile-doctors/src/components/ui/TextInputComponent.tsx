@@ -1,8 +1,6 @@
 import React, { ReactNode } from 'react';
 import {
-  Platform,
   StyleProp,
-  StyleSheet,
   Text,
   TextInput,
   TextInputProps,

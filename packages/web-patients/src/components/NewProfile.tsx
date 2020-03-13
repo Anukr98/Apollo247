@@ -45,6 +45,17 @@ const useStyles = makeStyles((theme: Theme) => {
         color: theme.palette.secondary.dark,
       },
     },
+    refFormControl: {
+      marginBottom: 20,
+      marginTop: -5,
+      width: '100%',
+      position: 'relative',
+      '& label': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: theme.palette.secondary.dark,
+      },
+    },
     signUpPop: {
       width: 368,
       borderRadius: 10,
@@ -167,6 +178,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       padding: '7px 13px 7px 13px',
       textTransform: 'none',
+    },
+    labelText: {
+      fontSize: 13,
     },
   });
 });
@@ -427,8 +441,10 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                     <div className={classes.referralCodeWrapper}>
                       <img src={require('images/ic_gift.svg')} alt="" />
                       <div className={classes.enterCode}>
-                        <div>Preeti Has Sent You A Referral Code!</div>
-                        <FormControl className={classes.formControl} fullWidth>
+                        <div className={classes.labelText}>
+                          Do You Have A Referral Code? (Optional)
+                        </div>
+                        <FormControl className={classes.refFormControl} fullWidth>
                           <AphTextField
                             className={classes.inputField}
                             placeholder="Enter Referral Code"
@@ -455,16 +471,17 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               component="div"
                               error={true}
                             >
-                              Referral code should start with 4 alphabets follwed by 4 digits.
+                              Referral code should start with 4 alphabets followed by 4 digits.
                             </FormHelperText>
                           ) : (
-                            ''
+                            referralCode.length === 8 && (
+                              <img
+                                className={classes.tickIcon}
+                                src={require('images/ic_check_white.svg')}
+                                alt=""
+                              />
+                            )
                           )}
-                          <img
-                            className={classes.tickIcon}
-                            src={require('images/ic_check_white.svg')}
-                            alt=""
-                          />
                         </FormControl>
                       </div>
                     </div>

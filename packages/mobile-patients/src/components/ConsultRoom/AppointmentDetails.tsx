@@ -47,7 +47,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Image,
   SafeAreaView,
@@ -59,6 +58,7 @@ import {
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '../../graphql/types/getPatinetAppointments';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -603,6 +603,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
                     callType: '',
+                    prescription: '',
                   });
                   // setConsultStarted(true);
                 }}

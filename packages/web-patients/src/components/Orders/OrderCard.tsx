@@ -140,6 +140,14 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       display: 'block',
     },
+    noData: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+      paddingLeft: 20,
+      paddingRight: 20,
+      textAlign: 'center',
+    },
   };
 });
 
@@ -383,5 +391,5 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       </div>
     );
   }
-  return <p>No Orders Found</p>;
+  return <div className={classes.noData}>No Orders Found</div>;
 };

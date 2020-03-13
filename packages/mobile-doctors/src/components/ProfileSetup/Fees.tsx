@@ -15,7 +15,6 @@ export interface FeesProps {
 export const Fees: React.FC<FeesProps> = ({ profileData }) => {
   const Feedata = profileData!;
   const BankDetails = profileData!.packages![0];
-  console.log(Feedata.bankAccount!.length);
   const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const renderCard = (title: string, children: Element) => (
     <SquareCardWithTitle title={title} containerStyle={{ marginTop: 16 }}>
@@ -121,7 +120,6 @@ export const Fees: React.FC<FeesProps> = ({ profileData }) => {
 
                 {showPaymentDetails ? (
                   <>
-                    {/* <View style={styles.separator}></View> */}
                     <View style={styles.understatusline} />
                     {feeprofileRowdetails(
                       strings.account.ac_holder_name,

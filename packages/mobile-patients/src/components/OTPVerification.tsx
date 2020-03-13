@@ -23,7 +23,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
-  AsyncStorage,
   BackHandler,
   Dimensions,
   EmitterSubscription,
@@ -51,6 +50,7 @@ import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvent
 import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { height, width } = Dimensions.get('window');
 

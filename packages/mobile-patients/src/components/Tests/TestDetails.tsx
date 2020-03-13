@@ -248,7 +248,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
             <Text style={styles.personDetailStyles}>
               {testInfo.collectionType
-                ? TEST_COLLECTION_TYPE.HC
+                ? testInfo.collectionType === TEST_COLLECTION_TYPE.HC
                   ? 'HOME VISIT OR CLINIC VISIT'
                   : 'CLINIC VISIT'
                 : null}

@@ -147,9 +147,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '16px 20px 10px 20px',
       marginBottom: 20,
     },
-    tabRightcontent: {
-      // paddingRight: 20,
-    },
     columnContent: {
       '-webkit-column-break-inside': 'avoid',
       'page-break-inside': 'avoid',
@@ -171,9 +168,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        // display: 'flex',
-      },
       '& h5': {
         fontSize: 12,
       },
@@ -185,9 +179,6 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       marginBottom: 12,
       color: '#01475b',
-      [theme.breakpoints.down('xs')]: {
-        // display: 'flex',
-      },
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -277,7 +268,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: theme.typography.fontWeightBold,
-      // pointerEvents: 'none',
       paddingLeft: 0,
       marginBottom: 20,
       '& img': {
@@ -435,7 +425,6 @@ const useStyles = makeStyles((theme: Theme) => {
           minHeight: 'auto',
           paddingLeft: 10,
           paddingRight: 10,
-          // borderBottom: '1px solid rgba(1,71,91,0.2)',
           '&:last-child': {
             borderBottom: 'none',
           },
@@ -473,7 +462,6 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px 5px 5px 0',
         marginLeft: 20,
         fontSize: 20,
-        // borderBottom: 'solid 2px rgba(101,143,155,0.05)',
         fontWeight: 600,
         color: '#02475b',
         margin: 0,
@@ -516,8 +504,6 @@ export interface StarDoctorCardProps {
 
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const { doctor, currentDocId } = props;
-  //const moreButttonRef = useRef(null);
-  //const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
@@ -799,7 +785,6 @@ interface DoctorDetailsProps {
 }
 export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
-
   const [popOver, setPopOver] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [secretaryName, setSecretaryName] = useState<string>('');
@@ -809,9 +794,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const addDoctorSecretary = useAuthContext().addDoctorSecretary!;
   const classes = useStyles();
   const [secretary, setSecretary] = useState<string>('');
-
-  const [userDetails, setUserDetails] = React.useState(doctor);
-
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
 
@@ -1117,7 +1099,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                               );
                             })
                             .catch((e: ApolloError) => {
-                              // Alert.alert('Error');
                               console.log(e);
                             });
                         }}

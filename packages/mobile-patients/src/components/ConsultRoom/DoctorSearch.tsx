@@ -54,7 +54,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  AsyncStorage,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -66,6 +65,7 @@ import moment from 'moment';
 import { getDoctorsBySpecialtyAndFilters } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width } = Dimensions.get('window');
 

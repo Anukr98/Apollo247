@@ -19,7 +19,6 @@ const useStyles = makeStyles((theme: Theme) => {
         top: 74,
         zIndex: 999,
         background: '#fff',
-        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       },
     },
     medicineSearchForm: {
@@ -38,6 +37,7 @@ const useStyles = makeStyles((theme: Theme) => {
           backgroundColor: '#f7f8f5',
           padding: '15px 33px 15px 12px',
           borderBottom: '2px solid transparent',
+          borderRadius: 5,
           '&:focus': {
             backgroundColor: '#fff',
             borderBottom: '2px solid #00b38e',
@@ -118,9 +118,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#890000',
       fontWeight: 500,
     },
-    itemSelected: {
-      backgroundColor: '#f7f8f5',
-    },
     searchBtnDisabled: {
       opacity: 0.5,
       '& img': {
@@ -192,9 +189,7 @@ export const TestsAutoSearch: React.FC = (props) => {
         <AphButton
           disabled={searchText.length < 3}
           className={classes.searchBtn}
-          onClick={() =>
-            (window.location.href = clientRoutes.searchByTest('search-medicines', searchText))
-          }
+          onClick={() => (window.location.href = clientRoutes.searchByTest())}
           classes={{
             disabled: classes.searchBtnDisabled,
           }}

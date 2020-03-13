@@ -1675,8 +1675,8 @@ app.get('/getPrismData', (req, res) => {
           data: {
             query: `
             mutation {
-              registerPatientsFromPrism(mobileNumber:${queueDetails[1]}) {
-                Patients {
+              registerPatientsFromPrism(mobileNumber:"${queueDetails[1]}") {
+                patients {
                   id                  
                     mobileNumber
                     firstName
@@ -1691,15 +1691,12 @@ app.get('/getPrismData', (req, res) => {
         })
           .then(async (response) => {
             if (response) {
-              console.log(
-                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
-                '======prism response======='
-              );
+              console.log(response, '======prism response=======');
             }
           })
           .catch((error) => {
             // no need to explicitly saying details about error for clients.
-            console.log(error);
+            console.log('======prism error response=======', error);
           });
       }
     }

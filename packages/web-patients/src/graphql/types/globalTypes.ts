@@ -26,6 +26,12 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum AppointmentType {
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -311,6 +317,17 @@ export interface AppointmentHistoryInput {
   doctorId: string;
 }
 
+export interface AppointmentPaymentInput {
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId?: string | null;
+  orderId?: string | null;
+}
+
 export interface BookAppointmentInput {
   patientId: string;
   doctorId: string;
@@ -393,6 +410,13 @@ export interface FilterDoctorInput {
 export interface Geolocation {
   latitude: number;
   longitude: number;
+}
+
+export interface HelpEmailInput {
+  category?: string | null;
+  reason?: string | null;
+  comments?: string | null;
+  patientId?: string | null;
 }
 
 export interface MedicineCartInput {
@@ -493,6 +517,27 @@ export interface PatientProfileInput {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
+}
+
+export interface PrescriptionMedicineInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patinetAddressId?: string | null;
+  prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
+  appointmentId?: string | null;
+  isEprescription?: number | null;
+  payment?: PrescriptionMedicinePaymentDetails | null;
+}
+
+export interface PrescriptionMedicinePaymentDetails {
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid?: number | null;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
 }
 
 export interface Range {

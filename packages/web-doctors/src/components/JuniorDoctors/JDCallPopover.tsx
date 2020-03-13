@@ -537,16 +537,15 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       fontWeight: 600,
       color: '#02475b',
-      textTransform: 'uppercase',
+      textTransform: 'initial',
     },
     consultDur: {
       fontSize: 12,
       fontWeight: 500,
-      borderLeft: 'solid 1px rgba(2, 71, 91, 0.6)',
-      paddingLeft: 12,
-      marginLeft: 12,
-      display: 'none',
-      color: 'rgba(2, 71, 91, 0.6)',
+      // paddingLeft: 12,
+      // marginLeft: 12,
+      display: 'block',
+      color: 'red',
       '& span': {
         fontWeight: 'bold',
       },
@@ -614,6 +613,7 @@ interface CallPopoverProps {
   assignedDoctor: assignedDoctorType;
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
   endCallNotificationAction: (callId: boolean) => void;
+  hasCameraMicPermission: boolean;
 }
 
 let intervalId: any;
@@ -1227,7 +1227,14 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     <div>
       <div className={classes.pageSubHeader}>
         <div className={classes.headerLeftGroup}>
-          <div className={classes.consultName}>Consult Room</div>
+          <div className={classes.consultName}>
+            Consult Room
+            {!props.hasCameraMicPermission && (
+              <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
+                Note: Please allow access to Camera & Mic.
+              </div>
+            )}
+          </div>
 
           {/* code commented as requested by the testing team
           ------------------------------------------------------------

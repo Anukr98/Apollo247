@@ -13,7 +13,6 @@ import {
   GetDoctorDetails_getDoctorDetails_consultHours,
   GetDoctorDetails_getDoctorDetails,
 } from 'graphql/types/GetDoctorDetails';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Divider from '@material-ui/core/Divider';
 import format from 'date-fns/format';
 
@@ -74,9 +73,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        // display: 'flex',
-      },
     },
     availabletabContent: {
       padding: theme.spacing(1, 0),
@@ -310,10 +306,6 @@ interface ConsultationHoursProps {
 export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
   const classes = useStyles();
   const data = values;
-  // console.log('conult hours are....', data);
-  // function convertTime(time: string) {
-  //   return format(new Date('1970-01-01T' + time), 'p');
-  // }
 
   // converts utc to ist time.
   const convertTime = (slotTime: string) => {
@@ -428,7 +420,6 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                               variant="contained"
                               color="primary"
                               classes={{ root: classes.cancelBtn }}
-                              // onClick={() => onBack()}
                             >
                               CANCEL
                             </AphButton>
@@ -436,7 +427,6 @@ export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) 
                               variant="contained"
                               color="primary"
                               classes={{ root: classes.saveBtn }}
-                              // onClick={() => onNext()}
                             >
                               SAVE
                             </AphButton>

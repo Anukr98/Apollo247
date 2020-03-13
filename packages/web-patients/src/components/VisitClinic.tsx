@@ -17,13 +17,20 @@ import {
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useMutation } from 'react-apollo-hooks';
-import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { AppointmentType } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 // import { Redirect } from 'react-router';
 import _forEach from 'lodash/forEach';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import { usePrevious } from 'hooks/reactCustomHooks';
 import { LocationContext } from 'components/LocationProvider';
+import { CouponCode } from 'components/Coupon/CouponCode';
+import {
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from 'graphql/types/makeAppointmentPayment';
+import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -195,6 +202,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [clinicAddress] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const makePaymentMutation = useMutation(MAKE_APPOINTMENT_PAYMENT);
   // const [mutationSuccess, setMutationSuccess] = React.useState(false);
 
   const prevDateSelected = usePrevious(dateSelected);
@@ -216,7 +224,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     doctorDetails.getDoctorDetailsById.physicalConsultationFees
       ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
       : '';
-
+  const [revisedAmount, setRevisedAmount] = useState(physicalConsultationFees);
+  const [couponCode, setCouponCode] = useState('');
   const morningSlots: number[] = [],
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
@@ -364,6 +373,12 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       : '';
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
+  let appointmentDateTime = '';
+
+  appointmentDateTime = new Date(
+    `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
+  ).toISOString();
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
@@ -445,6 +460,15 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               </div>
             </Grid>
           </Grid>
+          <CouponCode
+            setCouponCode={setCouponCode}
+            subtotal={physicalConsultationFees}
+            doctorId={doctorId}
+            revisedAmount={revisedAmount}
+            setRevisedAmount={setRevisedAmount}
+            appointmentDateTime={appointmentDateTime}
+            appointmentType={AppointmentType.ONLINE}
+          />
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am
@@ -474,7 +498,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   appointmentDateTime: new Date(
                     `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
                   ).toISOString(),
-                  appointmentType: APPOINTMENT_TYPE.PHYSICAL,
+                  appointmentType: AppointmentType.PHYSICAL,
                   hospitalId: defaultClinicId,
                 },
               },
@@ -486,12 +510,36 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   res.data.bookAppointment &&
                   res.data.bookAppointment.appointment
                 ) {
-                  const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
-                    res.data.bookAppointment.appointment.id
-                  }&patientId=${
-                    currentPatient ? currentPatient.id : ''
-                  }&price=${physicalConsultationFees}&source=WEB`;
-                  window.location.href = pgUrl;
+                  if (revisedAmount == '0') {
+                    makePaymentMutation({
+                      variables: {
+                        paymentInput: {
+                          amountPaid: 0,
+                          paymentRefId: '',
+                          paymentStatus: 'TXN_SUCCESS',
+                          paymentDateTime: res.data.bookAppointment.appointment.appointmentDateTime,
+                          responseCode: couponCode,
+                          responseMessage: 'Coupon applied',
+                          bankTxnId: '',
+                          orderId: res.data.bookAppointment.appointment.id,
+                        },
+                      },
+                      fetchPolicy: 'no-cache',
+                    })
+                      .then((res) => {
+                        window.location.href = clientRoutes.appointments();
+                      })
+                      .catch((error) => alert(error));
+                  } else {
+                    const pgUrl = `${
+                      process.env.CONSULT_PG_BASE_URL
+                    }/consultpayment?appointmentId=${
+                      res.data.bookAppointment.appointment.id
+                    }&patientId=${
+                      currentPatient ? currentPatient.id : ''
+                    }&price=${revisedAmount}&source=WEB`;
+                    window.location.href = pgUrl;
+                  }
                   // setMutationLoading(false);
                   // setIsDialogOpen(true);
                 }
@@ -510,7 +558,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           {mutationLoading ? (
             <CircularProgress size={22} color="secondary" />
           ) : (
-            `PAY Rs. ${physicalConsultationFees}`
+            `PAY Rs. ${revisedAmount}`
           )}
         </AphButton>
       </div>

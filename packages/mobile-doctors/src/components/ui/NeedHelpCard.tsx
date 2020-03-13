@@ -1,9 +1,8 @@
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacityProps, View, ViewStyle } from 'react-native';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import NeedHelpCardStyles from '@aph/mobile-doctors/src/components/ui/NeedHelpCard.styles';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import React from 'react';
+import { Linking, StyleProp, Text, TouchableOpacityProps, View, ViewStyle } from 'react-native';
 
 const styles = NeedHelpCardStyles;
 
@@ -19,17 +18,20 @@ export const NeedHelpCard: React.FC<NeedHelpCardProps> = (props) => {
   const data = [
     {
       label: 'SPOC for Apollo Hyderabad Doctors',
-      name: 'Ms. Sreevani  |  7702700910 ',
+      name: 'Ms. Sreevani  |  ',
+      number: '7702700910',
       email: 'sreevani_u@apollohospitals.com',
     },
     {
       label: 'SPOC for Apollo Chennai Doctors',
-      name: 'Mr. Sreekanth  |  09941134567',
+      name: 'Mr. Sreekanth  |  ',
+      number: '09941134567',
       email: 'edocmh_cni@apollohospitals.com',
     },
     {
       label: 'SPOC for ATHS Doctors',
-      name: 'Call Centre  |  18001021066',
+      name: 'Call Centre  |  ',
+      number: '18001021066',
       email: 'mrc_support@healthnet-global.com',
     },
   ];
@@ -44,7 +46,10 @@ export const NeedHelpCard: React.FC<NeedHelpCardProps> = (props) => {
         {data.map((item, i) => (
           <View style={i + 1 !== data.length && styles.viewStyle}>
             <Text style={styles.labelStyle}>{item.label}</Text>
-            <Text style={styles.nameStyle}>{item.name}</Text>
+            <Text style={styles.nameStyle}>
+              {item.name}
+              <Text onPress={() => Linking.openURL(`tel:${item.number}`)}>{item.number}</Text>
+            </Text>
             <Text style={styles.emailStyle}>{item.email}</Text>
           </View>
         ))}

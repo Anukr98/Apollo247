@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-import openTok, { TokenOptions } from 'opentok';
+
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import {
@@ -25,7 +25,8 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { addMilliseconds, format } from 'date-fns';
+import { addMilliseconds, format, isAfter } from 'date-fns';
+import { getSessionToken, getExpirationTime } from 'helpers/openTok';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -137,11 +138,7 @@ const createJuniorAppointmentSession: Resolver<
   if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
-  const opentok_key = process.env.OPENTOK_KEY ? process.env.OPENTOK_KEY : '';
-  const opentok_secret = process.env.OPENTOK_SECRET ? process.env.OPENTOK_SECRET : '';
-  const opentok = new openTok(opentok_key, opentok_secret);
-  let sessionId = '',
-    token = '';
+
   if (createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR) {
     throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
   }
@@ -174,22 +171,9 @@ const createJuniorAppointmentSession: Resolver<
       appointmentToken: apptSessionDets.juniorDoctorToken,
     };
   }
-  function getSessionToken() {
-    return new Promise((resolve, reject) => {
-      opentok.createSession({ mediaMode: 'routed', archiveMode: 'always' }, (error, session) => {
-        if (error) {
-          reject(error);
-        }
-        if (session) {
-          sessionId = session.sessionId;
-          const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
-          token = opentok.generateToken(sessionId, tokenOptions);
-        }
-        resolve(token);
-      });
-    });
-  }
-  await getSessionToken();
+  const tokenDetails = await getSessionToken('');
+  const sessionId = tokenDetails.sessionId;
+  const token = tokenDetails.token;
 
   const appointmentSessionAttrs = {
     sessionId,
@@ -226,12 +210,7 @@ const createAppointmentSession: Resolver<
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
 
-  const opentok_key = process.env.OPENTOK_KEY ? process.env.OPENTOK_KEY : '';
-  const opentok_secret = process.env.OPENTOK_SECRET ? process.env.OPENTOK_SECRET : '';
-  const opentok = new openTok(opentok_key, opentok_secret);
-  let sessionId = '',
-    token = '',
-    patientId = '',
+  let patientId = '',
     doctorId = '';
   let appointmentDateTime: Date = new Date();
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -258,27 +237,30 @@ const createAppointmentSession: Resolver<
   );
 
   if (apptSessionDets) {
+    const doctorTokenExpiryDate = apptSessionDets.doctorToken
+      ? await getExpirationTime(apptSessionDets.doctorToken)
+      : new Date();
+
+    //if today date is greater than the token generated date, regenerate the tokens
+    if (isAfter(new Date(), doctorTokenExpiryDate)) {
+      const doctorTokenDetails = await getSessionToken(apptSessionDets.sessionId);
+      apptSessionDets.doctorToken = doctorTokenDetails.token;
+
+      //update appointment session record
+      await apptSessionRepo.updateDoctorToken(doctorTokenDetails.token, apptSessionDets.id);
+    }
+
     if (
       createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
       apptDetails.status != STATUS.IN_PROGRESS
     ) {
-      await apptRepo.updateAppointmentStatus(
+      apptRepo.updateAppointmentStatus(
         createAppointmentSessionInput.appointmentId,
         STATUS.IN_PROGRESS,
         true
       );
     }
-    // If appointment started with junior doctor
-    // if (
-    //   createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR &&
-    //   apptDetails.status != STATUS.IN_PROGRESS &&
-    //   apptDetails.status != STATUS.JUNIOR_DOCTOR_STARTED
-    // ) {
-    //   await apptRepo.updateAppointmentStatus(
-    //     createAppointmentSessionInput.appointmentId,
-    //     STATUS.JUNIOR_DOCTOR_STARTED
-    //   );
-    // }
+
     // send notification
     const pushNotificationInput = {
       appointmentId: createAppointmentSessionInput.appointmentId,
@@ -302,40 +284,29 @@ const createAppointmentSession: Resolver<
       appointmentDateTime,
     };
   }
-  function getSessionToken() {
-    return new Promise((resolve, reject) => {
-      opentok.createSession({ mediaMode: 'routed', archiveMode: 'always' }, (error, session) => {
-        if (error) {
-          reject(error);
-        }
-        if (session) {
-          sessionId = session.sessionId;
-          const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
-          token = opentok.generateToken(sessionId, tokenOptions);
-        }
-        resolve(token);
-      });
-    });
-  }
-  await getSessionToken();
+
+  const tokenDetails = await getSessionToken('');
+  const sessionId = tokenDetails.sessionId;
+  const token = tokenDetails.token;
+
   const appointmentSessionAttrs = {
     sessionId,
     doctorToken: token,
     appointment: apptDetails,
     consultStartDateTime: new Date(),
   };
-  const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+  await apptSessionRepo.saveAppointmentSession(appointmentSessionAttrs);
   if (
     createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
     apptDetails.status != STATUS.IN_PROGRESS
   ) {
-    await apptRepo.updateAppointmentStatus(
+    apptRepo.updateAppointmentStatus(
       createAppointmentSessionInput.appointmentId,
       STATUS.IN_PROGRESS,
       true
     );
   }
-  await repo.saveAppointmentSession(appointmentSessionAttrs);
+
   // send notification
   const pushNotificationInput = {
     appointmentId: createAppointmentSessionInput.appointmentId,
@@ -369,19 +340,19 @@ const updateAppointmentSession: Resolver<
   if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
-  const opentok_key = process.env.OPENTOK_KEY ? process.env.OPENTOK_KEY : '';
-  const opentok_secret = process.env.OPENTOK_SECRET ? process.env.OPENTOK_SECRET : '';
-  const opentok = new openTok(opentok_key, opentok_secret);
+
   let token = '',
     sessionId = '';
+
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSession = await apptSessionRepo.getAppointmentSession(
     updateAppointmentSessionInput.appointmentId
   );
-  const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
+
   if (apptSession) {
     sessionId = apptSession.sessionId;
-    token = opentok.generateToken(sessionId, tokenOptions);
+    const tokenDetails = await getSessionToken(sessionId);
+    token = tokenDetails.token;
     await apptSessionRepo.updateAppointmentSession(token, apptSession.id);
   }
   return { sessionId: sessionId, appointmentToken: token };

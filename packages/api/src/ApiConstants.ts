@@ -4,8 +4,7 @@ export enum ApiConstants {
   //appointment reschedule initiated
   RESCHEDULE_INITIATION_TITLE = 'Appointment Reschedule Initiation',
   //RESCHEDULE_INITIATION_BODY = 'Hi {0}, we’re really sorry to keep you waiting. {1} will not be able to make it for this appointment. We request you to reschedule.',
-  RESCHEDULE_INITIATION_BODY = 'Hi {0}! Dr. {1} has requested you to reschedule due to an emergency. Please choose the next most suitable slot.',
-
+  RESCHEDULE_INITIATION_BODY = 'Hi {0}! Due to an emergency, Dr. {1} had to reschedule your appointment to the next available slot. Confirm Slot',
   PATIENT_NO_SHOW_RESCHEDULE_TITLE = 'Appointment Reschedule Initiation',
   PATIENT_NO_SHOW_RESCHEDULE_BODY = 'Hi {0}, as you were unable to attend your consultation appointment on time with Dr. {1}, Please reschedule it. We request you to be on time for your rescheduled consultation.',
 
@@ -65,7 +64,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
-  ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verfied & successfully processed. Order will be delivered in {2} hours',
+  ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
 
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
@@ -105,7 +104,7 @@ export enum ApiConstants {
   MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   SENT_BY_API = 'SENT_BY_API',
   //case sheet submitted
-  CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you. View case sheet',
+  CASESHEET_SUBMITTED_BODY = 'Hi Dr. {0}! Dr. {1} from your team has prepared and shared the case sheet with you.',
   DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24x7. Summary of appointments',
   ONLINE_APPOINTMENTS = ' \nOnline Appointments : {0}',
   PHYSICAL_APPOINTMENTS = ' \nPhysical Appointments : {0}',

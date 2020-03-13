@@ -132,7 +132,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
   // const [showLoading, setShowLoading] = useState<boolean>(false);
-  // const appointmentData = props.navigation.getParam('AppoinementData');
+  const appointmentData = props.navigation.getParam('AppoinementData');
+
   const [dropdownShow, setDropdownShow] = useState(false);
   const channel = props.navigation.getParam('AppId');
   const doctorId = props.navigation.getParam('DoctorId');
@@ -157,6 +158,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [returnToCall, setReturnToCall] = useState<boolean>(false);
   const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
+  const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
 
   // const [textinputStyles, setTextInputStyles] = useState<Object>({
   //   width: width,
@@ -190,8 +192,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   } = CaseSheetAPI();
 
   useEffect(() => {
+    console.log(appointmentData, 'appointmentData');
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
+    console.log(caseSheetEdit, 'caseSheetEdit');
+
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
@@ -382,7 +387,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             text: strings.consult_room.reschedule,
             onPress: () => {
               endAppointmentApiCall(STATUS.CALL_ABANDON);
-              hideAphAlert!();
+              // hideAphAlert!();
+              showAphAlert &&
+                showAphAlert({
+                  title: 'Alert!',
+                  description: 'Successfully Rescheduled',
+                });
             },
           },
         ],
@@ -407,7 +417,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .then((_data) => {
         //  setLoading(false);
         setShowPopUp(false);
-        console.log('_data', _data);
+        console.log('EndAppointmentSession', _data);
+        showAphAlert &&
+          showAphAlert({
+            title: 'Alert!',
+            description: 'Successfully Rescheduled',
+          });
         const text = {
           id: doctorId,
           message: messageCodes.callAbandonment,
@@ -1080,8 +1095,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               favMed={favMed}
               favTest={favTest}
               caseSheet={caseSheet}
+              getdetails={() => getCaseSheetAPI()}
               caseSheetEdit={caseSheetEdit}
               setCaseSheetEdit={setCaseSheetEdit}
+              showEditPreviewButtons={showEditPreviewButtons}
+              setShowEditPreviewButtons={setShowEditPreviewButtons}
             />
           ) : (
             <View
@@ -1190,6 +1208,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         setStartConsult(false);
         stopInterval();
         stopTimer();
+        stopMissedCallTimer();
+        stopNoShow();
       }
     );
   };
@@ -1219,6 +1239,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         textStyles={{
           marginTop: 10,
+          marginLeft: 37,
         }}
         rightIcons={[
           {
@@ -1229,25 +1250,35 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   opacity: isAfter ? 1 : 0.5,
                 }}
               >
-                <Call />
+                {appointmentData.status == 'COMPLETED' || showEditPreviewButtons ? null : <Call />}
               </View>
             ),
             onPress: () => {
               setHideView(!hideView);
-              setActiveTabIndex(tabsData[1].title);
-              startConsult && isAfter && setShowPopUp(true);
+              if (startConsult && isAfter) {
+                setActiveTabIndex(tabsData[1].title);
+                setShowPopUp(true);
+              }
             },
           },
           {
             icon: (
-              <View
-                style={{
-                  marginTop: 0,
-                  opacity: isAfter ? 1 : 0.5,
-                }}
-              >
-                <DotIcon />
-              </View>
+              <>
+                <View
+                  style={{
+                    marginTop: 0,
+                    opacity: isAfter ? 1 : 0.5,
+                  }}
+                >
+                  {appointmentData.appointmentState == 'AWAITING_RESCHEDULE' ||
+                  appointmentData.status == 'COMPLETED' ||
+                  showEditPreviewButtons ||
+                  isAudioCall ||
+                  isCall ? null : (
+                    <DotIcon />
+                  )}
+                </View>
+              </>
             ),
             onPress: () => isAfter && setDropdownShow(!dropdownShow),
           },
@@ -1487,7 +1518,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               },
               (status, response) => {}
             );
-            props.navigation.goBack();
+            props.navigation.push(AppRoutes.TabBar);
           }}
         />
       )}

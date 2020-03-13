@@ -1,14 +1,11 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import {
   StyleProp,
-  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
 import { BackIcon, Cancel } from '@aph/mobile-doctors/src/components/ui/Icons';
 import OtpCardStyles from '@aph/mobile-doctors/src/components/ui/OtpCard.styles';

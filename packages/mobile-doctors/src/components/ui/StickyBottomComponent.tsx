@@ -1,9 +1,7 @@
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { StyleProp, View, ViewStyle } from 'react-native';
 import StickyBottomComponentStyles from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent.styles';
-
-const { height } = Dimensions.get('window');
 
 const styles = StickyBottomComponentStyles;
 export interface StickyBottomProps {

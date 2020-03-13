@@ -1,6 +1,5 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { StyleProp, Text, TextStyle, View, ViewStyle } from 'react-native';
 import SquareCardWithTitleStyles from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle.styles';
 
 const styles = SquareCardWithTitleStyles;
