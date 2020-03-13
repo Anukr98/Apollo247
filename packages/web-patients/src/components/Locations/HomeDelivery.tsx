@@ -279,8 +279,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           )}
         </ul>
       ) : (
-          <>{isLoading ? <CircularProgress /> : null}</>
-        )}
+        <>{isLoading ? <CircularProgress /> : null}</>
+      )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (
