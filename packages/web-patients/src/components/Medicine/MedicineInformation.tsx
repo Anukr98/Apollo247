@@ -11,6 +11,7 @@ import axios, { AxiosResponse, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -267,12 +268,31 @@ const useStyles = makeStyles((theme: Theme) => {
       textDecoration: 'line-through',
       paddingRight: 5,
     },
-  });
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    });
 });
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
-  setShowPopup: (showPopup: boolean) => void;
+  // setShowPopup: (showPopup: boolean) => void;
 };
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
@@ -280,6 +300,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
+  const addToCartRef = useRef(null);
   const subDrugsRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
@@ -290,6 +311,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [updateMutationLoading, setUpdateMutationLoading] = useState<boolean>(false);
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = React.useState<boolean>(false);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -490,10 +512,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 </div>
               </>
             ) : (
-              <div className={classes.leftGroup}>
-                <div className={classes.medicineNoStock}>Out Of Stock</div>
-              </div>
-            )}
+                <div className={classes.leftGroup}>
+                  <div className={classes.medicineNoStock}>Out Of Stock</div>
+                </div>
+              )}
             <div className={classes.medicinePrice}>
               {data.special_price && (
                 <span className={classes.regularPrice}>(Rs. {data.price})</span>
@@ -529,7 +551,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   };
                   applyCartOperations(cartItem);
                   setAddMutationLoading(false);
-                  props.setShowPopup(true);
+                  setShowPopup(true);
                 }}
               >
                 {' '}
@@ -538,8 +560,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 ) : itemIndexInCart(data) !== -1 ? (
                   'Added To Cart'
                 ) : (
-                  'Add To Cart'
-                )}
+                      'Add To Cart'
+                    )}
               </AphButton>
 
               <AphButton
@@ -573,20 +595,20 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 {updateMutationLoading ? (
                   <CircularProgress size={22} color="secondary" />
                 ) : (
-                  'Buy Now'
-                )}
+                    'Buy Now'
+                  )}
               </AphButton>
             </>
           ) : null
-          // (
-          //   <AphButton
-          //     fullWidth
-          //     className={classes.notifyBtn}
-          //     onClick={() => setIsPopoverOpen(true)}
-          //   >
-          //     Notify when in stock
-          //   </AphButton>
-          // )
+            // (
+            //   <AphButton
+            //     fullWidth
+            //     className={classes.notifyBtn}
+            //     onClick={() => setIsPopoverOpen(true)}
+            //   >
+            //     Notify when in stock
+            //   </AphButton>
+            // )
           }
         </div>
       </div>
@@ -631,6 +653,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           data={substitutes}
           setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
         />
+      </Popover>
+      <Popover
+        open={showPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
+          </div>
+        </div>
       </Popover>
     </div>
   );

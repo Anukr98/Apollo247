@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Theme, Popover, Tabs, Tab } from '@material-ui/core';
+import { Theme, Tabs, Tab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -12,7 +12,6 @@ import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineAp
 import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -344,8 +343,6 @@ export const MedicineDetails: React.FC = (props) => {
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string }>();
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
-  const [showPopup, setShowPopup] = React.useState<boolean>(false);
-  const addToCartRef = useRef(null);
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -443,13 +440,13 @@ export const MedicineDetails: React.FC = (props) => {
               x.value = `${x.value}
               ${getHeader(v.Caption)}: \n
               ${v.CaptionDesc.split('&amp;lt')
-                .join('<')
-                .split('&amp;gt;')
-                .join('>')
-                .replace(/(<([^>]+)>)/gi, '')
-                .replace(/&amp;amp;/g, '&')
-                .replace(/&amp;nbsp;/g, ' ')
-                .replace(/&amp;/g, '&')}; \n
+                  .join('<')
+                  .split('&amp;gt;')
+                  .join('>')
+                  .replace(/(<([^>]+)>)/gi, '')
+                  .replace(/&amp;amp;/g, '&')
+                  .replace(/&amp;nbsp;/g, ' ')
+                  .replace(/&amp;/g, '&')}; \n
                 `;
             }
           });
@@ -572,11 +569,11 @@ export const MedicineDetails: React.FC = (props) => {
                                   medicinePharmacyDetails && medicinePharmacyDetails.length > 0
                                     ? medicinePharmacyDetails[0].Doseform
                                     : ''
-                                }${
+                                  }${
                                   medicineDetails.mou && parseFloat(medicineDetails.mou) !== 1
                                     ? 'S'
                                     : ''
-                                }`}
+                                  }`}
                               </div>
                               {medicineDetails.is_prescription_required !== '0' && (
                                 <div className={classes.prescriptionBox}>
@@ -588,42 +585,42 @@ export const MedicineDetails: React.FC = (props) => {
                               )}
                             </div>
                             {medicinePharmacyDetails &&
-                            medicinePharmacyDetails.length > 0 &&
-                            medicinePharmacyDetails[0].Overview &&
-                            medicinePharmacyDetails[0].Overview.length > 0 ? (
-                              <>
-                                <Tabs
-                                  value={tabValue}
-                                  variant="scrollable"
-                                  scrollButtons="on"
-                                  classes={{
-                                    root: classes.tabsRoot,
-                                    indicator: classes.tabsIndicator,
-                                  }}
-                                  onChange={(e, newValue) => {
-                                    setTabValue(newValue);
-                                  }}
-                                >
-                                  {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                                </Tabs>
-                                {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                              </>
-                            ) : medicineDetails.description ? (
-                              <div className={classes.productDetailed}>
-                                <div className={classes.productInfo}>Product Information</div>
-                                <div className={classes.productDescription}>
-                                  {description &&
-                                    description.split('rn').map((data, index) => {
-                                      return <p key={index}>{data}</p>;
-                                    })}
+                              medicinePharmacyDetails.length > 0 &&
+                              medicinePharmacyDetails[0].Overview &&
+                              medicinePharmacyDetails[0].Overview.length > 0 ? (
+                                <>
+                                  <Tabs
+                                    value={tabValue}
+                                    variant="scrollable"
+                                    scrollButtons="on"
+                                    classes={{
+                                      root: classes.tabsRoot,
+                                      indicator: classes.tabsIndicator,
+                                    }}
+                                    onChange={(e, newValue) => {
+                                      setTabValue(newValue);
+                                    }}
+                                  >
+                                    {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                  </Tabs>
+                                  {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                                </>
+                              ) : medicineDetails.description ? (
+                                <div className={classes.productDetailed}>
+                                  <div className={classes.productInfo}>Product Information</div>
+                                  <div className={classes.productDescription}>
+                                    {description &&
+                                      description.split('rn').map((data, index) => {
+                                        return <p key={index}>{data}</p>;
+                                      })}
+                                  </div>
                                 </div>
-                              </div>
-                            ) : null}
+                              ) : null}
                           </div>
                         </div>
                       </Scrollbars>
                     </div>
-                    <MedicineInformation data={medicineDetails} setShowPopup={setShowPopup} />
+                    <MedicineInformation data={medicineDetails} />
                   </div>
                 )}
               </div>
@@ -631,28 +628,6 @@ export const MedicineDetails: React.FC = (props) => {
           </>
         )}
       </MedicinesCartContext.Consumer>
-      <Popover
-        open={showPopup}
-        anchorEl={addToCartRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
-          </div>
-        </div>
-      </Popover>
       <NavigationBottom />
     </div>
   );
