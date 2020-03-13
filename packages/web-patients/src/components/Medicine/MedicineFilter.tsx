@@ -239,7 +239,7 @@ const useStyles = makeStyles((theme: Theme) => {
     priceLabel: {
       position: 'absolute',
       left: 0,
-      top: 4,
+      top: 3,
       color: '#02475b',
       fontWeight: 500,
       fontSize: 12,
@@ -506,24 +506,22 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                 <div className={classes.filterBy}>
                   <div className={classes.priceGroup}>
                     <AphTextField
-                      placeholder="500"
                       value={fromPrice}
                       onChange={(e) => {
                         setFromPrice(e.target.value);
                       }}
                     />
-                    <span className={classes.priceLabel}>RS.</span>
+                    <span className={classes.priceLabel}>Rs.</span>
                   </div>
                   <span>TO</span>
                   <div className={classes.priceGroup}>
                     <AphTextField
-                      placeholder="3000"
                       value={toPrice}
                       onChange={(e) => {
                         setToPrice(e.target.value);
                       }}
                     />
-                    <span className={classes.priceLabel}>RS.</span>
+                    <span className={classes.priceLabel}>Rs.</span>
                   </div>
                 </div>
               </div>

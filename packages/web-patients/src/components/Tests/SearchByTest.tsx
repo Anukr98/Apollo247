@@ -4,7 +4,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
-import { NavigationBottom } from 'components/NavigationBottom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AphButton } from '@aph/web-ui-components';
 import { TestFilter } from 'components/Tests/TestFilter';
@@ -219,7 +218,6 @@ export const SearchByTest: React.FC = (props) => {
           </div>
         </div>
       </div>
-      {/* <NavigationBottom /> */}
     </div>
   );
 };
