@@ -171,7 +171,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
-  // const [showLoading, setShowLoading] = useState<boolean>(false);
+  const [showLoading, setShowLoading] = useState<boolean>(false);
   const appointmentData = props.navigation.getParam('AppoinementData');
 
   const [dropdownShow, setDropdownShow] = useState(false);
@@ -1472,17 +1472,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         </View>
         <BottomButtons
           whiteButtontitle={strings.buttons.cancel}
-          disabledOrange={selectedReason === 'Other' && otherReason === ''}
+          disabledOrange={showLoading ? true : selectedReason === 'Other' && otherReason === ''}
           cancelFun={() => {
             setshowCancelPopup(false);
-            // setfavAdvice('');
-            // console.log('cancel');
-            // setIsAdvice(false);
           }}
           yellowButtontitle={strings.consult.cancel_consult}
           successFun={() => {
-            setLoading && setLoading(true);
             console.log('successFun:');
+            setShowLoading(true);
             mutationCancelSrdConsult({
               variables: {
                 cancelAppointmentInput: {
@@ -1514,6 +1511,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 );
               })
               .catch((e: ApolloError) => {
+                setShowLoading(false);
                 showAphAlert &&
                   showAphAlert({
                     title: 'Alert!',
@@ -1531,7 +1529,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               bottom: 0,
               left: 0,
               right: 0,
-              // backgroundColor: 'red',
               zIndex: 10000,
               elevation: 10000,
               alignItems: 'center',
@@ -1621,16 +1618,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             icon: (
               <>
                 <View
-                  // activeOpacity={1}
                   style={{
                     marginTop: 0,
                     opacity: isAfter ? 1 : 0.5,
                   }}
-                  // onPress={() => {
-                  //   setshowMorePopup(true);
-                  // }}
                 >
-                  {/* <DotIcon /> */}
                   {appointmentData.appointmentState == 'AWAITING_RESCHEDULE' ||
                   appointmentData.status == 'COMPLETED' ||
                   showEditPreviewButtons ||
