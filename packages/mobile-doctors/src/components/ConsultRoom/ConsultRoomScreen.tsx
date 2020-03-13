@@ -1,3 +1,9 @@
+import {
+  setDiagnosticPrescriptionDataList,
+  setDiagonsisList,
+  setMedicineList,
+  setSysmptonsList,
+} from '@aph/mobile-doctors/src/components/ApiCall';
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
 import { AudioCall } from '@aph/mobile-doctors/src/components/ConsultRoom/AudioCall';
@@ -6,6 +12,9 @@ import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/Ca
 import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
 import ConsultRoomScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
 import { VideoCall } from '@aph/mobile-doctors/src/components/ConsultRoom/VideoCall';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
+import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
 import { DropDown } from '@aph/mobile-doctors/src/components/ui/DropDown';
 import {
   BackArrow,
@@ -13,14 +22,17 @@ import {
   ClosePopup,
   CrossPopup,
   DotIcon,
+  Down,
   RoundCallIcon,
   RoundVideoIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
+import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
+  CANCEL_APPOINTMENT,
   CREATEAPPOINTMENTSESSION,
   CREATE_CASESHEET_FOR_SRD,
   END_APPOINTMENT_SESSION,
@@ -29,6 +41,10 @@ import {
   SEND_CALL_NOTIFICATION,
   UPLOAD_CHAT_FILE,
 } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  cancelAppointment,
+  cancelAppointmentVariables,
+} from '@aph/mobile-doctors/src/graphql/types/cancelAppointment';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -56,17 +72,18 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import {
+  APPOINTMENT_TYPE,
   APPT_CALL_TYPE,
   DOCTOR_CALL_TYPE,
   REQUEST_ROLES,
   STATUS,
-  APPOINTMENT_TYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
@@ -74,12 +91,14 @@ import { g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { ApolloError } from 'apollo-client';
 import moment from 'moment';
 import Pubnub, { HereNowResponse } from 'pubnub';
 import React, { useEffect, useRef, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import {
   Alert,
+  BackHandler,
   Dimensions,
   FlatList,
   Image,
@@ -90,18 +109,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  BackHandler,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import {
-  setDiagnosticPrescriptionDataList,
-  setDiagonsisList,
-  setMedicineList,
-  setSysmptonsList,
-} from '@aph/mobile-doctors/src/components/ApiCall';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -144,6 +154,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const tabsData = [
     { title: strings.consult_room.case_sheet, key: '0' },
     { title: strings.consult_room.chat, key: '1' },
+  ];
+  const reasons = [
+    'Not related to my specialty',
+    'Needs a second opinion from a senior specialist',
+    'Patient requested for a slot when I am not available',
+    'Patient needs a in person visit',
+    'Other',
   ];
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
@@ -205,6 +222,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
+  const [showMorePopup, setshowMorePopup] = useState<boolean>(false);
+  const [showCancelPopup, setshowCancelPopup] = useState<boolean>(false);
+  const [showCancelReason, setshowCancelReason] = useState<boolean>(false);
+  const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
+  const [otherReason, setotherReason] = useState<string>('');
+
+  const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
+    CANCEL_APPOINTMENT
+  );
+
   const {
     favList,
     // favListError,
@@ -1388,6 +1415,161 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
+  const renderCancelPopup = () => {
+    return (
+      <AphOverlay
+        headingViewStyle={{
+          ...theme.viewStyles.cardContainer,
+          zIndex: 1,
+          ...theme.viewStyles.shadowStyle,
+        }}
+        heading={strings.consult.cancel_consult}
+        onClose={() => {
+          // setfavAdvice('');
+          // setIsAdvice(false);
+          setshowCancelPopup(false);
+        }}
+        isVisible={true}
+      >
+        <View
+          style={{
+            backgroundColor: 'white',
+            margin: 16,
+            borderRadius: 10,
+            padding: 16,
+            marginBottom: 60,
+          }}
+        >
+          <Text style={styles.inputTextStyle}>Why do you want to cancel this consult?</Text>
+          <TouchableOpacity
+            style={{ marginBottom: 20 }}
+            onPress={() => {
+              setshowCancelReason(true);
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                borderBottomWidth: 2,
+                borderBottomColor: theme.colors.APP_GREEN,
+                // justifyContent: 'space-between',
+              }}
+            >
+              <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE), flex: 1 }}>
+                {selectedReason}
+              </Text>
+              <Down />
+            </View>
+          </TouchableOpacity>
+
+          {selectedReason === 'Other' && (
+            <TextInputComponent
+              placeholder="Enter here..."
+              value={otherReason}
+              onChangeText={setotherReason}
+            />
+          )}
+        </View>
+        <BottomButtons
+          whiteButtontitle={strings.buttons.cancel}
+          disabledOrange={selectedReason === 'Other' && otherReason === ''}
+          cancelFun={() => {
+            setshowCancelPopup(false);
+            // setfavAdvice('');
+            // console.log('cancel');
+            // setIsAdvice(false);
+          }}
+          yellowButtontitle={strings.consult.cancel_consult}
+          successFun={() => {
+            setLoading && setLoading(true);
+            console.log('successFun:');
+            mutationCancelSrdConsult({
+              variables: {
+                cancelAppointmentInput: {
+                  appointmentId: AppId,
+                  cancelReason: selectedReason === 'Other' ? otherReason : selectedReason,
+                  cancelledBy: REQUEST_ROLES.DOCTOR,
+                  cancelledById: doctorDetails ? doctorDetails.id : '',
+                },
+              },
+            })
+              .then((response) => {
+                console.log(response, 'cancel response');
+                const text = {
+                  id: doctorDetails ? doctorDetails.id : '',
+                  message: messageCodes.cancelConsultInitiated,
+                  isTyping: true,
+                  messageDate: new Date(),
+                  sentBy: REQUEST_ROLES.DOCTOR,
+                };
+                pubnub.publish(
+                  {
+                    message: text,
+                    channel: channel,
+                    storeInHistory: true,
+                  },
+                  (status: any, response: any) => {
+                    props.navigation.goBack();
+                  }
+                );
+              })
+              .catch((e: ApolloError) => {
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description: 'Error occured while cancelling appointment. Please try again',
+                  });
+                Alert.alert(e.graphQLErrors[0].message);
+              });
+          }}
+        />
+        {showCancelReason && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              // backgroundColor: 'red',
+              zIndex: 10000,
+              elevation: 10000,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: 'white',
+                borderRadius: 10,
+                ...theme.viewStyles.shadowStyle,
+                padding: 16,
+                paddingBottom: 0,
+                marginHorizontal: 16,
+              }}
+            >
+              {reasons.map((name) => (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE),
+                    paddingBottom: 16,
+                  }}
+                  onPress={() => {
+                    setselectedReason(name);
+                    setshowCancelReason(false);
+                    setotherReason('');
+                  }}
+                >
+                  {name}
+                </Text>
+              ))}
+            </View>
+          </View>
+        )}
+      </AphOverlay>
+    );
+  };
+
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
@@ -1439,11 +1621,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             icon: (
               <>
                 <View
+                  // activeOpacity={1}
                   style={{
                     marginTop: 0,
                     opacity: isAfter ? 1 : 0.5,
                   }}
+                  // onPress={() => {
+                  //   setshowMorePopup(true);
+                  // }}
                 >
+                  {/* <DotIcon /> */}
                   {appointmentData.appointmentState == 'AWAITING_RESCHEDULE' ||
                   appointmentData.status == 'COMPLETED' ||
                   showEditPreviewButtons ||
@@ -1499,14 +1686,32 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               width: '50%',
               marginRight: 20,
               marginTop: 40,
-              height: 80,
+              height: 120,
             }}
             options={[
               {
-                optionText: strings.consult_room.reschedule_consult,
+                optionText: strings.consult_room.reschedule,
                 onPress: () => {
                   setDropdownShow(false);
                   setDisplayReSchedulePopUp(true);
+                },
+              },
+              {
+                optionText: strings.consult.end_cancel_consult,
+                onPress: () => {
+                  if (
+                    appointmentData.status === STATUS.PENDING ||
+                    appointmentData.status === STATUS.IN_PROGRESS
+                  ) {
+                    setDropdownShow(false);
+                    setshowCancelPopup(true);
+                  } else {
+                    showAphAlert &&
+                      showAphAlert({
+                        title: 'Alert!',
+                        description: 'You are not allowed to cancel the appointment.',
+                      });
+                  }
                 },
               },
             ]}
@@ -1848,6 +2053,51 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           navigation={props.navigation}
         />
       )}
+      {showCancelPopup && renderCancelPopup()}
+      {/* {showMorePopup && (
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            // width: 200,
+            // backgroundColor: 'red',
+            zIndex: 1000,
+            elevation: 100,
+            alignItems: 'flex-end',
+          }}
+          onPress={() => setshowMorePopup(false)}
+        >
+          <View
+            style={{
+              // width: 150,
+              // height: 50,
+              marginTop: 30,
+              marginRight: 20,
+              ...theme.viewStyles.shadowStyle,
+              borderRadius: 10,
+              backgroundColor: 'white',
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.LIGHT_BLUE,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+                padding: 15,
+              }}
+              onPress={() => {
+                setshowCancelPopup(true);
+                setshowMorePopup(false);
+              }}
+            >
+              {strings.consult.end_cancel_consult}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      )} */}
     </SafeAreaView>
   );
 };
