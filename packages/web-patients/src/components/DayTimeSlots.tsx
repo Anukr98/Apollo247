@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 
-// import { getTime } from 'date-fns/esm';
-
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -163,14 +161,17 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
       parseInt(timeStringArray[0], 10) > 12
         ? parseInt(timeStringArray[0], 10) - 12
         : timeStringArray[0];
+
     const formattedHour =
       twelveHourHour && twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
 
+    const hours = parseInt(timeStringArray[0], 10);
+
     switch (key) {
       case 'late night':
-        return parseInt(timeStringArray[0], 10) > 12
-          ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
-          : '';
+        return hours > 12
+          ? `${hours - 12}:${timeStringArray[1]} pm`
+          : `${hours == 0 ? '12' : hours}:${timeStringArray[1]} am`;
       default:
         return formattedHour;
     }
@@ -221,6 +222,7 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                     const timeString = getTimeFromTimestamp(today, slotTime);
                     const timeStringArray = timeString.split(':');
                     const formattedHour = getTwelveHour(tab.message, timeStringArray);
+
                     if (formattedHour !== '') {
                       return (
                         <AphButton
