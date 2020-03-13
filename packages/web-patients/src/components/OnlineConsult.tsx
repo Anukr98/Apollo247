@@ -13,10 +13,15 @@ import {
 } from 'graphql/types/GetDoctorAvailableSlots';
 import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { useMutation } from 'react-apollo-hooks';
-import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { AppointmentType } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+import {
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from 'graphql/types/makeAppointmentPayment';
+import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { format } from 'date-fns';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import {
@@ -220,6 +225,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [consultNow, setConsultNow] = React.useState(true);
   const [scheduleLater, setScheduleLater] = React.useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const [couponCode, setCouponCode] = useState('');
 
   const { currentPatient } = useAllCurrentPatients();
   // const currentTime = new Date().getTime();
@@ -244,7 +250,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
       : '';
-
+  const [revisedAmount, setRevisedAmount] = useState(onlineConsultationFees);
   const hospitalId =
     doctorDetails &&
     doctorDetails.getDoctorDetailsById &&
@@ -424,7 +430,19 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     lateNightSlots.length === 0;
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
-
+  const makePaymentMutation = useMutation(MAKE_APPOINTMENT_PAYMENT);
+  let appointmentDateTime = '';
+  if (scheduleLater || !consultNowAvailable) {
+    const dateForScheduleLater =
+      dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
+    const appointmentDateTimeString = new Date(
+      `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
+    );
+    appointmentDateTime = moment.utc(appointmentDateTimeString).format();
+  } else {
+    appointmentDateTime = consultNowSlotTime;
+  }
+  const consultType: AppointmentType = AppointmentType.ONLINE;
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
@@ -548,7 +566,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </Grid>
             </>
           )}
-          <CouponCode />
+          <CouponCode
+            setCouponCode={setCouponCode}
+            subtotal={onlineConsultationFees}
+            revisedAmount={revisedAmount}
+            setRevisedAmount={setRevisedAmount}
+            doctorId={doctorId}
+            appointmentDateTime={appointmentDateTime}
+            appointmentType={consultType}
+          />
           <p className={classes.consultGroup}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am
@@ -620,7 +646,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     patientId: currentPatient ? currentPatient.id : '',
                     doctorId: doctorId,
                     appointmentDateTime: appointmentDateTime,
-                    appointmentType: APPOINTMENT_TYPE.ONLINE,
+                    appointmentType: AppointmentType.ONLINE,
                     hospitalId: hospitalId,
                   },
                 },
@@ -633,14 +659,37 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     res.data.bookAppointment &&
                     res.data.bookAppointment.appointment
                   ) {
-                    const pgUrl = `${
-                      process.env.CONSULT_PG_BASE_URL
-                    }/consultpayment?appointmentId=${
-                      res.data.bookAppointment.appointment.id
-                    }&patientId=${
-                      currentPatient ? currentPatient.id : ''
-                    }&price=${onlineConsultationFees}&source=WEB`;
-                    window.location.href = pgUrl;
+                    if (revisedAmount == '0') {
+                      makePaymentMutation({
+                        variables: {
+                          paymentInput: {
+                            amountPaid: 0,
+                            paymentRefId: '',
+                            paymentStatus: 'TXN_SUCCESS',
+                            paymentDateTime:
+                              res.data.bookAppointment.appointment.appointmentDateTime,
+                            responseCode: couponCode,
+                            responseMessage: 'Coupon applied',
+                            bankTxnId: '',
+                            orderId: res.data.bookAppointment.appointment.id,
+                          },
+                        },
+                        fetchPolicy: 'no-cache',
+                      })
+                        .then((res) => {
+                          window.location.href = clientRoutes.appointments();
+                        })
+                        .catch((error) => alert(error));
+                    } else {
+                      const pgUrl = `${
+                        process.env.CONSULT_PG_BASE_URL
+                      }/consultpayment?appointmentId=${
+                        res.data.bookAppointment.appointment.id
+                      }&patientId=${
+                        currentPatient ? currentPatient.id : ''
+                      }&price=${revisedAmount}&source=WEB`;
+                      window.location.href = pgUrl;
+                    }
                     // setMutationLoading(false);
                     // setIsDialogOpen(true);
                   }
@@ -664,7 +713,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             {mutationLoading ? (
               <CircularProgress size={22} color="secondary" />
             ) : (
-              `PAY Rs. ${onlineConsultationFees}`
+              `PAY Rs. ${revisedAmount}`
             )}
           </AphButton>
         </div>

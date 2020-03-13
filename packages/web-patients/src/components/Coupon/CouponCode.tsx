@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { useMutation } from 'react-apollo-hooks';
+import { VALIDATE_CONSULT_COUPON } from 'graphql/consult';
+import { AppointmentType } from 'graphql/types/globalTypes';
+import {
+  ValidateConsultCoupon,
+  ValidateConsultCouponVariables,
+} from 'graphql/types/ValidateConsultCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -108,43 +115,134 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+interface CouponProps {
+  doctorId: string;
+  appointmentDateTime: string;
+  appointmentType: AppointmentType;
+  setRevisedAmount: any;
+  revisedAmount: string;
+  subtotal: string;
+  setCouponCode: any;
+}
 
-export const CouponCode: React.FC = (props) => {
+export const CouponCode: React.FC<CouponProps> = (props) => {
   const classes = useStyles();
-
+  const [openCouponField, setOpenCouponField] = useState(false);
+  const [couponText, setCouponText] = useState('');
+  const [couponCodeApplied, setCouponCodeApplied] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isError, setIsError] = useState(false);
+  const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
+    VALIDATE_CONSULT_COUPON
+  );
   return (
     <div className={classes.root}>
       <div className={classes.couponButton}>
         <span className={classes.couponImg}>
           <img src={require('images/ic_coupon.svg')} alt="" />
         </span>
-        <span>Coupon Applied</span>
-        <div className={classes.tickMark}>
-          <img src={require('images/ic_arrow_right.svg')} alt="" />
-        </div>
-        <AphButton className={classes.removeBtn}>Remove</AphButton>
+        <span>Apply Coupon</span>
+        {!couponCodeApplied && (
+          <div className={classes.tickMark} onClick={() => setOpenCouponField(!openCouponField)}>
+            <img src={require('images/ic_arrow_right.svg')} alt="" />
+          </div>
+        )}
+        {couponCodeApplied && (
+          <AphButton
+            className={classes.removeBtn}
+            onClick={() => {
+              props.setRevisedAmount(props.subtotal);
+              setCouponText('');
+              setCouponCodeApplied(false);
+            }}
+          >
+            Remove
+          </AphButton>
+        )}
       </div>
-      <div className={classes.couponForm}>
-        <AphTextField placeholder="Enter coupon code" />
-        <AphButton className={classes.button}>Apply</AphButton>
-        <AphButton className={classes.button}>Remove</AphButton>
-        <div className={classes.successMsg}>Success.</div>
-        <div className={classes.errorMsg}>Sorry, invalid coupon code.</div>
-      </div>
-      <div className={classes.priceBox}>
-        <div className={classes.priceRow}>
-          <span>Subtotal</span>
-          <span className={classes.price}>Rs. 800.00</span>
+      {openCouponField && (
+        <div className={classes.couponForm}>
+          <AphTextField
+            placeholder="Enter coupon code"
+            onChange={(event) => {
+              setErrorMessage('');
+              setIsError(false);
+              setCouponCodeApplied(false);
+              setCouponText(event.target.value);
+            }}
+            value={couponText}
+          />
+          {!couponCodeApplied && (
+            <AphButton
+              className={classes.button}
+              disabled={couponText.length < 2}
+              onClick={() => {
+                const variables = {
+                  doctorId: props.doctorId,
+                  code: couponText,
+                  consultType: props.appointmentType,
+                  appointmentDateTimeInUTC: props.appointmentDateTime,
+                };
+                couponMutation({
+                  variables: {
+                    doctorId: props.doctorId,
+                    code: couponText,
+                    consultType: props.appointmentType,
+                    appointmentDateTimeInUTC: props.appointmentDateTime,
+                  },
+                  fetchPolicy: 'no-cache',
+                })
+                  .then((res) => {
+                    if (res && res.data && res.data.validateConsultCoupon) {
+                      setCouponCodeApplied(res.data.validateConsultCoupon.validityStatus);
+                      setErrorMessage(res.data.validateConsultCoupon.reasonForInvalidStatus);
+                      setIsError(!res.data.validateConsultCoupon.validityStatus);
+                      if (res.data.validateConsultCoupon.validityStatus) {
+                        props.setCouponCode(couponText);
+                      }
+                      props.setRevisedAmount(res.data.validateConsultCoupon.revisedAmount);
+                    }
+                  })
+                  .catch((error) => alert(error));
+              }}
+            >
+              Apply
+            </AphButton>
+          )}
+          {couponCodeApplied && (
+            <AphButton
+              className={classes.button}
+              onClick={() => {
+                props.setRevisedAmount(props.subtotal);
+                setCouponText('');
+                setCouponCodeApplied(false);
+              }}
+            >
+              Remove
+            </AphButton>
+          )}
+          {couponCodeApplied && <div className={classes.successMsg}>Success.</div>}
+          {isError && <div className={classes.errorMsg}>{errorMessage}</div>}
         </div>
-        <div className={classes.priceRow}>
-          <span>Coupon (WELCOME)</span>
-          <span className={classes.price}>-Rs. 800.00</span>
+      )}
+      {couponCodeApplied && (
+        <div className={classes.priceBox}>
+          <div className={classes.priceRow}>
+            <span>Subtotal</span>
+            <span className={classes.price}>Rs. {props.subtotal}.00</span>
+          </div>
+          <div className={classes.priceRow}>
+            <span>Coupon ({couponText})</span>
+            <span className={classes.price}>
+              -Rs. {Number(props.subtotal) - Number(props.revisedAmount)}.00
+            </span>
+          </div>
+          <div className={classes.totalPriceRow}>
+            <span>To Pay</span>
+            <span className={classes.totalPrice}>Rs.{props.revisedAmount}.00</span>
+          </div>
         </div>
-        <div className={classes.totalPriceRow}>
-          <span>To Pay</span>
-          <span className={classes.totalPrice}>Rs. 00.00</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
