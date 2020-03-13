@@ -278,8 +278,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     pastSearchValue && pastSearchValue.length > 0
       ? pastSearchValue
       : params.searchMedicineType === 'search-medicines'
-      ? params.searchText
-      : ''
+        ? params.searchText
+        : ''
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
@@ -387,7 +387,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('');
                       }}
@@ -399,7 +399,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('14') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('14');
                       }}
@@ -411,7 +411,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('24') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('24');
                       }}
@@ -423,7 +423,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('6') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('6');
                       }}
@@ -435,7 +435,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('71') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('71');
                       }}
@@ -447,7 +447,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('234') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('234');
                       }}
@@ -459,7 +459,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('97') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('97');
                       }}
@@ -471,7 +471,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('680') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('680');
                       }}

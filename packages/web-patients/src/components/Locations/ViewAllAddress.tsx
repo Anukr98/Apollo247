@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         fontWeight: 500,
         color: '#01475b',
+        wordBreak: 'break-word',
       },
     },
     addressGroup: {
