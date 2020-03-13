@@ -205,7 +205,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         <div className={classes.headerBackArrow}>
-          <AphButton>
+          <AphButton onClick={() => window.history.back()}>
             <img src={require('images/ic_back.svg')} />
           </AphButton>
         </div>

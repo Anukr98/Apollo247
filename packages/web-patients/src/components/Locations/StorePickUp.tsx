@@ -309,7 +309,7 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
               className={deliveryAddressId === '' ? classes.buttonDisable : ''}
               onClick={() => setIsViewAllAddressDialogOpen(false)}
             >
-              Done
+              SAVE AND USE
             </AphButton>
           </div>
         </div>
