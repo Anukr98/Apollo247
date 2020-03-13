@@ -504,7 +504,7 @@ export const MedicineCart: React.FC = (props) => {
   // if the total is less than 200 +20 is added.
   const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   const grossValue = cartTotal - discountAmount;
-  const deliveryCharges = grossValue > 200 || grossValue <= 0 ? 0 : 20;
+  const deliveryCharges = grossValue > 200 || grossValue <= 0 || tabValue === 1 ? 0 : 20;
   const totalAmount = (grossValue + deliveryCharges).toFixed(2);
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
