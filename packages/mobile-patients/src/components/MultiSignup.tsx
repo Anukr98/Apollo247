@@ -19,7 +19,6 @@ import {
   View,
   TouchableOpacity,
   Dimensions,
-  AsyncStorage,
   Alert,
   ActivityIndicator,
   BackHandler,
@@ -53,6 +52,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width, height } = Dimensions.get('window');
 

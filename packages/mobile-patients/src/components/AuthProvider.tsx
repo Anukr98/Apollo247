@@ -13,10 +13,14 @@ import _isEmpty from 'lodash/isEmpty';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
-import { AsyncStorage, Platform, Alert } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { DEVICE_TYPE } from '../graphql/types/globalTypes';
+import {
+  getNetStatus,
+  postWebEngageEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { DEVICE_TYPE, Relation } from '../graphql/types/globalTypes';
 import { GetCurrentPatientsVariables } from '../graphql/types/GetCurrentPatients';
 import { AppConfig } from '../strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -24,6 +28,9 @@ import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
 } from '../graphql/types/getPatientByMobileNumber';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import WebEngage from 'react-native-webengage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then(
@@ -126,6 +133,8 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
     cache,
   });
 };
+
+const webengage = new WebEngage();
 
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
@@ -259,6 +268,15 @@ export const AuthProvider: React.FC = (props) => {
               fetchPolicy: 'no-cache',
             })
             .then((data) => {
+              try {
+                const patients = g(data, 'data', 'getPatientByMobileNumber', 'patients') || [];
+                const patient = patients.find((item) => item!.relation == Relation.ME);
+                const mobileNumber = g(patient, 'mobileNumber');
+                mobileNumber && webengage.user.login(mobileNumber);
+              } catch (error) {
+                console.log('SplashScreen Webengage----', { error });
+              }
+
               setSignInError(false);
               console.log('getPatientApiCall', data);
               AsyncStorage.setItem('currentPatient', JSON.stringify(data));
@@ -299,6 +317,11 @@ export const AuthProvider: React.FC = (props) => {
             fetchPolicy: 'no-cache',
           })
           .then((data) => {
+            const eventAttributes: WebEngageEvents['Number of Profiles fetched'] = {
+              count: g(data, 'data', 'getCurrentPatients', 'patients', 'length') || 0,
+            };
+            postWebEngageEvent('Number of Profiles fetched', eventAttributes);
+
             AsyncStorage.setItem('callByPrism', 'true');
             AsyncStorage.setItem('currentPatient', JSON.stringify(data));
             setMobileAPICalled(true);

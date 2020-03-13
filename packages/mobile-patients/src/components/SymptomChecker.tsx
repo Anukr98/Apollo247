@@ -8,7 +8,6 @@ import {
   View,
   Text,
   BackHandler,
-  AsyncStorage,
   Dimensions,
   StyleSheet,
   Platform,
@@ -30,6 +29,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from './UIElementsProvider';
 import { ErrorBoundary } from '@aph/mobile-patients/src/components/ErrorBoundary';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 const styles = StyleSheet.create({

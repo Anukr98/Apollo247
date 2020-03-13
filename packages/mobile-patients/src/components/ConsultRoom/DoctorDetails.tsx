@@ -24,6 +24,7 @@ import {
   timeDiffFromNow,
   getNetStatus,
   statusBarHeight,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -53,6 +54,7 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -166,7 +168,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
-  const [availableInMin, setavailableInMin] = useState<Number>();
+  const [availableInMin, setavailableInMin] = useState<number>();
   const [availableTime, setavailableTime] = useState<string>('');
   const [physicalAvailableTime, setphysicalAvailableTime] = useState<string>('');
 
@@ -174,6 +176,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
   const { VirtualConsultationFee } = useAppCommonData();
+
+  useEffect(() => {
+    if (doctorDetails && availableInMin) {
+      _postWebEngageEvent(doctorDetails, availableInMin!);
+    }
+  }, [doctorDetails, availableInMin]);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -275,6 +283,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   //     }
   //   } catch {}
   // }
+
+  const _postWebEngageEvent = (
+    doctorDetails: getDoctorDetailsById_getDoctorDetailsById,
+    availableInMin: number
+  ) => {
+    const doctorClinics = (doctorDetails.doctorHospital || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+    const eventAttributes: WebEngageEvents['Consult- Doctor profile viewed for consultation'] = {
+      name: g(doctorDetails, 'fullName')!,
+      specialisation: g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
+      experience: Number(doctorDetails.experience!),
+      'language known': g(doctorDetails, 'languages') || 'NA',
+      Hospital:
+        doctorClinics.length > 0 && doctorDetails.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
+      'Available in': (availableInMin && `${availableInMin} minute(s)`) || '',
+    };
+    postWebEngageEvent('Consult- Doctor profile viewed for consultation', eventAttributes);
+  };
 
   const todayDate = new Date().toISOString().slice(0, 10);
 

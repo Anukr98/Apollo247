@@ -2075,3 +2075,11 @@ export const GET_PATIENTS_MOBILE = gql`
     }
   }
 `;
+
+export const SEND_CHAT_MESSAGE_TO_DOCTOR = gql`
+  query sendChatMessageToDoctor($appointmentId: String) {
+    sendChatMessageToDoctor(appointmentId: $appointmentId) {
+      status
+    }
+  }
+`;

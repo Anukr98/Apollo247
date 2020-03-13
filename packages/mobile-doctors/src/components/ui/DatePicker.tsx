@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import {
   Keyboard,
   StyleProp,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,

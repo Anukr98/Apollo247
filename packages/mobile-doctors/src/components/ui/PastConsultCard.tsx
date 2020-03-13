@@ -5,13 +5,11 @@ import {
   ImageSourcePropType,
   ImageStyle,
   StyleProp,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import PastConsultCardStyles from '@aph/mobile-doctors/src/components/ui/PastConsultCard.styles';
 

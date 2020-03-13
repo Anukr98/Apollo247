@@ -732,6 +732,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             contentContainerStyle={{
               marginHorizontal: 20,
               marginTop: 0,
+              paddingBottom: isIphoneX ? 50 : 0,
             }}
             removeClippedSubviews={false}
             bounces={false}

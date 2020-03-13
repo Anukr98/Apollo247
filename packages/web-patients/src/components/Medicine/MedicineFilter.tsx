@@ -73,7 +73,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     selectMenuRoot: {
-      paddingRight: 55,
       '& svg': {
         color: '#00b38e',
         fontSize: 30,
@@ -81,18 +80,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     selectMenuItem: {
       color: theme.palette.secondary.dark,
-      fontSize: 50,
+      fontSize: 12,
       fontWeight: 600,
-      lineHeight: '66px',
-      paddingTop: 2,
       paddingBottom: 7,
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      [theme.breakpoints.down('xs')]: {
-        fontSize: 30,
-        lineHeight: '46px',
-      },
       backgroundColor: 'transparent',
       '&:focus': {
         backgroundColor: 'transparent',
@@ -170,16 +163,31 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: theme.palette.common.white,
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
         borderRadius: 10,
-        padding: '5px 10px',
+        padding: '5px 10px 5px 10px',
         paddingTop: 0,
         '& input': {
           fontSize: 12,
           padding: '5px 0',
         },
+        '&:before': {
+          display: 'none',
+        },
+        '&:after': {
+          display: 'none',
+        },
+        '& svg': {
+          top: 'calc(50% - 12px) !important',
+          right: 5,
+        },
       },
       '& span': {
         paddingLeft: 10,
         paddingRight: 10,
+      },
+    },
+    padNone: {
+      '& >div': {
+        paddingBottom: 0,
       },
     },
     filterHeader: {
@@ -222,6 +230,20 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    priceGroup: {
+      position: 'relative',
+      '& input': {
+        paddingLeft: '20px !important',
+      },
+    },
+    priceLabel: {
+      position: 'absolute',
+      left: 0,
+      top: 4,
+      color: '#02475b',
+      fontWeight: 500,
+      fontSize: 12,
+    },
   });
 });
 type priceFilter = { fromPrice: string; toPrice: string };
@@ -249,13 +271,15 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   };
   const [selectedCatagerys, setSelectedCatagerys] = useState(['']);
   const [selected, setSelected] = useState<boolean>(false);
-
+  const pastSearchValue = localStorage.getItem('searchText');
   const params = useParams<Params>();
   const locationUrl = window.location.href;
   const [subtxt, setSubtxt] = useState<string>(
-    params.searchMedicineType === 'search-medicines'
+    pastSearchValue && pastSearchValue.length > 0
+      ? pastSearchValue
+      : params.searchMedicineType === 'search-medicines'
       ? params.searchText
-      : localStorage.getItem('searchText') || ''
+      : ''
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
@@ -264,7 +288,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [sortValue, setSortValue] = useState<string>('');
 
   useEffect(() => {
-    if (subtxt.length > 0 && subtxt !== params.searchText) {
+    if (subtxt.length > 0) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);
@@ -480,28 +504,34 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
               <div className={classes.filterType}>Price</div>
               <div className={classes.boxContent}>
                 <div className={classes.filterBy}>
-                  <AphTextField
-                    placeholder="RS.500"
-                    value={fromPrice}
-                    onChange={(e) => {
-                      setFromPrice(e.target.value);
-                    }}
-                  />{' '}
-                  <span>TO</span>{' '}
-                  <AphTextField
-                    placeholder="RS.3000"
-                    value={toPrice}
-                    onChange={(e) => {
-                      setToPrice(e.target.value);
-                    }}
-                  />
+                  <div className={classes.priceGroup}>
+                    <AphTextField
+                      placeholder="500"
+                      value={fromPrice}
+                      onChange={(e) => {
+                        setFromPrice(e.target.value);
+                      }}
+                    />
+                    <span className={classes.priceLabel}>RS.</span>
+                  </div>
+                  <span>TO</span>
+                  <div className={classes.priceGroup}>
+                    <AphTextField
+                      placeholder="3000"
+                      value={toPrice}
+                      onChange={(e) => {
+                        setToPrice(e.target.value);
+                      }}
+                    />
+                    <span className={classes.priceLabel}>RS.</span>
+                  </div>
                 </div>
               </div>
             </div>
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Sort by</div>
               <div className={classes.boxContent}>
-                <div className={classes.filterBy}>
+                <div className={`${classes.filterBy} ${classes.padNone}`}>
                   <AphSelect
                     value={sortValue !== '' ? sortValue : 'Select sort by'}
                     onChange={(e) => setSortValue(e.target.value as SortByOptions)}

@@ -33,6 +33,9 @@ import {
   aphConsole,
   isEmptyObject,
   handleGraphQlError,
+  doRequestAndAccessLocation,
+  postWebEngageEvent,
+  postwebEngageAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -56,6 +59,7 @@ import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import Geolocation from '@react-native-community/geolocation';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -210,46 +214,28 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, setLocationDetails } = useAppCommonData();
 
   useEffect(() => {
-    if (!(locationDetails && locationDetails.pincode)) {
-      Geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          getPlaceInfoByLatLng(latitude, longitude)
-            .then((obj) => {
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const _pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
-                  setpincode(_pincode || '');
-                }
-              } catch (e) {
-                CommonBugFender('MedicineDetailsScene_getPlaceInfoByLatLng_try', e);
-              }
-            })
-            .catch((error) => {
-              CommonBugFender('MedicineDetailsScene_getPlaceInfoByLatLng', error);
-              console.log(error, 'geocode error');
+    if (!locationDetails) {
+      doRequestAndAccessLocation()
+        .then((response) => {
+          setLoading(false);
+          response && setLocationDetails && setLocationDetails(response);
+        })
+        .catch((e) => {
+          CommonBugFender('MedicineDetailsScene_Location_Request', e);
+          setLoading(false);
+          showAphAlert &&
+            showAphAlert({
+              title: 'Uh oh! :(',
+              description: 'Unable to access location.',
             });
-        },
-        (error) => {
-          console.log(error.code, error.message, 'getCurrentPosition error');
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-      );
+        });
     } else {
       setpincode(locationDetails.pincode || '');
     }
-  }, []);
+  }, [locationDetails]);
 
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
@@ -393,15 +379,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   }, [deliveryTime, deliveryError]);
 
-  const onAddCartItem = ({
-    sku,
-    mou,
-    name,
-    price,
-    special_price,
-    is_prescription_required,
-    thumbnail,
-  }: MedicineProduct) => {
+  const onAddCartItem = (item: MedicineProduct) => {
+    const { sku, mou, name, price, special_price, is_prescription_required, thumbnail } = item;
     addCartItem!({
       id: sku,
       mou,
@@ -417,6 +396,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       thumbnail: thumbnail,
       isInStock: true,
     });
+    postwebEngageAddToCartEvent(item);
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
@@ -623,6 +603,25 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
                   updateQuantityCartItem(medicineDetails);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
+
+                  const eventAttributes: WebEngageEvents['Buy Now'] = {
+                    'product name': medicineDetails.name,
+                    'product id': medicineDetails.sku,
+                    Brand: '',
+                    'Brand ID': '',
+                    'category name': '',
+                    'category ID': medicineDetails.category_id,
+                    Price: medicineDetails.price,
+                    'Discounted Price':
+                      typeof medicineDetails.special_price == 'string'
+                        ? Number(medicineDetails.special_price)
+                        : medicineDetails.special_price,
+                    Quantity:
+                      typeof selectedQuantity == 'string'
+                        ? Number(selectedQuantity)
+                        : selectedQuantity,
+                  };
+                  postWebEngageEvent('Buy Now', eventAttributes);
                   props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
                 }}
                 title="BUY NOW"
@@ -726,11 +725,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderTabComponent = () => {
     // let description = desc; // props.route.key; //data.CaptionDesc;
     const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
-    const description = filterHtmlContent(
+    let description =
       selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
         ? selectedTabdata[0].CaptionDesc
-        : ''
-    );
+        : '';
+    description = description
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;rn/g, '>')
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/\.t/g, '.');
 
     return (
       <View
@@ -745,15 +750,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       >
         <View>
           {!!description && (
-            <Text
-              style={{
-                color: theme.colors.SKY_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 22,
+            <HTML
+              html={description}
+              baseFontStyle={{
+                ...theme.viewStyles.text('M', 14, '#0087ba', 1, 22),
               }}
-            >
-              {description}
-            </Text>
+              imagesMaxWidth={Dimensions.get('window').width}
+            />
           )}
         </View>
       </View>
@@ -785,9 +788,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderInfo = () => {
     const description = medicineDetails.description
+      .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;rn/g, '>')
-      .replace(/&gt;/g, '>');
+      .replace(/&gt;r/g, '>')
+      .replace(/&gt;/g, '>')
+      .replace(/.t/, '.');
     console.log(description);
 
     if (!!description)

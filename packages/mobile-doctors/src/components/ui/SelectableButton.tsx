@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, ViewStyle, View } from 'react-native';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { StyleProp, Text, TouchableOpacity, ViewStyle, View } from 'react-native';
 import SelectableButtonStyles from '@aph/mobile-doctors/src/components/ui/SelectableButton.styles';
 
 const styles = SelectableButtonStyles;

@@ -35,8 +35,8 @@ export const setLoggedIn = async (flag: boolean) => {
 
 export const clearUserData = async () => {
   await Promise.all([
-    AsyncStorage.removeItem('isProfileFlowDone'),
-    AsyncStorage.removeItem('doctorDetails'),
+    // AsyncStorage.removeItem('isProfileFlowDone'),
+    //AsyncStorage.removeItem('doctorDetails'),
     AsyncStorage.removeItem('isLoggedIn'),
   ]);
 };

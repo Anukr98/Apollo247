@@ -64,7 +64,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
-  ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verfied & successfully processed. Order will be delivered {2}',
+  ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
 
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',

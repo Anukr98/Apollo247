@@ -5,10 +5,9 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '../../graphql/types/getPatientMedicalRecords';
 import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
@@ -177,28 +176,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                         data: item.data,
                       });
                     }}
-                    onPressDelete={() => {
-                      CommonLogEvent('MEDICAL_RECORDS', 'Delete record');
-                      Alert.alert(
-                        'Delete Record',
-                        '',
-                        [
-                          {
-                            text: 'Cancel',
-                            onPress: () => console.log('Cancel Pressed'),
-                            style: 'cancel',
-                          },
-                          {
-                            text: 'OK',
-                            onPress: () => {
-                              CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order');
-                              props.renderDeleteMedicalOrder(item.data.id);
-                            },
-                          },
-                        ],
-                        { cancelable: false }
-                      );
-                    }}
+                    disableDelete={true}
                   />
                 );
               }}

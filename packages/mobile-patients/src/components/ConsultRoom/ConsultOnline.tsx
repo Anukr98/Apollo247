@@ -20,6 +20,8 @@ import {
   nextAvailability,
   timeTo12HrFormat,
   isIphone5s,
+  g,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -32,6 +34,10 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import moment from 'moment';
+import { DoctorType } from '../../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -69,6 +75,7 @@ type TimeArray = {
 }[];
 
 export interface ConsultOnlineProps {
+  source: 'List' | 'Profile';
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   date: Date;
   setDate: (arg0: Date) => void;
@@ -121,9 +128,11 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
 
   const [date, setDate] = useState<Date>(props.date);
-  const [availableInMin, setavailableInMin] = useState<Number>(0);
+  const [availableInMin, setavailableInMin] = useState<number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
   const [checkingAvailability, setCheckingAvailability] = useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
+
   useEffect(() => {
     console.log(availableInMin, 'ConsultOnline');
 
@@ -264,6 +273,43 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     }
   };
 
+  const postConsultNowOrScheduleLaterEvent = (type: 'now' | 'later') => {
+    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: WebEngageEvents['Consult- Schedule for Later clicked'] = {
+      name: g(props.doctor, 'fullName')!,
+      specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
+      experience: Number(g(props.doctor, 'experience')!),
+      'language known': g(props.doctor, 'languages')! || 'NA',
+      Hospital:
+        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
+      Source: props.source,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      slot: NextAvailableSlot,
+    };
+    if (type == 'now') {
+      (eventAttributes as WebEngageEvents['Consult- Consult Now clicked'])[
+        'Available in'
+      ] = `${availableInMin} minute(s)`;
+      postWebEngageEvent('Consult- Consult Now clicked', eventAttributes);
+    } else {
+      postWebEngageEvent('Consult- Schedule for Later clicked', eventAttributes);
+    }
+  };
+
   const renderTimings = () => {
     return (
       <View>
@@ -387,7 +433,8 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[0] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
-              CommonLogEvent(AppRoutes.DoctorDetails, 'Consult Now clicked');
+              postConsultNowOrScheduleLaterEvent('now');
+              CommonLogEvent(AppRoutes.DoctorDetails, 'Consult- Consult Now clicked');
               setselectedCTA(onlineCTA[0]);
               props.setisConsultOnline(true);
               // props.setselectedTimeSlot('');
@@ -409,6 +456,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
+              postConsultNowOrScheduleLaterEvent('later');
               CommonLogEvent(AppRoutes.DoctorDetails, 'Schedule For Later clicked');
               fetchSlots();
               setselectedCTA(onlineCTA[1]);

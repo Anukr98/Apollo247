@@ -4,6 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.webengage.sdk.android.WebEngage;
+import com.webengage.sdk.android.WebEngageConfig;
+import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerPackage;
 import com.imagepicker.ImagePickerPackage;
@@ -26,10 +29,12 @@ import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
 import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
 import android.app.AlertDialog;
+import com.webengage.sdk.android.Analytics;
 
 
 // import com.reactnative.ivpusic.imagepicker.PickerPackage;
@@ -55,6 +60,7 @@ import io.fabric.sdk.android.Fabric;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -112,6 +118,12 @@ public class MainApplication extends Application implements ReactApplication {
         Fabric.with(this, new Crashlytics());
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
+
+        WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
+                .setWebEngageKey("in~~c2ab3529")
+                .setDebugMode(false) // only in development mode
+                .build();
+        registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));
 
         ReactNativeExceptionHandlerModule.setNativeExceptionHandler(new NativeExceptionHandlerIfc() {
             @Override

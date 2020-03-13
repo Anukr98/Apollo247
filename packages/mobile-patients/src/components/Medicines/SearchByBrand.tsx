@@ -52,7 +52,12 @@ import {
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { isValidSearch } from '../../helpers/helperFunctions';
+import {
+  isValidSearch,
+  postWebEngageEvent,
+  postwebEngageAddToCartEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -155,15 +160,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       },
     });
 
-  const onAddCartItem = ({
-    sku,
-    mou,
-    name,
-    price,
-    special_price,
-    is_prescription_required,
-    thumbnail,
-  }: MedicineProduct) => {
+  const onAddCartItem = (item: MedicineProduct) => {
+    const { sku, mou, name, price, special_price, is_prescription_required, thumbnail } = item;
     addCartItem!({
       id: sku,
       mou,
@@ -179,6 +177,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       thumbnail,
       isInStock: true,
     });
+    postwebEngageAddToCartEvent(item);
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -495,6 +494,20 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
   };
 
+  const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
+    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+      'product name': name,
+      'product id': sku,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': category_id,
+      Source: 'List',
+      'Section Name': 'SEARCH',
+    };
+    postWebEngageEvent('Product Clicked', eventAttributes);
+  };
+
   const renderMedicineCard = (
     medicine: MedicineProduct,
     index: number,
@@ -524,6 +537,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
+          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
@@ -733,6 +747,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         setMedicineList([]);
         return;
       }
+      const eventAttributes: WebEngageEvents['Search'] = { keyword: _searchText };
+      postWebEngageEvent('Search', eventAttributes);
+
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
         .then(({ data }) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, ActivityIndicatorProps, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ActivityIndicatorProps, View } from 'react-native';
 import LoaderStyles from '@aph/mobile-doctors/src/components/ui/Loader.styles';
 
 const styles = LoaderStyles;
