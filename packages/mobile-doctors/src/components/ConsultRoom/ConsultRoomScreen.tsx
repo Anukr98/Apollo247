@@ -1208,6 +1208,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         setStartConsult(false);
         stopInterval();
         stopTimer();
+        stopMissedCallTimer();
+        stopNoShow();
       }
     );
   };
