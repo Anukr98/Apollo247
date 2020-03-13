@@ -141,45 +141,6 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       display: 'block',
     },
-    rescheduleButton: {
-      paddingTop: 8,
-      display: 'flex',
-      '& button': {
-        color: '#fc9916',
-        boxShadow: 'none',
-        backgroundColor: 'transparent',
-        padding: 0,
-        minWidth: 'auto',
-        '&:hover': {
-          backgroundColor: 'transparent',
-          color: '#fc9916',
-        },
-      },
-    },
-    wrapperCards: {
-      backgroundColor: '#f7f8f5',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      padding: 16,
-      marginTop: 16,
-      marginBottom: 16,
-      '& p': {
-        fontSize: 14,
-        fontWeight: 500,
-        color: '#02475b',
-        margin: 0,
-      },
-    },
-    doneButton: {
-      padding: 16,
-      marginBOttom: 16,
-      '& button': {
-        width: '100%',
-      },
-    },
-    menuSelected: {
-      backgroundColor: 'transparent !important',
-      color: '#00b38e !important',
-    },
   };
 });
 
@@ -414,58 +375,12 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                             {orderInfo.medicineOrdersStatus &&
                               getOrderDeliveryDate(orderInfo.medicineOrdersStatus)}
                           </div>
-                          <div className={classes.rescheduleButton}>
-                            <AphButton
-                              color="primary"
-                              onClick={() => setIsUploadPreDialogOpen(true)}
-                              title={'Schedule Appointment'}
-                            >
-                              Reschedule
-                            </AphButton>
-                            {/* <AphButton>Consult a Doctor</AphButton>
-                          <AphButton>Download Report</AphButton> */}
-                          </div>
                         </div>
                       </div>
                     )
                 )
               : 'No Orders Found'}
           </div>
-          <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
-            <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
-            <AphDialogTitle>Schedule Appointment</AphDialogTitle>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
-              <div className={classes.wrapperCards}>Calender</div>
-              <div className={classes.wrapperCards}>
-                <p>Slot</p>
-                <AphSelect>
-                  <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
-                    6:00 am - 6:40 am
-                  </MenuItem>
-                  <MenuItem value={2}>6:00 am - 6:40 am</MenuItem>
-                  <MenuItem value={3}>6:00 am - 6:40 am</MenuItem>
-                </AphSelect>
-              </div>
-              <div className={classes.wrapperCards}>
-                <p>Why are you rescheduling this order?</p>
-                <AphSelect>
-                  <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
-                    Select reason for rescheduling{' '}
-                  </MenuItem>
-                </AphSelect>
-              </div>
-              <div className={classes.wrapperCards}>
-                <p>Add Comments (Optional)</p>
-                <AphTextField
-                  // classes={{ root: classes.searchInput }}
-                  placeholder="Enter your comments here…"
-                />
-              </div>
-              <div className={classes.doneButton}>
-                <AphButton color="primary">Done</AphButton>
-              </div>
-            </Scrollbars>
-          </AphDialog>
         </Scrollbars>
       </div>
     );
