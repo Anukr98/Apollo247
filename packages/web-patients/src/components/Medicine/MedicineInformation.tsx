@@ -268,26 +268,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textDecoration: 'line-through',
       paddingRight: 5,
     },
-    successPopoverWindow: {
-      display: 'flex',
-      marginRight: 5,
-      marginBottom: 5,
-    },
-    windowWrap: {
-      width: 368,
-      borderRadius: 10,
-      paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
-    },
-    mascotIcon: {
-      position: 'absolute',
-      right: 12,
-      top: -40,
-      '& img': {
-        maxWidth: 72,
-      },
-    });
+  });
 });
 
 type MedicineInformationProps = {
