@@ -118,6 +118,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -378,21 +379,38 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setShowButtons(props.startConsult);
   }, []);
 
-  const saveDetails = () => {
-    setLoading && setLoading(true);
-    setShowButtons(true);
-    const input = {
+  useEffect(() => {
+    const onUnmount = async () => {
+      if (
+        (g(props.caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED ||
+          g(props.caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.IN_PROGRESS) &&
+        !g(props.caseSheet, 'caseSheetDetails', 'sentToPatient')
+      ) {
+        const inputData: string | null = await AsyncStorage.getItem('consultDetails');
+        if (inputData) {
+          saveDetails(false, JSON.parse(inputData) as ModifyCaseSheetInput, undefined);
+          AsyncStorage.removeItem('consultDetails');
+        }
+      }
+    };
+    return () => {
+      onUnmount();
+    };
+  }, []);
+
+  const getInputData = () => {
+    return {
       symptoms:
         symptonsData &&
         symptonsData
           .map((i) => {
             if (i) {
               return {
-                symptom: i.symptom,
-                since: i.since,
-                howOften: i.howOften,
-                severity: i.severity,
-                details: i.details,
+                symptom: i.symptom || '',
+                since: i.since || '',
+                howOften: i.howOften || '',
+                severity: i.severity || '',
+                details: i.details || '',
               };
             } else {
               return '';
@@ -487,13 +505,41 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       weight: medicalHistory ? medicalHistory.weight : '',
       bp: medicalHistory ? medicalHistory.bp : '',
     } as ModifyCaseSheetInput;
+  };
+  useEffect(() => {
+    AsyncStorage.setItem('consultDetails', JSON.stringify(getInputData()));
+  }, [
+    addedAdvices,
+    caseSheetData,
+    diagnosisData,
+    doctorNotes,
+    familyValues,
+    followUpConsultationType,
+    followupDays,
+    lifeStyleData,
+    medicalHistory,
+    medicinePrescriptionData,
+    selectedMedicinesId,
+    switchValue,
+    symptonsData,
+    tests,
+  ]);
+
+  const saveDetails = (
+    showLoading: boolean,
+    inputdata?: ModifyCaseSheetInput,
+    callBack?: () => void
+  ) => {
+    showLoading && setLoading && setLoading(true);
+    setShowButtons(true);
+    const input = getInputData();
     console.log('input', input);
 
     client
       .mutate<modifyCaseSheet, modifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
         variables: {
-          ModifyCaseSheetInput: input,
+          ModifyCaseSheetInput: inputdata ? inputdata : input,
         },
         fetchPolicy: 'no-cache',
       })
@@ -509,6 +555,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         //     description: strings.alerts.successfully_updated,
         //   });
         props.getdetails();
+        callBack && callBack();
       })
       .catch((e) => {
         setLoading && setLoading(false);
@@ -582,7 +629,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         },
         onSendPress: () => {
           props.onStopConsult();
-          sendToPatientAction();
+          saveDetails(true, undefined, sendToPatientAction);
         },
       });
     }
@@ -689,7 +736,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           ) : (
             <View style={styles.footerButtonsContainer}>
               <Button
-                onPress={() => saveDetails()}
+                onPress={() => saveDetails(true)}
                 title={strings.buttons.save}
                 titleTextStyle={styles.buttonTextStyle}
                 variant="white"
@@ -757,7 +804,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
         <View style={styles.footerButtonsContainer}>
           <Button
-            onPress={() => saveDetails()}
+            onPress={() => saveDetails(true)}
             title={'SAVE'}
             titleTextStyle={styles.buttonTextStyle}
             variant="white"
@@ -766,7 +813,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Button
             title={'PREVIEW PRESCRIPTION'}
             onPress={() => {
-              saveDetails();
+              // saveDetails();
               prescriptionView();
             }}
             style={styles.buttonendStyle}
@@ -2257,7 +2304,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             onPress={() => {
               setyesorno(false);
               setLoading && setLoading(true);
-              saveDetails();
+              saveDetails(true);
               endConsult();
             }}
           >
@@ -2603,7 +2650,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     style={styles.inputView}
                     multiline={true}
                     value={doctorNotes}
-                    onChangeText={(value) => setDoctorNotes(value)}
+                    onChangeText={(value) => caseSheetEdit && setDoctorNotes(value)}
                     autoCorrect={true}
                   />
                 </View>
