@@ -1,12 +1,13 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
+import { getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers } from 'graphql/types/getDiagnosticsData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -105,7 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface HotSellerProps {
-  data?: { products: MedicineProduct[] };
+  data: (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null;
 }
 
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
@@ -152,123 +153,42 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     ],
   };
 
+  const { data } = props;
+
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
-        <Link to={clientRoutes.testDetails()}>
-          <div className={classes.card}>
-            <div className={classes.cardWrap}>
-              <div className={classes.productIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-              <div className={classes.productTitle}>Liver Function Test</div>
-              <div className={classes.bottomSection}>
-                <div className={classes.priceGroup}>
-                  <span className={classes.regularPrice}>(Rs. 125)</span>
-                  <span>Rs. 124 </span>
+      {data &&
+        data.map(
+          (hotSeller: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null) =>
+            hotSeller && (
+              // <Slider {...sliderSettings}>
+              <Link to={clientRoutes.testDetails()}>
+                <div className={classes.card}>
+                  <div className={classes.cardWrap}>
+                    <div className={classes.productIcon}>
+                      {hotSeller.packageImage ? (
+                        <img src={hotSeller.packageImage} alt="" />
+                      ) : (
+                        <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                      )}
+                    </div>
+                    <div className={classes.productTitle}>{hotSeller.packageName}</div>
+                    <div className={classes.bottomSection}>
+                      <div className={classes.priceGroup}>
+                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                        <span>Rs. {hotSeller.price} </span>
+                      </div>
+                      <div className={classes.addToCart}>
+                        <AphButton>Add To Cart</AphButton>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className={classes.addToCart}>
-                  <AphButton>Add To Cart</AphButton>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Link>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Slider>
+              </Link>
+              // </Slider>
+            )
+        )}
+      {/* */}
     </div>
   );
 };

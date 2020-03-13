@@ -470,3 +470,76 @@ export const SEND_HELP_EMAIL = gql`
     sendHelpEmail(helpEmailInput: $helpEmailInput)
   }
 `;
+
+// diagnosis queries
+
+export const SEARCH_DIAGNOSTICS = gql`
+  query searchDiagnostics($city: String, $patientId: String, $searchText: String!) {
+    searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_DATA = gql`
+  query getDiagnosticsData {
+    getDiagnosticsData {
+      diagnosticOrgans {
+        id
+        organName
+        organImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          collectionType
+        }
+      }
+      diagnosticHotSellers {
+        id
+        packageName
+        price
+        packageImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          collectionType
+        }
+      }
+    }
+  }
+`;
