@@ -30,7 +30,10 @@ import {
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -718,7 +721,7 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
 
 const webengage = new WebEngage();
 
-export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes: Object) => {
+export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     console.log('\n********* WebEngageEvent Start *********\n');
     console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
@@ -729,14 +732,11 @@ export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes:
   }
 };
 
-export const postwebEngageAddToCartEvent = ({
-  sku,
-  name,
-  category_id,
-  price,
-  special_price,
-}: MedicineProduct) => {
-  const eventAttributes: WebEngageEvents['Add to cart'] = {
+export const postwebEngageAddToCartEvent = (
+  { sku, name, category_id, price, special_price }: MedicineProduct,
+  source: WebEngageEvents[WebEngageEventName.ADD_TO_CART]['Source']
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
     'product name': name,
     'product id': sku,
     Brand: '',
@@ -746,6 +746,7 @@ export const postwebEngageAddToCartEvent = ({
     Price: price,
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
+    Source: source,
   };
-  postWebEngageEvent('Add to cart', eventAttributes);
+  postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
 };

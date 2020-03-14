@@ -1,12 +1,77 @@
 type YesOrNo = { value: 'Yes' | 'No' };
 
+export enum WebEngageEventName {
+  MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
+  OTP_ENTERED = 'OTP Entered',
+  PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
+  REGISTRATION_DONE = 'Registration Done',
+  NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
+  SEARCH = 'Pharmacy Search',
+  PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
+  CATEGORY_CLICKED = 'Pharmacy Category Clicked',
+  ADD_TO_CART = 'Add to cart',
+  BUY_NOW = 'Buy Now',
+  CART_VIEWED = 'Cart Viewed',
+  PROCCED_TO_PAY_CLICKED = 'Procced To Pay Clicked',
+  PHARMACY_PAYMENT_INITIATED = 'Payment Initiated',
+  UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
+  UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
+  PHARMACY_SUBMIT_PRESCRIPTION = 'Pharmacy Submit Prescription',
+  PHARMACY_CHECKOUT_COMPLETED = 'Checkout completed',
+  DOCTOR_SEARCH = 'Doctor Search',
+  SPECIALITY_CLICKED = 'Speciality Clicked',
+  DOCTOR_CLICKED = 'Doctor Clicked',
+  DOCTOR_PROFILE_VIEWED = 'Doctor Profile Viewed',
+  BOOK_APPOINTMENT = 'Book Appointment',
+  CONSULT_NOW_CLICKED = 'Consult Now clicked',
+  CONSULT_SCHEDULE_FOR_LATER_CLICKED = 'Consult Schedule for Later clicked',
+  CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
+  CONSULT_COUPON_APPLIED = 'Coupon Applied',
+  PAY_BUTTON_CLICKED = 'Pay Button Clicked',
+  CONSULTATION_BOOKED = 'Consultation booked',
+
+  // HomePageElements Events
+  BUY_MEDICINES = 'Buy Medicines',
+  ORDER_TESTS = 'Order Tests',
+  MANAGE_DIABETES = 'Manage Diabetes',
+  TRACK_SYMPTOMS = 'Track Symptoms',
+  VIEW_HELATH_RECORDS = 'View Helath Records',
+  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
+  ACTIVE_APPOINTMENTS = 'Active Appointments',
+  NEED_HELP = 'Need Help?',
+  MY_ACCOUNT = 'My Account',
+  FIND_A_DOCTOR = 'Find a Doctor',
+
+  // Diagnostics Events
+  FEATURED_TEST_CLICKED = 'Featured Test Clicked',
+  BROWSE_PACKAGE = 'Browse Package',
+}
+
+export interface PatientInfo {
+  'Patient Name': string;
+  'Patient UHID': string;
+  Relation: string;
+  Age: number;
+  Gender: string;
+  'Mobile Number': string;
+  'Customer ID': string;
+}
+
+export interface PatientInfoWithSource extends PatientInfo {
+  Source: 'Home Screen' | 'Menu';
+}
+
+export interface SpecialityClickedEvent extends PatientInfo {
+  'Speciality Name': string;
+}
+
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
-  'Mobile Number Entered': { mobilenumber: string };
-  'OTP Entered': YesOrNo;
-  'Pre Apollo Customer': YesOrNo;
-  'Registration Done': {
+  [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
+  [WebEngageEventName.OTP_ENTERED]: YesOrNo;
+  [WebEngageEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
+  [WebEngageEventName.REGISTRATION_DONE]: {
     'Customer ID': string;
     'Customer First Name': string;
     'Customer Last Name': string;
@@ -15,28 +80,63 @@ export interface WebEngageEvents {
     Email: string;
     'Referral Code'?: string;
   };
-  'Number of Profiles fetched': { count: number };
+  [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
+
+  // ********** Home Screen Events ********** \\
+
+  [WebEngageEventName.BUY_MEDICINES]: PatientInfoWithSource;
+  [WebEngageEventName.ORDER_TESTS]: PatientInfoWithSource;
+  [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
+  [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
+  [WebEngageEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
+  [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
+  [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [WebEngageEventName.NEED_HELP]: PatientInfoWithSource; // source values may change later
+  [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
+  [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
 
   // ********** PharmacyEvents ********** \\
 
-  Search: { keyword: string; 'Buy Medicines': boolean; Medicines: boolean };
-  'Product Clicked': {
+  [WebEngageEventName.SEARCH]: {
+    keyword: string;
+    Source: 'Pharmacy Home';
+  };
+  [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
     'product name': string;
     'product id': string; // (SKUID)
     Brand: string;
     'Brand ID': string;
     'category name': string;
     'category ID': string;
-    Source: 'Home' | 'List';
+    Source: 'Home' | 'List' | 'Search';
     'Section Name': string;
   };
-  'Category Clicked': {
+  [WebEngageEventName.CATEGORY_CLICKED]: {
     'category name': string;
     'category ID': string;
     Source: 'Home'; // Home
     'Section Name': string;
   };
-  'Add to cart': {
+  [WebEngageEventName.ADD_TO_CART]: {
+    'product name': string;
+    'product id': string; // (SKUID)
+    Price: number;
+    'Discounted Price': number;
+    Quantity: number;
+    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
+    Brand?: string;
+    'Brand ID'?: string;
+    'category name'?: string;
+    'category ID'?: string;
+    // 'Patient Name': string;
+    // 'Patient UHID': string;
+    // Relation: string;
+    // Age: number;
+    // Gender: string;
+    // 'Mobile Number': string;
+    // 'Customer ID': string;
+  };
+  [WebEngageEventName.BUY_NOW]: {
     'product name': string;
     'product id': string; // (SKUID)
     Brand: string;
@@ -46,19 +146,9 @@ export interface WebEngageEvents {
     Price: number;
     'Discounted Price': number;
     Quantity: number;
+    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  'Buy Now': {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-  };
-  'Cart Viewed': {
+  [WebEngageEventName.CART_VIEWED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -68,33 +158,39 @@ export interface WebEngageEvents {
     'Prescription Needed?': boolean;
     'Cart ID'?: string;
     'Cart Items': object[];
+    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  'Procced To Pay Clicked': {
+  [WebEngageEventName.PROCCED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
     'Net after discount': number;
     'Prescription Needed?': boolean;
-    'Cart ID'?: string;
-    'Mode of Delivery': 'Home' | 'Pickup';
+    'Cart ID'?: string; // we don't have cartId before placing order
+    'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
     'Pin Code': string | number;
+    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  'Payment Initiated': {
+  [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
+    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  'Upload Prescription Clicked': {
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
   };
-  'Submit Prescription': {
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
+    Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
+  };
+  [WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
     'Order ID': string | number;
     'Delivery type': 'home' | 'store pickup';
     StoreId?: string; //(incase of store delivery)
     'Delivery address'?: string;
     Pincode: string | number;
   };
-  'Checkout completed': {
+  [WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
     'Order Type': 'Cart' | 'Non Cart';
     'Prescription Required': boolean;
@@ -107,15 +203,15 @@ export interface WebEngageEvents {
     'Delivery charge'?: number; // Optional
     'Net after discount'?: number; // Optional
     'Payment status'?: number; // Optional
+    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
     'Cart ID'?: string | number; // Optional
+    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
 
   // ********** ConsultEvents ********** \\
 
-  'Consult- Start Consultation Search': {
-    'Find a Doctor': boolean;
-    'Track Symptoms': boolean;
-    'Book an Appointment': boolean;
+  [WebEngageEventName.DOCTOR_SEARCH]: {
+    'Search Text': string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -124,7 +220,8 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
-  'Consult- Doctor profile viewed for consultation': {
+  [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
+  [WebEngageEventName.DOCTOR_PROFILE_VIEWED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -132,14 +229,30 @@ export interface WebEngageEvents {
     Hospital: string;
     'Available in': string;
   };
-  'Consult- Consult Now clicked': {
+  [WebEngageEventName.BOOK_APPOINTMENT]: {
+    'Doctor Name': string;
+    'Doctor City': string;
+    'Type of Doctor': string;
+    'Doctor Specialty': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.DOCTOR_CLICKED]: {
+    'Doctor Name': string;
+    Source: 'List' | 'Search';
+  };
+  [WebEngageEventName.CONSULT_NOW_CLICKED]: {
     name: string;
     specialisation: string;
     experience: number;
     'language known': string; // Comma separated values
     Hospital: string;
     'Available in': string;
-    'Book an Appointment'?: boolean; // need to pass only when user clicked on book appointment button from details screen
     Source: 'List' | 'Profile'; // List/Profile
     'Patient Name': string;
     'Patient UHID': string;
@@ -151,7 +264,7 @@ export interface WebEngageEvents {
     slot: string;
   };
   // confirm the type of data for the below
-  'Consult- Schedule for Later clicked': {
+  [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -167,7 +280,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     slot: string;
   };
-  'Consult- Slot Selected': {
+  [WebEngageEventName.CONSULT_SLOT_SELECTED]: {
     slot: string;
     doctorName: string;
     specialisation: string;
@@ -176,13 +289,13 @@ export interface WebEngageEvents {
     hospital: string;
     consultType: 'clinic' | 'online';
   };
-  'Consult- Coupon Applied': {
+  [WebEngageEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
-    Discount?: number;
-    RevisedAmount?: number;
+    'Net Amount'?: number;
+    'Discount Amount'?: number;
     'Coupon Applied': boolean;
   };
-  'Consult- Pay Button Clicked': {
+  [WebEngageEventName.PAY_BUTTON_CLICKED]: {
     Amount: number;
     'Doctor Name': string;
     'Doctor City': string;
@@ -194,6 +307,7 @@ export interface WebEngageEvents {
     'Discount used ?': boolean;
     'Discount coupon'?: string;
     'Discount Amount': number;
+    'Net Amount': number;
     'Patient ID': string;
     'Patient Name': string;
     'Patient Age': number;
@@ -201,7 +315,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     consultType: 'clinic' | 'online';
   };
-  'Consult- Consultation booked': {
+  [WebEngageEventName.CONSULTATION_BOOKED]: {
     'Consultation ID': string;
     name: string;
     specialisation: string;
@@ -216,6 +330,32 @@ export interface WebEngageEvents {
     Age: number;
     Gender: string;
     'Mobile Number': number;
+    'Customer ID': string;
+  };
+
+  [WebEngageEventName.FEATURED_TEST_CLICKED]: {
+    'Product name': string;
+    'Product id (SKUID)': string;
+    Source: 'Home' | 'List';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  [WebEngageEventName.BROWSE_PACKAGE]: {
+    'Package Name': string;
+    // Category: string; we don't have category for test
+    Source: 'Home' | 'List';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    Age: number;
+    Gender: string;
+    'Mobile Number': string;
     'Customer ID': string;
   };
 }

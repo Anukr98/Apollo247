@@ -7,7 +7,11 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  postWebEngageEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -26,6 +30,12 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import moment from 'moment';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -154,6 +164,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const currentItemId = testInfo.ItemID;
   aphConsole.log('currentItemId : ' + currentItemId);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     !TestDetailsDiscription &&
@@ -303,6 +314,30 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const postDiagnosticAddToCartEvent = (
+    name: string,
+    id: string,
+    price: number,
+    discountedPrice: number
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+      'product name': name,
+      'product id': id,
+      Source: 'Diagnostic',
+      Price: price,
+      'Discounted Price': discountedPrice,
+      Quantity: 1,
+      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      // 'Patient UHID': g(currentPatient, 'uhid'),
+      // Relation: g(currentPatient, 'relation'),
+      // Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      // Gender: g(currentPatient, 'gender'),
+      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
+      // 'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+  };
+
   const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);
   console.log('isAddedToCart' + isAddedToCart);
 
@@ -346,7 +381,13 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               title={!isAddedToCart ? 'ADD TO CART' : 'ADDED TO CART'}
               disabled={!isAddedToCart ? false : true}
               style={{ flex: 1, marginBottom: 16 }}
-              onPress={() =>
+              onPress={() => {
+                postDiagnosticAddToCartEvent(
+                  testInfo.ItemName,
+                  testInfo.ItemID,
+                  testInfo.Rate,
+                  testInfo.Rate
+                );
                 addCartItem!({
                   id: testInfo.ItemID,
                   name: testInfo.ItemName,
@@ -355,8 +396,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   thumbnail: '',
                   specialPrice: undefined,
                   collectionMethod: testInfo.collectionType,
-                })
-              }
+                });
+              }}
             />
           </View>
         </StickyBottomComponent>

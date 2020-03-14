@@ -64,7 +64,10 @@ import {
 import moment from 'moment';
 import { getDoctorsBySpecialtyAndFilters } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const { width } = Dimensions.get('window');
@@ -296,9 +299,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const postwebEngageSearchEvent = (searchInput: string) => {
-    const eventAttributes: WebEngageEvents['Consult- Start Consultation Search'] = {
-      'Find a Doctor': searchInput,
-      'Track Symptoms': '',
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SEARCH] = {
+      'Search Text': searchInput,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -307,7 +309,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
     };
-    postWebEngageEvent('Consult- Start Consultation Search', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DOCTOR_SEARCH, eventAttributes);
   };
 
   const fetchSearchData = (searchTextString: string = searchText) => {
@@ -711,6 +713,31 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
+  const postSpecialityWEGEvent = (speciality: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SPECIALITY_CLICKED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Speciality Name': speciality,
+    };
+    postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
+  };
+
+  const postDoctorClickWEGEvent = (
+    doctorName: string,
+    source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source']
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
+      'Doctor Name': doctorName,
+      Source: source,
+    };
+    postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+  };
+
   const renderSpecialistRow = (
     rowData: getAllSpecialties_getAllSpecialties | null,
     rowID: number,
@@ -725,6 +752,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearch, rowData.name);
+                postSpecialityWEGEvent(rowData.name);
                 onClickSearch(rowData.id, rowData.name);
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,
@@ -843,6 +871,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
+                postDoctorClickWEGEvent(rowData.fullName!, 'Search');
                 CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
                 const searchInput = {
                   type: SEARCH_TYPE.DOCTOR,
@@ -888,6 +917,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
+                postDoctorClickWEGEvent(rowData.fullName!, 'Search');
                 CommonLogEvent(AppRoutes.DoctorSearch, 'renderPossibleDoctorResultsRow clicked');
                 const searchInput = {
                   type: SEARCH_TYPE.DOCTOR,

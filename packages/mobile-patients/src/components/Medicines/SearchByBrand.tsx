@@ -57,7 +57,10 @@ import {
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -177,7 +180,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       thumbnail,
       isInStock: true,
     });
-    postwebEngageAddToCartEvent(item);
+    postwebEngageAddToCartEvent(item, 'Pharmacy List');
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -495,7 +498,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
-    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
       'product name': name,
       'product id': sku,
       Brand: '',
@@ -505,7 +508,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       Source: 'List',
       'Section Name': 'SEARCH',
     };
-    postWebEngageEvent('Product Clicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
   };
 
   const renderMedicineCard = (
@@ -747,8 +750,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         setMedicineList([]);
         return;
       }
-      const eventAttributes: WebEngageEvents['Search'] = { keyword: _searchText };
-      postWebEngageEvent('Search', eventAttributes);
+      const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+        keyword: _searchText,
+        Source: 'Pharmacy Home',
+      };
+      postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
 
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)

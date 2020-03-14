@@ -25,7 +25,11 @@ import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveDiagnosticOrder';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  formatAddress,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -43,6 +47,10 @@ import {
 } from 'react-native';
 // import { Slider } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -181,6 +189,14 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     ePrescriptions,
     diagnosticSlot,
     diagnosticClinic,
+    addresses,
+    clinics,
+    clinicId,
+    uploadPrescriptionRequired,
+    cartTotal,
+    deliveryCharges,
+    couponDiscount,
+    coupon,
   } = useDiagnosticsCart();
   const { locationForDiagnostics } = useAppCommonData();
   const client = useApolloClient();
@@ -211,6 +227,33 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       displayId,
       price: grandTotal,
     });
+  };
+
+  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string) => {
+    const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+    const store = clinicId && clinics.find((item) => item.CentreCode == clinicId);
+    const shippingInformation = addr
+      ? formatAddress(addr)
+      : store
+      ? `${store.CentreName}\n${store.Locality},${store.City},${store.State}`
+      : '';
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+      'Order ID': orderAutoId,
+      'Order Type': 'Cart',
+      'Prescription Required': uploadPrescriptionRequired,
+      'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+      'Shipping information': shippingInformation, // (Home/Store address)
+      'Total items in cart': cartItems.length,
+      'Grand Total': cartTotal + deliveryCharges,
+      'Total Discount %': coupon ? Number(((couponDiscount / cartTotal) * 100).toFixed(2)) : 0,
+      'Discount Amount': couponDiscount,
+      'Delivery charge': deliveryCharges,
+      'Net after discount': grandTotal,
+      'Payment status': 1,
+      'Payment Type': isCashOnDelivery ? 'COD' : 'Prepaid',
+      'Service Area': 'Pharmacy',
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
   };
 
   const initiateOrder = async () => {
@@ -275,6 +318,13 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       ),
     };
 
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PAYMENT_INITIATED] = {
+      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+      Amount: grandTotal,
+      'Service Area': 'Diagnostic',
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
+
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
     saveOrder(orderInfo)
@@ -298,6 +348,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             return;
           }
           // COD order, show popup here & clear cart info
+          postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
           clearCartInfo!();
           handleOrderSuccess(orderId!, displayId!);
         }

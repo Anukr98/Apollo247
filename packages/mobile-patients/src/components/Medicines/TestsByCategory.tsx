@@ -23,7 +23,11 @@ import {
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  isValidSearch,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
@@ -43,6 +47,8 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -131,6 +137,30 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       },
     });
 
+  const postDiagnosticAddToCartEvent = (
+    name: string,
+    id: string,
+    price: number,
+    discountedPrice: number
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+      'product name': name,
+      'product id': id,
+      Source: 'Diagnostic',
+      Price: price,
+      'Discounted Price': discountedPrice,
+      Quantity: 1,
+      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      // 'Patient UHID': g(currentPatient, 'uhid'),
+      // Relation: g(currentPatient, 'relation'),
+      // Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      // Gender: g(currentPatient, 'gender'),
+      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
+      // 'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+  };
+
   const errorAlert = () => {
     showAphAlert!({
       title: 'Uh oh! :(',
@@ -164,6 +194,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     { itemId, collectionType, itemName, rate }: searchDiagnostics_searchDiagnostics_diagnostics,
     testsIncluded: number
   ) => {
+    postDiagnosticAddToCartEvent(itemName, `${itemId}`, rate, rate);
     addCartItem!({
       id: `${itemId}`,
       mou: testsIncluded,
