@@ -1,11 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Tabs, Tab, Typography, CircularProgress } from '@material-ui/core';
-import React, { useState, useEffect } from 'react';
+import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
+import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
-import Scrollbars from 'react-custom-scrollbars';
-
-// import { getTime } from 'date-fns/esm';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -219,7 +216,6 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
       {tabs.map((tab) =>
         tab.tabValue === tabValue ? (
           <TabContainer>
-            {/* <Scrollbars> */}
             <div className={classes.timeSlotActions}>
               {tab.slots.length > 0
                 ? tab.slots.map((slotTime: number, idx) => {
@@ -256,7 +252,6 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
                   })
                 : noSlotsMessage(tab.message)}
             </div>
-            {/* </Scrollbars> */}
           </TabContainer>
         ) : null
       )}

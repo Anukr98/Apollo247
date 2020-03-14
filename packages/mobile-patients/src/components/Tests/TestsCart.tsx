@@ -7,6 +7,7 @@ import {
   formatTestSlot,
   getUniqueTestSlots,
   getTestSlotDetailsByTime,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -79,6 +80,7 @@ import {
   searchDiagnosticsByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -161,6 +163,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDiagnosticClinic,
     setDiagnosticSlot,
     setEPrescriptions,
+    deliveryCharges,
+    coupon,
   } = useDiagnosticsCart();
 
   const clinicHours: clinicHoursData[] = [
@@ -201,6 +205,45 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
+
+  useEffect(() => {
+    if (cartItems.length) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.CART_VIEWED] = {
+        'Total items in cart': cartItems.length,
+        'Sub Total': cartTotal,
+        'Delivery charge': deliveryCharges,
+        'Coupon code used': coupon ? coupon.code : '',
+        'Total Discount': couponDiscount,
+        'Net after discount': grandTotal,
+        'Prescription Needed?': uploadPrescriptionRequired,
+        'Cart Items': cartItems.map(
+          (item) =>
+            (({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              specialPrice: item.specialPrice || item.price,
+            } as unknown) as DiagnosticsCartItem)
+        ),
+        'Service Area': 'Diagnostic',
+      };
+      postWebEngageEvent(WebEngageEventName.CART_VIEWED, eventAttributes);
+    }
+  }, []);
+
+  const postwebEngageProceedToPayEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PROCCED_TO_PAY_CLICKED] = {
+      'Total items in cart': cartItems.length,
+      'Sub Total': cartTotal,
+      'Delivery charge': deliveryCharges,
+      'Net after discount': grandTotal,
+      'Prescription Needed?': uploadPrescriptionRequired,
+      'Mode of Delivery': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
+      'Pin Code': pinCode,
+      'Service Area': 'Pharmacy',
+    };
+    postWebEngageEvent(WebEngageEventName.PROCCED_TO_PAY_CLICKED, eventAttributes);
+  };
 
   useEffect(() => {
     onFinishUpload();
@@ -1245,6 +1288,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const onPressProceedToPay = () => {
+    postwebEngageProceedToPayEvent();
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
       props.navigation.navigate(AppRoutes.TestsCheckoutScene);

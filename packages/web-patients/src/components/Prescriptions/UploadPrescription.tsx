@@ -143,6 +143,16 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   const [isUploading, setIsUploading] = useState(false);
 
+  const toBase64 = (file: any) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+
   return (
     <div className={classes.root}>
       <div className={classes.orderSteps}>
@@ -167,7 +177,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 <input
                   type="file"
                   onChange={async (e) => {
-                    setIsUploading(false);
                     const fileNames = e.target.files;
                     if (fileNames && fileNames.length > 0) {
                       const file = fileNames[0] || null;
@@ -191,14 +200,21 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                             });
                           if (aphBlob && aphBlob.name) {
                             const url = client.getBlobUrl(aphBlob.name);
-                            setPrescriptionUploaded &&
-                              setPrescriptionUploaded({
-                                imageUrl: url,
-                                name: aphBlob.name,
-                              });
+                            toBase64(file).then((res: any) => {
+                              setPrescriptionUploaded &&
+                                setPrescriptionUploaded({
+                                  imageUrl: url,
+                                  name: aphBlob.name,
+                                  fileType: fileExtension.toLowerCase(),
+                                  baseFormat: res,
+                                });
+                            });
+                            setIsUploading(false);
                             const currentUrl = window.location.href;
                             if (currentUrl.endsWith('/medicines')) {
-                              window.location.href = clientRoutes.medicinesCart();
+                              setTimeout(() => {
+                                window.location.href = clientRoutes.medicinesCart();
+                              }, 3000);
                             }
                             props.closeDialog();
                           }
@@ -223,10 +239,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                   </label>
                 )}
               </div>
-              <div className={classes.uploadCard}>
+              {/* <div className={classes.uploadCard}>
                 <img src={require('images/ic_gallery.svg')} alt="" />
                 <p>Camera</p>
-              </div>
+              </div> */}
 
               <div
                 className={classes.uploadCard}

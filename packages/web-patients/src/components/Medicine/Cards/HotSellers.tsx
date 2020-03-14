@@ -58,6 +58,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 'bold',
       color: '#01475b',
+      textAlign: 'center',
+      '& span': {
+        display: 'block',
+      },
     },
     regularPrice: {
       fontWeight: 500,

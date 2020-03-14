@@ -1,14 +1,12 @@
 import React from 'react';
 import {
   StyleProp,
-  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableOpacityProps,
   View,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
 import NotificationHeaderStyles from '@aph/mobile-doctors/src/components/ui/NotificationHeader.styles';
 
 const styles = NotificationHeaderStyles;

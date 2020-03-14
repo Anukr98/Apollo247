@@ -16,10 +16,21 @@ import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Image,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+  Dimensions,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
+const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
 
 export interface MyAccountProps extends NavigationScreenProps {}
@@ -28,6 +39,25 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
   const { doctorDetails, getDoctorDetailsApi } = useAuth();
+
+  const buildName = () => {
+    switch (apiRoutes.graphql()) {
+      case 'https://aph.dev.api.popcornapps.com//graphql':
+        return 'DEV';
+      case 'https://aph.staging.api.popcornapps.com//graphql':
+        return 'QA';
+      case 'https://aph.uat.api.popcornapps.com//graphql':
+        return 'UAT';
+      case 'https://aph.vapt.api.popcornapps.com//graphql':
+        return 'VAPT';
+      case 'https://api.apollo247.com//graphql':
+        return 'PROD';
+      case 'https://asapi.apollo247.com//graphql':
+        return 'PRF';
+      default:
+        return '';
+    }
+  };
 
   useEffect(() => {
     if (!doctorDetails) {
@@ -155,6 +185,24 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                     {renderMciNumberData(doctorDetails)}
                   </View>
                   {renderData()}
+                  <View style={{ height: 92, marginBottom: 0 }}>
+                    <Text
+                      style={{
+                        ...theme.fonts.IBMPlexSansBold(13),
+                        color: '#00b38e',
+                        textAlign: 'center',
+                        height: 92,
+                        width: width,
+                        paddingTop: 20,
+                      }}
+                    >
+                      {`${buildName()} - v ${
+                        Platform.OS === 'ios'
+                          ? AppConfig.Configuration.iOS_Version
+                          : AppConfig.Configuration.Android_Version
+                      }`}
+                    </Text>
+                  </View>
                 </>
               )
             )}

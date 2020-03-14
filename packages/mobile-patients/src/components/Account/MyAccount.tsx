@@ -28,7 +28,6 @@ import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Image,
   NativeScrollEvent,
@@ -55,6 +54,7 @@ import { TabHeader } from '../ui/TabHeader';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '../../strings/AppConfig';
 import WebEngage from 'react-native-webengage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width } = Dimensions.get('window');
 

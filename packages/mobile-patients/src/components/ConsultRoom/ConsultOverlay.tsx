@@ -73,7 +73,10 @@ import {
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -200,22 +203,24 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     const localTimeSlot = moment(new Date(time));
     console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
 
-    const clinicAddress = [
-      g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'streetLine1'),
-      g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'streetLine2'),
-      g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'streetLine3'),
-    ]
-      .filter((val) => val)
-      .join(', ');
+    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
 
-    const eventAttributes: WebEngageEvents['Consult- Consultation booked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
       name: g(props.doctor, 'fullName')!,
       specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
       category: g(props.doctor, 'doctorType')!, // send doctorType
       time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
       type: tabs[0].title === selectedTab ? 'online' : 'clinic',
       'clinic name': g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'clinic address': clinicAddress,
+      'clinic address':
+        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -249,7 +254,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       .then(({ data }) => {
         console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
         postWebEngageEvent(
-          'Consult- Consultation booked',
+          WebEngageEventName.CONSULTATION_BOOKED,
           getConsultationBookedEventAttributes(
             paymentDateTime,
             g(data, 'makeAppointmentPayment', 'appointment', 'id')!
@@ -385,7 +390,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         ? nextAvailableSlot
         : selectedTimeSlot;
     const localTimeSlot = moment(new Date(timeSlot));
-    const eventAttributes: WebEngageEvents['Consult- Pay Button Clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PAY_BUTTON_CLICKED] = {
       Amount: coupon ? doctorDiscountedFees : Number(doctorFees),
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Doctor City': g(props.doctor, 'city')!,
@@ -397,6 +402,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Discount used ?': !!coupon,
       'Discount coupon': coupon,
       'Discount Amount': coupon ? Number(doctorFees) - Number(doctorDiscountedFees) : 0,
+      'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
       'Patient ID': g(currentPatient, 'id'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
@@ -404,7 +410,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Patient UHID': g(currentPatient, 'uhid'),
       consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
     };
-    postWebEngageEvent('Consult- Pay Button Clicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
   const onPressPay = () => {
@@ -613,21 +619,21 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             setDoctorDiscountedFees(Number(revisedAmount));
             res();
             if (!dontFireEvent) {
-              const eventAttributes: WebEngageEvents['Consult- Coupon Applied'] = {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
                 CouponCode: couponValue,
-                Discount: Number(doctorFees) - Number(revisedAmount),
-                RevisedAmount: Number(revisedAmount),
-                'Consult- Coupon Applied': true,
+                'Discount Amount': Number(doctorFees) - Number(revisedAmount),
+                'Net Amount': Number(revisedAmount),
+                'Coupon Applied': true,
               };
-              postWebEngageEvent('Consult- Coupon Applied', eventAttributes);
+              postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
             }
           } else {
             if (!dontFireEvent) {
-              const eventAttributes: WebEngageEvents['Consult- Coupon Applied'] = {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
                 CouponCode: couponValue,
-                'Consult- Coupon Applied': false,
+                'Coupon Applied': false,
               };
-              postWebEngageEvent('Consult- Coupon Applied', eventAttributes);
+              postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
             }
             rej(g(data, 'validateConsultCoupon', 'reasonForInvalidStatus'));
           }
@@ -659,7 +665,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
         leftIcon={<CouponIcon />}
         rightIcon={coupon ? <GreenTickIcon /> : <ArrowRight />}
-        title={!coupon ? 'Apply Coupon' : 'Consult- Coupon Applied'}
+        title={!coupon ? 'Apply Coupon' : WebEngageEventName.CONSULT_COUPON_APPLIED}
         onPress={() => {
           if (!selectedTimeSlot) {
             Alert.alert('Uh oh.. :(', 'Please select a slot to apply coupon.');
@@ -728,16 +734,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const postSlotSelectedEvent = (slot: string) => {
     // to avoid duplicate events
     if (!slotsSelected.find((val) => val == slot)) {
-      const eventAttributes: WebEngageEvents['Consult- Slot Selected'] = {
+      const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+        if (item && item.facility && item.facility.facilityType)
+          return item.facility.facilityType === 'HOSPITAL';
+      });
+
+      const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_SLOT_SELECTED] = {
         slot: slot,
         doctorName: g(props.doctor, 'fullName')!,
         specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
         experience: Number(g(props.doctor, 'experience')!),
         'language known': g(props.doctor, 'languages')! || 'NA',
-        hospital: g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
+        hospital:
+          doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
+            ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+                doctorClinics[0].facility.city
+              }`
+            : '',
         consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
       };
-      postWebEngageEvent('Consult- Slot Selected', eventAttributes);
+      postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
       setSlotsSelected([...slotsSelected, slot]);
     }
   };

@@ -23,13 +23,17 @@ import {
   GetMedicineOrderDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  handleGraphQlError,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
@@ -38,6 +42,7 @@ import { FEEDBACKTYPE, DoctorType } from '../graphql/types/globalTypes';
 import { FeedbackPopup } from './FeedbackPopup';
 import { MedicalIcon } from './ui/Icons';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -71,7 +76,8 @@ type CustomNotificationType =
   | 'Registration_Success'
   | 'Patient_Cancel_Appointment'
   | 'Patient_Noshow_Reschedule_Appointment'
-  | 'Appointment_Canceled';
+  | 'Appointment_Canceled'
+  | 'PRESCRIPTION_READY';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -162,7 +168,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
   const showChatRoomAlert = (
     data: { content: string; appointmentId: string } | any,
-    notificationType: CustomNotificationType
+    notificationType: CustomNotificationType,
+    prescription: string
   ) => {
     const description = data.content;
     const appointmentId = data.appointmentId;
@@ -179,7 +186,35 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           text: 'CONSULT ROOM',
           onPress: () => {
             hideAphAlert!();
-            getAppointmentData(appointmentId, notificationType, '');
+            getAppointmentData(appointmentId, notificationType, '', prescription);
+          },
+          type: 'orange-button',
+        },
+      ],
+    });
+  };
+
+  const showConsultDetailsRoomAlert = (
+    data: { content: string; appointmentId: string; file_id: string } | any,
+    notificationType: CustomNotificationType,
+    prescription: string
+  ) => {
+    const description = data.content;
+    const appointmentId = data.appointmentId;
+    showAphAlert!({
+      title: ' ',
+      description,
+      CTAs: [
+        {
+          text: 'DISMISS',
+          onPress: () => hideAphAlert!(),
+          type: 'white-button',
+        },
+        {
+          text: 'VIEW NOW',
+          onPress: () => {
+            hideAphAlert!();
+            getAppointmentData(appointmentId, notificationType, '', prescription, data.file_id);
           },
           type: 'orange-button',
         },
@@ -227,6 +262,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         return;
     }
 
+    // if (notificationType === 'PRESCRIPTION_READY') {
+    //   if (currentScreenName === AppRoutes.ConsultDetails) return;
+    // }
+
     aphConsole.log('processNotification after return statement');
 
     switch (notificationType) {
@@ -254,7 +293,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   console.log(
                     `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
                   );
-                  getAppointmentData(data.appointmentId, notificationType, '');
+                  getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
                 type: 'orange-button',
               },
@@ -331,7 +370,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   console.log(
                     `data.appointmentId: ${data.appointmentId}, data.callType: ${data.callType}`
                   );
-                  getAppointmentData(data.appointmentId, notificationType, '');
+                  getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
                 type: 'orange-button',
               },
@@ -469,7 +508,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 type: 'orange-button',
                 onPress: () => {
                   console.log('data.appointmentId', data.appointmentId);
-                  getAppointmentData(data.appointmentId, notificationType, '');
+                  getAppointmentData(data.appointmentId, notificationType, '', '');
                 },
               },
             ],
@@ -498,12 +537,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'Reminder_Appointment_15': // 15 min, case sheet present
         {
-          showChatRoomAlert(data, 'Reminder_Appointment_15');
+          showChatRoomAlert(data, 'Reminder_Appointment_15', '');
         }
         break;
       case 'Reminder_Appointment_Casesheet_15': // 15 min, no case sheet
         {
-          showChatRoomAlert(data, 'Reminder_Appointment_Casesheet_15');
+          showChatRoomAlert(data, 'Reminder_Appointment_Casesheet_15', '');
         }
         break;
 
@@ -521,6 +560,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             } will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified Doctor`,
             unDismissable: true,
           });
+        }
+        break;
+
+      case 'PRESCRIPTION_READY': // prescription is generated
+        {
+          showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
 
@@ -717,7 +762,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                     text: 'CONSULT ROOM',
                     type: 'orange-button',
                     onPress: () => {
-                      getAppointmentData(appointmentId, notificationType, callType);
+                      getAppointmentData(appointmentId, notificationType, callType, '');
                     },
                   },
                 ],
@@ -741,7 +786,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   const getAppointmentData = (
     appointmentId: string,
     notificationType: CustomNotificationType,
-    callType: string
+    callType: string,
+    prescription: string,
+    fileName?: string
   ) => {
     aphConsole.log('getAppointmentData', appointmentId, notificationType, callType);
     setLoading && setLoading(true);
@@ -793,8 +840,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],
                     callType: callType,
+                    prescription: prescription,
                   });
                 }
+              } catch (error) {}
+            } else if (notificationType == 'PRESCRIPTION_READY') {
+              try {
+                props.navigation.navigate(AppRoutes.ConsultDetails, {
+                  CaseSheet: g(appointmentData[0], 'id'),
+                  DoctorInfo: g(appointmentData[0], 'doctorInfo'),
+                  PatientId: g(appointmentData[0], 'patientId'),
+                  appointmentType: g(appointmentData[0], 'appointmentType'),
+                  DisplayId: g(appointmentData[0], 'displayId'),
+                  BlobName: fileName || '',
+                });
               } catch (error) {}
             }
           }

@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Mascot } from '@aph/mobile-doctors/src/components/ui/Icons';
 import BottomPopUpStyles from '@aph/mobile-doctors/src/components/ui/BottomPopUp.styles';
 

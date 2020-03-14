@@ -5,7 +5,6 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect } from 'react';
 import {
   BackHandler,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   StyleProp,
@@ -15,7 +14,6 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-const { width, height } = Dimensions.get('window');
 
 const styles = ChoicePopUpStyles;
 

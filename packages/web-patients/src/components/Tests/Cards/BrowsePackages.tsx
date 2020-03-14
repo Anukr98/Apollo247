@@ -6,7 +6,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { AphButton } from '@aph/web-ui-components';
 
-import { DealsOfTheDaySection } from '../../../helpers/MedicineApiCalls';
+import { DealsOfTheDaySection } from '../../../../src/helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,29 +143,31 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.testDetails}>
-              <div>
-                <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
-                <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
-                <div className={classes.testsCondition}>
-                  Ideal for individuals between 20-40 years.
+          <Link className={classes.cardLink} to={clientRoutes.searchByTest()}>
+            <div className={classes.cardWrap}>
+              <div className={classes.testDetails}>
+                <div>
+                  <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
+                  <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
+                  <div className={classes.testsCondition}>
+                    Ideal for individuals between 20-40 years.
+                  </div>
+                </div>
+                <div className={classes.cardIcon}>
+                  <img src={require('images/shopby/ic_stomach.svg')} alt="" />
                 </div>
               </div>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+              <div className={classes.bottomSection}>
+                <div className={classes.priceGroup}>
+                  <span className={classes.regularPrice}>(Rs. 125)</span>
+                  <span>Rs. 124 </span>
+                </div>
+                <div className={classes.addToCart}>
+                  <AphButton>Book Now</AphButton>
+                </div>
               </div>
             </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Book Now</AphButton>
-              </div>
-            </div>
-          </div>
+          </Link>
         </div>
         <div className={classes.card}>
           <div className={classes.cardWrap}>

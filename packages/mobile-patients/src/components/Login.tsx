@@ -21,7 +21,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  AsyncStorage,
   EmitterSubscription,
   Keyboard,
   Platform,
@@ -44,6 +43,7 @@ import { loginAPI } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
 import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { height, width } = Dimensions.get('window');
 

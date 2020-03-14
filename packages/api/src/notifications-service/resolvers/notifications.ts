@@ -625,7 +625,7 @@ export async function sendNotification(
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
     notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
       .replace('{1}', doctorDetails.firstName)
-      .replace('{2}', appointment.id)
+      .replace('{2}', appointment.displayId.toString())
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
     let smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
 
@@ -1628,7 +1628,11 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace('{1}', orderNumber);
-  notificationBody = notificationBody.replace('{2}', orderTat);
+  const atOrederDateTime = 'at ' + orderDetails.orderDateTime;
+  const inTatHours = 'in ' + orderTat + 'hours';
+  if (notificationType === NotificationType.MEDICINE_ORDER_CONFIRMED)
+    notificationBody = notificationBody.replace('{2}', atOrederDateTime);
+  notificationBody = notificationBody.replace('{2}', inTatHours);
   console.log(notificationBody, notificationType, 'med orders');
   const payload = {
     notification: {

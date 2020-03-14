@@ -57,7 +57,10 @@ import {
   SaveMedicineOrderPaymentMqVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPaymentMq';
 import moment from 'moment';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -201,6 +204,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     cartTotal,
     addresses,
     stores,
+    coupon,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -211,7 +215,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
     const store = storeId && stores.find((item) => item.storeid == storeId);
     const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
-    const eventAttributes: WebEngageEvents['Checkout completed'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = {
       'Order ID': orderAutoId,
       'Order Type': 'Cart',
       'Prescription Required': uploadPrescriptionRequired,
@@ -219,13 +223,15 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Shipping information': shippingInformation, // (Home/Store address)
       'Total items in cart': cartItems.length,
       'Grand Total': cartTotal + deliveryCharges,
-      'Total Discount %': Number(((couponDiscount / cartTotal) * 100).toFixed(2)),
+      'Total Discount %': coupon ? Number(((couponDiscount / cartTotal) * 100).toFixed(2)) : 0,
       'Discount Amount': couponDiscount,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
       'Payment status': 1,
+      'Payment Type': isCashOnDelivery ? 'COD' : 'Prepaid',
+      'Service Area': 'Pharmacy',
     };
-    postWebEngageEvent('Checkout completed', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
   };
 
   const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>
@@ -350,11 +356,12 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     console.log(JSON.stringify(orderInfo));
 
-    const eventAttributes: WebEngageEvents['Payment Initiated'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PAYMENT_INITIATED] = {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
+      'Service Area': 'Pharmacy',
     };
-    postWebEngageEvent('Payment Initiated', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
 
     saveOrder(orderInfo)
       .then(({ data }) => {

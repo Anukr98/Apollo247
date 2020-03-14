@@ -71,9 +71,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        // display: 'flex',
-      },
       '& h3': {
         color: '#658f9b !important',
         marginLeft: '20px !important',

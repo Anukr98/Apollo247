@@ -18,7 +18,6 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-  AsyncStorage,
   BackHandler,
   Platform,
   KeyboardAvoidingView,
@@ -54,7 +53,12 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import AsyncStorage from '@react-native-community/async-storage';
+import WebEngage from 'react-native-webengage';
 
 const { height } = Dimensions.get('window');
 
@@ -139,6 +143,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { signOut, getPatientApiCall, getPatientByPrism } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
+  const webengage = new WebEngage();
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -360,25 +365,40 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   const _postWebEngageEvent = () => {
-    const eventAttributes: WebEngageEvents['Registration Done'] = {
-      'Customer ID': currentPatient ? currentPatient.id : '',
-      'Customer First Name': firstName.trim(),
-      'Customer Last Name': lastName.trim(),
-      'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-      Gender:
+    try {
+      webengage.user.setFirstName(firstName.trim());
+      webengage.user.setLastName(lastName.trim());
+      webengage.user.setGender(
         gender === 'Female'
           ? Gender['FEMALE']
           : gender === 'Male'
           ? Gender['MALE']
-          : Gender['OTHER'],
-      Email: email.trim(),
-    };
-    if (referral) {
-      // only send if referral has a value
-      eventAttributes['Referral Code'] = referral;
-    }
+          : Gender['OTHER']
+      );
+      webengage.user.setEmail(email.trim());
 
-    postWebEngageEvent('Registration Done', eventAttributes);
+      const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient ? currentPatient.id : '',
+        'Customer First Name': firstName.trim(),
+        'Customer Last Name': lastName.trim(),
+        'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        Email: email.trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventAttributes['Referral Code'] = referral;
+      }
+
+      postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
+    } catch (error) {
+      console.log({ error });
+    }
   };
   return (
     <View style={{ flex: 1 }}>

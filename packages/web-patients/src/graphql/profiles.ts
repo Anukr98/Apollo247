@@ -200,6 +200,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           id
           salutation
           firstName
+          fullName
           lastName
           displayName
           experience
@@ -449,5 +450,23 @@ export const DELETE_PATIENT_MEDICAL_RECORD = gql`
     deletePatientMedicalRecord(recordId: $recordId) {
       status
     }
+  }
+`;
+
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
+  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
+    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
+      status
+      orderId
+      orderAutoId
+      errorCode
+      errorMessage
+    }
+  }
+`;
+
+export const SEND_HELP_EMAIL = gql`
+  query SendHelpEmail($helpEmailInput: HelpEmailInput) {
+    sendHelpEmail(helpEmailInput: $helpEmailInput)
   }
 `;

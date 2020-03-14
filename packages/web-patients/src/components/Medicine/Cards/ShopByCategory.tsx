@@ -102,7 +102,8 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
       <Slider {...sliderSettings}>
         {props.data &&
           props.data.map((category) => {
-            const formattedTitle = _replace(_lowerCase(category.title), ' ', '-');
+            let formattedTitle = _replace(category.title.toLowerCase(), ' & ', '_');
+            formattedTitle = _replace(formattedTitle, ' ', '-');
             return (
               <div key={category.category_id} className={classes.card}>
                 <Link to={clientRoutes.searchByMedicine(formattedTitle, category.category_id)}>

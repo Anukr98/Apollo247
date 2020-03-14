@@ -8,6 +8,7 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
+import { EPrescription } from 'components/MedicinesCartProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 
@@ -84,9 +85,8 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type EPrescriptionCardProps = {
-  prescription?: Prescription;
-  medicineOrder?: MedicineOrder;
-  removePrescription?: (id: string, type: string) => void;
+  prescription?: EPrescription;
+  removePrescription?: (id: string) => void;
 };
 
 export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
@@ -101,46 +101,29 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
       .map((item) => item!.medicineName)
       .join(', ');
 
-  return props.prescription || props.medicineOrder ? (
+  return props.prescription ? (
     <div className={classes.root}>
       <div className={classes.prescriptionGroup}>
         <div className={classes.imgThumb}>
           <img src={require('images/ic_prescription.svg')} alt="" />
         </div>
         <div className={classes.fileInfo}>
-          {props.prescription && props.prescription.doctorInfo
-            ? `${props.prescription.doctorInfo.salutation} ${props.prescription.doctorInfo.firstName}`
-            : props.medicineOrder &&
-              props.medicineOrder.id &&
-              `${`Meds Rx ${props.medicineOrder.id &&
-                props.medicineOrder.id.substring(0, props.medicineOrder.id.indexOf('-'))}`}`}
+          {props.prescription.doctorName}
           <div className={classes.priscriptionInfo}>
             <span className={classes.name}>{currentPatient && currentPatient.firstName}</span>
             <span className={classes.date}>
-              {moment(
-                props.prescription
-                  ? props.prescription.appointmentDateTime
-                  : props.medicineOrder && props.medicineOrder.quoteDateTime
-              ).format('DD MMM YYYY')}
+              {moment(props.prescription.date).format('DD MMM YYYY')}
             </span>
-            <span>
-              {props.medicineOrder &&
-              props.medicineOrder.medicineOrderLineItems &&
-              props.medicineOrder.medicineOrderLineItems.length > 0
-                ? getMedicines(props.medicineOrder.medicineOrderLineItems)
-                : null}
-            </span>
+            <span>{props.prescription.medicines}</span>
           </div>
         </div>
       </div>
       <div className={classes.closeBtn}>
         <AphButton
           onClick={() => {
-            props.removePrescription && props.medicineOrder
-              ? props.removePrescription(props.medicineOrder.id, 'medicineOrder')
-              : props.prescription &&
-                props.removePrescription &&
-                props.removePrescription(props.prescription.id, 'consults');
+            props.removePrescription &&
+              props.prescription &&
+              props.removePrescription(props.prescription.id);
           }}
         >
           <img src={require('images/ic_cross_onorange_small.svg')} alt="" />

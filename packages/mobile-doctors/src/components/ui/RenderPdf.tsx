@@ -12,9 +12,7 @@ import {
   StyleProp,
   TextStyle,
   ViewStyle,
-  StyleSheet,
 } from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
 import Pdf from 'react-native-pdf';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';

@@ -159,6 +159,8 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
           },
         })
         .then(({ data }) => {
+          console.log(data, 'initiateRescheduleAppointment');
+
           if (data) {
             const reschduleObject = {
               appointmentId: props.appointmentId,

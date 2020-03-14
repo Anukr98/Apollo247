@@ -65,6 +65,7 @@ import {
   g,
   getNetStatus,
   isValidSearch,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -96,6 +97,8 @@ import {
   searchDiagnosticsByIdVariables,
   searchDiagnosticsById_searchDiagnosticsById_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -373,6 +376,62 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, []);
+
+  const postFeaturedTestEvent = (name: string, id: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.FEATURED_TEST_CLICKED] = {
+      'Product name': name,
+      'Product id (SKUID)': id,
+      Source: 'Home',
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.FEATURED_TEST_CLICKED, eventAttributes);
+  };
+
+  const postDiagnosticAddToCartEvent = (
+    name: string,
+    id: string,
+    price: number,
+    discountedPrice: number
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+      'product name': name,
+      'product id': id,
+      Source: 'Diagnostic',
+      Price: price,
+      'Discounted Price': discountedPrice,
+      Quantity: 1,
+      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      // 'Patient UHID': g(currentPatient, 'uhid'),
+      // Relation: g(currentPatient, 'relation'),
+      // Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      // Gender: g(currentPatient, 'gender'),
+      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
+      // 'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+  };
+
+  const postBrowsePackageEvent = (packageName: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.BROWSE_PACKAGE] = {
+      'Package Name': packageName,
+      // Category: '',
+      Source: 'Home',
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.BROWSE_PACKAGE, eventAttributes);
+  };
 
   // Common Views
 
@@ -908,10 +967,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const { packageImage, packageName, diagnostics } = data.item;
     const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
     const specialPrice = undefined;
-    const addToCart = () =>
+    const addToCart = () => {
       fetchPackageInclusion(`${diagnostics!.itemId}`, (tests) => {
+        postDiagnosticAddToCartEvent(
+          packageName!,
+          `${diagnostics!.itemId}`,
+          diagnostics!.rate,
+          diagnostics!.rate // since no special price
+        );
         addCartItem!({
-          id: `${diagnostics!.itemId!}`,
+          id: `${diagnostics!.itemId}`,
           mou: tests.length,
           name: packageName!,
           price: diagnostics!.rate,
@@ -920,6 +985,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           collectionMethod: diagnostics!.collectionType!,
         });
       });
+    };
     const removeFromCart = () => removeCartItem!(`${diagnostics!.itemId}`);
     // const specialPrice = special_price
     //   ? typeof special_price == 'string'
@@ -934,7 +1000,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       specialPrice: undefined,
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
-      onPress: () =>
+      onPress: () => {
+        postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: diagnostics!.rate,
@@ -946,7 +1013,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ToAgeInDays: diagnostics!.toAgeInDays,
             preparation: diagnostics!.testPreparationData,
           } as TestPackageForDetails,
-        }),
+        });
+      },
       style: {
         marginHorizontal: 4,
         marginTop: 16,
@@ -1238,6 +1306,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 },
                 !!cartItems.find((_item) => _item.id == item.ItemID),
                 () => {
+                  postBrowsePackageEvent(item.ItemName);
                   fetchPackageDetails(item.ItemID, (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {

@@ -92,6 +92,21 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 'auto',
       },
     },
+    actions: {
+      padding: '0 0 20px 0',
+      display: 'flex',
+    },
+    button: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      marginLeft: 'auto',
+      fontWeight: 'bold',
+      color: '#fc9916',
+      padding: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
   };
 });
 
@@ -123,13 +138,6 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
                 </div>
                 <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
               </div>
-              {/* <div className={classes.orderBody}>Delivery By: 27 July 2019</div>
-          <div className={classes.remindMe}>
-            <span>Remind me to take medicines</span>
-            <span>
-              <AphCheckbox />
-            </span>
-          </div> */}
               <div className={classes.bottomActions}>
                 <AphButton>View Invoice</AphButton>
                 <AphButton
@@ -145,8 +153,16 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
         ) : (
           <>
             <Typography variant="h2">uh oh.. :(</Typography>
-            <p>Your payment wasn't successful duw to bad network connectivity. Please try again.</p>
-            <AphButton onClick={() => props.setShowOrderPopup(false)}>OK, GOT IT</AphButton>
+            <p>Your payment wasn’t successful due to bad network connectivity. Please try again.</p>
+            <div className={classes.actions}>
+              <AphButton
+                onClick={() => props.setShowOrderPopup(false)}
+                color="primary"
+                classes={{ root: classes.button }}
+              >
+                OK, GOT IT
+              </AphButton>
+            </div>
           </>
         )}
       </div>

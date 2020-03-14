@@ -3,25 +3,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { AphSelect } from '@aph/web-ui-components';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
-
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails_starTeam,
 } from 'graphql/types/GetDoctorDetails';
 import { ApolloConsumer } from 'react-apollo';
-
-interface DoctorsName {
-  label: string;
-  typeOfConsult: string;
-  experience: string;
-  firstName: string;
-  inviteStatus: string;
-  lastName: string;
-}
-interface Search {
-  text: string;
-  highlight: boolean;
-}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -130,11 +116,6 @@ export interface StarDoctorSearchProps {
 
 export const StarDoctorSearch: React.FC<StarDoctorSearchProps> = ({ addDoctorHandler }) => {
   const classes = useStyles();
-  // const [doctor, setDoctor] = React.useState<
-  //   GetDoctorDetails_getDoctorDetails_starTeam | null | undefined
-  // >({
-  //   associatedDoctor: {},
-  // } as GetDoctorDetails_getDoctorDetails_starTeam);
   const [data, setData] = useState<GetDoctorDetails>();
 
   return (

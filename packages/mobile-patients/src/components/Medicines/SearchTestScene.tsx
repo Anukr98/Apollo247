@@ -30,7 +30,12 @@ import {
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { aphConsole, g, isValidSearch } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  g,
+  isValidSearch,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
@@ -54,6 +59,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -311,6 +317,30 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       },
     });
 
+  const postDiagnosticAddToCartEvent = (
+    name: string,
+    id: string,
+    price: number,
+    discountedPrice: number
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+      'product name': name,
+      'product id': id,
+      Price: price,
+      'Discounted Price': discountedPrice,
+      Quantity: 1,
+      Source: 'Diagnostic',
+      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      // 'Patient UHID': g(currentPatient, 'uhid'),
+      // Relation: g(currentPatient, 'relation'),
+      // Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      // Gender: g(currentPatient, 'gender'),
+      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
+      // 'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+  };
+
   const onAddCartItem = (
     { itemId, itemName, rate, collectionType }: searchDiagnostics_searchDiagnostics_diagnostics,
     testsIncluded: number
@@ -318,6 +348,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
       aphConsole.log({ e });
     });
+    postDiagnosticAddToCartEvent(stripHtml(itemName), `${itemId}`, rate, rate);
     addCartItem!({
       id: `${itemId}`,
       name: stripHtml(itemName),

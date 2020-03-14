@@ -49,7 +49,10 @@ import {
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelectionView';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -146,14 +149,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const postwebEngageSubmitPrescriptionEvent = (orderId: number) => {
     const deliveryAddress = addresses.find((item) => item.zipcode == pinCode);
     const deliveryAddressLine = (deliveryAddress && formatAddress(deliveryAddress)) || '';
-    const eventAttributes: WebEngageEvents['Submit Prescription'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION] = {
       'Order ID': `${orderId}`,
       'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
       StoreId: storeId, // incase of store delivery
       'Delivery address': deliveryAddressLine,
       Pincode: pinCode,
     };
-    postWebEngageEvent('Submit Prescription', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
 
   const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
