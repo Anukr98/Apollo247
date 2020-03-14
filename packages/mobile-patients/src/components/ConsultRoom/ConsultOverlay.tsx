@@ -224,7 +224,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
       Gender: g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
@@ -405,7 +405,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
       'Patient ID': g(currentPatient, 'id'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Patient UHID': g(currentPatient, 'uhid'),
       consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
