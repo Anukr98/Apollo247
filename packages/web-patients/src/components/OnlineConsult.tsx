@@ -471,6 +471,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     setShowCalendar(false);
                     setConsultNow(true);
                     setScheduleLater(false);
+                    setTimeSelected('');
                   }}
                   color="secondary"
                   className={`${classes.button} ${
@@ -622,7 +623,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               mutationLoading ||
               isDialogOpen ||
               (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
+              (scheduleLater && timeSelected === '') ||
+              !timeSelected
             }
             onClick={() => {
               let appointmentDateTime = '';
@@ -704,7 +706,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               disableSubmit ||
               mutationLoading ||
               isDialogOpen ||
-              (scheduleLater && consultNowSlotTime === '')
+              (scheduleLater && consultNowSlotTime === '') ||
+              (!timeSelected && timeSelected === '')
                 ? classes.buttonDisable
                 : ''
             }
