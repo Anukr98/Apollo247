@@ -58,7 +58,6 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import AsyncStorage from '@react-native-community/async-storage';
-import WebEngage from 'react-native-webengage';
 
 const { height } = Dimensions.get('window');
 
@@ -143,7 +142,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { signOut, getPatientApiCall, getPatientByPrism } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
-  const webengage = new WebEngage();
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -366,17 +364,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   const _postWebEngageEvent = () => {
     try {
-      webengage.user.setFirstName(firstName.trim());
-      webengage.user.setLastName(lastName.trim());
-      webengage.user.setGender(
-        gender === 'Female'
-          ? Gender['FEMALE']
-          : gender === 'Male'
-          ? Gender['MALE']
-          : Gender['OTHER']
-      );
-      webengage.user.setEmail(email.trim());
-
       const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Customer First Name': firstName.trim(),

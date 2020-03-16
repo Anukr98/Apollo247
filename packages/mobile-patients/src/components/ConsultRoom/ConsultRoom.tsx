@@ -79,6 +79,7 @@ import {
   PatientInfoWithSource,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import moment from 'moment';
+import WebEngage from 'react-native-webengage';
 
 const { Vitals } = NativeModules;
 
@@ -210,6 +211,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert } = useUIElements();
+  const [isWEGFired, setWEGFired] = useState(false);
+  const webengage = new WebEngage();
+
+  useEffect(() => {
+    try {
+      if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
+        setWEGFired(true);
+        setWEGUserAttributes();
+      }
+    } catch (e) {}
+  }, [currentPatient]);
+
+  const setWEGUserAttributes = () => {
+    webengage.user.setFirstName(g(currentPatient, 'firstName'));
+    webengage.user.setLastName(g(currentPatient, 'lastName'));
+    webengage.user.setGender((g(currentPatient, 'gender') || '').toLowerCase());
+    webengage.user.setEmail(g(currentPatient, 'emailAddress'));
+    webengage.user.setBirthDateString(g(currentPatient, 'dateOfBirth'));
+    webengage.user.setPhone(g(currentPatient, 'mobileNumber'));
+  };
 
   const postHomeWEGEvent = (
     eventName: WebEngageEventName,
