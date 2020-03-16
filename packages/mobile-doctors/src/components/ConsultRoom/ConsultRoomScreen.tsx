@@ -44,12 +44,23 @@ import {
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
+  GetCaseSheet_getCaseSheet_pastAppointments,
+  GetCaseSheet_getCaseSheet_patientDetails,
+  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
+  GetCaseSheet_getCaseSheet_patientDetails_healthVault,
+  GetCaseSheet_getCaseSheet_patientDetails_lifeStyle,
+  GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import {
   APPT_CALL_TYPE,
   DOCTOR_CALL_TYPE,
   REQUEST_ROLES,
   STATUS,
+  APPOINTMENT_TYPE,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   SendCallNotification,
@@ -84,6 +95,13 @@ import {
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import {
+  setDiagnosticPrescriptionDataList,
+  setDiagonsisList,
+  setMedicineList,
+  setSysmptonsList,
+} from '@aph/mobile-doctors/src/components/ApiCall';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -115,6 +133,11 @@ export interface ConsultRoomScreenProps
   }> {
   activeTabIndex?: number;
   // navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
+}
+
+interface DataPair {
+  key: string;
+  value: string;
 }
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
@@ -160,6 +183,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
 
+  const [symptonsData, setSymptonsData] = useState<
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
+  >([]);
   // const [textinputStyles, setTextInputStyles] = useState<Object>({
   //   width: width,
   //   height: 66,
@@ -250,7 +276,115 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           });
       });
   };
+  const [pastList, setPastList] = useState<
+    (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
+  >([]);
+  const [lifeStyleData, setLifeStyleData] = useState<
+    (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
+  >();
+  const [
+    medicalHistory,
+    setMedicalHistory,
+  ] = useState<GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null>();
+  const [familyValues, setFamilyValues] = useState<
+    (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
+  >([]);
+  const [
+    patientDetails,
+    setPatientDetails,
+  ] = useState<GetCaseSheet_getCaseSheet_patientDetails | null>();
+  const [healthWalletArrayData, setHealthWalletArrayData] = useState<
+    (GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null
+  >([]);
+  const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
+  const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
+  const [juniordoctornotes, setJuniorDoctorNotes] = useState<string | null>('');
+  const [diagnosisData, setDiagnosisData] = useState<
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null
+  >([]);
+  const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<
+    (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null
+  >();
+  const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
+  const [switchValue, setSwitchValue] = useState<boolean | null>(true);
+  const [followupDays, setFollowupDays] = useState<number | string>();
+  const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
+  const [doctorNotes, setDoctorNotes] = useState<string>('');
+  const [displayId, setDisplayId] = useState<string>('');
+  const [prescriptionPdf, setPrescriptionPdf] = useState('');
 
+  const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
+    setPastList(g(caseSheet, 'pastAppointments') || null);
+    // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
+    setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
+    setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
+    setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
+    setPatientDetails(g(caseSheet, 'patientDetails') || null);
+    setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
+    setTests(
+      (g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || [])
+        .map((i) => {
+          if (i) {
+            return { itemname: i.itemname || '', isSelected: true };
+          } else {
+            return { itemname: '', isSelected: false };
+          }
+        })
+        .filter((i) => i.isSelected)
+    );
+    setAddedAdvices(
+      (g(caseSheet, 'caseSheetDetails', 'otherInstructions') || [])
+        .map((i) => {
+          if (i) {
+            return { key: i.instruction || '', value: i.instruction || '' };
+          } else {
+            return { key: '', value: '' };
+          }
+        })
+        .filter((i) => i.value !== '')
+    );
+    setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
+    setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
+    setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
+    // setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
+    // setDiagnosticPrescription(g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null);
+    setMedicinePrescriptionData(g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || null);
+    setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+      .map((i) => (i ? i.externalId || i.id : ''))
+      .filter((i) => i !== null || i !== '') as string[]);
+    setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
+    setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
+    setFollowUpConsultationType(
+      g(caseSheet, 'caseSheetDetails', 'followUpConsultType') || undefined
+    );
+    setDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || '');
+
+    setDisplayId(g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '');
+    setPrescriptionPdf(
+      `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(caseSheet, 'caseSheetDetails', 'blobName')}`
+    );
+    try {
+      setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
+        null) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
+      setDiagonsisList(g(
+        caseSheet,
+        'caseSheetDetails',
+        'diagnosis' || null
+      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
+      setDiagnosticPrescriptionDataList(g(
+        caseSheet,
+        'caseSheetDetails',
+        'diagnosticPrescription' || null
+      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
+      setMedicineList(g(
+        caseSheet,
+        'caseSheetDetails',
+        'medicinePrescription' || null
+      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
   const getCaseSheetAPI = () => {
     setLoading && setLoading(true);
     client
@@ -262,6 +396,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       .then((_data) => {
         const caseSheet = g(_data, 'data', 'getCaseSheet');
         setcaseSheet(caseSheet);
+        setData(caseSheet);
         setLoading && setLoading(false);
       })
       .catch((e) => {
@@ -773,22 +908,23 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       },
       (status, res) => {
         const newmessage: object[] = [];
-        res.messages.forEach((element, index) => {
-          const item = element.entry;
-          // console.log(item, 'element');
-          if (item.prismId) {
-            getPrismUrls(client, patientId, item.prismId)
-              .then((data) => {
-                if (data && data.urls) {
-                  item.url = data.urls[0] || item.url;
-                }
-              })
-              .catch((e) => {
-                CommonBugFender('ChatRoom_getPrismUrls', e);
-              });
-          }
-          newmessage[newmessage.length] = item;
-        });
+        res &&
+          res.messages.forEach((element, index) => {
+            const item = element.entry;
+            // console.log(item, 'element');
+            if (item.prismId) {
+              getPrismUrls(client, patientId, item.prismId)
+                .then((data) => {
+                  if (data && data.urls) {
+                    item.url = data.urls[0] || item.url;
+                  }
+                })
+                .catch((e) => {
+                  CommonBugFender('ChatRoom_getPrismUrls', e);
+                });
+            }
+            newmessage[newmessage.length] = item;
+          });
         try {
           res.messages.forEach((element, index) => {
             newmessage[index] = element.entry;
@@ -1100,6 +1236,44 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               setCaseSheetEdit={setCaseSheetEdit}
               showEditPreviewButtons={showEditPreviewButtons}
               setShowEditPreviewButtons={setShowEditPreviewButtons}
+              symptonsData={symptonsData}
+              setSymptonsData={(data) => setSymptonsData(data)}
+              pastList={pastList}
+              setPastList={setPastList}
+              lifeStyleData={lifeStyleData}
+              setLifeStyleData={setLifeStyleData}
+              medicalHistory={medicalHistory}
+              setMedicalHistory={setMedicalHistory}
+              familyValues={familyValues}
+              setFamilyValues={setFamilyValues}
+              patientDetails={patientDetails}
+              setPatientDetails={setPatientDetails}
+              healthWalletArrayData={healthWalletArrayData}
+              setHealthWalletArrayData={setHealthWalletArrayData}
+              tests={tests}
+              setTests={setTests}
+              addedAdvices={addedAdvices}
+              setAddedAdvices={setAddedAdvices}
+              juniordoctornotes={juniordoctornotes}
+              setJuniorDoctorNotes={setJuniorDoctorNotes}
+              diagnosisData={diagnosisData}
+              setDiagnosisData={setDiagnosisData}
+              medicinePrescriptionData={medicinePrescriptionData}
+              setMedicinePrescriptionData={setMedicinePrescriptionData}
+              selectedMedicinesId={selectedMedicinesId}
+              setSelectedMedicinesId={setSelectedMedicinesId}
+              switchValue={switchValue}
+              setSwitchValue={setSwitchValue}
+              followupDays={followupDays}
+              setFollowupDays={setFollowupDays}
+              followUpConsultationType={followUpConsultationType}
+              setFollowUpConsultationType={setFollowUpConsultationType}
+              doctorNotes={doctorNotes}
+              setDoctorNotes={setDoctorNotes}
+              displayId={displayId}
+              setDisplayId={setDisplayId}
+              prescriptionPdf={prescriptionPdf}
+              setPrescriptionPdf={setPrescriptionPdf}
             />
           ) : (
             <View
