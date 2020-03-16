@@ -667,7 +667,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
         leftIcon={<CouponIcon />}
         rightIcon={coupon ? <GreenTickIcon /> : <ArrowRight />}
-        title={!coupon ? 'Apply Coupon' : WebEngageEventName.CONSULT_COUPON_APPLIED}
+        title={!coupon ? 'Apply Coupon' : 'Coupon Applied'}
         onPress={() => {
           if (!selectedTimeSlot) {
             Alert.alert('Uh oh.. :(', 'Please select a slot to apply coupon.');

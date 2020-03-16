@@ -45,6 +45,15 @@ export enum WebEngageEventName {
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
+
+  // Health Records
+  CONSULT_RX = 'Consult & RX',
+  MEDICAL_RECORDS = 'Medical Records',
+  ADD_RECORD = 'Add Record',
+  UPLOAD_PRESCRIPTION = 'Upload Prescription',
+  UPLOAD_PHOTO = 'Upload Photo',
+  ITEMS_CLICKED = 'Items Clicked',
+  REORDER_MEDICINES = 'Reorder Medicines',
 }
 
 export interface PatientInfo {
@@ -361,7 +370,7 @@ export interface WebEngageEvents {
 
   // ********** Health Records ********** \\
 
-  'Consult & RX': {
+  [WebEngageEventName.CONSULT_RX]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -371,7 +380,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
-  'Medical Records': {
+  [WebEngageEventName.MEDICAL_RECORDS]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -381,11 +390,11 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
-  'Add Record': {
+  [WebEngageEventName.ADD_RECORD]: {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
   };
 
-  'Upload Prescription': {
+  [WebEngageEventName.UPLOAD_PRESCRIPTION]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -395,16 +404,16 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
-  'Upload Photo': {
+  [WebEngageEventName.UPLOAD_PHOTO]: {
     Source: 'Take Photo' | 'Gallery'; // List/Profile
   };
 
-  'Items Clicked': {
+  [WebEngageEventName.ITEMS_CLICKED]: {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
     Type: 'Prescription' | 'Test Result';
   };
 
-  'Reorder Medicines': {
+  [WebEngageEventName.REORDER_MEDICINES]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;

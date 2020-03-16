@@ -79,7 +79,10 @@ import {
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 
 const styles = StyleSheet.create({
@@ -433,7 +436,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         onChange={(selectedTab: string) => {
           setselectedTab(selectedTab);
           if (selectedTab === tabs[0].title) {
-            const eventAttributes: WebEngageEvents['Consult & RX'] = {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_RX] = {
               'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
               'Patient UHID': g(currentPatient, 'uhid'),
               Relation: g(currentPatient, 'relation'),
@@ -442,9 +445,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               'Mobile Number': g(currentPatient, 'mobileNumber'),
               'Customer ID': g(currentPatient, 'id'),
             };
-            postWebEngageEvent('Consult & RX', eventAttributes);
+            postWebEngageEvent(WebEngageEventName.CONSULT_RX, eventAttributes);
           } else {
-            const eventAttributes: WebEngageEvents['Medical Records'] = {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
               'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
               'Patient UHID': g(currentPatient, 'uhid'),
               Relation: g(currentPatient, 'relation'),
@@ -453,7 +456,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               'Mobile Number': g(currentPatient, 'mobileNumber'),
               'Customer ID': g(currentPatient, 'id'),
             };
-            postWebEngageEvent('Medical Records', eventAttributes);
+            postWebEngageEvent(WebEngageEventName.MEDICAL_RECORDS, eventAttributes);
           }
         }}
         selectedTab={selectedTab}
@@ -470,7 +473,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
             setdisplayOrderPopup(true);
 
-            const eventAttributes: WebEngageEvents['Upload Prescription'] = {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION] = {
               'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
               'Patient UHID': g(currentPatient, 'uhid'),
               Relation: g(currentPatient, 'relation'),
@@ -479,7 +482,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               'Mobile Number': g(currentPatient, 'mobileNumber'),
               'Customer ID': g(currentPatient, 'id'),
             };
-            postWebEngageEvent('Upload Prescription', eventAttributes);
+            postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION, eventAttributes);
             // props.navigation.navigate(AppRoutes.AddRecord);
           }}
         >
@@ -568,10 +571,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             <Button
               title="ADD RECORD"
               onPress={() => {
-                const eventAttributes: WebEngageEvents['Add Record'] = {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
                   Source: 'Consult & RX',
                 };
-                postWebEngageEvent('Add Record', eventAttributes);
+                postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
                 props.navigation.navigate(AppRoutes.AddRecord, {
                   navigatedFrom: 'Consult & RX',
                 });
