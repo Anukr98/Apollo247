@@ -93,7 +93,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const client = useApolloClient();
   const [consultsLoading, setConsultsLoading] = useState<boolean>(false);
   const [consultError, setConsultError] = useState<boolean>(false);
-  const [consultsData, setConsultsData] = useState<any[] | null>(null);
+  const [consultsData, setConsultsData] = useState<any[] | null>();
   const [allConsultsData, setAllConsultsData] = useState<any[] | null>(null);
 
   const [medicalRecords, setMedicalRecords] = useState<(MedicalRecordsType | null)[] | null>(null);
@@ -104,7 +104,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     null
   );
   const { isSigningIn } = useAuth();
-  const [allCombinedData, setAllCombinedData] = useState<any | null>(null);
+  const [allCombinedData, setAllCombinedData] = useState<any | null>();
   const [activeMedicalData, setActiveMedicalData] = useState<any | null>(null);
   const [medicalError, setMedicalError] = useState<boolean>(false);
   const [medicalRecordError, setMedicalRecordError] = useState<boolean>(false);
@@ -322,22 +322,24 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.healthRecordsPage}>
-          <Tabs
-            value={tabValue}
-            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-            onChange={(e, newValue) => {
-              setTabValue(newValue);
-            }}
-          >
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label={`Consults & Rx — ${(consultsData && consultsData.length) || 0}`}
-            />
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label={`Medical Records — ${(allCombinedData && allCombinedData.length) || 0}`}
-            />
-          </Tabs>
+          {consultsData && allCombinedData && (
+            <Tabs
+              value={tabValue}
+              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+              onChange={(e, newValue) => {
+                setTabValue(newValue);
+              }}
+            >
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label={`Consults & Rx — ${consultsData && consultsData.length}`}
+              />
+              <Tab
+                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                label={`Medical Records — ${allCombinedData && allCombinedData.length}`}
+              />
+            </Tabs>
+          )}
           {tabValue === 0 && (
             <TabContainer>
               <Consultations
