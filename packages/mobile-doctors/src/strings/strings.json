@@ -243,7 +243,7 @@
     "severity": "Severity?",
     "update_complaint": "UPDATE COMPLAINT",
     "add_complaint": "ADD COMPLAINT",
-    "enter_severity": "'Enter Severity",
+    "enter_severity": "Enter Severity",
     "enter_symptom": "Enter Symptom",
     "complaint_data_empty": "Complaint data is empty",
     "since_optional": "Since (Optional)",
