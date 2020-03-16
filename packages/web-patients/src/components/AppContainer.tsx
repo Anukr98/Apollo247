@@ -42,7 +42,7 @@ import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
 import { YourOrders } from 'components/Tests/YourOrders';
 import { SearchByTest } from 'components/Tests/SearchByTest';
-import { OrdersMessage } from 'components/Tests/OrdersMessage';
+import { OrderDetails } from 'components/Tests/OrderDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -137,9 +137,8 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
           <AuthRouted exact path={clientRoutes.tests()} component={TestsLanding} />
           <AuthRouted exact path={clientRoutes.testDetails()} component={TestDetails} />
-          <AuthRouted exact path={clientRoutes.testOrders()} component={YourOrders} />
           <AuthRouted exact path={clientRoutes.searchByTest()} component={SearchByTest} />
-          <AuthRouted exact path={clientRoutes.ordersMessage()} component={OrdersMessage} />
+          <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
         </Switch>
       </div>
     </Scrollbars>
