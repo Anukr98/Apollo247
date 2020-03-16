@@ -1306,7 +1306,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 },
                 !!cartItems.find((_item) => _item.id == item.ItemID),
                 () => {
-                  postBrowsePackageEvent(item.ItemName);
                   fetchPackageDetails(item.ItemID, (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
@@ -1408,11 +1407,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
               return renderCatalogCard(
                 item.organName!,
                 item.organImage!,
-                () =>
+                () => {
+                  postBrowsePackageEvent(item.organName!);
                   props.navigation.navigate(AppRoutes.TestsByCategory, {
                     title: `${item.organName || 'Products'}`.toUpperCase(),
                     products: [item.diagnostics],
-                  }),
+                  });
+                },
                 {
                   marginHorizontal: 4,
                   marginTop: 16,
