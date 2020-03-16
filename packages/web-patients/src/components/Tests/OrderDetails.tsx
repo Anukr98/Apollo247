@@ -10,6 +10,7 @@ import { MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -19,13 +20,90 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       backgroundColor: '#f7f8f5',
       position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: 0,
+        zIndex: 99,
+      },
     },
     contentWrapper: {
       maxWidth: 820,
       margin: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
-    root: {
-      // backgroundColor: '#f7f8f5',
+    content: {
+      padding: '0 20px 95px 20px',
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 20,
+      },
+    },
+    breadcrumbs: {
+      marginLeft: 20,
+      marginRight: 20,
+      fontSize: 13,
+      paddingTop: 17,
+      paddingBottom: 11,
+      fontWeight: 600,
+      color: '#02475b',
+      textTransform: 'uppercase',
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      display: 'flex',
+      alignItems: 'center',
+      position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        zIndex: 999,
+        top: 0,
+        width: '100%',
+        borderBottom: 'none',
+        backgroundColor: theme.palette.common.white,
+        margin: 0,
+        paddingLeft: 20,
+        paddingRight: 20,
+        textAlign: 'center',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
+    },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      [theme.breakpoints.up(1220)]: {
+        position: 'absolute',
+        left: -82,
+        top: 0,
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 0,
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    detailsHeader: {
+      flex: 1,
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
     },
     heading: {
       fontSize: 17,
@@ -36,12 +114,15 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 13,
       paddingTop: 30,
       marginBottom: 30,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 10,
+      },
     },
     medicineStrip: {
       backgroundColor: theme.palette.common.white,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       borderRadius: 5,
-      padding: 30,
+      padding: 20,
       marginBottom: 10,
       position: 'relative',
     },
@@ -50,14 +131,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineStripWrap: {
       display: 'flex',
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-      },
     },
     medicineInformation: {
       paddingRight: 10,
       display: 'flex',
-      alignItems: 'center',
     },
     cartRight: {
       marginLeft: 'auto',
@@ -66,10 +143,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#658f9b',
       fontSize: 17,
       fontWeight: 500,
-      [theme.breakpoints.down('xs')]: {
-        paddingLeft: 45,
-        paddingTop: 5,
-      },
     },
     medicineIcon: {
       paddingRight: 10,
@@ -78,14 +151,13 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
-    medicineName: {
-      fontSize: 14,
+    orderID: {
+      fontSize: 17,
       color: '#02475b',
       fontWeight: 500,
+      paddingBottom: 8,
       [theme.breakpoints.down('xs')]: {
-        paddingBottom: 5,
-        paddingRight: 24,
-        flexGrow: 1,
+        fontSize: 16,
       },
     },
     tabInfo: {
@@ -181,14 +253,14 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#00b38e',
       fontWeight: 600,
     },
-    scheduledRow: {
-      padding: 14,
-    },
-    scheduledMessage: {
-      color: '#658f9b',
+    labelText: {
       fontSize: 17,
       fontWeight: 500,
-      textAlign: 'center',
+      color: '#658f9b',
+      marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+      },
     },
     scheduledRowBottom: {
       position: 'absolute',
@@ -198,6 +270,13 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: '100%',
       marginBottom: 0,
       borderRadius: 0,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderBottomRightRadius: 5,
+      borderBottomLeftRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        borderRadius: 0,
+      },
     },
     scheduledRowBottomMsg: {
       fontSize: 17,
@@ -221,10 +300,11 @@ export interface TestListCardProps {
   isLoading: boolean;
 }
 
-export const OrdersMessage: React.FC<TestListCardProps> = (props) => {
+export const OrderDetails: React.FC<TestListCardProps> = (props) => {
   const classes = useStyles({});
   const { addCartItem, removeCartItem, updateCartItemQty, cartItems } = useShoppingCart();
   const options = Array.from(Array(20), (_, x) => x + 1);
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const [selectedPackedQty] = React.useState(1);
 
@@ -239,25 +319,54 @@ export const OrdersMessage: React.FC<TestListCardProps> = (props) => {
   };
 
   return (
-    <div className={classes.root}>
+    <div>
       <Header />
       <div className={classes.container}>
         <div className={classes.contentWrapper}>
           <div className={classes.heading}>Your Orders</div>
-          <Scrollbars autoHide={true} autoHeight autoHeightMin={'calc(100vh - 215px'}>
-            <div className={classes.medicineStrip}>
-              <div className={classes.medicineStripWrap}>
-                <div className={classes.medicineInformation}>
-                  <div className={classes.medicineIcon}>
-                    <img src={require('images/ic_tests_icon.svg')} alt="" />
-                  </div>
-                  <div className={classes.medicineName}>Blood Glucose</div>
-                </div>
-                <div className={classes.cartRight}>Home Visit</div>
+          <div className={classes.breadcrumbs}>
+            <a onClick={() => (window.location.href = clientRoutes.tests())}>
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
-            </div>
-            <div className={`${classes.medicineStrip} ${classes.scheduledRow}`}>
-              <div className={classes.scheduledMessage}>Scheduled For : 10 Mar 2020, 06:00 AM</div>
+            </a>
+            <div className={classes.detailsHeader}>Your Orders</div>
+          </div>
+          <Scrollbars
+            autoHide={true}
+            autoHeight
+            autoHeightMin={isSmallScreen ? 'calc(100vh - 180px)' : 'calc(100vh - 210px)'}
+          >
+            <div className={classes.content}>
+              <div className={classes.medicineStrip}>
+                <div className={classes.medicineStripWrap}>
+                  <div className={classes.medicineInformation}>
+                    <div className={classes.medicineIcon}>
+                      <img src={require('images/ic_tests_icon.svg')} alt="" />
+                    </div>
+                    <div>
+                      <div className={classes.orderID}>#A2472707936</div>
+                      <div className={classes.labelText}>Scheduled For : 10 Mar 2020, 06:00 AM</div>
+                    </div>
+                  </div>
+                  <div className={classes.labelText}>Home Visit</div>
+                </div>
+              </div>
+              <div className={classes.medicineStrip}>
+                <div className={classes.medicineStripWrap}>
+                  <div className={classes.medicineInformation}>
+                    <div className={classes.medicineIcon}>
+                      <img src={require('images/ic_tests_icon.svg')} alt="" />
+                    </div>
+                    <div>
+                      <div className={classes.orderID}>#A2472707936</div>
+                      <div className={classes.labelText}>Scheduled For : 10 Mar 2020, 06:00 AM</div>
+                    </div>
+                  </div>
+                  <div className={classes.labelText}>Clinic Visit</div>
+                </div>
+              </div>
             </div>
           </Scrollbars>
           <div className={`${classes.medicineStrip} ${classes.scheduledRowBottom}`}>
