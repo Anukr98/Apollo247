@@ -435,7 +435,9 @@ const updateDoctorFeeSummary: Resolver<
       ConsultMode.BOTH
     );
     let totalFee: number = 0;
+    let totalConsults: number = 0;
     if (totalConsultations.length) {
+      totalConsults = totalConsultations.length;
       totalConsultations.forEach(async (consultation, index, array) => {
         const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
           consultation.id
@@ -447,6 +449,8 @@ const updateDoctorFeeSummary: Resolver<
           saveDetails();
         }
       });
+    } else {
+      saveDetails();
     }
     async function saveDetails() {
       const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
@@ -457,7 +461,7 @@ const updateDoctorFeeSummary: Resolver<
         specialtiyId: doctor.specialty.id,
         specialityName: doctor.specialty.name,
         areaName: doctor.doctorHospital[0].facility.city,
-        appointmentsCount: totalConsultations.length,
+        appointmentsCount: totalConsults,
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
     }
