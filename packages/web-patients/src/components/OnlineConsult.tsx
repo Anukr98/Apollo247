@@ -241,8 +241,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const doctorName =
     doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.firstName
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.firstName
       ? doctorDetails.getDoctorDetailsById.firstName
       : '';
 
@@ -253,9 +253,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [revisedAmount, setRevisedAmount] = useState(onlineConsultationFees);
   const hospitalId =
     doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
-      doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
+    doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
       ? doctorDetails.getDoctorDetailsById.doctorHospital[0].facility.id
       : '';
 
@@ -480,7 +480,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                         ? classes.buttonActive
                         : ''
                       : classes.disabledButton
-                    }`}
+                  }`}
                   disabled={!(consultNow && slotAvailableNext !== '') || !consultNowAvailable}
                   title={' Consult Now'}
                 >
@@ -496,7 +496,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     showCalendar || scheduleLater || !consultNowAvailable
                       ? classes.buttonActive
                       : ''
-                    }`}
+                  }`}
                   title={' Schedule For Later'}
                 >
                   Schedule For Later
@@ -505,11 +505,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               {showCalendar || scheduleLater || !consultNowAvailable ? (
                 ''
               ) : (
-                  <p className={classes.consultNowInfo}>
-                    Please note that after booking, you will need to download the Apollo 247 app to
-                    continue with your consultation.
-                  </p>
-                )}
+                <p className={classes.consultNowInfo}>
+                  Please note that after booking, you will need to download the Apollo 247 app to
+                  continue with your consultation.
+                </p>
+              )}
             </div>
           )}
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
@@ -526,7 +526,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       showCalendar || scheduleLater || !consultNowAvailable
                         ? classes.showCalendar
                         : ''
-                      }`}
+                    }`}
                     ref={calendarRef}
                   >
                     <AphCalendar
@@ -537,32 +537,32 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 </Grid>
                 <Grid item sm={6} xs={12}>
                   {morningSlots.length > 0 ||
-                    afternoonSlots.length > 0 ||
-                    eveningSlots.length > 0 ||
-                    lateNightSlots.length > 0 ? (
-                      <div
-                        className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-                          showCalendar || scheduleLater || !consultNowAvailable
-                            ? classes.showTimeSlot
-                            : ''
-                          }`}
-                      >
-                        <DayTimeSlots
-                          morningSlots={morningSlots}
-                          afternoonSlots={afternoonSlots}
-                          eveningSlots={eveningSlots}
-                          latenightSlots={lateNightSlots}
-                          doctorName={doctorName}
-                          timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
-                        />
+                  afternoonSlots.length > 0 ||
+                  eveningSlots.length > 0 ||
+                  lateNightSlots.length > 0 ? (
+                    <div
+                      className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
+                        showCalendar || scheduleLater || !consultNowAvailable
+                          ? classes.showTimeSlot
+                          : ''
+                      }`}
+                    >
+                      <DayTimeSlots
+                        morningSlots={morningSlots}
+                        afternoonSlots={afternoonSlots}
+                        eveningSlots={eveningSlots}
+                        latenightSlots={lateNightSlots}
+                        doctorName={doctorName}
+                        timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
+                      />
+                    </div>
+                  ) : (
+                    <div className={classes.consultGroup}>
+                      <div className={classes.noSlotsAvailable}>
+                        Oops! No slots available with Dr. {doctorName} :(
                       </div>
-                    ) : (
-                      <div className={classes.consultGroup}>
-                        <div className={classes.noSlotsAvailable}>
-                          Oops! No slots available with Dr. {doctorName} :(
-                      </div>
-                      </div>
-                    )}
+                    </div>
+                  )}
                 </Grid>
               </Grid>
             </>
@@ -597,9 +597,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 doctorId: doctorId,
                 newDateTimeslot: new Date(
                   `${apiDateFormat} ${
-                  timeSelected !== ''
-                    ? timeSelected.padStart(5, '0')
-                    : slotAvailableNext.padStart(5, '0')
+                    timeSelected !== ''
+                      ? timeSelected.padStart(5, '0')
+                      : slotAvailableNext.padStart(5, '0')
                   }:00`
                 ).toISOString(),
                 initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
@@ -615,110 +615,112 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           </AphButton>
         </div>
       ) : (
-          <div className={classes.bottomActions}>
-            <AphButton
-              color="primary"
-              disabled={
-                disableSubmit ||
-                mutationLoading ||
-                isDialogOpen ||
-                (!consultNowAvailable && timeSelected === '') ||
-                (scheduleLater && timeSelected === '') || !timeSelected
+        <div className={classes.bottomActions}>
+          <AphButton
+            color="primary"
+            disabled={
+              disableSubmit ||
+              mutationLoading ||
+              isDialogOpen ||
+              (!consultNowAvailable && timeSelected === '') ||
+              (scheduleLater && timeSelected === '') ||
+              !timeSelected
+            }
+            onClick={() => {
+              let appointmentDateTime = '';
+              if (scheduleLater || !consultNowAvailable) {
+                const dateForScheduleLater =
+                  dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
+                const appointmentDateTimeString = new Date(
+                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
+                );
+                appointmentDateTime = moment.utc(appointmentDateTimeString).format();
+              } else {
+                appointmentDateTime = consultNowSlotTime;
               }
-              onClick={() => {
-                let appointmentDateTime = '';
-                if (scheduleLater || !consultNowAvailable) {
-                  const dateForScheduleLater =
-                    dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
-                  const appointmentDateTimeString = new Date(
-                    `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
-                  );
-                  appointmentDateTime = moment.utc(appointmentDateTimeString).format();
-                } else {
-                  appointmentDateTime = consultNowSlotTime;
-                }
-                // console.log(appointmentDateTime, 'appt time is....', scheduleLater);
-                // console.log(appointmentDateTime, 'appt date and time.....');
+              // console.log(appointmentDateTime, 'appt time is....', scheduleLater);
+              // console.log(appointmentDateTime, 'appt date and time.....');
 
-                setMutationLoading(true);
-                paymentMutation({
-                  variables: {
-                    bookAppointment: {
-                      patientId: currentPatient ? currentPatient.id : '',
-                      doctorId: doctorId,
-                      appointmentDateTime: appointmentDateTime,
-                      appointmentType: AppointmentType.ONLINE,
-                      hospitalId: hospitalId,
-                    },
+              setMutationLoading(true);
+              paymentMutation({
+                variables: {
+                  bookAppointment: {
+                    patientId: currentPatient ? currentPatient.id : '',
+                    doctorId: doctorId,
+                    appointmentDateTime: appointmentDateTime,
+                    appointmentType: AppointmentType.ONLINE,
+                    hospitalId: hospitalId,
                   },
-                })
-                  .then((res: any) => {
-                    disableSubmit = false;
-                    if (
-                      res &&
-                      res.data &&
-                      res.data.bookAppointment &&
-                      res.data.bookAppointment.appointment
-                    ) {
-                      if (revisedAmount == '0') {
-                        makePaymentMutation({
-                          variables: {
-                            paymentInput: {
-                              amountPaid: 0,
-                              paymentRefId: '',
-                              paymentStatus: 'TXN_SUCCESS',
-                              paymentDateTime:
-                                res.data.bookAppointment.appointment.appointmentDateTime,
-                              responseCode: couponCode,
-                              responseMessage: 'Coupon applied',
-                              bankTxnId: '',
-                              orderId: res.data.bookAppointment.appointment.id,
-                            },
+                },
+              })
+                .then((res: any) => {
+                  disableSubmit = false;
+                  if (
+                    res &&
+                    res.data &&
+                    res.data.bookAppointment &&
+                    res.data.bookAppointment.appointment
+                  ) {
+                    if (revisedAmount == '0') {
+                      makePaymentMutation({
+                        variables: {
+                          paymentInput: {
+                            amountPaid: 0,
+                            paymentRefId: '',
+                            paymentStatus: 'TXN_SUCCESS',
+                            paymentDateTime:
+                              res.data.bookAppointment.appointment.appointmentDateTime,
+                            responseCode: couponCode,
+                            responseMessage: 'Coupon applied',
+                            bankTxnId: '',
+                            orderId: res.data.bookAppointment.appointment.id,
                           },
-                          fetchPolicy: 'no-cache',
+                        },
+                        fetchPolicy: 'no-cache',
+                      })
+                        .then((res) => {
+                          window.location.href = clientRoutes.appointments();
                         })
-                          .then((res) => {
-                            window.location.href = clientRoutes.appointments();
-                          })
-                          .catch((error) => alert(error));
-                      } else {
-                        const pgUrl = `${
-                          process.env.CONSULT_PG_BASE_URL
-                          }/consultpayment?appointmentId=${
-                          res.data.bookAppointment.appointment.id
-                          }&patientId=${
-                          currentPatient ? currentPatient.id : ''
-                          }&price=${revisedAmount}&source=WEB`;
-                        window.location.href = pgUrl;
-                      }
-                      // setMutationLoading(false);
-                      // setIsDialogOpen(true);
+                        .catch((error) => alert(error));
+                    } else {
+                      const pgUrl = `${
+                        process.env.CONSULT_PG_BASE_URL
+                      }/consultpayment?appointmentId=${
+                        res.data.bookAppointment.appointment.id
+                      }&patientId=${
+                        currentPatient ? currentPatient.id : ''
+                      }&price=${revisedAmount}&source=WEB`;
+                      window.location.href = pgUrl;
                     }
-                  })
-                  .catch((errorResponse) => {
-                    alert(errorResponse);
-                    disableSubmit = false;
-                    setMutationLoading(false);
-                  });
-              }}
-              className={
-                disableSubmit ||
-                  mutationLoading ||
-                  isDialogOpen ||
-                  (scheduleLater && consultNowSlotTime === '') || (!timeSelected && timeSelected === '')
-                  ? classes.buttonDisable
-                  : ''
-              }
-              title={'Pay'}
-            >
-              {mutationLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                  `PAY Rs. ${revisedAmount}`
-                )}
-            </AphButton>
-          </div>
-        )}
+                    // setMutationLoading(false);
+                    // setIsDialogOpen(true);
+                  }
+                })
+                .catch((errorResponse) => {
+                  alert(errorResponse);
+                  disableSubmit = false;
+                  setMutationLoading(false);
+                });
+            }}
+            className={
+              disableSubmit ||
+              mutationLoading ||
+              isDialogOpen ||
+              (scheduleLater && consultNowSlotTime === '') ||
+              (!timeSelected && timeSelected === '')
+                ? classes.buttonDisable
+                : ''
+            }
+            title={'Pay'}
+          >
+            {mutationLoading ? (
+              <CircularProgress size={22} color="secondary" />
+            ) : (
+              `PAY Rs. ${revisedAmount}`
+            )}
+          </AphButton>
+        </div>
+      )}
       <AphDialog
         open={isDialogOpen}
         disableBackdropClick
