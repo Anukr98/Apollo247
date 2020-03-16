@@ -557,6 +557,11 @@ export interface MedicineCartItem {
   isMedicine?: string | null;
 }
 
+export interface MedicineOrderCancelInput {
+  orderNo?: number | null;
+  remarksCode?: string | null;
+}
+
 export interface MedicinePaymentMqInput {
   orderId: string;
   orderAutoId: number;
@@ -568,11 +573,6 @@ export interface MedicinePaymentMqInput {
   responseCode?: string | null;
   responseMessage?: string | null;
   bankTxnId?: string | null;
-}
-
-export interface OrderCancelInput {
-  orderNo?: number | null;
-  remarksCode?: string | null;
 }
 
 export interface OtpVerificationInput {

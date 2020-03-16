@@ -1819,6 +1819,11 @@ export const GET_APPOINTMENT_DATA = gql`
           bankTxnId
           orderId
         }
+        caseSheet {
+          id
+          blobName
+          sentToPatient
+        }
       }
     }
   }
@@ -1851,11 +1856,10 @@ export const UPLOAD_CHAT_FILE = gql`
   }
 `;
 
-export const SAVE_ORDER_CANCEL_STATUS = gql`
-  mutation saveOrderCancelStatus($orderCancelInput: OrderCancelInput) {
-    saveOrderCancelStatus(orderCancelInput: $orderCancelInput) {
-      requestStatus
-      requestMessage
+export const CANCEL_MEDICINE_ORDER = gql`
+  mutation cancelMedicineOrder($medicineOrderCancelInput: MedicineOrderCancelInput) {
+    cancelMedicineOrder(medicineOrderCancelInput: $medicineOrderCancelInput) {
+      orderStatus
     }
   }
 `;
