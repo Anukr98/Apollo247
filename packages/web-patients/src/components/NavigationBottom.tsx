@@ -22,16 +22,23 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     labelRoot: {
-      width: '100%',
-      minWidth: 'auto',
       borderTop: '4px solid #fff',
+      flex: 'auto',
+      minWidth: 'auto',
+      [theme.breakpoints.up(560)]: {
+        width: '100%',
+        flex: 1,
+      },
+      [theme.breakpoints.down(560)]: {
+        padding: '6px 6px 8px',
+      },
     },
     iconLabel: {
       fontSize: 10,
       color: '#67919d',
       paddingTop: 6,
       textTransform: 'uppercase',
-      [theme.breakpoints.down(420)]: {
+      [theme.breakpoints.down(560)]: {
         fontSize: 8,
       },
     },
@@ -96,10 +103,10 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Medicines"
-        className={classes.hieLink}
         component={Link}
         to={clientRoutes.medicines()}
         icon={<img src={require('images/bottom-nav/ic_medicines.svg')} />}
+        className={currentPath === clientRoutes.medicines() ? classes.activeMenu : ''}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
@@ -108,8 +115,10 @@ export const NavigationBottom: React.FC = (props) => {
       />
       <BottomNavigationAction
         label="Tests"
-        className={classes.hieLink}
+        component={Link}
+        to={clientRoutes.tests()}
         icon={<img src={require('images/bottom-nav/ic_tests.svg')} />}
+        className={currentPath === clientRoutes.tests() ? classes.activeMenu : ''}
         classes={{
           root: classes.labelRoot,
           label: classes.iconLabel,
