@@ -18,7 +18,7 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_MEDICINE_ORDER_DETAILS,
-  SAVE_ORDER_CANCEL_STATUS,
+  CANCEL_MEDICINE_ORDER,
   GET_MEDICINE_ORDERS_LIST,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -28,10 +28,6 @@ import {
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  saveOrderCancelStatus,
-  saveOrderCancelStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/saveOrderCancelStatus';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -67,6 +63,10 @@ import {
   GetMedicineOrdersListVariables,
 } from '../graphql/types/GetMedicineOrdersList';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  cancelMedicineOrder,
+  cancelMedicineOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/cancelMedicineOrder';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -532,23 +532,23 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const onPressConfirmCancelOrder = () => {
     setShowSpinner(true);
-    const variables: saveOrderCancelStatusVariables = {
-      orderCancelInput: {
-        orderNo: typeof orderAutoId == 'string' ? parseInt(orderAutoId) : orderAutoId,
-        remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0]!,
+    const variables: cancelMedicineOrderVariables = {
+      medicineOrderCancelInput: {
+        orderNo: typeof orderAutoId == 'string' ? parseInt(orderAutoId, 10) : orderAutoId,
+        remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0],
       },
     };
 
     console.log(JSON.stringify(variables));
 
     client
-      .mutate<saveOrderCancelStatus, saveOrderCancelStatusVariables>({
-        mutation: SAVE_ORDER_CANCEL_STATUS,
+      .mutate<cancelMedicineOrder, cancelMedicineOrderVariables>({
+        mutation: CANCEL_MEDICINE_ORDER,
         variables,
       })
       .then(({ data }) => {
         aphConsole.log({
-          s: data!.saveOrderCancelStatus!,
+          s: data,
         });
         const setInitialSate = () => {
           setShowSpinner(false);
@@ -556,8 +556,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setComment('');
           setSelectedReason('');
         };
-        const requestStatus = g(data, 'saveOrderCancelStatus', 'requestStatus');
-        if (requestStatus == 'true') {
+        const requestStatus = g(data, 'cancelMedicineOrder', 'orderStatus');
+        if (requestStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST) {
+          showAphAlert &&
+            showAphAlert({
+              title: 'Hi :),',
+              description:
+                'Cancel order has been initiated for order ' +
+                g(variables, 'medicineOrderCancelInput', 'orderNo'),
+            });
           refetch()
             .then(() => {
               setInitialSate();
@@ -585,7 +592,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 CommonBugFender('OrderDetailsScene_onPressConfirmCancelOrder', e);
               });
         } else {
-          Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
+          Alert.alert('Error', g(data, 'cancelMedicineOrder', 'orderStatus')!);
         }
       })
       .catch((e) => {
@@ -668,7 +675,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={`ORDER #${orderAutoId}`}
             container={{ borderBottomWidth: 0 }}
-            // rightComponent={renderMoreMenu()}
+            rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
