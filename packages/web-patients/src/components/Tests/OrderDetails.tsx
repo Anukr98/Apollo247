@@ -60,8 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
-        paddingLeft: 20,
-        paddingRight: 20,
+        padding: '15px',
         textAlign: 'center',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
@@ -325,12 +324,12 @@ export const OrderDetails: React.FC<TestListCardProps> = (props) => {
         <div className={classes.contentWrapper}>
           <div className={classes.heading}>Your Orders</div>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.tests())}>
+            <Link to={clientRoutes.tests()}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
-            </a>
+            </Link>
             <div className={classes.detailsHeader}>Your Orders</div>
           </div>
           <Scrollbars

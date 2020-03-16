@@ -42,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
             backgroundColor: '#fff',
             borderBottom: '2px solid #00b38e',
             paddingLeft: 0,
+            borderRadius: 0,
           },
         },
       },
