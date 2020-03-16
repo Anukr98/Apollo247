@@ -208,11 +208,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     if (cartItems.length) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.CART_VIEWED] = {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
         'Delivery charge': deliveryCharges,
-        'Coupon code used': coupon ? coupon.code : '',
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
         'Prescription Needed?': uploadPrescriptionRequired,
@@ -227,22 +226,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ),
         'Service Area': 'Diagnostic',
       };
-      postWebEngageEvent(WebEngageEventName.CART_VIEWED, eventAttributes);
+      if (coupon) {
+        eventAttributes['Coupon code used'] = coupon.code;
+      }
+      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
     }
   }, []);
 
   const postwebEngageProceedToPayEvent = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PROCCED_TO_PAY_CLICKED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
       'Prescription Needed?': uploadPrescriptionRequired,
-      'Mode of Delivery': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
+      'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
       'Pin Code': pinCode,
-      'Service Area': 'Pharmacy',
+      'Service Area': 'Diagnostic',
     };
-    postWebEngageEvent(WebEngageEventName.PROCCED_TO_PAY_CLICKED, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
   };
 
   useEffect(() => {

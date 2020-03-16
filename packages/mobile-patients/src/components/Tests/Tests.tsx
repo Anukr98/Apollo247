@@ -66,6 +66,7 @@ import {
   getNetStatus,
   isValidSearch,
   postWebEngageEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -399,7 +400,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     price: number,
     discountedPrice: number
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'product name': name,
       'product id': id,
       Source: 'Diagnostic',
@@ -414,7 +415,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // 'Mobile Number': g(currentPatient, 'mobileNumber'),
       // 'Customer ID': g(currentPatient, 'id'),
     };
-    postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   };
 
   const postBrowsePackageEvent = (packageName: string) => {
@@ -1435,6 +1436,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         containerStyle={{
           paddingBottom: 20,
           paddingTop: 20,
+        }}
+        onNeedHelpPress={() => {
+          postWEGNeedHelpEvent(currentPatient, 'Tests');
         }}
       />
     );

@@ -497,7 +497,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
+  const postwebEngageProductClickedEvent = ({ name, sku }: MedicineProduct) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
       'product name': name,
       'product id': sku,

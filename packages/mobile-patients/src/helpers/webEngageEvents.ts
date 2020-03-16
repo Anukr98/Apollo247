@@ -9,15 +9,20 @@ export enum WebEngageEventName {
   SEARCH = 'Pharmacy Search',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
-  ADD_TO_CART = 'Add to cart',
+  PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
+  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
   BUY_NOW = 'Buy Now',
-  CART_VIEWED = 'Cart Viewed',
-  PROCCED_TO_PAY_CLICKED = 'Procced To Pay Clicked',
-  PHARMACY_PAYMENT_INITIATED = 'Payment Initiated',
+  PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
+  DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
+  PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
+  DIAGNOSTIC_PROCEED_TO_PAY_CLICKED = 'Diagnostic Proceed To Pay Clicked',
+  PHARMACY_PAYMENT_INITIATED = 'Pharmacy Payment Initiated',
+  DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   PHARMACY_SUBMIT_PRESCRIPTION = 'Pharmacy Submit Prescription',
-  PHARMACY_CHECKOUT_COMPLETED = 'Checkout completed',
+  PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
@@ -70,6 +75,10 @@ export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
 }
 
+export interface PatientInfoWithNeedHelp extends PatientInfo {
+  Source: 'Home Screen' | 'Medicines' | 'Tests' | 'My Account' | 'Doctor Search';
+}
+
 export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
 }
@@ -100,7 +109,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
   [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
-  [WebEngageEventName.NEED_HELP]: PatientInfoWithSource; // source values may change later
+  [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
 
@@ -126,7 +135,26 @@ export interface WebEngageEvents {
     Source: 'Home'; // Home
     'Section Name': string;
   };
-  [WebEngageEventName.ADD_TO_CART]: {
+  [WebEngageEventName.PHARMACY_ADD_TO_CART]: {
+    'product name': string;
+    'product id': string; // (SKUID)
+    Price: number;
+    'Discounted Price': number;
+    Quantity: number;
+    Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
+    Brand?: string;
+    'Brand ID'?: string;
+    'category name'?: string;
+    'category ID'?: string;
+    // 'Patient Name': string;
+    // 'Patient UHID': string;
+    // Relation: string;
+    // Age: number;
+    // Gender: string;
+    // 'Mobile Number': string;
+    // 'Customer ID': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
@@ -157,11 +185,11 @@ export interface WebEngageEvents {
     Quantity: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.CART_VIEWED]: {
+  [WebEngageEventName.PHARMACY_CART_VIEWED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
-    'Coupon code used': string;
+    'Coupon code used'?: string;
     'Total Discount': number;
     'Net after discount': number;
     'Prescription Needed?': boolean;
@@ -169,7 +197,19 @@ export interface WebEngageEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.PROCCED_TO_PAY_CLICKED]: {
+  [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
+    'Total items in cart': number;
+    'Sub Total': number;
+    'Delivery charge': number;
+    'Coupon code used'?: string;
+    'Total Discount': number;
+    'Net after discount': number;
+    'Prescription Needed?': boolean;
+    'Cart ID'?: string;
+    'Cart Items': object[];
+    'Service Area': 'Pharmacy' | 'Diagnostic';
+  };
+  [WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -181,7 +221,24 @@ export interface WebEngageEvents {
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
+  [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
+    'Total items in cart': number;
+    'Sub Total': number;
+    'Delivery charge': number;
+    'Net after discount': number;
+    'Prescription Needed?': boolean;
+    'Cart ID'?: string; // we don't have cartId before placing order
+    'Mode of Sample Collection': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
+    'Delivery Date Time'?: string; // Optional (only if Home)
+    'Pin Code': string | number;
+    'Service Area': 'Pharmacy' | 'Diagnostic';
+  };
   [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
+    'Payment mode': 'Online' | 'COD';
+    Amount: number;
+    'Service Area': 'Pharmacy' | 'Diagnostic';
+  };
+  [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
@@ -200,6 +257,23 @@ export interface WebEngageEvents {
     Pincode: string | number;
   };
   [WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED]: {
+    'Order ID': string | number;
+    'Order Type': 'Cart' | 'Non Cart';
+    'Prescription Required': boolean;
+    'Prescription Added': boolean;
+    'Shipping information': string; // (Home/Store address)
+    'Total items in cart'?: number; // Optional
+    'Grand Total'?: number; // Optional
+    'Total Discount %'?: number; // Optional
+    'Discount Amount'?: number; // Optional
+    'Delivery charge'?: number; // Optional
+    'Net after discount'?: number; // Optional
+    'Payment status'?: number; // Optional
+    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
+    'Cart ID'?: string | number; // Optional
+    'Service Area': 'Pharmacy' | 'Diagnostic';
+  };
+  [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
     'Order Type': 'Cart' | 'Non Cart';
     'Prescription Required': boolean;
@@ -317,7 +391,7 @@ export interface WebEngageEvents {
     'Discount coupon'?: string;
     'Discount Amount': number;
     'Net Amount': number;
-    'Patient ID': string;
+    'Customer ID': string;
     'Patient Name': string;
     'Patient Age': number;
     'Patient Gender': string;
@@ -325,12 +399,12 @@ export interface WebEngageEvents {
     consultType: 'clinic' | 'online';
   };
   [WebEngageEventName.CONSULTATION_BOOKED]: {
-    'Consultation ID': string;
+    'Consult ID': string;
     name: string;
     specialisation: string;
     category: string;
     time: Date | string;
-    type: 'online' | 'clinic';
+    consultType: 'online' | 'clinic';
     'clinic name': string;
     'clinic address': string; // whole address
     'Patient Name': string;

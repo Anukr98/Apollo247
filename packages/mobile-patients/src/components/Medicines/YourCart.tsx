@@ -161,11 +161,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     if (cartItems.length) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.CART_VIEWED] = {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
         'Delivery charge': deliveryCharges,
-        'Coupon code used': coupon ? coupon.code : '',
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
         'Prescription Needed?': uploadPrescriptionRequired,
@@ -182,7 +181,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         'Service Area': 'Pharmacy',
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
-      postWebEngageEvent(WebEngageEventName.CART_VIEWED, eventAttributes);
+      if (coupon) {
+        eventAttributes['Coupon code used'] = coupon.code;
+      }
+      postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
     }
   }, []);
 
@@ -1023,7 +1025,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const postwebEngageProceedToPayEvent = () => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PROCCED_TO_PAY_CLICKED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
       'Delivery charge': deliveryCharges,
@@ -1036,7 +1038,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Pin Code': pinCode,
       'Service Area': 'Pharmacy',
     };
-    postWebEngageEvent(WebEngageEventName.PROCCED_TO_PAY_CLICKED, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
   };
 
   const onPressProceedToPay = () => {

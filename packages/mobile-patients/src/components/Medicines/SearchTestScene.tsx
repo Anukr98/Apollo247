@@ -35,6 +35,7 @@ import {
   g,
   isValidSearch,
   postWebEngageEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -323,7 +324,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     price: number,
     discountedPrice: number
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'product name': name,
       'product id': id,
       Price: price,
@@ -338,7 +339,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       // 'Mobile Number': g(currentPatient, 'mobileNumber'),
       // 'Customer ID': g(currentPatient, 'id'),
     };
-    postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   };
 
   const onAddCartItem = (
@@ -481,6 +482,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         <NeedHelpAssistant
           navigation={props.navigation}
           containerStyle={{ marginTop: 84, marginBottom: 50 }}
+          onNeedHelpPress={() => {
+            postWEGNeedHelpEvent(currentPatient, 'Tests');
+          }}
         />
       </ScrollView>
     );

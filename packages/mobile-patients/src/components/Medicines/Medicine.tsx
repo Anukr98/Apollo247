@@ -45,6 +45,7 @@ import {
   isValidSearch,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -899,6 +900,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         navigation={props.navigation}
         containerStyle={{
           paddingBottom: 20,
+        }}
+        onNeedHelpPress={() => {
+          postWEGNeedHelpEvent(currentPatient, 'Medicines');
         }}
       />
     );

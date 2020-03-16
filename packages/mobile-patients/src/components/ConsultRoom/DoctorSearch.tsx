@@ -36,6 +36,7 @@ import {
   isValidSearch,
   postWebEngageEvent,
   g,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -829,7 +830,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const renderHelpView = () => {
     if (needHelp) {
-      return <NeedHelpAssistant navigation={props.navigation} containerStyle={styles.helpView} />;
+      return (
+        <NeedHelpAssistant
+          navigation={props.navigation}
+          containerStyle={styles.helpView}
+          onNeedHelpPress={() => {
+            postWEGNeedHelpEvent(currentPatient, 'Doctor Search');
+          }}
+        />
+      );
     }
   };
 

@@ -143,7 +143,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     price: number,
     discountedPrice: number
   ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADD_TO_CART] = {
       'product name': name,
       'product id': id,
       Source: 'Diagnostic',
@@ -158,7 +158,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       // 'Mobile Number': g(currentPatient, 'mobileNumber'),
       // 'Customer ID': g(currentPatient, 'id'),
     };
-    postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   };
 
   const errorAlert = () => {

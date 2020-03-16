@@ -35,6 +35,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -734,9 +735,9 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
 
 export const postwebEngageAddToCartEvent = (
   { sku, name, category_id, price, special_price }: MedicineProduct,
-  source: WebEngageEvents[WebEngageEventName.ADD_TO_CART]['Source']
+  source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source']
 ) => {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_TO_CART] = {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id': sku,
     Brand: '',
@@ -748,5 +749,22 @@ export const postwebEngageAddToCartEvent = (
     Quantity: 1,
     Source: source,
   };
-  postWebEngageEvent(WebEngageEventName.ADD_TO_CART, eventAttributes);
+  postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postWEGNeedHelpEvent = (
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  source: WebEngageEvents[WebEngageEventName.NEED_HELP]['Source']
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.NEED_HELP] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid')!,
+    Relation: g(currentPatient, 'relation')!,
+    Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    Gender: g(currentPatient, 'gender')!,
+    'Mobile Number': g(currentPatient, 'mobileNumber')!,
+    'Customer ID': g(currentPatient, 'id')!,
+    Source: source,
+  };
+  postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
 };

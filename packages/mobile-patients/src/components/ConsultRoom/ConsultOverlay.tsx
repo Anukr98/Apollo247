@@ -213,7 +213,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
       category: g(props.doctor, 'doctorType')!, // send doctorType
       time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      type: tabs[0].title === selectedTab ? 'online' : 'clinic',
+      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
       'clinic name': g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
       'clinic address':
         doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
@@ -228,7 +228,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       Gender: g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
-      'Consultation ID': id,
+      'Consult ID': id,
     };
     return eventAttributes;
   };
@@ -391,7 +391,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         : selectedTimeSlot;
     const localTimeSlot = moment(new Date(timeSlot));
     const eventAttributes: WebEngageEvents[WebEngageEventName.PAY_BUTTON_CLICKED] = {
-      Amount: coupon ? doctorDiscountedFees : Number(doctorFees),
+      Amount: Number(doctorFees),
       'Doctor Name': g(props.doctor, 'fullName')!,
       'Doctor City': g(props.doctor, 'city')!,
       'Type of Doctor': g(props.doctor, 'doctorType')!,
@@ -403,7 +403,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Discount coupon': coupon,
       'Discount Amount': coupon ? Number(doctorFees) - Number(doctorDiscountedFees) : 0,
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
-      'Patient ID': g(currentPatient, 'id'),
+      'Customer ID': g(currentPatient, 'id'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient Age': Math.round(
         moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
@@ -625,6 +625,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 CouponCode: couponValue,
                 'Discount Amount': Number(doctorFees) - Number(revisedAmount),
                 'Net Amount': Number(revisedAmount),
+                // 'Net Amount': Number(doctorFees),
                 'Coupon Applied': true,
               };
               postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);

@@ -237,7 +237,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       : store
       ? `${store.CentreName}\n${store.Locality},${store.City},${store.State}`
       : '';
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
       'Order ID': orderAutoId,
       'Order Type': 'Cart',
       'Prescription Required': uploadPrescriptionRequired,
@@ -251,9 +251,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Net after discount': grandTotal,
       'Payment status': 1,
       'Payment Type': isCashOnDelivery ? 'COD' : 'Prepaid',
-      'Service Area': 'Pharmacy',
+      'Service Area': 'Diagnostic',
     };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, eventAttributes);
   };
 
   const initiateOrder = async () => {
@@ -318,12 +318,12 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       ),
     };
 
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PAYMENT_INITIATED] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
       'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
       'Service Area': 'Diagnostic',
     };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PAYMENT_INITIATED, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });

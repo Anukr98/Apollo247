@@ -27,6 +27,7 @@ import {
   isValidSearch,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -546,6 +547,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         <NeedHelpAssistant
           navigation={props.navigation}
           containerStyle={{ marginTop: 84, marginBottom: 50 }}
+          onNeedHelpPress={() => {
+            postWEGNeedHelpEvent(currentPatient, 'Medicines');
+          }}
         />
       </ScrollView>
     );
