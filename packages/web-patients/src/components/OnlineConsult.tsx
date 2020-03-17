@@ -634,17 +634,16 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               let appointmentDateTime = '';
               if (scheduleLater || !consultNowAvailable) {
                 const dateForScheduleLater =
-                  dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
-                const appointmentDateTimeString = new Date(
-                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
-                );
-                appointmentDateTime = moment.utc(appointmentDateTimeString).format();
+                  dateSelected.length > 0 ? dateSelected.replace(/\//g, '-') : apiDateFormat;
+                appointmentDateTime = moment(
+                  `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
+                  'DD-MM-YYYY HH:mm:ss'
+                )
+                  .utc()
+                  .format();
               } else {
                 appointmentDateTime = consultNowSlotTime;
               }
-              // console.log(appointmentDateTime, 'appt time is....', scheduleLater);
-              // console.log(appointmentDateTime, 'appt date and time.....');
-
               setMutationLoading(true);
               paymentMutation({
                 variables: {
