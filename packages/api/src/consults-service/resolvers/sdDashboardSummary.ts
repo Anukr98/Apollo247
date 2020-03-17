@@ -417,6 +417,8 @@ const updateSdSummary: Resolver<
         adminIds,
         loggedInHours,
         awayHours,
+        onlineConsultationFees: Number(doctor.onlineConsultationFees),
+        physicalConsultationFees: Number(doctor.physicalConsultationFees),
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });
