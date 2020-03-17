@@ -136,6 +136,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       marginTop: 8,
+      cursor: 'pointer',
     },
     callImg: {
       marginLeft: 'auto',
@@ -160,6 +161,24 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    expertBox: {
+      padding: 20,
+      textAlign: 'center',
+      '& h2': {
+        fontSize: 16,
+        margin: 0,
+      },
+      '& a': {
+        fontSize: 14,
+        paddingTop: 5,
+        display: 'inline-block',
+        color: '#0087ba',
+        fontWeight: 500,
+      },
+      '& button': {
+        marginTop: 20,
+      },
+    },
   };
 });
 
@@ -171,6 +190,7 @@ export const HeroBanner: React.FC = () => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
   return (
@@ -231,13 +251,30 @@ export const HeroBanner: React.FC = () => {
         )}
         <p>How can we help you today? :)</p>
         <OurServices />
-        <div className={classes.callEmergency} title={'Call 1066 in emergency'}>
-          <span>Call 1066 in emergency</span>
+        <div
+          onClick={() => {
+            setIscoronaDialogOpen(true);
+          }}
+          className={classes.callEmergency}
+          title={'Call 08047192606 in emergency'}
+        >
+          <span>CORONAVIRUS? Talk to our expert.</span>
           <span className={classes.callImg}>
             <img src={require('images/ic-emergency.svg')} alt="" />
           </span>
         </div>
       </div>
+      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle></AphDialogTitle>
+        <div className={classes.expertBox}>
+          <h2>CORONAVIRUS? Talk to our expert.</h2>
+          <a href="tel:08047192606">Call 08047192606 in emergency</a>
+          <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
+            Ok, Got It
+          </AphButton>
+        </div>
+      </AphDialog>
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Add New Member</AphDialogTitle>
