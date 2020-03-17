@@ -888,6 +888,18 @@ export class FeedbackDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   helpTickets: number;
 
+  @Column({ default: 0 })
+  validHubOrders: number;
+
+  @Column({ default: 0 })
+  validHubOrdersDelivered: number;
+
+  @Column({ default: 0 })
+  validVdcOrders: number;
+
+  @Column({ default: 0 })
+  validVdcOrdersDelivered: number;
+
   @Column()
   createdDate: Date;
 
