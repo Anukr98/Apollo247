@@ -508,7 +508,12 @@ export const MedicineCart: React.FC = (props) => {
   const totalAmount = (grossValue + deliveryCharges).toFixed(2);
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
-  const disableSubmit = deliveryAddressId === '' && storeAddressId === '';
+  const disableSubmit =
+    deliveryMode === 'HOME'
+      ? deliveryAddressId === ''
+      : deliveryMode === 'PICKUP'
+      ? storeAddressId === ''
+      : false;
   const uploadPrescriptionRequired = cartItems.findIndex(
     (v) => Number(v.is_prescription_required) === 1
   );

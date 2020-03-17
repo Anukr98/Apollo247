@@ -231,10 +231,7 @@ export const MedicineListingCard: React.FC = (props) => {
                     </AphCustomDropdown>
                   </div>
                   <div className={classes.medicinePrice}>
-                    Rs.{' '}
-                    {isNaN(Number(item.special_price))
-                      ? item.price.toFixed(2)
-                      : Number(item.special_price).toFixed(2)}
+                    Rs. {item.special_price || item.price}
                   </div>
                   <div className={classes.addToCart}>
                     <AphButton onClick={() => removeCartItem && removeCartItem(item.id)}>
