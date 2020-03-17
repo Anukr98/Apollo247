@@ -75,11 +75,15 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         padding: '16px 20px',
+        position: 'fixed',
+        width: '100%',
       },
     },
     doctorProfileSection: {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#dcdfce',
+        marginTop: 56,
+        paddingBottom: 80,
       },
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
@@ -188,14 +192,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     flotingBtn: {
       position: 'fixed',
-      bottom: 20,
+      bottom: 0,
       textAlign: 'center',
       width: '100%',
+      backgroundColor: '#dcdfce',
+      zIndex: 99,
       [theme.breakpoints.up(901)]: {
         display: 'none',
       },
       '& button': {
         minWidth: 200,
+        margin: '20px 0',
       },
     },
     loader: {
@@ -282,9 +289,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 240px)'
                   : isSmallScreen
-                  ? 'calc(100vh - 140px)'
+                  ? 'auto'
                   : 'calc(100vh - 154px)'
               }
+              // autoHeightMax={isMediumScreen ? 'calc(100vh - 240px)' : ''}
             >
               <div className={classes.doctorProfileSection}>
                 <DoctorProfile
