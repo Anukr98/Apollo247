@@ -634,7 +634,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               let appointmentDateTime = '';
               if (scheduleLater || !consultNowAvailable) {
                 const dateForScheduleLater =
-                  dateSelected.length > 0 ? dateSelected.replace(/\//g, '-') : apiDateFormat;
+                  dateSelected.length > 0
+                    ? dateSelected.replace(/\//g, '-')
+                    : moment(apiDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
                 appointmentDateTime = moment(
                   `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
                   'DD-MM-YYYY HH:mm:ss'
