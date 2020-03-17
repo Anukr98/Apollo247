@@ -292,6 +292,17 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setShowCalendar(false);
     handleFilterOptions(filterOptions);
   };
+  const clearFilters = () => {
+    emptySpeciality('');
+    setCityName([]);
+    setGender([]);
+    setExperience([]);
+    setAvailability([]);
+    setFees([]);
+    setLanguage([]);
+    setDateSelected('');
+    setShowCalendar(false);
+  }
   const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
   return (
@@ -331,12 +342,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           Sorry, we couldn't find what you are looking for :(
         </FormHelperText>
       ) : (
-        ''
-      )}
+          ''
+        )}
       <div
         className={` ${showResponsiveFilter ? classes.filterSectionOpen : ''} ${
           classes.filterSection
-        } ${disableFilters ? classes.filterSectionDisabled : ''}`}
+          } ${disableFilters ? classes.filterSectionDisabled : ''}`}
       >
         <div className={classes.filterHeader}>
           <AphButton
@@ -349,8 +360,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           <span>FILTERS</span>
           <AphButton
             onClick={() => {
-              emptyFilters(true);
-              setShowResponsiveFilter(false);
+              clearFilters();
+              setShowResponsiveFilter(true);
             }}
           >
             <img src={require('images/ic_refresh.svg')} alt="" />
@@ -363,8 +374,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 320px)'
               : isSmallScreen
-              ? 'calc(100vh - 120px)'
-              : 'calc(100vh - 275px)'
+                ? 'calc(100vh - 120px)'
+                : 'calc(100vh - 275px)'
           }
         >
           <div className={classes.customScroll}>
