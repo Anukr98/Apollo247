@@ -832,9 +832,7 @@ export const AddRecords: React.FC = (props) => {
                                     setdateOfTest(dateSelected);
                                     setShowCalendar(false);
                                   }}
-                                  selectedDate={
-                                    dateOfTest.length > 0 ? new Date(dateOfTest) : new Date()
-                                  }
+                                  selectedDate={new Date()}
                                 />
                               )}
                             </div>
