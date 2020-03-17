@@ -38,6 +38,7 @@ import {
   isValidSearch,
   isValidText,
   isValidName,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -71,6 +72,7 @@ import { BottomPopUp } from '../ui/BottomPopUp';
 import { string } from '../../strings/string';
 import { useUIElements } from '../UIElementsProvider';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
+import { WebEngageEvents } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -213,6 +215,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [Images, setImages] = useState<PickerImage>(
     props.navigation.state.params ? props.navigation.state.params.images : []
   );
+
+  const navigatedFrom = props.navigation.state.params!.navigatedFrom
+    ? props.navigation.state.params!.navigatedFrom
+    : '';
+
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -732,6 +739,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   setdateOfTest('');
                 }
                 settypeofRecord(data.key as MedicRecordType);
+
+                if (data.key === 'TEST_REPORT') {
+                  const eventAttributes: WebEngageEvents['Items Clicked'] = {
+                    Source: navigatedFrom,
+                    Type: 'Test Result',
+                  };
+                  postWebEngageEvent('Items Clicked', eventAttributes);
+                } else {
+                  const eventAttributes: WebEngageEvents['Items Clicked'] = {
+                    Source: navigatedFrom,
+                    Type: 'Prescription',
+                  };
+                  postWebEngageEvent('Items Clicked', eventAttributes);
+                }
               }}
               selectedTextStyle={{ color: theme.colors.APP_GREEN }}
               // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}

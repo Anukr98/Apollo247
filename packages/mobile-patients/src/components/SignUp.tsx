@@ -53,7 +53,10 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const { height } = Dimensions.get('window');
@@ -360,25 +363,29 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
   const _postWebEngageEvent = () => {
-    const eventAttributes: WebEngageEvents['Registration Done'] = {
-      'Customer ID': currentPatient ? currentPatient.id : '',
-      'Customer First Name': firstName.trim(),
-      'Customer Last Name': lastName.trim(),
-      'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-      Gender:
-        gender === 'Female'
-          ? Gender['FEMALE']
-          : gender === 'Male'
-          ? Gender['MALE']
-          : Gender['OTHER'],
-      Email: email.trim(),
-    };
-    if (referral) {
-      // only send if referral has a value
-      eventAttributes['Referral Code'] = referral;
-    }
+    try {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient ? currentPatient.id : '',
+        'Customer First Name': firstName.trim(),
+        'Customer Last Name': lastName.trim(),
+        'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        Email: email.trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventAttributes['Referral Code'] = referral;
+      }
 
-    postWebEngageEvent('Registration Done', eventAttributes);
+      postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
+    } catch (error) {
+      console.log({ error });
+    }
   };
   return (
     <View style={{ flex: 1 }}>

@@ -34,6 +34,7 @@ import {
   g,
   getOrderStatusText,
   handleGraphQlError,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -356,6 +357,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           />
         ) : null}
         <NeedHelpAssistant
+          onNeedHelpPress={() => {
+            postWEGNeedHelpEvent(currentPatient, 'Medicines');
+          }}
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
         />

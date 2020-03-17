@@ -138,7 +138,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 28
-        versionName "1.712"
+        versionName "1.713"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -202,6 +202,7 @@ android {
 dependencies {
     implementation 'com.webengage:android-sdk:3.+'
     implementation 'com.google.android.gms:play-services-ads:15.0.1' // optional for webengage
+    implementation 'com.android.installreferrer:installreferrer:1.1.1'
     implementation project(':react-native-webengage')
     implementation project(':@react-native-community_async-storage')
     implementation project(':react-native-exception-handler')

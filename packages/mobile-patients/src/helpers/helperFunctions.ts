@@ -30,8 +30,12 @@ import {
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
@@ -718,7 +722,7 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
 
 const webengage = new WebEngage();
 
-export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes: Object) => {
+export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     console.log('\n********* WebEngageEvent Start *********\n');
     console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
@@ -729,14 +733,11 @@ export const postWebEngageEvent = (eventName: keyof WebEngageEvents, attributes:
   }
 };
 
-export const postwebEngageAddToCartEvent = ({
-  sku,
-  name,
-  category_id,
-  price,
-  special_price,
-}: MedicineProduct) => {
-  const eventAttributes: WebEngageEvents['Add to cart'] = {
+export const postwebEngageAddToCartEvent = (
+  { sku, name, category_id, price, special_price }: MedicineProduct,
+  source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source']
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id': sku,
     Brand: '',
@@ -746,6 +747,24 @@ export const postwebEngageAddToCartEvent = ({
     Price: price,
     'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
     Quantity: 1,
+    Source: source,
   };
-  postWebEngageEvent('Add to cart', eventAttributes);
+  postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postWEGNeedHelpEvent = (
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients,
+  source: WebEngageEvents[WebEngageEventName.NEED_HELP]['Source']
+) => {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.NEED_HELP] = {
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid')!,
+    Relation: g(currentPatient, 'relation')!,
+    Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    Gender: g(currentPatient, 'gender')!,
+    'Mobile Number': g(currentPatient, 'mobileNumber')!,
+    'Customer ID': g(currentPatient, 'id')!,
+    Source: source,
+  };
+  postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
 };

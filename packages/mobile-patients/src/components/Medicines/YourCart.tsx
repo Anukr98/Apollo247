@@ -12,7 +12,6 @@ import {
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
-  ShoppingCartItem,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -54,7 +53,10 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -159,11 +161,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     if (cartItems.length) {
-      const eventAttributes: WebEngageEvents['Cart Viewed'] = {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_VIEWED] = {
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
         'Delivery charge': deliveryCharges,
-        'Coupon code used': coupon ? coupon.code : '',
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
         'Prescription Needed?': uploadPrescriptionRequired,
@@ -177,9 +178,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               specialPrice: item.specialPrice,
             } as ShoppingCartItem)
         ),
+        'Service Area': 'Pharmacy',
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
-      postWebEngageEvent('Cart Viewed', eventAttributes);
+      if (coupon) {
+        eventAttributes['Coupon code used'] = coupon.code;
+      }
+      postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
     }
   }, []);
 
@@ -404,7 +409,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const postwebEngageProductClickedEvent = ({ name, id }: ShoppingCartItem) => {
-    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
       'product name': name,
       'product id': id,
       Brand: '',
@@ -414,7 +419,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       Source: 'List',
       'Section Name': 'CART',
     };
-    postWebEngageEvent('Product Clicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
   };
 
   const renderItemsInCart = () => {
@@ -1020,7 +1025,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const postwebEngageProceedToPayEvent = () => {
-    const eventAttributes: WebEngageEvents['Procced To Pay Clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
       'Delivery charge': deliveryCharges,
@@ -1031,8 +1036,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Delivery Date Time':
         selectedTab === tabs[0].title && moment(deliveryTime).isValid ? deliveryTime : undefined, // Optional (only if Home)
       'Pin Code': pinCode,
+      'Service Area': 'Pharmacy',
     };
-    postWebEngageEvent('Procced To Pay Clicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED, eventAttributes);
   };
 
   const onPressProceedToPay = () => {

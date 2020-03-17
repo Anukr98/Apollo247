@@ -59,7 +59,10 @@ import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import Geolocation from '@react-native-community/geolocation';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -396,7 +399,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       thumbnail: thumbnail,
       isInStock: true,
     });
-    postwebEngageAddToCartEvent(item);
+    postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
@@ -604,7 +607,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   updateQuantityCartItem(medicineDetails);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
 
-                  const eventAttributes: WebEngageEvents['Buy Now'] = {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
                     'product name': medicineDetails.name,
                     'product id': medicineDetails.sku,
                     Brand: '',
@@ -620,8 +623,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                       typeof selectedQuantity == 'string'
                         ? Number(selectedQuantity)
                         : selectedQuantity,
+                    'Service Area': 'Pharmacy',
                   };
-                  postWebEngageEvent('Buy Now', eventAttributes);
+                  postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
                   props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
                 }}
                 title="BUY NOW"
