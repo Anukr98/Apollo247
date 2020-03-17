@@ -291,7 +291,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     variables: { filterInput: apiVairables },
     fetchPolicy: 'no-cache',
   });
-
+  if (data) {
+    localStorage.setItem('symptomTracker', '');
+  }
   // console.log('loading state.....', loading);
 
   // if (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) {
