@@ -251,7 +251,9 @@
     "enter_details_here": "Enter the details here",
     "last_consult": "Last Consult",
     "total_revenue": "Total Revenue — Rs.",
-    "consult": "Consult"
+    "consult": "Consult",
+    "cancel_consult": "Cancel Consult",
+    "end_cancel_consult": "End or Cancel Consult"
   },
   "transfer_consult": {
     "transfer_consult": "TRANSFER CONSULT",
