@@ -21,7 +21,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getNetStatus,
+  statusBarHeight,
+  postWEGNeedHelpEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -482,7 +487,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           {renderAnimatedHeader()}
           {profileDetails && renderDetails()}
           {renderRows()}
-          <NeedHelpAssistant navigation={props.navigation} />
+          <NeedHelpAssistant
+            navigation={props.navigation}
+            onNeedHelpPress={() => {
+              postWEGNeedHelpEvent(currentPatient, 'My Account');
+            }}
+          />
           <View style={{ height: 92, marginBottom: 0 }}>
             <Text
               style={{
