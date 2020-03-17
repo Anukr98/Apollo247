@@ -432,7 +432,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     lateNightSlots.length === 0;
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
-  const makePaymentMutation = useMutation(MAKE_APPOINTMENT_PAYMENT);
+  const makePaymentMutation = useMutation<makeAppointmentPayment, makeAppointmentPaymentVariables>(
+    MAKE_APPOINTMENT_PAYMENT
+  );
   let appointmentDateTime = '';
   if (scheduleLater || !consultNowAvailable) {
     const dateForScheduleLater =
