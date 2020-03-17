@@ -373,16 +373,18 @@ export const DoctorsLanding: React.FC = (props) => {
                   </a>
                   Doctors / Specialities
                   {specialitySelected.length > 0 ||
-                    (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 && (
-                      <AphButton
-                        className={classes.filterBtn}
-                        onClick={() => {
-                          setShowResponsiveFilter(true);
-                        }}
-                      >
-                        <img src={require('images/ic_filter.svg')} alt="" />
-                      </AphButton>
-                    ))}
+                  (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) ? (
+                    <AphButton
+                      className={classes.filterBtn}
+                      onClick={() => {
+                        setShowResponsiveFilter(true);
+                      }}
+                    >
+                      <img src={require('images/ic_filter.svg')} alt="" />
+                    </AphButton>
+                  ) : (
+                    ''
+                  )}
                 </div>
                 <div className={classes.doctorListingSection}>
                   <DoctorsFilter

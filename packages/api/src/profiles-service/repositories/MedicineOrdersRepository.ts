@@ -10,8 +10,7 @@ import {
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addDays, differenceInHours } from 'date-fns';
-import { addMilliseconds } from 'date-fns/esm';
+import { format, addDays, differenceInHours, addMilliseconds } from 'date-fns';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
