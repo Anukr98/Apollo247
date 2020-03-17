@@ -1111,6 +1111,12 @@ export class SdDashboardSummary extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   totalConsultationTime: number;
 
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  onlineConsultationFees: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  physicalConsultationFees: number;
+
   @Column()
   createdDate: Date;
 

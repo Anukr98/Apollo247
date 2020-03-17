@@ -11,6 +11,7 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInHours } from 'date-fns';
+import { addMilliseconds } from 'date-fns/esm';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
@@ -222,9 +223,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ordersList.map(async (orderDetails) => {
         if (Date.parse(orderDetails.orderTat.toString())) {
           const tatDate = new Date(orderDetails.orderTat.toString());
-          const orderTat = Math.floor(
-            Math.abs(differenceInHours(tatDate, orderDetails.createdDate))
-          );
+          const istCreatedDate = addMilliseconds(orderDetails.createdDate, 19800000);
+          const orderTat = Math.floor(Math.abs(differenceInHours(tatDate, istCreatedDate)));
           if (orderTat <= 2) {
             totalCount++;
           } else {
