@@ -32,7 +32,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Image as ImageNative } from 'react-native-elements';
+import { Image as ImageNative, Image } from 'react-native-elements';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -43,8 +43,10 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     position: 'absolute',
+    borderRadius: 16,
     bottom: 0,
     left: 0,
+    top: 0,
   },
   automatedLeftText: {
     ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
@@ -468,11 +470,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     width: 282,
                     borderRadius: 10,
                     marginVertical: 2,
-                    alignSelf: 'flex-start',
+                    alignSelf: 'flex-end',
                     paddingVertical: 17,
                   }}
                 >
-                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
+                  {leftComponent === 1 && PatientInfoAll.photoUrl ? (
+                    <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+                  ) : null}
                   <View
                     style={{
                       marginLeft: 40,
@@ -536,12 +540,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     marginVertical: 2,
                   }}
                 >
-                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
+                  {leftComponent === 1 && PatientInfoAll.photoUrl ? (
+                    <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+                  ) : null}
                   <View
                     style={{
                       borderRadius: 10,
                       marginVertical: 2,
-                      alignSelf: 'flex-end',
+                      alignSelf: 'flex-start',
                       flexDirection: 'row',
                       marginLeft: 40,
                     }}
@@ -588,8 +594,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 alignSelf: 'flex-start',
               }}
             >
-              {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
-
+              {leftComponent === 1 && PatientInfoAll.photoUrl ? (
+                <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+              ) : null}
               <View
                 style={{
                   backgroundColor: rowData.message === messageCodes.imageconsult ? '' : 'white',
