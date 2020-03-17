@@ -122,10 +122,10 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
-  const [pageCount, setPageCount] = useState<number>(1);
-  const [listFetching, setListFetching] = useState<boolean>(true);
-  const [endReached, setEndReached] = useState<boolean>(false);
-  const [prevData, setPrevData] = useState<MedicineProduct[]>();
+  // const [pageCount, setPageCount] = useState<number>(1);
+  // const [listFetching, setListFetching] = useState<boolean>(true);
+  // const [endReached, setEndReached] = useState<boolean>(false);
+  // const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
@@ -140,13 +140,14 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    getProductsByCategoryApi(category_id, pageCount)
+    // getProductsByCategoryApi(category_id, pageCount)
+    getProductsByCategoryApi(category_id)
       .then(({ data }) => {
         console.log(data, 'getProductsByCategoryApi');
         const products = data.products || [];
         setProductsList(products);
-        setPageCount(pageCount + 1);
-        setPrevData(products);
+        // setPageCount(pageCount + 1);
+        // setPrevData(products);
       })
       .catch((err) => {
         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
@@ -154,7 +155,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       })
       .finally(() => {
         setIsLoading(false);
-        setListFetching(false);
+        // setListFetching(false);
       });
   }, []);
 
@@ -708,43 +709,43 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         renderItem={({ item, index }) => renderMedicineCard(item, index, filteredProductsList)}
         keyExtractor={(_, index) => `${index}`}
         bounces={false}
-        ListFooterComponent={
-          listFetching ? (
-            <View style={{ marginBottom: 20 }}>
-              <ActivityIndicator animating={true} size="large" color="green" />
-            </View>
-          ) : null
-        }
-        onEndReachedThreshold={0.5}
-        onEndReached={() => {
-          if (!listFetching && !endReached) {
-            setListFetching(true);
-            getProductsByCategoryApi(category_id, pageCount)
-              .then(({ data }) => {
-                const products = data.products || [];
-                if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
-                  setProductsList([...productsList, ...products]);
-                  setPageCount(pageCount + 1);
-                  setPrevData(products);
-                } else {
-                  setEndReached(true);
-                  showAphAlert &&
-                    showAphAlert({
-                      title: 'Alert!',
-                      description: "You've reached the end of the list",
-                    });
-                }
-              })
-              .catch((err) => {
-                CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
-                console.log(err, 'errr');
-              })
-              .finally(() => {
-                setIsLoading(false);
-                setListFetching(false);
-              });
-          }
-        }}
+        // ListFooterComponent={
+        //   listFetching ? (
+        //     <View style={{ marginBottom: 20 }}>
+        //       <ActivityIndicator animating={true} size="large" color="green" />
+        //     </View>
+        //   ) : null
+        // }
+        // onEndReachedThreshold={0.5}
+        // onEndReached={() => {
+        //   if (!listFetching && !endReached) {
+        //     setListFetching(true);
+        //     getProductsByCategoryApi(category_id, pageCount)
+        //       .then(({ data }) => {
+        //         const products = data.products || [];
+        //         if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
+        //           setProductsList([...productsList, ...products]);
+        //           setPageCount(pageCount + 1);
+        //           setPrevData(products);
+        //         } else {
+        //           setEndReached(true);
+        //           showAphAlert &&
+        //             showAphAlert({
+        //               title: 'Alert!',
+        //               description: "You've reached the end of the list",
+        //             });
+        //         }
+        //       })
+        //       .catch((err) => {
+        //         CommonBugFender('SearchByBrand_getProductsByCategoryApi', err);
+        //         console.log(err, 'errr');
+        //       })
+        //       .finally(() => {
+        //         setIsLoading(false);
+        //         setListFetching(false);
+        //       });
+        //   }
+        // }}
       />
     ) : (
       renderEmptyData()

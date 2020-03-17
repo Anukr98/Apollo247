@@ -679,7 +679,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={`ORDER #${orderAutoId}`}
             container={{ borderBottomWidth: 0 }}
-            rightComponent={renderMoreMenu()}
+            // rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
