@@ -1017,6 +1017,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       clearInterval(intervalCallAbundant);
     }
   };
+  const startBtnInformationCheck = () => {
+    if (currentUserType === LoggedInUserType.SECRETARY) {
+      console.log('Secretary can not start consult');
+    } else if (startAppointmentButton) {
+      console.log('you can start your consult before 15 min and upto end time of appointment');
+    } else if (disableOnCancel) {
+      console.log('3rd condition');
+    } else if (
+      appointmentInfo!.appointmentState !== 'NEW' &&
+      appointmentInfo!.appointmentState !== 'TRANSFER' &&
+      appointmentInfo!.appointmentState !== 'RESCHEDULE'
+    ) {
+      console.log('Your appointment state is ' + appointmentInfo!.appointmentState);
+    } else if (
+      appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+      appointmentInfo!.status !== STATUS.PENDING
+    ) {
+      console.log('Your appointment status is ' + appointmentInfo!.status);
+    }
+  };
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -1314,6 +1334,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     } else {
       setStartAppointmentButton(true);
     }
+    startBtnInformationCheck();
   };
   const client = useApolloClient();
   setInterval(startConstultCheck, 1000);
