@@ -185,7 +185,8 @@ export const AuthProvider: React.FC = (props) => {
     return new Promise((resolve) => {
       setVerifyOtpError(false);
       setIsSendingOtp(true);
-      resendOtpApiCall(phoneNumber, loginId).then((generatedLoginId) => {
+      resendOtpApiCall(phoneNumber, loginId).then((generatedLoginId: any) => {
+        setCustomLoginId(generatedLoginId ? generatedLoginId : '');
         resolve(generatedLoginId);
       });
     }).finally(() => {
