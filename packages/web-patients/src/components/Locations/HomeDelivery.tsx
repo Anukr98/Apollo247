@@ -71,6 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         fontWeight: 500,
         color: '#01475b',
+        wordBreak: 'break-word',
       },
     },
     bottomActions: {
@@ -129,7 +130,12 @@ const apiDetails = {
   deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
 };
 
-export const HomeDelivery: React.FC = (props) => {
+type HomeDeliveryProps = {
+  setDeliveryTime: (deliveryTime: string) => void;
+  deliveryTime: string;
+};
+
+export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -138,7 +144,9 @@ export const HomeDelivery: React.FC = (props) => {
     deliveryAddresses,
     setDeliveryAddresses,
     cartItems,
+    setStoreAddressId,
   } = useShoppingCart();
+  const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
   const client = useApolloClient();
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
@@ -148,8 +156,8 @@ export const HomeDelivery: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isError, setIsError] = React.useState<boolean>(false);
-  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
+  const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
 
   const getAddressDetails = () => {
     setIsLoading(true);
@@ -169,8 +177,17 @@ export const HomeDelivery: React.FC = (props) => {
         ) {
           const addresses = _data.data.getPatientAddressList.addressList.reverse();
           if (addresses && addresses.length > 0) {
+            if (deliveryAddressId) {
+              setSelectedAddressData(
+                addresses.find((address) => address.id === deliveryAddressId) || addresses[0]
+              );
+            } else {
+              setSelectedAddressData(addresses[0]);
+              setDeliveryAddressId && setDeliveryAddressId(addresses[0].id);
+              setStoreAddressId && setStoreAddressId('');
+            }
+
             setDeliveryAddresses && setDeliveryAddresses(addresses);
-            !deliveryAddressId && setDeliveryAddressId && setDeliveryAddressId(addresses[0].id);
             if (cartItems.length > 0) {
               fetchDeliveryTime();
             }
@@ -235,7 +252,7 @@ export const HomeDelivery: React.FC = (props) => {
           console.log(error);
         }
       })
-      .catch((error: any) => alert(error));
+      .catch((error: any) => console.log(error));
   };
 
   if (isError) {
@@ -244,33 +261,22 @@ export const HomeDelivery: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      {deliveryAddresses.length > 0 ? (
+      {deliveryAddresses.length > 0 && selectedAddressData ? (
         <ul>
-          {deliveryAddresses.map(
-            (
-              deliveryAddress: GetPatientAddressList_getPatientAddressList_addressList,
-              index: number
-            ) => {
-              if (index < 2) {
-                const addressId = deliveryAddress.id;
-                const address = `${deliveryAddress.addressLine1} - ${deliveryAddress.zipcode}`;
-                return (
-                  <li key={index}>
-                    <FormControlLabel
-                      checked={deliveryAddressId === addressId}
-                      className={classes.radioLabel}
-                      value={addressId}
-                      control={<AphRadio color="primary" />}
-                      label={address}
-                      onChange={() => {
-                        setDeliveryAddressId && setDeliveryAddressId(addressId);
-                      }}
-                    />
-                  </li>
-                );
-              }
-            }
-          )}
+          <li>
+            <FormControlLabel
+              checked={true}
+              className={classes.radioLabel}
+              value={selectedAddressData.id}
+              control={<AphRadio color="primary" />}
+              label={`${selectedAddressData.addressLine1} - ${selectedAddressData.zipcode}`}
+              onChange={() => {
+                setDeliveryAddressId &&
+                  setDeliveryAddressId(selectedAddressData && selectedAddressData.id);
+                setStoreAddressId && setStoreAddressId('');
+              }}
+            />
+          </li>
         </ul>
       ) : (
         <>{isLoading ? <CircularProgress /> : null}</>
@@ -280,7 +286,7 @@ export const HomeDelivery: React.FC = (props) => {
         {!isSigningIn ? (
           <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
         ) : null}
-        {deliveryAddresses.length > 2 ? (
+        {deliveryAddresses.length > 1 ? (
           <AphButton
             onClick={() => setIsViewAllAddressDialogOpen(true)}
             className={classes.viewAllBtn}

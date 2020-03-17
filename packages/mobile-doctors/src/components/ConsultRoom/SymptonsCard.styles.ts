@@ -16,6 +16,7 @@ export default StyleSheet.create({
     ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 1),
     marginLeft: 12,
     marginTop: 12,
+    flex: 0.9,
   },
   tabdata: {
     ...theme.viewStyles.text('S', 12, theme.colors.SHARP_BLUE, 1, 18, 0),

@@ -8,13 +8,13 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: 290,
+      [theme.breakpoints.down(900)]: {
+        width: '100%',
+      },
       [theme.breakpoints.down('xs')]: {
-        width: '80px !important',
+        width: 80,
         position: 'absolute',
         marginLeft: 20,
-      },
-      [theme.breakpoints.down(992)]: {
-        width: '100%',
       },
       '& .image-gallery-slides': {
         border: 'solid 1px rgba(151,151,151,0.24)',
@@ -23,6 +23,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& .image-gallery-thumbnails': {
         paddingTop: 20,
+        [theme.breakpoints.down('xs')]: {
+          paddingTop: 10,
+        },
         '& a': {
           width: 60,
           backgroundColor: theme.palette.common.white,
@@ -31,6 +34,9 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: 8,
           border: '1px solid transparent',
           marginLeft: 8,
+          [theme.breakpoints.down('xs')]: {
+            width: 40,
+          },
           '&.active': {
             border: '1px solid #00b38e',
           },

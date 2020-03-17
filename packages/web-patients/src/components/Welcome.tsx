@@ -5,8 +5,10 @@ import { Header } from 'components/Header';
 import { HeroBanner } from 'components/HeroBanner';
 import { ManageProfile } from 'components/ManageProfile';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { PatientsOverview } from 'components/PatientsOverview';
+import { Relation } from 'graphql/types/globalTypes';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -29,6 +31,9 @@ const useStyles = makeStyles((theme: Theme) => {
 export const Welcome: React.FC = (props) => {
   const classes = useStyles();
   const { isSignedIn } = useAuth();
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   return (
     <div className={classes.welcome}>
@@ -40,7 +45,7 @@ export const Welcome: React.FC = (props) => {
         </div>
       </div>
       {isSignedIn && <NavigationBottom />}
-      <ManageProfile />
+      {onePrimaryUser ? <Help /> : <ManageProfile />}
     </div>
   );
 };

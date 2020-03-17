@@ -50,4 +50,9 @@ export default StyleSheet.create({
     top: 0,
     bottom: 0,
   },
+  inputTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: '#01475b',
+    paddingBottom: 20,
+  },
 });

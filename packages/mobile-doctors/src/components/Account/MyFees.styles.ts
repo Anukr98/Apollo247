@@ -3,11 +3,6 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-  descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#0087ba',
-    lineHeight: 24,
-  },
   feeeducation: {
     color: 'rgba(2, 71, 91, 0.5)',
     fontFamily: 'IBMPlexSans',
@@ -117,12 +112,5 @@ export default StyleSheet.create({
     shadowRadius: 10,
     shadowOpacity: 0.2,
     elevation: 5,
-  },
-  rowview: { flexDirection: 'row', marginTop: 16, justifyContent: 'space-between' },
-  roundicon: { marginLeft: 20, flexDirection: 'row', marginBottom: 10, marginRight: 20 },
-  free: {
-    color: '#fc9916',
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-    lineHeight: 22,
   },
 });

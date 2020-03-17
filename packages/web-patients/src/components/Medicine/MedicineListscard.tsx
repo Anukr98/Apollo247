@@ -207,7 +207,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                     </div>
                   </div>
                 </Link>
-                {medicine.is_in_stock && (
+                {medicine.is_in_stock ? (
                   <div className={classes.cartRight}>
                     {itemIndexInCart(medicine) !== -1 ? (
                       <>
@@ -251,7 +251,9 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                             ))}
                           </AphCustomDropdown>
                         </div>
-                        <div className={classes.medicinePrice}> Rs.{medicine.price}</div>
+                        <div className={classes.medicinePrice}>
+                          Rs. {medicine.special_price || medicine.price}
+                        </div>
                         <div className={classes.addToCart}>
                           <AphButton>
                             <img
@@ -297,7 +299,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                       </div>
                     )}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           ))

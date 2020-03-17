@@ -186,7 +186,7 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
                 value="PAYTM"
                 checked={'PAYTM' === paymentMethod}
                 control={<AphRadio color="primary" />}
-                label="Pay Using Paytm"
+                label="Pay Online Using Debit/Credit Card/Net Banking"
                 onChange={() => {
                   setPaymentMethod('PAYTM');
                   props.setPaymentMethod('PAYTM');

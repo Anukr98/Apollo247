@@ -113,12 +113,7 @@ export const SecretaryDashboard: React.FC = (props) => {
   const [selectedDate] = useState<Date>(today);
   const [viewSelection] = useState<string>('day');
   const [monthSelected] = useState<string>(moment(today).format('MMMM'));
-
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
-  const {
-    currentPatient,
-  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-
   const { data, error, loading } = useQuery<findLoggedinUserDetails>(LOGGED_IN_USER_DETAILS);
 
   const secretaryList =

@@ -393,6 +393,7 @@ export const ConsultTabs: React.FC = () => {
   const [lastMsg, setLastMsg] = useState<any>(null);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
+  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -720,6 +721,18 @@ export const ConsultTabs: React.FC = () => {
           ) {
             setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
           }
+          // -------------------------------------------------------------- //
+          navigator.mediaDevices
+            .getUserMedia({ audio: true, video: false })
+            .then(function(stream) {
+              console.log('Got stream', stream);
+              setCameraMicPermission(true);
+            })
+            .catch(function(err) {
+              setCameraMicPermission(false);
+              console.log('GUM failed with error', err);
+            });
+          // -------------------------------------------------------------- //
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -1119,10 +1132,11 @@ export const ConsultTabs: React.FC = () => {
         setUrlToPatient(true);
       })
       .catch((e) => {
+        console.log(casesheetInfo.getCaseSheet.patientDetails.firstName);
         const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          casesheetInfo.getCaseSheet.patientDetails.firstName +
           ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+          casesheetInfo.getCaseSheet.patientDetails.lastName;
         const logObject = {
           api: 'UpdatePatientPrescriptionSentStatus',
           inputParam: JSON.stringify({
@@ -1142,7 +1156,7 @@ export const ConsultTabs: React.FC = () => {
         };
 
         sessionClient.notify(JSON.stringify(logObject));
-        setError('Error occured while sending prescription to patient');
+        alert('Error occured while sending prescription to patient');
         console.log('Error occured while sending prescription to patient', e);
         setSaving(false);
       });
@@ -1560,6 +1574,7 @@ export const ConsultTabs: React.FC = () => {
                 lastMsg={lastMsg}
                 presenceEventObject={presenceEventObject}
                 endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
+                hasCameraMicPermission={hasCameraMicPermission}
               />
               <div>
                 <div

@@ -81,16 +81,18 @@ interface ViewAllStoreAddressProps {
   loading: boolean;
   setLoading: (loading: boolean) => void;
   setPincode: (pincode: string) => void;
+  setStoreAddress: (StoreAddresses: any) => void;
 }
 
 export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) => {
   const classes = useStyles({});
   const {
     setStorePickupPincode,
-    deliveryAddressId,
-    setDeliveryAddressId,
+    setStoreAddressId,
+    storeAddressId,
     setStores,
     stores,
+    setDeliveryAddressId,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -141,13 +143,15 @@ export const ViewAllStoreAddress: React.FC<ViewAllStoreAddressProps> = (props) =
                   return (
                     <li key={index}>
                       <FormControlLabel
-                        checked={deliveryAddressId === addressDetails.storeid}
+                        checked={storeAddressId === addressDetails.storeid}
                         className={classes.radioLabel}
                         value={addressDetails.storeid}
                         control={<AphRadio color="primary" />}
                         label={storeAddress}
                         onChange={() => {
-                          setDeliveryAddressId && setDeliveryAddressId(addressDetails.storeid);
+                          props.setStoreAddress(addressDetails);
+                          setDeliveryAddressId && setDeliveryAddressId('');
+                          setStoreAddressId && setStoreAddressId(addressDetails.storeid);
                         }}
                       />
                     </li>

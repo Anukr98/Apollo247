@@ -11,27 +11,33 @@ const ConfigurationDev = {
   LOG_ENVIRONMENT: 'debug',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  BUGSNAG_KEY: '7839e425f4acbd8e6ff3f907281addca',
+  BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   PRO_TOKBOX_KEY: '46429002',
+  iOS_Version: '1.007',
+  Android_Version: '1.007',
 };
 //QA
 const ConfigurationQA = {
   LOG_ENVIRONMENT: 'release',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  BUGSNAG_KEY: '7839e425f4acbd8e6ff3f907281addca',
+  BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   PRO_TOKBOX_KEY: '46429002',
+  iOS_Version: '1.004',
+  Android_Version: '1.004',
 };
 //Prod
 const ConfigurationProd = {
   LOG_ENVIRONMENT: 'release',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  BUGSNAG_KEY: '7839e425f4acbd8e6ff3f907281addca',
+  BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/',
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
+  iOS_Version: '1.0',
+  Android_Version: '1.0',
 };
 
 const Configuration =

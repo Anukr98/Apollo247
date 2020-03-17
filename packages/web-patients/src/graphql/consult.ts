@@ -68,3 +68,55 @@ export const GET_APPOINTMENT_DATA = gql`
     }
   }
 `;
+export const GET_COUPONS = gql`
+  query getCoupons {
+    getCoupons {
+      coupons {
+        id
+        code
+        description
+        discountType
+        discount
+        minimumOrderAmount
+        expirationDate
+        isActive
+      }
+    }
+  }
+`;
+
+export const VALIDATE_CONSULT_COUPON = gql`
+  query ValidateConsultCoupon(
+    $doctorId: ID!
+    $code: String!
+    $consultType: AppointmentType!
+    $appointmentDateTimeInUTC: DateTime!
+  ) {
+    validateConsultCoupon(
+      doctorId: $doctorId
+      code: $code
+      consultType: $consultType
+      appointmentDateTimeInUTC: $appointmentDateTimeInUTC
+    ) {
+      validityStatus
+      revisedAmount
+      reasonForInvalidStatus
+    }
+  }
+`;
+export const MAKE_APPOINTMENT_PAYMENT = gql`
+  mutation makeAppointmentPayment($paymentInput: AppointmentPaymentInput) {
+    makeAppointmentPayment(paymentInput: $paymentInput) {
+      appointment {
+        id
+        amountPaid
+        paymentRefId
+        paymentDateTime
+        responseCode
+        responseMessage
+        bankTxnId
+        orderId
+      }
+    }
+  }
+`;

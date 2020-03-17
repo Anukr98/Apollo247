@@ -1,6 +1,5 @@
 import { BottomPopUp } from '@aph/mobile-doctors/src/components/ui/BottomPopUp';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   BackHandler,
@@ -9,7 +8,6 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  StyleSheet,
   Keyboard,
   TextStyle,
 } from 'react-native';

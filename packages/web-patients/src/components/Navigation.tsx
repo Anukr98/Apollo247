@@ -17,16 +17,13 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         color: theme.palette.secondary.dark,
         textTransform: 'uppercase',
-        padding: '36px 20px 35px 20px',
+        padding: '36px 10px 35px 10px',
         display: 'inline-block',
         [theme.breakpoints.down('sm')]: {
           paddingLeft: 10,
           paddingRight: 10,
         },
         [theme.breakpoints.down(900)]: {
-          display: 'none',
-        },
-        '&:nth-child(3)': {
           display: 'none',
         },
       },
@@ -47,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
     notificationBtn: {
       // display: 'none',
       display: 'inline-block',
-      padding: '33px 20px 31px 20px',
+      padding: '33px 10px 31px 10px',
       fontSize: 13,
       fontWeight: 600,
       color: theme.palette.secondary.dark,
@@ -173,9 +170,20 @@ export const Navigation: React.FC = (props) => {
       >
         Medicines
       </Link>
+      <Link
+        to={clientRoutes.tests()}
+        className={
+          currentPath === clientRoutes.tests() || currentPath === clientRoutes.testsCart()
+            ? classes.menuItemActive
+            : ''
+        }
+        title={'Tests'}
+      >
+        Tests
+      </Link>
       <div
         id="cartId"
-        onClick={() => setIsCartPopoverOpen(true)}
+        onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
         onKeyPress={() => setIsCartPopoverOpen(true)}
         ref={cartPopoverRef}
         tabIndex={0}
@@ -206,7 +214,11 @@ export const Navigation: React.FC = (props) => {
         }}
       >
         <div className={classes.cartPopover}>
-          <Link className={classes.cartTypeGroup} to={clientRoutes.medicinesCart()}>
+          <Link
+            className={classes.cartTypeGroup}
+            to={clientRoutes.medicinesCart()}
+            onClick={() => setIsCartPopoverOpen(false)}
+          >
             <div className={classes.cartTypeIcon}>
               <img src={require('images/ic_medicines.png')} alt="Medicine Cart" />
             </div>
@@ -220,7 +232,11 @@ export const Navigation: React.FC = (props) => {
               <div className={classes.itemsAdded}>{`${cartItems.length} Items`}</div>
             </div>
           </Link>
-          <Link className={classes.cartTypeGroup} to={clientRoutes.medicinesCart()}>
+          <Link
+            className={classes.cartTypeGroup}
+            to={clientRoutes.medicinesCart()}
+            onClick={() => setIsCartPopoverOpen(false)}
+          >
             <div className={classes.cartTypeIcon}>
               <img src={require('images/ic_tests.svg')} alt="Tests Cart" />
             </div>

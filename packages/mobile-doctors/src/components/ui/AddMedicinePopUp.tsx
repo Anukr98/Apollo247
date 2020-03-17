@@ -511,33 +511,30 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         setMedList([]);
         return;
       }
-      searchMedicineApi(value).then((data) => {
-        console.log(data.data.products);
-      });
       setListLoader(true);
       searchMedicineApi(value)
         .then(async ({ data }) => {
           const products = data.products || [];
-          if (products.length > 0) {
-            setMedList(products);
-          } else {
-            setMedList([
-              {
-                description: '',
-                id: 1,
-                image: '',
-                is_in_stock: true,
-                is_prescription_required: '',
-                name: value,
-                price: 0,
-                sku: value,
-                small_image: '',
-                status: '',
-                thumbnail: '',
-                type_id: '',
-              },
-            ]);
-          }
+          // if (products.length > 0) {
+          setMedList(products);
+          // } else {
+          //   setMedList([
+          //     {
+          //       description: '',
+          //       id: 1,
+          //       image: '',
+          //       is_in_stock: true,
+          //       is_prescription_required: '',
+          //       name: value,
+          //       price: 0,
+          //       sku: value,
+          //       small_image: '',
+          //       status: '',
+          //       thumbnail: '',
+          //       type_id: '',
+          //     },
+          //   ]);
+          // }
           setListLoader(false);
         })
         .catch((e) => {
@@ -630,8 +627,28 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             <Spinner />
           ) : (
             <FlatList
-              data={medList}
-              renderItem={({ item, index }) => renderMedicineItem(item, index)}
+              data={[
+                medSearchText &&
+                medList.findIndex((i) => i.name.toLowerCase() === medSearchText.toLowerCase()) ===
+                  -1
+                  ? {
+                      description: '',
+                      id: 1,
+                      image: '',
+                      is_in_stock: true,
+                      is_prescription_required: '',
+                      name: medSearchText,
+                      price: 0,
+                      sku: medSearchText,
+                      small_image: '',
+                      status: '',
+                      thumbnail: '',
+                      type_id: '',
+                    }
+                  : null,
+                ...medList,
+              ].filter((i) => i !== null)}
+              renderItem={({ item, index }) => item && renderMedicineItem(item, index)}
             />
           )}
         </View>

@@ -489,9 +489,9 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               <span title={'Speciality'}>{speciality}</span>{' '}
               <span className={classes.lineDivider}>|</span>{' '}
               <span title={'Experience'}>{experience} Yrs</span>
-              <div className={classes.shareIcon} title={'Share info'}>
+              {/* <div className={classes.shareIcon} title={'Share info'}>
                 <img src={require('images/ic-share-green.svg')} alt="" />
-              </div>
+              </div> */}
             </div>
             <div className={classes.doctorInfoGroup}>
               <div className={classes.infoRow}>

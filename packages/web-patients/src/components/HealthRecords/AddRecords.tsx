@@ -671,36 +671,34 @@ export const AddRecords: React.FC = (props) => {
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.panelDetails}>
                     <Grid container spacing={2}>
-                      {isUploading ? (
-                        <CircularProgress />
-                      ) : uploadedDocuments && uploadedDocuments.length > 0 ? (
-                        uploadedDocuments.map((doc: any) => (
-                          <Grid item sm={4} className={classes.gridWidth}>
-                            <div className={classes.uploadedImage}>
-                              <div className={classes.docImg}>
-                                <img src={doc.imageUrl} alt="" />
-                              </div>
-                              <div className={classes.documentDetails}>
-                                <span>{doc.name}</span>
-                                <div className={classes.removeBtn}>
-                                  <AphButton>
-                                    <img
-                                      src={require('images/ic_cross_onorange_small.svg')}
-                                      alt=""
-                                      onClick={() => {
-                                        const docsWithoutSelectedDoc = uploadedDocuments.filter(
-                                          (document: any) => document.name !== doc.name
-                                        );
-                                        setUploadedDocuments(docsWithoutSelectedDoc);
-                                      }}
-                                    />
-                                  </AphButton>
+                      {uploadedDocuments && uploadedDocuments.length > 0
+                        ? uploadedDocuments.map((doc: any) => (
+                            <Grid item sm={4} className={classes.gridWidth}>
+                              <div className={classes.uploadedImage}>
+                                <div className={classes.docImg}>
+                                  <img src={doc.imageUrl} alt="" />
+                                </div>
+                                <div className={classes.documentDetails}>
+                                  <span>{doc.name}</span>
+                                  <div className={classes.removeBtn}>
+                                    <AphButton>
+                                      <img
+                                        src={require('images/ic_cross_onorange_small.svg')}
+                                        alt=""
+                                        onClick={() => {
+                                          const docsWithoutSelectedDoc = uploadedDocuments.filter(
+                                            (document: any) => document.name !== doc.name
+                                          );
+                                          setUploadedDocuments(docsWithoutSelectedDoc);
+                                        }}
+                                      />
+                                    </AphButton>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </Grid>
-                        ))
-                      ) : null}
+                            </Grid>
+                          ))
+                        : null}
 
                       <Grid item sm={4} className={classes.gridWidth}>
                         <div className={classes.uploadImage}>
@@ -759,7 +757,9 @@ export const AddRecords: React.FC = (props) => {
                             }}
                             id="icon-button-file"
                           />
-                          <label htmlFor="icon-button-file">Upload document</label>
+                          <label htmlFor="icon-button-file">
+                            {isUploading ? <CircularProgress /> : 'Upload document'}
+                          </label>
                         </div>
                       </Grid>
                     </Grid>

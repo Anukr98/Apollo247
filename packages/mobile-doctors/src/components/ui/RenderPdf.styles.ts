@@ -3,7 +3,8 @@ import { StyleSheet, Platform, Dimensions } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-const { width, height } = Dimensions.get('window');
+
+const { height } = Dimensions.get('window');
 
 export default StyleSheet.create({
   popUPContainer: {

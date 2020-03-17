@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Theme, Tabs, Tab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -180,6 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
     productBasicInfo: {
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 115,
+        minHeight: 160,
       },
     },
     productDetailed: {
@@ -297,6 +298,37 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       paddingLeft: 20,
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 
@@ -312,7 +344,6 @@ export const MedicineDetails: React.FC = (props) => {
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string }>();
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
-
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -367,12 +398,13 @@ export const MedicineDetails: React.FC = (props) => {
   const getData = (overView: MedicineOverView) => {
     const modifiedData = [
       { key: 'Overview', value: '' },
-      { key: 'Side Effects', value: '' },
       { key: 'Usage', value: '' },
+      { key: 'Side Effects', value: '' },
       { key: 'Precautions', value: '' },
       { key: 'Drug Warnings', value: '' },
       { key: 'Storage', value: '' },
     ];
+
     if (typeof overView !== 'string') {
       overView.forEach((v) => {
         if (v.Caption === 'USES') {
@@ -390,7 +422,11 @@ export const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'HOW TO USE' || v.Caption === 'HOW IT WORKS') {
           modifiedData.forEach((x) => {
             if (x.key === 'Usage') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              if (v.Caption === 'HOW TO USE') {
+                x.value = `${stripHtml(v.CaptionDesc)}${x.value}`;
+              } else {
+                x.value = `${x.value}${stripHtml(v.CaptionDesc)} `;
+              }
             }
           });
         } else if (
@@ -433,6 +469,12 @@ export const MedicineDetails: React.FC = (props) => {
     return modifiedData;
   };
 
+  const getUsageDesc = (desc: string) => {
+    return desc.split('.').map((eachDesc) => {
+      return <p>{eachDesc}.</p>;
+    });
+  };
+
   const renderOverviewTabDesc = (overView: MedicineOverView) => {
     const data = getData(overView);
     if (typeof overView !== 'string') {
@@ -440,8 +482,12 @@ export const MedicineDetails: React.FC = (props) => {
         (item, index) =>
           tabValue === index && (
             <div key={index} className={classes.tabContainer}>
-              {item.value.split(';').map((data, idx) => {
-                return <p key={idx}>{data}</p>;
+              {item.value.split(';').map((description, idx) => {
+                if (item.key === 'Usage') {
+                  return <div key={index}>{getUsageDesc(description)}</div>;
+                } else {
+                  return <p key={idx}>{description}</p>;
+                }
               })}
             </div>
           )
@@ -523,6 +569,10 @@ export const MedicineDetails: React.FC = (props) => {
                                 {`${medicineDetails.mou} ${
                                   medicinePharmacyDetails && medicinePharmacyDetails.length > 0
                                     ? medicinePharmacyDetails[0].Doseform
+                                    : ''
+                                }${
+                                  medicineDetails.mou && parseFloat(medicineDetails.mou) !== 1
+                                    ? 'S'
                                     : ''
                                 }`}
                               </div>

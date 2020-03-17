@@ -1,6 +1,5 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, TextStyle, View, ViewStyle, Text } from 'react-native';
+import { StyleProp, TextStyle, View, ViewStyle, Text } from 'react-native';
 import TagCardStyles from '@aph/mobile-doctors/src/components/ui/TagCard.styles';
 
 const styles = TagCardStyles;

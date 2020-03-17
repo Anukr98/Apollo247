@@ -1,6 +1,5 @@
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, TextStyle, View, ViewStyle, Platform } from 'react-native';
+import { StyleProp, TextStyle, View, ViewStyle, Platform } from 'react-native';
 import { Text } from 'react-native-elements';
 import ProfileTabHeaderStyles from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader.styles';
 
