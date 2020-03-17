@@ -196,6 +196,8 @@ const updateConsultRating: Resolver<
       helpTickets: helpTicketCount,
       validHubOrders: validHubOrders[0],
       validHubOrdersDelivered: validHubOrders[1],
+      validVdcOrders: validHubOrders[2],
+      validVdcOrdersDelivered: validHubOrders[3],
     };
 
     console.log('helpTicketCount', helpTicketCount);
