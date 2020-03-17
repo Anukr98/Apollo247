@@ -797,7 +797,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       .replace(/&gt;rn/g, '>')
       .replace(/&gt;r/g, '>')
       .replace(/&gt;/g, '>')
-      .replace(/.t/, '.');
+      .replace(/\.t/, '.');
     console.log(description);
 
     if (!!description)

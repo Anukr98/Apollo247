@@ -67,6 +67,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       opacity: 0.6,
       paddingRight: 5,
+      textDecoration: 'line-through',
     },
     addToCart: {
       paddingTop: 8,

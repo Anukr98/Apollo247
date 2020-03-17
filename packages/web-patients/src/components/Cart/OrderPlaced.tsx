@@ -139,7 +139,7 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
                 <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
               </div>
               <div className={classes.bottomActions}>
-                <AphButton>View Invoice</AphButton>
+                {/* <AphButton>View Invoice</AphButton> */}
                 <AphButton
                   className={classes.trackBtn}
                   onClick={() => (window.location.href = clientRoutes.yourOrders())}

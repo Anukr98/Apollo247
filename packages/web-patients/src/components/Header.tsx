@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccount: {
-      padding: 20,
+      padding: '20px 10px',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
@@ -194,11 +194,15 @@ export const Header: React.FC = (props) => {
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           )}
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
-            <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-              <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
-                Download Apollo247 App
-              </a>
-            </div>
+            {isSignedIn ? (
+              ''
+            ) : (
+              <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
+                <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
+                  Download Apollo247 App
+                </a>
+              </div>
+            )}
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
                 currentPath === clientRoutes.myAccount() ||

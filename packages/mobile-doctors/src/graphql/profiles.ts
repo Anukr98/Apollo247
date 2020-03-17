@@ -1157,3 +1157,11 @@ export const REMOVE_SECRETARY = gql`
     }
   }
 `;
+
+export const CANCEL_APPOINTMENT = gql`
+  mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
+    cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
+      status
+    }
+  }
+`;

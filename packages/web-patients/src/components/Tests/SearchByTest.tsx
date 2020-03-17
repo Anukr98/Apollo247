@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
         top: 0,
         zIndex: 999,
         width: '100%',
-        backgroundColor: '#f0f1ec',
+        backgroundColor: 'transparent',
       },
     },
     breadcrumbs: {

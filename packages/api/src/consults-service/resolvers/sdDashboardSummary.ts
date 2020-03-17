@@ -160,7 +160,7 @@ const updateConsultRating: Resolver<
   ConsultServiceContext,
   FeedbackSummaryResult
 > = async (parent, args, context) => {
-  const { feedbackRepo, dashboardRepo, helpTicketRepo } = getRepos(context);
+  const { feedbackRepo, dashboardRepo, helpTicketRepo, medOrderRepo } = getRepos(context);
   const feedbackData: FeedbackCounts[] = await feedbackRepo.getFeedbackByDate(
     args.summaryDate,
     FEEDBACKTYPE.CONSULT
@@ -185,6 +185,7 @@ const updateConsultRating: Resolver<
       }
     });
     const helpTicketCount = await helpTicketRepo.getHelpTicketCount(args.summaryDate);
+    const validHubOrders = await medOrderRepo.getValidHubOrders(args.summaryDate);
     const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
       ratingDate: args.summaryDate,
       goodRating,
@@ -193,6 +194,10 @@ const updateConsultRating: Resolver<
       greatRating,
       okRating,
       helpTickets: helpTicketCount,
+      validHubOrders: validHubOrders[0],
+      validHubOrdersDelivered: validHubOrders[1],
+      validVdcOrders: validHubOrders[2],
+      validVdcOrdersDelivered: validHubOrders[3],
     };
 
     console.log('helpTicketCount', helpTicketCount);
@@ -412,6 +417,8 @@ const updateSdSummary: Resolver<
         adminIds,
         loggedInHours,
         awayHours,
+        onlineConsultationFees: Number(doctor.onlineConsultationFees),
+        physicalConsultationFees: Number(doctor.physicalConsultationFees),
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });
@@ -435,7 +442,9 @@ const updateDoctorFeeSummary: Resolver<
       ConsultMode.BOTH
     );
     let totalFee: number = 0;
+    let totalConsults: number = 0;
     if (totalConsultations.length) {
+      totalConsults = totalConsultations.length;
       totalConsultations.forEach(async (consultation, index, array) => {
         const paymentDetails = await dashboardRepo.getAppointmentPaymentDetailsByApptId(
           consultation.id
@@ -447,6 +456,8 @@ const updateDoctorFeeSummary: Resolver<
           saveDetails();
         }
       });
+    } else {
+      saveDetails();
     }
     async function saveDetails() {
       const doctorFeeAttrs: Partial<DoctorFeeSummary> = {
@@ -457,7 +468,7 @@ const updateDoctorFeeSummary: Resolver<
         specialtiyId: doctor.specialty.id,
         specialityName: doctor.specialty.name,
         areaName: doctor.doctorHospital[0].facility.city,
-        appointmentsCount: totalConsultations.length,
+        appointmentsCount: totalConsults,
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
     }

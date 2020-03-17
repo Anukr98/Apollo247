@@ -455,12 +455,12 @@ export const MedicineCart: React.FC = (props) => {
   const {
     storePickupPincode,
     deliveryAddressId,
+    storeAddressId,
     clearCartInfo,
     prescriptions,
     setPrescriptions,
     cartItems,
     cartTotal,
-    deliveryAddresses,
     ePrescriptionData,
     setEPrescriptionData,
   } = useShoppingCart();
@@ -504,11 +504,16 @@ export const MedicineCart: React.FC = (props) => {
   // if the total is less than 200 +20 is added.
   const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   const grossValue = cartTotal - discountAmount;
-  const deliveryCharges = grossValue > 200 || grossValue <= 0 ? 0 : 20;
+  const deliveryCharges = grossValue > 200 || grossValue <= 0 || tabValue === 1 ? 0 : 20;
   const totalAmount = (grossValue + deliveryCharges).toFixed(2);
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
-  const disableSubmit = deliveryAddressId === '';
+  const disableSubmit =
+    deliveryMode === 'HOME'
+      ? deliveryAddressId === ''
+      : deliveryMode === 'PICKUP'
+      ? storeAddressId === ''
+      : false;
   const uploadPrescriptionRequired = cartItems.findIndex(
     (v) => Number(v.is_prescription_required) === 1
   );
@@ -537,7 +542,7 @@ export const MedicineCart: React.FC = (props) => {
         medicineCartInput: {
           quoteId: '',
           patientId: currentPatient ? currentPatient.id : '',
-          shopId: deliveryMode === 'HOME' ? '' : deliveryAddressId,
+          shopId: deliveryMode === 'HOME' ? '' : storeAddressId,
           patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
           medicineDeliveryType:
             deliveryMode === 'HOME'
@@ -668,7 +673,7 @@ export const MedicineCart: React.FC = (props) => {
               medicineDeliveryType: deliveryAddressId
                 ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-              shopId: deliveryAddressId || '0',
+              shopId: storeAddressId || '0',
               appointmentId: '',
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),

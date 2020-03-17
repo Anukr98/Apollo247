@@ -32,6 +32,7 @@ import { usePrevious } from 'hooks/reactCustomHooks';
 import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 import moment from 'moment';
 import { CouponCode } from 'components/Coupon/CouponCode';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -226,6 +227,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [scheduleLater, setScheduleLater] = React.useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [couponCode, setCouponCode] = useState('');
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const { currentPatient } = useAllCurrentPatients();
   // const currentTime = new Date().getTime();
@@ -445,7 +447,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const consultType: AppointmentType = AppointmentType.ONLINE;
   return (
     <div className={classes.root}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
           {!props.isRescheduleConsult && (
             <div className={classes.consultGroup}>
@@ -471,6 +473,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     setShowCalendar(false);
                     setConsultNow(true);
                     setScheduleLater(false);
+                    setTimeSelected('');
                   }}
                   color="secondary"
                   className={`${classes.button} ${
@@ -622,7 +625,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               mutationLoading ||
               isDialogOpen ||
               (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
+              (scheduleLater && timeSelected === '') ||
+              !timeSelected
             }
             onClick={() => {
               let appointmentDateTime = '';
@@ -704,7 +708,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               disableSubmit ||
               mutationLoading ||
               isDialogOpen ||
-              (scheduleLater && consultNowSlotTime === '')
+              (scheduleLater && consultNowSlotTime === '') ||
+              (!timeSelected && timeSelected === '')
                 ? classes.buttonDisable
                 : ''
             }

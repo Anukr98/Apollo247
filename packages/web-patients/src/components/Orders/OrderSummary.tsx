@@ -169,8 +169,7 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
         <span className={classes.totalPrice}>Rs.{orderPayment && orderPayment.amountPaid}</span>
       </div>
       <div className={classes.disclaimerText}>
-        Disclaimer: Nam libero tempore, m soluta nobis est eligendi optio cumque nihil impedit quo
-        minus quod.
+        Disclaimer: Price may vary when the actual bill is generated.
       </div>
     </div>
   );

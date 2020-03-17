@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         fontWeight: 500,
         color: '#01475b',
+        wordBreak: 'break-word',
       },
     },
     addressGroup: {
@@ -76,7 +77,12 @@ interface ViewAllAddressProps {
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const classes = useStyles({});
-  const { deliveryAddressId, setDeliveryAddressId, deliveryAddresses } = useShoppingCart();
+  const {
+    deliveryAddressId,
+    setDeliveryAddressId,
+    deliveryAddresses,
+    setStoreAddressId,
+  } = useShoppingCart();
 
   const disableSubmit = deliveryAddressId === '';
 
@@ -101,6 +107,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                           label={address}
                           onChange={() => {
                             setDeliveryAddressId && setDeliveryAddressId(addressId);
+                            setStoreAddressId && setStoreAddressId('');
                           }}
                         />
                       </li>

@@ -166,6 +166,7 @@ export const messageCodes = {
   startConsultjr: '^^#startconsultJr',
   callAbandonment: '^^#callAbandonment',
   appointmentComplete: '^^#appointmentComplete',
+  cancelConsultInitiated: '^^#cancelConsultInitiated',
 };
 
 export const formatFloating = (value: string) => {
