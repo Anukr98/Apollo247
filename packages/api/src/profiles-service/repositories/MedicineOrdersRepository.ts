@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Not, Between } from 'typeorm';
+import { EntityRepository, Repository, Not, Between, In } from 'typeorm';
 import {
   MedicineOrders,
   MedicineOrderLineItems,
@@ -6,10 +6,12 @@ import {
   MedicineOrdersStatus,
   MEDICINE_ORDER_STATUS,
   MedicineOrderInvoice,
+  MEDICINE_ORDER_TYPE,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addDays } from 'date-fns';
+import { format, addDays, differenceInHours } from 'date-fns';
+import { STATUS } from 'consults-service/entities';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
@@ -195,5 +197,59 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         createdDate: Between(newStartDate, newEndDate),
       },
     });
+  }
+
+  async getValidHubOrders(summaryDate: Date) {
+    const newStartDate = new Date(format(addDays(summaryDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(summaryDate, 'yyyy-MM-dd') + 'T18:30');
+    const ordersList = await this.find({
+      where: {
+        createdDate: Between(newStartDate, newEndDate),
+        orderTat: Not(['', null]),
+        orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+        currentStatus: In([
+          MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
+          MEDICINE_ORDER_STATUS.ORDER_PLACED,
+          MEDICINE_ORDER_STATUS.DELIVERED,
+        ]),
+      },
+    });
+    let totalCount = 0,
+      deliveryCount = 0,
+      vdcCount = 0,
+      vdcDeliveryCount = 0;
+
+    if (ordersList.length > 0) {
+      ordersList.map(async (orderDetails) => {
+        if (Date.parse(orderDetails.orderTat.toString())) {
+          const tatDate = new Date(orderDetails.orderTat.toString());
+          const orderTat = Math.floor(
+            Math.abs(differenceInHours(tatDate, orderDetails.createdDate))
+          );
+          if (orderTat <= 2) {
+            totalCount++;
+          } else {
+            vdcCount++;
+          }
+          if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
+            const orderStatusDetails = await MedicineOrdersStatus.findOne({
+              where: { medicineOrders: orderDetails, orderStatus: MEDICINE_ORDER_STATUS.DELIVERED },
+            });
+            if (orderStatusDetails) {
+              const deliveryTat = Math.floor(
+                Math.abs(differenceInHours(orderStatusDetails.statusDate, orderDetails.createdDate))
+              );
+
+              if (deliveryTat <= 2) {
+                deliveryCount++;
+              } else {
+                vdcDeliveryCount++;
+              }
+            }
+          }
+        }
+      });
+    }
+    return [totalCount, deliveryCount, vdcCount, vdcDeliveryCount];
   }
 }

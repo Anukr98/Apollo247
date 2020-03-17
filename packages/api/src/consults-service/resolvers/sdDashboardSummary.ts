@@ -160,7 +160,7 @@ const updateConsultRating: Resolver<
   ConsultServiceContext,
   FeedbackSummaryResult
 > = async (parent, args, context) => {
-  const { feedbackRepo, dashboardRepo, helpTicketRepo } = getRepos(context);
+  const { feedbackRepo, dashboardRepo, helpTicketRepo, medOrderRepo } = getRepos(context);
   const feedbackData: FeedbackCounts[] = await feedbackRepo.getFeedbackByDate(
     args.summaryDate,
     FEEDBACKTYPE.CONSULT
@@ -185,6 +185,7 @@ const updateConsultRating: Resolver<
       }
     });
     const helpTicketCount = await helpTicketRepo.getHelpTicketCount(args.summaryDate);
+    const validHubOrders = await medOrderRepo.getValidHubOrders(args.summaryDate);
     const feedbackAttrs: Partial<FeedbackDashboardSummary> = {
       ratingDate: args.summaryDate,
       goodRating,
@@ -193,6 +194,8 @@ const updateConsultRating: Resolver<
       greatRating,
       okRating,
       helpTickets: helpTicketCount,
+      validHubOrders: validHubOrders[0],
+      validHubOrdersDelivered: validHubOrders[1],
     };
 
     console.log('helpTicketCount', helpTicketCount);
