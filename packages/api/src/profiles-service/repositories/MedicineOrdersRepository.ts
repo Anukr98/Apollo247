@@ -11,7 +11,6 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInHours } from 'date-fns';
-import { STATUS } from 'consults-service/entities';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
