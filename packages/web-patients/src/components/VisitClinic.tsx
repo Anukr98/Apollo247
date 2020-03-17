@@ -203,7 +203,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [clinicAddress] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const makePaymentMutation = useMutation(MAKE_APPOINTMENT_PAYMENT);
+  const makePaymentMutation = useMutation<makeAppointmentPayment, makeAppointmentPaymentVariables>(
+    MAKE_APPOINTMENT_PAYMENT
+  );
   // const [mutationSuccess, setMutationSuccess] = React.useState(false);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
