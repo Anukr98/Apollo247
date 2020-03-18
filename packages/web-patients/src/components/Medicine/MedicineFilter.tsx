@@ -199,6 +199,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       marginBottom: 5,
       display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+      },
       '& button': {
         boxShadow: 'none',
         padding: 0,
@@ -254,9 +257,6 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
-    filterSectionDisabled: {
-      opacity: 0.3,
-    },
   });
 });
 type priceFilter = { fromPrice: string; toPrice: string };
@@ -295,8 +295,8 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     pastSearchValue && pastSearchValue.length > 0
       ? pastSearchValue
       : params.searchMedicineType === 'search-medicines'
-      ? params.searchText
-      : ''
+        ? params.searchText
+        : ''
   );
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
@@ -374,7 +374,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       <div
         className={`${classes.searchInput} ${
           !props.disableFilters ? classes.searchInputDisabled : ''
-        }`}
+          }`}
       >
         <AphTextField
           placeholder="Search med, brands and more"
@@ -386,9 +386,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
         />
       </div>
       <div
-        className={` ${props.showResponsiveFilter ? classes.filterSectionOpen : ''} ${
-          classes.filterSection
-        } ${props.disableFilters ? classes.filterSectionDisabled : ''}`}
+        className={`${classes.filterSection} ${props.showResponsiveFilter ? classes.filterSectionOpen : ''}`}
       >
         <div className={classes.filterHeader}>
           <AphButton
@@ -420,7 +418,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('');
                       }}
@@ -432,7 +430,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('14') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('14');
                       }}
@@ -444,7 +442,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('24') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('24');
                       }}
@@ -456,7 +454,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('6') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('6');
                       }}
@@ -468,7 +466,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('71') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('71');
                       }}
@@ -480,7 +478,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('234') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('234');
                       }}
@@ -492,7 +490,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('97') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('97');
                       }}
@@ -504,7 +502,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
                       size="small"
                       className={`${classes.button} ${
                         selectedCatagerys.includes('680') ? classes.buttonActive : ''
-                      }`}
+                        }`}
                       onClick={(e) => {
                         filterByCatagery('680');
                       }}
