@@ -9,7 +9,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useEffect } from 'react';
+import React, { useRef } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
@@ -375,6 +375,7 @@ const RecordType: RecordTypeType[] = [
 
 export const AddRecords: React.FC = (props) => {
   const classes = useStyles({});
+  let refFileInput: any = useRef();
   const [typeOfRecord, setTypeOfRecord] = React.useState<string>('');
   const [nameOfTest, setNameOfTest] = React.useState<string>('');
   const [notes, setNotes] = React.useState<string>('');
@@ -541,8 +542,7 @@ export const AddRecords: React.FC = (props) => {
                   .then(({ data }) => {
                     setshowSpinner(false);
                     setUploadedDocuments((uploadedDocuments.length = 0));
-                    const inputFile: any = document.getElementById('icon-button-file');
-                    inputFile.value = null;
+                    refFileInput.current.value = null;
                     window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
                   .catch((e) => {
@@ -592,8 +592,7 @@ export const AddRecords: React.FC = (props) => {
           .then(({ data }) => {
             setshowSpinner(false);
             setUploadedDocuments((uploadedDocuments.length = 0));
-            const inputFile: any = document.getElementById('icon-button-file');
-            inputFile.value = null;
+            refFileInput.current.value = null;
             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
           .catch((e) => {
@@ -711,6 +710,7 @@ export const AddRecords: React.FC = (props) => {
                           <input
                             disabled={showSpinner}
                             type="file"
+                            ref={refFileInput}
                             onChange={async (e) => {
                               const fileNames = e.target.files;
                               if (fileNames && fileNames.length > 0) {
