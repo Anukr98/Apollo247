@@ -233,6 +233,11 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    bottomActionsOpen: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+    },
     priceGroup: {
       position: 'relative',
       '& input': {
@@ -598,7 +603,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           </div>
         </Scrollbars>
       </div>
-      <div className={classes.bottomActions}>
+      <div className={`${classes.bottomActions} ${props.showResponsiveFilter ? classes.bottomActionsOpen : ''}`}>
         <AphButton
           color="primary"
           disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
