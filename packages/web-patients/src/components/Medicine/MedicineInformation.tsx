@@ -11,6 +11,7 @@ import axios, { AxiosResponse, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -272,6 +273,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
+  // setShowPopup: (showPopup: boolean) => void;
 };
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
@@ -279,6 +281,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
+  const addToCartRef = useRef(null);
   const subDrugsRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
@@ -289,6 +292,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
   const [updateMutationLoading, setUpdateMutationLoading] = useState<boolean>(false);
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = React.useState<boolean>(false);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -376,6 +380,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     }
   }, [substitutes]);
 
+  const itemIndexInCart = (item: MedicineProduct) => {
+    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
+  };
+
   const applyCartOperations = (cartItem: MedicineCartItem) => {
     const index = cartItems.findIndex((item) => item.id === cartItem.id);
     if (index >= 0) {
@@ -412,6 +420,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     Pick from {substitutes.length} available
                     {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                   </span>
+                  <div className={classes.dropDownArrow}>
+                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                  </div>
                 </div>
               </>
             )}
@@ -523,17 +534,20 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     quantity: medicineQty,
                   };
                   applyCartOperations(cartItem);
-                  setTimeout(() => {
-                    window.location.href = clientRoutes.medicinesLandingViewCart();
-                  }, 3000);
+                  setAddMutationLoading(false);
+                  setShowPopup(true);
                 }}
               >
+                {' '}
                 {addMutationLoading ? (
                   <CircularProgress size={22} color="secondary" />
+                ) : itemIndexInCart(data) !== -1 ? (
+                  'Added To Cart'
                 ) : (
                   'Add To Cart'
                 )}
               </AphButton>
+
               <AphButton
                 color="primary"
                 disabled={addMutationLoading || updateMutationLoading}
@@ -623,6 +637,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           data={substitutes}
           setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
         />
+      </Popover>
+      <Popover
+        open={showPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
+          </div>
+        </div>
       </Popover>
     </div>
   );

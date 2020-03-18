@@ -151,7 +151,12 @@ type TrackOrdersProps = {
 export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const [tabValue, setTabValue] = useState<number>(0);
+  const urlParams = new URLSearchParams(window.location.search);
+  const [tabValue, setTabValue] = useState<number>(
+    urlParams.get('v') && String(urlParams.get('v')) && String(urlParams.get('v')) === 'invoice'
+      ? 1
+      : 0
+  );
   const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
   const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = useState<boolean>(false);
   const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = useState<boolean>(false);
@@ -205,7 +210,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         <div className={classes.headerBackArrow}>
-          <AphButton>
+          <AphButton onClick={() => window.history.back()}>
             <img src={require('images/ic_back.svg')} />
           </AphButton>
         </div>

@@ -41,6 +41,7 @@
             <category android:name="android.intent.category.LAUNCHER" />
             <!--<category android:name="android.intent.category.BROWSABLE" />-->
             <!--<data android:scheme="https" android:host="www.apollohospitals.com" />-->
+              <data android:scheme="apolloDoctors" />
         </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />

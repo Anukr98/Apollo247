@@ -28,7 +28,10 @@ import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
 } from '../graphql/types/getPatientByMobileNumber';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -317,10 +320,10 @@ export const AuthProvider: React.FC = (props) => {
             fetchPolicy: 'no-cache',
           })
           .then((data) => {
-            const eventAttributes: WebEngageEvents['Number of Profiles fetched'] = {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.NUMBER_OF_PROFILES_FETCHED] = {
               count: g(data, 'data', 'getCurrentPatients', 'patients', 'length') || 0,
             };
-            postWebEngageEvent('Number of Profiles fetched', eventAttributes);
+            postWebEngageEvent(WebEngageEventName.NUMBER_OF_PROFILES_FETCHED, eventAttributes);
 
             AsyncStorage.setItem('callByPrism', 'true');
             AsyncStorage.setItem('currentPatient', JSON.stringify(data));

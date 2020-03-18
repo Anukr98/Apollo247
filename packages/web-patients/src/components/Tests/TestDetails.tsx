@@ -21,7 +21,6 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#f7f8f5',
         paddingBottom: 20,
         position: 'absolute',
         top: 0,
@@ -217,10 +216,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
+        borderBottom: 'none',
       },
       '&:before': {
         content: '""',
-        borderTop: '0.5px solid rgba(2,71,91,0.3)',
         position: 'absolute',
         left: 20,
         right: 20,
@@ -337,6 +336,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabsWrapper: {
+      paddingTop: 13,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         marginLeft: -20,
@@ -349,6 +349,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
       fontSize: 14,
       fontWeight: 500,
+      '& span': {
+        '&:nth-child(1)': {
+          marginRight: 5,
+        },
+      },
     },
   };
 });
@@ -361,6 +366,7 @@ export const TestDetails: React.FC = (props) => {
   const classes = useStyles({});
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [tabValue, setTabValue] = useState<number>(0);
+  const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
 
   return (
     <div className={classes.root}>
@@ -404,43 +410,62 @@ export const TestDetails: React.FC = (props) => {
                       HOME VISIT OR CLINIC VISIT
                     </div>
                   </div>
-                  <Tabs value={tabValue}>
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Test Included"
-                    ></Tab>
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Preparation"
-                    ></Tab>
-                  </Tabs>
-                  {tabValue === 0 && (
-                    <TabContainer>
-                      <div className={classes.tabsWrapper}>
-                        <div className={classes.testsList}>
-                          <span>1.</span>
-                          <span>Test a</span>
+                  <div>
+                    <Tabs
+                      value={tabValue}
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                        label="Test Included"
+                        title={'Choose home delivery'}
+                      />
+                      <Tab
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                        label="Preparation"
+                        title={'Choose store pick up'}
+                      />
+                    </Tabs>
+                    {tabValue === 0 && (
+                      <TabContainer>
+                        <div className={classes.tabsWrapper}>
+                          <div className={classes.testsList}>
+                            <span>1.</span>
+                            <span>Test a</span>
+                          </div>
+                          <div className={classes.testsList}>
+                            <span>2.</span>
+                            <span>Test a</span>
+                          </div>
+                          <div className={classes.testsList}>
+                            <span>3.</span>
+                            <span>Test a</span>
+                          </div>
+                          <div className={classes.testsList}>
+                            <span>4.</span>
+                            <span>Test a</span>
+                          </div>
+                          <div className={classes.testsList}>
+                            <span>5.</span>
+                            <span>Test a</span>
+                          </div>
                         </div>
-                        <div className={classes.testsList}>
-                          <span>2.</span>
-                          <span>Test a</span>
-                        </div>
-                        <div className={classes.testsList}>
-                          <span>3.</span>
-                          <span>Test a</span>
-                        </div>
-                        <div className={classes.testsList}>
-                          <span>4.</span>
-                          <span>Test a</span>
-                        </div>
-                        <div className={classes.testsList}>
-                          <span>5.</span>
-                          <span>Test a</span>
-                        </div>
-                      </div>
-                    </TabContainer>
-                  )}
-                  {tabValue === 1 && <TabContainer>content two </TabContainer>}
+                      </TabContainer>
+                    )}
+                    {tabValue === 1 && <TabContainer>Preparation</TabContainer>}
+                  </div>
                 </div>
               </Scrollbars>
             </div>

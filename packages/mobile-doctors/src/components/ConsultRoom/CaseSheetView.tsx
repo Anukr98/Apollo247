@@ -78,6 +78,7 @@ import {
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
+  MEDICINE_FORM_TYPES,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   modifyCaseSheet,
@@ -153,6 +154,81 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   showEditPreviewButtons: boolean;
   setShowEditPreviewButtons: Dispatch<React.SetStateAction<boolean>>;
   getdetails: () => void;
+  symptonsData: (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null;
+  setSymptonsData: React.Dispatch<
+    React.SetStateAction<(GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null>
+  >;
+  pastList: (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null;
+  setPastList: React.Dispatch<
+    React.SetStateAction<(GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null>
+  >;
+  lifeStyleData: (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null | undefined;
+  setLifeStyleData: React.Dispatch<
+    React.SetStateAction<
+      (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null | undefined
+    >
+  >;
+  medicalHistory: GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null | undefined;
+  setMedicalHistory: React.Dispatch<
+    React.SetStateAction<
+      GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null | undefined
+    >
+  >;
+  familyValues: (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null;
+  setFamilyValues: React.Dispatch<
+    React.SetStateAction<(GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null>
+  >;
+  patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null | undefined;
+  setPatientDetails: React.Dispatch<
+    React.SetStateAction<GetCaseSheet_getCaseSheet_patientDetails | null | undefined>
+  >;
+  healthWalletArrayData: (GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null;
+  setHealthWalletArrayData: React.Dispatch<
+    React.SetStateAction<(GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null>
+  >;
+  tests: {
+    itemname: string;
+    isSelected: boolean;
+  }[];
+  setTests: React.Dispatch<
+    React.SetStateAction<
+      {
+        itemname: string;
+        isSelected: boolean;
+      }[]
+    >
+  >;
+  addedAdvices: DataPair[];
+  setAddedAdvices: React.Dispatch<React.SetStateAction<DataPair[]>>;
+  juniordoctornotes: string | null;
+  setJuniorDoctorNotes: React.Dispatch<React.SetStateAction<string | null>>;
+  diagnosisData: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
+  setDiagnosisData: React.Dispatch<
+    React.SetStateAction<(GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null>
+  >;
+  medicinePrescriptionData:
+    | (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[]
+    | null
+    | undefined;
+  setMedicinePrescriptionData: React.Dispatch<
+    React.SetStateAction<
+      (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null | undefined
+    >
+  >;
+  selectedMedicinesId: string[];
+  setSelectedMedicinesId: React.Dispatch<React.SetStateAction<string[]>>;
+  switchValue: boolean | null;
+  setSwitchValue: React.Dispatch<React.SetStateAction<boolean | null>>;
+  followupDays: string | number | undefined;
+  setFollowupDays: React.Dispatch<React.SetStateAction<string | number | undefined>>;
+  followUpConsultationType: APPOINTMENT_TYPE | undefined;
+  setFollowUpConsultationType: React.Dispatch<React.SetStateAction<APPOINTMENT_TYPE | undefined>>;
+  doctorNotes: string;
+  setDoctorNotes: React.Dispatch<React.SetStateAction<string>>;
+  displayId: string;
+  setDisplayId: React.Dispatch<React.SetStateAction<string>>;
+  prescriptionPdf: string;
+  setPrescriptionPdf: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -165,23 +241,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [stastus, setStatus] = useState<STATUS | undefined>(
     props.navigation.getParam('AppointmentStatus')
   );
-  const [
-    patientDetails,
-    setPatientDetails,
-  ] = useState<GetCaseSheet_getCaseSheet_patientDetails | null>();
-  const [caseSheetData, setCaseSheetData] = useState<GetCaseSheet_getCaseSheet>();
-  const [displayId, setDisplayId] = useState<string>('');
-  const [doctorNotes, setDoctorNotes] = useState<string>('');
+
   // const [othervalue, setOthervalue] = useState<string>('');
-  const [familyValues, setFamilyValues] = useState<
-    (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
-  >([]);
 
   // const [allergiesData, setAllergiesData] = useState<string | null>('');
-  const [lifeStyleData, setLifeStyleData] = useState<
-    (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null
-  >();
-  const [juniordoctornotes, setJuniorDoctorNotes] = useState<string | null>('');
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
   const [vitalsShow, setVitalsShow] = useState(false);
@@ -194,44 +257,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [adviceInstructions, setAdviceInstructions] = useState(false);
   const [followup, setFollowUp] = useState(false);
   // const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
-  const [switchValue, setSwitchValue] = useState<boolean | null>(true);
 
   const [diagnosisView, setDiagnosisView] = useState(false);
 
-  const [symptonsData, setSymptonsData] = useState<
-    (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
-  >([]);
-  const [diagnosisData, setDiagnosisData] = useState<
-    (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null
-  >([]);
-  // const [diagnosticPrescriptionData, setDiagnosticPrescription] = useState<
-  //   (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null
-  // >(null);
-  // const [otherInstructionsData, setOtherInstructionsData] = useState<any>([]);
-  const [medicinePrescriptionData, setMedicinePrescriptionData] = useState<
-    (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null
-  >();
-  const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
-  // const [getcasesheetId, setGetCaseshhetId] = useState<string>('');
-  const [
-    medicalHistory,
-    setMedicalHistory,
-  ] = useState<GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null>();
-  const [healthWalletArrayData, setHealthWalletArrayData] = useState<
-    (GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null
-  >([]);
-  const [pastList, setPastList] = useState<
-    (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null
-  >([]);
-
-  const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
   // This is dependent : 1728 // const [consultationPayType, setConsultationPayType] = useState<'PAID' | 'FREE' | ''>('');
-  const [followupDays, setFollowupDays] = useState<number | string>();
+
   const [folloUpNotes, setFolloUpNotes] = useState<string>('');
 
-  const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
   const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
-  const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
 
   const { showAphAlert, setLoading, loading } = useUIElements();
   const { doctorDetails } = useAuth();
@@ -240,21 +273,59 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [yesorno, setyesorno] = useState<boolean>(false);
   const client = useApolloClient();
 
-  const [prescriptionPdf, setPrescriptionPdf] = useState('');
   const {
     caseSheetEdit,
     setCaseSheetEdit,
     showEditPreviewButtons,
     setShowEditPreviewButtons,
+    symptonsData,
+    setSymptonsData,
+    pastList,
+    setPastList,
+    lifeStyleData,
+    setLifeStyleData,
+    medicalHistory,
+    setMedicalHistory,
+    familyValues,
+    setFamilyValues,
+    patientDetails,
+    setPatientDetails,
+    healthWalletArrayData,
+    setHealthWalletArrayData,
+    tests,
+    setTests,
+    addedAdvices,
+    setAddedAdvices,
+    juniordoctornotes,
+    setJuniorDoctorNotes,
+    diagnosisData,
+    setDiagnosisData,
+    medicinePrescriptionData,
+    setMedicinePrescriptionData,
+    selectedMedicinesId,
+    setSelectedMedicinesId,
+    switchValue,
+    setSwitchValue,
+    followupDays,
+    setFollowupDays,
+    followUpConsultationType,
+    setFollowUpConsultationType,
+    doctorNotes,
+    setDoctorNotes,
+    displayId,
+    setDisplayId,
+    prescriptionPdf,
+    setPrescriptionPdf,
   } = props;
   console.log(props.caseSheetEdit, 'caseSheetEdit');
 
   const sendToPatientAction = () => {
+    setLoading && setLoading(true);
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
         variables: {
-          caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id') || '',
+          caseSheetId: g(props.caseSheet, 'caseSheetDetails', 'id') || '',
           sentToPatient: true,
         },
       })
@@ -277,100 +348,26 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}`
           );
           props.navigation.popToTop();
+          setLoading && setLoading(false);
         }
       })
-      .catch((e) => {});
+      .catch((e) => {
+        showAphAlert &&
+          showAphAlert({
+            title: strings.common.uh_oh,
+            description: strings.common.oops_msg,
+          });
+      });
   };
 
-  const setData = () => {
-    const caseSheet = props.caseSheet;
+  useEffect(() => {
     if (
-      g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED &&
-      !g(caseSheet, 'caseSheetDetails', 'sentToPatient')
+      g(props.caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED &&
+      !g(props.caseSheet, 'caseSheetDetails', 'sentToPatient')
     ) {
       setShowEditPreviewButtons(true);
       prescriptionView();
     }
-    //   showEditPreviewButtons=!g(caseSheet, 'caseSheetDetails', 'sentToPatient'));
-    setCaseSheetData(caseSheet || undefined);
-    setPastList(g(caseSheet, 'pastAppointments') || null);
-    // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
-    setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
-    setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
-    setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
-    setPatientDetails(g(caseSheet, 'patientDetails') || null);
-    setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
-    setTests(
-      (g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || [])
-        .map((i) => {
-          if (i) {
-            return { itemname: i.itemname || '', isSelected: true };
-          } else {
-            return { itemname: '', isSelected: false };
-          }
-        })
-        .filter((i) => i.isSelected)
-    );
-    setAddedAdvices(
-      (g(caseSheet, 'caseSheetDetails', 'otherInstructions') || [])
-        .map((i) => {
-          if (i) {
-            return { key: i.instruction || '', value: i.instruction || '' };
-          } else {
-            return { key: '', value: '' };
-          }
-        })
-        .filter((i) => i.value !== '')
-    );
-    setSymptonsData(g(caseSheet, 'caseSheetDetails', 'symptoms') || null);
-    setJuniorDoctorNotes(g(caseSheet, 'juniorDoctorNotes') || null);
-    setDiagnosisData(g(caseSheet, 'caseSheetDetails', 'diagnosis') || null);
-    // setOtherInstructionsData(g(caseSheet, 'caseSheetDetails', 'otherInstructions') || null);
-    // setDiagnosticPrescription(g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || null);
-    setMedicinePrescriptionData(g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || null);
-    setSelectedMedicinesId((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
-      .map((i) => (i ? i.externalId || i.id : ''))
-      .filter((i) => i !== null || i !== '') as string[]);
-    setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
-    setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
-    setFollowUpConsultationType(
-      g(caseSheet, 'caseSheetDetails', 'followUpConsultType') || undefined
-    );
-    setDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || '');
-
-    setDisplayId(g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '');
-    setPrescriptionPdf(
-      `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-        caseSheetData,
-        'caseSheetDetails',
-        'blobName'
-      )}`
-    );
-    try {
-      setSysmptonsList((g(caseSheet, 'caseSheetDetails', 'symptoms') ||
-        null) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]);
-      setDiagonsisList(g(
-        caseSheet,
-        'caseSheetDetails',
-        'diagnosis' || null
-      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]);
-      setDiagnosticPrescriptionDataList(g(
-        caseSheet,
-        'caseSheetDetails',
-        'diagnosticPrescription' || null
-      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]);
-      setMedicineList(g(
-        caseSheet,
-        'caseSheetDetails',
-        'medicinePrescription' || null
-      ) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]);
-    } catch (error) {
-      console.log({ error });
-    }
-  };
-
-  useEffect(() => {
-    setData();
   }, [props.caseSheet]);
 
   const startDate = moment(new Date()).format('YYYY-MM-DD');
@@ -394,7 +391,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       }
     };
     return () => {
-      onUnmount();
+      // onUnmount();
     };
   }, []);
 
@@ -417,13 +414,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }
           })
           .filter((i) => i !== ''),
-      notes: doctorNotes,
+      notes: doctorNotes || '',
       diagnosis:
         diagnosisData &&
         diagnosisData
           .map((i) => {
             if (i) {
-              return { name: i.name };
+              return { name: i.name || '' };
             } else {
               return '';
             }
@@ -434,13 +431,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           ? tests
               .filter((i) => i.isSelected)
               .map((i) => {
-                return { itemname: i.itemname };
+                return { itemname: i.itemname || '' };
               })
           : null,
-      status: g(caseSheetData, 'caseSheetDetails', 'status'),
+      status: g(props.caseSheet, 'caseSheetDetails', 'status'),
       followUp: switchValue,
       followUpDate: moment(
-        g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
+        g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
       )
         .add(Number(followupDays), 'd')
         .format('YYYY-MM-DD'),
@@ -449,7 +446,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       otherInstructions:
         addedAdvices && addedAdvices.length > 0
           ? addedAdvices.map((i) => {
-              return { instruction: i.value };
+              return { instruction: i.value || '' };
             })
           : null,
       medicinePrescription:
@@ -462,17 +459,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           .map((i) => {
             if (i) {
               return {
-                id: i.externalId || i.id,
-                medicineConsumptionDuration: i.medicineConsumptionDuration,
-                medicineConsumptionDurationInDays: i.medicineConsumptionDurationInDays,
+                id: i.externalId || i.id || '',
+                medicineConsumptionDuration: i.medicineConsumptionDuration || '',
+                medicineConsumptionDurationInDays: i.medicineConsumptionDurationInDays || '',
                 medicineConsumptionDurationUnit: i.medicineConsumptionDurationUnit,
-                medicineDosage: i.medicineDosage,
-                medicineFormTypes: i.medicineFormTypes,
+                medicineDosage: i.medicineDosage || '',
+                medicineFormTypes: i.medicineFormTypes || MEDICINE_FORM_TYPES.OTHERS,
                 medicineFrequency: i.medicineFrequency,
-                medicineInstructions: i.medicineInstructions,
-                medicineName: i.medicineName,
-                medicineTimings: i.medicineTimings,
-                medicineToBeTaken: i.medicineToBeTaken,
+                medicineInstructions: i.medicineInstructions || '',
+                medicineName: i.medicineName || '',
+                medicineTimings: i.medicineTimings || [],
+                medicineToBeTaken: i.medicineToBeTaken || [],
                 medicineUnit: i.medicineUnit,
               };
             } else {
@@ -480,11 +477,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             }
           })
           .filter((i) => i !== ''),
-      id: g(caseSheetData, 'caseSheetDetails', 'id') || '',
+      id: g(props.caseSheet, 'caseSheetDetails', 'id') || '',
       lifeStyle:
         lifeStyleData &&
         lifeStyleData
-          .map((i) => (i ? i.description : ''))
+          .map((i) => (i ? i.description || '' : ''))
           .filter((i) => i !== '')
           .join('\n')
           .trim(),
@@ -495,35 +492,36 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           .filter((i) => i !== '')
           .join('\n')
           .trim(),
-      dietAllergies: medicalHistory ? medicalHistory.dietAllergies : '',
-      drugAllergies: medicalHistory ? medicalHistory.drugAllergies : '',
-      height: medicalHistory ? medicalHistory.height : '',
+      dietAllergies: medicalHistory ? medicalHistory.dietAllergies || '' : '',
+      drugAllergies: medicalHistory ? medicalHistory.drugAllergies || '' : '',
+      height: medicalHistory ? medicalHistory.height || '' : '',
       menstrualHistory: medicalHistory ? medicalHistory.menstrualHistory || '' : '',
       pastMedicalHistory: medicalHistory ? medicalHistory.pastMedicalHistory || '' : '',
       pastSurgicalHistory: medicalHistory ? medicalHistory.pastSurgicalHistory || '' : '',
-      temperature: medicalHistory ? medicalHistory.temperature : '',
-      weight: medicalHistory ? medicalHistory.weight : '',
-      bp: medicalHistory ? medicalHistory.bp : '',
+      temperature: medicalHistory ? medicalHistory.temperature || '' : '',
+      weight: medicalHistory ? medicalHistory.weight || '' : '',
+      bp: medicalHistory ? medicalHistory.bp || '' : '',
     } as ModifyCaseSheetInput;
   };
-  useEffect(() => {
-    AsyncStorage.setItem('consultDetails', JSON.stringify(getInputData()));
-  }, [
-    addedAdvices,
-    caseSheetData,
-    diagnosisData,
-    doctorNotes,
-    familyValues,
-    followUpConsultationType,
-    followupDays,
-    lifeStyleData,
-    medicalHistory,
-    medicinePrescriptionData,
-    selectedMedicinesId,
-    switchValue,
-    symptonsData,
-    tests,
-  ]);
+
+  // useEffect(() => {
+  //   AsyncStorage.setItem('consultDetails', JSON.stringify(getInputData()));
+  // }, [
+  //   addedAdvices,
+  //   props.caseSheet,
+  //   diagnosisData,
+  //   doctorNotes,
+  //   familyValues,
+  //   followUpConsultationType,
+  //   followupDays,
+  //   lifeStyleData,
+  //   medicalHistory,
+  //   medicinePrescriptionData,
+  //   selectedMedicinesId,
+  //   switchValue,
+  //   symptonsData,
+  //   tests,
+  // ]);
 
   const saveDetails = (
     showLoading: boolean,
@@ -544,7 +542,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        setLoading && setLoading(false);
         console.log('savecasesheet', _data);
         const result = _data.data!.modifyCaseSheet;
         console.log('UpdateCaseSheetData', result);
@@ -555,7 +552,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         //     description: strings.alerts.successfully_updated,
         //   });
         props.getdetails();
-        callBack && callBack();
+        if (callBack) {
+          setLoading && setLoading(true);
+          callBack();
+        } else {
+          setLoading && setLoading(false);
+        }
       })
       .catch((e) => {
         setLoading && setLoading(false);
@@ -575,13 +577,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       appointmentId: AppId,
       folloupDateTime: followup
         ? moment(
-            g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
+            g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
+              new Date()
           )
             .add(Number(followupDays), 'd')
             .format('YYYY-MM-DD')
         : '',
-      doctorId: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
-      caseSheetId: g(caseSheetData, 'caseSheetDetails', 'id'),
+      doctorId: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
+      caseSheetId: g(props.caseSheet, 'caseSheetDetails', 'id'),
       doctorInfo: doctorDetails,
       pdfUrl: pdf || prescriptionPdf,
     };
@@ -614,7 +617,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           uhid: patientDetails.uhid,
           appId: displayId,
           date: moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY'),
-          type: g(caseSheetData, 'caseSheetDetails', 'appointment', 'appointmentType'),
+          type: g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType'),
         },
         complaints: symptonsData,
         diagnosis: diagnosisData,
@@ -657,7 +660,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         setShowEditPreviewButtons(true);
         // endCallNotification();
         const text = {
-          id: g(caseSheetData, 'caseSheetDetails', 'doctorId'),
+          id: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
           message: '^^#appointmentComplete',
           isTyping: true,
           messageDate: new Date(),
@@ -813,7 +816,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <Button
             title={'PREVIEW PRESCRIPTION'}
             onPress={() => {
-              // saveDetails();
+              // saveDetails(true);
               prescriptionView();
             }}
             style={styles.buttonendStyle}
@@ -2280,9 +2283,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           style={{
             marginHorizontal: 40,
             marginTop: 112,
-            height: 289,
+            minHeight: 289,
             borderRadius: 10,
             backgroundColor: 'white',
+            paddingBottom: 10,
           }}
         >
           <TouchableOpacity onPress={() => setyesorno(false)} style={{ height: 40 }}>
@@ -2635,7 +2639,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {renderMedicinePrescription()}
             {renderDiagonisticPrescription()}
             {renderAdviceInstruction()}
-            {renderFollowUpView()}
+            {/* {renderFollowUpView()} */}
 
             <View style={{ zIndex: -1 }}>
               {/* {renderOtherInstructionsView()} */}

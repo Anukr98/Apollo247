@@ -10,7 +10,7 @@ import {
   Selected,
   UnSelected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
+import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { RadioButtons } from '@aph/mobile-doctors/src/components/ui/RadioButtons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
@@ -94,7 +94,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
   ];
   type CalendarItem = { start: string; end: string; consultMode: ConsultMode };
 
-  const [selectedReason, setselectedReason] = useState<OptionsType>(options[0]);
+  const [selectedReason, setselectedReason] = useState<OptionsObject>(options[0]);
   const [selectedBlockOption, setselectedBlockOption] = useState(blockOptions[0].key);
   const [selectedDay, setselectedDay] = useState<string>(daysArray[0].key);
   const [startDate, setstartDate] = useState<Date>();
@@ -168,7 +168,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     props.navigation.goBack();
   };
 
-  const callBlockMultipleCalendar = (variables) => {
+  const callBlockMultipleCalendar = (variables: any) => {
     client
       .mutate({
         mutation: BLOCK_MULTIPLE_CALENDAR_ITEMS,
@@ -198,7 +198,7 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
             .startOf('day')
             .toISOString()
       : '';
-    let variables = {
+    let variables: any = {
       doctorId: doctorDetails ? doctorDetails.id : '',
     };
     if (selectedBlockOption === blockOptions[0].key) {

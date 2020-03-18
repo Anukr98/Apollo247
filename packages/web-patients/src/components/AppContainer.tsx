@@ -42,7 +42,8 @@ import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
 import { YourOrders } from 'components/Tests/YourOrders';
 import { SearchByTest } from 'components/Tests/SearchByTest';
-import { OrdersMessage } from 'components/Tests/OrdersMessage';
+import { OrderDetails } from 'components/Tests/OrderDetails';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -62,12 +63,19 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 0,
       },
     },
+    helpIcon: {
+      display: 'none',
+      [theme.breakpoints.up(1134)]: {
+        display: 'block',
+      },
+    },
   };
 });
 
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
+  const currentPath = window.location.pathname;
 
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
@@ -137,9 +145,8 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
           <AuthRouted exact path={clientRoutes.tests()} component={TestsLanding} />
           <AuthRouted exact path={clientRoutes.testDetails()} component={TestDetails} />
-          <AuthRouted exact path={clientRoutes.testOrders()} component={YourOrders} />
           <AuthRouted exact path={clientRoutes.searchByTest()} component={SearchByTest} />
-          <AuthRouted exact path={clientRoutes.ordersMessage()} component={OrdersMessage} />
+          <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
         </Switch>
       </div>
     </Scrollbars>
