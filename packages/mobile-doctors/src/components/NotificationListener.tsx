@@ -1,23 +1,23 @@
-import { NavigationScreenProps } from 'react-navigation';
-import React, { useEffect, useState } from 'react';
-import firebase from 'react-native-firebase';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import AsyncStorage from '@react-native-community/async-storage';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import { GET_CASESHEET, CREATE_CASESHEET_FOR_SRD } from '@aph/mobile-doctors/src/graphql/profiles';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { CREATE_CASESHEET_FOR_SRD, GET_CASESHEET } from '@aph/mobile-doctors/src/graphql/profiles';
 import { CreateSeniorDoctorCaseSheet } from '@aph/mobile-doctors/src/graphql/types/CreateSeniorDoctorCaseSheet';
+import { GetCaseSheet } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import AsyncStorage from '@react-native-community/async-storage';
+import React, { useEffect } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import firebase from 'react-native-firebase';
+import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
+import { NavigationScreenProps } from 'react-navigation';
 
 type CustomNotificationType = 'Reminder_Appointment_Casesheet_15' | 'NOTIFICATION_TYPE2';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
-  const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const client = useApolloClient();
 
   useEffect(() => {
@@ -112,7 +112,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   const processNotification = async (notification: Notification) => {
     const { title, body, data } = notification;
     const notificationType = 'Reminder_Appointment_Casesheet_15'; //data.type as CustomNotificationType;
-    // console.log({ notificationType, title, body, data });
+    console.log({ notificationType, title, body, data });
     // console.log('processNotification', notification);
 
     // if (notificationType === 'PRESCRIPTION_READY') {

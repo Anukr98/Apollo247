@@ -1,7 +1,6 @@
-import React from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { theme } from '../../theme/theme';
 import DiagnosticsCardStyles from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard.styles';
+import React from 'react';
+import { StyleProp, Text, View, ViewStyle } from 'react-native';
 
 const styles = DiagnosticsCardStyles;
 

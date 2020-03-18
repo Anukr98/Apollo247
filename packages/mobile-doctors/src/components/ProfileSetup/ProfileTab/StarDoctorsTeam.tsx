@@ -47,7 +47,7 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const client = useApolloClient();
-  const [profileData, setProfileData] = useState(_profileData);
+  const [profileData] = useState(_profileData);
   const starDoctorsActive = _profileData.starTeam!.filter((doctor) => doctor!.isActive);
   const starDoctorsInActive = _profileData.starTeam!.filter((doctor) => !doctor!.isActive);
 

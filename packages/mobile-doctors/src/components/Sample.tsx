@@ -1,4 +1,5 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import SampleStyles from '@aph/mobile-doctors/src/components/Sample.styles';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   ApploLogo,
@@ -11,9 +12,8 @@ import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard
 import { PatientCard } from '@aph/mobile-doctors/src/components/ui/PatientCard';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import SampleStyles from '@aph/mobile-doctors/src/components/Sample.styles';
 
 const styles = SampleStyles;
 

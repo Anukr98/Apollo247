@@ -3,7 +3,7 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { StyleSheet, Dimensions, Platform } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default StyleSheet.create({
   headerContainer: {

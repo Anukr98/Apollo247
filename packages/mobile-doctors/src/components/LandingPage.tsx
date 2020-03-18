@@ -1,16 +1,12 @@
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
-
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
-import * as React from 'react';
-import { Platform, StyleSheet, Text, View, ScrollView } from 'react-native';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
-import { NavigationScreenProps } from 'react-navigation';
-import { theme } from '././../theme/theme';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { SplashLogo, LandingPageImage } from '@aph/mobile-doctors/src/components/ui/Icons';
 import LandingPageStyles from '@aph/mobile-doctors/src/components/LandingPage.styles';
+import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { LandingPageImage, SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { getLocalData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import * as React from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = LandingPageStyles;
 

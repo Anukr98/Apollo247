@@ -1,10 +1,9 @@
+import NeedHelpDonePageStyles from '@aph/mobile-doctors/src/components/NeedHelpDonePage.styles';
 import { OtpCard } from '@aph/mobile-doctors/src/components/ui/OtpCard';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
+import { SafeAreaView, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import NeedHelpDonePageStyles from '@aph/mobile-doctors/src/components/NeedHelpDonePage.styles';
 
 const styles = NeedHelpDonePageStyles;
 

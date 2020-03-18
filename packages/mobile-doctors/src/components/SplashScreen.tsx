@@ -1,13 +1,13 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
 import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, AsyncStorage, Linking, Platform, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, AsyncStorage, Linking, Platform, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
-import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 
 const styles = SplashScreenStyles;
 

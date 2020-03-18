@@ -1,4 +1,5 @@
 import { removeMedicineList, updateMedicineList } from '@aph/mobile-doctors/src/components/ApiCall';
+import MedicineUpdateStyles from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineUpdate.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
@@ -9,13 +10,11 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import MedicineUpdateStyles from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineUpdate.styles';
+import React, { useState } from 'react';
+import { SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = MedicineUpdateStyles;
 

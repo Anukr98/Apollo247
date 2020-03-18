@@ -1,18 +1,6 @@
-import React from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-  TouchableOpacity,
-  Platform,
-  Dimensions,
-} from 'react-native';
-import { theme } from '../../theme/theme';
-import { DiagonisisRemove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import DiagnosisCardStyles from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard.styles';
-const { width, height } = Dimensions.get('window');
+import React from 'react';
+import { StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 const styles = DiagnosisCardStyles;
 
