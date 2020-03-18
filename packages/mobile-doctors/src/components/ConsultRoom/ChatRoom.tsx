@@ -8,6 +8,7 @@ import {
   Mascot,
   MissedCallIcon,
   RoundChatIcon,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
@@ -95,6 +96,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
 
+  const patientImage = PatientInfoAll && (
+    <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+  );
   const { messages } = props;
 
   const keyboardDidShow = (e: KeyboardEvent) => {
@@ -476,8 +480,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     paddingVertical: 17,
                   }}
                 >
-                  {leftComponent === 1 && PatientInfoAll.photoUrl ? (
-                    <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+                  {leftComponent === 1 ? (
+                    PatientInfoAll.photoUrl ? (
+                      patientImage
+                    ) : (
+                      <UserPlaceHolder style={styles.imageStyle} />
+                    )
                   ) : null}
                   <View
                     style={{
@@ -542,8 +550,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     marginVertical: 2,
                   }}
                 >
-                  {leftComponent === 1 && PatientInfoAll.photoUrl ? (
-                    <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+                  {leftComponent === 1 ? (
+                    PatientInfoAll.photoUrl ? (
+                      patientImage
+                    ) : (
+                      <UserPlaceHolder style={styles.imageStyle} />
+                    )
                   ) : null}
                   <View
                     style={{
@@ -596,8 +608,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 alignSelf: 'flex-start',
               }}
             >
-              {leftComponent === 1 && PatientInfoAll.photoUrl ? (
-                <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+              {leftComponent === 1 ? (
+                PatientInfoAll.photoUrl ? (
+                  patientImage
+                ) : (
+                  <UserPlaceHolder style={styles.imageStyle} />
+                )
               ) : null}
               <View
                 style={{
