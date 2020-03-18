@@ -31,7 +31,7 @@ export enum ApiConstants {
   PHYSICAL_APPOINTMENT_REMINDER_DOCTOR_1_BODY = "Hi Dr. {0}! It's time to see {1}. Hope you're ready for your appointment.",
 
   DOCTOR_APPOINTMENT_REMINDER_15_SMS = 'Appointment Reminder: Your appointment with {0} will start in 15 mins. Please be available online and prepared, accordingly.',
-  DOCTOR_APPOINTMENT_REMINDER_15_SMS_PHYSICAL = 'Appointment Reminder: Your appointment with {0} will start in 15 mins. Please be available and prepared, accordingly. Review Appointment Details',
+  DOCTOR_APPOINTMENT_REMINDER_15_SMS_PHYSICAL = 'Appointment Reminder: Your appointment with {0} will start in 15 mins. Please be available and prepared, accordingly.',
   DOCTOR_APPOINTMENT_REMINDER_1_SMS = "Hi Dr. {0}! It's time to see {1}. Hope you're online and ready for your appointment.",
 
   //appointment casesheet reminder 15
