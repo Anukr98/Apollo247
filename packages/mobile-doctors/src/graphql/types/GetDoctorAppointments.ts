@@ -20,6 +20,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   doctorType: DoctorType | null;
   sentToPatient: boolean | null;
   blobName: string | null;
+  doctorId: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo_addressList {

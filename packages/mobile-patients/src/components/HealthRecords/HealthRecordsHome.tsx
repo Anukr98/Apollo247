@@ -38,7 +38,11 @@ import {
   getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
 } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
 import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  handleGraphQlError,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -75,6 +79,11 @@ import {
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import WebEngage from 'react-native-webengage';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -172,6 +181,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const { showAphAlert } = useUIElements();
   const { deliveryAddressId, storeId } = useShoppingCart();
+  const webengage = new WebEngage();
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
@@ -423,7 +433,32 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }}
         height={44}
         data={tabs}
-        onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+        onChange={(selectedTab: string) => {
+          setselectedTab(selectedTab);
+          if (selectedTab === tabs[0].title) {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_RX] = {
+              'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+              'Patient UHID': g(currentPatient, 'uhid'),
+              Relation: g(currentPatient, 'relation'),
+              Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+              Gender: g(currentPatient, 'gender'),
+              'Mobile Number': g(currentPatient, 'mobileNumber'),
+              'Customer ID': g(currentPatient, 'id'),
+            };
+            postWebEngageEvent(WebEngageEventName.CONSULT_RX, eventAttributes);
+          } else {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+              'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+              'Patient UHID': g(currentPatient, 'uhid'),
+              Relation: g(currentPatient, 'relation'),
+              Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+              Gender: g(currentPatient, 'gender'),
+              'Mobile Number': g(currentPatient, 'mobileNumber'),
+              'Customer ID': g(currentPatient, 'id'),
+            };
+            postWebEngageEvent(WebEngageEventName.MEDICAL_RECORDS, eventAttributes);
+          }
+        }}
         selectedTab={selectedTab}
       />
     );
@@ -437,6 +472,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           onPress={() => {
             CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
             setdisplayOrderPopup(true);
+
+            const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION] = {
+              'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+              'Patient UHID': g(currentPatient, 'uhid'),
+              Relation: g(currentPatient, 'relation'),
+              Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+              Gender: g(currentPatient, 'gender'),
+              'Mobile Number': g(currentPatient, 'mobileNumber'),
+              'Customer ID': g(currentPatient, 'id'),
+            };
+            postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION, eventAttributes);
             // props.navigation.navigate(AppRoutes.AddRecord);
           }}
         >
@@ -524,7 +570,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
             <Button
               title="ADD RECORD"
-              onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+              onPress={() => {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+                  Source: 'Consult & RX',
+                };
+                postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+                props.navigation.navigate(AppRoutes.AddRecord, {
+                  navigatedFrom: 'Consult & RX',
+                });
+              }}
             />
           </View>
         </View>

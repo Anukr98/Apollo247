@@ -42,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f0f1ec',
         width: '100%',
         padding: 0,
+        height: '100vh',
       },
     },
     filterSectionOpen: {
@@ -54,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 10,
       paddingRight: 15,
       [theme.breakpoints.down('xs')]: {
-        padding: '10px 0 20px 0',
+        padding: '10px 0 80px 0',
       },
     },
     searchInput: {
@@ -342,12 +343,12 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           Sorry, we couldn't find what you are looking for :(
         </FormHelperText>
       ) : (
-        ''
-      )}
+          ''
+        )}
       <div
         className={` ${showResponsiveFilter ? classes.filterSectionOpen : ''} ${
           classes.filterSection
-        } ${disableFilters ? classes.filterSectionDisabled : ''}`}
+          } ${disableFilters ? classes.filterSectionDisabled : ''}`}
       >
         <div className={classes.filterHeader}>
           <AphButton
@@ -374,8 +375,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 320px)'
               : isSmallScreen
-              ? 'calc(100vh - 120px)'
-              : 'calc(100vh - 275px)'
+                ? 'calc(100vh - 60px)'
+                : 'calc(100vh - 275px)'
           }
         >
           <div className={classes.customScroll}>

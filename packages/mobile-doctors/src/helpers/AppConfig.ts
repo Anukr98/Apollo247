@@ -1,7 +1,9 @@
-enum AppEnv {
+export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   PROD = 'PROD',
+  PERFORM = 'PERFORM',
+  VAPT = 'VAPT',
 }
 
 const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
@@ -49,4 +51,5 @@ const Configuration =
 
 export const AppConfig = {
   Configuration,
+  APP_ENV,
 };

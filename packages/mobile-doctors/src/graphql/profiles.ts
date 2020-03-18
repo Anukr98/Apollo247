@@ -127,6 +127,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           doctorType
           sentToPatient
           blobName
+          doctorId
         }
         patientInfo {
           id
@@ -422,20 +423,6 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
   }
 `;
 
-export const GET_CASESHEET_DETAILS = gql`
-  query GetCaseSheetDetails($appointmentId: String!) {
-    getCaseSheet(appointmentId: $appointmentId) {
-      caseSheetDetails {
-        id
-        blobName
-        doctorId
-        sentToPatient
-        status
-      }
-    }
-  }
-`;
-
 export const GET_CASESHEET = gql`
   query GetCaseSheet($appointmentId: String!) {
     getCaseSheet(appointmentId: $appointmentId) {
@@ -481,6 +468,7 @@ export const GET_CASESHEET = gql`
         id
         blobName
         doctorId
+        patientId
         sentToPatient
         status
         appointment {
@@ -614,6 +602,7 @@ export const GET_CASESHEET = gql`
       juniorDoctorNotes
       juniorDoctorCaseSheet {
         createdDate
+        doctorId
         createdDoctorProfile {
           firstName
           lastName

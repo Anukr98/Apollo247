@@ -14,6 +14,8 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
+import { postWebEngageEvent } from '../../helpers/helperFunctions';
+import { WebEngageEvents } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -101,7 +103,11 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
       <View style={styles.filterViewStyle}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.AddRecord, {
+              navigatedFrom: 'Medical Records',
+            })
+          }
         >
           <AddFileIcon />
         </TouchableOpacity>
@@ -147,7 +153,15 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
             <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
               <Button
                 title="ADD RECORD"
-                onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+                onPress={() => {
+                  const eventAttributes: WebEngageEvents['Add Record'] = {
+                    Source: 'Medical Records',
+                  };
+                  postWebEngageEvent('Add Record', eventAttributes);
+                  props.navigation.navigate(AppRoutes.AddRecord, {
+                    navigatedFrom: 'Medical Records',
+                  });
+                }}
               />
             </View>
           </View>

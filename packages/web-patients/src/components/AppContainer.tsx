@@ -43,6 +43,7 @@ import { TestDetails } from 'components/Tests/TestDetails';
 import { YourOrders } from 'components/Tests/YourOrders';
 import { SearchByTest } from 'components/Tests/SearchByTest';
 import { OrderDetails } from 'components/Tests/OrderDetails';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -60,6 +61,12 @@ const useStyles = makeStyles((theme: Theme) => {
     appNotSignedIn: {
       [theme.breakpoints.down(900)]: {
         paddingBottom: 0,
+      },
+    },
+    helpIcon: {
+      display: 'none',
+      [theme.breakpoints.up(1134)]: {
+        display: 'block',
       },
     },
   };
@@ -140,6 +147,11 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.searchByTest()} component={SearchByTest} />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
         </Switch>
+        {isSignedIn &&
+          <div className={classes.helpIcon}>
+            <Help />
+          </div>
+        }
       </div>
     </Scrollbars>
   );

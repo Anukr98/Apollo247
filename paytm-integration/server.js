@@ -254,6 +254,19 @@ app.get('/invokeDashboardSummaries', (req, res) => {
       }
     }`,
   };
+  const getAvailableDoctorsCountRequestJSON = {
+    query: `{
+      getAvailableDoctorsCount(availabilityDate:"${currentDate}"){
+        count{
+          speciality
+          morning
+          afternoon
+          evening
+          night
+        }
+      }
+    }`,
+  };
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
 
   //updateDoctorFeeSummary api call
@@ -338,6 +351,33 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\n---------------------------\n' +
         '\nupdatePhrDocSummary Response\n' +
         response.data.data.updatePhrDocSummary +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+
+  //getAvailableDoctorsCount api call
+  axios
+    .post(process.env.API_URL, getAvailableDoctorsCountRequestJSON)
+    .then((response) => {
+      console.log(response);
+      console.log(response.data.data.getAvailableDoctorsCount, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\ngetAvailableDoctorsCount Response\n' +
+        response.data.data.getAvailableDoctorsCount +
         '\n-------------------\n';
       fs.appendFile(fileName, content, function(err) {
         if (err) throw err;

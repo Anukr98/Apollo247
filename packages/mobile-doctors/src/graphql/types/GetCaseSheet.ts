@@ -170,6 +170,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   id: string | null;
   blobName: string | null;
   doctorId: string | null;
+  patientId: string | null;
   sentToPatient: boolean | null;
   status: string | null;
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
@@ -262,6 +263,7 @@ export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorPr
 export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet {
   __typename: "CaseSheet";
   createdDate: any | null;
+  doctorId: string | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile | null;
   updatedDate: any | null;
 }

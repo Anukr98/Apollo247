@@ -151,7 +151,12 @@ type TrackOrdersProps = {
 export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const [tabValue, setTabValue] = useState<number>(0);
+  const urlParams = new URLSearchParams(window.location.search);
+  const [tabValue, setTabValue] = useState<number>(
+    urlParams.get('v') && String(urlParams.get('v')) && String(urlParams.get('v')) === 'invoice'
+      ? 1
+      : 0
+  );
   const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
   const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = useState<boolean>(false);
   const [isReturnOrderDialogOpen, setIsReturnOrderDialogOpen] = useState<boolean>(false);

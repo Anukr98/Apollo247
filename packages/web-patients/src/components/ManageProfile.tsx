@@ -11,9 +11,15 @@ import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     signUpBar: {
-      display: 'flex',
-      [theme.breakpoints.down('xs')]: {
-        justifyContent: 'center',
+      paddingTop: 20,
+      [theme.breakpoints.up(901)]: {
+        display: 'flex',
+      },
+      [theme.breakpoints.down(900)]: {
+        textAlign: 'center',
+      },
+      [theme.breakpoints.up(1134)]: {
+        paddingTop: 0,
       },
     },
     mascotCircle: {
