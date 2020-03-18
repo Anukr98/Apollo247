@@ -171,9 +171,9 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
     const previousAppointments = data.getAppointmentHistory.appointmentsHistory;
     const symptoms = ['FEVER', 'COUGH & COLD'];
     return (
-      <div className={classes.sectionGroup}>
+      <>
         {previousAppointments.length > 0 ? (
-          <>
+          <div className={classes.sectionGroup}>
             <div className={classes.sectionHeader}>
               <span>{`Appointment History (${(previousAppointments &&
                 previousAppointments.length) ||
@@ -212,9 +212,9 @@ export const AppointmentHistory: React.FC<AppointmentHistoryProps> = (props) => 
                 );
               })}
             </Grid>
-          </>
+          </div>
         ) : null}
-      </div>
+      </>
     );
   } else {
     return <></>;
