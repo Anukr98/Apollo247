@@ -332,19 +332,14 @@ export const OrderDetails: React.FC = () => {
     );
   if (error) return <div>Error :(</div>;
 
-  if (
-    data &&
-    data.getDiagnosticOrdersList &&
-    data.getDiagnosticOrdersList.ordersList &&
-    data.getDiagnosticOrdersList.ordersList.length > 0
-  ) {
+  const testOrderListData = data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList
+  if (testOrderListData && testOrderListData.length > 0) {
     const testOrderListData = data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList
     const firstOrderInfo = testOrderListData && testOrderListData[0];
     if (!displayId && firstOrderInfo && firstOrderInfo.displayId) {
       setDisplayId(firstOrderInfo.displayId);
     }
   }
-  const testOrderListData = data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList
   return (
     <div>
       <Header />
