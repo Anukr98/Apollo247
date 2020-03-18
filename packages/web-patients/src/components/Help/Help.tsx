@@ -11,10 +11,11 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 18,
       bottom: 15,
       cursor: 'pointer',
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down(900)]: {
         position: 'static',
         textAlign: 'center',
-        paddingBottom: 30,
+        paddingBottom: 10,
+        paddingTop: 20,
       },
     },
     bottomPopover: {
@@ -45,10 +46,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 12,
       borderRadius: 5,
       position: 'relative',
-      [theme.breakpoints.up('sm')]: {
+      [theme.breakpoints.up(901)]: {
         display: 'none',
       },
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down(900)]: {
         display: 'inline-block',
       },
       '&:before': {
@@ -96,7 +97,9 @@ export const Help: React.FC = (props) => {
         src={require('images/ic-mascot.png')}
         onClick={() => setIsPopoverOpen(true)}
       />
-      <div className={classes.helpText}>Need Help?</div>
+      <div onClick={() => setIsPopoverOpen(true)} className={classes.helpText}>
+        Need Help?
+      </div>
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}

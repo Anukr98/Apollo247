@@ -518,7 +518,8 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                 <PrescriptionPreview /> */}
                   </>
                 ) : (
-                  activeConsult && (
+                  activeConsult &&
+                  activeConsult.prescriptionImageUrl && (
                     <div className={classes.prescriptionImage}>
                       {activeConsult.prescriptionImageUrl.includes('.pdf') ? (
                         <a href={activeConsult.prescriptionImageUrl}>Download File</a>

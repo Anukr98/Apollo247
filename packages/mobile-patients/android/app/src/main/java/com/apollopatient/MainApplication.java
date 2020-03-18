@@ -24,6 +24,10 @@ import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.heanoria.library.reactnative.locationenabler.RNAndroidLocationEnablerPackage;
 import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+import com.webengage.sdk.android.WebEngage;
 
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -115,12 +119,21 @@ public class MainApplication extends Application implements ReactApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+            @Override
+            public void onSuccess(InstanceIdResult instanceIdResult) {
+                String token = instanceIdResult.getToken();
+                WebEngage.get().setRegistrationID(token);
+            }
+        });
+
         Fabric.with(this, new Crashlytics());
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
 
         WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                .setWebEngageKey("in~~c2ab3529")
+                .setWebEngageKey("in~~c2ab3533")
                 .setDebugMode(false) // only in development mode
                 .build();
         registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));

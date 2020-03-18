@@ -17,16 +17,13 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         color: theme.palette.secondary.dark,
         textTransform: 'uppercase',
-        padding: '36px 20px 35px 20px',
+        padding: '36px 10px 35px 10px',
         display: 'inline-block',
         [theme.breakpoints.down('sm')]: {
           paddingLeft: 10,
           paddingRight: 10,
         },
         [theme.breakpoints.down(900)]: {
-          display: 'none',
-        },
-        '&:nth-child(3)': {
           display: 'none',
         },
       },
@@ -47,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
     notificationBtn: {
       // display: 'none',
       display: 'inline-block',
-      padding: '33px 20px 31px 20px',
+      padding: '33px 10px 31px 10px',
       fontSize: 13,
       fontWeight: 600,
       color: theme.palette.secondary.dark,
@@ -172,6 +169,17 @@ export const Navigation: React.FC = (props) => {
         title={'Medicines'}
       >
         Medicines
+      </Link>
+      <Link
+        to={clientRoutes.tests()}
+        className={
+          currentPath === clientRoutes.tests() || currentPath === clientRoutes.testsCart()
+            ? classes.menuItemActive
+            : ''
+        }
+        title={'Tests'}
+      >
+        Tests
       </Link>
       <div
         id="cartId"

@@ -180,7 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
     productBasicInfo: {
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 115,
-        minHeight: 150,
+        minHeight: 160,
       },
     },
     productDetailed: {

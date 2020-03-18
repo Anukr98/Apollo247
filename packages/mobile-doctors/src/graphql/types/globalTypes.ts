@@ -229,6 +229,13 @@ export interface CalendarItem {
   consultMode?: ConsultMode | null;
 }
 
+export interface CancelAppointmentInput {
+  appointmentId: string;
+  cancelReason?: string | null;
+  cancelledBy: REQUEST_ROLES;
+  cancelledById: string;
+}
+
 export interface CreateAppointmentSessionInput {
   appointmentId: string;
   requestRole: REQUEST_ROLES;

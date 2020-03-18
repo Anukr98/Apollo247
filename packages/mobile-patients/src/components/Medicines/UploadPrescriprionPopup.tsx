@@ -14,7 +14,7 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
@@ -29,6 +29,10 @@ import {
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -101,6 +105,16 @@ export interface UploadPrescriprionPopupProps {
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
+  const postUPrescriptionWEGEvent = (
+    source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
+      Source: source,
+    };
+    postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
+  };
+
   const formatResponse = (response: ImageCropPickerResponse[]) => {
     console.log('response Img', response);
     if (props.isProfileImage) {
@@ -136,7 +150,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const onClickTakePhoto = () => {
+    postUPrescriptionWEGEvent('Take a Photo');
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
+
+    const eventAttributes: WebEngageEvents['Upload Photo'] = {
+      Source: 'Take Photo',
+    };
+    postWebEngageEvent('Upload Photo', eventAttributes);
+
     setshowSpinner(true);
     ImagePicker.openCamera({
       // width: 400,
@@ -167,8 +188,15 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const onClickGallery = async () => {
+    postUPrescriptionWEGEvent('Choose Gallery');
     setshowSpinner(true);
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
+
+    const eventAttributes: WebEngageEvents['Upload Photo'] = {
+      Source: 'Gallery',
+    };
+    postWebEngageEvent('Upload Photo', eventAttributes);
+
     //   try {
     //     const docs = await DocumentPicker.pickMultiple({
     //       type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
@@ -364,6 +392,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             activeOpacity={1}
             style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
             onPress={() => {
+              postUPrescriptionWEGEvent('E-Rx');
               props.onResponse('E-PRESCRIPTION', []);
             }}
           >

@@ -31,6 +31,7 @@ import {
 } from 'graphql/types/makeAppointmentPayment';
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { clientRoutes } from 'helpers/clientRoutes';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -202,8 +203,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [clinicAddress] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const makePaymentMutation = useMutation(MAKE_APPOINTMENT_PAYMENT);
+  const makePaymentMutation = useMutation<makeAppointmentPayment, makeAppointmentPaymentVariables>(
+    MAKE_APPOINTMENT_PAYMENT
+  );
   // const [mutationSuccess, setMutationSuccess] = React.useState(false);
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const prevDateSelected = usePrevious(dateSelected);
   const { currentPatient } = useAllCurrentPatients();
@@ -381,7 +385,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             Please note that after booking, you will need to download the Apollo 247 app to continue

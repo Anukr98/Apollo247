@@ -43,6 +43,7 @@ import { TestDetails } from 'components/Tests/TestDetails';
 import { YourOrders } from 'components/Tests/YourOrders';
 import { SearchByTest } from 'components/Tests/SearchByTest';
 import { OrderDetails } from 'components/Tests/OrderDetails';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -62,12 +63,19 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 0,
       },
     },
+    helpIcon: {
+      display: 'none',
+      [theme.breakpoints.up(1134)]: {
+        display: 'block',
+      },
+    },
   };
 });
 
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
+  const currentPath = window.location.pathname;
 
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
