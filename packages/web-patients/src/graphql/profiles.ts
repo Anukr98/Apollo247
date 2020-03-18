@@ -556,3 +556,26 @@ export const GET_DIAGNOSTICS_CITES = gql`
     }
   }
 `;
+
+export const SEARCH_DIAGNOSTICS_BY_ID = gql`
+  query searchDiagnosticsById($itemIds: String) {
+    searchDiagnosticsById(itemIds: $itemIds) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
