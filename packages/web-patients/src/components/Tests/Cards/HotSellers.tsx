@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div >img': {
         width: 24,
         height: 24,
+        [theme.breakpoints.down('xs')]: {
+          display: 'none !important',
+        },
       },
     },
     card: {

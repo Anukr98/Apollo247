@@ -170,7 +170,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 0,
         borderRadius: 0,
         position: 'absolute',
-        top: 160,
+        top: 158,
         width: '100%',
         padding: '16px 20px',
       },
@@ -181,7 +181,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 25,
         paddingRight: 0,
-        paddingLeft: 20,
+        paddingLeft: 0,
       },
     },
     sliderSection: {
@@ -201,6 +201,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 8,
       marginBottom: 10,
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 20,
+      },
     },
     bannerInfo: {
       [theme.breakpoints.down('xs')]: {
