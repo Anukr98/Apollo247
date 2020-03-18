@@ -1020,8 +1020,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const startBtnInformationCheck = () => {
     if (currentUserType === LoggedInUserType.SECRETARY) {
       console.log('Secretary can not start consult');
-    } else if (startAppointmentButton) {
-      console.log('you can start your consult before 15 min and upto end time of appointment');
     } else if (disableOnCancel) {
       console.log('3rd condition');
     } else if (
@@ -1035,6 +1033,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentInfo!.status !== STATUS.PENDING
     ) {
       console.log('Your appointment status is ' + appointmentInfo!.status);
+    } else if (startAppointmentButton) {
+      console.log('you can start your consult before 15 min and upto end time of appointment');
     }
   };
   // timer for audio/video call end
@@ -1325,6 +1325,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       clearInterval(intervalcallId);
       callIntervalTimer(180);
     }
+    console.log('disablecurrent', disablecurrent);
+    console.log('minusTime', minusTime);
+    console.log('disableaddedTime', disableaddedTime);
+    console.log('disablecurrent >= minusTime', disablecurrent >= minusTime);
+    console.log('disableaddedTime >= disablecurrent', disableaddedTime >= disablecurrent);
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
