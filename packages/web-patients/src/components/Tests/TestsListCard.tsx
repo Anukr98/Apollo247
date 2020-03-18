@@ -2,12 +2,14 @@ import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
-import { array } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import { MedicineCartItem } from 'components/MedicinesCartProvider';
+import {
+  searchDiagnostics,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from 'graphql/types/searchDiagnostics';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -136,105 +138,49 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface TestListCardProps {
-  medicineList: MedicineProduct[] | null;
+  testLists: (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null;
   isLoading: boolean;
 }
 
 export const TestsListCard: React.FC<TestListCardProps> = (props) => {
   const classes = useStyles({});
-  const { addCartItem, removeCartItem, updateCartItemQty, cartItems } = useShoppingCart();
-  const options = Array.from(Array(20), (_, x) => x + 1);
-
-  const [selectedPackedQty] = React.useState(1);
-
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
-  };
-
-  const itemIndexInCart = (item: MedicineProduct) => {
-    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
-  };
+  const { testLists } = props;
 
   return (
     <div className={classes.root}>
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <Link to={clientRoutes.testDetails()}>
-            <div className={classes.medicineInformation}>
-              <div className={classes.medicineIcon}>
-                <img src={require('images/ic_tests_icon.svg')} alt="" />
+      {testLists &&
+        testLists.length > 0 &&
+        testLists.map(
+          (testData) =>
+            testData && (
+              <div className={classes.medicineStrip}>
+                <div className={classes.medicineStripWrap}>
+                  <Link to={clientRoutes.testDetails()}>
+                    <div className={classes.medicineInformation}>
+                      <div className={classes.medicineIcon}>
+                        <img src={require('images/ic_tests_icon.svg')} alt="" />
+                      </div>
+                      <div className={classes.medicineName}>
+                        {testData.itemName}{' '}
+                        <div className={classes.tabInfo}>Rs. {testData.rate}</div>
+                      </div>
+                    </div>
+                  </Link>
+                  <div className={classes.cartRight}>
+                    <div className={classes.addToCart}>
+                      <AphButton>
+                        <img
+                          src={require('images/ic_plus.svg')}
+                          alt="Add Item"
+                          title="Add item to Cart"
+                        />
+                      </AphButton>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className={classes.medicineName}>
-                Blood Glucose <div className={classes.tabInfo}>Rs. 100</div>
-              </div>
-            </div>
-          </Link>
-          <div className={classes.cartRight}>
-            <div className={classes.addToCart}>
-              <AphButton>
-                <img src={require('images/ic_plus.svg')} alt="Add Item" title="Add item to Cart" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <Link to={clientRoutes.testDetails()}>
-            <div className={classes.medicineInformation}>
-              <div className={classes.medicineIcon}>
-                <img src={require('images/ic_tests_icon.svg')} alt="" />
-              </div>
-              <div className={classes.medicineName}>
-                Blood Glucose <div className={classes.tabInfo}>Rs. 100</div>
-              </div>
-            </div>
-          </Link>
-          <div className={classes.cartRight}>
-            <>
-              <div className={classes.addToCart}>
-                <AphButton>
-                  <img
-                    src={require('images/ic_cross_onorange_small.svg')}
-                    alt="Remove Item"
-                    title="Remove item from Cart"
-                  />
-                </AphButton>
-              </div>
-            </>
-          </div>
-        </div>
-      </div>
-      <div className={classes.medicineStrip}>
-        <div className={classes.medicineStripWrap}>
-          <Link to={clientRoutes.testDetails()}>
-            <div className={classes.medicineInformation}>
-              <div className={classes.medicineIcon}>
-                <img src={require('images/ic_tests_icon.svg')} alt="" />
-              </div>
-              <div className={classes.medicineName}>
-                Blood Glucose <div className={classes.tabInfo}> Included 8 tests</div>
-              </div>
-            </div>
-          </Link>
-          <div className={classes.cartRight}>
-            <>
-              <div className={classes.medicinePrice}>Rs. 200 </div>
-              <div className={classes.addToCart}>
-                <AphButton>
-                  <img
-                    src={require('images/ic_cross_onorange_small.svg')}
-                    alt="Remove Item"
-                    title="Remove item from Cart"
-                  />
-                </AphButton>
-              </div>
-            </>
-          </div>
-        </div>
-      </div>
+            )
+        )}
     </div>
   );
 };

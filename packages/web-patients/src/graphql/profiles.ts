@@ -543,3 +543,16 @@ export const GET_DIAGNOSTIC_DATA = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTICS_CITES = gql`
+  query getDiagnosticsCites($patientId: String, $cityName: String) {
+    getDiagnosticsCites(patientId: $patientId, cityName: $cityName) {
+      diagnosticsCities {
+        cityname
+        statename
+        cityid
+        stateid
+      }
+    }
+  }
+`;
