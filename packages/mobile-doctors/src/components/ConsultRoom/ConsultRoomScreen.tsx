@@ -135,7 +135,7 @@ export interface ConsultRoomScreenProps
     DoctorId: string;
     PatientId: string;
     PatientConsultTime: string;
-    PatientInfoAll: PatientInfoData;
+    PatientInfoAll: PatientInfoData | GetCaseSheet_getCaseSheet_patientDetails | null;
     AppId: string;
     Appintmentdatetime: string; //Date;
     AppoinementData: any;
@@ -168,7 +168,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
-  const PatientInfoAll = props.navigation.getParam('PatientInfoAll');
+  let PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
   const [showLoading, setShowLoading] = useState<boolean>(false);
@@ -341,6 +341,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
 
   const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
+    PatientInfoAll = g(caseSheet, 'patientDetails') || null;
     setPastList(g(caseSheet, 'pastAppointments') || null);
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
     setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
@@ -1906,7 +1907,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           setAudioCallStyles={setAudioCallStyles}
           cameraPosition={cameraPosition}
           setCameraPosition={setCameraPosition}
-          firstName={PatientInfoAll.firstName}
+          firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
           chatReceived={chatReceived}
           callAccepted={callAccepted}
           setChatReceived={setChatReceived}
@@ -1970,7 +1971,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           callSeconds={callSeconds}
           minutes={minutes}
           seconds={seconds}
-          firstName={PatientInfoAll.firstName}
+          firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
           subscriberEventHandlers={subscriberEventHandlers}
           sessionEventHandlers={sessionEventHandlers}
           sessionId={sessionId}
