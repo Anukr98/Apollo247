@@ -89,6 +89,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
 
   const doctorId = props.navigation.getParam('DoctorId');
+  const patientId = props.navigation.getParam('PatientId');
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
@@ -448,7 +449,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ) {
       return null;
     }
-    if (rowData.id !== doctorId) {
+    if (rowData.id === patientId) {
       leftComponent++;
       rightComponent = 0;
       return (
@@ -712,7 +713,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {rowData.message === messageCodes.consultPatientStartedMsg
                 ? patientAutomatedMessage(rowData, index)
                 : rowData.message === messageCodes.firstMessage ||
-                  rowData.message === messageCodes.secondMessage
+                  rowData.message === messageCodes.secondMessage ||
+                  rowData.message === messageCodes.languageQue ||
+                  rowData.message === messageCodes.startConsultjr ||
+                  rowData.message === messageCodes.stopConsultJr
                 ? doctorAutomatedMessage(rowData, index)
                 : rowData.message === messageCodes.imageconsult
                 ? renderImageView(rowData)
