@@ -149,6 +149,8 @@ export const SearchByMedicine: React.FC = (props) => {
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('');
+  const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
+  const [disableFilters, setDisableFilters] = useState<boolean>(true);
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -350,12 +352,25 @@ export const SearchByMedicine: React.FC = (props) => {
             <div>
               {getTitle()} ({medicineListFiltered && medicineListFiltered.length})
             </div>
-            <AphButton className={classes.filterBtn}>
+            <AphButton
+              className={classes.filterBtn}
+              onClick={() => {
+                setShowResponsiveFilter(true);
+              }}
+            >
               <img src={require('images/ic_filter.svg')} alt="" />
             </AphButton>
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter
+              disableFilters={disableFilters}
+              manageFilter={(disableFilters) => {
+                setDisableFilters(disableFilters);
+              }}
+              showResponsiveFilter={showResponsiveFilter}
+              setShowResponsiveFilter={(showResponsiveFilter: boolean) =>
+                setShowResponsiveFilter(showResponsiveFilter)
+              }
               setMedicineList={setMedicineList}
               setPriceFilter={setPriceFilter}
               setDiscountFilter={setDiscountFilter}
