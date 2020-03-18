@@ -187,9 +187,7 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {isSignedIn && (
-            <LocationContext.Consumer>{() => <LocationSearch />}</LocationContext.Consumer>
-          )}
+          {isSignedIn && <LocationSearch />}
           {isSignedIn && (
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           )}
@@ -264,8 +262,8 @@ export const Header: React.FC = (props) => {
                     const otpAfterCleaning = otp.replace(/,/g, '');
                     if (
                       mobileNumber.length === 0 ||
-                      ((mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
-                        otpAfterCleaning.length === 6)
+                      (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+                      otpAfterCleaning.length === 6
                     ) {
                       setIsLoginPopupVisible(false);
                       setVerifyOtpError(false);

@@ -246,10 +246,10 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
                   <AphButton onClick={() => setIsCancelOrderDialogOpen(true)}>
                     Cancel Order
                   </AphButton>
-
+                  {/* 
                   <AphButton onClick={() => setIsReturnOrderDialogOpen(true)}>
                     Return Order
-                  </AphButton>
+                  </AphButton> */}
                 </div>
               </Popover>
             </div>

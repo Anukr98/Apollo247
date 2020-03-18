@@ -1,12 +1,13 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
+import { getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers } from 'graphql/types/getDiagnosticsData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -15,6 +16,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div >img': {
         width: 24,
         height: 24,
+        [theme.breakpoints.down('xs')]: {
+          display: 'none !important',
+        },
       },
     },
     card: {
@@ -105,13 +109,14 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface HotSellerProps {
-  data?: { products: MedicineProduct[] };
+  data: (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null;
 }
 
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
+  const { data } = props;
   const sliderSettings = {
-    infinite: true,
+    infinite: data && data.length > 6 ? true : false,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 1,
@@ -123,7 +128,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: data && data.length > 6 ? true : false,
           dots: true,
           centerPadding: '50px',
         },
@@ -155,119 +160,35 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        <Link to={clientRoutes.testDetails()}>
-          <div className={classes.card}>
-            <div className={classes.cardWrap}>
-              <div className={classes.productIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-              <div className={classes.productTitle}>Liver Function Test</div>
-              <div className={classes.bottomSection}>
-                <div className={classes.priceGroup}>
-                  <span className={classes.regularPrice}>(Rs. 125)</span>
-                  <span>Rs. 124 </span>
-                </div>
-                <div className={classes.addToCart}>
-                  <AphButton>Add To Cart</AphButton>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Link>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.offerPrice}>
-              <span>-30%</span>
-            </div>
-            <div className={classes.productIcon}>
-              <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-            </div>
-            <div className={classes.productTitle}>Liver Function Test</div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Add To Cart</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
+        {data &&
+          data.map(
+            (hotSeller: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null) =>
+              hotSeller && (
+                <Link to={clientRoutes.testDetails()}>
+                  <div className={classes.card}>
+                    <div className={classes.cardWrap}>
+                      <div className={classes.productIcon}>
+                        {hotSeller.packageImage ? (
+                          <img src={hotSeller.packageImage} alt="" />
+                        ) : (
+                          <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                        )}
+                      </div>
+                      <div className={classes.productTitle}>{hotSeller.packageName}</div>
+                      <div className={classes.bottomSection}>
+                        <div className={classes.priceGroup}>
+                          <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                          <span>Rs. {hotSeller.price} </span>
+                        </div>
+                        <div className={classes.addToCart}>
+                          <AphButton>Add To Cart</AphButton>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )
+          )}
       </Slider>
     </div>
   );

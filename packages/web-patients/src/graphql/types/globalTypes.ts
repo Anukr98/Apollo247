@@ -59,6 +59,11 @@ export enum DEVICETYPE {
   IOS = "IOS",
 }
 
+export enum DIAGNOSTICS_TYPE {
+  PACKAGE = "PACKAGE",
+  TEST = "TEST",
+}
+
 export enum DOCTOR_ONLINE_STATUS {
   AWAY = "AWAY",
   ONLINE = "ONLINE",
@@ -264,6 +269,11 @@ export enum Salutation {
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
+}
+
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {

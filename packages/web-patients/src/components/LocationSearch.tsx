@@ -2,11 +2,11 @@ import React, { useRef, useContext, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
 import { AphTextField } from '@aph/web-ui-components';
-import { LocationContext } from 'components/LocationProvider';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
 import { Helmet } from 'react-helmet';
 import { AllowLocation } from 'components/AllowLocation';
 import { useAuth } from 'hooks/authHooks';
+import { useLocationDetails } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -214,7 +214,7 @@ export const LocationSearch: React.FC = (props) => {
     setCurrentLong,
     setCurrentLocation,
     locateCurrentLocation,
-  } = useContext(LocationContext);
+  } = useLocationDetails();
   const { isSigningIn } = useAuth();
 
   const handleChange = (address: string) => setAddress(address);
