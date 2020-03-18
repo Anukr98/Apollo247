@@ -540,6 +540,9 @@ export const AddRecords: React.FC = (props) => {
                 })
                   .then(({ data }) => {
                     setshowSpinner(false);
+                    setUploadedDocuments((uploadedDocuments.length = 0));
+                    const inputFile: any = document.getElementById('icon-button-file');
+                    inputFile.value = null;
                     window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
                   .catch((e) => {
@@ -588,6 +591,9 @@ export const AddRecords: React.FC = (props) => {
         })
           .then(({ data }) => {
             setshowSpinner(false);
+            setUploadedDocuments((uploadedDocuments.length = 0));
+            const inputFile: any = document.getElementById('icon-button-file');
+            inputFile.value = null;
             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
           .catch((e) => {
