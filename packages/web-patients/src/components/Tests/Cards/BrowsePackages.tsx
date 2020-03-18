@@ -141,42 +141,51 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      < Slider {...sliderSettings} >
-        {data && data.map((diagnosticOrgans: getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null, index) =>
-          diagnosticOrgans && (
-            <div key={index} className={classes.card}>
-              <Link className={classes.cardLink} to={clientRoutes.searchByTest()}>
-                <div className={classes.cardWrap}>
-                  <div className={classes.testDetails}>
-                    <div>
-                      <div className={classes.testName}>{diagnosticOrgans.organName} </div>
-                      {/* <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
+      <Slider {...sliderSettings}>
+        {data &&
+          data.map(
+            (
+              diagnosticOrgans: getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null,
+              index
+            ) =>
+              diagnosticOrgans && (
+                <div key={index} className={classes.card}>
+                  <Link className={classes.cardLink} to={clientRoutes.searchByTest()}>
+                    <div className={classes.cardWrap}>
+                      <div className={classes.testDetails}>
+                        <div>
+                          <div className={classes.testName}>{diagnosticOrgans.organName} </div>
+                          {/* <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
                       <div className={classes.testsCondition}>
                         Ideal for individuals between 20-40 years.
                       </div> */}
-                    </div>
-                    <div className={classes.cardIcon}>
-                      {diagnosticOrgans.organImage ? (
-                        <img src={diagnosticOrgans.organImage} alt="" />
-                      ) : (
-                          <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                        </div>
+                        <div className={classes.cardIcon}>
+                          {diagnosticOrgans.organImage ? (
+                            <img src={diagnosticOrgans.organImage} alt="" />
+                          ) : (
+                            <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                          )}
+                        </div>
+                      </div>
+                      <div className={classes.bottomSection}>
+                        {diagnosticOrgans && diagnosticOrgans.diagnostics && (
+                          <div className={classes.priceGroup}>
+                            <span className={classes.regularPrice}>
+                              ({diagnosticOrgans.diagnostics.rate})
+                            </span>
+                            <span>Rs. {diagnosticOrgans.diagnostics.rate} </span>
+                          </div>
                         )}
+                        <div className={classes.addToCart}>
+                          <AphButton>Book Now</AphButton>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className={classes.bottomSection}>
-                    {diagnosticOrgans && diagnosticOrgans.diagnostics && <div className={classes.priceGroup}>
-                      <span className={classes.regularPrice}>({diagnosticOrgans.diagnostics.rate})</span>
-                      <span>Rs. {diagnosticOrgans.diagnostics.rate} </span>
-                    </div>}
-                    <div className={classes.addToCart}>
-                      <AphButton>Book Now</AphButton>
-                    </div>
-                  </div>
+                  </Link>
                 </div>
-              </Link>
-            </div>
-          )
-        )}
+              )
+          )}
       </Slider>
     </div>
   );

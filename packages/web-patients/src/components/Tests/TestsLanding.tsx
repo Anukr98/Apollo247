@@ -307,9 +307,14 @@ export const TestsLanding: React.FC = (props) => {
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
-          if (data && data.getDiagnosticsData && data.getDiagnosticsData.diagnosticHotSellers && data.getDiagnosticsData.diagnosticOrgans) {
+          if (
+            data &&
+            data.getDiagnosticsData &&
+            data.getDiagnosticsData.diagnosticHotSellers &&
+            data.getDiagnosticsData.diagnosticOrgans
+          ) {
             setDiagnosisHotSellerData(data.getDiagnosticsData.diagnosticHotSellers);
-            setDiagnosticOrgansData(data.getDiagnosticsData.diagnosticOrgans)
+            setDiagnosticOrgansData(data.getDiagnosticsData.diagnosticOrgans);
             setDiagnosisDataError(false);
           }
         })

@@ -168,8 +168,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         {hotSeller.packageImage ? (
                           <img src={hotSeller.packageImage} alt="" />
                         ) : (
-                            <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-                          )}
+                          <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                        )}
                       </div>
                       <div className={classes.productTitle}>{hotSeller.packageName}</div>
                       <div className={classes.bottomSection}>
