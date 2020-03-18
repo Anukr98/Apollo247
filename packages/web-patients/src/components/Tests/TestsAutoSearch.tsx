@@ -230,7 +230,7 @@ export const TestsAutoSearch: React.FC = (props) => {
                   (test) =>
                     test && (
                       <li key={test.id}>
-                        <Link to={clientRoutes.testDetails()}>
+                        <Link to={clientRoutes.testDetails(test.itemId.toString())}>
                           <div className={classes.medicineImg}>
                             <img src={require('images/ic_tests_icon.svg')} alt="" />
                           </div>

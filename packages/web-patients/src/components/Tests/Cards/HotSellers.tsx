@@ -164,7 +164,11 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
           data.map(
             (hotSeller: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null) =>
               hotSeller && (
-                <Link to={clientRoutes.testDetails()}>
+                <Link
+                  to={clientRoutes.testDetails(
+                    hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
+                  )}
+                >
                   <div className={classes.card}>
                     <div className={classes.cardWrap}>
                       <div className={classes.productIcon}>

@@ -155,7 +155,7 @@ export const TestsListCard: React.FC<TestListCardProps> = (props) => {
             testData && (
               <div className={classes.medicineStrip}>
                 <div className={classes.medicineStripWrap}>
-                  <Link to={clientRoutes.testDetails()}>
+                  <Link to={clientRoutes.testDetails(testData.itemId.toString())}>
                     <div className={classes.medicineInformation}>
                       <div className={classes.medicineIcon}>
                         <img src={require('images/ic_tests_icon.svg')} alt="" />

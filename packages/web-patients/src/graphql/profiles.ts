@@ -642,3 +642,26 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
     }
   }
 `;
+
+export const SEARCH_DIAGNOSTICS_BY_ID = gql`
+  query searchDiagnosticsById($itemIds: String) {
+    searchDiagnosticsById(itemIds: $itemIds) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
