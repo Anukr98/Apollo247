@@ -447,7 +447,8 @@ export const MedicineDetails: React.FC = (props) => {
                 .replace(/(<([^>]+)>)/gi, '')
                 .replace(/&amp;amp;/g, '&')
                 .replace(/&amp;nbsp;/g, ' ')
-                .replace(/&amp;/g, '&')}; \n
+                .replace(/&amp;/g, '&')
+                .replace(/\.t/g, '.')}; \n
                 `;
             }
           });
@@ -550,7 +551,11 @@ export const MedicineDetails: React.FC = (props) => {
                         autoHeightMax={'calc(100vh - 215px'}
                       >
                         <div className={classes.productInformation}>
-                          <MedicineImageGallery data={medicineDetails} />
+                          {medicineDetails.image && medicineDetails.image.includes('.') ? (
+                            <MedicineImageGallery data={medicineDetails} />
+                          ) : (
+                            <img src={require('images/medicine.svg')} alt="" />
+                          )}
                           <div className={classes.productDetails}>
                             <div className={classes.productBasicInfo}>
                               <h2>{medicineDetails.name}</h2>
