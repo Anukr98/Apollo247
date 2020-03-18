@@ -541,7 +541,7 @@ export const AddRecords: React.FC = (props) => {
                 })
                   .then(({ data }) => {
                     setshowSpinner(false);
-                    setUploadedDocuments((uploadedDocuments.length = 0));
+                    setUploadedDocuments([]);
                     refFileInput.current.value = null;
                     window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
@@ -591,7 +591,7 @@ export const AddRecords: React.FC = (props) => {
         })
           .then(({ data }) => {
             setshowSpinner(false);
-            setUploadedDocuments((uploadedDocuments.length = 0));
+            setUploadedDocuments([]);
             refFileInput.current.value = null;
             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
