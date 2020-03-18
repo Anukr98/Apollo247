@@ -1,5 +1,20 @@
+import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
+
+export const apiBaseUrl =
+  AppConfig.APP_ENV == AppEnv.PROD
+    ? 'https://api.apollo247.com/'
+    : AppConfig.APP_ENV == AppEnv.QA
+    ? 'https://aph.staging.api.popcornapps.com/'
+    : AppConfig.APP_ENV == AppEnv.PERFORM
+    ? 'https://asapi.apollo247.com/'
+    : AppConfig.APP_ENV == AppEnv.VAPT
+    ? 'https://aph.vapt.api.popcornapps.com/'
+    : AppConfig.APP_ENV == AppEnv.DEV
+    ? 'https://aph.dev.api.popcornapps.com/'
+    : 'http://localhost:4000';
+
 // export const apiBaseUrl = 'http://localhost:4000';
-export const apiBaseUrl = 'https://aph.dev.api.popcornapps.com/'; //Development
+// export const apiBaseUrl = 'https://aph.dev.api.popcornapps.com/'; //Development
 // export const apiBaseUrl = 'https://aph.staging.api.popcornapps.com/'; // QA
 //export const apiBaseUrl = 'https://aph.uat.api.popcornapps.com/'; // UAT
 // export const apiBaseUrl = 'https://aph.vapt.api.popcornapps.com/'; // VAPT

@@ -8,6 +8,7 @@ import {
   Mascot,
   MissedCallIcon,
   RoundChatIcon,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
@@ -32,7 +33,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Image as ImageNative } from 'react-native-elements';
+import { Image as ImageNative, Image } from 'react-native-elements';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -43,8 +44,10 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     position: 'absolute',
+    borderRadius: 16,
     bottom: 0,
     left: 0,
+    top: 0,
   },
   automatedLeftText: {
     ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
@@ -87,11 +90,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
 
   const doctorId = props.navigation.getParam('DoctorId');
+  const patientId = props.navigation.getParam('PatientId');
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(height - 185);
 
+  const patientImage = PatientInfoAll && (
+    <Image style={styles.imageStyle} source={{ uri: PatientInfoAll.photoUrl }} />
+  );
   const { messages } = props;
 
   const keyboardDidShow = (e: KeyboardEvent) => {
@@ -446,7 +453,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     ) {
       return null;
     }
-    if (rowData.id !== doctorId) {
+    if (rowData.id === patientId) {
       leftComponent++;
       rightComponent = 0;
       return (
@@ -469,11 +476,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     width: 282,
                     borderRadius: 10,
                     marginVertical: 2,
-                    alignSelf: 'flex-start',
+                    alignSelf: 'flex-end',
                     paddingVertical: 17,
                   }}
                 >
-                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
+                  {leftComponent === 1 ? (
+                    PatientInfoAll.photoUrl ? (
+                      patientImage
+                    ) : (
+                      <UserPlaceHolder style={styles.imageStyle} />
+                    )
+                  ) : null}
                   <View
                     style={{
                       marginLeft: 40,
@@ -537,12 +550,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     marginVertical: 2,
                   }}
                 >
-                  {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
+                  {leftComponent === 1 ? (
+                    PatientInfoAll.photoUrl ? (
+                      patientImage
+                    ) : (
+                      <UserPlaceHolder style={styles.imageStyle} />
+                    )
+                  ) : null}
                   <View
                     style={{
                       borderRadius: 10,
                       marginVertical: 2,
-                      alignSelf: 'flex-end',
+                      alignSelf: 'flex-start',
                       flexDirection: 'row',
                       marginLeft: 40,
                     }}
@@ -589,8 +608,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 alignSelf: 'flex-start',
               }}
             >
-              {leftComponent === 1 ? <DoctorImage style={styles.imageStyle} /> : null}
-
+              {leftComponent === 1 ? (
+                PatientInfoAll.photoUrl ? (
+                  patientImage
+                ) : (
+                  <UserPlaceHolder style={styles.imageStyle} />
+                )
+              ) : null}
               <View
                 style={{
                   backgroundColor: rowData.message === messageCodes.imageconsult ? '' : 'white',
@@ -705,7 +729,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {rowData.message === messageCodes.consultPatientStartedMsg
                 ? patientAutomatedMessage(rowData, index)
                 : rowData.message === messageCodes.firstMessage ||
-                  rowData.message === messageCodes.secondMessage
+                  rowData.message === messageCodes.secondMessage ||
+                  rowData.message === messageCodes.languageQue ||
+                  rowData.message === messageCodes.startConsultjr ||
+                  rowData.message === messageCodes.stopConsultJr
                 ? doctorAutomatedMessage(rowData, index)
                 : rowData.message === messageCodes.imageconsult
                 ? renderImageView(rowData)
