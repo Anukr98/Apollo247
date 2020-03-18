@@ -75,7 +75,6 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
-  const currentPath = window.location.pathname;
 
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
@@ -148,6 +147,13 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.searchByTest()} component={SearchByTest} />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
         </Switch>
+        {!isSignedIn ? (
+          ''
+        ) : (
+            <div className={classes.helpIcon}>
+              <Help />
+            </div>
+          )}
       </div>
     </Scrollbars>
   );
