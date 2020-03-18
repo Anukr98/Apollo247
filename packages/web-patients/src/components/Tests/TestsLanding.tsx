@@ -19,6 +19,20 @@ import Typography from '@material-ui/core/Typography';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
 import { AllowLocation } from 'components/AllowLocation';
+import {
+  // GET_DIAGNOSTICS_CITES,
+  GET_DIAGNOSTIC_DATA,
+  // GET_DIAGNOSTIC_ORDER_LIST,
+  // SEARCH_DIAGNOSTICS,
+  // SAVE_SEARCH,
+  // SEARCH_DIAGNOSTICS_BY_ID,
+} from 'graphql/profiles';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
+} from 'graphql/types/getDiagnosticsData';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -262,21 +276,20 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const TestsLanding: React.FC = (props) => {
   const classes = useStyles({});
-  const mascotRef = useRef(null);
-  const addToCartRef = useRef(null);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
-  const [isLocationPopoverOpen, setIsLocationPopoverOpen] = React.useState<boolean>(false);
+  const client = useApolloClient();
   const params = useParams<{ orderAutoId: string; orderStatus: string }>();
-  if (params.orderStatus === 'success') {
-    localStorage.removeItem('cartItems');
-    localStorage.removeItem('dp');
-  }
 
-  const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<ApolloError | null>(null);
+  const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
+    (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
+  >(null);
+
+  const [diagnosticOrgansData, setDiagnosticOrgansData] = useState<
+    (getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null)[] | null
+  >(null);
+
+  const [diagnosisDataLoading, setDiagnosisDataLoading] = useState<boolean>(false);
+  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
   const [showPopup, setShowPopup] = React.useState<boolean>(
     window.location.pathname === '/medicines/added-to-cart'
   );
@@ -284,13 +297,44 @@ export const TestsLanding: React.FC = (props) => {
     params.orderStatus && params.orderStatus.length > 0 ? true : false
   );
 
+  useEffect(() => {
+    if (!diagnosisHotSellerData && !diagnosticOrgansData) {
+      setDiagnosisDataLoading(true);
+      client
+        .query<getDiagnosticsData>({
+          query: GET_DIAGNOSTIC_DATA,
+          variables: {},
+          fetchPolicy: 'cache-first',
+        })
+        .then(({ data }) => {
+          if (
+            data &&
+            data.getDiagnosticsData &&
+            data.getDiagnosticsData.diagnosticHotSellers &&
+            data.getDiagnosticsData.diagnosticOrgans
+          ) {
+            setDiagnosisHotSellerData(data.getDiagnosticsData.diagnosticHotSellers);
+            setDiagnosticOrgansData(data.getDiagnosticsData.diagnosticOrgans);
+            setDiagnosisDataError(false);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+          setDiagnosisDataError(true);
+        })
+        .finally(() => {
+          setDiagnosisDataLoading(false);
+        });
+    }
+  }, [diagnosisHotSellerData, diagnosticOrgansData]);
+
   return (
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
-            <div className={classes.bannerInfo}>
+            {/* <div className={classes.bannerInfo}>
               {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
                 <Typography variant="h1">
                   <span title={'hi'}>hi</span>
@@ -321,7 +365,7 @@ export const TestsLanding: React.FC = (props) => {
                         color="primary"
                         classes={{ root: classes.addMemberBtn }}
                         onClick={() => {
-                          setIsAddNewProfileDialogOpen(true);
+                          // setIsAddNewProfileDialogOpen(true);
                         }}
                         title={'Add Member'}
                       >
@@ -333,7 +377,7 @@ export const TestsLanding: React.FC = (props) => {
               ) : (
                 <Typography variant="h1">hello there!</Typography>
               )}
-            </div>
+            </div> */}
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
                 <TestsAutoSearch />
@@ -368,22 +412,22 @@ export const TestsLanding: React.FC = (props) => {
             <span>Most trusted diagnostics from the comfort of your home!</span>
           </div>
           <div className={classes.allProductsList}>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                <>
+            {diagnosisHotSellerData && diagnosisHotSellerData.length > 0 && (
+              <div className={classes.sliderSection}>
+                <div className={classes.sectionTitle}>
                   <span>Hot sellers</span>
-                </>
+                </div>
+                <HotSellers data={diagnosisHotSellerData} />
               </div>
-              <HotSellers />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                <>
+            )}
+            {diagnosticOrgansData && diagnosticOrgansData.length > 0 && (
+              <div className={classes.sliderSection}>
+                <div className={classes.sectionTitle}>
                   <span>Browse Packages</span>
-                </>
+                </div>
+                <BrowsePackages data={diagnosticOrgansData} />
               </div>
-              <BrowsePackages />
-            </div>
+            )}
           </div>
         </div>
       </div>
