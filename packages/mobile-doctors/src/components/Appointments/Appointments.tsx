@@ -31,6 +31,7 @@ import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
+import { NotificationListener } from '@aph/mobile-doctors/src/components/NotificationListener';
 
 const styles = AppointmentsStyles;
 
@@ -366,6 +367,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         )}
       </View>
       {showNeedHelp && <NeedHelpCard onPress={() => setshowNeedHelp(false)} />}
+      <NotificationListener navigation={props.navigation} />
     </SafeAreaView>
   );
 };

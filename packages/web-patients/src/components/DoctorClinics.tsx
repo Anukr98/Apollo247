@@ -183,12 +183,12 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
                           ? clinicDetails.facility.streetLine3
                           : ''}
                       </div>
+                      <div className={classes.cityText}>
+                        {clinicDetails && clinicDetails.facility.city
+                          ? clinicDetails.facility.city
+                          : ''}
+                      </div>
                     </div>
-                  </div>
-                  <div className={classes.cityText}>
-                    {clinicDetails && clinicDetails.facility.city
-                      ? clinicDetails.facility.city
-                      : ''}
                   </div>
                 </Grid>
               );

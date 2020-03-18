@@ -511,7 +511,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         </Scrollbars>
       ) : (
         <>
-          {!loading ? (
+          {!loading && data ? (
             consultErrorMessage()
           ) : (
             <div className={classes.circlularProgress}>
