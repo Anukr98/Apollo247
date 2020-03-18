@@ -153,7 +153,7 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
             ) =>
               diagnosticOrgans && (
                 <div key={index} className={classes.card}>
-                  <Link className={classes.cardLink} to={clientRoutes.searchByTest()}>
+                  <Link className={classes.cardLink} to={clientRoutes.searchByTest('')}>
                     <div className={classes.cardWrap}>
                       <div className={classes.testDetails}>
                         <div>

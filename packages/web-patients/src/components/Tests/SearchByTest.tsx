@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { AphButton } from '@aph/web-ui-components';
 import { TestFilter } from 'components/Tests/TestFilter';
 import { TestsListCard } from 'components/Tests/TestsListCard';
+import { useLocationDetails } from 'components/LocationProvider';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
+import {
+  searchDiagnostics,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from 'graphql/types/searchDiagnostics';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -163,15 +171,51 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const TabContainer: React.FC = (props) => {
-  return <Typography component="div">{props.children}</Typography>;
-};
+type Params = { searchTestText: string };
 
 export const SearchByTest: React.FC = (props) => {
   const classes = useStyles({});
+  const params = useParams<Params>();
+  const { city } = useLocationDetails();
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [testsList, setTestsList] = useState<
+    (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
+  >(null);
+
+  const onSearchTests = async (value: string) => {
+    setLoading(true);
+    client
+      .query<searchDiagnostics>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          searchText: value,
+          city, //'Hyderabad' | 'Chennai,
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        if (data && data.searchDiagnostics && data.searchDiagnostics.diagnostics) {
+          setLoading(false);
+          setTestsList(data.searchDiagnostics.diagnostics);
+        }
+      })
+      .catch((e) => {
+        setLoading(false);
+        console.log('Tests_onSearchMedicine', e);
+      });
+  };
+
+  useEffect(() => {
+    if (!testsList) {
+      onSearchTests(params.searchTestText);
+    }
+  }, [testsList]);
 
   return (
     <div className={classes.root}>
@@ -185,7 +229,9 @@ export const SearchByTest: React.FC = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
-            <div className={classes.detailsHeader}>SEARCH TESTS (02)</div>
+            <div className={classes.detailsHeader}>
+              SEARCH TESTS ({testsList ? testsList.length : 0})
+            </div>
           </div>
           <div className={classes.medicineDetailsGroup}>
             <div className={classes.medicineSection}>
@@ -211,7 +257,7 @@ export const SearchByTest: React.FC = (props) => {
                 }
               >
                 <div className={classes.customScroll}>
-                  <TestsListCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                  <TestsListCard testLists={testsList} isLoading={loading} />
                 </div>
               </Scrollbars>
             </div>
