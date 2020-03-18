@@ -111,8 +111,9 @@ interface HotSellerProps {
 
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
+  const { data } = props;
   const sliderSettings = {
-    infinite: true,
+    infinite: data && data.length > 6 ? true : false,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 1,
@@ -124,7 +125,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: data && data.length > 6 ? true : false,
           dots: true,
           centerPadding: '50px',
         },
@@ -153,42 +154,39 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     ],
   };
 
-  const { data } = props;
-
   return (
     <div className={classes.root}>
-      {data &&
-        data.map(
-          (hotSeller: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null) =>
-            hotSeller && (
-              // <Slider {...sliderSettings}>
-              <Link to={clientRoutes.testDetails()}>
-                <div className={classes.card}>
-                  <div className={classes.cardWrap}>
-                    <div className={classes.productIcon}>
-                      {hotSeller.packageImage ? (
-                        <img src={hotSeller.packageImage} alt="" />
-                      ) : (
-                        <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-                      )}
-                    </div>
-                    <div className={classes.productTitle}>{hotSeller.packageName}</div>
-                    <div className={classes.bottomSection}>
-                      <div className={classes.priceGroup}>
-                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
-                        <span>Rs. {hotSeller.price} </span>
+      <Slider {...sliderSettings}>
+        {data &&
+          data.map(
+            (hotSeller: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null) =>
+              hotSeller && (
+                <Link to={clientRoutes.testDetails()}>
+                  <div className={classes.card}>
+                    <div className={classes.cardWrap}>
+                      <div className={classes.productIcon}>
+                        {hotSeller.packageImage ? (
+                          <img src={hotSeller.packageImage} alt="" />
+                        ) : (
+                            <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                          )}
                       </div>
-                      <div className={classes.addToCart}>
-                        <AphButton>Add To Cart</AphButton>
+                      <div className={classes.productTitle}>{hotSeller.packageName}</div>
+                      <div className={classes.bottomSection}>
+                        <div className={classes.priceGroup}>
+                          <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                          <span>Rs. {hotSeller.price} </span>
+                        </div>
+                        <div className={classes.addToCart}>
+                          <AphButton>Add To Cart</AphButton>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-              // </Slider>
-            )
-        )}
-      {/* */}
+                </Link>
+              )
+          )}
+      </Slider>
     </div>
   );
 };

@@ -283,6 +283,11 @@ export const TestsLanding: React.FC = (props) => {
   const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
     (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
   >(null);
+
+  const [diagnosticOrgansData, setDiagnosticOrgansData] = useState<
+    (getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null)[] | null
+  >(null);
+
   const [diagnosisDataLoading, setDiagnosisDataLoading] = useState<boolean>(false);
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
   const [showPopup, setShowPopup] = React.useState<boolean>(
@@ -293,7 +298,7 @@ export const TestsLanding: React.FC = (props) => {
   );
 
   useEffect(() => {
-    if (!diagnosisHotSellerData) {
+    if (!diagnosisHotSellerData && !diagnosticOrgansData) {
       setDiagnosisDataLoading(true);
       client
         .query<getDiagnosticsData>({
@@ -302,8 +307,9 @@ export const TestsLanding: React.FC = (props) => {
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
-          if (data && data.getDiagnosticsData && data.getDiagnosticsData.diagnosticHotSellers) {
+          if (data && data.getDiagnosticsData && data.getDiagnosticsData.diagnosticHotSellers && data.getDiagnosticsData.diagnosticOrgans) {
             setDiagnosisHotSellerData(data.getDiagnosticsData.diagnosticHotSellers);
+            setDiagnosticOrgansData(data.getDiagnosticsData.diagnosticOrgans)
             setDiagnosisDataError(false);
           }
         })
@@ -315,7 +321,7 @@ export const TestsLanding: React.FC = (props) => {
           setDiagnosisDataLoading(false);
         });
     }
-  }, [diagnosisHotSellerData]);
+  }, [diagnosisHotSellerData, diagnosticOrgansData]);
 
   return (
     <div className={classes.root}>
@@ -409,14 +415,14 @@ export const TestsLanding: React.FC = (props) => {
                 <HotSellers data={diagnosisHotSellerData} />
               </div>
             )}
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                <>
+            {diagnosticOrgansData && diagnosticOrgansData.length > 0 && (
+              <div className={classes.sliderSection}>
+                <div className={classes.sectionTitle}>
                   <span>Browse Packages</span>
-                </>
+                </div>
+                <BrowsePackages data={diagnosticOrgansData} />
               </div>
-              <BrowsePackages />
-            </div>
+            )}
           </div>
         </div>
       </div>
