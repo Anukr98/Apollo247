@@ -556,3 +556,89 @@ export const GET_DIAGNOSTICS_CITES = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTIC_ORDER_LIST = gql`
+  query GetDiagnosticOrdersList($patientId: String) {
+    getDiagnosticOrdersList(patientId: $patientId) {
+      ordersList {
+        id
+        patientAddressId
+        city
+        slotTimings
+        employeeSlotId
+        diagnosticEmployeeCode
+        diagnosticBranchCode
+        totalPrice
+        prescriptionUrl
+        diagnosticDate
+        centerName
+        centerCode
+        centerCity
+        centerState
+        centerLocality
+        orderStatus
+        orderType
+        displayId
+        createdDate
+        diagnosticOrderLineItems {
+          id
+          itemId
+          quantity
+          price
+          diagnostics {
+            id
+            itemId
+            itemName
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
+  query GetDiagnosticOrderDetails($diagnosticOrderId: String) {
+    getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
+      ordersList {
+        id
+        patientAddressId
+        city
+        slotTimings
+        employeeSlotId
+        diagnosticEmployeeCode
+        diagnosticBranchCode
+        totalPrice
+        prescriptionUrl
+        diagnosticDate
+        centerName
+        centerCode
+        centerCity
+        centerState
+        centerLocality
+        orderStatus
+        orderType
+        displayId
+        createdDate
+        diagnosticOrderLineItems {
+          id
+          itemId
+          price
+          quantity
+          diagnostics {
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            collectionType
+          }
+        }
+      }
+    }
+  }
+`;
