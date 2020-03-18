@@ -147,13 +147,11 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.searchByTest()} component={SearchByTest} />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
         </Switch>
-        {!isSignedIn ? (
-          ''
-        ) : (
-            <div className={classes.helpIcon}>
-              <Help />
-            </div>
-          )}
+        {isSignedIn &&
+          <div className={classes.helpIcon}>
+            <Help />
+          </div>
+        }
       </div>
     </Scrollbars>
   );
