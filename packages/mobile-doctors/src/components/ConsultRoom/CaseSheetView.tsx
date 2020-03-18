@@ -1549,233 +1549,234 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  // const renderFollowUpView = () => {
-  //   return (
-  //     <View>
-  //       <CollapseCard
-  //         heading={strings.case_sheet.follow_up}
-  //         collapse={followup}
-  //         onPress={() => setFollowUp(!followup)}
-  //       >
-  //         <View style={{ marginHorizontal: 16 }}>
-  //           {switchValue && (
-  //             <Text
-  //               style={{
-  //                 ...theme.viewStyles.text('M', 12, '#02474b', 1, undefined, 0.02),
-  //                 marginRight: 20,
-  //                 marginBottom: 10,
-  //               }}
-  //             >
-  //               {strings.case_sheet.first_follow_up_descr}
-  //             </Text>
-  //           )}
-  //           <View
-  //             style={{
-  //               marginBottom: 20,
-  //               flexDirection: 'row',
-  //               justifyContent: 'space-between',
-  //             }}
-  //           >
-  //             <Text style={styles.medicineText}>
-  //               {strings.case_sheet.do_you_recommend_followup}
-  //             </Text>
-  //             {!switchValue ? (
-  //               <View>
-  //                 <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
-  //                   <View>
-  //                     <ToogleOff />
-  //                   </View>
-  //                 </TouchableOpacity>
-  //               </View>
-  //             ) : (
-  //               <View>
-  //                 <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
-  //                   <View>
-  //                     <ToogleOn />
-  //                   </View>
-  //                 </TouchableOpacity>
-  //               </View>
-  //             )}
-  //           </View>
-  //           {switchValue ? (
-  //             <View>
-  //               <View style={styles.medicineunderline}></View>
-  //               <View style={{ marginBottom: 20, marginRight: 25 }}>
-  //                 <Text style={[styles.medicineText, { marginBottom: 7 }]}>
-  //                   {strings.case_sheet.follow_up_after}
-  //                 </Text>
-  //                 <View style={{ flex: 1, justifyContent: 'center' }}>
-  //                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-  //                     <TextInput
-  //                       autoCorrect={false}
-  //                       keyboardType={'number-pad'}
-  //                       multiline={false}
-  //                       maxLength={4}
-  //                       style={styles.inputSingleView}
-  //                       value={followupDays ? followupDays.toString() : ''}
-  //                       blurOnSubmit={false}
-  //                       // returnKeyType="send"
-  //                       onChangeText={(value) => {
-  //                         setFollowupDays(parseInt(value, 10) || '');
-  //                       }}
-  //                     />
-  //                     <Text
-  //                       style={{
-  //                         ...theme.viewStyles.text('M', 14, '#02475b', 1, undefined, 0.02),
-  //                         marginBottom: 7,
-  //                         marginLeft: 8,
-  //                       }}
-  //                     >
-  //                       {strings.common.days}
-  //                     </Text>
-  //                   </View>
-  //                 </View>
-  //               </View>
-  //               <TextInput
-  //                 placeholder={strings.common.add_instructions_here}
-  //                 style={[styles.inputView, { marginBottom: 18 }]}
-  //                 multiline={true}
-  //                 textAlignVertical={'top'}
-  //                 placeholderTextColor={theme.colors.placeholderTextColor}
-  //                 value={folloUpNotes}
-  //                 onChangeText={(value) => setFolloUpNotes(value)}
-  //                 autoCorrect={true}
-  //               />
-  //               {/* <View style={{ marginBottom: 20, zIndex: -1 }}>
-  //                 <Text
-  //                   style={{
-  //                     color: 'rgba(2, 71, 91, 0.6)',
-  //                     ...theme.fonts.IBMPlexSansMedium(14),
-  //                     marginBottom: 12,
-  //                   }}
-  //                 >
-  //                   Recommended Consult Type
-  //                 </Text>
-  //                 <View style={{ flexDirection: 'row' }}>
-  //                   <View>
-  //                     <SelectableButton
-  //                       containerStyle={{
-  //                         marginRight: 20,
-  //                         borderColor: '#00b38e',
-  //                         borderWidth: 1,
-  //                         minWidth: '40%',
-  //                         borderRadius: 5,
-  //                       }}
-  //                       onChange={() => {
-  //                         setConsultationPayType('PAID');
-  //                       }}
-  //                       title="Paid"
-  //                       isChecked={consultationPayType == 'PAID'}
-  //                     />
-  //                   </View>
-  //                   <View>
-  //                     <SelectableButton
-  //                       containerStyle={{
-  //                         marginRight: 20,
-  //                         borderColor: '#00b38e',
-  //                         borderWidth: 1,
-  //                         minWidth: '40%',
-  //                         borderRadius: 5,
-  //                       }}
-  //                       onChange={() => {
-  //                         setConsultationPayType('FREE');
-  //                       }}
-  //                       title="Free"
-  //                       isChecked={consultationPayType == 'FREE'}
-  //                     />
-  //                   </View>
-  //                 </View>
-  //               </View> */}
-  //               <View style={{ borderColor: '#00b38e', marginBottom: 12, zIndex: -1 }}>
-  //                 <Text
-  //                   style={{
-  //                     color: 'rgba(2, 71, 91, 0.6)',
-  //                     ...theme.fonts.IBMPlexSansMedium(14),
-  //                     marginBottom: 12,
-  //                   }}
-  //                 >
-  //                   {strings.case_sheet.recommend_consult_type}
-  //                 </Text>
-  //                 <View style={{ flexDirection: 'row' }}>
-  //                   <View>
-  //                     <SelectableButton
-  //                       containerStyle={{
-  //                         marginRight: 20,
-  //                         borderColor: '#00b38e',
-  //                         borderWidth: 1,
-  //                         minWidth: '40%',
-  //                         borderRadius: 5,
-  //                       }}
-  //                       onChange={() => {
-  //                         if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
-  //                           setFollowUpConsultationType(undefined);
-  //                         } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
-  //                           setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
-  //                         } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
-  //                           setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
-  //                         } else {
-  //                           setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
-  //                         }
-  //                       }}
-  //                       title={strings.case_sheet.online}
-  //                       isChecked={
-  //                         followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
-  //                         followUpConsultationType === APPOINTMENT_TYPE.BOTH
-  //                       }
-  //                       icon={
-  //                         followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
-  //                         followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
-  //                           <PhysicalIcon />
-  //                         ) : (
-  //                           <GreenOnline />
-  //                         )
-  //                       }
-  //                     />
-  //                   </View>
-  //                   <View>
-  //                     <SelectableButton
-  //                       containerStyle={{
-  //                         marginRight: 20,
-  //                         borderColor: '#00b38e',
-  //                         borderWidth: 1,
-  //                         minWidth: '40%',
-  //                         borderRadius: 5,
-  //                       }}
-  //                       onChange={() => {
-  //                         if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
-  //                           setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
-  //                         } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
-  //                           setFollowUpConsultationType(undefined);
-  //                         } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
-  //                           setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
-  //                         } else {
-  //                           setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
-  //                         }
-  //                       }}
-  //                       title={strings.case_sheet.in_person}
-  //                       isChecked={
-  //                         followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
-  //                         followUpConsultationType === APPOINTMENT_TYPE.BOTH
-  //                       }
-  //                       icon={
-  //                         followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
-  //                         followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
-  //                           <InpersonWhiteIcon />
-  //                         ) : (
-  //                           <InpersonIcon />
-  //                         )
-  //                       }
-  //                     />
-  //                   </View>
-  //                 </View>
-  //               </View>
-  //             </View>
-  //           ) : null}
-  //         </View>
-  //       </CollapseCard>
-  //     </View>
-  //   );
-  // };
+  //It will be used in future
+  const renderFollowUpView = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading={strings.case_sheet.follow_up}
+          collapse={followup}
+          onPress={() => setFollowUp(!followup)}
+        >
+          <View style={{ marginHorizontal: 16 }}>
+            {switchValue && (
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#02474b', 1, undefined, 0.02),
+                  marginRight: 20,
+                  marginBottom: 10,
+                }}
+              >
+                {strings.case_sheet.first_follow_up_descr}
+              </Text>
+            )}
+            <View
+              style={{
+                marginBottom: 20,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Text style={styles.medicineText}>
+                {strings.case_sheet.do_you_recommend_followup}
+              </Text>
+              {!switchValue ? (
+                <View>
+                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
+                    <View>
+                      <ToogleOff />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View>
+                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
+                    <View>
+                      <ToogleOn />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+            {switchValue ? (
+              <View>
+                <View style={styles.medicineunderline}></View>
+                <View style={{ marginBottom: 20, marginRight: 25 }}>
+                  <Text style={[styles.medicineText, { marginBottom: 7 }]}>
+                    {strings.case_sheet.follow_up_after}
+                  </Text>
+                  <View style={{ flex: 1, justifyContent: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <TextInput
+                        autoCorrect={false}
+                        keyboardType={'number-pad'}
+                        multiline={false}
+                        maxLength={4}
+                        style={styles.inputSingleView}
+                        value={followupDays ? followupDays.toString() : ''}
+                        blurOnSubmit={false}
+                        // returnKeyType="send"
+                        onChangeText={(value) => {
+                          setFollowupDays(parseInt(value, 10) || '');
+                        }}
+                      />
+                      <Text
+                        style={{
+                          ...theme.viewStyles.text('M', 14, '#02475b', 1, undefined, 0.02),
+                          marginBottom: 7,
+                          marginLeft: 8,
+                        }}
+                      >
+                        {strings.common.days}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <TextInput
+                  placeholder={strings.common.add_instructions_here}
+                  style={[styles.inputView, { marginBottom: 18 }]}
+                  multiline={true}
+                  textAlignVertical={'top'}
+                  placeholderTextColor={theme.colors.placeholderTextColor}
+                  value={folloUpNotes}
+                  onChangeText={(value) => setFolloUpNotes(value)}
+                  autoCorrect={true}
+                />
+                {/* <View style={{ marginBottom: 20, zIndex: -1 }}>
+                  <Text
+                    style={{
+                      color: 'rgba(2, 71, 91, 0.6)',
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      marginBottom: 12,
+                    }}
+                  >
+                    Recommended Consult Type
+                  </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          setConsultationPayType('PAID');
+                        }}
+                        title="Paid"
+                        isChecked={consultationPayType == 'PAID'}
+                      />
+                    </View>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          setConsultationPayType('FREE');
+                        }}
+                        title="Free"
+                        isChecked={consultationPayType == 'FREE'}
+                      />
+                    </View>
+                  </View>
+                </View> */}
+                <View style={{ borderColor: '#00b38e', marginBottom: 12, zIndex: -1 }}>
+                  <Text
+                    style={{
+                      color: 'rgba(2, 71, 91, 0.6)',
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      marginBottom: 12,
+                    }}
+                  >
+                    {strings.case_sheet.recommend_consult_type}
+                  </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
+                            setFollowUpConsultationType(undefined);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
+                          } else {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
+                          }
+                        }}
+                        title={strings.case_sheet.online}
+                        isChecked={
+                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
+                        }
+                        icon={
+                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
+                            <PhysicalIcon />
+                          ) : (
+                            <GreenOnline />
+                          )
+                        }
+                      />
+                    </View>
+                    <View>
+                      <SelectableButton
+                        containerStyle={{
+                          marginRight: 20,
+                          borderColor: '#00b38e',
+                          borderWidth: 1,
+                          minWidth: '40%',
+                          borderRadius: 5,
+                        }}
+                        onChange={() => {
+                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
+                            setFollowUpConsultationType(undefined);
+                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
+                          } else {
+                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
+                          }
+                        }}
+                        title={strings.case_sheet.in_person}
+                        isChecked={
+                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
+                        }
+                        icon={
+                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
+                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
+                            <InpersonWhiteIcon />
+                          ) : (
+                            <InpersonIcon />
+                          )
+                        }
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ) : null}
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
 
   const renderDiagnosisView = () => {
     return (
