@@ -244,6 +244,19 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       fontSize: 12,
     },
+    searchInputDisabled: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    filterSectionOpen: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+    },
+    filterSectionDisabled: {
+      opacity: 0.3,
+    },
   });
 });
 type priceFilter = { fromPrice: string; toPrice: string };
@@ -255,6 +268,10 @@ interface MedicineFilterProps {
   setFilterData?: (filterData: []) => void;
   setDiscountFilter?: (discountFilter: discountFilter) => void;
   setSortBy?: (sortValue: string) => void;
+  disableFilters: boolean;
+  manageFilter: (disableFilters: boolean) => void;
+  showResponsiveFilter: boolean;
+  setShowResponsiveFilter: (showResponsiveFilter: boolean) => void;
 }
 
 type Params = { searchMedicineType: string; searchText: string };
@@ -354,7 +371,11 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.searchInput}>
+      <div
+        className={`${classes.searchInput} ${
+          !props.disableFilters ? classes.searchInputDisabled : ''
+        }`}
+      >
         <AphTextField
           placeholder="Search med, brands and more"
           onChange={(e) => {
@@ -364,13 +385,25 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
           value={subtxt}
         />
       </div>
-      <div className={`${classes.filterSection}`}>
+      <div
+        className={` ${props.showResponsiveFilter ? classes.filterSectionOpen : ''} ${
+          classes.filterSection
+        } ${props.disableFilters ? classes.filterSectionDisabled : ''}`}
+      >
         <div className={classes.filterHeader}>
-          <AphButton>
+          <AphButton
+            onClick={() => {
+              props.setShowResponsiveFilter(false);
+            }}
+          >
             <img src={require('images/ic_cross.svg')} alt="" />
           </AphButton>
           <span>FILTERS</span>
-          <AphButton>
+          <AphButton
+            onClick={() => {
+              props.setShowResponsiveFilter(true);
+            }}
+          >
             <img src={require('images/ic_refresh.svg')} alt="" />
           </AphButton>
         </div>
