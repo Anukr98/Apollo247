@@ -2,7 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, Typography, MenuItem } from '@material-ui/core';
+import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { Header } from 'components/Header';
 import { BrowsePackages } from 'components/Tests/Cards/BrowsePackages';
 import { HotSellers } from 'components/Tests/Cards/HotSellers';
@@ -317,7 +318,7 @@ export const TestsLanding: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
-            {/* <div className={classes.bannerInfo}>
+            <div className={classes.bannerInfo}>
               {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
                 <Typography variant="h1">
                   <span title={'hi'}>hi</span>
@@ -328,7 +329,6 @@ export const TestsLanding: React.FC = (props) => {
                     title={currentPatient.firstName || ''}
                   >
                     {allCurrentPatients.map((patient) => {
-                      // const isSelected = patient.id === currentPatient.id;
                       const isSelected = patient.relation === 'ME';
                       const name = (patient.firstName || '').toLocaleLowerCase();
                       return (
@@ -360,7 +360,7 @@ export const TestsLanding: React.FC = (props) => {
               ) : (
                 <Typography variant="h1">hello there!</Typography>
               )}
-            </div> */}
+            </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
                 <TestsAutoSearch />
