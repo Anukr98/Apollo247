@@ -33,6 +33,11 @@ import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql
 import moment from 'moment';
 import { CouponCode } from 'components/Coupon/CouponCode';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { VALIDATE_CONSULT_COUPON } from 'graphql/consult';
+import {
+  ValidateConsultCoupon,
+  ValidateConsultCouponVariables,
+} from 'graphql/types/ValidateConsultCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -228,6 +233,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const calendarRef = useRef<HTMLDivElement>(null);
   const [couponCode, setCouponCode] = useState('');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
+    VALIDATE_CONSULT_COUPON
+  );
 
   const { currentPatient } = useAllCurrentPatients();
   // const currentTime = new Date().getTime();
@@ -283,7 +291,31 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   useEffect(() => {
     if (prevDateSelected !== dateSelected) setTimeSelected('');
   }, [dateSelected, prevDateSelected]);
-
+  const checkCouponValidity = () => {
+    couponMutation({
+      variables: {
+        doctorId: doctorId,
+        code: couponCode,
+        consultType: AppointmentType.ONLINE,
+        appointmentDateTimeInUTC: appointmentDateTime,
+      },
+      fetchPolicy: 'no-cache',
+    })
+      .then((res) => {
+        if (res && res.data && res.data.validateConsultCoupon) {
+          if (res.data.validateConsultCoupon.reasonForInvalidStatus) {
+            alert(res.data.validateConsultCoupon.reasonForInvalidStatus);
+            setMutationLoading(false);
+          } else {
+            bookAppointment();
+          }
+        }
+      })
+      .catch((error) => {
+        alert(error);
+        setMutationLoading(false);
+      });
+  };
   // get available slots.
   const {
     data: availableSlotsData,
@@ -447,6 +479,62 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     appointmentDateTime = consultNowSlotTime;
   }
   const consultType: AppointmentType = AppointmentType.ONLINE;
+
+  const bookAppointment = () => {
+    paymentMutation({
+      variables: {
+        bookAppointment: {
+          patientId: currentPatient ? currentPatient.id : '',
+          doctorId: doctorId,
+          appointmentDateTime: appointmentDateTime,
+          appointmentType: AppointmentType.ONLINE,
+          hospitalId: hospitalId,
+          couponCode: couponCode ? couponCode : null,
+        },
+      },
+    })
+      .then((res: any) => {
+        disableSubmit = false;
+        if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
+          if (revisedAmount == '0') {
+            makePaymentMutation({
+              variables: {
+                paymentInput: {
+                  amountPaid: 0,
+                  paymentRefId: '',
+                  paymentStatus: 'TXN_SUCCESS',
+                  paymentDateTime: res.data.bookAppointment.appointment.appointmentDateTime,
+                  responseCode: couponCode,
+                  responseMessage: 'Coupon applied',
+                  bankTxnId: '',
+                  orderId: res.data.bookAppointment.appointment.id,
+                },
+              },
+              fetchPolicy: 'no-cache',
+            })
+              .then((res) => {
+                window.location.href = clientRoutes.appointments();
+              })
+              .catch((error) => alert(error));
+          } else {
+            const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
+              res.data.bookAppointment.appointment.id
+            }&patientId=${
+              currentPatient ? currentPatient.id : ''
+            }&price=${revisedAmount}&source=WEB`;
+            window.location.href = pgUrl;
+          }
+          // setMutationLoading(false);
+          // setIsDialogOpen(true);
+        }
+      })
+      .catch((errorResponse) => {
+        alert(errorResponse);
+        disableSubmit = false;
+        setMutationLoading(false);
+      });
+  };
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
@@ -646,66 +734,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 appointmentDateTime = consultNowSlotTime;
               }
               setMutationLoading(true);
-              paymentMutation({
-                variables: {
-                  bookAppointment: {
-                    patientId: currentPatient ? currentPatient.id : '',
-                    doctorId: doctorId,
-                    appointmentDateTime: appointmentDateTime,
-                    appointmentType: AppointmentType.ONLINE,
-                    hospitalId: hospitalId,
-                    couponCode: couponCode ? couponCode : null,
-                  },
-                },
-              })
-                .then((res: any) => {
-                  disableSubmit = false;
-                  if (
-                    res &&
-                    res.data &&
-                    res.data.bookAppointment &&
-                    res.data.bookAppointment.appointment
-                  ) {
-                    if (revisedAmount == '0') {
-                      makePaymentMutation({
-                        variables: {
-                          paymentInput: {
-                            amountPaid: 0,
-                            paymentRefId: '',
-                            paymentStatus: 'TXN_SUCCESS',
-                            paymentDateTime:
-                              res.data.bookAppointment.appointment.appointmentDateTime,
-                            responseCode: couponCode,
-                            responseMessage: 'Coupon applied',
-                            bankTxnId: '',
-                            orderId: res.data.bookAppointment.appointment.id,
-                          },
-                        },
-                        fetchPolicy: 'no-cache',
-                      })
-                        .then((res) => {
-                          window.location.href = clientRoutes.appointments();
-                        })
-                        .catch((error) => alert(error));
-                    } else {
-                      const pgUrl = `${
-                        process.env.CONSULT_PG_BASE_URL
-                      }/consultpayment?appointmentId=${
-                        res.data.bookAppointment.appointment.id
-                      }&patientId=${
-                        currentPatient ? currentPatient.id : ''
-                      }&price=${revisedAmount}&source=WEB`;
-                      window.location.href = pgUrl;
-                    }
-                    // setMutationLoading(false);
-                    // setIsDialogOpen(true);
-                  }
-                })
-                .catch((errorResponse) => {
-                  alert(errorResponse);
-                  disableSubmit = false;
-                  setMutationLoading(false);
-                });
+              if (couponCode) {
+                checkCouponValidity();
+              } else {
+                bookAppointment();
+              }
             }}
             className={
               disableSubmit ||
