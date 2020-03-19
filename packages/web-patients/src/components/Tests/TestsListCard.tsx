@@ -1,15 +1,11 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
-import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
+import { Theme } from '@material-ui/core';
+import { AphButton } from '@aph/web-ui-components';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
-import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import {
-  searchDiagnostics,
-  searchDiagnostics_searchDiagnostics_diagnostics,
-} from 'graphql/types/searchDiagnostics';
+import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
+import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -138,49 +134,45 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface TestListCardProps {
-  testLists: (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null;
-  isLoading: boolean;
+  testData:
+    | searchDiagnostics_searchDiagnostics_diagnostics
+    | getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics
+    | null;
 }
 
 export const TestsListCard: React.FC<TestListCardProps> = (props) => {
   const classes = useStyles({});
-  const { testLists } = props;
+  const { testData } = props;
 
   return (
     <div className={classes.root}>
-      {testLists &&
-        testLists.length > 0 &&
-        testLists.map(
-          (testData) =>
-            testData && (
-              <div className={classes.medicineStrip}>
-                <div className={classes.medicineStripWrap}>
-                  <Link to={clientRoutes.testDetails(testData.itemId.toString())}>
-                    <div className={classes.medicineInformation}>
-                      <div className={classes.medicineIcon}>
-                        <img src={require('images/ic_tests_icon.svg')} alt="" />
-                      </div>
-                      <div className={classes.medicineName}>
-                        {testData.itemName}{' '}
-                        <div className={classes.tabInfo}>Rs. {testData.rate}</div>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className={classes.cartRight}>
-                    <div className={classes.addToCart}>
-                      <AphButton>
-                        <img
-                          src={require('images/ic_plus.svg')}
-                          alt="Add Item"
-                          title="Add item to Cart"
-                        />
-                      </AphButton>
-                    </div>
-                  </div>
+      {testData && (
+        <div className={classes.medicineStrip}>
+          <div className={classes.medicineStripWrap}>
+            <Link to={clientRoutes.testDetails(testData.itemId.toString())}>
+              <div className={classes.medicineInformation}>
+                <div className={classes.medicineIcon}>
+                  <img src={require('images/ic_tests_icon.svg')} alt="" />
+                </div>
+                <div className={classes.medicineName}>
+                  {testData.itemName} <div className={classes.tabInfo}>Rs. {testData.rate}</div>
                 </div>
               </div>
-            )
-        )}
+            </Link>
+            <div className={classes.cartRight}>
+              <div className={classes.addToCart}>
+                <AphButton>
+                  <img
+                    src={require('images/ic_plus.svg')}
+                    alt="Add Item"
+                    title="Add item to Cart"
+                  />
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

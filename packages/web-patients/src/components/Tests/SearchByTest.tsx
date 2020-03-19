@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -8,15 +8,18 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { TestFilter } from 'components/Tests/TestFilter';
 import { TestsListCard } from 'components/Tests/TestsListCard';
 import { useLocationDetails } from 'components/LocationProvider';
-import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
+import { SEARCH_DIAGNOSTICS, GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import {
   searchDiagnostics,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from 'graphql/types/searchDiagnostics';
 import { useParams } from 'hooks/routerHooks';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics,
+} from 'graphql/types/getDiagnosticsData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -180,12 +183,49 @@ export const SearchByTest: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   const [testsList, setTestsList] = useState<
     (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
   >(null);
+
+  const [
+    diagnosticList,
+    setDiagnosticList,
+  ] = useState<getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics | null>(null);
+
+  const getDiagnosticsOrgansData = () => {
+    setLoading(true);
+    client
+      .query<getDiagnosticsData>({
+        query: GET_DIAGNOSTIC_DATA,
+        variables: {},
+        fetchPolicy: 'cache-first',
+      })
+      .then(({ data }) => {
+        if (
+          data &&
+          data.getDiagnosticsData &&
+          data.getDiagnosticsData.diagnosticHotSellers &&
+          data.getDiagnosticsData.diagnosticOrgans
+        ) {
+          const { diagnosticOrgans } = data.getDiagnosticsData;
+          const diagnosticsData = diagnosticOrgans.find(
+            (organ) =>
+              organ &&
+              organ.diagnostics &&
+              organ.diagnostics.itemId === Number(params.searchTestText)
+          );
+          diagnosticsData && setDiagnosticList(diagnosticsData.diagnostics);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const onSearchTests = async (value: string) => {
     setLoading(true);
@@ -201,19 +241,24 @@ export const SearchByTest: React.FC = (props) => {
       })
       .then(({ data }) => {
         if (data && data.searchDiagnostics && data.searchDiagnostics.diagnostics) {
-          setLoading(false);
           setTestsList(data.searchDiagnostics.diagnostics);
         }
       })
       .catch((e) => {
-        setLoading(false);
         console.log('Tests_onSearchMedicine', e);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   useEffect(() => {
-    if (!testsList) {
-      onSearchTests(params.searchTestText);
+    if (!testsList && !diagnosticList) {
+      if (Number(params.searchTestText)) {
+        getDiagnosticsOrgansData();
+      } else {
+        onSearchTests(params.searchTestText);
+      }
     }
   }, [testsList]);
 
@@ -223,14 +268,14 @@ export const SearchByTest: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.medicineDetailsPage}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.tests())}>
+            <a onClick={() => window.history.back()}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </a>
             <div className={classes.detailsHeader}>
-              SEARCH TESTS ({testsList ? testsList.length : 0})
+              SEARCH TESTS ({testsList ? testsList.length : diagnosticList ? 1 : 0})
             </div>
           </div>
           <div className={classes.medicineDetailsGroup}>
@@ -257,7 +302,11 @@ export const SearchByTest: React.FC = (props) => {
                 }
               >
                 <div className={classes.customScroll}>
-                  <TestsListCard testLists={testsList} isLoading={loading} />
+                  {loading && <CircularProgress />}
+                  {testsList &&
+                    testsList.length > 0 &&
+                    testsList.map((test) => <TestsListCard testData={test} />)}
+                  {diagnosticList && <TestsListCard testData={diagnosticList} />}
                 </div>
               </Scrollbars>
             </div>

@@ -138,10 +138,6 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
     ],
   };
 
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
-  };
-
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -153,7 +149,14 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
             ) =>
               diagnosticOrgans && (
                 <div key={index} className={classes.card}>
-                  <Link className={classes.cardLink} to={clientRoutes.searchByTest('')}>
+                  <Link
+                    className={classes.cardLink}
+                    to={clientRoutes.searchByTest(
+                      diagnosticOrgans.diagnostics
+                        ? diagnosticOrgans.diagnostics.itemId.toString()
+                        : ''
+                    )}
+                  >
                     <div className={classes.cardWrap}>
                       <div className={classes.testDetails}>
                         <div>
