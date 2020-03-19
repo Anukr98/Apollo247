@@ -34,6 +34,10 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       border: 'solid 1px transparent',
       position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        padding: 16,
+      },
     },
     cardSelected: {
       border: 'solid 1px #00b38e',
@@ -66,9 +70,16 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       width: '40%',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
     },
     itemImg: {
       paddingRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingRight: 16,
+      },
+
       '& img': {
         verticalAlign: 'middle',
       },
@@ -96,6 +107,12 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 1,
         borderLeft: 0,
       },
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 6,
+        top: 22,
+        marginRight: 0,
+      },
     },
     customScroll: {
       paddingLeft: 10,
@@ -105,6 +122,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       paddingLeft: 20,
       width: '25%',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        display: 'flex',
+        paddingLeft: 40,
+        paddingRight: 0,
+      },
     },
     orderStatus: {
       fontSize: 12,
@@ -123,11 +146,20 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       lineHeight: '20px',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
+      },
     },
     orderTrackSlider: {
       paddingLeft: 20,
       paddingRight: 20,
       width: '40%',
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingLeft: 40,
+        paddingRight: 0,
+        margin: '8px 0',
+      },
     },
     orderError: {
       color: '#890000',
@@ -355,10 +387,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                             <img src={require('images/ic_tablets.svg')} alt="" />
                           </div>
                           <div className={classes.itemSection}>
-                            <div className={classes.itemName}>Medicines</div>
+                            <div className={classes.itemName}>#{orderInfo.orderAutoId}</div>
                             <div className={classes.deliveryType}>
                               <span>{orderInfo.deliveryType}</span>
-                              <span>#{orderInfo.orderAutoId}</span>
                             </div>
                           </div>
                         </div>
