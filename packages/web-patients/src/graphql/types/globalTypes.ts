@@ -59,6 +59,20 @@ export enum DEVICETYPE {
   IOS = "IOS",
 }
 
+export enum DIAGNOSTICS_TYPE {
+  PACKAGE = "PACKAGE",
+  TEST = "TEST",
+}
+
+export enum DIAGNOSTIC_ORDER_STATUS {
+  ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_PLACED = "ORDER_PLACED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
+  PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
+  PICKUP_REQUESTED = "PICKUP_REQUESTED",
+}
+
 export enum DOCTOR_ONLINE_STATUS {
   AWAY = "AWAY",
   ONLINE = "ONLINE",
@@ -264,6 +278,11 @@ export enum Salutation {
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
+}
+
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {

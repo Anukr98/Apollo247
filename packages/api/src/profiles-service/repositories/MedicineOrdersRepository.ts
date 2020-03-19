@@ -198,6 +198,36 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  async getPrescriptionsCountNewOld(selDate: Date) {
+    const startDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    //select r.id, r."documentURLs",p."uhidCreatedDate",p."uhid",p."firstName" from medical_records r, patient p
+    //where r."documentURLs" is not null and r."documentURLs" != '' and r."patientId" = p.id
+    const newPatientCount = await this.createQueryBuilder('medicine_orders')
+      .leftJoinAndSelect('medicine_orders.patient', 'patient')
+      .where('medicine_orders."prescriptionImageUrl" is not null')
+      .andWhere('medicine_orders."createdDate" Between :fromDate AND :toDate', {
+        fromDate: startDate,
+        toDate: endDate,
+      })
+      .andWhere('medicine_orders."prescriptionImageUrl" != \'\'')
+      .andWhere('patient."uhidCreatedDate" is not null')
+      .getCount();
+
+    const oldPatientCount = await this.createQueryBuilder('medicine_orders')
+      .leftJoinAndSelect('medicine_orders.patient', 'patient')
+      .where('medicine_orders."prescriptionImageUrl" is not null')
+      .andWhere('medicine_orders."createdDate" Between :fromDate AND :toDate', {
+        fromDate: startDate,
+        toDate: endDate,
+      })
+      .andWhere('medicine_orders."prescriptionImageUrl" != \'\'')
+      .andWhere('patient."uhidCreatedDate" is null')
+      .getCount();
+
+    return [newPatientCount, oldPatientCount];
+  }
+
   async getValidHubOrders(summaryDate: Date) {
     const newStartDate = new Date(format(addDays(summaryDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(summaryDate, 'yyyy-MM-dd') + 'T18:30');

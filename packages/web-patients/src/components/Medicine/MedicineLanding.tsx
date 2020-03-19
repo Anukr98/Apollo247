@@ -228,7 +228,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 25,
         paddingRight: 0,
-        paddingLeft: 20,
+        paddingLeft: 0,
       },
     },
     sliderSection: {
@@ -248,6 +248,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 8,
       marginBottom: 10,
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 20,
+      },
     },
     viewAllLink: {
       marginLeft: 'auto',
