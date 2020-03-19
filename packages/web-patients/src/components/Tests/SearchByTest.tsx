@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { TestFilter } from 'components/Tests/TestFilter';
-import { TestsListCard } from 'components/Tests/TestsListCard';
+import { TestCard } from 'components/Tests/TestCard';
 import { useLocationDetails } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -305,8 +304,8 @@ export const SearchByTest: React.FC = (props) => {
                   {loading && <CircularProgress size={22} />}
                   {testsList &&
                     testsList.length > 0 &&
-                    testsList.map((test) => <TestsListCard testData={test} />)}
-                  {diagnosticList && <TestsListCard testData={diagnosticList} />}
+                    testsList.map((test) => <TestCard testData={test} mou={testsList.length} />)}
+                  {diagnosticList && <TestCard testData={diagnosticList} mou={1} />}
                 </div>
               </Scrollbars>
             </div>
