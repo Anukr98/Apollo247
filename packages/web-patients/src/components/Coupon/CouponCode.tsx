@@ -137,29 +137,38 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
   );
   return (
     <div className={classes.root}>
-      <div className={classes.couponButton}>
-        <span className={classes.couponImg}>
-          <img src={require('images/ic_coupon.svg')} alt="" />
-        </span>
-        <span>Apply Coupon</span>
-        {!couponCodeApplied && (
-          <div className={classes.tickMark} onClick={() => setOpenCouponField(!openCouponField)}>
+      {!couponCodeApplied && (
+        <div className={classes.couponButton} onClick={() => setOpenCouponField(!openCouponField)}>
+          <span className={classes.couponImg}>
+            <img src={require('images/ic_coupon.svg')} alt="" />
+          </span>
+          <span>Apply Coupon</span>
+
+          <div className={classes.tickMark}>
             <img src={require('images/ic_arrow_right.svg')} alt="" />
           </div>
-        )}
-        {couponCodeApplied && (
+        </div>
+      )}
+
+      {couponCodeApplied && (
+        <div className={classes.couponButton}>
+          <span className={classes.couponImg}>
+            <img src={require('images/ic_coupon.svg')} alt="" />
+          </span>
+          <span> Coupon Applied</span>
           <AphButton
             className={classes.removeBtn}
             onClick={() => {
               props.setRevisedAmount(props.subtotal);
               setCouponText('');
               setCouponCodeApplied(false);
+              setOpenCouponField(false);
             }}
           >
             Remove
           </AphButton>
-        )}
-      </div>
+        </div>
+      )}
       {openCouponField && (
         <div className={classes.couponForm}>
           <AphTextField
@@ -216,6 +225,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
                 props.setRevisedAmount(props.subtotal);
                 setCouponText('');
                 setCouponCodeApplied(false);
+                setOpenCouponField(false);
               }}
             >
               Remove
