@@ -554,7 +554,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             revisedAmount={revisedAmount}
             setRevisedAmount={setRevisedAmount}
             appointmentDateTime={appointmentDateTime}
-            appointmentType={AppointmentType.ONLINE}
+            appointmentType={AppointmentType.PHYSICAL}
           />
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
