@@ -1,7 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
-import { AphButton, AphCustomDropdown, AphTrackSlider, AphDeliveredSlider, } from '@aph/web-ui-components';
+import {
+  AphButton,
+  AphCustomDropdown,
+  AphTrackSlider,
+  AphDeliveredSlider,
+} from '@aph/web-ui-components';
 import { array } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -332,9 +337,15 @@ export const OrderDetails: React.FC = () => {
     );
   if (error) return <div>Error :(</div>;
 
-  const testOrderListData = data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList
+  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+  };
+
+  const testOrderListData =
+    data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList;
   if (testOrderListData && testOrderListData.length > 0) {
-    const testOrderListData = data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList
+    const testOrderListData =
+      data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList;
     const firstOrderInfo = testOrderListData && testOrderListData[0];
     if (!displayId && firstOrderInfo && firstOrderInfo.displayId) {
       setDisplayId(firstOrderInfo.displayId);
@@ -363,31 +374,40 @@ export const OrderDetails: React.FC = () => {
             <div className={classes.content}>
               {testOrderListData && testOrderListData.length > 0
                 ? testOrderListData.map(
-                  (testOrderInfo) =>
-                    testOrderInfo &&
-                    testOrderInfo.orderStatus && (
-                      <div key={testOrderInfo.id} className={classes.medicineStrip} onClick={() => setDisplayId(testOrderInfo.displayId)}>
-                        <div className={classes.medicineStripWrap}>
-                          <div className={classes.medicineInformation}>
-                            <div className={classes.medicineIcon}>
-                              <img src={require('images/ic_tests_icon.svg')} alt="" />
-                            </div>
-                            <div>
-                              <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
-                              <div className={classes.labelText}>
-                                {testOrderInfo.orderStatus && !!testOrderInfo.slotTimings &&
-                                  `${`Scheduled For :`}${moment(new Date(testOrderInfo.diagnosticDate)).format('DD MMM YYYY ,hh:mm a')}`
-                                }
+                    (testOrderInfo) =>
+                      testOrderInfo &&
+                      testOrderInfo.orderStatus && (
+                        <div
+                          key={testOrderInfo.id}
+                          className={classes.medicineStrip}
+                          onClick={() => setDisplayId(testOrderInfo.displayId)}
+                        >
+                          <div className={classes.medicineStripWrap}>
+                            <div className={classes.medicineInformation}>
+                              <div className={classes.medicineIcon}>
+                                <img src={require('images/ic_tests_icon.svg')} alt="" />
+                              </div>
+                              <div>
+                                <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
+                                <div className={classes.labelText}>
+                                  {testOrderInfo.orderStatus &&
+                                    `Scheduled For: ${moment(testOrderInfo!.diagnosticDate).format(
+                                      `D MMM YYYY`
+                                    )}${
+                                      !!testOrderInfo.slotTimings
+                                        ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
+                                        : ''
+                                    }`}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className={classes.labelText}>
-                            {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                            <div className={classes.labelText}>
+                              {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )
-                )
+                      )
+                  )
                 : 'No Orders Found'}
             </div>
           </Scrollbars>
@@ -402,6 +422,6 @@ export const OrderDetails: React.FC = () => {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
-}
+};
