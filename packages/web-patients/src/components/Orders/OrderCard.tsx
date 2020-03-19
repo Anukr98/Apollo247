@@ -79,7 +79,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingRight: 16,
       },
-
       '& img': {
         verticalAlign: 'middle',
       },
@@ -91,6 +90,17 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    orderID: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+      [theme.breakpoints.up('sm')]: {
+        display: 'none',
+      },
     },
     deliveryType: {
       fontSize: 10,
@@ -387,7 +397,8 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                             <img src={require('images/ic_tablets.svg')} alt="" />
                           </div>
                           <div className={classes.itemSection}>
-                            <div className={classes.itemName}>#{orderInfo.orderAutoId}</div>
+                            <div className={classes.itemName}>Medicines</div>
+                            <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
                             <div className={classes.deliveryType}>
                               <span>{orderInfo.deliveryType}</span>
                             </div>
