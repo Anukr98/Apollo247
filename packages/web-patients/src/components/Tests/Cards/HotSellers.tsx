@@ -110,11 +110,12 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface HotSellerProps {
   data: (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null;
+  isLoading: boolean;
 }
 
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props;
+  const { data, isLoading } = props;
   const sliderSettings = {
     infinite: data && data.length > 6 ? true : false,
     speed: 500,
@@ -156,6 +157,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
       },
     ],
   };
+
+  if (isLoading) {
+    return <CircularProgress size={22} />;
+  }
 
   return (
     <div className={classes.root}>
