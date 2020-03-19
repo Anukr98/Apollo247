@@ -20,6 +20,11 @@ export class FacilityRepository extends Repository<Facility> {
       });
   }
 
+  findDistinctCity() {
+    return this.createQueryBuilder('facility')
+      .select('DISTINCT facility.city', 'city')
+      .getRawMany();
+  }
   async getAllFacilityDistances(userGeoLocation: Geolocation) {
     const facilities = await this.find({ where: { name: Not('') } });
 

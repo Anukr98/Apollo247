@@ -27,6 +27,10 @@ import {
   searchDoctorAndSpecialtyByNameTypeDefs,
 } from 'doctors-service/resolvers/searchDoctorAndSpecialtyByName';
 
+import {
+  getAllFacilityCitiesResolvers,
+  getAllFacilityCitiesTypeDefs,
+} from 'doctors-service/resolvers/facility';
 import { starTeamResolvers, starTeamTypeDefs } from 'doctors-service/resolvers/starTeam';
 import {
   saveDoctorDeviceTokenTypeDefs,
@@ -107,6 +111,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: delegateFunctionsTypeDefs,
         resolvers: delegateFunctionsResolvers,
+      },
+      {
+        typeDefs: getAllFacilityCitiesTypeDefs,
+        resolvers: getAllFacilityCitiesResolvers,
       },
       {
         typeDefs: getDoctorsBySpecialtyAndFiltersTypeDefs,
