@@ -1,35 +1,28 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import OnboardingStyles from '@aph/mobile-doctors/src/components/Onboarding.styles';
 import {
   ArrowFull,
   ArrowStep1,
   ArrowStep2,
   ArrowStep3,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { useEffect } from 'react';
 import {
-  Dimensions,
+  AsyncStorage,
   Image,
   ImageSourcePropType,
   ImageStyle,
   SafeAreaView,
   StyleProp,
-  StyleSheet,
   Text,
   TextStyle,
   TouchableOpacity,
   View,
-  AsyncStorage,
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
-
-import SplashScreen from 'react-native-splash-screen';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import OnboardingStyles from '@aph/mobile-doctors/src/components/Onboarding.styles';
-const { height } = Dimensions.get('window');
 
 const styles = OnboardingStyles;
 

@@ -56,7 +56,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
     if (Testitemname) {
       if (tempTestArray.length > 0) {
         console.log('length is greater than  zero');
-        for (var i = 0; i < tempTestArray.length; i++) {
+        for (let i = 0; i < tempTestArray.length; i++) {
           console.log('for loop');
           if (tempTestArray[i] === Testitemname) {
             Alert.alert(strings.common.alert, 'Test existed in the list.');

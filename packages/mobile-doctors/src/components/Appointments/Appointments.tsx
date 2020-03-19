@@ -5,7 +5,6 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   ApploLogo,
   CalendarTodayIcon,
-  DotIcon,
   Down,
   NoCalenderData,
   Notification,

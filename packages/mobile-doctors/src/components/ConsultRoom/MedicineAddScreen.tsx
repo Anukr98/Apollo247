@@ -1,24 +1,16 @@
 import { addMedicineList } from '@aph/mobile-doctors/src/components/ApiCall';
+import MedicineAddScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineAddScreen.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { BackArrow, Minus, Plus } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { Alert, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import MedicineAddScreenStyles from '@aph/mobile-doctors/src/components/ConsultRoom/MedicineAddScreen.styles';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = MedicineAddScreenStyles;
 

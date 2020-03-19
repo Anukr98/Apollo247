@@ -1,4 +1,5 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import OTPVerificationStyles from '@aph/mobile-doctors/src/components/OTPVerification.styles';
 import { Card } from '@aph/mobile-doctors/src/components/ui/Card';
 import { CountDownTimer } from '@aph/mobile-doctors/src/components/ui/CountDownTimer';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
@@ -8,7 +9,10 @@ import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { setDoctorDetails } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import string from '@aph/mobile-doctors/src/strings/strings.json';
+import {
+  default as string,
+  default as strings,
+} from '@aph/mobile-doctors/src/strings/strings.json';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -18,11 +22,9 @@ import {
   AppStateStatus,
   AsyncStorage,
   BackHandler,
-  Dimensions,
   Keyboard,
   Platform,
   SafeAreaView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -32,8 +34,6 @@ import Hyperlink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { resendOTP, verifyOTP } from '../helpers/loginCalls';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import OTPVerificationStyles from '@aph/mobile-doctors/src/components/OTPVerification.styles';
 
 const styles = OTPVerificationStyles;
 
@@ -327,21 +327,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       console.log(error, 'error');
       // Error saving data
     }
-  };
-
-  const navigateTo = (routeName: AppRoutes) => {
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [
-          NavigationActions.navigate({
-            routeName: routeName,
-          }),
-        ],
-      })
-    );
-    // props.navigation.replace(AppRoutes.ConsultRoom);
   };
 
   const onClickOk = () => {
