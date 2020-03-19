@@ -101,14 +101,15 @@ const useStyles = makeStyles((theme: Theme) => {
 interface PastSearchProps {
   speciality: (specialitySelected: string) => void;
   disableFilter: (disableFilters: boolean) => void;
+  specialityId?: (specialityId: string) => void;
 }
 
 export const PastSearches: React.FC<PastSearchProps> = (props) => {
   const classes = useStyles();
   const { currentPatient } = useAllCurrentPatients();
-  const { speciality, disableFilter } = props;
+  const { speciality, disableFilter, specialityId } = props;
 
-  const { data, error } = useQueryWithSkip<GetPatientPastSearches, GetPatientPastSearchesVariables>(
+  const { data } = useQueryWithSkip<GetPatientPastSearches, GetPatientPastSearchesVariables>(
     PATIENT_PAST_SEARCHES,
     {
       variables: {
@@ -117,18 +118,6 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
-
-  // if (loading) {
-  //   return (
-  //     <div className={classes.circlularProgress}>
-  //       <CircularProgress />
-  //     </div>
-  //   );
-  // }
-
-  // if (error) {
-  //   return <></>;
-  // }
 
   return data && data.getPatientPastSearches && data.getPatientPastSearches.length > 0 ? (
     <div className={classes.root}>
@@ -161,6 +150,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                 lg={3}
                 title={(searchDetails && searchDetails.name) || ''}
                 onClick={(e) => {
+                  specialityId && specialityId((searchDetails && searchDetails.typeId) || '');
                   speciality(e.currentTarget.title);
                   disableFilter(false);
                 }}

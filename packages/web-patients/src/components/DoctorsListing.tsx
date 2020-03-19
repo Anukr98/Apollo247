@@ -159,6 +159,7 @@ interface DoctorsListingProps {
   specialityName: string;
   specialityId: string;
   prakticeSDKSpecialties?: string;
+  disableFilter?: (disableFilter: boolean) => void;
 }
 
 let availableNow = {};
@@ -215,7 +216,7 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const classes = useStyles();
 
-  const { filter, specialityName, specialityId, prakticeSDKSpecialties } = props;
+  const { filter, specialityName, specialityId, prakticeSDKSpecialties, disableFilter } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const { currentPatient } = useAllCurrentPatients();
   const [tabValue, setTabValue] = useState('All Consults');
@@ -291,6 +292,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     variables: { filterInput: apiVairables },
     fetchPolicy: 'no-cache',
   });
+
+  if (loading) disableFilter && disableFilter(true);
+  else disableFilter && disableFilter(false);
+
   if (data) {
     localStorage.setItem('symptomTracker', '');
   }
