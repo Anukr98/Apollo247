@@ -8,6 +8,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 
+export type CityList = {
+  city: string;
+  id: string;
+};
+
 @EntityRepository(Facility)
 export class FacilityRepository extends Repository<Facility> {
   findAll() {
@@ -20,15 +25,18 @@ export class FacilityRepository extends Repository<Facility> {
       });
   }
 
-  findDistinctCity() {
-    return this.createQueryBuilder('facility')
-      .select('DISTINCT facility.city', 'city')
+  async findDistinctCity() {
+    const citiesList: CityList[] = await this.createQueryBuilder('facility')
+      .select(['DISTINCT facility.city,', 'city', 'facility.id as id'])
+      .where('facility.city is not null')
+      .andWhere("facility.city != ''")
       .getRawMany()
       .catch((getFacilitiesError) => {
         throw new AphError(AphErrorMessages.GET_FACILITIES_ERROR, undefined, {
           getFacilitiesError,
         });
       });
+    return citiesList;
   }
   async getAllFacilityDistances(userGeoLocation: Geolocation) {
     const facilities = await this.find({ where: { name: Not('') } });

@@ -1,11 +1,16 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+import { FacilityRepository, CityList } from 'doctors-service/repositories/facilityRepository';
 
 export const getAllFacilityCitiesTypeDefs = gql`
   type GetCities {
-    city: [String]
+    city: [CityList]
+  }
+
+  type CityList {
+    city: String
+    id: String
   }
   extend type Query {
     getAllFacilityCities: GetCities!
@@ -13,7 +18,7 @@ export const getAllFacilityCitiesTypeDefs = gql`
 `;
 
 type GetCities = {
-  city: string[];
+  city: CityList[];
 };
 
 const getAllFacilityCities: Resolver<null, {}, DoctorsServiceContext, GetCities> = async (
@@ -23,15 +28,7 @@ const getAllFacilityCities: Resolver<null, {}, DoctorsServiceContext, GetCities>
 ) => {
   const facilitiesRepo = doctorsDb.getCustomRepository(FacilityRepository);
   const allcities = await facilitiesRepo.findDistinctCity();
-  const cities: string[] = [];
-  if (allcities[0]) {
-    allcities.forEach((data) => {
-      if (data.city) {
-        cities.push(data.city);
-      }
-    });
-  }
-  return { city: cities };
+  return { city: allcities };
 };
 
 export const getAllFacilityCitiesResolvers = {
