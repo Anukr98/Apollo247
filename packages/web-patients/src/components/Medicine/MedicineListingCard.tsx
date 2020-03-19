@@ -144,6 +144,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       fontWeight: 500,
       color: '#02475b',
+      minWidth: 30,
     },
     menuSelected: {
       backgroundColor: 'transparent !important',
@@ -167,7 +168,7 @@ export const MedicineListingCard: React.FC = (props) => {
             key={item.id}
             className={`${classes.medicineStrip} ${
               item.is_in_stock ? '' : classes.medicineStripDisabled
-            }`}
+              }`}
           >
             <div className={classes.medicineStripWrap}>
               <div className={classes.medicineInformation}>
@@ -193,7 +194,9 @@ export const MedicineListingCard: React.FC = (props) => {
                   <div className={classes.medicinePack}>
                     QTY :
                     <AphCustomDropdown
-                      classes={{ selectMenu: classes.selectMenuItem }}
+                      classes={{
+                        selectMenu: classes.selectMenuItem,
+                      }}
                       value={item.quantity}
                       onChange={(e: React.ChangeEvent<{ value: any }>) =>
                         updateCartItemQty &&
