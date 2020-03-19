@@ -716,7 +716,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={styles.footerButtonsContainersave}>
               <Button
                 title={strings.buttons.start_consult}
-                disabled={!enableConsultButton}
+                // disabled={!enableConsultButton}
                 buttonIcon={<Start style={{ right: 10 }} />}
                 onPress={() => {
                   setShowButtons(true);
@@ -2650,10 +2650,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           ? renderEditPreviewButtons()
           : stastus == STATUS.COMPLETED
           ? renderCompletedButtons()
-          : moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
-            stastus == 'IN_PROGRESS'
-          ? renderButtonsView()
-          : null}
+          : renderButtonsView()}
       </View>
       {yesorno && renderyesorno()}
     </SafeAreaView>

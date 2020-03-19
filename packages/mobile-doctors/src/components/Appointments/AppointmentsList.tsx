@@ -25,7 +25,15 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import {
+  UpdatePatientPrescriptionSentStatus,
+  UpdatePatientPrescriptionSentStatusVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
+import { UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS } from '@aph/mobile-doctors/src/graphql/profiles';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const styles = AppointmentsListStyles;
 
@@ -38,6 +46,7 @@ export interface AppointmentsListProps extends NavigationScreenProps {
 }
 
 export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
+  const client = useApolloClient();
   const isNewPatient = (id: string) => {
     return props.newPatientsList.indexOf(id) > -1;
   };
@@ -185,6 +194,12 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           .map((i) => i && i.blobName)
                           .filter((i) => i !== null)[0];
                         setLoading && setLoading(false);
+                        console.log(i, 'i.caseSheet');
+                        const caseSheet =
+                          i.caseSheet &&
+                          i.caseSheet.find((i) => i && i.doctorType !== DoctorType.JUNIOR);
+                        const caseSheetId = caseSheet && caseSheet.id;
+
                         props.navigation.push(AppRoutes.RenderPdf, {
                           uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
                           title: 'PRESCRIPTION',
@@ -192,7 +207,53 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                             {
                               title: 'PRESCRIPTION SENT',
                               variant: 'white',
-                              onPress: () => {},
+                              onPress: () => {
+                                if (caseSheetId) {
+                                  setLoading && setLoading(true);
+                                  client
+                                    .mutate<
+                                      UpdatePatientPrescriptionSentStatus,
+                                      UpdatePatientPrescriptionSentStatusVariables
+                                    >({
+                                      mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+                                      variables: {
+                                        caseSheetId: caseSheetId,
+                                        sentToPatient: true,
+                                      },
+                                    })
+                                    .then((_data) => {
+                                      setLoading && setLoading(false);
+                                      if (
+                                        g(
+                                          _data,
+                                          'data',
+                                          'updatePatientPrescriptionSentStatus',
+                                          'success'
+                                        )
+                                      ) {
+                                        props.navigation.popToTop();
+                                        // showAphAlert &&
+                                        //   showAphAlert({
+                                        //     title: 'Hi',
+                                        //     description: 'Resend Prescription Sent Successfuly',
+                                        //     onPressOk: () => {
+
+                                        //       props.navigation.popToTop();
+                                        //     },
+
+                                        //   });
+                                      }
+                                    })
+                                    .catch((e) => {
+                                      setLoading && setLoading(false);
+                                      showAphAlert &&
+                                        showAphAlert({
+                                          title: strings.common.uh_oh,
+                                          description: strings.common.oops_msg,
+                                        });
+                                    });
+                                }
+                              },
                             },
                           ],
                         });
