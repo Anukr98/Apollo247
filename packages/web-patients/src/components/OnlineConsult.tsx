@@ -654,6 +654,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     appointmentDateTime: appointmentDateTime,
                     appointmentType: AppointmentType.ONLINE,
                     hospitalId: hospitalId,
+                    couponCode: couponCode ? couponCode : null,
                   },
                 },
               })
