@@ -26,7 +26,9 @@ const getAllFacilityCities: Resolver<null, {}, DoctorsServiceContext, GetCities>
   const cities: string[] = [];
   if (allcities[0]) {
     allcities.forEach((data) => {
-      cities.push(data.city);
+      if (data.city) {
+        cities.push(data.city);
+      }
     });
   }
   return { city: cities };
