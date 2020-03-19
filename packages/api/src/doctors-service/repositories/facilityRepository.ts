@@ -23,7 +23,12 @@ export class FacilityRepository extends Repository<Facility> {
   findDistinctCity() {
     return this.createQueryBuilder('facility')
       .select('DISTINCT facility.city', 'city')
-      .getRawMany();
+      .getRawMany()
+      .catch((getFacilitiesError) => {
+        throw new AphError(AphErrorMessages.GET_FACILITIES_ERROR, undefined, {
+          getFacilitiesError,
+        });
+      });
   }
   async getAllFacilityDistances(userGeoLocation: Geolocation) {
     const facilities = await this.find({ where: { name: Not('') } });

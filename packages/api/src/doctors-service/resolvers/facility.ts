@@ -24,9 +24,11 @@ const getAllFacilityCities: Resolver<null, {}, DoctorsServiceContext, GetCities>
   const facilitiesRepo = doctorsDb.getCustomRepository(FacilityRepository);
   const allcities = await facilitiesRepo.findDistinctCity();
   const cities: string[] = [];
-  allcities.forEach((data) => {
-    cities.push(data.city);
-  });
+  if (allcities[0]) {
+    allcities.forEach((data) => {
+      cities.push(data.city);
+    });
+  }
   return { city: cities };
 };
 
