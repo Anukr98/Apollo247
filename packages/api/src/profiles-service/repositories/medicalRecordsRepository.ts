@@ -71,4 +71,34 @@ export class MedicalRecordsRepository extends Repository<MedicalRecords> {
       where: { documentURLs: Not(''), createdDate: Between(startDate, endDate) },
     });
   }
+
+  async getRecordSummaryNewOld(selDate: Date) {
+    const startDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    //select r.id, r."documentURLs",p."uhidCreatedDate",p."uhid",p."firstName" from medical_records r, patient p
+    //where r."documentURLs" is not null and r."documentURLs" != '' and r."patientId" = p.id
+    const newPatientCount = await this.createQueryBuilder('medical_records')
+      .leftJoinAndSelect('medical_records.patient', 'patient')
+      .where('medical_records."documentURLs" is not null')
+      .andWhere('medical_records."createdDate" Between :fromDate AND :toDate', {
+        fromDate: startDate,
+        toDate: endDate,
+      })
+      .andWhere('medical_records."documentURLs" != \'\'')
+      .andWhere('patient."uhidCreatedDate" is not null')
+      .getCount();
+
+    const oldPatientCount = await this.createQueryBuilder('medical_records')
+      .leftJoinAndSelect('medical_records.patient', 'patient')
+      .where('medical_records."documentURLs" is not null')
+      .andWhere('medical_records."createdDate" Between :fromDate AND :toDate', {
+        fromDate: startDate,
+        toDate: endDate,
+      })
+      .andWhere('medical_records."documentURLs" != \'\'')
+      .andWhere('patient."uhidCreatedDate" is null')
+      .getCount();
+
+    return [newPatientCount, oldPatientCount];
+  }
 }
