@@ -1,4 +1,5 @@
 import 'newrelic';
+
 import '@aph/universal/dist/global';
 import { ApolloServer } from 'apollo-server';
 import { ApolloGateway, RemoteGraphQLDataSource } from '@apollo/gateway';
