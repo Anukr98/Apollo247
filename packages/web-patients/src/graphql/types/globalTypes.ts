@@ -26,6 +26,12 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum AppointmentType {
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+}
+
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -51,6 +57,20 @@ export enum ConsultType {
 export enum DEVICETYPE {
   ANDROID = "ANDROID",
   IOS = "IOS",
+}
+
+export enum DIAGNOSTICS_TYPE {
+  PACKAGE = "PACKAGE",
+  TEST = "TEST",
+}
+
+export enum DIAGNOSTIC_ORDER_STATUS {
+  ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_PLACED = "ORDER_PLACED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
+  PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
+  PICKUP_REQUESTED = "PICKUP_REQUESTED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -260,6 +280,11 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
+}
+
 export enum TRANSFER_INITIATED_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
@@ -309,6 +334,17 @@ export interface AddMedicalRecordParametersInput {
 export interface AppointmentHistoryInput {
   patientId: string;
   doctorId: string;
+}
+
+export interface AppointmentPaymentInput {
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId?: string | null;
+  orderId?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -393,6 +429,13 @@ export interface FilterDoctorInput {
 export interface Geolocation {
   latitude: number;
   longitude: number;
+}
+
+export interface HelpEmailInput {
+  category?: string | null;
+  reason?: string | null;
+  comments?: string | null;
+  patientId?: string | null;
 }
 
 export interface MedicineCartInput {
@@ -493,6 +536,27 @@ export interface PatientProfileInput {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
+}
+
+export interface PrescriptionMedicineInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patinetAddressId?: string | null;
+  prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
+  appointmentId?: string | null;
+  isEprescription?: number | null;
+  payment?: PrescriptionMedicinePaymentDetails | null;
+}
+
+export interface PrescriptionMedicinePaymentDetails {
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid?: number | null;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
 }
 
 export interface Range {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Theme,
   makeStyles,
@@ -15,9 +15,7 @@ import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import { isEmpty, debounce, trim, deburr } from 'lodash';
 import axios from 'axios';
-import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorFavouriteMedicineList } from 'graphql/types/GetDoctorFavouriteMedicineList';
 import {
@@ -758,7 +756,6 @@ export const FavouriteMedicines: React.FC = () => {
       })
       .catch((error) => {
         if (error.toString().includes('404')) {
-          //setIsSuggestionFetched(false);
           setLoading(false);
         }
       });
@@ -767,10 +764,7 @@ export const FavouriteMedicines: React.FC = () => {
     return suggestions;
   }
 
-  function renderSuggestion(
-    suggestion: OptionType,
-    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-  ) {
+  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
     const matches = match(suggestion.label, query);
     const parts = parse(suggestion.label, matches);
 
@@ -1612,7 +1606,6 @@ export const FavouriteMedicines: React.FC = () => {
                               </AphSelect>
                             </div>
                           </Grid>
-                          {/* {medicineForm === 'OTHERS' && ( */}
                           <Grid item xs={medicineForm === 'OTHERS' ? 12 : 6}>
                             {medicineForm !== 'OTHERS' && <h6>&nbsp;</h6>}
                             <div className={classes.unitsSelect}>
@@ -1640,7 +1633,6 @@ export const FavouriteMedicines: React.FC = () => {
                               </AphSelect>
                             </div>
                           </Grid>
-                          {/* // )} */}
                           <Grid item lg={6} md={6} xs={6}>
                             <h6>For</h6>
                             <div className={classes.numberTablets}>

@@ -42,6 +42,18 @@ export interface StoreAddresses {
 export interface PrescriptionFormat {
   name: string | null;
   imageUrl: string | null;
+  fileType: string;
+  baseFormat: string;
+}
+
+export interface EPrescription {
+  id: string;
+  uploadedUrl: string;
+  forPatient: string;
+  date: string;
+  medicines: string;
+  doctorName: string;
+  prismPrescriptionFileId: string;
 }
 
 export interface MedicineCartContextProps {
@@ -60,6 +72,8 @@ export interface MedicineCartContextProps {
   setStores: ((stores: StoreAddresses[]) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((deliveryAddressId: string) => void) | null;
+  storeAddressId: string;
+  setStoreAddressId: ((deliveryAddressId: string) => void) | null;
   deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[];
   setDeliveryAddresses:
     | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
@@ -68,12 +82,10 @@ export interface MedicineCartContextProps {
   addMultipleCartItems: ((items: MedicineCartItem[]) => void) | null;
   prescriptions: PrescriptionFormat[] | null;
   setPrescriptions: ((prescriptions: PrescriptionFormat[] | null) => void) | null;
-  phrPrescriptionData: Prescription[] | null;
-  setPhrPrescriptionData: ((phrPrescriptionData: Prescription[] | null) => void) | null;
-  setMedicineOrderData: ((medicineOrderData: MedicineOrder[] | null) => void) | null;
-  medicineOrderData: MedicineOrder[] | null;
   setPrescriptionUploaded: ((prescriptionUploaded: PrescriptionFormat | null) => void) | null;
   prescriptionUploaded: PrescriptionFormat | null;
+  ePrescriptionData: EPrescription[] | null;
+  setEPrescriptionData: ((ePrescriptionData: EPrescription[] | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -90,16 +102,16 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setStores: null,
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+  setStoreAddressId: null,
+  storeAddressId: '',
   deliveryAddresses: [],
   setDeliveryAddresses: null,
   clearCartInfo: null,
   addMultipleCartItems: null,
   prescriptions: null,
   setPrescriptions: null,
-  phrPrescriptionData: null,
-  setPhrPrescriptionData: null,
-  setMedicineOrderData: null,
-  medicineOrderData: null,
+  ePrescriptionData: null,
+  setEPrescriptionData: null,
   prescriptionUploaded: null,
   setPrescriptionUploaded: null,
 });
@@ -108,6 +120,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const defPresObject = {
     name: '',
     imageUrl: '',
+    fileType: '',
+    baseFormat: '',
   };
   const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>(
     localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems') || '') : []
@@ -127,6 +141,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
     MedicineCartContextProps['deliveryAddressId']
   >('');
 
+  const [storeAddressId, setStoreAddressId] = useState<MedicineCartContextProps['storeAddressId']>(
+    ''
+  );
+
   const [deliveryAddresses, setDeliveryAddresses] = useState<
     MedicineCartContextProps['deliveryAddresses']
   >([]);
@@ -138,21 +156,15 @@ export const MedicinesCartProvider: React.FC = (props) => {
       ? JSON.parse(localStorage.getItem('prescriptions') || '')
       : []
   );
-  const [phrPrescriptionData, setPhrPrescriptionData] = React.useState<
-    MedicineCartContextProps['phrPrescriptionData']
-  >(
-    localStorage.getItem('phrPrescriptionData')
-      ? JSON.parse(localStorage.getItem('phrPrescriptionData') || '')
-      : []
-  );
   const [prescriptionUploaded, setPrescriptionUploaded] = React.useState<PrescriptionFormat | null>(
     defPresObject
   );
-  const [medicineOrderData, setMedicineOrderData] = React.useState<
-    MedicineCartContextProps['medicineOrderData']
+
+  const [ePrescriptionData, setEPrescriptionData] = React.useState<
+    MedicineCartContextProps['ePrescriptionData']
   >(
-    localStorage.getItem('medicineOrderData')
-      ? JSON.parse(localStorage.getItem('medicineOrderData') || '')
+    localStorage.getItem('ePrescriptionData')
+      ? JSON.parse(localStorage.getItem('ePrescriptionData') || '')
       : []
   );
 
@@ -171,15 +183,13 @@ export const MedicinesCartProvider: React.FC = (props) => {
         const finalPrescriptions = [...prescriptions, prescriptionUploaded];
         localStorage.setItem('prescriptions', JSON.stringify(finalPrescriptions));
         setPrescriptions && setPrescriptions(finalPrescriptions);
+        setPrescriptionUploaded(defPresObject);
       }
     }
-    if (medicineOrderData) {
-      localStorage.setItem('medicineOrderData', JSON.stringify(medicineOrderData));
+    if (ePrescriptionData) {
+      localStorage.setItem('ePrescriptionData', JSON.stringify(ePrescriptionData));
     }
-    if (phrPrescriptionData) {
-      localStorage.setItem('phrPrescriptionData', JSON.stringify(phrPrescriptionData));
-    }
-  }, [prescriptionUploaded, medicineOrderData, phrPrescriptionData]);
+  }, [prescriptionUploaded, ePrescriptionData]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     setCartItems([...cartItems, itemToAdd]);
@@ -228,17 +238,26 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
-  const cartTotal: MedicineCartContextProps['cartTotal'] = cartItems.reduce(
-    (currTotal, currItem) => currTotal + currItem.quantity * currItem.price,
-    0
+  const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
+    cartItems
+      .reduce(
+        (currTotal, currItem) =>
+          currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price),
+        0
+      )
+      .toFixed(2)
   );
 
   const clearCartInfo = () => {
+    localStorage.setItem('prescriptions', JSON.stringify([]));
     setCartItems([]);
     setDeliveryAddressId('');
+    setStoreAddressId('');
     setStores([]);
     setDeliveryAddresses([]);
     setStorePickupPincode('');
+    setPrescriptions([]);
+    setEPrescriptionData([]);
   };
 
   return (
@@ -257,18 +276,18 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setStores,
         deliveryAddressId,
         setDeliveryAddressId,
+        setStoreAddressId,
+        storeAddressId,
         deliveryAddresses,
         setDeliveryAddresses,
         clearCartInfo,
         addMultipleCartItems,
         prescriptions,
-        setPhrPrescriptionData,
         setPrescriptions,
-        phrPrescriptionData,
-        setMedicineOrderData,
-        medicineOrderData,
         prescriptionUploaded,
         setPrescriptionUploaded,
+        ePrescriptionData,
+        setEPrescriptionData,
       }}
     >
       {props.children}
@@ -291,16 +310,16 @@ export const useShoppingCart = () => ({
   setStores: useShoppingCartContext().setStores,
   deliveryAddressId: useShoppingCartContext().deliveryAddressId,
   setDeliveryAddressId: useShoppingCartContext().setDeliveryAddressId,
+  setStoreAddressId: useShoppingCartContext().setStoreAddressId,
+  storeAddressId: useShoppingCartContext().storeAddressId,
   deliveryAddresses: useShoppingCartContext().deliveryAddresses,
   setDeliveryAddresses: useShoppingCartContext().setDeliveryAddresses,
   clearCartInfo: useShoppingCartContext().clearCartInfo,
   addMultipleCartItems: useShoppingCartContext().addMultipleCartItems,
   prescriptions: useShoppingCartContext().prescriptions,
-  setPhrPrescriptionData: useShoppingCartContext().setPhrPrescriptionData,
   setPrescriptions: useShoppingCartContext().setPrescriptions,
-  phrPrescriptionData: useShoppingCartContext().phrPrescriptionData,
-  setMedicineOrderData: useShoppingCartContext().setMedicineOrderData,
-  medicineOrderData: useShoppingCartContext().medicineOrderData,
   prescriptionUploaded: useShoppingCartContext().prescriptionUploaded,
   setPrescriptionUploaded: useShoppingCartContext().setPrescriptionUploaded,
+  setEPrescriptionData: useShoppingCartContext().setEPrescriptionData,
+  ePrescriptionData: useShoppingCartContext().ePrescriptionData,
 });

@@ -1,10 +1,10 @@
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React, { useEffect, useContext } from 'react';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { useQuery, useApolloClient, useMutation } from 'react-apollo-hooks';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { MyProfile } from 'components/MyProfile';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -69,17 +69,12 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: 'none',
       },
     },
-    tabRightcontent: {
-      // paddingRight: 20,
-    },
+    tabRightcontent: {},
     serviceItem: {
       padding: '0 0 10px 0',
       position: 'relative',
       height: '100%',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        // display: 'flex',
-      },
     },
     serviceItemLeft: {
       padding: '0 0 10px 0',
@@ -88,9 +83,6 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       marginBottom: 12,
       color: '#01475b',
-      [theme.breakpoints.down('xs')]: {
-        // display: 'flex',
-      },
     },
     avatarBlock: {
       overflow: 'hidden',
@@ -245,12 +237,6 @@ export const MyAccount: React.FC = (props) => {
   const [userDetails, setUserDetails] = React.useState();
   const [selectedNavTab, setselectedNavTab] = React.useState(1);
 
-  /*   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
-  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
-
-  if (loading) return <CircularProgress className={classes.loading} />;
-  if (error || !getDoctorDetailsData) return <div>error :(</div>; */
-
   const getDoctorDetailsById = () => {
     client
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
@@ -361,8 +347,6 @@ export const MyAccount: React.FC = (props) => {
                             selectedNavTab === 0
                               ? require('images/ic_stats_white.svg')
                               : require('images/ic_stats.svg')
-                            // ? require('images/ic_profilenav_white.svg')
-                            // : require('images/ic_profilenav.svg')
                           }
                           className={classes.navLeftIcon}
                         />

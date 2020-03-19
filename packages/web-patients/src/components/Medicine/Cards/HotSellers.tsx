@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div >img': {
         width: 24,
         height: 24,
+        [theme.breakpoints.down('xs')]: {
+          display: 'none !important',
+        },
       },
     },
     card: {
@@ -58,11 +61,16 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 'bold',
       color: '#01475b',
+      textAlign: 'center',
+      '& span': {
+        display: 'block',
+      },
     },
     regularPrice: {
       fontWeight: 500,
       opacity: 0.6,
       paddingRight: 5,
+      textDecoration: 'line-through',
     },
     addToCart: {
       paddingTop: 8,

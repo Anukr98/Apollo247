@@ -2,26 +2,23 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
-import { AphButton, AphSelect } from '@aph/web-ui-components';
-import { BrowseByOrgans } from 'components/Tests/Cards/BrowseByOrgans';
 import { BrowsePackages } from 'components/Tests/Cards/BrowsePackages';
 import { HotSellers } from 'components/Tests/Cards/HotSellers';
-import { BrowseByTest } from 'components/Tests/Cards/BrowseByTest';
 import { TestsAutoSearch } from 'components/Tests/TestsAutoSearch';
-import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-import { ApolloError } from 'apollo-client';
-import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
-import axios from 'axios';
-import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
-import Typography from '@material-ui/core/Typography';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
-import { AllowLocation } from 'components/AllowLocation';
+import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
+} from 'graphql/types/getDiagnosticsData';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,6 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         padding: 0,
         boxShadow: 'none',
+        backgroundColor: 'transparent',
       },
     },
     medicineTopGroup: {
@@ -77,8 +75,10 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         padding: '20px 20px 0 20px',
-        backgroundColor: '#f7f8f5',
-        marginTop: 20,
+        marginTop: 68,
+      },
+      [theme.breakpoints.down(457)]: {
+        marginTop: 85,
       },
     },
     medicineSection: {
@@ -103,18 +103,22 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        padding: 16,
+        borderRadius: 10,
       },
     },
     textVCenter: {
       alignItems: 'center',
       minHeight: 54,
-      paddingBottom: 10,
     },
     serviceIcon: {
       marginRight: 10,
       '& img': {
         maxWidth: 24,
         verticalAlign: 'middle',
+      },
+      [theme.breakpoints.down('xs')]: {
+        marginRight: 16,
       },
     },
     rightArrow: {
@@ -150,7 +154,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         marginTop: 0,
-        paddingTop: 8,
+        borderRadius: 0,
+        position: 'absolute',
+        top: 158,
+        width: '100%',
+        padding: '16px 20px',
       },
     },
     allProductsList: {
@@ -159,7 +167,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 25,
         paddingRight: 0,
-        paddingLeft: 20,
+        paddingLeft: 0,
       },
     },
     sliderSection: {
@@ -179,20 +187,8 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 8,
       marginBottom: 10,
       display: 'flex',
-    },
-    windowWrap: {
-      width: 368,
-      borderRadius: 10,
-      paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
-    },
-    mascotIcon: {
-      position: 'absolute',
-      right: 12,
-      top: -40,
-      '& img': {
-        maxWidth: 72,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 20,
       },
     },
     bannerInfo: {
@@ -263,72 +259,57 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
-    mascotCircle: {
-      cursor: 'pointer',
-      [theme.breakpoints.up(768)]: {
-        marginLeft: 'auto',
-        marginBottom: 12,
-        marginRight: 15,
-      },
-      [theme.breakpoints.up(1134)]: {
-        marginLeft: 'auto',
-        position: 'fixed',
-        bottom: 0,
-        right: 0,
-      },
-      '& img': {
-        maxWidth: 72,
-        maxHeight: 72,
-        verticalAlign: 'middle',
-      },
-    },
-    bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'none',
-      boxShadow: 'none',
-      right: '20px !important',
-      bottom: '20px !important',
-      left: 'auto !important',
-      top: 'auto !important',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
-    },
-    successPopoverWindow: {
-      display: 'flex',
-      marginRight: 5,
-      marginBottom: 5,
-    },
   };
 });
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const TestsLanding: React.FC = (props) => {
   const classes = useStyles({});
-  const mascotRef = useRef(null);
-  const addToCartRef = useRef(null);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
-  const [isLocationPopoverOpen, setIsLocationPopoverOpen] = React.useState<boolean>(false);
+  const client = useApolloClient();
   const params = useParams<{ orderAutoId: string; orderStatus: string }>();
-  if (params.orderStatus === 'success') {
-    localStorage.removeItem('cartItems');
-    localStorage.removeItem('dp');
-  }
 
-  const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<ApolloError | null>(null);
-  const [showPopup, setShowPopup] = React.useState<boolean>(
-    window.location.pathname === '/medicines/added-to-cart'
-  );
-  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
-    params.orderStatus && params.orderStatus.length > 0 ? true : false
-  );
+  const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
+    (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
+  >(null);
+
+  const [diagnosticOrgansData, setDiagnosticOrgansData] = useState<
+    (getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null)[] | null
+  >(null);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!diagnosisHotSellerData && !diagnosticOrgansData) {
+      setIsLoading(true);
+      client
+        .query<getDiagnosticsData>({
+          query: GET_DIAGNOSTIC_DATA,
+          variables: {},
+          fetchPolicy: 'cache-first',
+        })
+        .then(({ data }) => {
+          if (
+            data &&
+            data.getDiagnosticsData &&
+            data.getDiagnosticsData.diagnosticHotSellers &&
+            data.getDiagnosticsData.diagnosticOrgans
+          ) {
+            setDiagnosisHotSellerData(data.getDiagnosticsData.diagnosticHotSellers);
+            setDiagnosticOrgansData(data.getDiagnosticsData.diagnosticOrgans);
+            setDiagnosisDataError(false);
+          }
+        })
+        .catch((e) => {
+          alert(e);
+          setDiagnosisDataError(true);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [diagnosisHotSellerData, diagnosticOrgansData]);
 
   return (
     <div className={classes.root}>
@@ -336,7 +317,7 @@ export const TestsLanding: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
-            <div className={classes.bannerInfo}>
+            {/* <div className={classes.bannerInfo}>
               {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
                 <Typography variant="h1">
                   <span title={'hi'}>hi</span>
@@ -367,7 +348,7 @@ export const TestsLanding: React.FC = (props) => {
                         color="primary"
                         classes={{ root: classes.addMemberBtn }}
                         onClick={() => {
-                          setIsAddNewProfileDialogOpen(true);
+                          // setIsAddNewProfileDialogOpen(true);
                         }}
                         title={'Add Member'}
                       >
@@ -379,7 +360,7 @@ export const TestsLanding: React.FC = (props) => {
               ) : (
                 <Typography variant="h1">hello there!</Typography>
               )}
-            </div>
+            </div> */}
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
                 <TestsAutoSearch />
@@ -394,10 +375,10 @@ export const TestsLanding: React.FC = (props) => {
                   <div className={`${classes.sectionGroup} ${classes.marginNone}`}>
                     <Link
                       className={`${classes.serviceType} ${classes.textVCenter}`}
-                      to={clientRoutes.yourOrders()}
+                      to={clientRoutes.testOrders()}
                     >
                       <span className={classes.serviceIcon}>
-                        <img src={require('images/ic_tablets.svg')} alt="" />
+                        <img src={require('images/ic_tests_icon.svg')} alt="" />
                       </span>
                       <span className={classes.linkText}>Your Orders</span>
                       <span className={classes.rightArrow}>
@@ -414,54 +395,25 @@ export const TestsLanding: React.FC = (props) => {
             <span>Most trusted diagnostics from the comfort of your home!</span>
           </div>
           <div className={classes.allProductsList}>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                <>
+            {diagnosisHotSellerData && diagnosisHotSellerData.length > 0 && (
+              <div className={classes.sliderSection}>
+                <div className={classes.sectionTitle}>
                   <span>Hot sellers</span>
-                </>
+                </div>
+                <HotSellers data={diagnosisHotSellerData} isLoading={isLoading} />
               </div>
-              <HotSellers />
-            </div>
-            <div className={classes.sliderSection}>
-              <div className={classes.sectionTitle}>
-                <>
+            )}
+            {diagnosticOrgansData && diagnosticOrgansData.length > 0 && (
+              <div className={classes.sliderSection}>
+                <div className={classes.sectionTitle}>
                   <span>Browse Packages</span>
-                </>
+                </div>
+                <BrowsePackages data={diagnosticOrgansData} isLoading={isLoading} />
               </div>
-              <BrowsePackages />
-            </div>
+            )}
           </div>
         </div>
       </div>
-      <div className={classes.mascotCircle} ref={mascotRef} onClick={() => setIsPopoverOpen(true)}>
-        <img src={require('images/ic-mascot.png')} alt="" />
-      </div>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <AllowLocation
-              setIsLocationPopoverOpen={setIsLocationPopoverOpen}
-              setIsPopoverOpen={setIsPopoverOpen}
-              isPopoverOpen={isPopoverOpen}
-            />
-          </div>
-        </div>
-      </Popover>
       <NavigationBottom />
     </div>
   );

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Theme, Avatar, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { HelpForm } from 'components/Help/HelpForm';
+import { HelpSuccess } from 'components/HelpSuccess';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -10,10 +11,26 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 18,
       bottom: 15,
       cursor: 'pointer',
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down(900)]: {
         position: 'static',
         textAlign: 'center',
-        paddingBottom: 30,
+        paddingBottom: 10,
+        paddingTop: 20,
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'none',
+      boxShadow: 'none',
+      right: '20px !important',
+      bottom: '20px !important',
+      left: 'auto !important',
+      top: 'auto !important',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
       },
     },
     medium: {
@@ -29,10 +46,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 12,
       borderRadius: 5,
       position: 'relative',
-      [theme.breakpoints.up('sm')]: {
+      [theme.breakpoints.up(901)]: {
         display: 'none',
       },
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down(900)]: {
         display: 'inline-block',
       },
       '&:before': {
@@ -70,6 +87,7 @@ export const Help: React.FC = (props) => {
   const classes = useStyles();
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [isHelpSuccessPopoverOpen, setIsHelpSuccessPopoverOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -79,7 +97,9 @@ export const Help: React.FC = (props) => {
         src={require('images/ic-mascot.png')}
         onClick={() => setIsPopoverOpen(true)}
       />
-      <div className={classes.helpText}>Need Help?</div>
+      <div onClick={() => setIsPopoverOpen(true)} className={classes.helpText}>
+        Need Help?
+      </div>
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}
@@ -94,7 +114,26 @@ export const Help: React.FC = (props) => {
         }}
         classes={{ paper: classes.helpPopover }}
       >
-        <HelpForm />
+        <HelpForm
+          submitStatus={(status: boolean) => setIsHelpSuccessPopoverOpen(status)}
+          closeHelpForm={() => setIsPopoverOpen(false)}
+        />
+      </Popover>
+      <Popover
+        open={isHelpSuccessPopoverOpen}
+        anchorEl={mascotRef.current}
+        onClose={() => setIsHelpSuccessPopoverOpen(false)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <HelpSuccess onSubmitClick={() => setIsHelpSuccessPopoverOpen(false)} />
       </Popover>
     </div>
   );

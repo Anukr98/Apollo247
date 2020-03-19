@@ -9,7 +9,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useEffect } from 'react';
+import React, { useRef } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
@@ -375,6 +375,7 @@ const RecordType: RecordTypeType[] = [
 
 export const AddRecords: React.FC = (props) => {
   const classes = useStyles({});
+  let refFileInput: any = useRef();
   const [typeOfRecord, setTypeOfRecord] = React.useState<string>('');
   const [nameOfTest, setNameOfTest] = React.useState<string>('');
   const [notes, setNotes] = React.useState<string>('');
@@ -540,6 +541,8 @@ export const AddRecords: React.FC = (props) => {
                 })
                   .then(({ data }) => {
                     setshowSpinner(false);
+                    setUploadedDocuments([]);
+                    refFileInput.current.value = null;
                     window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
                   .catch((e) => {
@@ -588,6 +591,8 @@ export const AddRecords: React.FC = (props) => {
         })
           .then(({ data }) => {
             setshowSpinner(false);
+            setUploadedDocuments([]);
+            refFileInput.current.value = null;
             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
           .catch((e) => {
@@ -671,42 +676,41 @@ export const AddRecords: React.FC = (props) => {
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.panelDetails}>
                     <Grid container spacing={2}>
-                      {isUploading ? (
-                        <CircularProgress />
-                      ) : uploadedDocuments && uploadedDocuments.length > 0 ? (
-                        uploadedDocuments.map((doc: any) => (
-                          <Grid item sm={4} className={classes.gridWidth}>
-                            <div className={classes.uploadedImage}>
-                              <div className={classes.docImg}>
-                                <img src={doc.imageUrl} alt="" />
-                              </div>
-                              <div className={classes.documentDetails}>
-                                <span>{doc.name}</span>
-                                <div className={classes.removeBtn}>
-                                  <AphButton>
-                                    <img
-                                      src={require('images/ic_cross_onorange_small.svg')}
-                                      alt=""
-                                      onClick={() => {
-                                        const docsWithoutSelectedDoc = uploadedDocuments.filter(
-                                          (document: any) => document.name !== doc.name
-                                        );
-                                        setUploadedDocuments(docsWithoutSelectedDoc);
-                                      }}
-                                    />
-                                  </AphButton>
+                      {uploadedDocuments && uploadedDocuments.length > 0
+                        ? uploadedDocuments.map((doc: any) => (
+                            <Grid item sm={4} className={classes.gridWidth}>
+                              <div className={classes.uploadedImage}>
+                                <div className={classes.docImg}>
+                                  <img src={doc.imageUrl} alt="" />
+                                </div>
+                                <div className={classes.documentDetails}>
+                                  <span>{doc.name}</span>
+                                  <div className={classes.removeBtn}>
+                                    <AphButton>
+                                      <img
+                                        src={require('images/ic_cross_onorange_small.svg')}
+                                        alt=""
+                                        onClick={() => {
+                                          const docsWithoutSelectedDoc = uploadedDocuments.filter(
+                                            (document: any) => document.name !== doc.name
+                                          );
+                                          setUploadedDocuments(docsWithoutSelectedDoc);
+                                        }}
+                                      />
+                                    </AphButton>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </Grid>
-                        ))
-                      ) : null}
+                            </Grid>
+                          ))
+                        : null}
 
                       <Grid item sm={4} className={classes.gridWidth}>
                         <div className={classes.uploadImage}>
                           <input
                             disabled={showSpinner}
                             type="file"
+                            ref={refFileInput}
                             onChange={async (e) => {
                               const fileNames = e.target.files;
                               if (fileNames && fileNames.length > 0) {
@@ -759,7 +763,9 @@ export const AddRecords: React.FC = (props) => {
                             }}
                             id="icon-button-file"
                           />
-                          <label htmlFor="icon-button-file">Upload document</label>
+                          <label htmlFor="icon-button-file">
+                            {isUploading ? <CircularProgress /> : 'Upload document'}
+                          </label>
                         </div>
                       </Grid>
                     </Grid>
@@ -832,9 +838,7 @@ export const AddRecords: React.FC = (props) => {
                                     setdateOfTest(dateSelected);
                                     setShowCalendar(false);
                                   }}
-                                  selectedDate={
-                                    dateOfTest.length > 0 ? new Date(dateOfTest) : new Date()
-                                  }
+                                  selectedDate={new Date()}
                                 />
                               )}
                             </div>

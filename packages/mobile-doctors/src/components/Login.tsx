@@ -1,3 +1,4 @@
+import LoginStyles from '@aph/mobile-doctors/src/components/Login.styles';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { timeOutDataType } from '@aph/mobile-doctors/src/components/OTPVerification';
 import { Card } from '@aph/mobile-doctors/src/components/ui/Card';
@@ -13,16 +14,13 @@ import {
   default as strings,
 } from '@aph/mobile-doctors/src/strings/strings.json';
 import { fonts } from '@aph/mobile-doctors/src/theme/fonts';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
   AsyncStorage,
-  Dimensions,
   Keyboard,
   Platform,
   SafeAreaView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -32,7 +30,6 @@ import HyperLink from 'react-native-hyperlink';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
-import LoginStyles from '@aph/mobile-doctors/src/components/Login.styles';
 
 const styles = LoginStyles;
 

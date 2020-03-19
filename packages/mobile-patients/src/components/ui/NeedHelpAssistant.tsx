@@ -38,11 +38,13 @@ const styles = StyleSheet.create({
 export interface NeedHelpAssistantProps {
   containerStyle?: StyleProp<ViewStyle>;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
+  onNeedHelpPress?: () => void;
 }
 
 export const NeedHelpAssistant: React.FC<NeedHelpAssistantProps> = (props) => {
   const showNeed = () => {
     CommonLogEvent(AppRoutes.MobileHelp, 'MobileHelp_clicked');
+    props.onNeedHelpPress && props.onNeedHelpPress();
     props.navigation && props.navigation.navigate(AppRoutes.MobileHelp);
   };
   return (

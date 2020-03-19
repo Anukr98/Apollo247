@@ -1,22 +1,19 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { Typography, Chip, Theme } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
+import { Typography, Theme } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { InputBase, Button } from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Paper, Grid, FormHelperText, Modal, MenuItem, CircularProgress } from '@material-ui/core';
-import { AphTextField, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
-
+import { Paper, Modal, CircularProgress } from '@material-ui/core';
+import { AphTextField, AphDialogTitle } from '@aph/web-ui-components';
 import {
   AddDoctorFavouriteAdvice,
   AddDoctorFavouriteAdviceVariables,
 } from 'graphql/types/AddDoctorFavouriteAdvice';
-
 import {
   DeleteDoctorFavouriteAdvice,
   DeleteDoctorFavouriteAdviceVariables,
 } from 'graphql/types/DeleteDoctorFavouriteAdvice';
-
 import {
   GetDoctorFavouriteAdviceList,
   GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList,
@@ -25,7 +22,6 @@ import {
   UpdateDoctorFavouriteAdvice,
   UpdateDoctorFavouriteAdviceVariables,
 } from 'graphql/types/UpdateDoctorFavouriteAdvice';
-
 import {
   GET_DOCTOR_FAVOURITE_ADVICE_LIST,
   DELETE_DOCTOR_FAVOURITE_ADVICE,
@@ -40,8 +36,6 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
     },
     textFieldColor: {
-      // border: '1px solid #00b38e',
-      // borderRadius: 5,
       padding: 16,
     },
     dialogContent: {
@@ -74,9 +68,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontWeight: 500,
       marginBottom: 0,
-      // padding: '30px 20px',
       '& button': {
-        // border: '1px solid #00b38e',
         padding: '5px 10px',
         fontSize: 12,
         fontWeight: 'normal',
@@ -227,7 +219,6 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      // pointerEvents: 'none',
       paddingLeft: 4,
       '&:hover': {
         backgroundColor: 'transparent',
@@ -273,10 +264,6 @@ export const FavouriteAdvice: React.FC = () => {
   const [updateAdviceId, setUpdateAdviceId] = useState('');
 
   const handleUpdate = (item: any, adviceId: string) => {
-    /*     selectedValues && selectedValues!.splice(idx, 1);
-    setSelectedValues(selectedValues);
-    const sum = idx + Math.random();
-    setIdx(sum); */
     setAdviceLoader(true);
 
     client
@@ -459,12 +446,6 @@ export const FavouriteAdvice: React.FC = () => {
                           setAdvice(event.target.value);
                         }}
                       />
-
-                      {/* <AphTextField
-                        fullWidth
-                        className={classes.textFieldColor}
-                        placeholder="What you enter here won't be shown to the patient.."                       
-                      /> */}
                     </div>
                   </div>
                 </div>

@@ -42,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f0f1ec',
         width: '100%',
         padding: 0,
+        height: '100vh',
       },
     },
     filterSectionOpen: {
@@ -54,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 10,
       paddingRight: 15,
       [theme.breakpoints.down('xs')]: {
-        padding: '10px 0 20px 0',
+        padding: '10px 0 80px 0',
       },
     },
     searchInput: {
@@ -188,6 +189,7 @@ export interface SearchObject {
   language: string[] | null;
   dateSelected: string;
   specialtyName: string;
+  prakticeSpecialties: string | null;
 }
 
 export interface DoctorsFilterProps {
@@ -200,6 +202,7 @@ export interface DoctorsFilterProps {
   manageFilter: (disableFilters: boolean) => void;
   showResponsiveFilter: boolean;
   setShowResponsiveFilter: (showResponsiveFilter: boolean) => void;
+  prakticeSpecialties?: '';
 }
 
 export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
@@ -258,6 +261,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     language: language,
     dateSelected: dateSelected,
     specialtyName: selectedSpecialtyName,
+    prakticeSpecialties: '',
   };
 
   // we should keep the previous value and render only when prop changes to prevent infinite renders.
@@ -289,6 +293,17 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     setShowCalendar(false);
     handleFilterOptions(filterOptions);
   };
+  const clearFilters = () => {
+    emptySpeciality('');
+    setCityName([]);
+    setGender([]);
+    setExperience([]);
+    setAvailability([]);
+    setFees([]);
+    setLanguage([]);
+    setDateSelected('');
+    setShowCalendar(false);
+  };
   const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
   return (
@@ -300,6 +315,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         placeholder="Search doctors or specialities"
         onChange={(event) => {
           if (isValidSearch(event.target.value)) {
+            if (localStorage.getItem('symptomTracker')) {
+              localStorage.removeItem('symptomTracker');
+              emptyFilters(true);
+            }
             if (
               selectedSpecialtyName !== '' &&
               selectedSpecialtyName !== event.currentTarget.value
@@ -342,8 +361,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           <span>FILTERS</span>
           <AphButton
             onClick={() => {
-              emptyFilters(true);
-              setShowResponsiveFilter(false);
+              clearFilters();
+              setShowResponsiveFilter(true);
             }}
           >
             <img src={require('images/ic_refresh.svg')} alt="" />
@@ -356,7 +375,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 320px)'
               : isSmallScreen
-              ? 'calc(100vh - 120px)'
+              ? 'calc(100vh - 60px)'
               : 'calc(100vh - 275px)'
           }
         >

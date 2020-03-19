@@ -40,14 +40,13 @@ import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   ImageBackground,
   Linking,
@@ -72,6 +71,15 @@ import { ListCard } from '../ui/ListCard';
 import KotlinBridge from '../../KotlinBridge';
 import { GenerateTokenforCM } from '../../helpers/apiCalls';
 import { useUIElements } from '../UIElementsProvider';
+import AsyncStorage from '@react-native-community/async-storage';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+  PatientInfo,
+  PatientInfoWithSource,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import moment from 'moment';
+import WebEngage from 'react-native-webengage';
 
 const { Vitals } = NativeModules;
 
@@ -203,31 +211,86 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
   const { showAphAlert } = useUIElements();
+  const [isWEGFired, setWEGFired] = useState(false);
+  const webengage = new WebEngage();
+
+  useEffect(() => {
+    try {
+      if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
+        setWEGFired(true);
+        setWEGUserAttributes();
+      }
+    } catch (e) {}
+  }, [currentPatient]);
+
+  const setWEGUserAttributes = () => {
+    webengage.user.setFirstName(g(currentPatient, 'firstName'));
+    webengage.user.setLastName(g(currentPatient, 'lastName'));
+    webengage.user.setGender((g(currentPatient, 'gender') || '').toLowerCase());
+    webengage.user.setEmail(g(currentPatient, 'emailAddress'));
+    webengage.user.setBirthDateString(g(currentPatient, 'dateOfBirth'));
+    webengage.user.setPhone(g(currentPatient, 'mobileNumber'));
+  };
+
+  const postHomeWEGEvent = (
+    eventName: WebEngageEventName,
+    source?: PatientInfoWithSource['Source']
+  ) => {
+    const eventAttributes: PatientInfo = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    if (
+      source &&
+      (eventName == WebEngageEventName.BUY_MEDICINES ||
+        eventName == WebEngageEventName.ORDER_TESTS ||
+        eventName == WebEngageEventName.VIEW_HELATH_RECORDS ||
+        eventName == WebEngageEventName.NEED_HELP)
+    ) {
+      (eventAttributes as PatientInfoWithSource)['Source'] = source;
+    }
+    postWebEngageEvent(eventName, eventAttributes);
+  };
 
   const menuOptions: menuOptions[] = [
     {
       id: 1,
       title: 'Find a Doctor',
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
-      onPress: () => props.navigation.navigate(AppRoutes.DoctorSearch),
+      onPress: () => {
+        postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      },
     },
     {
       id: 2,
       title: 'Buy Medicines',
       image: <TestsCartMedicineIcon style={styles.menuOptionIconStyle} />,
-      onPress: () => props.navigation.navigate('MEDICINES', { focusSearch: true }),
+      onPress: () => {
+        postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
+        props.navigation.navigate('MEDICINES', { focusSearch: true });
+      },
     },
     {
       id: 3,
       title: 'Order Tests',
       image: <TestsCartIcon style={styles.menuOptionIconStyle} />,
-      onPress: () => props.navigation.navigate('TESTS', { focusSearch: true }),
+      onPress: () => {
+        postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Home Screen');
+        props.navigation.navigate('TESTS', { focusSearch: true });
+      },
     },
     {
       id: 4,
       title: 'Manage Diabetes',
       image: <Diabetes style={styles.menuOptionIconStyle} />,
       onPress: () => {
+        postHomeWEGEvent(WebEngageEventName.MANAGE_DIABETES);
         getTokenforCM();
       },
     },
@@ -235,14 +298,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       id: 5,
       title: 'Track Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
-      onPress: () =>
-        props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' }),
+      onPress: () => {
+        postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
+        props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
+      },
     },
     {
       id: 6,
       title: 'View Health Records',
       image: <PrescriptionMenu style={styles.menuOptionIconStyle} />,
-      onPress: () => props.navigation.navigate('HEALTH RECORDS'),
+      onPress: () => {
+        postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
+        props.navigation.navigate('HEALTH RECORDS');
+      },
     },
   ];
 
@@ -519,15 +587,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'CONSULT_ROOM clicked');
                   props.navigation.navigate('APPOINTMENTS');
                 } else if (i == 1) {
+                  postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
+                  postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  postHomeWEGEvent(WebEngageEventName.ORDER_TESTS, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
                   props.navigation.navigate('TESTS');
                 } else if (i == 4) {
+                  postHomeWEGEvent(WebEngageEventName.MY_ACCOUNT);
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
                   props.navigation.navigate('MY ACCOUNT');
                 }
@@ -605,7 +677,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           container={{ marginTop: 14 }}
           title={'Active Appointments'}
           leftIcon={renderListCount(currentAppointments)}
-          onPress={() => props.navigation.navigate('APPOINTMENTS')}
+          onPress={() => {
+            postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
+            props.navigation.navigate('APPOINTMENTS');
+          }}
         />
         {/* <ListCard
           container={{ marginTop: 14 }}
@@ -704,6 +779,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           {
+            postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
             Linking.openURL('tel:08047192606');
           }
         }}
@@ -799,6 +875,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <NeedHelpAssistant
             containerStyle={{ marginTop: 30, marginBottom: 48 }}
             navigation={props.navigation}
+            onNeedHelpPress={() => {
+              postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');
+            }}
           />
         </ScrollView>
       </SafeAreaView>

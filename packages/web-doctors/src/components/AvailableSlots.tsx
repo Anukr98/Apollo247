@@ -161,13 +161,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
     },
     scheduleCalendar: {
-      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
     },
     scheduleTimeSlots: {
-      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
@@ -213,11 +211,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
-const getYyMmDd = (ddmmyyyy: string) => {
-  const splitString = ddmmyyyy.split('/');
-  return `${splitString[2]}-${splitString[1]}-${splitString[0]}`;
-};
 
 interface AvailableSlotsProps {
   setIsPopoverOpen: (openPopup: boolean) => void;
@@ -300,49 +293,6 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
   if (availableSlotsError) {
     return <div className={classes.noDataAvailable}>Unable to load Available slots.</div>;
   }
-
-  //   const {
-  //     data: nextAvailableSlot,
-  //     loading: nextAvailableSlotLoading
-  //   } = useQueryWithSkip<
-  //     GetDoctorNextAvailableSlot,
-  //     GetDoctorNextAvailableSlotVariables
-  //   >(GET_DOCTOR_NEXT_AVAILABILITY, {
-  //     variables: {
-  //       DoctorNextAvailableSlotInput: {
-  //         doctorIds: [props.doctorId],
-  //         availableDate: format(new Date(), "yyyy-MM-dd")
-  //       }
-  //     },
-  //     fetchPolicy: "no-cache"
-  //   });
-
-  //   let slotAvailableNext = "";
-  //   let differenceInMinutes = 0;
-  //   if (
-  //     nextAvailableSlot &&
-  //     nextAvailableSlot.getDoctorNextAvailableSlot &&
-  //     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-  //   ) {
-  //     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach(
-  //       availability => {
-  //         if (availability && availability.availableSlot !== "") {
-  //           const slotTime = new Date(availability.availableSlot).getTime();
-  //           const currentTime = new Date(new Date().toISOString()).getTime();
-  //           if (slotTime > currentTime) {
-  //             const difference = slotTime - currentTime;
-  //             const slotArray = availability.availableSlot.split("T");
-  //             differenceInMinutes = Math.round(difference / 60000);
-  //             slotAvailableNext = slotArray[1].substr(0, 5);
-  //             // autoSlot = availability.availableSlot;
-  //           }
-  //         } else {
-  //           differenceInMinutes = -1;
-  //         }
-  //       }
-  //     );
-  //   }
-
   const availableSlots =
     (availableSlotsData && availableSlotsData.getDoctorAvailableSlots.availableSlots) || [];
 
@@ -428,7 +378,6 @@ export const AvailableSlots: React.FC<AvailableSlotsProps> = (props) => {
             lateNightSlots.length === 0
           }
           onClick={() => {
-            // props.rescheduleConsultAction();
             props.setIsPopoverOpen(false);
           }}
         >

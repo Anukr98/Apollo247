@@ -11,9 +11,15 @@ import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     signUpBar: {
-      display: 'flex',
-      [theme.breakpoints.down('xs')]: {
-        justifyContent: 'center',
+      paddingTop: 20,
+      [theme.breakpoints.up(901)]: {
+        display: 'flex',
+      },
+      [theme.breakpoints.down(900)]: {
+        textAlign: 'center',
+      },
+      [theme.breakpoints.up(1134)]: {
+        paddingTop: 0,
       },
     },
     mascotCircle: {
@@ -75,7 +81,10 @@ export const ManageProfile: React.FC = (props) => {
 
   const hasExistingProfile =
     allCurrentPatients && allCurrentPatients.some((p) => !_isEmpty(p.uhid));
+
   const defaultNewProfile = allCurrentPatients ? currentPatient || allCurrentPatients[0] : null;
+
+  // console.log(hasExistingProfile, defaultNewProfile, '-----------');
 
   return (
     <ProtectedWithLoginPopup>

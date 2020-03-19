@@ -325,44 +325,37 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     switch (combinedData.type) {
       case 'medical':
         return type === 'title' &&
-          moment(new Date()).format('DD/MM/YYYY') ===
-            moment(new Date(combinedData.data.testDate)).format('DD/MM/YYYY') ? (
-          <span>Today , {moment(new Date(combinedData.data.testDate)).format('DD MMM YYYY')}</span>
+          moment().format('DD/MM/YYYY') ===
+            moment(combinedData.data.testDate).format('DD/MM/YYYY') ? (
+          <span>Today , {moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
         ) : (
-          <span>{moment(new Date(combinedData.data.testDate)).format('DD MMM YYYY')}</span>
+          <span>{moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
         );
       case 'lab':
         return type === 'title' &&
-          moment(new Date()).format('DD/MM/YYYY') ===
-            moment(new Date(combinedData.data.labTestDate)).format('DD/MM/YYYY') ? (
-          <span>
-            Today , {moment(new Date(combinedData.data.labTestDate)).format('DD MMM YYYY')}
-          </span>
+          moment().format('DD/MM/YYYY') ===
+            moment(combinedData.data.labTestDate).format('DD/MM/YYYY') ? (
+          <span>Today , {moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
         ) : (
-          <span>{moment(new Date(combinedData.data.labTestDate)).format('DD MMM YYYY')}</span>
+          <span>{moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
         );
       case 'hospital':
         return type === 'title' &&
-          moment(new Date()).format('DD/MM/YYYY') ===
-            moment(new Date(combinedData.data.dateOfHospitalization)).format('DD/MM/YYYY') ? (
+          moment().format('DD/MM/YYYY') ===
+            moment(combinedData.data.dateOfHospitalization).format('DD/MM/YYYY') ? (
           <span>
-            Today ,{' '}
-            {moment(new Date(combinedData.data.dateOfHospitalization)).format('DD MMM YYYY')}
+            Today , {moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}
           </span>
         ) : (
-          <span>
-            {moment(new Date(combinedData.data.dateOfHospitalization)).format('DD MMM YYYY')}
-          </span>
+          <span>{moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}</span>
         );
       case 'health':
         return type === 'title' &&
-          moment(new Date()).format('DD/MM/YYYY') ===
-            moment(new Date(combinedData.data.appointmentDate)).format('DD/MM/YYYY') ? (
-          <span>
-            Today , {moment(new Date(combinedData.data.appointmentDate)).format('DD MMM YYYY')}
-          </span>
+          moment().format('DD/MM/YYYY') ===
+            moment(combinedData.data.appointmentDate).format('DD/MM/YYYY') ? (
+          <span>Today , {moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
         ) : (
-          <span>{moment(new Date(combinedData.data.appointmentDate)).format('DD MMM YYYY')}</span>
+          <span>{moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
         );
       default:
         return '';

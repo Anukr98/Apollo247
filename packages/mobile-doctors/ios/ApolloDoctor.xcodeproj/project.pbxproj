@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		03360BBD62A9AB382F0989FE /* libPods-ApolloDoctor.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE20EEE4997E7AC1798795C /* libPods-ApolloDoctor.a */; };
+		675FCB6C24209C3F00DB786B /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 675FCB6A24209C3E00DB786B /* Fabric.framework */; };
+		675FCB6D24209C3F00DB786B /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 675FCB6B24209C3E00DB786B /* Crashlytics.framework */; };
+		675FCB6F2420A74B00DB786B /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 675FCB6E2420A74B00DB786B /* CloudKit.framework */; };
 		B6452DCC2412783500D14AFC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B6452DB52412783500D14AFC /* AppDelegate.m */; };
 		B6452DCD2412783500D14AFC /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = B6452DB62412783500D14AFC /* LaunchScreen.xib */; };
 		B6452DCE2412783500D14AFC /* IBMPlexSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6452DB92412783500D14AFC /* IBMPlexSans-Bold.ttf */; };
@@ -45,6 +48,9 @@
 		490468701BAC4D42B826BD1C /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		4B973476F75B4CCF9413B39D /* libRNVectorIcons.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNVectorIcons.a; sourceTree = "<group>"; };
 		5071FDB5D3F54B438EF70ABB /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
+		675FCB6A24209C3E00DB786B /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
+		675FCB6B24209C3E00DB786B /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
+		675FCB6E2420A74B00DB786B /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		8819077E2C464310AD4B1537 /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		92A9BEAAC3E648F6A7F57360 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		97362EC173AC41188EA489C7 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = "<group>"; };
@@ -93,8 +99,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				675FCB6F2420A74B00DB786B /* CloudKit.framework in Frameworks */,
 				ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */,
 				03360BBD62A9AB382F0989FE /* libPods-ApolloDoctor.a in Frameworks */,
+				675FCB6D24209C3F00DB786B /* Crashlytics.framework in Frameworks */,
+				675FCB6C24209C3F00DB786B /* Fabric.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +113,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				675FCB6E2420A74B00DB786B /* CloudKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
 				2D16E6891FA4F8E400B85C8A /* libReact.a */,
@@ -181,6 +191,8 @@
 			children = (
 				B6618F47241278B200173C4C /* GoogleService-Info.plist */,
 				B6452DB32412783500D14AFC /* ApolloDoctor.entitlements */,
+				675FCB6B24209C3E00DB786B /* Crashlytics.framework */,
+				675FCB6A24209C3E00DB786B /* Fabric.framework */,
 				B6452DB42412783500D14AFC /* AppDelegate.h */,
 				B6452DB52412783500D14AFC /* AppDelegate.m */,
 				B6618F4E24127B1700173C4C /* OTInstall.swift */,
@@ -239,6 +251,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				24E29770917A6AEFCCF9DDDE /* [CP] Copy Pods Resources */,
+				675FCB702420A99500DB786B /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -259,7 +272,7 @@
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = Y9EKYK4YZ4;
+						DevelopmentTeam = 4A6H5Y5CK5;
 						LastSwiftMigration = 1130;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
@@ -407,6 +420,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ApolloDoctor/Pods-ApolloDoctor-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		675FCB702420A99500DB786B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PROJECT_DIR}/Fabric.framework/run\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -441,14 +472,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "Apple Development: Ganeshraj Narayanasamy (UX6UTZV6PW)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = Y9EKYK4YZ4;
+				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ApolloDoctor",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -464,9 +496,9 @@
 					"-lc++",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor;
+				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor_InHouse;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Dev;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -481,13 +513,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "Apple Development: Ganeshraj Narayanasamy (UX6UTZV6PW)";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = Y9EKYK4YZ4;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ApolloDoctor",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -503,9 +536,9 @@
 					"-lc++",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor;
+				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor_InHouse;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Dev;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { AphButton } from '@aph/web-ui-components';
 
-import { DealsOfTheDaySection } from '../../../helpers/MedicineApiCalls';
+import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans } from 'graphql/types/getDiagnosticsData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div >img': {
         width: 24,
         height: 24,
+        [theme.breakpoints.down('xs')]: {
+          display: 'none !important',
+        },
       },
     },
     card: {
@@ -88,14 +91,15 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface BrowsePackagesProps {
-  // data: DealsOfTheDaySection[];
-  data?: { products: DealsOfTheDaySection[] };
+  data: (getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null)[] | null;
+  isLoading: boolean;
 }
 
 export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
   const classes = useStyles({});
+  const { data, isLoading } = props;
   const sliderSettings = {
-    infinite: true,
+    infinite: data && data.length > 3 ? true : false,
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
@@ -107,7 +111,7 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: data && data.length > 3 ? true : false,
           dots: true,
         },
       },
@@ -135,163 +139,64 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
     ],
   };
 
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
-  };
+  if (isLoading) {
+    return <CircularProgress size={22} />;
+  }
 
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.testDetails}>
-              <div>
-                <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
-                <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
-                <div className={classes.testsCondition}>
-                  Ideal for individuals between 20-40 years.
+        {data &&
+          data.map(
+            (
+              diagnosticOrgans: getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null,
+              index
+            ) =>
+              diagnosticOrgans && (
+                <div key={index} className={classes.card}>
+                  <Link
+                    className={classes.cardLink}
+                    to={clientRoutes.searchByTest(
+                      diagnosticOrgans.diagnostics
+                        ? diagnosticOrgans.diagnostics.itemId.toString()
+                        : ''
+                    )}
+                  >
+                    <div className={classes.cardWrap}>
+                      <div className={classes.testDetails}>
+                        <div>
+                          <div className={classes.testName}>{diagnosticOrgans.organName} </div>
+                          {/* <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
+                      <div className={classes.testsCondition}>
+                        Ideal for individuals between 20-40 years.
+                      </div> */}
+                        </div>
+                        <div className={classes.cardIcon}>
+                          {diagnosticOrgans.organImage ? (
+                            <img src={diagnosticOrgans.organImage} alt="" />
+                          ) : (
+                            <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                          )}
+                        </div>
+                      </div>
+                      <div className={classes.bottomSection}>
+                        {diagnosticOrgans && diagnosticOrgans.diagnostics && (
+                          <div className={classes.priceGroup}>
+                            <span className={classes.regularPrice}>
+                              ({diagnosticOrgans.diagnostics.rate})
+                            </span>
+                            <span>Rs. {diagnosticOrgans.diagnostics.rate} </span>
+                          </div>
+                        )}
+                        <div className={classes.addToCart}>
+                          <AphButton>Book Now</AphButton>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Book Now</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.testDetails}>
-              <div>
-                <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
-                <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
-                <div className={classes.testsCondition}>
-                  Ideal for individuals between 20-40 years.
-                </div>
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Book Now</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.testDetails}>
-              <div>
-                <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
-                <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
-                <div className={classes.testsCondition}>
-                  Ideal for individuals between 20-40 years.
-                </div>
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Book Now</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.testDetails}>
-              <div>
-                <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
-                <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
-                <div className={classes.testsCondition}>
-                  Ideal for individuals between 20-40 years.
-                </div>
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Book Now</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.testDetails}>
-              <div>
-                <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
-                <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
-                <div className={classes.testsCondition}>
-                  Ideal for individuals between 20-40 years.
-                </div>
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Book Now</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className={classes.card}>
-          <div className={classes.cardWrap}>
-            <div className={classes.testDetails}>
-              <div>
-                <div className={classes.testName}>Basic Diabetic Screening Checkup </div>
-                <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
-                <div className={classes.testsCondition}>
-                  Ideal for individuals between 20-40 years.
-                </div>
-              </div>
-              <div className={classes.cardIcon}>
-                <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-              </div>
-            </div>
-            <div className={classes.bottomSection}>
-              <div className={classes.priceGroup}>
-                <span className={classes.regularPrice}>(Rs. 125)</span>
-                <span>Rs. 124 </span>
-              </div>
-              <div className={classes.addToCart}>
-                <AphButton>Book Now</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
+              )
+          )}
       </Slider>
     </div>
   );

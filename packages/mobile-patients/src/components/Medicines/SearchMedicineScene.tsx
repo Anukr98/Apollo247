@@ -27,6 +27,7 @@ import {
   isValidSearch,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -50,7 +51,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { WebEngageEvents } from '../../helpers/webEngageEvents';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -296,7 +297,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       thumbnail,
       isInStock: true,
     });
-    postwebEngageAddToCartEvent(item);
+    postwebEngageAddToCartEvent(item, 'Pharmacy List');
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -546,13 +547,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         <NeedHelpAssistant
           navigation={props.navigation}
           containerStyle={{ marginTop: 84, marginBottom: 50 }}
+          onNeedHelpPress={() => {
+            postWEGNeedHelpEvent(currentPatient, 'Medicines');
+          }}
         />
       </ScrollView>
     );
   };
 
   const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
-    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
       'product name': name,
       'product id': sku,
       Brand: '',
@@ -562,7 +566,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       Source: 'List',
       'Section Name': 'SEARCH',
     };
-    postWebEngageEvent('Product Clicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
   };
 
   const renderMedicineCard = (

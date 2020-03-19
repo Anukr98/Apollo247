@@ -49,7 +49,10 @@ import {
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelectionView';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -114,7 +117,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const { setLoading, showAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { deliveryAddressId, storeId, pinCode, addresses } = useShoppingCart();
+  const { deliveryAddressId, storeId, pinCode, addresses, stores } = useShoppingCart();
 
   const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
     return Promise.all(
@@ -143,17 +146,19 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       })
     );
   };
-  const postwebEngageSubmitPrescriptionEvent = (orderId: string) => {
-    const deliveryAddress = addresses.find((item) => item.zipcode == pinCode);
+  const postwebEngageSubmitPrescriptionEvent = (orderId: number) => {
+    const deliveryAddress = addresses.find((item) => item.id == deliveryAddressId);
     const deliveryAddressLine = (deliveryAddress && formatAddress(deliveryAddress)) || '';
-    const eventAttributes: WebEngageEvents['Submit Prescription'] = {
-      'Order ID': orderId,
+    const storeAddress = storeId && stores.find((item) => item.storeid == storeId);
+    const storeAddressLine = storeAddress && `${storeAddress.storename}, ${storeAddress.address}`;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION] = {
+      'Order ID': `${orderId}`,
       'Delivery type': deliveryAddressId ? 'home' : 'store pickup',
-      'Store id': Number(storeId) || undefined, //(incase of store delivery)
-      'Delivery address': deliveryAddressLine,
+      StoreId: storeId, // incase of store delivery
+      'Delivery address': deliveryAddressId ? deliveryAddressLine : storeAddressLine,
       Pincode: pinCode,
     };
-    postWebEngageEvent('Submit Prescription', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
   };
 
   const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
@@ -164,8 +169,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       })
       .then(({ data }) => {
         console.log({ data });
-        const { errorCode, orderId } = g(data, 'SavePrescriptionMedicineOrder')! || {};
-        postwebEngageSubmitPrescriptionEvent(orderId);
+        const { errorCode, orderAutoId } = g(data, 'SavePrescriptionMedicineOrder') || {};
+        postwebEngageSubmitPrescriptionEvent(orderAutoId);
         if (errorCode) {
           renderErrorAlert(`Something went wrong, unable to place order.`);
           return;

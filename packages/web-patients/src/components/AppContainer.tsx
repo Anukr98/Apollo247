@@ -38,10 +38,12 @@ import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
 import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
 import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
-import { Help } from 'components/Help/Help';
 import { TestsLanding } from 'components/Tests/TestsLanding';
-import { SearchByTest } from 'components/Tests/SearchByTest';
 import { TestDetails } from 'components/Tests/TestDetails';
+import { YourOrders } from 'components/Tests/YourOrders';
+import { SearchByTest } from 'components/Tests/SearchByTest';
+import { OrderDetails } from 'components/Tests/OrderDetails';
+import { Help } from 'components/Help/Help';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,15 +63,23 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 0,
       },
     },
+    helpIcon: {
+      display: 'none',
+      [theme.breakpoints.up(1134)]: {
+        display: 'block',
+      },
+    },
   };
 });
 
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
+
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
   }, [signInError]);
+
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
       <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
@@ -133,14 +143,19 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
           <AuthRouted exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
           <AuthRouted exact path={clientRoutes.tests()} component={TestsLanding} />
+          <AuthRouted exact path={clientRoutes.testDetails(':itemId')} component={TestDetails} />
           <AuthRouted
             exact
-            path={clientRoutes.searchByTest(':searchMedicineType', ':searchText')}
+            path={clientRoutes.searchByTest(':searchTestText')}
             component={SearchByTest}
           />
-          <AuthRouted exact path={clientRoutes.testDetails()} component={TestDetails} />
+          <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
         </Switch>
-        <Help />
+        {isSignedIn && (
+          <div className={classes.helpIcon}>
+            <Help />
+          </div>
+        )}
       </div>
     </Scrollbars>
   );

@@ -1,8 +1,10 @@
+import MyAvailabilityStyles from '@aph/mobile-doctors/src/components/Account/MyAvailability.styles';
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AddIconLabel } from '@aph/mobile-doctors/src/components/ui/AddIconLabel';
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { BackArrow, RoundChatIcon, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { HelpView } from '@aph/mobile-doctors/src/components/ui/HelpView';
+import { BackArrow, RoundIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import {
@@ -18,14 +20,12 @@ import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graph
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { format } from 'date-fns';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, Text, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import MyAvailabilityStyles from '@aph/mobile-doctors/src/components/Account/MyAvailability.styles';
 
 const styles = MyAvailabilityStyles;
 
@@ -36,11 +36,6 @@ export interface ProfileProps
   scrollViewRef: KeyboardAwareScrollView | null;
   onReload: () => void;
 }
-
-const get12HrsFormat = (timeString: string /* 12:30 */) => {
-  const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i, 10));
-  return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
-};
 
 const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
   `${moment(startTime, 'HH:mm')
@@ -163,7 +158,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
                       <ConsultationHoursCard
                         days={i.weekDay}
                         timing={fromatConsultationHours(i.startTime, i.endTime)}
-                        isAvailableForOnlineConsultation={i.consultMode.toLocaleLowerCase()}
+                        consultMode={i.consultMode}
                         //isAvailableForPhysicalConsultation={i!.consultType}
                         key={idx}
                         type="fixed"
@@ -218,20 +213,7 @@ export const MyAvailability: React.FC<ProfileProps> = (props) => {
               style={{ marginTop: 32 }}
             />
           </View>
-
-          <View style={styles.rowview}>
-            <View style={{ marginTop: 4 }}>
-              <RoundChatIcon />
-            </View>
-
-            <View style={{ marginLeft: 14 }}>
-              <Text>
-                <Text style={styles.descriptionview}>{strings.common.call}</Text>
-                <Text style={styles.freenum}> {strings.common.toll_free_num} </Text>
-                <Text style={styles.descriptionview}>{strings.account.to_make_changes}</Text>
-              </Text>
-            </View>
-          </View>
+          <HelpView />
         </ScrollView>
       </SafeAreaView>
       {showSpinner && <Spinner />}

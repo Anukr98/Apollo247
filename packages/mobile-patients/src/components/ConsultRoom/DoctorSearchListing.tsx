@@ -34,7 +34,7 @@ import {
   doRequestAndAccessLocation,
   g,
   getNetStatus,
-  callPermissions,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -61,6 +61,10 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -341,7 +345,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       fetchSpecialityFilterData(filterMode, FilterData, latlng);
       setcurrentLocation(locationDetails.displayName);
     }
-    callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
@@ -828,6 +831,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
+  const postDoctorClickWEGEvent = (
+    doctorName: string,
+    source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source']
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
+      'Doctor Name': doctorName,
+      Source: source,
+    };
+    postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+  };
+
   const renderSearchDoctorResultsRow = (
     rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null,
     index: number,
@@ -845,6 +859,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           style={styles}
           numberOfLines={numberOfLines}
           availableModes={filter ? filter : null}
+          onPress={() => {
+            postDoctorClickWEGEvent(rowData.fullName!, 'List');
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: rowData.id,
+            });
+          }}
         />
       );
     }

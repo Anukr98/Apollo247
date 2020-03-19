@@ -607,10 +607,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           successFun={() => {
             if (favAdviceId != '') {
               console.log('UpdateAdvice');
-
+              setIsAdvice(false);
               UpdateAdvice(favAdviceId, favAdvice);
             } else {
               console.log(' && :', favAdviceId, favAdvice);
+              setIsAdvice(false);
               addAdvice(favAdvice);
             }
             console.log('successFun:', favAdvice);

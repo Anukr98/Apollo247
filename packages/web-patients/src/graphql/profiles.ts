@@ -200,6 +200,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           id
           salutation
           firstName
+          fullName
           lastName
           displayName
           experience
@@ -448,6 +449,219 @@ export const DELETE_PATIENT_MEDICAL_RECORD = gql`
   mutation deletePatientMedicalRecord($recordId: ID!) {
     deletePatientMedicalRecord(recordId: $recordId) {
       status
+    }
+  }
+`;
+
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
+  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
+    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
+      status
+      orderId
+      orderAutoId
+      errorCode
+      errorMessage
+    }
+  }
+`;
+
+export const SEND_HELP_EMAIL = gql`
+  query SendHelpEmail($helpEmailInput: HelpEmailInput) {
+    sendHelpEmail(helpEmailInput: $helpEmailInput)
+  }
+`;
+
+// diagnosis queries
+
+export const SEARCH_DIAGNOSTICS = gql`
+  query searchDiagnostics($city: String, $patientId: String, $searchText: String!) {
+    searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_DATA = gql`
+  query getDiagnosticsData {
+    getDiagnosticsData {
+      diagnosticOrgans {
+        id
+        organName
+        organImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          collectionType
+        }
+      }
+      diagnosticHotSellers {
+        id
+        packageName
+        price
+        packageImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          collectionType
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_CITES = gql`
+  query getDiagnosticsCites($patientId: String, $cityName: String) {
+    getDiagnosticsCites(patientId: $patientId, cityName: $cityName) {
+      diagnosticsCities {
+        cityname
+        statename
+        cityid
+        stateid
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_LIST = gql`
+  query GetDiagnosticOrdersList($patientId: String) {
+    getDiagnosticOrdersList(patientId: $patientId) {
+      ordersList {
+        id
+        patientAddressId
+        city
+        slotTimings
+        employeeSlotId
+        diagnosticEmployeeCode
+        diagnosticBranchCode
+        totalPrice
+        prescriptionUrl
+        diagnosticDate
+        centerName
+        centerCode
+        centerCity
+        centerState
+        centerLocality
+        orderStatus
+        orderType
+        displayId
+        createdDate
+        diagnosticOrderLineItems {
+          id
+          itemId
+          quantity
+          price
+          diagnostics {
+            id
+            itemId
+            itemName
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
+  query GetDiagnosticOrderDetails($diagnosticOrderId: String) {
+    getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
+      ordersList {
+        id
+        patientAddressId
+        city
+        slotTimings
+        employeeSlotId
+        diagnosticEmployeeCode
+        diagnosticBranchCode
+        totalPrice
+        prescriptionUrl
+        diagnosticDate
+        centerName
+        centerCode
+        centerCity
+        centerState
+        centerLocality
+        orderStatus
+        orderType
+        displayId
+        createdDate
+        diagnosticOrderLineItems {
+          id
+          itemId
+          price
+          quantity
+          diagnostics {
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            collectionType
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSTICS_BY_ID = gql`
+  query searchDiagnosticsById($itemIds: String) {
+    searchDiagnosticsById(itemIds: $itemIds) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
     }
   }
 `;

@@ -45,6 +45,7 @@ import {
   isValidSearch,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postWEGNeedHelpEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -55,7 +56,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Keyboard,
   ListRenderItemInfo,
@@ -71,7 +71,11 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import AsyncStorage from '@react-native-community/async-storage';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -133,19 +137,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const postwebEngageProductClickedEvent = (
     { name, sku, category_id }: MedicineProduct,
-    sectionName: string
+    sectionName: string,
+    source: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED]['Source']
   ) => {
-    const eventAttributes: WebEngageEvents['Product Clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
       'product name': name,
       'product id': sku,
       Brand: '',
       'Brand ID': '',
       'category name': '',
       'category ID': category_id,
-      Source: 'Home',
+      Source: source,
       'Section Name': sectionName,
     };
-    postWebEngageEvent('Product Clicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
   };
 
   const postwebEngageCategoryClickedEvent = (
@@ -153,13 +158,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     categoryName: string,
     sectionName: string
   ) => {
-    const eventAttributes: WebEngageEvents['Category Clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED] = {
       'category name': categoryName,
       'category ID': categoryId,
       'Section Name': sectionName,
       Source: 'Home',
     };
-    postWebEngageEvent('Category Clicked', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
   };
 
   useEffect(() => {
@@ -395,10 +400,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </Text>
           <Button
             onPress={() => {
-              const eventAttributes: WebEngageEvents['Upload Prescription Clicked'] = {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED] = {
                 Source: 'Home',
               };
-              postWebEngageEvent('Upload Prescription Clicked', eventAttributes);
+              postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
               setShowPopop(true);
             }}
             style={{ width: 'auto' }}
@@ -756,7 +761,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         thumbnail,
         isInStock: true,
       });
-      postwebEngageAddToCartEvent(data.item);
+      postwebEngageAddToCartEvent(data.item, 'Pharmacy Home');
     };
 
     const removeFromCart = () => removeCartItem!(sku);
@@ -774,7 +779,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
-        postwebEngageProductClickedEvent(data.item, 'HOT SELLERS');
+        postwebEngageProductClickedEvent(data.item, 'HOT SELLERS', 'Home');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku });
       },
       style: {
@@ -896,6 +901,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         containerStyle={{
           paddingBottom: 20,
         }}
+        onNeedHelpPress={() => {
+          postWEGNeedHelpEvent(currentPatient, 'Medicines');
+        }}
       />
     );
   };
@@ -912,8 +920,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         setMedicineList([]);
         return;
       }
-      const eventAttributes: WebEngageEvents['Search'] = { keyword: _searchText };
-      postWebEngageEvent('Search', eventAttributes);
+      const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+        keyword: _searchText,
+        Source: 'Pharmacy Home',
+      };
+      postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
 
       setsearchSate('load');
       getMedicineSearchSuggestionsApi(_searchText)
@@ -1183,7 +1194,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       : undefined;
     return renderSearchSuggestionItem({
       onPress: () => {
-        postwebEngageProductClickedEvent(item, 'HOME SEARCH');
+        postwebEngageProductClickedEvent(item, 'HOME SEARCH', 'Search');
         CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
         savePastSeacrh(`${item.id}`, item.name).catch((e) => {});
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {

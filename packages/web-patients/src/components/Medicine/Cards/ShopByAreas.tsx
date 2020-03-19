@@ -15,6 +15,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div >img': {
         width: 24,
         height: 24,
+        [theme.breakpoints.down('xs')]: {
+          display: 'none !important',
+        },
       },
     },
     card: {
@@ -102,7 +105,8 @@ export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
       <Slider {...sliderSettings}>
         {props.data &&
           props.data.map((healthArea, index) => {
-            const formattedTitle = _replace(_lowerCase(healthArea.title), ' ', '-');
+            let formattedTitle = _replace(healthArea.title.toLowerCase(), ' & ', '_');
+            formattedTitle = _replace(formattedTitle, ' ', '-');
             return (
               <div key={index} className={classes.card}>
                 <Link to={clientRoutes.searchByMedicine(formattedTitle, healthArea.category_id)}>

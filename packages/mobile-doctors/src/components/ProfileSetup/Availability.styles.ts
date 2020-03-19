@@ -14,11 +14,6 @@ export default StyleSheet.create({
     marginTop: 16,
     marginHorizontal: 20,
   },
-  descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#0087ba',
-    lineHeight: 24,
-  },
   consultTypeText: {
     marginLeft: 20,
     marginTop: 8,
@@ -36,4 +31,6 @@ export default StyleSheet.create({
   },
   roundChaticon: { margin: 20, flexDirection: 'row', marginBottom: -10 },
   tollfreeText: { color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 },
+  icon: { margin: 20, flexDirection: 'row', marginBottom: -10 },
+  num: { color: '#fc9916', ...theme.fonts.IBMPlexSansSemiBold(16), lineHeight: 22 },
 });

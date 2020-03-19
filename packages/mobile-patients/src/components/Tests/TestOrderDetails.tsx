@@ -34,7 +34,11 @@ import {
   updateDiagnosticOrder,
   updateDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  handleGraphQlError,
+  postWEGNeedHelpEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -348,6 +352,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           <NeedHelpAssistant
             containerStyle={{ marginTop: 20, marginBottom: 30 }}
             navigation={props.navigation}
+            onNeedHelpPress={() => {
+              postWEGNeedHelpEvent(currentPatient, 'Tests');
+            }}
           />
         </ScrollView>
       </SafeAreaView>

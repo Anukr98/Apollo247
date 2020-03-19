@@ -189,6 +189,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 400,
       color: 'red',
     },
+    consultTest: {
+      position: 'relative',
+      width: '50%',
+    },
     timeLeft: {
       fontSize: 12,
       fontWeight: 500,
@@ -197,6 +201,14 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       top: -1,
       display: 'none',
+    },
+    permission: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: 'red',
+      textTransform: 'initial',
+      position: 'absolute',
+      bottom: -15,
     },
     backArrow: {
       cursor: 'pointer',
@@ -768,6 +780,7 @@ interface CallPopoverProps {
   sessionClient: any;
   lastMsg: any;
   presenceEventObject: any;
+  hasCameraMicPermission: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -830,6 +843,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
+  const [showRescheduleLoader, setShowRescheduleLoader] = React.useState<boolean>(false);
+
   const [loading, setLoading] = React.useState<boolean>(false);
 
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
@@ -1000,6 +1015,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     } else {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
+    }
+  };
+  const startBtnInformationCheck = () => {
+    if (currentUserType === LoggedInUserType.SECRETARY) {
+      console.log('Secretary can not start consult');
+    } else if (disableOnCancel) {
+      console.log('3rd condition');
+    } else if (
+      appointmentInfo!.appointmentState !== 'NEW' &&
+      appointmentInfo!.appointmentState !== 'TRANSFER' &&
+      appointmentInfo!.appointmentState !== 'RESCHEDULE'
+    ) {
+      console.log('Your appointment state is ' + appointmentInfo!.appointmentState);
+    } else if (
+      appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+      appointmentInfo!.status !== STATUS.PENDING
+    ) {
+      console.log('Your appointment status is ' + appointmentInfo!.status);
+    } else if (startAppointmentButton) {
+      console.log('you can start your consult before 15 min and upto end time of appointment');
     }
   };
   // timer for audio/video call end
@@ -1268,16 +1303,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const disableaddedMinutes =
       disableyear +
       '-' +
-      disablemonth +
+      (disablemonth < 10 ? '0' + disablemonth : disablemonth) +
       '-' +
-      disableday +
+      (disableday < 10 ? '0' + disableday : disableday) +
       ' ' +
-      disablehour +
+      (disablehour < 10 ? '0' + disablehour : disablehour) +
       ':' +
-      disableminute +
+      (disableminute < 10 ? '0' + disableminute : disableminute) +
       ':' +
-      disablesecond;
-    const disableaddedTime = new Date(disableaddedMinutes);
+      (disablesecond < 10 ? '0' + disablesecond : disablesecond);
+    const disableaddedTime = new Date(disableaddedMinutes.replace(/-/g, '/'));
+    console.log(disableaddedMinutes, disableaddedTime);
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const presentTime = new Date().toISOString();
 
@@ -1290,6 +1326,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       clearInterval(intervalcallId);
       callIntervalTimer(180);
     }
+    // console.log('disablecurrent', disablecurrent);
+    // console.log('minusTime', minusTime);
+    // console.log('disableaddedTime', disableaddedTime);
+    // console.log('disablecurrent >= minusTime', disablecurrent >= minusTime);
+    // console.log('disableaddedTime >= disablecurrent', disableaddedTime >= disablecurrent);
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
@@ -1299,6 +1340,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     } else {
       setStartAppointmentButton(true);
     }
+    startBtnInformationCheck();
   };
   const client = useApolloClient();
   setInterval(startConstultCheck, 1000);
@@ -1598,6 +1640,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const initiateRescheduleMutation = useMutation(INITIATE_RESCHDULE_APPONITMENT);
   // flag: true is for missed call reschedule & false for normal
   const callInitiateReschedule = (flag: boolean) => {
+    setShowRescheduleLoader(true);
     const today = moment();
     unSubscribeBrowserButtonsListener();
 
@@ -1629,7 +1672,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             ).format('YYYY-MM-DDTHH:mm') + ':00.000Z',
           autoSelectSlot: 0,
         };
-
     initiateRescheduleMutation({
       variables: {
         RescheduleAppointmentInput: rescheduleParam,
@@ -1671,6 +1713,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             storeInHistory: true,
           },
           (status: any, response: any) => {
+            setShowRescheduleLoader(false);
             navigateToCalendar();
           }
         );
@@ -1695,7 +1738,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ),
           error: JSON.stringify(e),
         };
-
+        setShowRescheduleLoader(false);
         props.sessionClient.notify(JSON.stringify(logObject));
         alert(errorMessage);
       });
@@ -1740,14 +1783,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </div>
           </Link>
         </div>
-        CONSULT ROOM &nbsp;
-        <span className={classes.timeLeft}>
+        <div className={classes.consultTest}>
+          CONSULT ROOM
+          {!props.hasCameraMicPermission && (
+            <div className={classes.permission}>Note: Please allow access to Camera & Mic.</div>
+          )}
+        </div>
+        {/* <span className={classes.timeLeft}>
           {props.startAppointment
             ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
                 seconds.toString().length < 2 ? '0' + seconds : seconds
               }`
             : getTimerText()}
-        </span>
+        </span> */}
         <div className={classes.consultButtonContainer}>
           <span>
             {props.appointmentStatus === STATUS.COMPLETED &&
@@ -2270,15 +2318,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </div>
               </Scrollbars>
               <div className={classes.tabFooter}>
-                <Button
-                  className={classes.ResheduleCosultButton}
-                  disabled={!reason}
-                  onClick={() => {
-                    rescheduleConsultAction();
-                  }}
-                >
-                  Reschedule Consult
-                </Button>
+                {showRescheduleLoader ? (
+                  <CircularProgress />
+                ) : (
+                  <Button
+                    className={classes.ResheduleCosultButton}
+                    disabled={!reason}
+                    onClick={() => {
+                      rescheduleConsultAction();
+                    }}
+                  >
+                    Reschedule Consult
+                  </Button>
+                )}
               </div>
             </Paper>
           </div>

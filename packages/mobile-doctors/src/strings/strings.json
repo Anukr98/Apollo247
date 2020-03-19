@@ -243,7 +243,7 @@
     "severity": "Severity?",
     "update_complaint": "UPDATE COMPLAINT",
     "add_complaint": "ADD COMPLAINT",
-    "enter_severity": "'Enter Severity",
+    "enter_severity": "Enter Severity",
     "enter_symptom": "Enter Symptom",
     "complaint_data_empty": "Complaint data is empty",
     "since_optional": "Since (Optional)",
@@ -251,7 +251,9 @@
     "enter_details_here": "Enter the details here",
     "last_consult": "Last Consult",
     "total_revenue": "Total Revenue — Rs.",
-    "consult": "Consult"
+    "consult": "Consult",
+    "cancel_consult": "Cancel Consult",
+    "end_cancel_consult": "End or Cancel Consult"
   },
   "transfer_consult": {
     "transfer_consult": "TRANSFER CONSULT",

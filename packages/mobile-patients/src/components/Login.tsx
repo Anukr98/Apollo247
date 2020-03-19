@@ -21,7 +21,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  AsyncStorage,
   EmitterSubscription,
   Keyboard,
   Platform,
@@ -42,8 +41,12 @@ import HyperLink from 'react-native-hyperlink';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { loginAPI } from '../helpers/loginCalls';
 import { WebView } from 'react-native-webview';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { height, width } = Dimensions.get('window');
 
@@ -253,10 +256,10 @@ export const Login: React.FC<LoginProps> = (props) => {
       webengage.user.login(`+91${phoneNumber}`);
       CommonLogEvent(AppRoutes.Login, 'Login clicked');
       setTimeout(() => {
-        const eventAttributes: WebEngageEvents['Mobile Number Entered'] = {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_NUMBER_ENTERED] = {
           mobilenumber: phoneNumber,
         };
-        postWebEngageEvent('Mobile Number Entered', eventAttributes);
+        postWebEngageEvent(WebEngageEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
       }, 3000);
 
       Keyboard.dismiss();

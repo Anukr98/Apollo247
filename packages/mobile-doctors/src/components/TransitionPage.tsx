@@ -1,14 +1,14 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import TransitionPageStyles from '@aph/mobile-doctors/src/components/TransitionPage.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import { ProfileTabHeader } from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import TransitionPageStyles from '@aph/mobile-doctors/src/components/TransitionPage.styles';
 
 const styles = TransitionPageStyles;
 
@@ -17,8 +17,6 @@ export interface TransitionPageProps extends NavigationScreenProps {}
 export const TransitionPage: React.FC<TransitionPageProps> = (props) => {
   const doctorName = props.navigation.state.params && props.navigation.state.params.doctorName;
   const doctorId = props.navigation.state.params && props.navigation.state.params.DoctorId;
-  console.log('doctorname', doctorName);
-  console.log('doctorId', doctorId);
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>

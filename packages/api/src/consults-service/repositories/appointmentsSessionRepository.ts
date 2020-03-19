@@ -14,7 +14,16 @@ export class AppointmentsSessionRepository extends Repository<AppointmentSession
   }
 
   updateAppointmentSession(patientToken: string, id: string) {
-    return this.update(id, { patientToken });
+    return this.update(id, { patientToken, updatedDate: new Date() });
+  }
+
+  updateDoctorAppointmentSession(doctorToken: string, id: string, sessionId: string) {
+    return this.update(id, {
+      doctorToken,
+      sessionId,
+      consultStartDateTime: new Date(),
+      updatedDate: new Date(),
+    });
   }
 
   getAppointmentSession(appointment: string) {
@@ -23,5 +32,12 @@ export class AppointmentsSessionRepository extends Repository<AppointmentSession
 
   endAppointmentSession(id: string, consultEndDateTime: Date) {
     return this.update(id, { consultEndDateTime });
+  }
+
+  updateDoctorToken(doctorToken: string, id: string) {
+    return this.update(id, {
+      doctorToken,
+      updatedDate: new Date(),
+    });
   }
 }

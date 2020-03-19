@@ -33,7 +33,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
@@ -42,6 +42,7 @@ import { FEEDBACKTYPE, DoctorType } from '../graphql/types/globalTypes';
 import { FeedbackPopup } from './FeedbackPopup';
 import { MedicalIcon } from './ui/Icons';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -194,7 +195,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   };
 
   const showConsultDetailsRoomAlert = (
-    data: { content: string; appointmentId: string } | any,
+    data: { content: string; appointmentId: string; file_id: string } | any,
     notificationType: CustomNotificationType,
     prescription: string
   ) => {
@@ -210,11 +211,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           type: 'white-button',
         },
         {
-          text: 'CONSULT ROOM',
-          // text: 'CONSULT DETAILS',
+          text: 'VIEW NOW',
           onPress: () => {
             hideAphAlert!();
-            getAppointmentData(appointmentId, notificationType, '', prescription);
+            getAppointmentData(appointmentId, notificationType, '', prescription, data.file_id);
           },
           type: 'orange-button',
         },
@@ -250,7 +250,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'Appointment_Canceled' ||
       notificationType === 'Patient_Noshow_Reschedule_Appointment' ||
       notificationType === 'Reschedule_Appointment'
-      // notificationType === 'PRESCRIPTION_READY'
     ) {
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
@@ -564,9 +563,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         }
         break;
 
-      case 'PRESCRIPTION_READY': // 15 min, no case sheet
+      case 'PRESCRIPTION_READY': // prescription is generated
         {
-          // showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
+          showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
         }
         break;
 
@@ -788,7 +787,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     appointmentId: string,
     notificationType: CustomNotificationType,
     callType: string,
-    prescription: string
+    prescription: string,
+    fileName?: string
   ) => {
     aphConsole.log('getAppointmentData', appointmentId, notificationType, callType);
     setLoading && setLoading(true);
@@ -834,7 +834,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               notificationType == 'chat_room' ||
               notificationType == 'Reminder_Appointment_15' ||
               notificationType == 'Reminder_Appointment_Casesheet_15'
-              // notificationType == 'PRESCRIPTION_READY'
             ) {
               try {
                 if (appointmentData[0]!.doctorInfo !== null) {
@@ -845,19 +844,18 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   });
                 }
               } catch (error) {}
+            } else if (notificationType == 'PRESCRIPTION_READY') {
+              try {
+                props.navigation.navigate(AppRoutes.ConsultDetails, {
+                  CaseSheet: g(appointmentData[0], 'id'),
+                  DoctorInfo: g(appointmentData[0], 'doctorInfo'),
+                  PatientId: g(appointmentData[0], 'patientId'),
+                  appointmentType: g(appointmentData[0], 'appointmentType'),
+                  DisplayId: g(appointmentData[0], 'displayId'),
+                  BlobName: fileName || '',
+                });
+              } catch (error) {}
             }
-            // else if (notificationType == 'PRESCRIPTION_READY') {
-            //   try {
-            // props.navigation.navigate(AppRoutes.ConsultDetails, {
-            //   CaseSheet: g(appointmentData[0], 'id'),
-            //   DoctorInfo: g(appointmentData[0], 'doctorInfo'),
-            //   PatientId: g(appointmentData[0], 'patientId'),
-            //   appointmentType: g(appointmentData[0], 'appointmentType'),
-            //   DisplayId: g(appointmentData[0], 'displayId'),
-            //   // BlobName: AppConfig.Configuration.DOCUMENT_BASE_URL.concat(g(appointmentData[0], ''));
-            // });
-            // } catch (error) {}
-            // }
           }
         } catch (error) {
           CommonBugFender('NotificationListener_getAppointmentData_try', error);

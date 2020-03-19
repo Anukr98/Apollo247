@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccount: {
-      padding: 20,
+      padding: '20px 10px',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
@@ -187,18 +187,20 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {isSignedIn && (
-            <LocationContext.Consumer>{() => <LocationSearch />}</LocationContext.Consumer>
-          )}
+          {isSignedIn && <LocationSearch />}
           {isSignedIn && (
             <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           )}
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
-            <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-              <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
-                Download Apollo247 App
-              </a>
-            </div>
+            {isSignedIn ? (
+              ''
+            ) : (
+              <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
+                <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
+                  Download Apollo247 App
+                </a>
+              </div>
+            )}
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
                 currentPath === clientRoutes.myAccount() ||
@@ -260,8 +262,8 @@ export const Header: React.FC = (props) => {
                     const otpAfterCleaning = otp.replace(/,/g, '');
                     if (
                       mobileNumber.length === 0 ||
-                      ((mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
-                        otpAfterCleaning.length === 6)
+                      (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+                      otpAfterCleaning.length === 6
                     ) {
                       setIsLoginPopupVisible(false);
                       setVerifyOtpError(false);

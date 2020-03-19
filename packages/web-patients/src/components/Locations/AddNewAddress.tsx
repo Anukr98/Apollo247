@@ -344,7 +344,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                   .then(() => {
                     props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
-                    setDeliveryAddressId && setDeliveryAddressId(pincode);
+                    setDeliveryAddressId && setDeliveryAddressId(addressId);
                   })
                   .catch((error) => alert(error))
               : saveAddressMutation({
@@ -360,18 +360,21 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     },
                   },
                 })
-                  .then(() => {
-                    props.setIsAddAddressDialogOpen(false);
+                  .then(({ data }: any) => {
+                    if (data && data.savePatientAddress && data.savePatientAddress.patientAddress)
+                      props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
-                    setDeliveryAddressId && setDeliveryAddressId(pincode);
+                    if (setDeliveryAddressId) {
+                      setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
+                    }
                   })
                   .catch((error) => {
                     alert(error);
                   });
           }}
-          title={'save'}
+          title={'Save and use'}
         >
-          {mutationLoading ? <CircularProgress size={20} color="secondary" /> : 'Save'}
+          {mutationLoading ? <CircularProgress size={20} color="secondary" /> : 'SAVE AND USE'}
         </AphButton>
       </div>
     </div>

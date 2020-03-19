@@ -116,22 +116,6 @@ export default StyleSheet.create({
     marginLeft: 20,
     paddingBottom: 0,
   },
-  descriptionview: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: '#0087ba',
-    lineHeight: 24,
-  },
-  helpview: {
-    flexDirection: 'row',
-    marginLeft: 20,
-    marginRight: 20,
-    marginTop: 12,
-  },
-  helptext: {
-    color: '#fc9916',
-    ...theme.fonts.IBMPlexSansSemiBold(16),
-    lineHeight: 22,
-  },
   mobileview: {
     margin: 20,
     backgroundColor: '#ffffff',

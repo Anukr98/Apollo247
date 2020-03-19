@@ -8,7 +8,7 @@ import React, {
   PropsWithoutRef,
   RefAttributes,
 } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import CalendarStrip from 'react-native-calendar-strip';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import WeekViewCalendarStyles from '@aph/mobile-doctors/src/components/ui/WeekViewCalendar.styles';

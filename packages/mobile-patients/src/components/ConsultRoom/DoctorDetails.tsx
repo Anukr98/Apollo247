@@ -25,7 +25,6 @@ import {
   getNetStatus,
   statusBarHeight,
   postWebEngageEvent,
-  callPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -55,7 +54,11 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '../AppCommonDataProvider';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import moment from 'moment';
 
 const { height, width } = Dimensions.get('window');
 
@@ -220,7 +223,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
-    callPermissions();
   }, []);
 
   useEffect(() => {
@@ -294,7 +296,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });
-    const eventAttributes: WebEngageEvents['Consult- Doctor profile viewed for consultation'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_PROFILE_VIEWED] = {
       name: g(doctorDetails, 'fullName')!,
       specialisation: g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
       experience: Number(doctorDetails.experience!),
@@ -307,7 +309,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           : '',
       'Available in': (availableInMin && `${availableInMin} minute(s)`) || '',
     };
-    postWebEngageEvent('Consult- Doctor profile viewed for consultation', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
   };
 
   const todayDate = new Date().toISOString().slice(0, 10);
@@ -825,6 +827,23 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   };
 
+  const postBookAppointmentWEGEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
+      'Doctor Name': g(doctorDetails, 'fullName')!,
+      'Doctor City': g(doctorDetails, 'city')!,
+      'Type of Doctor': g(doctorDetails, 'doctorType')!,
+      'Doctor Specialty': g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -861,7 +880,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <Button
               title={'BOOK APPOINTMENT'}
               onPress={() => {
-                callPermissions();
+                postBookAppointmentWEGEvent();
                 getNetStatus()
                   .then((status) => {
                     if (status) {

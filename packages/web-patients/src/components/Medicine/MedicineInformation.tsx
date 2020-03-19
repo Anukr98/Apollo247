@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover } from '@material-ui/core';
+import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
@@ -11,6 +11,7 @@ import axios, { AxiosResponse, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -163,18 +164,18 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     medicinePrice: {
-      fontSize: 14,
+      fontSize: 13,
       color: '#02475b',
       letterSpacing: 0.3,
       fontWeight: 'bold',
-      width: '50%',
       textAlign: 'right',
+      marginLeft: 'auto',
     },
     leftGroup: {
-      width: '50%',
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: 500,
+      width: 98,
     },
     medicinePack: {
       color: '#02475b',
@@ -260,7 +261,7 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 0.6,
     },
     regularPrice: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: 500,
       color: '#01475b',
       opacity: 0.6,
@@ -272,12 +273,15 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
+  // setShowPopup: (showPopup: boolean) => void;
 };
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const classes = useStyles({});
+  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
+  const addToCartRef = useRef(null);
   const subDrugsRef = useRef(null);
   const [isSubDrugsPopoverOpen, setIsSubDrugsPopoverOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
@@ -286,7 +290,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const params = useParams<{ sku: string }>();
   const [pinCode, setPinCode] = React.useState<string>('');
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
-  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
+  const [updateMutationLoading, setUpdateMutationLoading] = useState<boolean>(false);
+  const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = React.useState<boolean>(false);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -365,7 +371,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           console.log(error);
         }
       })
-      .catch((error: any) => alert(error));
+      .catch((error: any) => console.log(error));
   };
 
   useEffect(() => {
@@ -373,6 +379,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       fetchSubstitutes();
     }
   }, [substitutes]);
+
+  const itemIndexInCart = (item: MedicineProduct) => {
+    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
+  };
 
   const applyCartOperations = (cartItem: MedicineCartItem) => {
     const index = cartItems.findIndex((item) => item.id === cartItem.id);
@@ -385,7 +395,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const options = Array.from(Array(20), (_, x) => x + 1);
-  console.log(data);
   return (
     <div className={classes.root}>
       <div className={`${classes.medicineSection}`}>
@@ -411,6 +420,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     Pick from {substitutes.length} available
                     {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                   </span>
+                  <div className={classes.dropDownArrow}>
+                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                  </div>
                 </div>
               </>
             )}
@@ -421,6 +433,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   <div className={classes.deliveryTimeGroup}>
                     <AphTextField
                       placeholder="Enter Pin Code"
+                      inputProps={{
+                        maxLength: 6,
+                        type: 'text',
+                      }}
                       onChange={(e) => setPinCode(e.target.value)}
                     />
                     <AphButton
@@ -497,7 +513,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           {data.is_in_stock ? (
             <>
               <AphButton
+                disabled={addMutationLoading || updateMutationLoading}
                 onClick={() => {
+                  setAddMutationLoading(true);
                   const cartItem: MedicineCartItem = {
                     description: data.description,
                     id: data.id,
@@ -516,14 +534,25 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     quantity: medicineQty,
                   };
                   applyCartOperations(cartItem);
-                  window.location.href = clientRoutes.medicinesLandingViewCart();
+                  setAddMutationLoading(false);
+                  setShowPopup(true);
                 }}
               >
-                Add To Cart
+                {' '}
+                {addMutationLoading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : itemIndexInCart(data) !== -1 ? (
+                  'Added To Cart'
+                ) : (
+                  'Add To Cart'
+                )}
               </AphButton>
+
               <AphButton
                 color="primary"
+                disabled={addMutationLoading || updateMutationLoading}
                 onClick={() => {
+                  setUpdateMutationLoading(true);
                   const cartItem: MedicineCartItem = {
                     description: data.description,
                     id: data.id,
@@ -542,21 +571,29 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     quantity: medicineQty,
                   };
                   applyCartOperations(cartItem);
-                  window.location.href = clientRoutes.medicinesCart();
+                  setTimeout(() => {
+                    window.location.href = clientRoutes.medicinesCart();
+                  }, 3000);
                 }}
               >
-                Buy Now
+                {updateMutationLoading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  'Buy Now'
+                )}
               </AphButton>
             </>
-          ) : (
-            <AphButton
-              fullWidth
-              className={classes.notifyBtn}
-              onClick={() => setIsPopoverOpen(true)}
-            >
-              Notify when in stock
-            </AphButton>
-          )}
+          ) : null
+          // (
+          //   <AphButton
+          //     fullWidth
+          //     className={classes.notifyBtn}
+          //     onClick={() => setIsPopoverOpen(true)}
+          //   >
+          //     Notify when in stock
+          //   </AphButton>
+          // )
+          }
         </div>
       </div>
 
@@ -600,6 +637,28 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           data={substitutes}
           setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
         />
+      </Popover>
+      <Popover
+        open={showPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <AddToCartPopover setShowPopup={setShowPopup} showPopup={showPopup} />
+          </div>
+        </div>
       </Popover>
     </div>
   );

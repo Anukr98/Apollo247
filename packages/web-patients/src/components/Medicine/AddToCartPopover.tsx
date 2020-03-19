@@ -31,6 +31,14 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       textTransform: 'uppercase',
     },
+    viewCartLeftBtn: {
+      fontSize: 13,
+      color: '#fc9916',
+      fontWeight: 'bold',
+      textAlign: 'left',
+      marginRight: 'auto',
+      textTransform: 'uppercase',
+    },
   };
 });
 
@@ -49,6 +57,14 @@ export const AddToCartPopover: React.FC<AddToCarProps> = (props) => {
         <p>Your medicines have been added to your cart.</p>
       </div>
       <div className={classes.actions}>
+        <AphButton
+          className={classes.viewCartLeftBtn}
+          onClick={() => {
+            props.setShowPopup(false);
+          }}
+        >
+          Continue
+        </AphButton>
         <AphButton
           className={classes.viewCartBtn}
           onClick={() => {

@@ -269,6 +269,9 @@ export class AppointmentDocuments extends BaseEntity {
   @Column({ nullable: true })
   prismFileId: string;
 
+  @Column({ default: 1 })
+  userType: number;
+
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentDocuments)
   appointment: Appointment;
 }
@@ -833,10 +836,19 @@ export class PhrDocumentsSummary extends BaseEntity {
   appointmentDoc: number;
 
   @Column({ default: 0 })
+  oldAppointmentDoc: number;
+
+  @Column({ default: 0 })
   medicineOrderDoc: number;
 
   @Column({ default: 0 })
+  oldMedicineOrderDoc: number;
+
+  @Column({ default: 0 })
   standAloneDoc: number;
+
+  @Column({ default: 0 })
+  oldStandAloneDoc: number;
 
   @Column({ default: 0 })
   newUser: number;
@@ -887,6 +899,18 @@ export class FeedbackDashboardSummary extends BaseEntity {
 
   @Column({ default: 0 })
   helpTickets: number;
+
+  @Column({ default: 0 })
+  validHubOrders: number;
+
+  @Column({ default: 0 })
+  validHubOrdersDelivered: number;
+
+  @Column({ default: 0 })
+  validVdcOrders: number;
+
+  @Column({ default: 0 })
+  validVdcOrdersDelivered: number;
 
   @Column()
   createdDate: Date;
@@ -1098,6 +1122,12 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   totalConsultationTime: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  onlineConsultationFees: number;
+
+  @Column('decimal', { precision: 10, scale: 5, default: 0 })
+  physicalConsultationFees: number;
 
   @Column()
   createdDate: Date;

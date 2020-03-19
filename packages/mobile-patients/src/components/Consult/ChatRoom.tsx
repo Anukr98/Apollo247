@@ -79,7 +79,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
-  AsyncStorage,
   Dimensions,
   FlatList,
   Keyboard,
@@ -99,7 +98,6 @@ import {
   StyleSheet,
   AppState,
   AppStateStatus,
-  WebView,
   Image as ImageReact,
 } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -145,7 +143,9 @@ import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { RenderPdf } from '../ui/RenderPdf';
 import { colors } from '../../theme/colors';
-// import { WebView } from 'react-native-webview';
+import AsyncStorage from '@react-native-community/async-storage';
+
+import { WebView } from 'react-native-webview';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -5493,7 +5493,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             borderRadius: 10,
           }}
           source={{ uri: url }}
-          useWebKit={true}
         />
       </View>
     );

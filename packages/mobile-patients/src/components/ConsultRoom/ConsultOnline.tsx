@@ -34,7 +34,10 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { DoctorType } from '../../graphql/types/globalTypes';
@@ -279,7 +282,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         return item.facility.facilityType === 'HOSPITAL';
     });
 
-    const eventAttributes: WebEngageEvents['Consult- Schedule for Later clicked'] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED] = {
       name: g(props.doctor, 'fullName')!,
       specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
       experience: Number(g(props.doctor, 'experience')!),
@@ -294,19 +297,19 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
       Gender: g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
       slot: NextAvailableSlot,
     };
     if (type == 'now') {
-      (eventAttributes as WebEngageEvents['Consult- Consult Now clicked'])[
+      (eventAttributes as WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED])[
         'Available in'
       ] = `${availableInMin} minute(s)`;
-      postWebEngageEvent('Consult- Consult Now clicked', eventAttributes);
+      postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
     } else {
-      postWebEngageEvent('Consult- Schedule for Later clicked', eventAttributes);
+      postWebEngageEvent(WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED, eventAttributes);
     }
   };
 
@@ -434,7 +437,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             ]}
             onPress={() => {
               postConsultNowOrScheduleLaterEvent('now');
-              CommonLogEvent(AppRoutes.DoctorDetails, 'Consult- Consult Now clicked');
+              CommonLogEvent(AppRoutes.DoctorDetails, WebEngageEventName.CONSULT_NOW_CLICKED);
               setselectedCTA(onlineCTA[0]);
               props.setisConsultOnline(true);
               // props.setselectedTimeSlot('');

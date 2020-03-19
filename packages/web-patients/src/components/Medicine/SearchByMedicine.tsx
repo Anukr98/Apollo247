@@ -130,6 +130,16 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const apiDetails = {
+  url: process.env.PHARMACY_MED_CATEGORY_LIST,
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+};
+const apiDetailsText = {
+  url: process.env.PHARMACY_MED_SEARCH_URL,
+};
+type Params = { searchMedicineType: string; searchText: string };
+
 export const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [priceFilter, setPriceFilter] = useState();
@@ -138,20 +148,21 @@ export const SearchByMedicine: React.FC = (props) => {
   const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
+  const [disableFilters, setDisableFilters] = useState<boolean>(true);
 
   const getTitle = () => {
-    return _replace(_lowerCase(params.searchMedicineType), '-', ' ');
+    let title = params.searchMedicineType;
+    if (params.searchMedicineType.includes('-')) {
+      title = _replace(title, '-', ' ');
+    }
+    if (params.searchMedicineType.includes('_')) {
+      title = _replace(title, '_', ' & ');
+    }
+    return title;
   };
-  type Params = { searchMedicineType: string; searchText: string };
 
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_CATEGORY_LIST,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
-  };
-  const apiDetailsText = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
-  };
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
 
@@ -161,7 +172,7 @@ export const SearchByMedicine: React.FC = (props) => {
       .post(
         apiDetailsText.url,
         {
-          params: paramSearchText,
+          params: localStorage.getItem('searchText') || paramSearchText,
         },
         {
           headers: {
@@ -181,7 +192,7 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!medicineList && Number(paramSearchText) > 0) {
+    if (!medicineList && Number(paramSearchText) > 0 && !localStorage.getItem('searchText')) {
       setIsLoading(true);
       axios
         .post(
@@ -230,7 +241,8 @@ export const SearchByMedicine: React.FC = (props) => {
       filterData[0] === '' &&
       discountFilter &&
       discountFilter.fromDiscount === 0 &&
-      discountFilter.toDiscount === 100
+      discountFilter.toDiscount === 100 &&
+      sortBy === ''
     ) {
       setMedicineListFiltered(medicineList);
       return;
@@ -250,7 +262,6 @@ export const SearchByMedicine: React.FC = (props) => {
           medicineList &&
           medicineList.filter((value) => {
             if (Number(priceFilter.fromPrice) <= value.price) {
-              // priceFilterArray.push(value);
               return value;
             }
           });
@@ -259,13 +270,40 @@ export const SearchByMedicine: React.FC = (props) => {
           medicineList &&
           medicineList.filter((value) => {
             if (value.price <= Number(priceFilter.toPrice)) {
-              // priceFilterArray.push(value);
               return value;
             }
           });
       }
     } else if (priceFilter && !priceFilter.fromPrice && !priceFilter.toPrice) {
       priceFilterArray = medicineList && medicineList.length > 0 ? medicineList : [];
+    }
+
+    //Sort By
+    if (sortBy.length > 0) {
+      const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
+      if (sortBy === 'Price-L-H') {
+        priceFilterArray = filteredArray.sort((med1: MedicineProduct, med2: MedicineProduct) => {
+          return (
+            getSpecialPrice(med1.special_price || med1.price)! -
+            getSpecialPrice(med2.special_price || med2.price)!
+          );
+        });
+      } else if (sortBy === 'Price-H-L') {
+        priceFilterArray = filteredArray.sort((med1: MedicineProduct, med2: MedicineProduct) => {
+          return (
+            getSpecialPrice(med2.special_price || med2.price)! -
+            getSpecialPrice(med1.special_price || med1.price)!
+          );
+        });
+      } else if (sortBy === 'A-Z') {
+        priceFilterArray = filteredArray.sort((med1: MedicineProduct, med2: MedicineProduct) =>
+          med1.name < med2.name ? -1 : med1.name > med2.name ? 1 : 0
+        );
+      } else if (sortBy === 'Z-A') {
+        priceFilterArray = filteredArray.sort((med1: MedicineProduct, med2: MedicineProduct) =>
+          med1.name > med2.name ? -1 : med1.name < med2.name ? 1 : 0
+        );
+      }
     }
 
     if (discountFilter && discountFilter.fromDiscount >= 0 && discountFilter.toDiscount <= 100) {
@@ -297,7 +335,7 @@ export const SearchByMedicine: React.FC = (props) => {
       priceFilterArray = categoryFilterArray;
     }
     setMedicineListFiltered(priceFilterArray);
-  }, [priceFilter, filterData, discountFilter]);
+  }, [priceFilter, filterData, discountFilter, sortBy]);
 
   return (
     <div className={classes.root}>
@@ -312,18 +350,32 @@ export const SearchByMedicine: React.FC = (props) => {
               </div>
             </a>
             <div>
-              {getTitle()}({medicineListFiltered && medicineListFiltered.length})
+              {getTitle()} ({medicineListFiltered && medicineListFiltered.length})
             </div>
-            <AphButton className={classes.filterBtn}>
+            <AphButton
+              className={classes.filterBtn}
+              onClick={() => {
+                setShowResponsiveFilter(true);
+              }}
+            >
               <img src={require('images/ic_filter.svg')} alt="" />
             </AphButton>
           </div>
           <div className={classes.brandListingSection}>
             <MedicineFilter
+              disableFilters={disableFilters}
+              manageFilter={(disableFilters) => {
+                setDisableFilters(disableFilters);
+              }}
+              showResponsiveFilter={showResponsiveFilter}
+              setShowResponsiveFilter={(showResponsiveFilter: boolean) =>
+                setShowResponsiveFilter(showResponsiveFilter)
+              }
               setMedicineList={setMedicineList}
               setPriceFilter={setPriceFilter}
               setDiscountFilter={setDiscountFilter}
               setFilterData={setFilterData}
+              setSortBy={setSortBy}
             />
             <div className={classes.searchSection}>
               <Scrollbars className={classes.scrollBar} autoHide={true}>

@@ -1,12 +1,13 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
 import { SplashLogo } from '@aph/mobile-doctors/src/components/ui/Icons';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, AsyncStorage, Linking, Platform, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, AsyncStorage, Linking, Platform, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
-import SplashScreenStyles from '@aph/mobile-doctors/src/components/SplashScreen.styles';
 
 const styles = SplashScreenStyles;
 
@@ -15,23 +16,67 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { firebaseUser, doctorDetails, getDoctorDetailsApi } = useAuth();
 
-  const handleOpenURL = (url: string) => {
-    console.log(url);
-    // Alert.alert('Linking Worked');
+  useEffect(() => {
+    try {
+      if (Platform.OS === 'android') {
+        Linking.getInitialURL()
+          .then((url) => {
+            handleOpenURL(url);
+            console.log('linking', url);
+          })
+          .catch((e) => {
+            CommonBugFender('SplashScreen_Linking_URL', e);
+          });
+      } else {
+        console.log('linking');
+        Linking.addEventListener('url', handleOpenURL);
+      }
+      AsyncStorage.removeItem('location');
+    } catch (error) {
+      CommonBugFender('SplashScreen_Linking_URL_try', error);
+    }
+  }, []);
+
+  const handleOpenURL = (event: any) => {
+    console.log('event', event);
+    let route;
+
+    if (Platform.OS === 'ios') {
+      route = event.url.replace('apolloDoctors://', '');
+    } else {
+      route = event.replace('apolloDoctors://', '');
+    }
     const { navigate } = props.navigation;
-    const route = url.replace(/.*?:\/\//g, '');
     const id = route && route.match(/\/([^\/]+)\/?$/) && route.match(/\/([^\/]+)\/?$/)![1];
     const routeName = route.split('/')[0];
-
     switch (routeName) {
       case 'appointments':
-        navigate(AppRoutes.Appointments, { id });
+        navigate(AppRoutes.TabBar, { id });
         break;
       // Add other urls as required
       default:
         break;
     }
+    console.log('route', route);
   };
+
+  // const handleOpenURL = (url: string) => {
+  //   console.log(url);
+  //   // Alert.alert('Linking Worked');
+  //   const { navigate } = props.navigation;
+  //   const route = url.replace(/.*?:\/\//g, '');
+  //   const id = route && route.match(/\/([^\/]+)\/?$/) && route.match(/\/([^\/]+)\/?$/)![1];
+  //   const routeName = route.split('/')[0];
+
+  //   switch (routeName) {
+  //     case 'appointments':
+  //       navigate(AppRoutes.Appointments, { id });
+  //       break;
+  //     // Add other urls as required
+  //     default:
+  //       break;
+  //   }
+  // };
   useEffect(() => {
     if (!doctorDetails) {
       getDoctorDetailsApi &&
@@ -89,20 +134,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     // return () => {
     //   onTokenRefreshListener();
     // };
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      Linking.getInitialURL().then((url) => {
-        console.log(url);
-        url && handleOpenURL(url);
-      });
-    } else {
-      Linking.addEventListener('url', ({ url }) => handleOpenURL(url));
-    }
-    return () => {
-      Linking.removeEventListener('url', ({ url }) => handleOpenURL(url));
-    };
   }, []);
 
   useEffect(() => {

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   NativeSyntheticEvent,
   StyleProp,
-  StyleSheet,
   TextInput,
   TextInputKeyPressEventData,
   View,
