@@ -269,6 +269,9 @@ export class AppointmentDocuments extends BaseEntity {
   @Column({ nullable: true })
   prismFileId: string;
 
+  @Column({ default: 1 })
+  userType: number;
+
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentDocuments)
   appointment: Appointment;
 }
@@ -833,10 +836,19 @@ export class PhrDocumentsSummary extends BaseEntity {
   appointmentDoc: number;
 
   @Column({ default: 0 })
+  oldAppointmentDoc: number;
+
+  @Column({ default: 0 })
   medicineOrderDoc: number;
 
   @Column({ default: 0 })
+  OldmedicineOrderDoc: number;
+
+  @Column({ default: 0 })
   standAloneDoc: number;
+
+  @Column({ default: 0 })
+  OldStandAloneDoc: number;
 
   @Column({ default: 0 })
   newUser: number;
