@@ -883,7 +883,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   });
 
   //call abundant timer start
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(620);
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       if (props.appointmentStatus !== STATUS.COMPLETED) {
@@ -925,7 +925,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   // timer for ring called end
   // timer for No show called
-  const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
+  const [remainingCallTime, setRemainingCallTime] = useState<number>(600);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
@@ -1324,7 +1324,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
     ) {
       clearInterval(intervalcallId);
-      callIntervalTimer(180);
+      callIntervalTimer(600);
     }
     if (
       disablecurrent >= minusTime &&
@@ -1461,7 +1461,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
           if (!abondmentStarted && didPatientJoined) {
             abondmentStarted = true;
-            callAbundantIntervalTimer(200);
+            callAbundantIntervalTimer(620);
           }
         }
       }
@@ -1950,7 +1950,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       appointmentInfo &&
                       appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
                     ) {
-                      callIntervalTimer(180);
+                      callIntervalTimer(600);
                     }
                   }}
                 >
