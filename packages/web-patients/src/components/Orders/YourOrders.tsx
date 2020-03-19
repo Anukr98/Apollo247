@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
         width: 'auto',
+        display: 'none',
       },
     },
     sectionHeader: {
