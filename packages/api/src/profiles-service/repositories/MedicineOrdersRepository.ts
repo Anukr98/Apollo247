@@ -203,8 +203,6 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const endDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
     //select r.id, r."documentURLs",p."uhidCreatedDate",p."uhid",p."firstName" from medical_records r, patient p
     //where r."documentURLs" is not null and r."documentURLs" != '' and r."patientId" = p.id
-    console.log('phr doc summary quert');
-    //let newPatientCount = 0;
     const newPatientCount = await this.createQueryBuilder('medicine_orders')
       .leftJoinAndSelect('medicine_orders.patient', 'patient')
       .where('medicine_orders."prescriptionImageUrl" is not null')

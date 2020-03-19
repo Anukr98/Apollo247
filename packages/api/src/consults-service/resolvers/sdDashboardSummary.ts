@@ -169,7 +169,6 @@ const updateConsultRating: Resolver<
     okRating = 0,
     poorRating = 0,
     greatRating = 0;
-  console.log(feedbackData, 'feedback data');
   if (feedbackData.length > 0) {
     feedbackData.forEach((record) => {
       console.log(record, 'record');
@@ -199,8 +198,6 @@ const updateConsultRating: Resolver<
       validVdcOrders: validHubOrders[2],
       validVdcOrdersDelivered: validHubOrders[3],
     };
-
-    console.log('helpTicketCount', helpTicketCount);
     await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
   return { ratingRowsCount: feedbackData.length };
@@ -220,9 +217,9 @@ const updatePhrDocSummary: Resolver<
     documentDate: args.summaryDate,
     appointmentDoc: docCount,
     medicineOrderDoc: prescritionCount[0],
-    OldmedicineOrderDoc: prescritionCount[1],
+    oldmedicineOrderDoc: prescritionCount[1],
     standAloneDoc: standAloneDocCount[0],
-    OldStandAloneDoc: standAloneDocCount[1],
+    oldStandAloneDoc: standAloneDocCount[1],
     oldAppointmentDoc: oldDocCount,
   };
   await dashboardRepo.saveDocumentSummary(phrDocAttrs);

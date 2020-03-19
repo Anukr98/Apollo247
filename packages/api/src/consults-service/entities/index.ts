@@ -842,13 +842,13 @@ export class PhrDocumentsSummary extends BaseEntity {
   medicineOrderDoc: number;
 
   @Column({ default: 0 })
-  OldmedicineOrderDoc: number;
+  oldmedicineOrderDoc: number;
 
   @Column({ default: 0 })
   standAloneDoc: number;
 
   @Column({ default: 0 })
-  OldStandAloneDoc: number;
+  oldStandAloneDoc: number;
 
   @Column({ default: 0 })
   newUser: number;
