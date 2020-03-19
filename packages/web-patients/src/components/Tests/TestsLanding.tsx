@@ -2,31 +2,17 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
-import { AphButton, AphSelect } from '@aph/web-ui-components';
 import { BrowsePackages } from 'components/Tests/Cards/BrowsePackages';
 import { HotSellers } from 'components/Tests/Cards/HotSellers';
 import { TestsAutoSearch } from 'components/Tests/TestsAutoSearch';
-import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-import { ApolloError } from 'apollo-client';
-import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
-import axios from 'axios';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
-import Typography from '@material-ui/core/Typography';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
-import { AllowLocation } from 'components/AllowLocation';
-import {
-  // GET_DIAGNOSTICS_CITES,
-  GET_DIAGNOSTIC_DATA,
-  // GET_DIAGNOSTIC_ORDER_LIST,
-  // SEARCH_DIAGNOSTICS,
-  // SAVE_SEARCH,
-  // SEARCH_DIAGNOSTICS_BY_ID,
-} from 'graphql/profiles';
+import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import {
   getDiagnosticsData,
   getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
@@ -291,18 +277,12 @@ export const TestsLanding: React.FC = (props) => {
     (getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null)[] | null
   >(null);
 
-  const [diagnosisDataLoading, setDiagnosisDataLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
-  const [showPopup, setShowPopup] = React.useState<boolean>(
-    window.location.pathname === '/medicines/added-to-cart'
-  );
-  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
-    params.orderStatus && params.orderStatus.length > 0 ? true : false
-  );
 
   useEffect(() => {
     if (!diagnosisHotSellerData && !diagnosticOrgansData) {
-      setDiagnosisDataLoading(true);
+      setIsLoading(true);
       client
         .query<getDiagnosticsData>({
           query: GET_DIAGNOSTIC_DATA,
@@ -322,11 +302,11 @@ export const TestsLanding: React.FC = (props) => {
           }
         })
         .catch((e) => {
-          console.log(e);
+          alert(e);
           setDiagnosisDataError(true);
         })
         .finally(() => {
-          setDiagnosisDataLoading(false);
+          setIsLoading(false);
         });
     }
   }, [diagnosisHotSellerData, diagnosticOrgansData]);
@@ -420,7 +400,7 @@ export const TestsLanding: React.FC = (props) => {
                 <div className={classes.sectionTitle}>
                   <span>Hot sellers</span>
                 </div>
-                <HotSellers data={diagnosisHotSellerData} />
+                <HotSellers data={diagnosisHotSellerData} isLoading={isLoading} />
               </div>
             )}
             {diagnosticOrgansData && diagnosticOrgansData.length > 0 && (
@@ -428,7 +408,7 @@ export const TestsLanding: React.FC = (props) => {
                 <div className={classes.sectionTitle}>
                   <span>Browse Packages</span>
                 </div>
-                <BrowsePackages data={diagnosticOrgansData} />
+                <BrowsePackages data={diagnosticOrgansData} isLoading={isLoading} />
               </div>
             )}
           </div>

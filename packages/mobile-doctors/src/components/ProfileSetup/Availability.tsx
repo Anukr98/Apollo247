@@ -1,7 +1,6 @@
 import AvailabilityStyles from '@aph/mobile-doctors/src/components/ProfileSetup/Availability.styles';
 import { ConsultationHoursCard } from '@aph/mobile-doctors/src/components/ui/ConsultationHoursCard';
 import { HelpView } from '@aph/mobile-doctors/src/components/ui/HelpView';
-import { RoundChatIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { format } from 'date-fns';

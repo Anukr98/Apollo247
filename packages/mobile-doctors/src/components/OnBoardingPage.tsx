@@ -1,4 +1,5 @@
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import OnBoardingPageStyles from '@aph/mobile-doctors/src/components/OnBoardingPage.styles';
 import {
   ArrowFull,
   ArrowStep1,
@@ -6,17 +7,14 @@ import {
   ArrowStep3,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   AsyncStorage,
   Image,
   ImageSourcePropType,
   ImageStyle,
-  Platform,
   SafeAreaView,
   StyleProp,
-  StyleSheet,
   Text,
   TextStyle,
   TouchableOpacity,
@@ -24,9 +22,7 @@ import {
 } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
-import { ifIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
-import OnBoardingPageStyles from '@aph/mobile-doctors/src/components/OnBoardingPage.styles';
 
 const styles = OnBoardingPageStyles;
 

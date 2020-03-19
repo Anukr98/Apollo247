@@ -1,6 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
-
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+
 const { height, width } = Dimensions.get('window');
 
 export default StyleSheet.create({

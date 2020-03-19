@@ -1,10 +1,9 @@
 /* eslint-disable import/no-default-export */
-import { Dimensions, StyleSheet, Platform } from 'react-native';
-
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { Dimensions, Platform, StyleSheet } from 'react-native';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default StyleSheet.create({
   chipContainerStyle: {

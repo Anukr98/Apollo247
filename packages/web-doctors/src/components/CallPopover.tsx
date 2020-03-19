@@ -1303,16 +1303,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const disableaddedMinutes =
       disableyear +
       '-' +
-      disablemonth +
+      (disablemonth < 10 ? '0' + disablemonth : disablemonth) +
       '-' +
-      disableday +
+      (disableday < 10 ? '0' + disableday : disableday) +
       ' ' +
-      disablehour +
+      (disablehour < 10 ? '0' + disablehour : disablehour) +
       ':' +
-      disableminute +
+      (disableminute < 10 ? '0' + disableminute : disableminute) +
       ':' +
-      disablesecond;
-    const disableaddedTime = new Date(disableaddedMinutes);
+      (disablesecond < 10 ? '0' + disablesecond : disablesecond);
+    const disableaddedTime = new Date(disableaddedMinutes.replace(/-/g, '/'));
+    console.log(disableaddedMinutes, disableaddedTime);
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const presentTime = new Date().toISOString();
 
@@ -1325,11 +1326,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       clearInterval(intervalcallId);
       callIntervalTimer(180);
     }
-    console.log('disablecurrent', disablecurrent);
-    console.log('minusTime', minusTime);
-    console.log('disableaddedTime', disableaddedTime);
-    console.log('disablecurrent >= minusTime', disablecurrent >= minusTime);
-    console.log('disableaddedTime >= disablecurrent', disableaddedTime >= disablecurrent);
+    // console.log('disablecurrent', disablecurrent);
+    // console.log('minusTime', minusTime);
+    // console.log('disableaddedTime', disableaddedTime);
+    // console.log('disablecurrent >= minusTime', disablecurrent >= minusTime);
+    // console.log('disableaddedTime >= disablecurrent', disableaddedTime >= disablecurrent);
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&

@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export interface AddInstructionPopUpProps {
   onClose: () => void;
