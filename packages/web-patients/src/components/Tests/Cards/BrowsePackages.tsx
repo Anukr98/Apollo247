@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
@@ -92,11 +92,12 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface BrowsePackagesProps {
   data: (getDiagnosticsData_getDiagnosticsData_diagnosticOrgans | null)[] | null;
+  isLoading: boolean;
 }
 
 export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props;
+  const { data, isLoading } = props;
   const sliderSettings = {
     infinite: data && data.length > 3 ? true : false,
     speed: 500,
@@ -137,6 +138,10 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
       },
     ],
   };
+
+  if (isLoading) {
+    return <CircularProgress size={22} />;
+  }
 
   return (
     <div className={classes.root}>

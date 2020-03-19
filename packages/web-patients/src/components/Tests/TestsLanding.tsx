@@ -395,26 +395,22 @@ export const TestsLanding: React.FC = (props) => {
             <span>Most trusted diagnostics from the comfort of your home!</span>
           </div>
           <div className={classes.allProductsList}>
-            {diagnosisHotSellerData && diagnosisHotSellerData.length > 0 ? (
+            {diagnosisHotSellerData && diagnosisHotSellerData.length > 0 && (
               <div className={classes.sliderSection}>
                 <div className={classes.sectionTitle}>
                   <span>Hot sellers</span>
                 </div>
-                <HotSellers data={diagnosisHotSellerData} />
+                <HotSellers data={diagnosisHotSellerData} isLoading={isLoading} />
               </div>
-            ) : isLoading ? (
-              <CircularProgress />
-            ) : null}
-            {diagnosticOrgansData && diagnosticOrgansData.length > 0 ? (
+            )}
+            {diagnosticOrgansData && diagnosticOrgansData.length > 0 && (
               <div className={classes.sliderSection}>
                 <div className={classes.sectionTitle}>
                   <span>Browse Packages</span>
                 </div>
-                <BrowsePackages data={diagnosticOrgansData} />
+                <BrowsePackages data={diagnosticOrgansData} isLoading={isLoading} />
               </div>
-            ) : isLoading ? (
-              <CircularProgress />
-            ) : null}
+            )}
           </div>
         </div>
       </div>

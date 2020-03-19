@@ -302,7 +302,7 @@ export const SearchByTest: React.FC = (props) => {
                 }
               >
                 <div className={classes.customScroll}>
-                  {loading && <CircularProgress />}
+                  {loading && <CircularProgress size={22} />}
                   {testsList &&
                     testsList.length > 0 &&
                     testsList.map((test) => <TestsListCard testData={test} />)}
