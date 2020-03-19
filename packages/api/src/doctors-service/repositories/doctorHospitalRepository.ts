@@ -31,7 +31,11 @@ export class DoctorHospitalRepository extends Repository<DoctorAndHospital> {
         ? false
         : true;
     });
-    return newDoctorAndHospitals;
+    return this.save(newDoctorAndHospitals).catch((saveDoctorHospitalsError) => {
+      throw new AphError(AphErrorMessages.SAVE_DOCTOR_AND_HOSPITAL_ERROR, undefined, {
+        saveDoctorHospitalsError,
+      });
+    });
   }
 
   findById(id: string) {
