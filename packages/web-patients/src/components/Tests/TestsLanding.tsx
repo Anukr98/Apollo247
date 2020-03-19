@@ -302,7 +302,7 @@ export const TestsLanding: React.FC = (props) => {
           }
         })
         .catch((e) => {
-          console.log(e);
+          alert(e);
           setDiagnosisDataError(true);
         })
         .finally(() => {

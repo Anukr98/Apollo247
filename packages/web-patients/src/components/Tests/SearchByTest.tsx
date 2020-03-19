@@ -220,7 +220,7 @@ export const SearchByTest: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        console.log(e);
+        alert(e);
       })
       .finally(() => {
         setLoading(false);
@@ -245,7 +245,7 @@ export const SearchByTest: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        console.log('Tests_onSearchMedicine', e);
+        alert(e);
       })
       .finally(() => {
         setLoading(false);
