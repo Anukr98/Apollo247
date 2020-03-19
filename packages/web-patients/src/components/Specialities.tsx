@@ -97,13 +97,14 @@ export interface SpecialitiesProps {
   speciality: (specialitySelected: string) => void;
   disableFilter: (disableFilters: boolean) => void;
   subHeading: string;
+  specialityId?: (specialityId: string) => void;
   // filteredSpecialties?: any;
 }
 
 export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const classes = useStyles();
   const { loading, error, data } = useQueryWithSkip<GetAllSpecialties>(GET_ALL_SPECIALITIES);
-  const { keyword, matched, speciality, disableFilter, subHeading } = props;
+  const { keyword, matched, speciality, disableFilter, specialityId, subHeading } = props;
 
   const { currentPatient } = useAllCurrentPatients();
 
@@ -132,7 +133,7 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
       keyword !== '' && Object.keys(data) ? filterValues(data) : data.getAllSpecialties;
     return (
       <>
-        {subHeading !== '' ? (
+        {subHeading !== '' && filterSpecialites.length > 0 ? (
           <div className={classes.sectionHeader}>
             <span>{subHeading}</span>
             {/* <span className={classes.count}>
@@ -147,10 +148,10 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
             <Grid container spacing={1}>
               {_map(filterSpecialites, (specialityDetails) => {
                 const specialityName = specialityDetails && specialityDetails.name;
-                const specialitySingular =
-                  specialityDetails && specialityDetails.specialistSingularTerm;
-                const specialityPlural =
-                  specialityDetails && specialityDetails.specialistPluralTerm;
+                // const specialitySingular =
+                //   specialityDetails && specialityDetails.specialistSingularTerm;
+                // const specialityPlural =
+                //   specialityDetails && specialityDetails.specialistPluralTerm;
                 const userFriendlyName =
                   specialityDetails && specialityDetails.userFriendlyNomenclature;
                 const title = specialityName;
@@ -175,6 +176,7 @@ export const Specialities: React.FC<SpecialitiesProps> = (props) => {
                         onClick={(e) => {
                           mutation();
                           speciality(e.currentTarget.title);
+                          specialityId && specialityId(specialityDetails.id);
                           disableFilter(false);
                         }}
                       >
