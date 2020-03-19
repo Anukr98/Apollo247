@@ -32,6 +32,11 @@ import {
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { VALIDATE_CONSULT_COUPON } from 'graphql/consult';
+import {
+  ValidateConsultCoupon,
+  ValidateConsultCouponVariables,
+} from 'graphql/types/ValidateConsultCoupon';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -203,9 +208,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const [clinicAddress] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const makePaymentMutation = useMutation<makeAppointmentPayment, makeAppointmentPaymentVariables>(
-    MAKE_APPOINTMENT_PAYMENT
-  );
+  const makePaymentMutation = useMutation(MAKE_APPOINTMENT_PAYMENT);
   // const [mutationSuccess, setMutationSuccess] = React.useState(false);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
@@ -213,7 +216,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { currentLocation, currentLat, currentLong } = useContext(LocationContext);
   const { doctorDetails } = props;
-
+  const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
+    VALIDATE_CONSULT_COUPON
+  );
   const currentTime = new Date().getTime();
   const doctorName =
     doctorDetails &&
@@ -382,7 +387,85 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   appointmentDateTime = new Date(
     `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
   ).toISOString();
-
+  const checkCouponValidity = () => {
+    couponMutation({
+      variables: {
+        doctorId: doctorId,
+        code: couponCode,
+        consultType: AppointmentType.PHYSICAL,
+        appointmentDateTimeInUTC: appointmentDateTime,
+      },
+      fetchPolicy: 'no-cache',
+    })
+      .then((res) => {
+        if (res && res.data && res.data.validateConsultCoupon) {
+          if (res.data.validateConsultCoupon.reasonForInvalidStatus) {
+            alert(res.data.validateConsultCoupon.reasonForInvalidStatus);
+            setMutationLoading(false);
+          } else {
+            bookAppointment();
+          }
+        }
+      })
+      .catch((error) => {
+        alert(error);
+        setMutationLoading(false);
+      });
+  };
+  const bookAppointment = () => {
+    paymentMutation({
+      variables: {
+        bookAppointment: {
+          patientId: currentPatient ? currentPatient.id : '',
+          doctorId: doctorId,
+          appointmentDateTime: new Date(
+            `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
+          ).toISOString(),
+          appointmentType: AppointmentType.PHYSICAL,
+          hospitalId: defaultClinicId,
+          couponCode: couponCode ? couponCode : null,
+        },
+      },
+    })
+      .then((res: any) => {
+        if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
+          if (revisedAmount == '0') {
+            makePaymentMutation({
+              variables: {
+                paymentInput: {
+                  amountPaid: 0,
+                  paymentRefId: '',
+                  paymentStatus: 'TXN_SUCCESS',
+                  paymentDateTime: res.data.bookAppointment.appointment.appointmentDateTime,
+                  responseCode: couponCode,
+                  responseMessage: 'Coupon applied',
+                  bankTxnId: '',
+                  orderId: res.data.bookAppointment.appointment.id,
+                },
+              },
+              fetchPolicy: 'no-cache',
+            })
+              .then((res) => {
+                window.location.href = clientRoutes.appointments();
+              })
+              .catch((error) => alert(error));
+          } else {
+            const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
+              res.data.bookAppointment.appointment.id
+            }&patientId=${
+              currentPatient ? currentPatient.id : ''
+            }&price=${revisedAmount}&source=WEB`;
+            window.location.href = pgUrl;
+          }
+          // setMutationLoading(false);
+          // setIsDialogOpen(true);
+        }
+      })
+      .catch((errorResponse) => {
+        alert(errorResponse);
+        setMutationLoading(false);
+      });
+  };
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
@@ -494,64 +577,12 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             //   new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString(),
             //   'visit clinic.......'
             // );
-            paymentMutation({
-              variables: {
-                bookAppointment: {
-                  patientId: currentPatient ? currentPatient.id : '',
-                  doctorId: doctorId,
-                  appointmentDateTime: new Date(
-                    `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
-                  ).toISOString(),
-                  appointmentType: AppointmentType.PHYSICAL,
-                  hospitalId: defaultClinicId,
-                },
-              },
-            })
-              .then((res: any) => {
-                if (
-                  res &&
-                  res.data &&
-                  res.data.bookAppointment &&
-                  res.data.bookAppointment.appointment
-                ) {
-                  if (revisedAmount == '0') {
-                    makePaymentMutation({
-                      variables: {
-                        paymentInput: {
-                          amountPaid: 0,
-                          paymentRefId: '',
-                          paymentStatus: 'TXN_SUCCESS',
-                          paymentDateTime: res.data.bookAppointment.appointment.appointmentDateTime,
-                          responseCode: couponCode,
-                          responseMessage: 'Coupon applied',
-                          bankTxnId: '',
-                          orderId: res.data.bookAppointment.appointment.id,
-                        },
-                      },
-                      fetchPolicy: 'no-cache',
-                    })
-                      .then((res) => {
-                        window.location.href = clientRoutes.appointments();
-                      })
-                      .catch((error) => alert(error));
-                  } else {
-                    const pgUrl = `${
-                      process.env.CONSULT_PG_BASE_URL
-                    }/consultpayment?appointmentId=${
-                      res.data.bookAppointment.appointment.id
-                    }&patientId=${
-                      currentPatient ? currentPatient.id : ''
-                    }&price=${revisedAmount}&source=WEB`;
-                    window.location.href = pgUrl;
-                  }
-                  // setMutationLoading(false);
-                  // setIsDialogOpen(true);
-                }
-              })
-              .catch((errorResponse) => {
-                alert(errorResponse);
-                setMutationLoading(false);
-              });
+
+            if (couponCode) {
+              checkCouponValidity();
+            } else {
+              bookAppointment();
+            }
           }}
           className={
             disableSubmit || mutationLoading || isDialogOpen || !timeSelected
