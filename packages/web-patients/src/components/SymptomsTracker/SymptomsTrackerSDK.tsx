@@ -131,9 +131,19 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 20,
       padding: '8px 0 8px 1rem',
       [theme.breakpoints.down(767)]: {
-        left: 'auto',
-        position: 'fixed',
-        top: 78,
+        display: 'none',
+      },
+    },
+    profileDropdownMobile: {
+      fontSize: 14,
+      fontWeight: 500,
+      position: 'absolute',
+      top: 4,
+      right: 10,
+      padding: '8px 0 8px 1rem',
+      textTransform: 'none',
+      [theme.breakpoints.up(768)]: {
+        display: 'none',
       },
     },
     selectMenuItem: {
@@ -377,6 +387,45 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 </div>
               </Link>
               Consult a doctor
+              <div className={classes.profileDropdownMobile}>
+                For
+                <AphCustomDropdown
+                  classes={{ selectMenu: classes.selectMenuItem }}
+                  value={currentPatient && currentPatient.id}
+                  onChange={(e) => {
+                    setCurrentPatientId(e.target.value as Patient['id']);
+                  }}
+                >
+                  {allCurrentPatients &&
+                    allCurrentPatients.length > 0 &&
+                    currentPatient &&
+                    allCurrentPatients.map((patient) => {
+                      const isSelected = patient && patient.id === currentPatient.id;
+                      const name = (patient.firstName || '').toLocaleLowerCase();
+                      return (
+                        <MenuItem
+                          selected={isSelected}
+                          value={patient.id}
+                          classes={{ selected: classes.menuSelected }}
+                          key={patient.id}
+                        >
+                          {name}
+                        </MenuItem>
+                      );
+                    })}
+                  <MenuItem classes={{ selected: classes.menuSelected }}>
+                    <AphButton
+                      color="primary"
+                      classes={{ root: classes.addMemberBtn }}
+                      onClick={() => {
+                        setIsAddNewProfileDialogOpen(true);
+                      }}
+                    >
+                      Add Member
+                    </AphButton>
+                  </MenuItem>
+                </AphCustomDropdown>
+              </div>
             </div>
             <Scrollbars
               autoHide={true}
@@ -531,7 +580,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </Popover>
         </div>
       )}
-      {isSignedIn && <NavigationBottom />}
     </div>
   );
 };
