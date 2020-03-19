@@ -229,17 +229,17 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
         <div className={classes.priceBox}>
           <div className={classes.priceRow}>
             <span>Subtotal</span>
-            <span className={classes.price}>Rs. {props.subtotal}.00</span>
+            <span className={classes.price}>Rs. {props.subtotal}</span>
           </div>
           <div className={classes.priceRow}>
             <span>Coupon ({couponText})</span>
             <span className={classes.price}>
-              -Rs. {Number(props.subtotal) - Number(props.revisedAmount)}.00
+              -Rs. {Number(props.subtotal) - Number(props.revisedAmount)}
             </span>
           </div>
           <div className={classes.totalPriceRow}>
             <span>To Pay</span>
-            <span className={classes.totalPrice}>Rs.{props.revisedAmount}.00</span>
+            <span className={classes.totalPrice}>Rs.{props.revisedAmount}</span>
           </div>
         </div>
       )}
