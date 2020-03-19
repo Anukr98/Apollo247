@@ -332,6 +332,10 @@ export const OrderDetails: React.FC = () => {
     );
   if (error) return <div>Error :(</div>;
 
+  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
+  };
+
   const testOrderListData = data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList
   if (testOrderListData && testOrderListData.length > 0) {
     const testOrderListData = data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList
@@ -375,8 +379,8 @@ export const OrderDetails: React.FC = () => {
                             <div>
                               <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
                               <div className={classes.labelText}>
-                                {testOrderInfo.orderStatus && !!testOrderInfo.slotTimings &&
-                                  `${`Scheduled For :`}${moment(new Date(testOrderInfo.diagnosticDate)).format('DD MMM YYYY ,hh:mm a')}`
+                                {testOrderInfo.orderStatus &&
+                                  `Scheduled For: ${moment(testOrderInfo!.diagnosticDate).format(`D MMM YYYY`)}${!!testOrderInfo.slotTimings ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}` : ''}`
                                 }
                               </div>
                             </div>
