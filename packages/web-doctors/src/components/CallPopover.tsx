@@ -1553,6 +1553,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             storeInHistory: true,
           },
           (status: any, response: any) => {
+            alert('Prescription has been sent to patient successfully');
             setIsResendLoading(false);
           }
         );
@@ -1807,7 +1808,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             props.sentToPatient === true ? (
               <Button
                 className={classes.backButton}
-                disabled={sendToPatientButtonDisable}
                 onClick={() => {
                   onStopConsult(true);
                 }}
