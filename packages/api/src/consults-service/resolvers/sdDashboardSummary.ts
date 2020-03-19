@@ -217,7 +217,7 @@ const updatePhrDocSummary: Resolver<
     documentDate: args.summaryDate,
     appointmentDoc: docCount,
     medicineOrderDoc: prescritionCount[0],
-    oldmedicineOrderDoc: prescritionCount[1],
+    oldMedicineOrderDoc: prescritionCount[1],
     standAloneDoc: standAloneDocCount[0],
     oldStandAloneDoc: standAloneDocCount[1],
     oldAppointmentDoc: oldDocCount,
