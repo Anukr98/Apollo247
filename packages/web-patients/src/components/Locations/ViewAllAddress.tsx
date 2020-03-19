@@ -127,7 +127,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           className={disableSubmit ? classes.buttonDisable : ''}
           onClick={() => props.setIsViewAllAddressDialogOpen(false)}
         >
-          Done
+          SAVE AND USE
         </AphButton>
       </div>
     </div>
