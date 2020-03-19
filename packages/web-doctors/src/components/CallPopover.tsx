@@ -1312,7 +1312,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       (disableminute < 10 ? '0' + disableminute : disableminute) +
       ':' +
       (disablesecond < 10 ? '0' + disablesecond : disablesecond);
-    const disableaddedTime = new Date(disableaddedMinutes);
+    const disableaddedTime = new Date(disableaddedMinutes.replace(/-/g, '/'));
     console.log(disableaddedMinutes, disableaddedTime);
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const presentTime = new Date().toISOString();
