@@ -12,6 +12,9 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { LocationContext } from 'components/LocationProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { TestsListingCard } from 'components/Tests/Cart/TestsListingCard';
+import { TestsFor } from 'components/Tests/Cart/TestsFor';
+import { AppointmentsSlot } from 'components/Tests/Cart/AppointmentsSlot';
+import { ClinicHours } from 'components/Tests/Cart/ClinicHours';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -491,6 +494,7 @@ export const TestsCart: React.FC = (props) => {
               </AphButton>
             </div>
             <TestsListingCard />
+            <TestsFor />
           </div>
         </Scrollbars>
       </div>
@@ -531,7 +535,7 @@ export const TestsCart: React.FC = (props) => {
                       root: classes.tabRoot,
                       selected: classes.tabSelected,
                     }}
-                    label="Store Pick Up"
+                    label="Clinic Visit"
                     title={'Choose store pick up'}
                   />
                 </Tabs>
@@ -553,6 +557,8 @@ export const TestsCart: React.FC = (props) => {
                 )}
               </div>
             </div>
+            <AppointmentsSlot />
+            <ClinicHours />
             {diagnosticsCartItems && diagnosticsCartItems.length > 0 && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>

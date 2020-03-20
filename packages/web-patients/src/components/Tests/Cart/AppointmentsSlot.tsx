@@ -1,13 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
+import { Theme, MenuItem } from '@material-ui/core';
 import {
   AphButton,
   AphDialog,
   AphDialogTitle,
   AphDialogClose,
   AphSelect,
-  AphTextField,
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphCalendar } from 'components/AphCalendar';
@@ -142,7 +141,7 @@ export const AppointmentsSlot: React.FC = (props) => {
         <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
           <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
           <AphDialogTitle>Schedule Appointment</AphDialogTitle>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
             <div className={classes.wrapperCards}>
               <AphCalendar
                 getDate={(dateSelected: string) => setDateSelected(dateSelected)}
@@ -161,10 +160,10 @@ export const AppointmentsSlot: React.FC = (props) => {
                 </AphSelect>
               </div>
             </div>
-            <div className={classes.doneButton}>
-              <AphButton color="primary">Done</AphButton>
-            </div>
           </Scrollbars>
+          <div className={classes.doneButton}>
+            <AphButton color="primary">Done</AphButton>
+          </div>
         </AphDialog>
       </div>
     </div>
