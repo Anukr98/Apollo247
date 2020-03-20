@@ -404,15 +404,15 @@ export const TestDetails: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
-  const mou = 1;
+
   const apiDetails = {
     url: process.env.GET_PACKAGE_DATA,
   };
 
   const TestApiCredentials = {
-    UserName: 'ASKAPOLLO',
-    Password: '3HAQbAb9wrsykr8TMLnV',
-    InterfaceClient: 'ASKAPOLLO',
+    UserName: process.env.UserName,
+    Password: process.env.Password,
+    InterfaceClient: process.env.InterfaceClient,
   };
 
   const getPackageDetails = async (itemId: string) => {
@@ -514,9 +514,9 @@ export const TestDetails: React.FC = (props) => {
                             testDetails.gender == 'B'
                               ? 'BOYS AND GIRLS'
                               : testDetails.gender == 'M'
-                              ? 'BOYS'
-                              : 'GIRLS'
-                          }`}
+                                ? 'BOYS'
+                                : 'GIRLS'
+                            }`}
                         </div>
                       )}
                       <div className={classes.textInfo}>
@@ -600,8 +600,8 @@ export const TestDetails: React.FC = (props) => {
                     isSmallScreen ? (
                       <div {...props} style={{ position: 'static' }} />
                     ) : (
-                      <div {...props} />
-                    )
+                        <div {...props} />
+                      )
                   }
                 >
                   <div className={classes.customScroll}>
@@ -625,7 +625,7 @@ export const TestDetails: React.FC = (props) => {
                             addCartItem({
                               itemId: `${testDetails.itemId}`,
                               id: testDetails.id,
-                              mou,
+                              mou: 1,
                               name: stripHtml(testDetails.itemName),
                               price: testDetails.rate,
                               thumbnail: '',
@@ -639,8 +639,8 @@ export const TestDetails: React.FC = (props) => {
                         ) : itemIndexInCart(testDetails) === -1 ? (
                           'Add To Cart'
                         ) : (
-                          'Added To Cart'
-                        )}
+                              'Added To Cart'
+                            )}
                       </AphButton>
                     </div>
                   </div>
@@ -648,12 +648,12 @@ export const TestDetails: React.FC = (props) => {
               </div>
             </div>
           ) : (
-            loading && (
-              <div className={classes.progressLoader}>
-                <CircularProgress size={30} />
-              </div>
-            )
-          )}
+              loading && (
+                <div className={classes.progressLoader}>
+                  <CircularProgress size={30} />
+                </div>
+              )
+            )}
         </div>
       </div>
     </div>
