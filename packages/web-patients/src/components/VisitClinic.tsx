@@ -202,6 +202,8 @@ interface VisitClinicProps {
 
 export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const classes = useStyles({});
+  let appointmentDateTime = '';
+
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [clinicSelected, setClinicSelected] = useState<string>('');
@@ -382,8 +384,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       : '';
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
-  let appointmentDateTime = '';
-
   appointmentDateTime = new Date(
     `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
   ).toISOString();
