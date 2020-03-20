@@ -15,7 +15,7 @@ import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform } from 'react-native';
+import { Alert, Dimensions, Platform, Linking } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
@@ -466,7 +466,7 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
             getlocationData(resolve, reject);
           }
         } else {
-          if (response === 'restricted' && Platform.OS === 'ios') {
+          if (response === 'denied' || response === 'restricted') {
             Alert.alert('Location', 'Enable location access form settings', [
               {
                 text: 'Cancle',
@@ -767,4 +767,46 @@ export const postWEGNeedHelpEvent = (
     Source: source,
   };
   postWebEngageEvent(WebEngageEventName.NEED_HELP, eventAttributes);
+};
+
+export const permissionHandler = (
+  permission: string,
+  deniedMessage: string,
+  doRequest: () => void
+) => {
+  Permissions.request(permission)
+    .then((message) => {
+      console.log(message, 'sdhu');
+
+      if (message === 'authorized') {
+        doRequest();
+      } else if (message === 'denied' || message === 'restricted') {
+        Alert.alert(permission.toUpperCase(), deniedMessage, [
+          {
+            text: 'Cancle',
+            onPress: () => {},
+          },
+          {
+            text: 'Ok',
+            onPress: () => {
+              Linking.openSettings();
+              AsyncStorage.setItem('permissionHandler', 'true');
+            },
+          },
+        ]);
+      }
+    })
+    .catch((e) => console.log(e, 'dsvunacimkl'));
+};
+
+export const callPermissions = (doRequest?: () => void) => {
+  permissionHandler('camera', 'Enable camera from settings for calls during consultation.', () => {
+    permissionHandler(
+      'microphone',
+      'Enable microphone from settings for calls during consultation.',
+      () => {
+        doRequest && doRequest();
+      }
+    );
+  });
 };

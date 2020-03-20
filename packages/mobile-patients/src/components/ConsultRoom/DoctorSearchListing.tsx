@@ -345,7 +345,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       fetchSpecialityFilterData(filterMode, FilterData, latlng);
       setcurrentLocation(locationDetails.displayName);
     }
-
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();

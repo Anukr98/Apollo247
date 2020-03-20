@@ -190,12 +190,37 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       console.log(allPatients, 'allPatientssplash');
       console.log(mePatient, 'mePatientsplash');
+      const navigationPropsString: string | null = await AsyncStorage.getItem('NAVIGATION_PROPS');
+      const navigationProps = JSON.parse(navigationPropsString || '');
 
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
 
       setTimeout(() => {
-        if (userLoggedIn == 'true') {
+        if (navigationProps) {
+          let navi: any[] = [];
+          navigationProps.scenes.map((i: any) => {
+            navi.push(
+              NavigationActions.navigate({
+                routeName: i.descriptor.navigation.state.routeName,
+                params: i.descriptor.navigation.state.params,
+              })
+            );
+            // props.navigation.push(
+            //   i.descriptor.navigation.state.routeName,
+            //   i.descriptor.navigation.state.params
+            // );
+          });
+          if (navi.length > 0) {
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: navi.length - 1,
+                key: null,
+                actions: navi,
+              })
+            );
+          }
+        } else if (userLoggedIn == 'true') {
           setshowSpinner(false);
 
           if (mePatient) {

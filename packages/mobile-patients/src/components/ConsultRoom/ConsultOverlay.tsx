@@ -418,7 +418,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const onPressPay = () => {
     // Pay Button Clicked	event
     postWebEngagePayButtonClickedEvent();
-
     CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
     CommonLogEvent(
       AppRoutes.DoctorDetails,

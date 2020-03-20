@@ -20,7 +20,7 @@ import {
   getPatinetAppointments,
   getPatinetAppointments_getPatinetAppointments_patinetAppointments,
 } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, callPermissions } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -263,6 +263,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     }
     setLoading && setLoading(true);
     fetchAppointments();
+    callPermissions();
   }, [currentPatient]);
 
   useEffect(() => {
