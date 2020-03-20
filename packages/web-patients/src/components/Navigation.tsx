@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -139,6 +140,7 @@ export const Navigation: React.FC = (props) => {
   const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { cartItems } = useShoppingCart();
+  const { diagnosticsCartItems } = useDiagnosticsCart();
   const cartPopoverRef = useRef(null);
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
 
@@ -194,7 +196,9 @@ export const Navigation: React.FC = (props) => {
       >
         <span>
           <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
-          <span className={classes.itemCount}>{cartItems.length || 0}</span>
+          <span className={classes.itemCount}>
+            {cartItems.length + diagnosticsCartItems.length || 0}
+          </span>
         </span>
       </div>
       {/* <div className={`${classes.notificationBtn}`}>
@@ -234,7 +238,7 @@ export const Navigation: React.FC = (props) => {
           </Link>
           <Link
             className={classes.cartTypeGroup}
-            to={clientRoutes.medicinesCart()}
+            to={clientRoutes.testsCart()}
             onClick={() => setIsCartPopoverOpen(false)}
           >
             <div className={classes.cartTypeIcon}>
@@ -247,7 +251,7 @@ export const Navigation: React.FC = (props) => {
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
               </div>
-              <div className={classes.itemsAdded}>No Items</div>
+              <div className={classes.itemsAdded}>{`${diagnosticsCartItems.length} Items`}</div>
             </div>
           </Link>
         </div>

@@ -44,6 +44,7 @@ import { YourOrders } from 'components/Tests/YourOrders';
 import { SearchByTest } from 'components/Tests/SearchByTest';
 import { OrderDetails } from 'components/Tests/OrderDetails';
 import { Help } from 'components/Help/Help';
+import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -175,9 +176,11 @@ const AppContainer: React.FC = () => {
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <MedicinesCartProvider>
-              <LocationProvider>
-                <App />
-              </LocationProvider>
+              <DiagnosticsCartProvider>
+                <LocationProvider>
+                  <App />
+                </LocationProvider>
+              </DiagnosticsCartProvider>
             </MedicinesCartProvider>
           </MuiPickersUtilsProvider>
         </AphThemeProvider>

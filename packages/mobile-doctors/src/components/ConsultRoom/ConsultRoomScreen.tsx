@@ -892,7 +892,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               );
               if (!abondmentStarted && patientJoined) {
                 abondmentStarted = true;
-                startNoShow(200, () => {
+                startNoShow(600, () => {
                   callAbandonmentCall();
                 });
               }
@@ -1371,7 +1371,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             if (timediffInSec > 0) {
               startNoShow(timediffInSec, () => {
                 console.log('countdown ', joinTimerNoShow);
-                startNoShow(180, () => {
+                startNoShow(600, () => {
                   console.log('Trigger no ShowAPi');
                   console.log(joinTimerNoShow, 'joinTimerNoShow');
 
@@ -1379,7 +1379,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 });
               });
             } else {
-              startNoShow(180, () => {
+              startNoShow(600, () => {
                 console.log('Trigger no ShowAPi');
                 endAppointmentApiCall(STATUS.NO_SHOW);
               });

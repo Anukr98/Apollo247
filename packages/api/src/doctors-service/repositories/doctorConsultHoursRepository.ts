@@ -102,6 +102,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
           arrDayTimes.forEach((dayTimes: DayTimes) => {
             const dayConsultHour: Partial<ConsultHours> = {
               weekDay: weekDay.trim(),
+              actualDay: weekDay.trim(),
               startTime: dayTimes.startTime,
               endTime: dayTimes.endTime,
               ...consultHourData,

@@ -60,23 +60,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     console.log('route', route);
   };
 
-  // const handleOpenURL = (url: string) => {
-  //   console.log(url);
-  //   // Alert.alert('Linking Worked');
-  //   const { navigate } = props.navigation;
-  //   const route = url.replace(/.*?:\/\//g, '');
-  //   const id = route && route.match(/\/([^\/]+)\/?$/) && route.match(/\/([^\/]+)\/?$/)![1];
-  //   const routeName = route.split('/')[0];
-
-  //   switch (routeName) {
-  //     case 'appointments':
-  //       navigate(AppRoutes.Appointments, { id });
-  //       break;
-  //     // Add other urls as required
-  //     default:
-  //       break;
-  //   }
-  // };
   useEffect(() => {
     if (!doctorDetails) {
       getDoctorDetailsApi &&
@@ -142,14 +125,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     async function fetchData() {
       const isOnboardingDone = await AsyncStorage.getItem('isOnboardingDone');
       const isProfileFlowDone = await AsyncStorage.getItem('isProfileFlowDone');
-      // await AsyncStorage.getItem('doctorDetails');
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
       setTimeout(() => {
         console.log(firebaseUser);
-
-        // getLocalData()
-        //   .then((localData) => {
-        //     console.log(localData, 'localData');
         console.log('isLoggedIn', isLoggedIn, isOnboardingDone, isProfileFlowDone);
 
         if (isLoggedIn === 'true') {
@@ -163,12 +141,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         } else {
           props.navigation.replace(AppRoutes.LandingPage);
         }
-        // }
         SplashScreenView.hide();
-        // })
-        // .catch((e) => {
-        //   console.log('getLocalData error', e);
-        // });
       }, 2000);
     }
     fetchData();

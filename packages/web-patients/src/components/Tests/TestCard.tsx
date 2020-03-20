@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
+import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
+import stripHtml from 'string-strip-html';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -138,11 +140,21 @@ export interface TestListCardProps {
     | searchDiagnostics_searchDiagnostics_diagnostics
     | getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics
     | null;
+  mou: number;
 }
 
-export const TestsListCard: React.FC<TestListCardProps> = (props) => {
+export const TestCard: React.FC<TestListCardProps> = (props) => {
   const classes = useStyles({});
-  const { testData } = props;
+  const { testData, mou } = props;
+  const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
+
+  const itemIndexInCart = (
+    item:
+      | searchDiagnostics_searchDiagnostics_diagnostics
+      | getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics
+  ) => {
+    return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
+  };
 
   return (
     <div className={classes.root}>
@@ -161,13 +173,44 @@ export const TestsListCard: React.FC<TestListCardProps> = (props) => {
             </Link>
             <div className={classes.cartRight}>
               <div className={classes.addToCart}>
-                <AphButton>
+                {itemIndexInCart(testData) === -1 ? (
+                  <AphButton>
+                    <img
+                      src={require('images/ic_plus.svg')}
+                      alt="Add Item"
+                      title="Add item to Cart"
+                      onClick={() =>
+                        addCartItem &&
+                        addCartItem({
+                          id: `${testData.id}`,
+                          mou,
+                          name: stripHtml(testData.itemName),
+                          price: testData.rate,
+                          thumbnail: '',
+                          collectionMethod: testData.collectionType!,
+                        })
+                      }
+                    />
+                  </AphButton>
+                ) : (
+                  <AphButton>
+                    <img
+                      src={require('images/ic_cross_onorange_small.svg')}
+                      alt="Remove Item"
+                      title="Remove item from Cart"
+                      onClick={() => {
+                        removeCartItem && removeCartItem(`${testData.itemId}`);
+                      }}
+                    />
+                  </AphButton>
+                )}
+                {/* <AphButton>
                   <img
                     src={require('images/ic_plus.svg')}
                     alt="Add Item"
                     title="Add item to Cart"
                   />
-                </AphButton>
+                </AphButton> */}
               </div>
             </div>
           </div>
