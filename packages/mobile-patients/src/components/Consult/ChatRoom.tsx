@@ -146,6 +146,7 @@ import { colors } from '../../theme/colors';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { WebView } from 'react-native-webview';
+// import NetworkTest, { ErrorNames } from 'opentok-network-test-js';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -155,7 +156,7 @@ let timerId: any;
 let joinTimerId: any;
 let diffInHours: number;
 let callAbandonmentTimer: any;
-let callAbandonmentStoppedTimer: number = 440;
+let callAbandonmentStoppedTimer: number = 620;
 let messageSent: string;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
@@ -455,6 +456,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(error, 'error');
     }
   };
+
+  // useEffect(() => {}, []);
+
+  // const otNetworkTest = new NetworkTest(OT, {
+  //   apiKey: '123456', // Add the API key for your OpenTok project here.
+  //   sessionId: '1_MX40NzIwMzJ-fjE1MDElGQkJJfn4', // Add a test session ID for that project
+  //   token: 'T1==cGFydG5lcXN0PQ==', // Add a token for that session here
+  // });
 
   useEffect(() => {
     const userName =
@@ -1225,14 +1234,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               return obj.message === startConsultMsg;
             });
             // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
-            if (diffInMins < 15) {
-              if (response.totalOccupancy >= 2) {
-                if (callAbandonmentStoppedTimer == 440) return;
-                if (callAbandonmentStoppedTimer < 440) {
-                  // console.log('calljoined');
-                  APIForUpdateAppointmentData(true);
-                }
-              } else {
+            if (response.totalOccupancy >= 2) {
+              if (callAbandonmentStoppedTimer == 620) return;
+              if (callAbandonmentStoppedTimer < 620) {
+                // console.log('calljoined');
+                APIForUpdateAppointmentData(true);
+              }
+            } else {
+              if (diffInMins < 15) {
                 if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
                   // console.log('abondmentStarted -------> ', abondmentStarted);
 
@@ -1285,7 +1294,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(440);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(620);
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
@@ -1308,7 +1317,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
 
       abondmentStarted = true;
-      startCallAbondmentTimer(440, true);
+      startCallAbondmentTimer(620, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1331,7 +1340,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
 
         abondmentStarted = true;
-        startCallAbondmentTimer(440, false);
+        startCallAbondmentTimer(620, false);
       } else {
         abondmentStarted = false;
       }
@@ -1357,8 +1366,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             NextAvailableSlot(appointmentData, 'Transfer', true);
           }
-          setCallAbundantCallTime(440);
-          callAbandonmentStoppedTimer = 440;
+          setCallAbundantCallTime(620);
+          callAbandonmentStoppedTimer = 620;
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
       }, 1000);
@@ -1371,8 +1380,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
     callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-    setCallAbundantCallTime(440);
-    callAbandonmentStoppedTimer = 440;
+    setCallAbundantCallTime(620);
+    callAbandonmentStoppedTimer = 620;
     abondmentStarted = false;
   };
 
