@@ -466,7 +466,7 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
             getlocationData(resolve, reject);
           }
         } else {
-          if (response === 'restricted' && Platform.OS === 'ios') {
+          if (response === 'denied' || response === 'restricted') {
             Alert.alert('Location', 'Enable location access form settings', [
               {
                 text: 'Cancle',
