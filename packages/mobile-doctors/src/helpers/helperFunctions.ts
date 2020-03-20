@@ -2,6 +2,9 @@ import moment from 'moment';
 import NetInfo from '@react-native-community/netinfo';
 import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
+import Permissions, { PERMISSIONS, Permission } from 'react-native-permissions';
+import { Alert, Platform } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
@@ -283,3 +286,49 @@ export function g(obj: any, ...props: string[]) {
   return obj && props.reduce((result, prop) => (result == null ? undefined : result[prop]), obj);
 }
 /*eslint-enable */
+
+export const permissionHandler = (
+  permission: Permission,
+  deniedMessage: string,
+  doRequest: () => void
+) => {
+  Permissions.request(permission)
+    .then((message) => {
+      console.log(message, 'sdhu');
+
+      if (message === 'granted') {
+        doRequest();
+      } else if (message === 'denied' || message === 'blocked') {
+        Alert.alert((permission.split('.').pop() || 'permission').toUpperCase(), deniedMessage, [
+          {
+            text: 'Cancle',
+            onPress: () => {},
+          },
+          {
+            text: 'Ok',
+            onPress: () => {
+              Permissions.openSettings();
+              AsyncStorage.setItem('permissionHandler', 'true');
+            },
+          },
+        ]);
+      }
+    })
+    .catch((e) => console.log(e, 'dsvunacimkl'));
+};
+
+export const callPermissions = (doRequest?: () => void) => {
+  permissionHandler(
+    Platform.OS === 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.CAMERA,
+    'Enable camera from settings for calls during consultation.',
+    () => {
+      permissionHandler(
+        Platform.OS === 'ios' ? PERMISSIONS.IOS.MICROPHONE : PERMISSIONS.ANDROID.RECORD_AUDIO,
+        'Enable microphone from settings for calls during consultation.',
+        () => {
+          doRequest && doRequest();
+        }
+      );
+    }
+  );
+};

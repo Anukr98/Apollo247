@@ -26,6 +26,7 @@ import {
   ScrollView,
 } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { callPermissions } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = AppointmentsListStyles;
 
@@ -197,15 +198,18 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           ],
                         });
                       } else {
-                        props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                          DoctorId: doctorId,
-                          PatientId: patientId,
-                          PatientConsultTime: null,
-                          PatientInfoAll: PatientInfo,
-                          AppId: appId,
-                          Appintmentdatetime: i.appointmentDateTime,
-                          AppointmentStatus: i.status,
-                          AppoinementData: i,
+                        setLoading && setLoading(false);
+                        callPermissions(() => {
+                          props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                            DoctorId: doctorId,
+                            PatientId: patientId,
+                            PatientConsultTime: null,
+                            PatientInfoAll: PatientInfo,
+                            AppId: appId,
+                            Appintmentdatetime: i.appointmentDateTime,
+                            AppointmentStatus: i.status,
+                            AppoinementData: i,
+                          });
                         });
                       }
                     } else {

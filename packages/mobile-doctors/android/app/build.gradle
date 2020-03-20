@@ -135,7 +135,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.001"
+        versionName "1.008"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -193,6 +193,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-permissions')
     implementation project(':react-native-svg')
     implementation project(':@react-native-community_art')
     implementation project(':react-native-exception-handler')
