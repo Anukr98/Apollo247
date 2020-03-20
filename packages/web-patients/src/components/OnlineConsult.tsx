@@ -467,14 +467,18 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const makePaymentMutation = useMutation<makeAppointmentPayment, makeAppointmentPaymentVariables>(
     MAKE_APPOINTMENT_PAYMENT
   );
-  let appointmentDateTime = '';
+  let appointmentDateTime = ''; // this is delcared here intentionally as global. don't edit => Kumar
   if (scheduleLater || !consultNowAvailable) {
     const dateForScheduleLater =
-      dateSelected.length > 0 ? dateSelected.replace(/\/g/, '-') : apiDateFormat;
-    const appointmentDateTimeString = new Date(
-      `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`
-    );
-    appointmentDateTime = moment.utc(appointmentDateTimeString).format();
+      dateSelected.length > 0
+        ? dateSelected.replace(/\//g, '-')
+        : moment(apiDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
+    appointmentDateTime = moment(
+      `${dateForScheduleLater} ${String(timeSelected).padStart(5, '0')}:00`,
+      'DD-MM-YYYY HH:mm:ss'
+    )
+      .utc()
+      .format();
   } else {
     appointmentDateTime = consultNowSlotTime;
   }
@@ -718,7 +722,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               (scheduleLater && timeSelected === '')
             }
             onClick={() => {
-              let appointmentDateTime = '';
+              // let appointmentDateTime = '';
               if (scheduleLater || !consultNowAvailable) {
                 const dateForScheduleLater =
                   dateSelected.length > 0
