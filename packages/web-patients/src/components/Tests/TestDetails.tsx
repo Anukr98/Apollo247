@@ -514,9 +514,9 @@ export const TestDetails: React.FC = (props) => {
                             testDetails.gender == 'B'
                               ? 'BOYS AND GIRLS'
                               : testDetails.gender == 'M'
-                                ? 'BOYS'
-                                : 'GIRLS'
-                            }`}
+                              ? 'BOYS'
+                              : 'GIRLS'
+                          }`}
                         </div>
                       )}
                       <div className={classes.textInfo}>
@@ -600,8 +600,8 @@ export const TestDetails: React.FC = (props) => {
                     isSmallScreen ? (
                       <div {...props} style={{ position: 'static' }} />
                     ) : (
-                        <div {...props} />
-                      )
+                      <div {...props} />
+                    )
                   }
                 >
                   <div className={classes.customScroll}>
@@ -639,8 +639,8 @@ export const TestDetails: React.FC = (props) => {
                         ) : itemIndexInCart(testDetails) === -1 ? (
                           'Add To Cart'
                         ) : (
-                              'Added To Cart'
-                            )}
+                          'Added To Cart'
+                        )}
                       </AphButton>
                     </div>
                   </div>
@@ -648,12 +648,12 @@ export const TestDetails: React.FC = (props) => {
               </div>
             </div>
           ) : (
-              loading && (
-                <div className={classes.progressLoader}>
-                  <CircularProgress size={30} />
-                </div>
-              )
-            )}
+            loading && (
+              <div className={classes.progressLoader}>
+                <CircularProgress size={30} />
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>
