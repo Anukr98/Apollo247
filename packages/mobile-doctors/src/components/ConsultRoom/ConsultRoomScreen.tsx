@@ -87,7 +87,7 @@ import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { PatientInfoData } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { g, messageCodes, callPermissions } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -164,7 +164,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   ];
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
-  const [hideView, setHideView] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
@@ -1607,11 +1606,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               </View>
             ),
             onPress: () => {
-              setHideView(!hideView);
-              if (startConsult && isAfter) {
-                setActiveTabIndex(tabsData[1].title);
-                setShowPopUp(true);
-              }
+              callPermissions(() => {
+                if (startConsult && isAfter) {
+                  setActiveTabIndex(tabsData[1].title);
+                  setShowPopUp(true);
+                }
+              });
             },
           },
           {

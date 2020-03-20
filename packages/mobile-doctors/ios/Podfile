@@ -52,17 +52,18 @@ target 'ApolloDoctor' do
   pod 'RNImageCropPicker', :path => '../node_modules/react-native-image-crop-picker'
   pod 'QBImagePickerController', :path => '../node_modules/react-native-image-crop-picker/ios/QBImagePicker/QBImagePickerController.podspec'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
-
-
   pod 'BugsnagReactNative', :path => '../node_modules/bugsnag-react-native'
-
   pod 'RNExitApp', :path => '../node_modules/react-native-exit-app'
-
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
-
   pod 'ReactNativeART', :path => '../node_modules/@react-native-community/art'
-
-
   pod 'RNSVG', :path => '../node_modules/react-native-svg'
+
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera.podspec"
+  pod 'Permission-Microphone', :path => "#{permissions_path}/Microphone.podspec"
+  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications.podspec"
+  pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary.podspec"
+
+  pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
 
 end
