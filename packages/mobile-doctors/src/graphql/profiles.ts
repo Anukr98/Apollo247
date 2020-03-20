@@ -123,6 +123,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           symptoms {
             symptom
           }
+          id
           status
           doctorType
           sentToPatient
