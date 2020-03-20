@@ -7,16 +7,25 @@ import {
   UpComingIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 import {
   APPOINTMENT_TYPE,
   DoctorType,
   STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  UpdatePatientPrescriptionSentStatus,
+  UpdatePatientPrescriptionSentStatusVariables,
+} from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { Appointments } from '@aph/mobile-doctors/src/helpers/commonTypes';
+import { callPermissions, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import moment from 'moment';
 import React from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import { View } from 'react-native';
 import {
   NavigationParams,
@@ -25,15 +34,6 @@ import {
   NavigationScreenProps,
   ScrollView,
 } from 'react-navigation';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import {
-  UpdatePatientPrescriptionSentStatus,
-  UpdatePatientPrescriptionSentStatusVariables,
-} from '@aph/mobile-doctors/src/graphql/types/UpdatePatientPrescriptionSentStatus';
-import { UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS } from '@aph/mobile-doctors/src/graphql/profiles';
-import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { useApolloClient } from 'react-apollo-hooks';
 
 const styles = AppointmentsListStyles;
 
@@ -258,15 +258,18 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           ],
                         });
                       } else {
-                        props.navigation.push(AppRoutes.ConsultRoomScreen, {
-                          DoctorId: doctorId,
-                          PatientId: patientId,
-                          PatientConsultTime: null,
-                          PatientInfoAll: PatientInfo,
-                          AppId: appId,
-                          Appintmentdatetime: i.appointmentDateTime,
-                          AppointmentStatus: i.status,
-                          AppoinementData: i,
+                        setLoading && setLoading(false);
+                        callPermissions(() => {
+                          props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                            DoctorId: doctorId,
+                            PatientId: patientId,
+                            PatientConsultTime: null,
+                            PatientInfoAll: PatientInfo,
+                            AppId: appId,
+                            Appintmentdatetime: i.appointmentDateTime,
+                            AppointmentStatus: i.status,
+                            AppoinementData: i,
+                          });
                         });
                       }
                     } else {

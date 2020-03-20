@@ -393,7 +393,7 @@ export const ConsultTabs: React.FC = () => {
   const [lastMsg, setLastMsg] = useState<any>(null);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
-  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(false);
+  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';

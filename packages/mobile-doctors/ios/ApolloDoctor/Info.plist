@@ -61,13 +61,13 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Uses Camera</string>
+	<string>${PRODUCT_NAME} need access to the camera for image upload and video calling.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Uses Location</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Uses Microphone</string>
+	<string>${PRODUCT_NAME} need access to the microphone for audio and video calling.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Uses Gallery</string>
+	<string>${PRODUCT_NAME} need access to the photos for image upload.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialIcons-Regular.ttf</string>

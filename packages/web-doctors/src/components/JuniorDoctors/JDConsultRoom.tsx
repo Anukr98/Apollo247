@@ -430,7 +430,7 @@ export const JDConsultRoom: React.FC = () => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const client = useApolloClient();
-  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(false);
+  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
 
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
