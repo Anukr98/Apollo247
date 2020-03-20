@@ -182,7 +182,8 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
                       onClick={() =>
                         addCartItem &&
                         addCartItem({
-                          id: `${testData.id}`,
+                          itemId: `${testData.itemId}`,
+                          id: testData.id,
                           mou,
                           name: stripHtml(testData.itemName),
                           price: testData.rate,
@@ -199,7 +200,7 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
                       alt="Remove Item"
                       title="Remove item from Cart"
                       onClick={() => {
-                        removeCartItem && removeCartItem(`${testData.itemId}`);
+                        removeCartItem && removeCartItem(testData.id, `${testData.itemId}`);
                       }}
                     />
                   </AphButton>

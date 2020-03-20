@@ -9,12 +9,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface DiagnosticsCartItem {
   id: string;
+  itemId: string;
   name: string;
   mou: number; // package of how many tests (eg. 10)
   price: number;
   thumbnail: string | null;
   specialPrice?: number;
-  collectionMethod: TEST_COLLECTION_TYPE; // Home or Clinic (most probably `H` will not be an option)
+  collectionMethod: TEST_COLLECTION_TYPE | null; // Home or Clinic (most probably `H` will not be an option)
 }
 
 export interface DiagnosticSlot {
@@ -35,7 +36,9 @@ export interface DiagnosticsCartContextProps {
   setDiagnosticsCartItems: ((items: DiagnosticsCartItem[]) => void) | null;
   addCartItem: ((item: DiagnosticsCartItem) => void) | null;
   addMultipleCartItems: ((items: DiagnosticsCartItem[]) => void) | null;
-  removeCartItem: ((itemId: DiagnosticsCartItem['id']) => void) | null;
+  removeCartItem:
+    | ((id: DiagnosticsCartItem['id'], itemId: DiagnosticsCartItem['itemId']) => void)
+    | null;
   updateCartItem:
     | ((itemUpdates: Partial<DiagnosticsCartItem> & { id: DiagnosticsCartItem['id'] }) => void)
     | null;
@@ -97,11 +100,6 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 export const DiagnosticsCartProvider: React.FC = (props) => {
   // const { currentPatient } = useAllCurrentPatients();
   const id = ''; //(currentPatient && currentPatient.id) || '';
-  const AsyncStorageKeys = {
-    diagnosticsCartItems: `diagnosticsCartItems${id}`,
-    ePrescriptions: `diagnosticsEPrescriptions${id}`,
-    physicalPrescriptions: `diagnosticsPhysicalPrescriptions${id}`,
-  };
 
   const [forPatientId, setPatientId] = useState<string>('');
 
@@ -158,8 +156,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDiagnosticsCartItems(newCartItems);
   };
 
-  const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id) => {
-    const newCartItems = diagnosticsCartItems.filter((item) => item.id !== id);
+  const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id, itemId) => {
+    const newCartItems = diagnosticsCartItems.filter(
+      (item) => item.id !== id && item.itemId !== itemId
+    );
     setDiagnosticsCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
