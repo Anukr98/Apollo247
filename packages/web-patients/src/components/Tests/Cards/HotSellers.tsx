@@ -3,11 +3,11 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
-import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
-import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers } from 'graphql/types/getDiagnosticsData';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { TEST_COLLECTION_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -115,6 +115,7 @@ interface HotSellerProps {
 
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
+  const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const { data, isLoading } = props;
   const sliderSettings = {
     infinite: data && data.length > 6 ? true : false,
@@ -158,6 +159,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     ],
   };
 
+  const itemIndexInCart = (item: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers) => {
+    return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
+  };
+
   if (isLoading) {
     return <CircularProgress size={22} />;
   }
@@ -169,33 +174,67 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
           data.map(
             (hotSeller: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null) =>
               hotSeller && (
-                <Link
-                  to={clientRoutes.testDetails(
-                    hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
-                  )}
-                >
-                  <div className={classes.card}>
-                    <div className={classes.cardWrap}>
-                      <div className={classes.productIcon}>
-                        {hotSeller.packageImage ? (
-                          <img src={hotSeller.packageImage} alt="" />
-                        ) : (
-                          <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-                        )}
+                <div className={classes.card}>
+                  <div className={classes.cardWrap}>
+                    <div
+                      className={classes.productIcon}
+                      onClick={() =>
+                        (window.location.href = clientRoutes.testDetails(
+                          hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
+                        ))
+                      }
+                    >
+                      {hotSeller.packageImage ? (
+                        <img src={hotSeller.packageImage} alt="" />
+                      ) : (
+                        <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                      )}
+                    </div>
+                    <div className={classes.productTitle}>{hotSeller.packageName}</div>
+                    <div className={classes.bottomSection}>
+                      <div className={classes.priceGroup}>
+                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                        <span>Rs. {hotSeller.price} </span>
                       </div>
-                      <div className={classes.productTitle}>{hotSeller.packageName}</div>
-                      <div className={classes.bottomSection}>
-                        <div className={classes.priceGroup}>
-                          <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
-                          <span>Rs. {hotSeller.price} </span>
-                        </div>
-                        <div className={classes.addToCart}>
-                          <AphButton>Add To Cart</AphButton>
-                        </div>
+                      <div className={classes.addToCart}>
+                        {itemIndexInCart(hotSeller) === -1 ? (
+                          <AphButton
+                            onClick={() =>
+                              addCartItem &&
+                              addCartItem({
+                                itemId: hotSeller.diagnostics
+                                  ? `${hotSeller.diagnostics.itemId}`
+                                  : '',
+                                id: hotSeller.id,
+                                mou: data.length,
+                                name: hotSeller.packageName || '',
+                                price: hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0,
+                                thumbnail: hotSeller.packageImage,
+                                collectionMethod: hotSeller.diagnostics
+                                  ? hotSeller.diagnostics.collectionType
+                                  : null,
+                              })
+                            }
+                          >
+                            Add To Cart
+                          </AphButton>
+                        ) : (
+                          <AphButton
+                            onClick={() => {
+                              removeCartItem &&
+                                removeCartItem(
+                                  hotSeller.id,
+                                  hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
+                                );
+                            }}
+                          >
+                            remove
+                          </AphButton>
+                        )}
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               )
           )}
       </Slider>
