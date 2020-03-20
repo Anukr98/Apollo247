@@ -601,18 +601,32 @@ app.get('/consultpayment', (req, res) => {
                   '"){ status } }',
               };
               axios.post(process.env.API_URL, requestJSON);
-              req.session.appointmentId = req.query.appointmentId;
-              req.session.source = source;
-              res.render('consults.ejs', {
-                athsToken: response.data.data.getAthsToken.patient.athsToken,
-                merchantId: resp.data.Result,
-                price: req.query.price,
-                patientId: req.query.patientId,
-                patientName: response.data.data.getAthsToken.patient.firstName,
-                mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
-                baseUrl: process.env.APP_BASE_URL,
-                pgUrl: process.env.CONSULT_PG_URL,
-              });
+              const getAptRequestJson = {
+                query:
+                  'query { getAppointmentData(appointmentId:"' +
+                  req.query.appointmentId +
+                  '"){ appointmentsHistory { discountedAmount } } }',
+              };
+              axios
+                .post(process.env.API_URL, getAptRequestJson)
+                .then((Aptresp) => {
+                  req.session.appointmentId = req.query.appointmentId;
+                  req.session.source = source;
+                  res.render('consults.ejs', {
+                    athsToken: response.data.data.getAthsToken.patient.athsToken,
+                    merchantId: resp.data.Result,
+                    price: Aptresp.appointmentsHistory.discountedAmount,
+                    patientId: req.query.patientId,
+                    patientName: response.data.data.getAthsToken.patient.firstName,
+                    mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
+                    baseUrl: process.env.APP_BASE_URL,
+                    pgUrl: process.env.CONSULT_PG_URL,
+                  });
+                })
+                .catch((err) => {
+                  console.log(err);
+                  res.send(err, 'Appointment id error');
+                });
             })
             .catch((err) => {
               console.log(err);
