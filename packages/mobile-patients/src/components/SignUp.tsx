@@ -430,11 +430,12 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       }
                     } else if (!gender) {
                       validationMessage = 'Please select gender';
-                    } else if (referral !== '') {
-                      if (!isValidReferral) {
-                        validationMessage = 'Enter valid referral code';
-                      }
                     }
+                    // else if (referral !== '') {
+                    //   if (!isValidReferral) {
+                    //     validationMessage = 'Enter valid referral code';
+                    //   }
+                    // }
                     if (validationMessage) {
                       Alert.alert('Error', validationMessage);
                     } else {

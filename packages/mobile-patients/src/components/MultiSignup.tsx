@@ -437,9 +437,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       AppRoutes.MultiSignup,
                       'There should be 1 profile with relation set as Me'
                     );
-                  } else if (referral !== '' && !isValidReferral) {
-                    Alert.alert('Apollo', 'Enter valid referral code');
-                  } else {
+                  }
+                  // else if (referral !== '' && !isValidReferral) {
+                  //   Alert.alert('Apollo', 'Enter valid referral code');
+                  // }
+                  else {
                     setVerifyingPhoneNumber(true);
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
