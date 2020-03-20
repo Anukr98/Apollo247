@@ -209,7 +209,6 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                 mou: data.length,
                                 name: hotSeller.packageName || '',
                                 price: hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0,
-                                specialPrice: undefined,
                                 thumbnail: hotSeller.packageImage,
                                 collectionMethod: hotSeller.diagnostics
                                   ? hotSeller.diagnostics.collectionType
