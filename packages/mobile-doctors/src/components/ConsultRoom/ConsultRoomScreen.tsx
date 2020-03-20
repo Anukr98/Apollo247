@@ -169,14 +169,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
   let PatientInfoAll = props.navigation.getParam('PatientInfoAll');
   const AppId = props.navigation.getParam('AppId');
-  const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
+  let Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
   const [showLoading, setShowLoading] = useState<boolean>(false);
-  const appointmentData = props.navigation.getParam('AppoinementData');
+  let appointmentData = props.navigation.getParam('AppoinementData');
 
   const [dropdownShow, setDropdownShow] = useState(false);
   const channel = props.navigation.getParam('AppId');
-  const doctorId = props.navigation.getParam('DoctorId');
-  const patientId = props.navigation.getParam('PatientId');
+  let doctorId = props.navigation.getParam('DoctorId');
+  let patientId = props.navigation.getParam('PatientId');
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
   const [activeTabIndex, setActiveTabIndex] = useState(
     props.activeTabIndex ? props.activeTabIndex.toString() : tabsData[0].title
@@ -340,6 +340,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
     PatientInfoAll = g(caseSheet, 'patientDetails') || null;
+    Appintmentdatetime = g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime');
+    appointmentData = g(caseSheet, 'caseSheetDetails', 'appointment');
+    doctorId = g(caseSheet, 'caseSheetDetails', 'doctorId') || '';
+    patientId = g(caseSheet, 'caseSheetDetails', 'patientId') || '';
+
     setPastList(g(caseSheet, 'pastAppointments') || null);
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
     setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
@@ -1602,7 +1607,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   opacity: isAfter ? 1 : 0.5,
                 }}
               >
-                {appointmentData.status == 'COMPLETED' || showEditPreviewButtons ? null : <Call />}
+                {(appointmentData || {}).status == 'COMPLETED' || showEditPreviewButtons ? null : (
+                  <Call />
+                )}
               </View>
             ),
             onPress: () => {
@@ -1623,8 +1630,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     opacity: isAfter ? 1 : 0.5,
                   }}
                 >
-                  {appointmentData.appointmentState == 'AWAITING_RESCHEDULE' ||
-                  appointmentData.status == 'COMPLETED' ||
+                  {(appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ||
+                  (appointmentData || {}).status == 'COMPLETED' ||
                   showEditPreviewButtons ||
                   isAudioCall ||
                   isCall ? null : (
@@ -1692,12 +1699,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 optionText: strings.consult.end_cancel_consult,
                 onPress: () => {
                   if (
-                    appointmentData.appointmentStatus === STATUS.COMPLETED &&
-                    appointmentData.sentToPatient === false &&
+                    (appointmentData || {}).appointmentStatus === STATUS.COMPLETED &&
+                    (appointmentData || {}).sentToPatient === false &&
                     // (isClickedOnPriview || props.sentToPatient === false) &&
                     !caseSheetEdit &&
-                    (appointmentData.status === STATUS.PENDING ||
-                      appointmentData.status === STATUS.IN_PROGRESS)
+                    ((appointmentData || {}).status === STATUS.PENDING ||
+                      (appointmentData || {}).status === STATUS.IN_PROGRESS)
                   ) {
                     setDropdownShow(false);
                     setshowCancelPopup(true);

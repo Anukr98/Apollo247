@@ -258,7 +258,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
 
-  const { showAphAlert, setLoading, loading } = useUIElements();
+  const { showAphAlert, setLoading, loading, hideAphAlert } = useUIElements();
   const { doctorDetails } = useAuth();
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
@@ -327,16 +327,29 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               'blobName'
             )}`
           );
-          followUpMessage(
-            `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-              _data,
-              'data',
-              'updatePatientPrescriptionSentStatus',
-              'blobName'
-            )}`
-          );
-          props.navigation.popToTop();
           setLoading && setLoading(false);
+          if (!g(props.caseSheet, 'caseSheetDetails', 'sentToPatient')) {
+            followUpMessage(
+              `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+                _data,
+                'data',
+                'updatePatientPrescriptionSentStatus',
+                'blobName'
+              )}`
+            );
+            props.navigation.popToTop();
+          } else {
+            showAphAlert &&
+              showAphAlert({
+                title: 'Hi',
+                description: 'Resend Prescription Sent Successfuly',
+                onPressOk: () => {
+                  props.navigation.popToTop();
+                  hideAphAlert && hideAphAlert();
+                },
+                unDismissable: true,
+              });
+          }
         }
       })
       .catch((e) => {
@@ -356,6 +369,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       setShowEditPreviewButtons(true);
       prescriptionView();
     }
+    if (g(props.caseSheet, 'caseSheetDetails', 'sentToPatient')) {
+      setShowEditPreviewButtons(false);
+    }
+    setStatus(g(props.caseSheet, 'caseSheetDetails', 'appointment', 'status'));
   }, [props.caseSheet]);
 
   const startDate = moment(new Date()).format('YYYY-MM-DD');
@@ -749,33 +766,55 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
 
   const renderCompletedButtons = () => {
-    return (
-      <StickyBottomComponent
-        style={{
-          backgroundColor: '#f0f4f5',
-        }}
-      >
-        <View style={styles.footerButtonsContainer}>
-          <Button
-            onPress={() => {
-              props.setCaseSheetEdit(true);
-              setShowEditPreviewButtons(true);
-            }}
-            title={'EDIT CASE SHEET'}
-            titleTextStyle={styles.buttonTextStyle}
-            variant="white"
-            style={[styles.buttonsaveStyle, { marginRight: 16 }]}
-          />
-          <Button
-            title={'SEND TO PATIENT'}
-            onPress={() => {
-              sendToPatientAction();
-            }}
-            style={styles.buttonendStyle}
-          />
-        </View>
-      </StickyBottomComponent>
-    );
+    if (!g(props.caseSheet, 'caseSheetDetails', 'sentToPatient')) {
+      return (
+        <StickyBottomComponent
+          style={{
+            backgroundColor: '#f0f4f5',
+          }}
+        >
+          <View style={styles.footerButtonsContainer}>
+            <Button
+              onPress={() => {
+                props.setCaseSheetEdit(true);
+                setShowEditPreviewButtons(true);
+              }}
+              title={'EDIT CASE SHEET'}
+              titleTextStyle={styles.buttonTextStyle}
+              variant="white"
+              style={[styles.buttonsaveStyle, { marginRight: 16 }]}
+            />
+            <Button
+              title={'SEND TO PATIENT'}
+              onPress={() => {
+                sendToPatientAction();
+              }}
+              style={styles.buttonendStyle}
+            />
+          </View>
+        </StickyBottomComponent>
+      );
+    } else {
+      return (
+        <StickyBottomComponent
+          style={{
+            backgroundColor: '#f0f4f5',
+            justifyContent: 'center',
+            paddingBottom: 16,
+          }}
+        >
+          <View style={styles.footerButtonsContainersave}>
+            <Button
+              title={'RE-SEND TO PATIENT'}
+              onPress={() => {
+                sendToPatientAction();
+              }}
+              variant="white"
+            />
+          </View>
+        </StickyBottomComponent>
+      );
+    }
   };
 
   const renderEditPreviewButtons = () => {
