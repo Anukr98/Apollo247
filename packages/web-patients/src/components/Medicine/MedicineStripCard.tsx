@@ -415,7 +415,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                   selectedPackedContainer[index] || medicineQty > 0
                     ? classes.showElement
                     : classes.hideElement
-                  }`}
+                }`}
               >
                 <AphCustomDropdown
                   classes={{ selectMenu: classes.selectMenuItem }}
@@ -476,23 +476,23 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                       />
                     </AphButton>
                   ) : (
-                      <AphButton
-                        onClick={(e) => {
-                          const existingSelectedPackedValues = selectedPackedContainer;
-                          existingSelectedPackedValues[index] = true;
-                          setSelectedPackedContainer((previousValues) => [
-                            ...previousValues,
-                            ...existingSelectedPackedValues,
-                          ]);
-                        }}
-                      >
-                        <img
-                          src={require('images/ic_plus.svg')}
-                          alt="Add Item"
-                          title="Add item to Cart"
-                        />
-                      </AphButton>
-                    )}
+                    <AphButton
+                      onClick={(e) => {
+                        const existingSelectedPackedValues = selectedPackedContainer;
+                        existingSelectedPackedValues[index] = true;
+                        setSelectedPackedContainer((previousValues) => [
+                          ...previousValues,
+                          ...existingSelectedPackedValues,
+                        ]);
+                      }}
+                    >
+                      <img
+                        src={require('images/ic_plus.svg')}
+                        alt="Add Item"
+                        title="Add item to Cart"
+                      />
+                    </AphButton>
+                  )}
                 </div>
               ) : null}
             </div>
