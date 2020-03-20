@@ -57,6 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 20,
         paddingRight: 20,
         justifyContent: 'space-between',
+        zIndex: 2,
       },
     },
     brandListingSection: {
@@ -120,6 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     scrollBar: {
       height: 'calc(100vh - 195px) !important',
+      zIndex: 1,
       [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 245px) !important',
       },
@@ -385,11 +387,11 @@ export const SearchByMedicine: React.FC = (props) => {
                       params.searchMedicineType === 'search-by-brand' ? (
                         <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
                       ) : (
-                        <MedicineListscard
-                          medicineList={medicineListFiltered}
-                          isLoading={isLoading}
-                        />
-                      )
+                          <MedicineListscard
+                            medicineList={medicineListFiltered}
+                            isLoading={isLoading}
+                          />
+                        )
                     }
                   </MedicinesCartContext.Consumer>
                 </div>
