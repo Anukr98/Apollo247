@@ -16,13 +16,15 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        zIndex: 991,
+        top: 50,
         borderRadius: 0,
         paddingTop: 0,
         paddingBottom: 20,
         boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
         width: '100%',
         height: 'auto',
-        zIndex: 2,
       },
     },
     filterSection: {
