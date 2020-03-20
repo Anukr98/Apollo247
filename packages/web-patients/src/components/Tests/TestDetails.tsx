@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
+import { Theme, Tabs, Tab, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -7,6 +7,21 @@ import Scrollbars from 'react-custom-scrollbars';
 import { NavigationBottom } from 'components/NavigationBottom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AphButton } from '@aph/web-ui-components';
+import { useParams } from 'hooks/routerHooks';
+import axios from 'axios';
+import {
+  searchDiagnosticsById,
+  searchDiagnosticsByIdVariables,
+  searchDiagnosticsById_searchDiagnosticsById_diagnostics as diagnosticTestDetails,
+} from 'graphql/types/searchDiagnosticsById';
+import { TEST_COLLECTION_TYPE } from 'graphql/types/globalTypes';
+import { SEARCH_DIAGNOSTICS_BY_ID } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+
+import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
+import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
+import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
+import stripHtml from 'string-strip-html';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -307,6 +322,10 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       paddingBottom: 10,
     },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
+    },
     substitutes: {
       backgroundColor: '#f7f8f5',
       padding: 10,
@@ -355,6 +374,10 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    progressLoader: {
+      textAlign: 'center',
+      padding: 20,
+    },
   };
 });
 
@@ -367,7 +390,84 @@ export const TestDetails: React.FC = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [tabValue, setTabValue] = useState<number>(0);
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
+  const params = useParams<{ itemId: string }>();
+  const [testDetails, setTestDetails] = React.useState<diagnosticTestDetails | null>(null);
+  const [testDetailsPackage, setTestDetailsPackage] = React.useState(null);
+  const client = useApolloClient();
+  const [loading, setLoading] = useState(false);
+  const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
+  const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
+  const mou = 1;
+  const apiDetails = {
+    url: process.env.GET_PACKAGE_DATA,
+  };
 
+  const TestApiCredentials = {
+    UserName: 'ASKAPOLLO',
+    Password: '3HAQbAb9wrsykr8TMLnV',
+    InterfaceClient: 'ASKAPOLLO',
+  };
+
+  const getPackageDetails = async (itemId: string) => {
+    setLoading(true);
+    axios
+      .post(apiDetails.url || '', {
+        ...TestApiCredentials,
+        ItemID: itemId,
+      })
+      .then((data: any) => {
+        console.log('data==', data);
+        if (data && data.data && data.data.data && data.data.data) {
+          const details = data.data.data;
+          let packagedetails = details[0];
+          if (packagedetails && packagedetails !== '') {
+            setLoading(false);
+            setTestDetailsPackage(packagedetails);
+          }
+        }
+      })
+      .catch((e: any) => {
+        console.log('TestDetails', e);
+        setLoading(false);
+      });
+  };
+  const getTestDetails = async (itemId: string) => {
+    setLoading(true);
+    client
+      .query<searchDiagnosticsById>({
+        query: SEARCH_DIAGNOSTICS_BY_ID,
+        variables: {
+          itemIds: itemId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        if (data && data.searchDiagnosticsById && data.searchDiagnosticsById.diagnostics) {
+          setLoading(false);
+          setTestDetails(data.searchDiagnosticsById.diagnostics[0]);
+          console.log('data----', data);
+        }
+      })
+      .catch((e) => {
+        setLoading(false);
+        console.log(e);
+      });
+  };
+
+  useEffect(() => {
+    if (!testDetails && !testDetailsPackage) {
+      getTestDetails(params.itemId);
+      getPackageDetails(params.itemId);
+    }
+  }, [testDetails, testDetailsPackage]);
+
+  const itemIndexInCart = (
+    item:
+      | searchDiagnostics_searchDiagnostics_diagnostics
+      | getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics
+  ) => {
+    return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
+  };
   return (
     <div className={classes.root}>
       <Header />
@@ -382,114 +482,164 @@ export const TestDetails: React.FC = (props) => {
             </a>
             <div className={classes.detailsHeader}>Test Detail</div>
           </div>
-          <div className={classes.medicineDetailsGroup}>
-            <div className={classes.searchSection}>
-              <Scrollbars
-                className={classes.scrollResponsive}
-                autoHide={true}
-                autoHeight
-                autoHeightMax={'calc(100vh - 215px'}
-              >
-                <div className={classes.productInformation}>
-                  <div className={classes.productBasicInfo}>
-                    <h2>Urine Cotinine (Nicotine) Test</h2>
-                    <div className={classes.textInfo}>
-                      <label>Age Group</label>
-                      BELOW 7 YEARS
+          {testDetails ? (
+            <div className={classes.medicineDetailsGroup}>
+              <div className={classes.searchSection}>
+                <Scrollbars
+                  className={classes.scrollResponsive}
+                  autoHide={true}
+                  autoHeight
+                  autoHeightMax={'calc(100vh - 215px'}
+                >
+                  <div className={classes.productInformation}>
+                    <div className={classes.productBasicInfo}>
+                      <h2>{testDetails && testDetails.itemName}</h2>
+                      {!!testDetails.toAgeInDays && (
+                        <div className={classes.textInfo}>
+                          <label>Age Group</label>
+                          {(testDetails.fromAgeInDays / 365).toFixed(0)} TO{' '}
+                          {(testDetails.toAgeInDays / 365).toFixed(0)} YEARS
+                        </div>
+                      )}
+                      {!!testDetails.toAgeInDays && (
+                        <div className={classes.textInfo}>
+                          <label>Gender</label>
+                          {`${'For' + ' '}${
+                            testDetails.gender == 'B'
+                              ? 'BOYS AND GIRLS'
+                              : testDetails.gender == 'M'
+                                ? 'BOYS'
+                                : 'GIRLS'
+                            }`}
+                        </div>
+                      )}
+                      {testDetailsPackage && (
+                        <div className={classes.textInfo}>
+                          <label>Sample Type</label>
+                          {/* {testDetailsPackage && testDetailsPackage.SampleTypeName} */}
+                        </div>
+                      )}
+                      <div className={classes.textInfo}>
+                        <label>Collection Method</label>
+                        {testDetails.collectionType
+                          ? testDetails.collectionType === TEST_COLLECTION_TYPE.HC
+                            ? 'HOME VISIT OR CLINIC VISIT'
+                            : 'CLINIC VISIT'
+                          : null}
+                      </div>
                     </div>
-                    <div className={classes.textInfo}>
-                      <label>Gender</label>
-                      FOR BOYS AND GIRLS
-                    </div>
-                    <div className={classes.textInfo}>
-                      <label>Sample Type</label>
-                      Urine
-                    </div>
-                    <div className={classes.textInfo}>
-                      <label>Collection Method</label>
-                      HOME VISIT OR CLINIC VISIT
-                    </div>
-                  </div>
-                  <div>
-                    <Tabs
-                      value={tabValue}
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
+                    <div>
+                      <Tabs
+                        value={tabValue}
                         classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
+                          root: classes.tabsRoot,
+                          indicator: classes.tabsIndicator,
                         }}
-                        label="Test Included"
-                        title={'Choose home delivery'}
-                      />
-                      <Tab
-                        classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
+                        onChange={(e, newValue) => {
+                          setTabValue(newValue);
                         }}
-                        label="Preparation"
-                        title={'Choose store pick up'}
-                      />
-                    </Tabs>
-                    {tabValue === 0 && (
-                      <TabContainer>
-                        <div className={classes.tabsWrapper}>
+                      >
+                        <Tab
+                          classes={{
+                            root: classes.tabRoot,
+                            selected: classes.tabSelected,
+                          }}
+                          label="Test Included"
+                          title={'Choose home delivery'}
+                        />
+                        <Tab
+                          classes={{
+                            root: classes.tabRoot,
+                            selected: classes.tabSelected,
+                          }}
+                          label="Preparation"
+                          title={'Choose store pick up'}
+                        />
+                      </Tabs>
+                      {tabValue === 0 && (
+                        <TabContainer>
+                          {/* {testDetailsPackage && testDetailsPackage.TestName && <div className={classes.tabsWrapper}>
                           <div className={classes.testsList}>
                             <span>1.</span>
-                            <span>Test a</span>
+                            <span>{testDetailsPackage.TestName}</span>
                           </div>
-                          <div className={classes.testsList}>
-                            <span>2.</span>
-                            <span>Test a</span>
+                        </div>} */}
+                          <></>
+                        </TabContainer>
+                      )}
+                      {tabValue === 1 && (
+                        <TabContainer>
+                          <div className={classes.tabsWrapper}>
+                            <div className={classes.testsList}>
+                              {(testDetails && testDetails.testPreparationData) || 'Not available'}
+                            </div>
                           </div>
-                          <div className={classes.testsList}>
-                            <span>3.</span>
-                            <span>Test a</span>
-                          </div>
-                          <div className={classes.testsList}>
-                            <span>4.</span>
-                            <span>Test a</span>
-                          </div>
-                          <div className={classes.testsList}>
-                            <span>5.</span>
-                            <span>Test a</span>
-                          </div>
-                        </div>
-                      </TabContainer>
+                        </TabContainer>
+                      )}
+                    </div>
+                  </div>
+                </Scrollbars>
+              </div>
+              <div className={`${classes.medicineSection}`}>
+                <Scrollbars
+                  className={classes.scrollResponsive}
+                  autoHide={true}
+                  renderView={(props) =>
+                    isSmallScreen ? (
+                      <div {...props} style={{ position: 'static' }} />
+                    ) : (
+                        <div {...props} />
+                      )
+                  }
+                >
+                  <div className={classes.customScroll}>
+                    {testDetails && (
+                      <div className={classes.substitutes}>
+                        Rs. {testDetails && testDetails.rate}
+                      </div>
                     )}
-                    {tabValue === 1 && <TabContainer>Preparation</TabContainer>}
+                    <div className={classes.addToCart}>
+                      <AphButton
+                        color="primary"
+                        disabled={addMutationLoading || itemIndexInCart(testDetails) !== -1}
+                        className={addMutationLoading || itemIndexInCart(testDetails) !== -1 ? classes.buttonDisable : ''}
+                        onClick={() => {
+                          setAddMutationLoading(true);
+                          addCartItem &&
+                            addCartItem({
+                              itemId: `${testDetails.itemId}`,
+                              id: testDetails.id,
+                              mou,
+                              name: stripHtml(testDetails.itemName),
+                              price: testDetails.rate,
+                              thumbnail: '',
+                              collectionMethod: testDetails.collectionType!,
+                            })
+                          setAddMutationLoading(false);
+                        }}
+                      >
+                        {' '}
+                        {addMutationLoading ? (
+                          <CircularProgress size={22} color="secondary" />
+                        ) : itemIndexInCart(testDetails) !== -1 ?
+                            (
+                              'Added To Cart'
+                            ) : (
+                              'Add To Cart'
+                            )}
+                      </AphButton>
+                    </div>
                   </div>
-                </div>
-              </Scrollbars>
+                </Scrollbars>
+              </div>
             </div>
-            <div className={`${classes.medicineSection}`}>
-              <Scrollbars
-                className={classes.scrollResponsive}
-                autoHide={true}
-                renderView={(props) =>
-                  isSmallScreen ? (
-                    <div {...props} style={{ position: 'static' }} />
-                  ) : (
-                    <div {...props} />
-                  )
-                }
-              >
-                <div className={classes.customScroll}>
-                  <div className={classes.substitutes}>Rs. 6,500 </div>
-                  <div className={classes.addToCart}>
-                    <AphButton color="primary">Add to Cart</AphButton>
-                  </div>
+          ) : (
+              loading && (
+                <div className={classes.progressLoader}>
+                  <CircularProgress size={30} />
                 </div>
-              </Scrollbars>
-            </div>
-          </div>
+              )
+            )}
         </div>
       </div>
     </div>
