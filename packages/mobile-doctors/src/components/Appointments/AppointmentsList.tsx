@@ -51,7 +51,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return props.newPatientsList.indexOf(id) > -1;
   };
   const { doctorDetails } = useAuth();
-  const { showAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
 
   const getStatusCircle = (status: string, showNext: boolean) => {
     return showNext ? (
@@ -231,17 +231,17 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                           'success'
                                         )
                                       ) {
-                                        props.navigation.popToTop();
-                                        // showAphAlert &&
-                                        //   showAphAlert({
-                                        //     title: 'Hi',
-                                        //     description: 'Resend Prescription Sent Successfuly',
-                                        //     onPressOk: () => {
-
-                                        //       props.navigation.popToTop();
-                                        //     },
-
-                                        //   });
+                                        // props.navigation.popToTop();
+                                        showAphAlert &&
+                                          showAphAlert({
+                                            title: 'Hi',
+                                            description: 'Resend Prescription Sent Successfuly',
+                                            onPressOk: () => {
+                                              props.navigation.popToTop();
+                                              hideAphAlert && hideAphAlert();
+                                            },
+                                            unDismissable: true,
+                                          });
                                       }
                                     })
                                     .catch((e) => {
