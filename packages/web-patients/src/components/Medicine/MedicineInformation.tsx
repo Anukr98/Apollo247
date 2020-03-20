@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
+import { Theme, MenuItem, Popover } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineNotifyPopover } from 'components/Medicine/MedicineNotifyPopover';
@@ -12,6 +12,7 @@ import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -293,6 +294,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [updateMutationLoading, setUpdateMutationLoading] = useState<boolean>(false);
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
   const [showPopup, setShowPopup] = React.useState<boolean>(false);
+  const [tatLoading, setTatLoading] = React.useState<boolean>(false);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -329,6 +331,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const fetchDeliveryTime = async () => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
+    setTatLoading(true);
     await axios
       .post(
         apiDetails.deliveryUrl || '',
@@ -355,6 +358,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then((res: AxiosResponse) => {
         try {
           if (res && res.data) {
+            setTatLoading(false);
             if (
               typeof res.data === 'object' &&
               Array.isArray(res.data.tat) &&
@@ -437,7 +441,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         maxLength: 6,
                         type: 'text',
                       }}
-                      onChange={(e) => setPinCode(e.target.value)}
+                      onChange={(e) => {
+                        setPinCode(e.target.value);
+                        if (e.target.value.length < 6) {
+                          setDeliveryTime('');
+                        }
+                      }}
                     />
                     <AphButton
                       disabled={pinCode.length !== 6}
@@ -453,7 +462,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   {deliveryTime.length > 0 && (
                     <div className={classes.deliveryTimeInfo}>
                       <span>Delivery Time</span>
-                      <span>{deliveryTime}</span>
+                      {tatLoading ? <CircularProgress size={20} /> : <span>{deliveryTime}</span>}
                     </div>
                   )}
                 </div>
