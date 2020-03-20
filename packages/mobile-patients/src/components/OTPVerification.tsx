@@ -928,6 +928,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={showResentTimer ? () => {} : onClickResend}
+                style={{ width: '50%' }}
               >
                 <Text
                   style={[
