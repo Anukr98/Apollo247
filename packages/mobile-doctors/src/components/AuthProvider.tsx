@@ -45,7 +45,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setDoctorDetails: null,
   getDoctorDetailsApi: null,
   getDoctorDetailsError: false,
-  // signOut: null,
   setDoctorDetailsError: null,
 });
 
@@ -154,17 +153,6 @@ export const AuthProvider: React.FC = (props) => {
         });
     });
   };
-
-  // const signOut = useCallback(() => {
-  //   try {
-  //     auth.signOut();
-  //     setAuthToken('');
-  //     setDoctorDetails(null);
-  //     console.log('authprovider signOut');
-  //   } catch (error) {
-  //     console.log('signOut error', error);
-  //   }
-  // }, [auth]);
 
   // listen to firebase auth
   useEffect(() => {

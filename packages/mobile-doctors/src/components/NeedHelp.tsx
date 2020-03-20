@@ -12,23 +12,18 @@ const styles = NeedHelpStyles;
 export interface NeedHelpProps extends NavigationScreenProps {}
 
 const isPhoneNumberValid = (number: string) => {
-  const isValidNumber =
-    // (number.replace(/^0+/, '').length !== 10 && number.length !== 0) ||
-    /^[6-9]{1}\d{0,9}$/.test(number);
+  const isValidNumber = /^[6-9]{1}\d{0,9}$/.test(number);
   return isValidNumber;
 };
 
 export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
-  // const [verifyingPhoneNumber, setVerifyingPhonenNumber] = useState(false);
 
   const validateAndSetPhoneNumber = (number: string) => {
     if (/^\d+$/.test(number) || number == '') {
       setPhoneNumber(number);
-      // if (number.length == 10) {
       setPhoneNumberIsValid(isPhoneNumberValid(number));
-      // }
     } else {
       return false;
     }
@@ -72,11 +67,6 @@ export const NeedHelp: React.FC<NeedHelpProps> = (props) => {
           />
         </OtpCard>
       </SafeAreaView>
-      {/* {verifyingPhoneNumber ? (
-        <View style={styles.needhelpview}>
-          <ActivityIndicator animating={verifyingPhoneNumber} size="large" color="green" />
-        </View>
-      ) : null} */}
     </View>
   );
 };

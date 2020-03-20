@@ -142,7 +142,6 @@ export const MyFees: React.FC<ProfileProps> = (props) => {
 
                     {showPaymentDetails ? (
                       <>
-                        {/* <View style={styles.separator}></View> */}
                         <View style={styles.understatusline} />
                         {feeprofileRowdetails(
                           strings.account.ac_holder_name,

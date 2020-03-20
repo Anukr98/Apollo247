@@ -88,27 +88,6 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
     firebase.analytics().setCurrentScreen('Onboarding');
   });
 
-  // useEffect(() => {
-  //   console.log('OnboardingProps currentUser', currentUser);
-
-  //   // async function fetchData() {
-  //   //   firebase.analytics().setCurrentScreen('Onboarding');
-  //   //   const onboarding = await AsyncStorage.getItem('onboarding');
-  //   //   if (onboarding == 'true') {
-  //   //     props.navigation.replace(AppRoutes.Login);
-  //   //   }
-  //   // }
-  //   // fetchData();
-
-  //   if (currentUser) {
-  //     props.navigation.replace(AppRoutes.TabBar);
-
-  //     setTimeout(() => {
-  //       SplashScreen.hide();
-  //     }, 100);
-  //   }
-  // }, [currentUser, props.navigation]);
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainView}>

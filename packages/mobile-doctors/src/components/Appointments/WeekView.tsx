@@ -79,10 +79,6 @@ export const WeekView: React.FC<WeekViewProps> = (props) => {
         }}
         iconLeft={null}
         iconRight={null}
-        // dateNameStyle={styles.textStyle}
-        // dateNumberStyle={styles.textStyle}
-        // highlightDateNameStyle={[styles.textStyleToday, {}]}
-        // highlightDateNumberStyle={[styles.textStyleToday, {}]}
         dayComponent={(dayComponentProps) => {
           return renderDayComponent(new Date(dayComponentProps.date.toISOString()));
         }}
