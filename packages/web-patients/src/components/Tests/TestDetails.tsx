@@ -381,6 +381,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type TestDetails = {
+  TestName: string;
+  SampleRemarks: string;
+  SampleTypeName: string;
+  TestParameters: string;
+};
+
 const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
@@ -392,7 +399,7 @@ export const TestDetails: React.FC = (props) => {
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
   const params = useParams<{ itemId: string }>();
   const [testDetails, setTestDetails] = React.useState<diagnosticTestDetails | null>(null);
-  const [testDetailsPackage, setTestDetailsPackage] = React.useState(null);
+  const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
   const client = useApolloClient();
   const [loading, setLoading] = useState(false);
   const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
@@ -416,21 +423,21 @@ export const TestDetails: React.FC = (props) => {
         ItemID: itemId,
       })
       .then((data: any) => {
-        console.log('data==', data);
         if (data && data.data && data.data.data && data.data.data) {
           const details = data.data.data;
-          let packagedetails = details[0];
-          if (packagedetails && packagedetails !== '') {
-            setLoading(false);
-            setTestDetailsPackage(packagedetails);
+          if (details && details.length > 0) {
+            setTestDetailsPackage(details);
+          } else {
+            setTestDetailsPackage([]);
           }
+          setLoading(false);
         }
       })
       .catch((e: any) => {
-        console.log('TestDetails', e);
         setLoading(false);
       });
   };
+
   const getTestDetails = async (itemId: string) => {
     setLoading(true);
     client
@@ -445,7 +452,6 @@ export const TestDetails: React.FC = (props) => {
         if (data && data.searchDiagnosticsById && data.searchDiagnosticsById.diagnostics) {
           setLoading(false);
           setTestDetails(data.searchDiagnosticsById.diagnostics[0]);
-          console.log('data----', data);
         }
       })
       .catch((e) => {
@@ -508,17 +514,20 @@ export const TestDetails: React.FC = (props) => {
                             testDetails.gender == 'B'
                               ? 'BOYS AND GIRLS'
                               : testDetails.gender == 'M'
-                                ? 'BOYS'
-                                : 'GIRLS'
-                            }`}
+                              ? 'BOYS'
+                              : 'GIRLS'
+                          }`}
                         </div>
                       )}
-                      {testDetailsPackage && (
-                        <div className={classes.textInfo}>
-                          <label>Sample Type</label>
-                          {/* {testDetailsPackage && testDetailsPackage.SampleTypeName} */}
-                        </div>
-                      )}
+                      <div className={classes.textInfo}>
+                        <label>Sample Type</label>
+                        {/* {packageData.SampleTypeName} */}
+                        {testDetailsPackage &&
+                          testDetailsPackage.length > 0 &&
+                          testDetailsPackage
+                            .map((packageData: TestDetails) => packageData.SampleTypeName)
+                            .join(', ')}
+                      </div>
                       <div className={classes.textInfo}>
                         <label>Collection Method</label>
                         {testDetails.collectionType
@@ -558,13 +567,16 @@ export const TestDetails: React.FC = (props) => {
                       </Tabs>
                       {tabValue === 0 && (
                         <TabContainer>
-                          {/* {testDetailsPackage && testDetailsPackage.TestName && <div className={classes.tabsWrapper}>
-                          <div className={classes.testsList}>
-                            <span>1.</span>
-                            <span>{testDetailsPackage.TestName}</span>
-                          </div>
-                        </div>} */}
-                          <></>
+                          {testDetailsPackage &&
+                            testDetailsPackage.length > 0 &&
+                            testDetailsPackage.map((packageData: TestDetails, idx: number) => (
+                              <div className={classes.tabsWrapper}>
+                                <div className={classes.testsList}>
+                                  <span>{idx + 1}.</span>
+                                  <span>{packageData.TestName}</span>
+                                </div>
+                              </div>
+                            ))}
                         </TabContainer>
                       )}
                       {tabValue === 1 && (
@@ -588,8 +600,8 @@ export const TestDetails: React.FC = (props) => {
                     isSmallScreen ? (
                       <div {...props} style={{ position: 'static' }} />
                     ) : (
-                        <div {...props} />
-                      )
+                      <div {...props} />
+                    )
                   }
                 >
                   <div className={classes.customScroll}>
@@ -602,7 +614,11 @@ export const TestDetails: React.FC = (props) => {
                       <AphButton
                         color="primary"
                         disabled={addMutationLoading || itemIndexInCart(testDetails) !== -1}
-                        className={addMutationLoading || itemIndexInCart(testDetails) !== -1 ? classes.buttonDisable : ''}
+                        className={
+                          addMutationLoading || itemIndexInCart(testDetails) !== -1
+                            ? classes.buttonDisable
+                            : ''
+                        }
                         onClick={() => {
                           setAddMutationLoading(true);
                           addCartItem &&
@@ -614,19 +630,17 @@ export const TestDetails: React.FC = (props) => {
                               price: testDetails.rate,
                               thumbnail: '',
                               collectionMethod: testDetails.collectionType!,
-                            })
+                            });
                           setAddMutationLoading(false);
                         }}
                       >
-                        {' '}
                         {addMutationLoading ? (
                           <CircularProgress size={22} color="secondary" />
-                        ) : itemIndexInCart(testDetails) !== -1 ?
-                            (
-                              'Added To Cart'
-                            ) : (
-                              'Add To Cart'
-                            )}
+                        ) : itemIndexInCart(testDetails) === -1 ? (
+                          'Add To Cart'
+                        ) : (
+                          'Added To Cart'
+                        )}
                       </AphButton>
                     </div>
                   </div>
@@ -634,12 +648,12 @@ export const TestDetails: React.FC = (props) => {
               </div>
             </div>
           ) : (
-              loading && (
-                <div className={classes.progressLoader}>
-                  <CircularProgress size={30} />
-                </div>
-              )
-            )}
+            loading && (
+              <div className={classes.progressLoader}>
+                <CircularProgress size={30} />
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>
