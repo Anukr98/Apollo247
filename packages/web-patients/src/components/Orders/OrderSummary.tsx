@@ -131,7 +131,7 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
     <div className={classes.loader}>
       <CircularProgress />
     </div>
-  ) : (
+  ) : props.orderDetailsData && props.orderDetailsData.orderAutoId ? (
     <div className={classes.root}>
       <div className={classes.summaryHeader}>
         <div className={classes.headRow}>
@@ -172,5 +172,5 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
         Disclaimer: Price may vary when the actual bill is generated.
       </div>
     </div>
-  );
+  ) : null;
 };
