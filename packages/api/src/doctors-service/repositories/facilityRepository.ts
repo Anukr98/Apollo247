@@ -27,7 +27,7 @@ export class FacilityRepository extends Repository<Facility> {
 
   async findDistinctCity() {
     const citiesList: CityList[] = await this.createQueryBuilder('facility')
-      .select(['DISTINCT facility.city,', 'city', 'facility.id as id'])
+      .select(['DISTINCT facility.city as city', 'facility.id as id'])
       .where('facility.city is not null')
       .andWhere("facility.city != ''")
       .getRawMany()
