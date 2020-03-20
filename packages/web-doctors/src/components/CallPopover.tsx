@@ -883,7 +883,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   });
 
   //call abundant timer start
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(200);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(620);
   const callAbundantIntervalTimer = (timer: number) => {
     intervalCallAbundant = setInterval(() => {
       if (props.appointmentStatus !== STATUS.COMPLETED) {
@@ -925,7 +925,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   // timer for ring called end
   // timer for No show called
-  const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
+  const [remainingCallTime, setRemainingCallTime] = useState<number>(600);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
       const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
@@ -1020,8 +1020,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const startBtnInformationCheck = () => {
     if (currentUserType === LoggedInUserType.SECRETARY) {
       console.log('Secretary can not start consult');
-    } else if (startAppointmentButton) {
-      console.log('you can start your consult before 15 min and upto end time of appointment');
     } else if (disableOnCancel) {
       console.log('3rd condition');
     } else if (
@@ -1035,6 +1033,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentInfo!.status !== STATUS.PENDING
     ) {
       console.log('Your appointment status is ' + appointmentInfo!.status);
+    } else if (startAppointmentButton) {
+      console.log('you can start your consult before 15 min and upto end time of appointment');
     }
   };
   // timer for audio/video call end
@@ -1055,6 +1055,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [otherTextCancelValue, setOtherTextCancelValue] = useState('');
   const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
   const [isClickedOnPriview, setIsClickedOnPriview] = useState(false);
+  const [isResendLoading, setIsResendLoading] = useState(false);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -1303,16 +1304,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const disableaddedMinutes =
       disableyear +
       '-' +
-      disablemonth +
+      (disablemonth < 10 ? '0' + disablemonth : disablemonth) +
       '-' +
-      disableday +
+      (disableday < 10 ? '0' + disableday : disableday) +
       ' ' +
-      disablehour +
+      (disablehour < 10 ? '0' + disablehour : disablehour) +
       ':' +
-      disableminute +
+      (disableminute < 10 ? '0' + disableminute : disableminute) +
       ':' +
-      disablesecond;
-    const disableaddedTime = new Date(disableaddedMinutes);
+      (disablesecond < 10 ? '0' + disablesecond : disablesecond);
+    const disableaddedTime = new Date(disableaddedMinutes.replace(/-/g, '/'));
     const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
     const presentTime = new Date().toISOString();
 
@@ -1323,7 +1324,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
     ) {
       clearInterval(intervalcallId);
-      callIntervalTimer(180);
+      callIntervalTimer(600);
     }
     if (
       disablecurrent >= minusTime &&
@@ -1365,7 +1366,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
   useEffect(() => {
     if (props.urlToPatient) {
-      onStopConsult();
+      onStopConsult(false);
     }
   }, [props.urlToPatient]);
   useEffect(() => {
@@ -1460,7 +1461,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         if (presenceEventObject.totalOccupancy === 1 && occupancyPatient.length === 0) {
           if (!abondmentStarted && didPatientJoined) {
             abondmentStarted = true;
-            callAbundantIntervalTimer(200);
+            callAbundantIntervalTimer(620);
           }
         }
       }
@@ -1485,7 +1486,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       (status: any, response: any) => {}
     );
   };
-  const onStopConsult = () => {
+  const onStopConsult = (isResend: boolean) => {
     const text = {
       id: props.doctorId,
       message: stopConsult,
@@ -1494,14 +1495,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       sentBy: REQUEST_ROLES.DOCTOR,
     };
     unSubscribeBrowserButtonsListener();
-    pubnub.publish(
-      {
-        message: text,
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status: any, response: any) => {}
-    );
+    if (!isResend) {
+      pubnub.publish(
+        {
+          message: text,
+          channel: channel,
+          storeInHistory: true,
+        },
+        (status: any, response: any) => {}
+      );
+    } else {
+      setIsResendLoading(true);
+    }
 
     let folloupDateTime = new Date(
       new Date(props.appointmentDateTime).getTime() +
@@ -1530,7 +1535,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         caseSheetId: props.caseSheetId,
         doctorInfo: currentPatient,
         pdfUrl: props.prescriptionPdf,
+        isResend: isResend,
       };
+      const timeToLoad = isResend ? 1000 : 100;
+
       setTimeout(() => {
         pubnub.publish(
           {
@@ -1544,9 +1552,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             channel: channel,
             storeInHistory: true,
           },
-          (status: any, response: any) => {}
+          (status: any, response: any) => {
+            alert('Prescription has been sent to patient successfully');
+            setIsResendLoading(false);
+          }
         );
-      }, 100);
+      }, timeToLoad);
     }
   };
   const cancelConsultAction = () => {
@@ -1795,7 +1806,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             {props.appointmentStatus === STATUS.COMPLETED &&
             currentUserType !== LoggedInUserType.SECRETARY &&
             props.sentToPatient === true ? (
-              <span className={classes.prescriptionSent}>PRESCRIPTION SENT</span>
+              <Button
+                className={classes.backButton}
+                onClick={() => {
+                  onStopConsult(true);
+                }}
+              >
+                {isResendLoading ? 'please wait...' : 'Resend Prescription'}
+                {/* <span className={classes.prescriptionSent}>PRESCRIPTION SENT</span> */}
+              </Button>
             ) : (
               props.appointmentStatus === STATUS.COMPLETED &&
               currentUserType !== LoggedInUserType.SECRETARY &&
@@ -1920,7 +1939,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       appointmentInfo!.status !== STATUS.PENDING)
                   }
                   onClick={() => {
-                    !props.startAppointment ? onStartConsult() : onStopConsult();
+                    !props.startAppointment ? onStartConsult() : onStopConsult(false);
                     !props.startAppointment ? startInterval(900) : stopInterval();
                     props.startAppointmentClick(!props.startAppointment);
                     props.createSessionAction();
@@ -1931,7 +1950,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       appointmentInfo &&
                       appointmentInfo.appointmentType !== APPOINTMENT_TYPE.PHYSICAL
                     ) {
-                      callIntervalTimer(180);
+                      callIntervalTimer(600);
                     }
                   }}
                 >

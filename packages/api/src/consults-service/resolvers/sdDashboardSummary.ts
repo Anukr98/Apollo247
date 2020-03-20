@@ -169,7 +169,6 @@ const updateConsultRating: Resolver<
     okRating = 0,
     poorRating = 0,
     greatRating = 0;
-  console.log(feedbackData, 'feedback data');
   if (feedbackData.length > 0) {
     feedbackData.forEach((record) => {
       console.log(record, 'record');
@@ -199,8 +198,6 @@ const updateConsultRating: Resolver<
       validVdcOrders: validHubOrders[2],
       validVdcOrdersDelivered: validHubOrders[3],
     };
-
-    console.log('helpTicketCount', helpTicketCount);
     await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
   return { ratingRowsCount: feedbackData.length };
@@ -213,16 +210,20 @@ const updatePhrDocSummary: Resolver<
 > = async (parent, args, context) => {
   const { dashboardRepo, medOrderRepo, medRecordRepo } = getRepos(context);
   const docCount = await dashboardRepo.getDocumentSummary(args.summaryDate);
-  const prescritionCount = await medOrderRepo.getPrescriptionsCount(args.summaryDate);
-  const standAloneDoc = await medRecordRepo.getRecordSummary(args.summaryDate);
+  const oldDocCount = await dashboardRepo.getOldDocumentSummary(args.summaryDate);
+  const prescritionCount = await medOrderRepo.getPrescriptionsCountNewOld(args.summaryDate);
+  const standAloneDocCount = await medRecordRepo.getRecordSummaryNewOld(args.summaryDate);
   const phrDocAttrs: Partial<PhrDocumentsSummary> = {
     documentDate: args.summaryDate,
     appointmentDoc: docCount,
-    medicineOrderDoc: prescritionCount,
-    standAloneDoc,
+    medicineOrderDoc: prescritionCount[0],
+    oldMedicineOrderDoc: prescritionCount[1],
+    standAloneDoc: standAloneDocCount[0],
+    oldStandAloneDoc: standAloneDocCount[1],
+    oldAppointmentDoc: oldDocCount,
   };
   await dashboardRepo.saveDocumentSummary(phrDocAttrs);
-  return { apptDocCount: docCount, medDocCount: prescritionCount };
+  return { apptDocCount: docCount, medDocCount: prescritionCount[0] };
 };
 
 const updatePatientType: Resolver<

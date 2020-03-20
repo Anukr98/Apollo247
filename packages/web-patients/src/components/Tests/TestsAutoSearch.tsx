@@ -5,8 +5,14 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import axios from 'axios';
-import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { useLocationDetails } from 'components/LocationProvider';
+import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  searchDiagnostics,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from 'graphql/types/searchDiagnostics';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -122,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => {
     searchBtnDisabled: {
       opacity: 0.5,
       '& img': {
-        filter: 'grayscale(100%)',
+        filter: 'grayscale(100%)c',
       },
     },
     progressLoader: {
@@ -132,41 +138,49 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+const apiDetails = {
+  url: process.env.PHARMACY_MED_SEARCH_URL,
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+};
+
 export const TestsAutoSearch: React.FC = (props) => {
   const classes = useStyles({});
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
-  };
+  const { city } = useLocationDetails();
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
-  const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
+  const [searchTests, setSearchTests] = useState<
+    (searchDiagnostics_searchDiagnostics_diagnostics | null)[]
+  >([]);
   const [searchText, setSearchText] = useState('');
 
-  let cancelSearchSuggestionsApi: any;
   const [loading, setLoading] = useState(false);
-  const onSearchMedicine = async (value: string) => {
+
+  const onSearchTests = async (value: string) => {
     setLoading(true);
-    await axios
-      .post(
-        apiDetails.url,
-        {
-          params: value,
+    client
+      .query<searchDiagnostics>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          searchText: value,
+          city, //'Hyderabad' | 'Chennai,
+          patientId: (currentPatient && currentPatient.id) || '',
         },
-        {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
-        }
-      )
+        fetchPolicy: 'no-cache',
+      })
       .then(({ data }) => {
-        setSearchMedicines(data.products);
-        setLoading(false);
+        if (data && data.searchDiagnostics && data.searchDiagnostics.diagnostics) {
+          setLoading(false);
+          setSearchTests(data.searchDiagnostics.diagnostics);
+        }
       })
       .catch((e) => {
-        console.log(e);
+        setLoading(false);
+        console.log('Tests_onSearchMedicine', e);
       });
   };
+
   useEffect(() => {
     if (searchText.length < 3) {
       setLoading(false);
@@ -181,16 +195,20 @@ export const TestsAutoSearch: React.FC = (props) => {
           onChange={(e) => {
             setSearchText(e.target.value);
             if (e.target.value.length > 2) {
-              onSearchMedicine(e.target.value);
+              onSearchTests(e.target.value);
             } else {
-              setSearchMedicines([]);
+              setSearchTests([]);
             }
           }}
         />
         <AphButton
-          disabled={searchText.length < 3}
+          disabled={searchTests.length === 0}
           className={classes.searchBtn}
-          onClick={() => (window.location.href = clientRoutes.searchByTest())}
+          onClick={() => {
+            const text = searchText;
+            setSearchText('');
+            window.location.href = clientRoutes.searchByTest(text);
+          }}
           classes={{
             disabled: classes.searchBtnDisabled,
           }}
@@ -205,30 +223,29 @@ export const TestsAutoSearch: React.FC = (props) => {
               <CircularProgress size={30} />
             </div>
           )}
-          {searchMedicines && searchMedicines.length > 0 && (
+          {searchTests && searchTests.length > 0 && (
             <div className={classes.searchList}>
               <ul>
-                {searchMedicines.map((medicine) => (
-                  <li key={medicine.id}>
-                    <Link to={clientRoutes.testDetails()}>
-                      <div className={classes.medicineImg}>
-                        {medicine.is_prescription_required ? (
-                          <img src={require('images/ic_tablets_rx.svg')} alt="" />
-                        ) : (
-                          <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
-                        )}
-                      </div>
-                      <div className={classes.medicineInfo}>
-                        <div className={classes.medicineName}>{medicine.name}</div>
-                        {medicine.is_in_stock ? (
-                          <div className={classes.medicinePrice}>{`Rs. ${medicine.price}`}</div>
-                        ) : (
-                          <div className={classes.noStock}>Out Of Stock</div>
-                        )}
-                      </div>
-                    </Link>
-                  </li>
-                ))}
+                {searchTests.map(
+                  (test) =>
+                    test && (
+                      <li key={test.id}>
+                        <Link to={clientRoutes.testDetails(test.itemId.toString())}>
+                          <div className={classes.medicineImg}>
+                            <img src={require('images/ic_tests_icon.svg')} alt="" />
+                          </div>
+                          <div className={classes.medicineInfo}>
+                            {test.itemName && (
+                              <div className={classes.medicineName}>{test.itemName}</div>
+                            )}
+                            {test.rate && (
+                              <div className={classes.medicinePrice}>{`Rs. ${test.rate}`}</div>
+                            )}
+                          </div>
+                        </Link>
+                      </li>
+                    )
+                )}
               </ul>
             </div>
           )}

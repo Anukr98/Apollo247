@@ -1,3 +1,4 @@
+import ShareConsultStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
@@ -7,20 +8,11 @@ import {
   Selected,
   UnSelected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
-import {
-  Dimensions,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Dimensions, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import ShareConsultStyles from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult.styles';
 
 const { height } = Dimensions.get('window');
 

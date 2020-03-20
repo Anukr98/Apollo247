@@ -292,7 +292,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   ? 'auto'
                   : 'calc(100vh - 154px)'
               }
-              // autoHeightMax={isMediumScreen ? 'calc(100vh - 240px)' : ''}
             >
               <div className={classes.doctorProfileSection}>
                 <DoctorProfile

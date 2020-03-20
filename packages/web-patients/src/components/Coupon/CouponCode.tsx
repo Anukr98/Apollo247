@@ -137,29 +137,38 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
   );
   return (
     <div className={classes.root}>
-      <div className={classes.couponButton}>
-        <span className={classes.couponImg}>
-          <img src={require('images/ic_coupon.svg')} alt="" />
-        </span>
-        <span>Apply Coupon</span>
-        {!couponCodeApplied && (
-          <div className={classes.tickMark} onClick={() => setOpenCouponField(!openCouponField)}>
+      {!couponCodeApplied && (
+        <div className={classes.couponButton} onClick={() => setOpenCouponField(!openCouponField)}>
+          <span className={classes.couponImg}>
+            <img src={require('images/ic_coupon.svg')} alt="" />
+          </span>
+          <span>Apply Coupon</span>
+
+          <div className={classes.tickMark}>
             <img src={require('images/ic_arrow_right.svg')} alt="" />
           </div>
-        )}
-        {couponCodeApplied && (
+        </div>
+      )}
+
+      {couponCodeApplied && (
+        <div className={classes.couponButton}>
+          <span className={classes.couponImg}>
+            <img src={require('images/ic_coupon.svg')} alt="" />
+          </span>
+          <span> Coupon Applied</span>
           <AphButton
             className={classes.removeBtn}
             onClick={() => {
               props.setRevisedAmount(props.subtotal);
               setCouponText('');
               setCouponCodeApplied(false);
+              setOpenCouponField(false);
             }}
           >
             Remove
           </AphButton>
-        )}
-      </div>
+        </div>
+      )}
       {openCouponField && (
         <div className={classes.couponForm}>
           <AphTextField
@@ -216,6 +225,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
                 props.setRevisedAmount(props.subtotal);
                 setCouponText('');
                 setCouponCodeApplied(false);
+                setOpenCouponField(false);
               }}
             >
               Remove
@@ -229,17 +239,17 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
         <div className={classes.priceBox}>
           <div className={classes.priceRow}>
             <span>Subtotal</span>
-            <span className={classes.price}>Rs. {props.subtotal}.00</span>
+            <span className={classes.price}>Rs. {props.subtotal}</span>
           </div>
           <div className={classes.priceRow}>
             <span>Coupon ({couponText})</span>
             <span className={classes.price}>
-              -Rs. {Number(props.subtotal) - Number(props.revisedAmount)}.00
+              -Rs. {Number(props.subtotal) - Number(props.revisedAmount)}
             </span>
           </div>
           <div className={classes.totalPriceRow}>
             <span>To Pay</span>
-            <span className={classes.totalPrice}>Rs.{props.revisedAmount}.00</span>
+            <span className={classes.totalPrice}>Rs.{props.revisedAmount}</span>
           </div>
         </div>
       )}

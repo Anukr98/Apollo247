@@ -21,7 +21,6 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/RemoveTeamDoctorFromStarTeam';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';

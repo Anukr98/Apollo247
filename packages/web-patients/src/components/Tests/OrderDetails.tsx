@@ -1,7 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
-import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
+import {
+  AphButton,
+  AphCustomDropdown,
+  AphTrackSlider,
+  AphDeliveredSlider,
+} from '@aph/web-ui-components';
 import { array } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -11,6 +16,16 @@ import { MedicineCartItem } from 'components/MedicinesCartProvider';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import {
+  GetDiagnosticOrdersList,
+  GetDiagnosticOrdersListVariables,
+  GetDiagnosticOrdersList_getDiagnosticOrdersList_ordersList as ordersList,
+} from 'graphql/types/GetDiagnosticOrdersList';
+
+import moment from 'moment';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_DIAGNOSTIC_ORDER_LIST } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -286,6 +301,11 @@ const useStyles = makeStyles((theme: Theme) => {
     bold: {
       fontWeight: 'bold',
     },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
     phoneNumbers: {
       '& span': {
         color: '#fc9916',
@@ -294,29 +314,43 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface TestListCardProps {
-  medicineList: MedicineProduct[] | null;
-  isLoading: boolean;
-}
-
-export const OrderDetails: React.FC<TestListCardProps> = (props) => {
+export const OrderDetails: React.FC = () => {
   const classes = useStyles({});
-  const { addCartItem, removeCartItem, updateCartItemQty, cartItems } = useShoppingCart();
-  const options = Array.from(Array(20), (_, x) => x + 1);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const [displayId, setDisplayId] = React.useState<number>(0);
 
-  const [selectedPackedQty] = React.useState(1);
+  const { currentPatient } = useAllCurrentPatients();
 
-  const apiDetails = {
-    url: process.env.PHARMACY_MED_SEARCH_URL,
-    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-    imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+  const { data, error, loading } = useQueryWithSkip<
+    GetDiagnosticOrdersList,
+    GetDiagnosticOrdersListVariables
+  >(GET_DIAGNOSTIC_ORDER_LIST, {
+    variables: {
+      patientId: currentPatient && currentPatient.id,
+    },
+  });
+  if (loading)
+    return (
+      <div className={classes.loader}>
+        <CircularProgress />
+      </div>
+    );
+  if (error) return <div>Error :(</div>;
+
+  const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
+    return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
-  const itemIndexInCart = (item: MedicineProduct) => {
-    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
-  };
-
+  const testOrderListData =
+    data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList;
+  if (testOrderListData && testOrderListData.length > 0) {
+    const testOrderListData =
+      data && data.getDiagnosticOrdersList && data.getDiagnosticOrdersList.ordersList;
+    const firstOrderInfo = testOrderListData && testOrderListData[0];
+    if (!displayId && firstOrderInfo && firstOrderInfo.displayId) {
+      setDisplayId(firstOrderInfo.displayId);
+    }
+  }
   return (
     <div>
       <Header />
@@ -338,34 +372,43 @@ export const OrderDetails: React.FC<TestListCardProps> = (props) => {
             autoHeightMin={isSmallScreen ? 'calc(100vh - 180px)' : 'calc(100vh - 210px)'}
           >
             <div className={classes.content}>
-              <div className={classes.medicineStrip}>
-                <div className={classes.medicineStripWrap}>
-                  <div className={classes.medicineInformation}>
-                    <div className={classes.medicineIcon}>
-                      <img src={require('images/ic_tests_icon.svg')} alt="" />
-                    </div>
-                    <div>
-                      <div className={classes.orderID}>#A2472707936</div>
-                      <div className={classes.labelText}>Scheduled For : 10 Mar 2020, 06:00 AM</div>
-                    </div>
-                  </div>
-                  <div className={classes.labelText}>Home Visit</div>
-                </div>
-              </div>
-              <div className={classes.medicineStrip}>
-                <div className={classes.medicineStripWrap}>
-                  <div className={classes.medicineInformation}>
-                    <div className={classes.medicineIcon}>
-                      <img src={require('images/ic_tests_icon.svg')} alt="" />
-                    </div>
-                    <div>
-                      <div className={classes.orderID}>#A2472707936</div>
-                      <div className={classes.labelText}>Scheduled For : 10 Mar 2020, 06:00 AM</div>
-                    </div>
-                  </div>
-                  <div className={classes.labelText}>Clinic Visit</div>
-                </div>
-              </div>
+              {testOrderListData && testOrderListData.length > 0
+                ? testOrderListData.map(
+                    (testOrderInfo) =>
+                      testOrderInfo &&
+                      testOrderInfo.orderStatus && (
+                        <div
+                          key={testOrderInfo.id}
+                          className={classes.medicineStrip}
+                          onClick={() => setDisplayId(testOrderInfo.displayId)}
+                        >
+                          <div className={classes.medicineStripWrap}>
+                            <div className={classes.medicineInformation}>
+                              <div className={classes.medicineIcon}>
+                                <img src={require('images/ic_tests_icon.svg')} alt="" />
+                              </div>
+                              <div>
+                                <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
+                                <div className={classes.labelText}>
+                                  {testOrderInfo.orderStatus &&
+                                    `Scheduled For: ${moment(testOrderInfo!.diagnosticDate).format(
+                                      `D MMM YYYY`
+                                    )}${
+                                      !!testOrderInfo.slotTimings
+                                        ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
+                                        : ''
+                                    }`}
+                                </div>
+                              </div>
+                            </div>
+                            <div className={classes.labelText}>
+                              {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                  )
+                : 'No Orders Found'}
             </div>
           </Scrollbars>
           <div className={`${classes.medicineStrip} ${classes.scheduledRowBottom}`}>

@@ -131,6 +131,19 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         fromDate: newStartDate,
         toDate: newEndDate,
       })
+      .andWhere('appointment_documents.userType = 1')
+      .getCount();
+  }
+
+  getOldDocumentSummary(docDate: Date) {
+    const newStartDate = new Date(format(addDays(docDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(docDate, 'yyyy-MM-dd') + 'T18:30');
+    return AppointmentDocuments.createQueryBuilder('appointment_documents')
+      .where('appointment_documents.createdDate Between :fromDate AND :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere('appointment_documents.userType = 0')
       .getCount();
   }
 

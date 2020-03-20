@@ -1,9 +1,3 @@
-import {
-  setDiagnosticPrescriptionDataList,
-  setDiagonsisList,
-  setMedicineList,
-  setSysmptonsList,
-} from '@aph/mobile-doctors/src/components/ApiCall';
 import { styles } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView.styles';
 import { DiagnosisCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosisCard';
 import { DiagnosicsCard } from '@aph/mobile-doctors/src/components/ConsultRoom/DiagnosticsCard';
@@ -16,7 +10,6 @@ import { AddMedicinePopUp } from '@aph/mobile-doctors/src/components/ui/AddMedic
 import { AddSymptomPopUp } from '@aph/mobile-doctors/src/components/ui/AddSymptomPopUp';
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { ChoicePopUp } from '@aph/mobile-doctors/src/components/ui/ChoicePopUp';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
 import {
   AddPlus,
@@ -57,7 +50,6 @@ import {
 import {
   GetCaseSheet_getCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
   GetCaseSheet_getCaseSheet_pastAppointments,
@@ -72,13 +64,13 @@ import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineL
 import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
   APPOINTMENT_TYPE,
+  MEDICINE_FORM_TYPES,
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
-  MEDICINE_FORM_TYPES,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   modifyCaseSheet,
@@ -98,18 +90,19 @@ import {
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import React, { Dispatch, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  SafeAreaView,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -119,7 +112,6 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -281,7 +273,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     symptonsData,
     setSymptonsData,
     pastList,
-    setPastList,
     lifeStyleData,
     setLifeStyleData,
     medicalHistory,
@@ -289,9 +280,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     familyValues,
     setFamilyValues,
     patientDetails,
-    setPatientDetails,
     healthWalletArrayData,
-    setHealthWalletArrayData,
     tests,
     setTests,
     addedAdvices,
@@ -313,7 +302,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     doctorNotes,
     setDoctorNotes,
     displayId,
-    setDisplayId,
     prescriptionPdf,
     setPrescriptionPdf,
   } = props;
@@ -728,7 +716,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <View style={styles.footerButtonsContainersave}>
               <Button
                 title={strings.buttons.start_consult}
-                disabled={!enableConsultButton}
+                // disabled={!enableConsultButton}
                 buttonIcon={<Start style={{ right: 10 }} />}
                 onPress={() => {
                   setShowButtons(true);
@@ -790,17 +778,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const renderSentToPatient = () => {
-    return (
-      <StickyBottomComponent
-        style={{ backgroundColor: '#f0f4f5', justifyContent: 'center', height: 50 }}
-      >
-        <Text style={theme.viewStyles.text('M', 13, theme.colors.LIGHT_BLUE)}>
-          PRESCRIPTION SENT
-        </Text>
-      </StickyBottomComponent>
-    );
-  };
   const renderEditPreviewButtons = () => {
     //console.log({ Appintmentdatetimeconsultpage });
     return (
@@ -1572,6 +1549,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
+  //It will be used in future
   const renderFollowUpView = () => {
     return (
       <View>
@@ -2672,10 +2650,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           ? renderEditPreviewButtons()
           : stastus == STATUS.COMPLETED
           ? renderCompletedButtons()
-          : moment(Appintmentdatetimeconsultpage).format('YYYY-MM-DD') == startDate ||
-            stastus == 'IN_PROGRESS'
-          ? renderButtonsView()
-          : null}
+          : renderButtonsView()}
       </View>
       {yesorno && renderyesorno()}
     </SafeAreaView>

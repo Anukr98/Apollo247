@@ -5,6 +5,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { OrderCard } from 'components/Orders/OrderCard';
 import { OrdersMessage } from 'components/Orders/OrdersMessage';
 import { TrackOrders } from 'components/Orders/TrackOrders';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -30,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
         width: 'auto',
+        display: 'none',
       },
     },
     sectionHeader: {
@@ -110,6 +112,7 @@ export const YourOrders: React.FC = (props) => {
       <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
         <TrackOrders orderAutoId={orderAutoId} />
       </div>
+      <NavigationBottom />
       <Popover
         open={isPopoverOpen}
         anchorEl={mascotRef.current}

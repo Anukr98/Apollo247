@@ -179,7 +179,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const patientId = props.navigation.getParam('PatientId');
   const PatientConsultTime = props.navigation.getParam('PatientConsultTime');
   const [activeTabIndex, setActiveTabIndex] = useState(
-    // tabsData[0].title
     props.activeTabIndex ? props.activeTabIndex.toString() : tabsData[0].title
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
@@ -892,7 +891,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               );
               if (!abondmentStarted && patientJoined) {
                 abondmentStarted = true;
-                startNoShow(200, () => {
+                startNoShow(600, () => {
                   callAbandonmentCall();
                 });
               }
@@ -1371,7 +1370,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             if (timediffInSec > 0) {
               startNoShow(timediffInSec, () => {
                 console.log('countdown ', joinTimerNoShow);
-                startNoShow(180, () => {
+                startNoShow(600, () => {
                   console.log('Trigger no ShowAPi');
                   console.log(joinTimerNoShow, 'joinTimerNoShow');
 
@@ -1379,7 +1378,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 });
               });
             } else {
-              startNoShow(180, () => {
+              startNoShow(600, () => {
                 console.log('Trigger no ShowAPi');
                 endAppointmentApiCall(STATUS.NO_SHOW);
               });
@@ -1693,8 +1692,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 optionText: strings.consult.end_cancel_consult,
                 onPress: () => {
                   if (
-                    appointmentData.status === STATUS.PENDING ||
-                    appointmentData.status === STATUS.IN_PROGRESS
+                    appointmentData.appointmentStatus === STATUS.COMPLETED &&
+                    appointmentData.sentToPatient === false &&
+                    // (isClickedOnPriview || props.sentToPatient === false) &&
+                    !caseSheetEdit &&
+                    (appointmentData.status === STATUS.PENDING ||
+                      appointmentData.status === STATUS.IN_PROGRESS)
                   ) {
                     setDropdownShow(false);
                     setshowCancelPopup(true);

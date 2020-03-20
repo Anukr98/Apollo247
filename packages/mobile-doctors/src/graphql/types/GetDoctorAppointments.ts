@@ -16,6 +16,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet {
   __typename: "CaseSheet";
   symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
+  id: string | null;
   status: string | null;
   doctorType: DoctorType | null;
   sentToPatient: boolean | null;

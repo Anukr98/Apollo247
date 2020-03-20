@@ -85,6 +85,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
           C: 'specialistSingularTerm',
           D: 'specialistPluralTerm',
           E: 'image',
+          F: 'displayOrder',
         },
       },
     ],

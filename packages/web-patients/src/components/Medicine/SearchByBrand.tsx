@@ -132,7 +132,8 @@ export const SearchByBrand: React.FC = (props) => {
   const [data, setData] = useState<MedicineProduct[] | null>(null);
   const [priceFilter, setPriceFilter] = useState();
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
-
+  const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
+  const [disableFilters, setDisableFilters] = useState<boolean>(true);
   useEffect(() => {
     if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
       axios
@@ -209,7 +210,18 @@ export const SearchByBrand: React.FC = (props) => {
             Search By Brand ({data && data.length})
           </div>
           <div className={classes.brandListingSection}>
-            <MedicineFilter setMedicineList={setData} setPriceFilter={setPriceFilter} />
+            <MedicineFilter
+              disableFilters={disableFilters}
+              manageFilter={(disableFilters) => {
+                setDisableFilters(disableFilters);
+              }}
+              setMedicineList={setData}
+              setPriceFilter={setPriceFilter}
+              showResponsiveFilter={showResponsiveFilter}
+              setShowResponsiveFilter={(showResponsiveFilter: boolean) =>
+                setShowResponsiveFilter(showResponsiveFilter)
+              }
+            />
             <div className={classes.searchSection}>
               <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
                 <div className={classes.customScroll}>

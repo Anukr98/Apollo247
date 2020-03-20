@@ -20,7 +20,6 @@ import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graph
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { format } from 'date-fns';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -37,11 +36,6 @@ export interface ProfileProps
   scrollViewRef: KeyboardAwareScrollView | null;
   onReload: () => void;
 }
-
-const get12HrsFormat = (timeString: string /* 12:30 */) => {
-  const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i, 10));
-  return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
-};
 
 const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
   `${moment(startTime, 'HH:mm')
