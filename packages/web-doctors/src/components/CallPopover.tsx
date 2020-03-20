@@ -1930,8 +1930,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   className={classes.consultButton}
                   disabled={
                     currentUserType === LoggedInUserType.SECRETARY ||
-                    startAppointmentButton ||
-                    disableOnCancel ||
+                    // startAppointmentButton ||
+                    // disableOnCancel ||
                     (appointmentInfo!.appointmentState !== 'NEW' &&
                       appointmentInfo!.appointmentState !== 'TRANSFER' &&
                       appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
