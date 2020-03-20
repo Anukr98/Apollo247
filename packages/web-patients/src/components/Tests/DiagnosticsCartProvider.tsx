@@ -256,5 +256,15 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 };
 
-export const useDiagnosticsCart = () =>
-  useContext<DiagnosticsCartContextProps>(DiagnosticsCartContext);
+const useDiagnosticsContext = () => useContext<DiagnosticsCartContextProps>(DiagnosticsCartContext);
+
+export const useDiagnosticsCart = () => ({
+  diagnosticsCartItems: useDiagnosticsContext().diagnosticsCartItems,
+  setDiagnosticsCartItems: useDiagnosticsContext().setDiagnosticsCartItems,
+  addCartItem: useDiagnosticsContext().addCartItem,
+  removeCartItem: useDiagnosticsContext().removeCartItem,
+  addMultipleCartItems: useDiagnosticsContext().addMultipleCartItems,
+  updateCartItem: useDiagnosticsContext().updateCartItem,
+  cartTotal: useDiagnosticsContext().cartTotal,
+  grandTotal: useDiagnosticsContext().grandTotal,
+});
