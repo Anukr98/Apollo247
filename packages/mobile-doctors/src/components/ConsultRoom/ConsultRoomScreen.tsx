@@ -263,6 +263,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
+      stopNoShow();
+      stopMissedCallTimer();
     };
   }, []);
 
