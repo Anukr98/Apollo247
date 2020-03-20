@@ -82,7 +82,6 @@ const slides: Slide[] = [
 export interface OnboardingPageProps extends NavigationScreenProps {}
 export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
-  // const { currentUser } = useAuth();
   const [state, setState] = useState(true);
 
   useEffect(() => {
@@ -94,7 +93,6 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
       AsyncStorage.setItem('isOnboardingDone', 'true').then(() => {
         props.navigation.replace(AppRoutes.Login);
       });
-      // props.navigation.replace(AppRoutes.Login);
     } else {
       index === slides.length - 1 ? setState(false) : setState(true);
       appIntroSliderRef.current!.goToSlide(index);
@@ -135,14 +133,6 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
         </View>
 
         {!state ? null : (
-          // <TouchableOpacity
-          //   onPress={() => {
-          //     AsyncStorage.setItem('onboarding', 'true').then(() => {
-          //       console.log('view');
-          //       props.navigation.replace(AppRoutes.Login);
-          //     });
-          //   }}
-          // >
           <View style={styles.skipView}>
             <Text
               style={styles.skipTextStyle}
@@ -155,7 +145,6 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
               {strings.buttons.skip}
             </Text>
           </View>
-          // </TouchableOpacity>
         )}
       </SafeAreaView>
     </View>

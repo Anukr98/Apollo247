@@ -224,31 +224,23 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
-  // const PatientInfoData = props.navigation.getParam('PatientInfoAll');
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   console.log(Appintmentdatetimeconsultpage, 'Appintmentdatetimeconsultpage');
-  // const dateIsAfterconsult = moment(Appintmentdatetimeconsultpage).isAfter(moment(new Date()));
-  // console.log(dateIsAfterconsult, 'dateIsAfterconsult');
   const AppId = props.navigation.getParam('AppId');
   const [stastus, setStatus] = useState<STATUS | undefined>(
     props.navigation.getParam('AppointmentStatus')
   );
 
-  // const [othervalue, setOthervalue] = useState<string>('');
-
-  // const [allergiesData, setAllergiesData] = useState<string | null>('');
   const [showButtons, setShowButtons] = useState(false);
   const [show, setShow] = useState(false);
   const [vitalsShow, setVitalsShow] = useState(false);
   const [juniorshow, setJuniorShow] = useState(false);
   const [patientHistoryshow, setpatientHistoryshow] = useState(false);
-  // const [otherInstructions, setOtherInstructions] = useState(false);
   const [patientHealthWallet, setPatientHealthWallet] = useState(false);
   const [showdiagonisticPrescription, setshowdiagonisticPrescription] = useState(false);
   const [medicinePrescription, setMedicinePrescription] = useState(false);
   const [adviceInstructions, setAdviceInstructions] = useState(false);
   const [followup, setFollowUp] = useState(false);
-  // const [otherInstructionsadd, setOtherInstructionsAdd] = useState(false);
 
   const [diagnosisView, setDiagnosisView] = useState(false);
 
@@ -357,8 +349,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       prescriptionView();
     }
   }, [props.caseSheet]);
-
-  const startDate = moment(new Date()).format('YYYY-MM-DD');
 
   useEffect(() => {
     setShowButtons(props.startConsult);
@@ -492,25 +482,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     } as ModifyCaseSheetInput;
   };
 
-  // useEffect(() => {
-  //   AsyncStorage.setItem('consultDetails', JSON.stringify(getInputData()));
-  // }, [
-  //   addedAdvices,
-  //   props.caseSheet,
-  //   diagnosisData,
-  //   doctorNotes,
-  //   familyValues,
-  //   followUpConsultationType,
-  //   followupDays,
-  //   lifeStyleData,
-  //   medicalHistory,
-  //   medicinePrescriptionData,
-  //   selectedMedicinesId,
-  //   switchValue,
-  //   symptonsData,
-  //   tests,
-  // ]);
-
   const saveDetails = (
     showLoading: boolean,
     inputdata?: ModifyCaseSheetInput,
@@ -534,11 +505,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         const result = _data.data!.modifyCaseSheet;
         console.log('UpdateCaseSheetData', result);
         setStatus(g(_data, 'data', 'modifyCaseSheet', 'appointment', 'status'));
-        // showAphAlert &&
-        //   showAphAlert({
-        //     title: strings.alerts.update_cs,
-        //     description: strings.alerts.successfully_updated,
-        //   });
+
         props.getdetails();
         if (callBack) {
           setLoading && setLoading(true);
@@ -708,7 +675,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   }, []);
 
   const renderButtonsView = () => {
-    //console.log({ Appintmentdatetimeconsultpage });
     return (
       <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
         <View>
@@ -779,7 +745,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   };
 
   const renderEditPreviewButtons = () => {
-    //console.log({ Appintmentdatetimeconsultpage });
     return (
       <StickyBottomComponent style={{ backgroundColor: '#f0f4f5', justifyContent: 'center' }}>
         <View style={styles.footerButtonsContainer}>
@@ -1191,9 +1156,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {strings.common.no_data}
           </Text>
         )}
-        {/* {diagnosticPrescriptionData == null ? (
-          <Text style={[styles.symptomsText, { textAlign: 'center' }]}>No data</Text>
-        ) : ( */}
+
         {props.favTest && props.favTest.length ? (
           <Text style={[styles.familyText, { marginBottom: 12 }]}>
             {strings.smartPrescr.fav_test}
@@ -1210,7 +1173,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         caseSheetEdit && (
                           <TouchableOpacity
                             onPress={() => {
-                              // removeDiagnosticPresecription(showdata, i);
                               setTests([...tests, { ...showdata, isSelected: true }]);
                             }}
                           >

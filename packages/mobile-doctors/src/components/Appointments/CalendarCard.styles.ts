@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { StyleSheet } from 'react-native';

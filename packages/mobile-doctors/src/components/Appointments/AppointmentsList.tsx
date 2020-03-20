@@ -231,7 +231,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                           'success'
                                         )
                                       ) {
-                                        // props.navigation.popToTop();
                                         showAphAlert &&
                                           showAphAlert({
                                             title: 'Hi',
