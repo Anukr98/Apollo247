@@ -445,7 +445,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     try {
       console.log(callhandelBack, 'is back called');
       if (callhandelBack) {
-        props.navigation.replace(AppRoutes.TabBar);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+          })
+        );
+        handleCallTheEdSessionAPI();
         return true;
       } else {
         return true;
@@ -811,7 +818,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('nextAppState :' + nextAppState, abondmentStarted);
-      // handleCallTheEdSessionAPI();
+      if (onSubscribe) {
+        props.navigation.setParams({ callType: isAudio ? 'AUDIO' : 'VIDEO' });
+      }
     } else if (nextAppState === 'active') {
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
       if (permissionSettings && permissionSettings === 'true') {
