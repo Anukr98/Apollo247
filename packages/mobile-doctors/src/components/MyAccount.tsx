@@ -40,14 +40,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             style={{ width: '80%' }}
             title={strings.buttons.logout}
             onPress={() => {
-              // signOut && signOut();
-              // props.navigation.dispatch(
-              //   StackActions.reset({
-              //     index: 0,
-              //     key: null,
-              //     actions: [NavigationActions.navigate({ routeName: AppRoutes.Login })],
-              //   })
-              // );
               Promise.all([clearFirebaseUser && clearFirebaseUser(), clearUserData()])
                 .then(() => {
                   props.navigation.dispatch(

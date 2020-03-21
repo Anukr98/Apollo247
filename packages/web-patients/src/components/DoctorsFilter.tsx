@@ -314,6 +314,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         }}
         placeholder="Search doctors or specialities"
         onChange={(event) => {
+          if (localStorage.getItem('symptomTracker')) {
+            localStorage.removeItem('symptomTracker');
+          }
           if (isValidSearch(event.target.value)) {
             if (localStorage.getItem('symptomTracker')) {
               localStorage.removeItem('symptomTracker');
@@ -336,7 +339,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         }}
         value={searchKeyword}
         error={showError}
-        title={'Search doctors or specialities'}
+        title="Search doctors or specialities"
+        // disabled={localStorage && localStorage.getItem('symptomTracker') !== null ? true : false}
       />
       {showError ? (
         <FormHelperText className={classes.helpText} component="div" error={showError}>

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-default-export */
 import { StyleSheet, Platform } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -23,7 +24,6 @@ export default StyleSheet.create({
     marginTop: 4,
   },
   tabContainerShadow: {
-    //...theme.viewStyles.whiteRoundedCornerCard,
     backgroundColor: '#ffffff',
     borderRadius: 0,
     shadowColor: '#000000',

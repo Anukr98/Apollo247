@@ -294,21 +294,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   });
 
   if (loading) disableFilter && disableFilter(true);
-  else disableFilter && disableFilter(false);
-
-  if (data) {
-    localStorage.setItem('symptomTracker', '');
-  }
-  // console.log('loading state.....', loading);
-
-  // if (prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0) {
-  //   apiVairables['specialty'] = '';
-  //   apiVairables['specialtyName'] =
-  //     prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0
-  //       ? decodeURI(prakticeSDKSpecialties).split(',')
-  //       : [];
-  //   apiVairables['specialtySearchType'] = 'NAME';
-  // }
+  else if (currentPatient && currentPatient.id.length > 0) disableFilter && disableFilter(false);
 
   useEffect(() => {
     if (currentLat || currentLong) {

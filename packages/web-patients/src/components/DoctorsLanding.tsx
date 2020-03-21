@@ -200,9 +200,7 @@ export const DoctorsLanding: React.FC = (props) => {
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [matchingSpecialities, setMatchingSpecialities] = useState<number>(0);
   const [specialitySelected, setSpecialitySelected] = useState<string>('');
-  const [disableFilters, setDisableFilters] = useState<boolean>(
-    prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? false : true
-  );
+  const [disableFilters, setDisableFilters] = useState<boolean>(true);
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [showSearchAndPastSearch, setShowSearchAndPastSearch] = useState<boolean>(true);
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
@@ -313,10 +311,10 @@ export const DoctorsLanding: React.FC = (props) => {
     data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.specialties
       ? data.SearchDoctorAndSpecialtyByName.specialties.length
       : 0;
-  const derivedSpecialites =
-    data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.specialties
-      ? data.SearchDoctorAndSpecialtyByName.specialties
-      : [];
+  // const derivedSpecialites =
+  //   data && data.SearchDoctorAndSpecialtyByName && data.SearchDoctorAndSpecialtyByName.specialties
+  //     ? data.SearchDoctorAndSpecialtyByName.specialties
+  //     : [];
 
   // if (derivedSpecialites && derivedSpecialites.length > 0) {
   //   const derivedSpeciality = derivedSpecialites[0];
