@@ -641,7 +641,7 @@ app.get('/consultpayment', (req, res) => {
                   query:
                     'query { getAppointmentData(appointmentId:"' +
                     req.query.appointmentId +
-                    '"){ appointmentsHistory { discountedAmount paymentOrderId } } }',
+                    '"){ appointmentsHistory { discountedAmount paymentOrderId patientInfo { mobileNumber firstName } } } }',
                 };
                 axios
                   .post(process.env.API_URL, getAptRequestJson)
@@ -650,7 +650,8 @@ app.get('/consultpayment', (req, res) => {
                       aptResp.data.data.getAppointmentData.appointmentsHistory,
                       aptResp.data.data.getAppointmentData.appointmentsHistory[0].discountedAmount,
                       'appoint resp',
-                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].paymentOrderId
+                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                        .mobileNumber
                     );
                     req.session.appointmentId = req.query.appointmentId;
                     req.session.source = source;
@@ -662,8 +663,12 @@ app.get('/consultpayment', (req, res) => {
                         aptResp.data.data.getAppointmentData.appointmentsHistory[0]
                           .discountedAmount,
                       patientId: req.query.patientId,
-                      patientName: response.data.data.getAthsToken.patient.firstName,
-                      mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
+                      patientName:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                          .firstName,
+                      mobileNumber:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                          .mobileNumber,
                       baseUrl: process.env.APP_BASE_URL,
                       pgUrl: process.env.CONSULT_PG_URL,
                     });
