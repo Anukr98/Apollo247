@@ -136,7 +136,6 @@ export const TestsFor: React.FC = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
-
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
@@ -144,7 +143,7 @@ export const TestsFor: React.FC = (props) => {
       </div>
       <div className={classes.medicineStrip}>
         <div className={classes.medicineInformation}>
-          {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) &&
+          {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) && (
             <Typography>
               <AphSelect
                 value={currentPatient.id}
@@ -177,10 +176,11 @@ export const TestsFor: React.FC = (props) => {
                     title={'Add New Profile'}
                   >
                     Add New Profile
-                </AphButton>
+                  </AphButton>
                 </MenuItem>
               </AphSelect>
-            </Typography>}
+            </Typography>
+          )}
           <div className={classes.testsInfo}>
             All the tests must be for one person. Tests for multiple profiles will require separate
             purchases.

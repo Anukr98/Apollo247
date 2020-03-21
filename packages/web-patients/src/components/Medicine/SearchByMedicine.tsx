@@ -382,11 +382,11 @@ export const SearchByMedicine: React.FC = (props) => {
                       params.searchMedicineType === 'search-by-brand' ? (
                         <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
                       ) : (
-                          <MedicineListscard
-                            medicineList={medicineListFiltered}
-                            isLoading={isLoading}
-                          />
-                        )
+                        <MedicineListscard
+                          medicineList={medicineListFiltered}
+                          isLoading={isLoading}
+                        />
+                      )
                     }
                   </MedicinesCartContext.Consumer>
                 </div>

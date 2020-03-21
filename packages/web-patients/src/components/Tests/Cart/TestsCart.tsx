@@ -638,8 +638,8 @@ export const TestsCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                  `Pay - RS. ${totalAmount}`
-                )}
+                `Pay - RS. ${totalAmount}`
+              )}
             </AphButton>
           </div>
         </div>
