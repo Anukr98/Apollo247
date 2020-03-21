@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { TestFilter } from 'components/Tests/TestFilter';
+// import { TestFilter } from 'components/Tests/TestFilter';
 import { TestCard } from 'components/Tests/TestCard';
 import { useLocationDetails } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -19,6 +19,7 @@ import {
   getDiagnosticsData,
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics,
 } from 'graphql/types/getDiagnosticsData';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,6 +29,31 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+    },
+    searchInput: {
+      paddingLeft: 20,
+      paddingRight: 20,
+      position: 'relative',
+      display: 'flex',
+      '& input': {
+        paddingRight: 30,
+      },
+    },
+    searchBtn: {
+      marginLeft: 'auto',
+      padding: 0,
+      boxShadow: 'none',
+      backgroundColor: 'transparent !important',
+      minWidth: 'auto',
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        right: 20,
+        top: 6,
+        boxShadow: 'none',
+        padding: 0,
+      },
     },
     medicineDetailsPage: {
       borderRadius: '0 0 10px 10px',
@@ -188,14 +214,16 @@ export const SearchByTest: React.FC = (props) => {
     (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
   >(null);
 
+  const [searchValue, setSearchValue] = useState<string>('');
+
   const [
     diagnosticList,
     setDiagnosticList,
   ] = useState<getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics | null>(null);
 
-  const getDiagnosticsOrgansData = () => {
+  const getDiagnosticsOrgansData = async () => {
     setLoading(true);
-    client
+    await client
       .query<getDiagnosticsData>({
         query: GET_DIAGNOSTIC_DATA,
         variables: {},
@@ -216,6 +244,7 @@ export const SearchByTest: React.FC = (props) => {
               organ.diagnostics.itemId === Number(params.searchTestText)
           );
           diagnosticsData && setDiagnosticList(diagnosticsData.diagnostics);
+          setTestsList(null);
         }
       })
       .catch((e) => {
@@ -241,6 +270,7 @@ export const SearchByTest: React.FC = (props) => {
       .then(({ data }) => {
         if (data && data.searchDiagnostics && data.searchDiagnostics.diagnostics) {
           setTestsList(data.searchDiagnostics.diagnostics);
+          setDiagnosticList(null);
         }
       })
       .catch((e) => {
@@ -251,15 +281,27 @@ export const SearchByTest: React.FC = (props) => {
       });
   };
 
+  const fetchResults = () => {
+    if (Number(params.searchTestText)) {
+      getDiagnosticsOrgansData();
+    } else if (!Number(params.searchTestText)) {
+      onSearchTests(params.searchTestText);
+    }
+  };
+
   useEffect(() => {
     if (!testsList && !diagnosticList) {
-      if (Number(params.searchTestText)) {
-        getDiagnosticsOrgansData();
-      } else {
-        onSearchTests(params.searchTestText);
-      }
+      fetchResults();
     }
-  }, [testsList]);
+  }, [testsList, diagnosticList]);
+
+  useEffect(() => {
+    if (searchValue.length > 2) {
+      onSearchTests(searchValue);
+    } else if ((testsList || diagnosticList) && searchValue.length === 0) {
+      fetchResults();
+    }
+  }, [searchValue]);
 
   return (
     <div className={classes.root}>
@@ -279,14 +321,18 @@ export const SearchByTest: React.FC = (props) => {
           </div>
           <div className={classes.medicineDetailsGroup}>
             <div className={classes.medicineSection}>
-              {/* <Scrollbars
-                className={classes.scrollResponsive}
-                autoHide={true}
-                autoHeight
-                autoHeightMin={'calc(100vh - 215px'}
-              > */}
-              <TestFilter />
-              {/* </Scrollbars> */}
+              <div className={classes.searchInput}>
+                <AphTextField
+                  placeholder="Search tests"
+                  onChange={(e) => {
+                    setSearchValue(e.target.value);
+                  }}
+                  value={searchValue}
+                />
+                <AphButton className={classes.searchBtn}>
+                  <img src={require('images/ic_send.svg')} alt="" />
+                </AphButton>
+              </div>
             </div>
             <div className={`${classes.searchSection}`}>
               <Scrollbars
@@ -301,11 +347,15 @@ export const SearchByTest: React.FC = (props) => {
                 }
               >
                 <div className={classes.customScroll}>
-                  {loading && <CircularProgress size={22} />}
-                  {testsList &&
-                    testsList.length > 0 &&
-                    testsList.map((test) => <TestCard testData={test} mou={testsList.length} />)}
-                  {diagnosticList && <TestCard testData={diagnosticList} mou={1} />}
+                  {loading ? (
+                    <CircularProgress />
+                  ) : testsList && testsList.length > 0 ? (
+                    testsList.map((test) => <TestCard testData={test} mou={testsList.length} />)
+                  ) : diagnosticList ? (
+                    <TestCard testData={diagnosticList} mou={1} />
+                  ) : (
+                    'No data found'
+                  )}
                 </div>
               </Scrollbars>
             </div>
