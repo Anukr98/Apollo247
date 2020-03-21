@@ -1,7 +1,14 @@
-import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem } from '@material-ui/core';
+import { Theme, MenuItem, Popover } from '@material-ui/core';
+import React, { useState } from 'react';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
+import Typography from '@material-ui/core/Typography';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import _isEmpty from 'lodash/isEmpty';
+import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
+import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
+import { MascotWithMessage } from 'components/MascotWithMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,6 +35,42 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent !important',
       color: '#00b38e',
       fontWeight: 600,
+    },
+    selectMenuRoot: {
+      paddingRight: 55,
+      '& svg': {
+        color: '#00b38e',
+        fontSize: 30,
+      },
+    },
+    selectMenuItem: {
+      color: theme.palette.secondary.dark,
+      fontSize: 26,
+      fontWeight: 500,
+      lineHeight: '36px',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      textTransform: 'capitalize',
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 36,
+        lineHeight: '46px',
+      },
+      backgroundColor: 'transparent',
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
     },
     testsInfo: {
       fontSize: 14,
@@ -84,8 +127,15 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
 export const TestsFor: React.FC = (props) => {
   const classes = useStyles({});
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
+  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
+
 
   return (
     <div className={classes.root}>
@@ -94,30 +144,82 @@ export const TestsFor: React.FC = (props) => {
       </div>
       <div className={classes.medicineStrip}>
         <div className={classes.medicineInformation}>
-          <AphSelect>
-            <MenuItem value={1} classes={{ selected: classes.menuSelected }}>
-              Surj
-            </MenuItem>
-            <MenuItem value={2} classes={{ selected: classes.menuSelected }}>
-              Preeti
-            </MenuItem>
-            <MenuItem value={3} classes={{ selected: classes.menuSelected }}>
-              Gaurav
-            </MenuItem>
-            <MenuItem classes={{ selected: classes.menuSelected }}>
-              <AphButton
-                color="primary"
-                classes={{ root: classes.addMemberBtn }}
-                title={'Add New Profile'}
+          {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) &&
+            <Typography>
+              <AphSelect
+                value={currentPatient.id}
+                onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+                title={currentPatient.firstName || ''}
               >
-                Add New Profile
-              </AphButton>
-            </MenuItem>
-          </AphSelect>
+                {allCurrentPatients.map((patient) => {
+                  const isSelected = patient.relation === 'ME';
+                  const name = (patient.firstName || '').toLocaleLowerCase();
+                  return (
+                    <MenuItem
+                      selected={isSelected}
+                      value={patient.id}
+                      classes={{ selected: classes.menuSelected }}
+                      key={patient.id}
+                      title={name || ''}
+                    >
+                      {name}
+                    </MenuItem>
+                  );
+                })}
+                <MenuItem classes={{ selected: classes.menuSelected }}>
+                  <AphButton
+                    color="primary"
+                    classes={{ root: classes.addMemberBtn }}
+                    onClick={() => {
+                      setIsAddNewProfileDialogOpen(true);
+                    }}
+                    title={'Add New Profile'}
+                  >
+                    Add New Profile
+                </AphButton>
+                </MenuItem>
+              </AphSelect>
+            </Typography>}
           <div className={classes.testsInfo}>
             All the tests must be for one person. Tests for multiple profiles will require separate
             purchases.
           </div>
+          <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+            <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
+            <AphDialogTitle>Add New Member</AphDialogTitle>
+            <AddNewProfile
+              closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+                setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+              }
+              isMeClicked={isMeClicked}
+              selectedPatientId=""
+              successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+              isProfileDelete={false}
+            />
+          </AphDialog>
+          <Popover
+            open={isPopoverOpen}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            classes={{ paper: classes.bottomPopover }}
+          >
+            <MascotWithMessage
+              messageTitle=""
+              message="Profile created successfully."
+              closeButtonLabel="OK"
+              closeMascot={() => {
+                setIsPopoverOpen(false);
+                window.location.reload(true);
+              }}
+            />
+          </Popover>
         </div>
       </div>
     </div>
