@@ -625,6 +625,7 @@ app.get('/consultpayment', (req, res) => {
             })
             .then((resp) => {
               console.log(resp.data, resp.data.Result);
+              const merchantId = resp.data.result;
               const requestJSON = {
                 query:
                   'mutation { updatePaymentOrderId(appointmentId:"' +
@@ -635,18 +636,47 @@ app.get('/consultpayment', (req, res) => {
                   source +
                   '"){ status } }',
               };
-              axios.post(process.env.API_URL, requestJSON);
-              req.session.appointmentId = req.query.appointmentId;
-              req.session.source = source;
-              res.render('consults.ejs', {
-                athsToken: response.data.data.getAthsToken.patient.athsToken,
-                merchantId: resp.data.Result,
-                price: req.query.price,
-                patientId: req.query.patientId,
-                patientName: response.data.data.getAthsToken.patient.firstName,
-                mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
-                baseUrl: process.env.APP_BASE_URL,
-                pgUrl: process.env.CONSULT_PG_URL,
+              axios.post(process.env.API_URL, requestJSON).then((updateResp) => {
+                const getAptRequestJson = {
+                  query:
+                    'query { getAppointmentData(appointmentId:"' +
+                    req.query.appointmentId +
+                    '"){ appointmentsHistory { discountedAmount paymentOrderId patientInfo { mobileNumber firstName } } } }',
+                };
+                axios
+                  .post(process.env.API_URL, getAptRequestJson)
+                  .then((aptResp) => {
+                    console.log(
+                      aptResp.data.data.getAppointmentData.appointmentsHistory,
+                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].discountedAmount,
+                      'appoint resp',
+                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                        .mobileNumber
+                    );
+                    req.session.appointmentId = req.query.appointmentId;
+                    req.session.source = source;
+                    res.render('consults.ejs', {
+                      athsToken: response.data.data.getAthsToken.patient.athsToken,
+                      merchantId:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].paymentOrderId,
+                      price:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0]
+                          .discountedAmount,
+                      patientId: req.query.patientId,
+                      patientName:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                          .firstName,
+                      mobileNumber:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                          .mobileNumber,
+                      baseUrl: process.env.APP_BASE_URL,
+                      pgUrl: process.env.CONSULT_PG_URL,
+                    });
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                    res.send(err, 'Appointment id error');
+                  });
               });
             })
             .catch((err) => {

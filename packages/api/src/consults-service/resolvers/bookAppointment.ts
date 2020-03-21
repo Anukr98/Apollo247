@@ -278,6 +278,14 @@ const bookAppointment: Resolver<
         couponGenericRulesData.discountValue
       );
     }
+  } else {
+    let doctorFees = 0;
+    if (appointmentInput.appointmentType === APPOINTMENT_TYPE.ONLINE)
+      doctorFees = <number>docDetails.onlineConsultationFees;
+    else doctorFees = <number>docDetails.physicalConsultationFees;
+
+    appointmentInput.discountedAmount = doctorFees;
+    appointmentInput.actualAmount = doctorFees;
   }
 
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
