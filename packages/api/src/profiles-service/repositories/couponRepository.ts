@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Raw } from 'typeorm';
-import { Coupon } from 'profiles-service/entities';
+import { Coupon, ReferralCodesMaster, ReferalCouponMapping } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -33,6 +33,38 @@ export class CouponRepository extends Repository<Coupon> {
       relations: ['couponConsultRule', 'couponGenericRule'],
     }).catch((getCouponsError) => {
       throw new AphError(AphErrorMessages.GET_COUPONS_ERROR, undefined, {
+        getCouponsError,
+      });
+    });
+  }
+}
+
+@EntityRepository(ReferralCodesMaster)
+export class ReferralCodesMasterRepository extends Repository<ReferralCodesMaster> {
+  findByReferralCode(name: string) {
+    return this.findOne({
+      where: {
+        name,
+      },
+      relations: ['referalCouponMapping'],
+    }).catch((getCouponsError) => {
+      throw new AphError(AphErrorMessages.GET_REFERRAL_CODE_ERROR, undefined, {
+        getCouponsError,
+      });
+    });
+  }
+}
+
+@EntityRepository(ReferalCouponMapping)
+export class ReferalCouponMappingRepository extends Repository<ReferalCouponMapping> {
+  findByReferralCodeId(referralcodeid: string) {
+    return this.findOne({
+      where: {
+        referralcodeid,
+      },
+      relations: ['coupon'],
+    }).catch((getCouponsError) => {
+      throw new AphError(AphErrorMessages.GET_REFERRAL_CODE_MAPPING_ERROR, undefined, {
         getCouponsError,
       });
     });

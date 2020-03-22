@@ -7,10 +7,18 @@ import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
+import {
+  sendPatientRegistrationNotification,
+  sendNotificationSMS,
+} from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
 import { RegistrationCodesRepository } from 'profiles-service/repositories/registrationCodesRepository';
+import {
+  ReferralCodesMasterRepository,
+  ReferalCouponMappingRepository,
+} from 'profiles-service/repositories/couponRepository';
+import { ApiConstants } from 'ApiConstants';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -115,7 +123,29 @@ const updatePatient: Resolver<
     //send registration success notification here
     sendPatientRegistrationNotification(patient, profilesDb, regCode);
   }
-
+  if (updateAttrs.referralCode) {
+    const referralCodesMasterRepo = await profilesDb.getCustomRepository(
+      ReferralCodesMasterRepository
+    );
+    const referralCodeExist = await referralCodesMasterRepo.findByReferralCode(
+      updateAttrs.referralCode
+    );
+    let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', patient.firstName);
+    if (referralCodeExist) {
+      const referalCouponMappingRepo = await profilesDb.getCustomRepository(
+        ReferalCouponMappingRepository
+      );
+      const mappingData = await referalCouponMappingRepo.findByReferralCodeId(referralCodeExist.id);
+      if (mappingData)
+        smsText = ApiConstants.REFERRAL_CODE_TEXT_WITH_COUPON.replace(
+          '{0}',
+          patient.firstName
+        ).replace('{1}', mappingData.coupon.code);
+      sendNotificationSMS(patient.mobileNumber, smsText);
+    } else {
+      sendNotificationSMS(patient.mobileNumber, smsText);
+    }
+  }
   return { patient };
 };
 
