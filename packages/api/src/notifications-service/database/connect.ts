@@ -73,6 +73,8 @@ import {
   PatientNotificationSettings,
   SearchHistory,
   RegistrationCodes,
+  ReferralCodesMaster,
+  ReferalCouponMapping,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -170,6 +172,8 @@ export const connect = async () => {
         PatientNotificationSettings,
         SearchHistory,
         RegistrationCodes,
+        ReferralCodesMaster,
+        ReferalCouponMapping,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
