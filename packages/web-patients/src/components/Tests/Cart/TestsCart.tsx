@@ -9,7 +9,7 @@ import {
   CircularProgress,
 } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
-import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { useDiagnosticsCart, Clinic } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -485,6 +485,8 @@ export const TestsCart: React.FC = (props) => {
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = React.useState<string>('COD');
   const [mutationLoading, setMutationLoading] = useState(false);
+  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
+  const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
 
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
@@ -579,12 +581,18 @@ export const TestsCart: React.FC = (props) => {
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    <HomeVisit />
+                    <HomeVisit
+                      selectedAddressData={selectedAddressData}
+                      setSelectedAddressData={setSelectedAddressData}
+                    />
                   </TabContainer>
                 )}
                 {tabValue === 1 && (
                   <TabContainer>
-                    <ClinicVisit />
+                    <ClinicVisit
+                      selectedClinic={selectedClinic}
+                      setSelectedClinic={setSelectedClinic}
+                    />
                   </TabContainer>
                 )}
               </div>
