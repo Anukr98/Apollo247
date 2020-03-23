@@ -14,6 +14,8 @@ import { TestsFor } from 'components/Tests/Cart/TestsFor';
 import { AppointmentsSlot } from 'components/Tests/Cart/AppointmentsSlot';
 import { ClinicHours } from 'components/Tests/Cart/ClinicHours';
 import { HomeVisit } from 'components/Tests/Cart/HomeVisit';
+import { ClinicVisit } from 'components/Tests/Cart/ClinicVisit';
+import { LocationContext } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -432,7 +434,6 @@ const TabContainer: React.FC = (props) => {
 export const TestsCart: React.FC = (props) => {
   const classes = useStyles({});
   const { cartTotal, diagnosticsCartItems } = useDiagnosticsCart();
-
   const [tabValue, setTabValue] = useState<number>(0);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
@@ -539,13 +540,7 @@ export const TestsCart: React.FC = (props) => {
                 )}
                 {tabValue === 1 && (
                   <TabContainer>
-                    {/* <ClinicVisit
-                      pincode={
-                        storePickupPincode && storePickupPincode.length === 6
-                          ? storePickupPincode
-                          : currentPincode
-                      }
-                    /> */}
+                    <ClinicVisit />
                   </TabContainer>
                 )}
               </div>
