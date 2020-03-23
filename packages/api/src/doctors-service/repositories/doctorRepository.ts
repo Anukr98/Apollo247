@@ -712,7 +712,6 @@ export class DoctorRepository extends Repository<Doctor> {
     if (doctorId == '0') {
       return this.find({
         where: {
-          isActive: true,
           doctorType: Not('JUNIOR'),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
@@ -721,7 +720,6 @@ export class DoctorRepository extends Repository<Doctor> {
       return this.find({
         where: {
           id: doctorId,
-          isActive: true,
           doctorType: Not('JUNIOR'),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
@@ -733,7 +731,6 @@ export class DoctorRepository extends Repository<Doctor> {
     if (doctorId == '0') {
       return this.find({
         where: {
-          isActive: true,
           doctorType: DoctorType.JUNIOR,
         },
       });
@@ -741,7 +738,6 @@ export class DoctorRepository extends Repository<Doctor> {
       return this.find({
         where: {
           id: doctorId,
-          isActive: true,
           doctorType: DoctorType.JUNIOR,
         },
       });

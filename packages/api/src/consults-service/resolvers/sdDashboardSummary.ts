@@ -453,6 +453,7 @@ const updateSdSummary: Resolver<
         awayHours,
         onlineConsultationFees: Number(doctor.onlineConsultationFees),
         physicalConsultationFees: Number(doctor.physicalConsultationFees),
+        isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });

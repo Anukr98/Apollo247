@@ -99,6 +99,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     '183.82.124.217',
     '104.211.90.216',
     '104.211.216.178',
+    'https://apollo247.com',
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');
