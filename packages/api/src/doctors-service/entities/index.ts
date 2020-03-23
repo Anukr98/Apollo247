@@ -986,3 +986,22 @@ export class AdminAuditorMapper extends BaseEntity {
   adminuser: AdminUsers;
 }
 // QAadmin_auditor_mapper ends
+
+@Entity()
+export class CityPincodeMapper extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @Column()
+  city: string;
+
+  @Column()
+  pincode: string;
+}
+// QAadmin_auditor_mapper ends
