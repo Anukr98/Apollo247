@@ -34,9 +34,8 @@ export const clientRoutes = {
   symptomsTrackerFor: () => '/track-symptoms-for',
   symptomsTracker: () => '/track-symptoms',
   tests: () => '/tests',
-  testDetails: (itemId: string) => `/tests-list/test-details/${itemId}`,
-  testDetailsHotseller: (searchTestType: string, itemId: string) =>
-    `/tests-list/test-details/${searchTestType}/${itemId}`,
+  testDetails: (searchTestType: string, itemName: string, itemId: string) =>
+    `/test-details/${searchTestType}/${itemName}/${itemId}`,
   searchByTest: (searchTestText: string) => `/tests-list/search-test/${searchTestText}`,
   testOrders: () => '/order-details',
 };

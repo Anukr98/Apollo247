@@ -179,8 +179,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     <div
                       className={classes.productIcon}
                       onClick={() =>
-                        (window.location.href = clientRoutes.testDetailsHotseller(
-                          'hotSeller', hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
+                        (window.location.href = clientRoutes.testDetails(
+                          'hot-seller', hotSeller.packageName || '', hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
                         ))
                       }
                     >

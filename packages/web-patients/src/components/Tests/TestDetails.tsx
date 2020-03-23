@@ -402,8 +402,7 @@ export const TestDetails: React.FC = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [tabValue, setTabValue] = useState<number>(0);
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-  const params = useParams<{ itemId: string }>();
-  const paramshotseller = useParams<{ searchTestType: string, itemId: string }>();
+  const params = useParams<{ searchTestType: string, itemName: string, itemId: string }>();
 
   const [testDetails, setTestDetails] = React.useState<diagnosticTestDetails | null>(null);
   const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
@@ -414,7 +413,7 @@ export const TestDetails: React.FC = (props) => {
 
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
   const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
-    (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
+    (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers) | null
   >(null);
 
   const apiDetails = {
@@ -428,12 +427,12 @@ export const TestDetails: React.FC = (props) => {
   };
 
 
-  const getPackageDetails = async (itemId: string) => {
+  const getPackageDetails = async () => {
     setLoading(true);
     axios
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
-        ItemID: itemId,
+        ItemID: params.itemId,
       })
       .then((data: any) => {
         if (data && data.data && data.data.data && data.data.data) {
@@ -450,15 +449,14 @@ export const TestDetails: React.FC = (props) => {
         setLoading(false);
       });
   };
-  console.log("setTestDetailsPackage", testDetailsPackage);
 
-  const getTestDetails = async (itemId: string) => {
+  const getTestDetails = async () => {
     setLoading(true);
     client
       .query<searchDiagnosticsById>({
         query: SEARCH_DIAGNOSTICS_BY_ID,
         variables: {
-          itemIds: itemId,
+          itemIds: params.itemId,
         },
         fetchPolicy: 'no-cache',
       })
@@ -475,47 +473,9 @@ export const TestDetails: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (paramshotseller.searchTestType && !diagnosisHotSellerData) {
-      setLoading(true);
-      client
-        .query<getDiagnosticsData>({
-          query: GET_DIAGNOSTIC_DATA,
-          variables: {
-
-          },
-          fetchPolicy: 'cache-first',
-        })
-        .then(({ data }) => {
-          if (
-            data &&
-            data.getDiagnosticsData &&
-            data.getDiagnosticsData.diagnosticHotSellers
-          ) {
-            const diagnosticdata = data.getDiagnosticsData.diagnosticHotSellers
-            if (diagnosticdata && diagnosticdata.length > 0) {
-              setDiagnosisHotSellerData(diagnosticdata);
-            } else {
-              setDiagnosisHotSellerData([]);
-            }
-            setDiagnosisDataError(false);
-          }
-        })
-        .catch((e) => {
-          alert(e);
-          setDiagnosisDataError(true);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [diagnosisHotSellerData, paramshotseller.searchTestType]);
-
-  console.log("DiagnosisHotSellerData", diagnosisHotSellerData);
-
-  useEffect(() => {
     if (!testDetails && !testDetailsPackage) {
-      getTestDetails(params.itemId);
-      getPackageDetails(params.itemId);
+      getTestDetails();
+      getPackageDetails();
     }
   }, [testDetails, testDetailsPackage]);
 
@@ -553,8 +513,8 @@ export const TestDetails: React.FC = (props) => {
                   <div className={classes.productInformation}>
                     <div className={classes.productBasicInfo}>
 
-                      <h2>{diagnosisHotSellerData && diagnosisHotSellerData.length > 0 ?
-                        diagnosisHotSellerData[0].packageName : testDetails && testDetails.itemName}</h2>
+                      <h2>{params.searchTestType === 'hot-seller' ?
+                        params.itemName : testDetails && testDetails.itemName}</h2>
 
                       {!!testDetails.toAgeInDays && (
                         <div className={classes.textInfo}>
