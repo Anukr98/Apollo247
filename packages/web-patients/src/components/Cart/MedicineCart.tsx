@@ -584,16 +584,19 @@ export const MedicineCart: React.FC = (props) => {
         if (data && data.SaveMedicineOrderPaymentMq) {
           const { errorCode, errorMessage } = data.SaveMedicineOrderPaymentMq;
           if (errorCode || (errorMessage && errorMessage.length > 0)) {
-            window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
+            localStorage.setItem('orderStatus', 'failed');
+            window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString());
             return;
           }
           setCheckoutDialogOpen(false);
           clearCartInfo && clearCartInfo();
-          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
+          localStorage.setItem('orderStatus', 'success');
+          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString());
         }
       })
       .catch((e) => {
-        window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
+        localStorage.setItem('orderStatus', 'failed');
+        window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString());
       })
       .finally(() => {
         setMutationLoading(false);
@@ -611,7 +614,8 @@ export const MedicineCart: React.FC = (props) => {
         console.log(data);
         clearCartInfo && clearCartInfo();
         setTimeout(() => {
-          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
+          localStorage.setItem('orderStatus', 'success');
+          window.location.href = clientRoutes.medicinesCartInfo('prescription');
         }, 3000);
       })
       .catch((e) => {
