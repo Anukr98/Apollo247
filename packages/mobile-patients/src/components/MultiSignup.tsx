@@ -528,7 +528,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
           <Gift style={{ marginRight: 20, marginTop: 12 }} />
           <TextInputComponent
-            maxLength={8}
+            maxLength={25}
             label={
               'Do You Have A Referral Code? (Optional)'
               // referredBy
