@@ -119,8 +119,7 @@ export const HomeVisit: React.FC = (props) => {
     deliveryAddressId,
     deliveryAddresses,
     setDeliveryAddresses,
-    diagnosticsCartItems,
-    // setStoreAddressId,
+    setClinicId,
   } = useDiagnosticsCart();
   const { isSigningIn } = useAuth();
   const client = useApolloClient();
@@ -131,7 +130,6 @@ export const HomeVisit: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isError, setIsError] = React.useState<boolean>(false);
-  const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
   const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
 
   const getAddressDetails = () => {
@@ -159,13 +157,9 @@ export const HomeVisit: React.FC = (props) => {
             } else {
               setSelectedAddressData(addresses[0]);
               setDeliveryAddressId && setDeliveryAddressId(addresses[0].id);
-              //   setStoreAddressId && setStoreAddressId('');
             }
 
             setDeliveryAddresses && setDeliveryAddresses(addresses);
-            // if (diagnosticsCartItems.length > 0) {
-            //   fetchDeliveryTime();
-            // }
           } else {
             setDeliveryAddresses && setDeliveryAddresses([]);
           }
