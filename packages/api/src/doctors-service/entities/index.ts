@@ -987,6 +987,7 @@ export class AdminAuditorMapper extends BaseEntity {
 }
 // QAadmin_auditor_mapper ends
 
+//citypincode mapper starts
 @Entity()
 export class CityPincodeMapper extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -1004,4 +1005,4 @@ export class CityPincodeMapper extends BaseEntity {
   @Column()
   pincode: string;
 }
-// QAadmin_auditor_mapper ends
+// citypincode mapper ends
