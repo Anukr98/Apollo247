@@ -115,11 +115,11 @@ export type filterDataType = {
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const filterData: filterDataType[] = [
-    {
-      label: 'City',
-      options: ['Hyderabad', 'Chennai'],
-      selectedOptions: [],
-    },
+    // {
+    //   label: 'City',
+    //   options: ['Hyderabad', 'Chennai'],
+    //   selectedOptions: [],
+    // },
     {
       label: 'Experience In Years',
       options: ['0 - 5', '6 - 10', '11 - 15', '15+'],
@@ -425,8 +425,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     location: locationType | null = latlng
   ) => {
     const experienceArray: Range[] = [];
-    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
-      SearchData[1].selectedOptions.forEach((element: string) => {
+    if (SearchData[0].selectedOptions && SearchData[0].selectedOptions.length > 0)
+      SearchData[0].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -440,8 +440,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
 
     const feesArray: Range[] = [];
-    if (SearchData[3].selectedOptions && SearchData[3].selectedOptions.length > 0)
-      SearchData[3].selectedOptions.forEach((element: string) => {
+    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
+      SearchData[2].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -458,8 +458,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     let availableNow = {};
     const availabilityArray: string[] = [];
     const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
-      SearchData[2].selectedOptions.forEach((element: string) => {
+    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
+      SearchData[1].selectedOptions.forEach((element: string) => {
         if (element === 'Now') {
           availableNow = {
             availableNow: moment(new Date())
@@ -514,12 +514,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const FilterInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.getParam('specialityId') || '',
-      city: SearchData[0].selectedOptions,
+      // city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
-      gender: SearchData[4].selectedOptions,
-      language: SearchData[5].selectedOptions,
+      gender: SearchData[3].selectedOptions,
+      language: SearchData[4].selectedOptions,
       ...availableNow,
       // consultMode: filterMode,
       ...specialtyName,
