@@ -2,18 +2,23 @@ import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
+import { createMuiTheme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    root: {},
+    root: {
+      width: '100%',
+    },
     dialogBox: {
       '& > div': {
         display: 'flex',
-        backgroundColor: 'transparent',
         '& div': {
           marginTop: 0,
         },
       },
+    },
+    backDrop: {
+      backgroundColor: 'transparent',
     },
     defaultWrapper: {
       width: 466,
@@ -85,22 +90,22 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       justifyContent: 'space-evenly',
     },
-    dialogWidth: {
-      maxWidth: 500,
-    },
   };
 });
 export const Alerts: React.FC = (props) => {
   const classes = useStyles({});
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(true);
-
   return (
     <div className={classes.root}>
       <AphDialog
         className={classes.dialogBox}
-        classes={{ paper: classes.dialogWidth }}
         open={isAlertOpen}
         maxWidth="md"
+        BackdropProps={{
+          classes: {
+            root: classes.backDrop,
+          },
+        }}
       >
         <div
           className={`${classes.defaultWrapper} ${classes.errorAlertWrapper} ${classes.successAlertWrapper}`}
