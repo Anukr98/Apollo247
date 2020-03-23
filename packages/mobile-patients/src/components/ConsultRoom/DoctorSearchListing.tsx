@@ -1,4 +1,7 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -29,7 +32,11 @@ import {
   Range,
   SpecialtySearchType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPlaceInfoByPlaceId, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  getPlaceInfoByPlaceId,
+  GooglePlacesType,
+  getPlaceInfoByLatLng,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocation,
   g,
@@ -650,10 +657,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             lat: coordinates.lat,
             lng: coordinates.lng,
           };
-          setLocationDetails!({
+          const locationData: LocationData = {
             displayName: item.name,
-            latitude: coordinates.lat,
-            longitude: coordinates.lng,
+            latitude:
+              typeof coordinates.lat == 'string' ? Number(coordinates.lat) : coordinates.lat,
+            longitude:
+              typeof coordinates.lng == 'string' ? Number(coordinates.lng) : coordinates.lng,
             area: [
               findAddrComponents('route', addrComponents),
               findAddrComponents('sublocality_level_2', addrComponents),
@@ -666,7 +675,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             country: findAddrComponents('country', addrComponents),
             pincode: findAddrComponents('postal_code', addrComponents),
             lastUpdated: new Date().getTime(),
-          });
+          };
+
+          setLocationDetails!(locationData);
+
+          getPlaceInfoByLatLng(coordinates.lat, coordinates.lng)
+            .then((response) => {
+              const addrComponents =
+                g(response, 'data', 'results', '0' as any, 'address_components') || [];
+              if (addrComponents.length > 0) {
+                setLocationDetails!({
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                  lastUpdated: new Date().getTime(),
+                });
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('LocationSearchPopup_saveLatlong', error);
+            });
         }
       })
       .catch((error) => {

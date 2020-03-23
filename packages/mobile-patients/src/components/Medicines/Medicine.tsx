@@ -76,6 +76,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -112,6 +114,7 @@ export interface MedicineProps
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
+  const { locationDetails } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const config = AppConfig.Configuration;
@@ -126,6 +129,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ordersFetched, setOrdersFetched] = useState<
     (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
   >([]);
+  const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
 
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
@@ -309,7 +313,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderTopView = () => {
-    return <TabHeader navigation={props.navigation} />;
+    return (
+      <TabHeader
+        navigation={props.navigation}
+        locationVisible={true}
+        onLocationPress={() => {
+          setLocationSearchVisible(true);
+        }}
+      />
+    );
   };
 
   const renderEPrescriptionModal = () => {
@@ -1363,6 +1375,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
+      {isLocationSearchVisible && (
+        <LocationSearchPopup
+          onPressLocationSearchItem={() => {
+            setLocationSearchVisible(false);
+          }}
+          location={g(locationDetails, 'displayName')}
+          onClose={() => {
+            setLocationSearchVisible(false);
+          }}
+        />
+      )}
     </View>
   );
 };
