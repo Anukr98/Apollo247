@@ -486,7 +486,7 @@ export const TestsCart: React.FC = (props) => {
               <AphButton
                 className={classes.addItemBtn}
                 onClick={() => {
-                  window.location.href = clientRoutes.medicines();
+                  window.location.href = clientRoutes.tests();
                 }}
                 title={'Add items to cart'}
               >
@@ -602,7 +602,7 @@ export const TestsCart: React.FC = (props) => {
             color="primary"
             fullWidth
             disabled={!isPaymentButtonEnable}
-            className={mutationLoading ? classes.buttonDisable : ''}
+            className={mutationLoading || !isPaymentButtonEnable ? classes.buttonDisable : ''}
             title={'Proceed to pay bill'}
           >
             {`Proceed to pay — RS. ${totalAmount}`}
