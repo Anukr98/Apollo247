@@ -45,6 +45,22 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type clinicHoursData = {
+  week: string;
+  time: string;
+};
+
+const clinicHours: clinicHoursData[] = [
+  {
+    week: 'Mon - Fri',
+    time: '9:00 AM - 5:00 PM',
+  },
+  {
+    week: 'Sat - Sun',
+    time: '10:00 AM - 3:30 PM',
+  },
+];
+
 export const ClinicHours: React.FC = (props) => {
   const classes = useStyles({});
 
@@ -56,14 +72,12 @@ export const ClinicHours: React.FC = (props) => {
           <span>Clinic Hours</span>
         </div>
         <div className={classes.appointmentInfo}>
-          <div className={classes.details}>
-            <div>Mon - Fri</div>
-            <div className={classes.time}>9:00AM - 5:00 PM</div>
-          </div>
-          <div className={classes.details}>
-            <div>Sat - Sun</div>
-            <div className={classes.time}>10:30 AM - 3.30PM</div>
-          </div>
+          {clinicHours.map((hours) => (
+            <div className={classes.details}>
+              <div>{hours.week}</div>
+              <div className={classes.time}>{hours.time}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
