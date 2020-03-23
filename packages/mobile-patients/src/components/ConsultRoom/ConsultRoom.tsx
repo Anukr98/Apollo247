@@ -202,6 +202,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [selectedProfile, setSelectedProfile] = useState<string>('');
   const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
+  const [showList, setShowList] = useState<boolean>(false);
+  const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
 
   const { cartItems } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
@@ -320,6 +322,40 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const onProfileChange = () => {
+    setShowList(false);
+    if (isFindDoctorCustomProfile) {
+      setFindDoctorCustomProfile(false);
+      props.navigation.navigate(AppRoutes.DoctorSearch);
+    }
+  };
+
+  const showProfileSelectionAlert = () => {
+    showAphAlert!({
+      title: 'Hi!',
+      description: 'Who is the patient today?',
+      ctaContainerStyle: { marginTop: 50 },
+      CTAs: [
+        {
+          text: 'MYSELF',
+          onPress: () => {
+            hideAphAlert!();
+            props.navigation.navigate(AppRoutes.DoctorSearch);
+          },
+        },
+        {
+          type: 'white-button',
+          text: 'SOMEONE ELSE',
+          onPress: () => {
+            setShowList(true);
+            hideAphAlert!();
+            setFindDoctorCustomProfile(true);
+          },
+        },
+      ],
+    });
+  };
+
   const menuOptions: menuOptions[] = [
     {
       id: 1,
@@ -327,7 +363,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
-        props.navigation.navigate(AppRoutes.DoctorSearch);
+        showProfileSelectionAlert();
       },
     },
     {
@@ -701,6 +737,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderProfileDrop = () => {
     return (
       <ProfileList
+        showList={showList}
+        onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
         childView={
