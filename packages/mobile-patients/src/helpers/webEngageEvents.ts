@@ -117,7 +117,7 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.SEARCH]: {
     keyword: string;
-    Source: 'Pharmacy Home';
+    Source: 'Pharmacy Home' | 'Pharmacy List';
   };
   [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
     'product name': string;

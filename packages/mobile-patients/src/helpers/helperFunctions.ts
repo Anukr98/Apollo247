@@ -727,7 +727,10 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
     console.log('\n********* WebEngageEvent Start *********\n');
     console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
     console.log('\n********* WebEngageEvent End *********\n');
-    webengage.track(eventName, attributes);
+    if (getBuildEnvironment() !== 'DEV') {
+      // Don't post events in DEV environment
+      webengage.track(eventName, attributes);
+    }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }

@@ -15,7 +15,7 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { postWebEngageEvent } from '../../helpers/helperFunctions';
-import { WebEngageEvents } from '../../helpers/webEngageEvents';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -154,10 +154,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
               <Button
                 title="ADD RECORD"
                 onPress={() => {
-                  const eventAttributes: WebEngageEvents['Add Record'] = {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
                     Source: 'Medical Records',
                   };
-                  postWebEngageEvent('Add Record', eventAttributes);
+                  postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
                   props.navigation.navigate(AppRoutes.AddRecord, {
                     navigatedFrom: 'Medical Records',
                   });
