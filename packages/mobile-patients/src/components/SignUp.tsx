@@ -442,27 +442,27 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       console.log('signup currentPatient', currentPatient);
 
                       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-                      const item = JSON.parse(retrievedItem);
+                      const mePatient = JSON.parse(retrievedItem);
 
-                      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-                      let allPatients;
+                      // const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+                      // let allPatients;
 
-                      if (callByPrism === 'true') {
-                        allPatients =
-                          item && item.data && item.data.getCurrentPatients
-                            ? item.data.getCurrentPatients.patients
-                            : null;
-                      } else {
-                        allPatients =
-                          item && item.data && item.data.getPatientByMobileNumber
-                            ? item.data.getPatientByMobileNumber.patients
-                            : null;
-                      }
+                      // if (callByPrism === 'true') {
+                      //   allPatients =
+                      //     item && item.data && item.data.getCurrentPatients
+                      //       ? item.data.getCurrentPatients.patients
+                      //       : null;
+                      // } else {
+                      //   allPatients =
+                      //     item && item.data && item.data.getPatientByMobileNumber
+                      //       ? item.data.getPatientByMobileNumber.patients
+                      //       : null;
+                      // }
 
-                      const mePatient = allPatients
-                        ? allPatients.find((patient: any) => patient.relation === Relation.ME) ||
-                          allPatients[0]
-                        : null;
+                      // const mePatient = allPatients
+                      //   ? allPatients.find((patient: any) => patient.relation === Relation.ME) ||
+                      //     allPatients[0]
+                      //   : null;
 
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,

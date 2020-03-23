@@ -166,23 +166,23 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   useEffect(() => {
     async function fetchData() {
-      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const retrievedItem: any = await AsyncStorage.getItem('allPatients');
+      const allPatients = JSON.parse(retrievedItem);
 
-      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-      let allPatients;
+      // const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+      // let allPatients;
 
-      if (callByPrism === 'true') {
-        allPatients =
-          item && item.data && item.data.getCurrentPatients
-            ? item.data.getCurrentPatients.patients
-            : null;
-      } else {
-        allPatients =
-          item && item.data && item.data.getPatientByMobileNumber
-            ? item.data.getPatientByMobileNumber.patients
-            : null;
-      }
+      // if (callByPrism === 'true') {
+      //   allPatients =
+      //     item && item.data && item.data.getCurrentPatients
+      //       ? item.data.getCurrentPatients.patients
+      //       : null;
+      // } else {
+      //   allPatients =
+      //     item && item.data && item.data.getPatientByMobileNumber
+      //       ? item.data.getPatientByMobileNumber.patients
+      //       : null;
+      // }
 
       setAllCurrentPatients(allPatients);
 

@@ -1,6 +1,9 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import {
   Ambulance,
@@ -9,6 +12,7 @@ import {
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  MedicineIcon,
   MyHealth,
   Person,
   PrescriptionMenu,
@@ -16,40 +20,55 @@ import {
   TestsCartIcon,
   TestsCartMedicineIcon,
   TestsIcon,
-  MedicineIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
+import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  CommonLogEvent,
-  DeviceHelper,
   CommonBugFender,
+  CommonLogEvent,
   CommonSetUserBugsnag,
+  DeviceHelper,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { GenerateTokenforCM } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
+  doRequestAndAccessLocation,
   g,
   postWebEngageEvent,
-  doRequestAndAccessLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  PatientInfo,
+  PatientInfoWithSource,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Dimensions,
   ImageBackground,
   Linking,
+  NativeModules,
   Platform,
   SafeAreaView,
   StyleProp,
@@ -58,31 +77,11 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  NativeModules,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
-import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
-import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import { GenerateTokenforCM } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import AsyncStorage from '@react-native-community/async-storage';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-  PatientInfo,
-  PatientInfoWithSource,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import moment from 'moment';
 import WebEngage from 'react-native-webengage';
-import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
-import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { NavigationScreenProps } from 'react-navigation';
 
 const { Vitals } = NativeModules;
 
@@ -427,26 +426,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     async function fetchData() {
       try {
         const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-        const item = JSON.parse(retrievedItem);
+        const patientDetails = JSON.parse(retrievedItem);
 
-        const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-        let allPatients;
+        // const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+        // let allPatients;
 
-        if (callByPrism === 'true') {
-          allPatients =
-            item && item.data && item.data.getCurrentPatients
-              ? item.data.getCurrentPatients.patients
-              : null;
-        } else {
-          allPatients =
-            item && item.data && item.data.getPatientByMobileNumber
-              ? item.data.getPatientByMobileNumber.patients
-              : null;
-        }
+        // if (callByPrism === 'true') {
+        //   allPatients =
+        //     item && item.data && item.data.getCurrentPatients
+        //       ? item.data.getCurrentPatients.patients
+        //       : null;
+        // } else {
+        //   allPatients =
+        //     item && item.data && item.data.getPatientByMobileNumber
+        //       ? item.data.getPatientByMobileNumber.patients
+        //       : null;
+        // }
 
-        const patientDetails = allPatients
-          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-          : null;
+        // const patientDetails = allPatients
+        //   ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        //   : null;
 
         CommonSetUserBugsnag(
           patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
@@ -526,30 +525,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-    const item = JSON.parse(retrievedItem);
+    const patientDetails = JSON.parse(retrievedItem);
 
-    const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+    // const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+    // let allPatients;
 
-    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    // if (callByPrism === 'false') {
+    //   allPatients =
+    //     item && item.data && item.data.getPatientByMobileNumber
+    //       ? item.data.getPatientByMobileNumber.patients
+    //       : null;
+    // } else {
+    //   allPatients =
+    //     item && item.data && item.data.getCurrentPatients
+    //       ? item.data.getCurrentPatients.patients
+    //       : null;
+    // }
 
-    let allPatients;
-
-    if (callByPrism === 'false') {
-      allPatients =
-        item && item.data && item.data.getPatientByMobileNumber
-          ? item.data.getPatientByMobileNumber.patients
-          : null;
-    } else {
-      allPatients =
-        item && item.data && item.data.getCurrentPatients
-          ? item.data.getCurrentPatients.patients
-          : null;
-    }
-
-    const patientDetails = allPatients
-      ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-      : null;
+    // const patientDetails = allPatients
+    //   ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+    //   : null;
 
     const fullName = `${g(patientDetails, 'firstName') || ''}%20${g(patientDetails, 'lastName') ||
       ''}`;

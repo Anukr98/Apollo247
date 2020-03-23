@@ -62,8 +62,6 @@ export interface AuthContextProps {
   getPatientApiCall: (() => Promise<unknown>) | null;
   getPatientByPrism: (() => Promise<unknown>) | null;
 
-  mobileAPICalled: boolean;
-  setMobileAPICalled: ((par: boolean) => void) | null;
   getFirebaseToken: (() => Promise<unknown>) | null;
 }
 
@@ -87,9 +85,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   setAllPatients: null,
 
   getPatientByPrism: null,
-
-  mobileAPICalled: false,
-  setMobileAPICalled: null,
 
   getFirebaseToken: null,
 });
@@ -156,7 +151,6 @@ export const AuthProvider: React.FC = (props) => {
 
   const [isSigningIn, setIsSigningIn] = useState<AuthContextProps['isSigningIn']>(false);
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
-  const [mobileAPICalled, setMobileAPICalled] = useState<AuthContextProps['signInError']>(false);
 
   const auth = firebase.auth();
 
@@ -191,7 +185,7 @@ export const AuthProvider: React.FC = (props) => {
       AsyncStorage.removeItem('currentPatient');
       AsyncStorage.removeItem('deviceToken');
       AsyncStorage.removeItem('selectUserId');
-      AsyncStorage.removeItem('callByPrism');
+      // AsyncStorage.removeItem('callByPrism');
 
       console.log('authprovider signOut');
     } catch (error) {
@@ -282,15 +276,23 @@ export const AuthProvider: React.FC = (props) => {
 
               setSignInError(false);
               console.log('getPatientApiCall', data);
-              AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-              AsyncStorage.setItem('callByPrism', 'false');
-              setAllPatients(data);
+              const allPatientsData =
+                data && data.data && data.data.getPatientByMobileNumber
+                  ? data.data.getPatientByMobileNumber.patients
+                  : null;
+              const mePatient = allPatientsData
+                ? allPatientsData.find((patient: any) => patient.relation === Relation.ME) ||
+                  allPatientsData[0]
+                : null;
+              mePatient && AsyncStorage.setItem('currentPatient', JSON.stringify(mePatient));
+              AsyncStorage.setItem('allPatients', JSON.stringify(allPatientsData));
+
+              setAllPatients(allPatientsData);
               resolve(data);
-              setMobileAPICalled(false);
             })
             .catch(async (error) => {
               CommonBugFender('AuthProvider_getPatientApiCall', error);
-              const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+              const retrievedItem: any = await AsyncStorage.getItem('allPatients');
               const item = JSON.parse(retrievedItem);
               setAllPatients(item);
               setSignInError(false);
@@ -325,12 +327,19 @@ export const AuthProvider: React.FC = (props) => {
             };
             postWebEngageEvent(WebEngageEventName.NUMBER_OF_PROFILES_FETCHED, eventAttributes);
 
-            AsyncStorage.setItem('callByPrism', 'true');
-            AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-            setMobileAPICalled(true);
             setSignInError(false);
             console.log('getPatientByPrism', data);
-            setAllPatients(data);
+            const allPatientsData =
+              data && data.data && data.data.getCurrentPatients
+                ? data.data.getCurrentPatients.patients
+                : null;
+            const mePatient = allPatientsData
+              ? allPatientsData.find((patient: any) => patient.relation === Relation.ME) ||
+                allPatientsData[0]
+              : null;
+            AsyncStorage.setItem('currentPatient', JSON.stringify(mePatient));
+            AsyncStorage.setItem('allPatients', JSON.stringify(allPatientsData));
+            setAllPatients(allPatientsData);
             resolve(data);
           })
           .catch(async (error) => {
@@ -366,8 +375,6 @@ export const AuthProvider: React.FC = (props) => {
             getPatientApiCall,
 
             getPatientByPrism,
-            mobileAPICalled,
-            setMobileAPICalled,
 
             getFirebaseToken,
           }}
