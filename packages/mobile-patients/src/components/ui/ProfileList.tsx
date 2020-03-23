@@ -53,6 +53,7 @@ export interface ProfileListProps {
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
   unsetloaderDisplay?: boolean;
   showList?: boolean;
+  onProfileChange?: (profile: GetCurrentPatients_getCurrentPatients_patients) => void;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -260,7 +261,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             });
             setDisplayAddProfile && setDisplayAddProfile(true);
           } else {
-            profileArray && setProfile(profileArray!.find((i) => selectedUser.key === i.id));
+            const pfl = profileArray!.find((i) => selectedUser.key === i.id);
+            props.onProfileChange && props.onProfileChange(pfl!);
+            profileArray && setProfile(pfl);
           }
           saveUserChange &&
             selectedUser.key !== addString &&
