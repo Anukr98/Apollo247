@@ -115,8 +115,8 @@ export enum ApiConstants {
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
 
-  REFERRAL_CODE_TEXT = 'Hi {0}, Use code WELCOME to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. ExpertiseIsForEveryone. Click to learn https://youtu.be/gwIRbcO3hpk',
-  REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code {1} to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. ExpertiseIsForEveryone. Click to learn https://youtu.be/XF7MWPebtkw',
+  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "WELCOME" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
+  REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
 
   /*** push-notification messages end here ***/
 
