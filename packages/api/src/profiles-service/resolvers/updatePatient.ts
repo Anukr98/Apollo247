@@ -83,12 +83,9 @@ const updatePatient: Resolver<
 > = async (parent, { patientInput }, { profilesDb }) => {
   const { id, ...updateAttrs } = patientInput;
 
-  //check for referal code validation
   if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
     const referralCode = updateAttrs.referralCode.toUpperCase();
     updateAttrs.referralCode = referralCode;
-    if (!isValidReferralCode(referralCode))
-      throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
   }
 
   const patientRepo = await profilesDb.getCustomRepository(PatientRepository);
