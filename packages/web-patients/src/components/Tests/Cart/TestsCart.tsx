@@ -1,9 +1,14 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
+import {
+  Theme,
+  FormControlLabel,
+  Typography,
+  Tabs,
+  Tab,
+  CircularProgress,
+} from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { Checkout } from 'components/Cart/Checkout';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
@@ -15,7 +20,13 @@ import { AppointmentsSlot } from 'components/Tests/Cart/AppointmentsSlot';
 import { ClinicHours } from 'components/Tests/Cart/ClinicHours';
 import { HomeVisit } from 'components/Tests/Cart/HomeVisit';
 import { ClinicVisit } from 'components/Tests/Cart/ClinicVisit';
-import { LocationContext } from 'components/LocationProvider';
+import {
+  AphButton,
+  AphRadio,
+  AphDialog,
+  AphDialogTitle,
+  AphDialogClose,
+} from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -27,6 +38,39 @@ const useStyles = makeStyles((theme: Theme) => {
         PaddingLeft: 3,
         display: 'flex',
         paddingBottom: 20,
+      },
+    },
+    checkoutType: {
+      padding: '10px 18px',
+      borderRadius: 5,
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+      backgroundColor: '#f7f8f5',
+      marginTop: 20,
+      '& ul': {
+        padding: 0,
+        margin: 0,
+      },
+      '& li': {
+        listStyleType: 'none',
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingBottom: 10,
+        '&:last-child': {
+          paddingBottom: 0,
+        },
+      },
+    },
+    radioLabel: {
+      margin: 0,
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#01475b',
+      alignItems: 'center',
+      '& span:last-child': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: '#01475b',
       },
     },
     buttonDisable: {
@@ -439,7 +483,7 @@ export const TestsCart: React.FC = (props) => {
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = React.useState<string>('');
+  const [paymentMethod, setPaymentMethod] = React.useState<string>('COD');
   const [mutationLoading, setMutationLoading] = useState(false);
 
   const isSmallScreen = useMediaQuery('(max-width:767px)');
@@ -604,11 +648,25 @@ export const TestsCart: React.FC = (props) => {
           <div className={classes.dialogContent}>
             <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
               <div className={classes.customScrollBar}>
-                <Checkout
-                  setPaymentMethod={(paymentMethod: string) => {
-                    setPaymentMethod(paymentMethod);
-                  }}
-                />
+                <div>
+                  <div className={classes.sectionHeader}>Pick a payment mode</div>
+                  <div className={classes.checkoutType}>
+                    <ul>
+                      <li>
+                        <FormControlLabel
+                          className={classes.radioLabel}
+                          value="COD"
+                          checked={true}
+                          control={<AphRadio color="primary" />}
+                          label="Cash On Delivery"
+                          onChange={() => {
+                            setPaymentMethod('COD');
+                          }}
+                        />
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </Scrollbars>
           </div>
