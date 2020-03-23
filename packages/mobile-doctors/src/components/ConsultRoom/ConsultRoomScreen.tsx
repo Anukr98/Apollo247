@@ -1608,7 +1608,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               <View
                 style={{
                   marginTop: 0,
-                  opacity: isAfter ? 1 : 0.5,
+                  opacity: startConsult ? 1 : 0.5,
                 }}
               >
                 {(appointmentData || {}).status == 'COMPLETED' || showEditPreviewButtons ? null : (
@@ -1618,7 +1618,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             ),
             onPress: () => {
               callPermissions(() => {
-                if (startConsult && isAfter) {
+                if (startConsult) {
                   setActiveTabIndex(tabsData[1].title);
                   setShowPopUp(true);
                 }
@@ -1631,7 +1631,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 <View
                   style={{
                     marginTop: 0,
-                    opacity: isAfter ? 1 : 0.5,
+                    opacity: startConsult ? 1 : 0.5,
                   }}
                 >
                   {(appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ||
@@ -1644,7 +1644,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 </View>
               </>
             ),
-            onPress: () => isAfter && setDropdownShow(!dropdownShow),
+            onPress: () => startConsult && setDropdownShow(!dropdownShow),
           },
         ]}
       />
