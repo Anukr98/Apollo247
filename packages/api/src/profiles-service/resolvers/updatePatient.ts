@@ -104,46 +104,41 @@ const updatePatient: Resolver<
   }
 
   let regCode = '';
-  //if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
   const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
-  //const getCode = await regCodeRepo.getCode();
   const getCode = await regCodeRepo.updateCodeStatus('', patient);
   if (getCode) {
-    /*const regCodeStatus = await regCodeRepo.updateCodeStatus(getCode[0].id, patient);
-    if (regCodeStatus) {
-      regCode = getCode[0].registrationCode;
-    }*/
     regCode = getCode[0].registrationCode;
   }
-  //}
 
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
   console.log(getPatientList, 'getPatientList for count');
   if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
     //send registration success notification here
     sendPatientRegistrationNotification(patient, profilesDb, regCode);
-  }
-  if (updateAttrs.referralCode) {
-    const referralCodesMasterRepo = await profilesDb.getCustomRepository(
-      ReferralCodesMasterRepository
-    );
-    const referralCodeExist = await referralCodesMasterRepo.findByReferralCode(
-      updateAttrs.referralCode
-    );
-    let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', patient.firstName);
-    if (referralCodeExist) {
-      const referalCouponMappingRepo = await profilesDb.getCustomRepository(
-        ReferalCouponMappingRepository
+    if (updateAttrs.referralCode) {
+      const referralCodesMasterRepo = await profilesDb.getCustomRepository(
+        ReferralCodesMasterRepository
       );
-      const mappingData = await referalCouponMappingRepo.findByReferralCodeId(referralCodeExist.id);
-      if (mappingData)
-        smsText = ApiConstants.REFERRAL_CODE_TEXT_WITH_COUPON.replace(
-          '{0}',
-          patient.firstName
-        ).replace('{1}', mappingData.coupon.code);
-      sendNotificationSMS(patient.mobileNumber, smsText);
-    } else {
-      sendNotificationSMS(patient.mobileNumber, smsText);
+      const referralCodeExist = await referralCodesMasterRepo.findByReferralCode(
+        updateAttrs.referralCode
+      );
+      let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', patient.firstName);
+      if (referralCodeExist) {
+        const referalCouponMappingRepo = await profilesDb.getCustomRepository(
+          ReferalCouponMappingRepository
+        );
+        const mappingData = await referalCouponMappingRepo.findByReferralCodeId(
+          referralCodeExist.id
+        );
+        if (mappingData)
+          smsText = ApiConstants.REFERRAL_CODE_TEXT_WITH_COUPON.replace(
+            '{0}',
+            patient.firstName
+          ).replace('{1}', mappingData.coupon.code);
+        sendNotificationSMS(patient.mobileNumber, smsText);
+      } else {
+        sendNotificationSMS(patient.mobileNumber, smsText);
+      }
     }
   }
   return { patient };
