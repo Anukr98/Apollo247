@@ -45,6 +45,7 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
       searchText: String!
       patientId: ID
       geolocation: Geolocation
+      pincode: String
     ): SearchDoctorAndSpecialtyByNameResult
   }
 `;
@@ -69,7 +70,7 @@ let identifier: string;
 let callStartTime: Date;
 const SearchDoctorAndSpecialtyByName: Resolver<
   null,
-  { searchText: string; patientId: string; geolocation: Geolocation },
+  { searchText: string; patientId: string; geolocation: Geolocation; pincode: string },
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {

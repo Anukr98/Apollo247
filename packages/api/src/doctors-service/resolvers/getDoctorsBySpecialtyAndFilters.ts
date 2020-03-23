@@ -63,6 +63,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     language: [String]
     geolocation: Geolocation
     consultMode: ConsultMode
+    pincode: String
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
@@ -104,6 +105,7 @@ export type FilterDoctorInput = {
   language: string[];
   geolocation: Geolocation;
   consultMode: ConsultMode;
+  pincode: string;
 };
 
 export type ConsultModeAvailability = {
