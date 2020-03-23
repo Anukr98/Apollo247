@@ -1510,6 +1510,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 );
               })
               .catch((e: ApolloError) => {
+                console.log(e, 'cancel');
+
                 setShowLoading(false);
                 showAphAlert &&
                   showAphAlert({
@@ -1692,12 +1694,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 optionText: strings.consult.end_cancel_consult,
                 onPress: () => {
                   if (
-                    appointmentData.appointmentStatus === STATUS.COMPLETED &&
-                    appointmentData.sentToPatient === false &&
-                    // (isClickedOnPriview || props.sentToPatient === false) &&
-                    !caseSheetEdit &&
-                    (appointmentData.status === STATUS.PENDING ||
-                      appointmentData.status === STATUS.IN_PROGRESS)
+                    appointmentData.status === STATUS.PENDING ||
+                    appointmentData.status === STATUS.IN_PROGRESS ||
+                    (appointmentData.appointmentStatus === STATUS.COMPLETED &&
+                      appointmentData.sentToPatient === false)
+                    // (appointmentData.appointmentStatus === STATUS.COMPLETED &&
+                    //   appointmentData.sentToPatient === false) ||
+                    // // (isClickedOnPriview || props.sentToPatient === false) &&
+                    // caseSheetEdit ||
+                    // (!caseSheetEdit &&
+                    //   (appointmentData.status === STATUS.PENDING ||
+                    //     appointmentData.status === STATUS.IN_PROGRESS))
                   ) {
                     setDropdownShow(false);
                     setshowCancelPopup(true);
