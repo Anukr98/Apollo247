@@ -240,7 +240,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             conatinerstyles={{ width: '78%' }}
             value={referral}
             onChangeText={(text) => setReferral(text)}
-            icon={isValidReferral ? <WhiteTickIcon /> : null}
+            icon={referral.length > 0 ? <WhiteTickIcon /> : null}
           />
         </View>
       </View>
@@ -430,11 +430,12 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       }
                     } else if (!gender) {
                       validationMessage = 'Please select gender';
-                    } else if (referral !== '') {
-                      if (!isValidReferral) {
-                        validationMessage = 'Enter valid referral code';
-                      }
                     }
+                    // else if (referral !== '') {
+                    //   if (!isValidReferral) {
+                    //     validationMessage = 'Enter valid referral code';
+                    //   }
+                    // }
                     if (validationMessage) {
                       Alert.alert('Error', validationMessage);
                     } else {
