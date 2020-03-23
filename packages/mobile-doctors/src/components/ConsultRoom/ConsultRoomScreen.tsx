@@ -1631,7 +1631,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 <View
                   style={{
                     marginTop: 0,
-                    opacity: startConsult ? 1 : 0.5,
+                    //opacity: startConsult ? 1 : 0.5,
                   }}
                 >
                   {(appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ||
@@ -1644,7 +1644,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 </View>
               </>
             ),
-            onPress: () => startConsult && setDropdownShow(!dropdownShow),
+            onPress: () => setDropdownShow(!dropdownShow), //startConsult && setDropdownShow(!dropdownShow),
           },
         ]}
       />
