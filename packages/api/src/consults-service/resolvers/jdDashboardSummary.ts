@@ -171,6 +171,7 @@ const updateJdSummary: Resolver<
         totalAllocatedChats,
         casesOngoing,
         caseSheetNotSatisfactory,
+        isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);
     });
