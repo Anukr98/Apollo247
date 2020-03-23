@@ -418,6 +418,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                     Keyboard.dismiss();
                     CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
                     let validationMessage = '';
+                    let trimReferral = referral;
                     if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
                       validationMessage = 'Enter valid first name';
                     } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
@@ -430,12 +431,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       }
                     } else if (!gender) {
                       validationMessage = 'Please select gender';
+                    } else if (referral !== '') {
+                      trimReferral = trimReferral.trim();
                     }
-                    // else if (referral !== '') {
-                    //   if (!isValidReferral) {
-                    //     validationMessage = 'Enter valid referral code';
-                    //   }
-                    // }
                     if (validationMessage) {
                       Alert.alert('Error', validationMessage);
                     } else {
@@ -481,7 +479,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         uhid: '',
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
-                        referralCode: referral ? referral : null,
+                        referralCode: trimReferral ? trimReferral : null,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({

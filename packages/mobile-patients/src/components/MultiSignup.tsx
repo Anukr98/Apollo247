@@ -427,6 +427,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               disabled={isDisabled()}
               onPress={async () => {
                 Keyboard.dismiss();
+                let trimReferral = referral;
                 if (profiles) {
                   const result = profiles.filter((obj) => {
                     return obj.relation == Relation['ME'];
@@ -437,18 +438,16 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       AppRoutes.MultiSignup,
                       'There should be 1 profile with relation set as Me'
                     );
-                  }
-                  // else if (referral !== '' && !isValidReferral) {
-                  //   Alert.alert('Apollo', 'Enter valid referral code');
-                  // }
-                  else {
+                  } else if (referral !== '') {
+                    trimReferral = trimReferral.trim();
+                  } else {
                     setVerifyingPhoneNumber(true);
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
                       const patientsDetails: UpdatePatientInput = {
                         id: profile.id,
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
-                        referralCode: (profile.relation == Relation.ME && referral) || null,
+                        referralCode: (profile.relation == Relation.ME && trimReferral) || null,
                       };
                       console.log('patientsDetails', { patientsDetails });
                       CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
