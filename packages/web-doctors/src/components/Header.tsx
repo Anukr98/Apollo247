@@ -319,7 +319,9 @@ export const Header: React.FC = (props) => {
         <Dialog open={true}>
           <DialogTitle>{''}</DialogTitle>
           <DialogContent>
-            <DialogContentText>Please check your internet/wifi connection</DialogContentText>
+            <DialogContentText>
+              Seems like you are offline. Please check your internet connection
+            </DialogContentText>
           </DialogContent>
         </Dialog>
       </Offline>
