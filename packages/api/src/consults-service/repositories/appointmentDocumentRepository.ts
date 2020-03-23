@@ -15,6 +15,19 @@ export class AppointmentDocumentRepository extends Repository<AppointmentDocumen
       });
   }
 
+  getAllDocuments() {
+    return this.find({
+      relations: ['appointment'],
+    });
+  }
+
+  updateUserType(userType: number, appt: AppointmentDocuments) {
+    this.update(appt.id, { userType }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
   getDocument(id: string) {
     return this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_DOCUMENT_ERROR, undefined, {
