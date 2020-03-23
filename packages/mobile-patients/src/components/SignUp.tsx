@@ -240,7 +240,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             conatinerstyles={{ width: '78%' }}
             value={referral}
             onChangeText={(text) => setReferral(text)}
-            icon={isValidReferral ? <WhiteTickIcon /> : null}
+            icon={referral.length > 0 ? <WhiteTickIcon /> : null}
           />
         </View>
       </View>
