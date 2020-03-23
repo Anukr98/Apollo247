@@ -104,14 +104,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const apiDetails = {
-  url: process.env.PHARMACY_MED_INFO_URL,
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
-  deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
+type HomeVisitProps = {
+  selectedAddressData: any | null;
+  setSelectedAddressData: (selectedAddressData: any | null) => void;
 };
 
-export const HomeVisit: React.FC = (props) => {
+export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -119,10 +117,10 @@ export const HomeVisit: React.FC = (props) => {
     deliveryAddressId,
     deliveryAddresses,
     setDeliveryAddresses,
-    setClinicId,
   } = useDiagnosticsCart();
   const { isSigningIn } = useAuth();
   const client = useApolloClient();
+  const { selectedAddressData, setSelectedAddressData } = props;
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
@@ -130,7 +128,7 @@ export const HomeVisit: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isError, setIsError] = React.useState<boolean>(false);
-  const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
+  // const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
 
   const getAddressDetails = () => {
     setIsLoading(true);

@@ -116,8 +116,14 @@ const TestApiCredentials = {
   InterfaceClient: process.env.TEST_DETAILS_PACKAGE_INTERFACE_CLIENT,
 };
 
-export const ClinicVisit: React.FC = (props) => {
+type ClinicVisitProps = {
+  selectedClinic: Clinic | null;
+  setSelectedClinic: (selectedClinic: Clinic | null) => void;
+};
+
+export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
   const classes = useStyles({});
+  const { selectedClinic, setSelectedClinic } = props;
   const { currentLat, currentLong, setCurrentPincode, currentPincode } = useContext(
     LocationContext
   );
@@ -136,7 +142,7 @@ export const ClinicVisit: React.FC = (props) => {
   );
   const [filteredClinicList, setFilteredClinicList] = useState<Clinic[]>([]);
   const [pincode, setPincode] = useState<string | null>(clinicPinCode || currentPincode);
-  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
+  // const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [pincodeError, setPincodeError] = useState<boolean>(false);
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
@@ -240,6 +246,7 @@ export const ClinicVisit: React.FC = (props) => {
 
   useEffect(() => {
     if (pincode && clinics.length > 0) {
+      setLoading(true);
       filterClinics(pincode);
     } else if (!pincode && pincode !== '') {
       if (currentLat && currentLong) {
