@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        zIndex: 991,
+        top: 50,
         borderRadius: 0,
         paddingTop: 0,
         paddingBottom: 20,

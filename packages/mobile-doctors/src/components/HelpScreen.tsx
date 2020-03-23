@@ -9,7 +9,6 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   container: {
-    //...theme.viewStyles.container,
     flex: 1,
     width: '100%',
     height: 600,
@@ -31,7 +30,6 @@ const styles = StyleSheet.create({
   },
   needdataview: {
     marginTop: 0,
-    //height: 300,
   },
   mainview: {
     //marginBottom: 20,
@@ -40,7 +38,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',
     lineHeight: 24,
-    //marginTop: 20,
   },
   headingText: {
     marginTop: 20,

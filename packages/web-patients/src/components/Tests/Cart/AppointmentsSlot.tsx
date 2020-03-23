@@ -1,16 +1,21 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
+import { Theme, MenuItem } from '@material-ui/core';
 import {
   AphButton,
   AphDialog,
   AphDialogTitle,
   AphDialogClose,
   AphSelect,
-  AphTextField,
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphCalendar } from 'components/AphCalendar';
+import { GET_DIAGNOSTIC_SLOTS } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import { getDiagnosticSlots, getDiagnosticSlotsVariables } from 'graphql/types/getDiagnosticSlots';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -115,8 +120,43 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const AppointmentsSlot: React.FC = (props) => {
   const classes = useStyles({});
-  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
+  const { deliveryAddressId, setDiagnosticSlot, deliveryAddresses } = useDiagnosticsCart();
+  const [checkingServicability, setCheckingServicability] = React.useState<boolean>(false);
   const [dateSelected, setDateSelected] = useState<string>();
+  const client = useApolloClient();
+
+  const checkServicability = (selectedAddress: any) => {
+    setCheckingServicability(true);
+    client
+      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+        query: GET_DIAGNOSTIC_SLOTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: currentPatient ? currentPatient.id : '',
+          hubCode: 'HYD_HUB1', // not considering this field at backend
+          selectedDate: moment().format('YYYY-MM-DD'),
+          zipCode: parseInt(selectedAddress.zipcode!),
+        },
+      })
+      .then(({ data }) => {
+        console.log('ORIGINAL DIAGNOSTIC SLOTS', { data });
+      })
+      .catch((e) => {
+        console.log(
+          'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.'
+        );
+      });
+  };
+
+  useEffect(() => {
+    if (deliveryAddressId) {
+      const selectedAddress = deliveryAddresses.find((address) => address.id === deliveryAddressId);
+      if (selectedAddress) {
+        checkServicability(selectedAddress);
+      }
+    }
+  }, [deliveryAddressId]);
 
   return (
     <div className={classes.root}>
@@ -136,13 +176,13 @@ export const AppointmentsSlot: React.FC = (props) => {
           </div>
         </div>
         <div className={classes.pickSlot}>
-          <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>Pick Another Slot</AphButton>
+          <AphButton>Pick Another Slot</AphButton>
         </div>
 
-        <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
-          <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+        <AphDialog open={false} maxWidth="sm">
+          <AphDialogClose title={'Close'} />
           <AphDialogTitle>Schedule Appointment</AphDialogTitle>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'65vh'}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'55vh'}>
             <div className={classes.wrapperCards}>
               <AphCalendar
                 getDate={(dateSelected: string) => setDateSelected(dateSelected)}
@@ -161,10 +201,10 @@ export const AppointmentsSlot: React.FC = (props) => {
                 </AphSelect>
               </div>
             </div>
-            <div className={classes.doneButton}>
-              <AphButton color="primary">Done</AphButton>
-            </div>
           </Scrollbars>
+          <div className={classes.doneButton}>
+            <AphButton color="primary">Done</AphButton>
+          </div>
         </AphDialog>
       </div>
     </div>

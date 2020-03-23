@@ -15,10 +15,6 @@ export interface RadioButtonsProps {
 export const RadioButtons: React.FC<RadioButtonsProps> = (props) => {
   const { setselectedItem, selectedItem, data, horizontal } = props;
 
-  // const [selectedItemChildren, setselectedItemChildren] = useState<ReactNode>(
-  //   data.length ? data[0].children : null
-  // );
-
   return (
     <View pointerEvents={props.disabled ? 'none' : 'auto'}>
       <View
@@ -39,7 +35,6 @@ export const RadioButtons: React.FC<RadioButtonsProps> = (props) => {
               ]}
               onPress={() => {
                 setselectedItem(item.key);
-                // setselectedItemChildren(item.children);
               }}
             >
               {item.key == selectedItem ? <Selected /> : <UnSelected />}

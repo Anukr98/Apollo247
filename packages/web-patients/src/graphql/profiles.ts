@@ -665,3 +665,31 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlots(
+    $patientId: String
+    $hubCode: String
+    $selectedDate: Date
+    $zipCode: Int
+  ) {
+    getDiagnosticSlots(
+      patientId: $patientId
+      hubCode: $hubCode
+      selectedDate: $selectedDate
+      zipCode: $zipCode
+    ) {
+      diagnosticBranchCode
+      diagnosticSlot {
+        employeeCode
+        employeeName
+        slotInfo {
+          endTime
+          status
+          startTime
+          slot
+        }
+      }
+    }
+  }
+`;

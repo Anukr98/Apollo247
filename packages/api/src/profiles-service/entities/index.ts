@@ -1027,6 +1027,9 @@ export class Coupon extends BaseEntity {
   @ManyToOne((type) => CouponGenericRules, (couponGenericRule) => couponGenericRule.coupon)
   couponGenericRule: CouponGenericRules;
 
+  @OneToMany((type) => ReferalCouponMapping, (referalCouponMapping) => referalCouponMapping.coupon)
+  referalCouponMapping: ReferalCouponMapping[];
+
   @Column({ type: 'text', nullable: true })
   description: string;
 
@@ -1759,6 +1762,48 @@ export class LoginOtpArchive extends BaseEntity {
 
   @Column({ default: 0 })
   incorrectAttempts: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
+@Entity()
+export class ReferralCodesMaster extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @OneToMany(
+    (type) => ReferalCouponMapping,
+    (referalCouponMapping) => referalCouponMapping.referralCodesMaster
+  )
+  referalCouponMapping: ReferalCouponMapping[];
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+}
+
+@Entity()
+export class ReferalCouponMapping extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne(
+    (type) => ReferralCodesMaster,
+    (ReferralCodesMaster) => ReferralCodesMaster.referalCouponMapping
+  )
+  referralCodesMaster: ReferralCodesMaster;
+
+  @ManyToOne((type) => Coupon, (coupon) => coupon.referalCouponMapping)
+  coupon: Coupon;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
 
   @Column({ nullable: true })
   updatedDate: Date;

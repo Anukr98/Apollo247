@@ -7,11 +7,13 @@ import { Checkout } from 'components/Cart/Checkout';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { LocationContext } from 'components/LocationProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { TestsListingCard } from 'components/Tests/Cart/TestsListingCard';
+import { TestsFor } from 'components/Tests/Cart/TestsFor';
+import { AppointmentsSlot } from 'components/Tests/Cart/AppointmentsSlot';
+import { ClinicHours } from 'components/Tests/Cart/ClinicHours';
+import { HomeVisit } from 'components/Tests/Cart/HomeVisit';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -439,13 +441,7 @@ export const TestsCart: React.FC = (props) => {
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
 
-  const { currentPincode } = useContext(LocationContext);
-
-  const [deliveryTime, setDeliveryTime] = React.useState<string>('');
-
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-
-  const { currentPatient } = useAllCurrentPatients();
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'Clinic';
   const disablePayButton = paymentMethod === '';
@@ -483,7 +479,7 @@ export const TestsCart: React.FC = (props) => {
               <AphButton
                 className={classes.addItemBtn}
                 onClick={() => {
-                  window.location.href = clientRoutes.medicines();
+                  window.location.href = clientRoutes.tests();
                 }}
                 title={'Add items to cart'}
               >
@@ -491,6 +487,7 @@ export const TestsCart: React.FC = (props) => {
               </AphButton>
             </div>
             <TestsListingCard />
+            <TestsFor />
           </div>
         </Scrollbars>
       </div>
@@ -531,13 +528,13 @@ export const TestsCart: React.FC = (props) => {
                       root: classes.tabRoot,
                       selected: classes.tabSelected,
                     }}
-                    label="Store Pick Up"
+                    label="Clinic Visit"
                     title={'Choose store pick up'}
                   />
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    {/* <HomeVisit setDeliveryTime={setDeliveryTime} deliveryTime={deliveryTime} /> */}
+                    <HomeVisit />
                   </TabContainer>
                 )}
                 {tabValue === 1 && (
@@ -553,6 +550,7 @@ export const TestsCart: React.FC = (props) => {
                 )}
               </div>
             </div>
+            {tabValue === 0 ? <AppointmentsSlot /> : <ClinicHours />}
             {diagnosticsCartItems && diagnosticsCartItems.length > 0 && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>

@@ -267,6 +267,14 @@ app.get('/invokeDashboardSummaries', (req, res) => {
       }
     }`,
   };
+  const updateConsultRatingRequestJSON = {
+    query: `mutation{
+      updateConsultRating(summaryDate:"${currentDate}"){
+        ratingRowsCount
+      }
+    }`,
+  };
+
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
 
   //updateDoctorFeeSummary api call
@@ -378,6 +386,33 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\n---------------------------\n' +
         '\ngetAvailableDoctorsCount Response\n' +
         response.data.data.getAvailableDoctorsCount +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+
+  //updateConsultRating api call
+  axios
+    .post(process.env.API_URL, updateConsultRatingRequestJSON)
+    .then((response) => {
+      console.log(response);
+      console.log(response.data.data.updateConsultRating, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateConsultRating Response\n' +
+        response.data.data.updateConsultRating +
         '\n-------------------\n';
       fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
@@ -590,6 +625,7 @@ app.get('/consultpayment', (req, res) => {
             })
             .then((resp) => {
               console.log(resp.data, resp.data.Result);
+              const merchantId = resp.data.result;
               const requestJSON = {
                 query:
                   'mutation { updatePaymentOrderId(appointmentId:"' +
@@ -600,18 +636,47 @@ app.get('/consultpayment', (req, res) => {
                   source +
                   '"){ status } }',
               };
-              axios.post(process.env.API_URL, requestJSON);
-              req.session.appointmentId = req.query.appointmentId;
-              req.session.source = source;
-              res.render('consults.ejs', {
-                athsToken: response.data.data.getAthsToken.patient.athsToken,
-                merchantId: resp.data.Result,
-                price: req.query.price,
-                patientId: req.query.patientId,
-                patientName: response.data.data.getAthsToken.patient.firstName,
-                mobileNumber: response.data.data.getAthsToken.patient.mobileNumber,
-                baseUrl: process.env.APP_BASE_URL,
-                pgUrl: process.env.CONSULT_PG_URL,
+              axios.post(process.env.API_URL, requestJSON).then((updateResp) => {
+                const getAptRequestJson = {
+                  query:
+                    'query { getAppointmentData(appointmentId:"' +
+                    req.query.appointmentId +
+                    '"){ appointmentsHistory { discountedAmount paymentOrderId patientInfo { mobileNumber firstName } } } }',
+                };
+                axios
+                  .post(process.env.API_URL, getAptRequestJson)
+                  .then((aptResp) => {
+                    console.log(
+                      aptResp.data.data.getAppointmentData.appointmentsHistory,
+                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].discountedAmount,
+                      'appoint resp',
+                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                        .mobileNumber
+                    );
+                    req.session.appointmentId = req.query.appointmentId;
+                    req.session.source = source;
+                    res.render('consults.ejs', {
+                      athsToken: response.data.data.getAthsToken.patient.athsToken,
+                      merchantId:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].paymentOrderId,
+                      price:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0]
+                          .discountedAmount,
+                      patientId: req.query.patientId,
+                      patientName:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                          .firstName,
+                      mobileNumber:
+                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
+                          .mobileNumber,
+                      baseUrl: process.env.APP_BASE_URL,
+                      pgUrl: process.env.CONSULT_PG_URL,
+                    });
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                    res.send(err, 'Appointment id error');
+                  });
               });
             })
             .catch((err) => {

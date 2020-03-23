@@ -981,7 +981,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           unSubscribeBrowserButtonsListener();
           if (status === STATUS.NO_SHOW) {
             alert(
-              'Since the patient is not responding from last 3 mins, we are rescheduling this appointment.'
+              'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.'
             );
           }
           navigateToCalendar();
@@ -1930,8 +1930,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   className={classes.consultButton}
                   disabled={
                     currentUserType === LoggedInUserType.SECRETARY ||
-                    startAppointmentButton ||
-                    disableOnCancel ||
+                    // startAppointmentButton ||
+                    // disableOnCancel ||
                     (appointmentInfo!.appointmentState !== 'NEW' &&
                       appointmentInfo!.appointmentState !== 'TRANSFER' &&
                       appointmentInfo!.appointmentState !== 'RESCHEDULE') ||

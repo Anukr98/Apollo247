@@ -2,7 +2,6 @@ import React, { useRef, useEffect } from 'react';
 import { Theme, Tabs, Tab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
@@ -12,11 +11,16 @@ import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineAp
 import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
+    },
+    progressLoader: {
+      textAlign: 'center',
+      padding: 20,
     },
     container: {
       maxWidth: 1064,
@@ -416,7 +420,17 @@ export const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'SIDE EFFECTS') {
           modifiedData.forEach((x) => {
             if (x.key === 'Side Effects') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = `${x.value}${v.CaptionDesc.split('&lt;')
+                .join('<')
+                .split('&gt;')
+                .join('>')
+                .replace(/(<([^>]+)>)/gi, '')
+                .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '')
+                .replace(/&gt/g, '')
+                .replace(/br \//g, '')}`;
             }
           });
         } else if (v.Caption === 'HOW TO USE' || v.Caption === 'HOW IT WORKS') {
@@ -455,7 +469,18 @@ export const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'DRUGS WARNINGS') {
           modifiedData.forEach((x) => {
             if (x.key === 'Drug Warnings') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = `${x.value}${v.CaptionDesc.split('&lt;')
+                .join('<')
+                .split('&gt;')
+                .join('>')
+                .replace(/(<([^>]+)>)/gi, '')
+                .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '')
+                .replace(/&gt/g, '')
+                .replace(/br \//g, '')
+                .replace(/&#039;/g, '')}`;
             }
           });
         } else if (v.Caption === 'STORAGE') {
@@ -541,7 +566,7 @@ export const MedicineDetails: React.FC = (props) => {
                   </a>
                   <div className={classes.detailsHeader}>Product Detail</div>
                 </div>
-                {medicineDetails && (
+                {medicineDetails ? (
                   <div className={classes.medicineDetailsGroup}>
                     <div className={classes.searchSection}>
                       <Scrollbars
@@ -627,6 +652,10 @@ export const MedicineDetails: React.FC = (props) => {
                       </Scrollbars>
                     </div>
                     <MedicineInformation data={medicineDetails} />
+                  </div>
+                ) : (
+                  <div className={classes.progressLoader}>
+                    <CircularProgress size={30} />
                   </div>
                 )}
               </div>

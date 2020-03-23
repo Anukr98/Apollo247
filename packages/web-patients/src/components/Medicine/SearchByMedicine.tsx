@@ -28,14 +28,6 @@ const useStyles = makeStyles((theme: Theme) => {
     searchByBrandPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: 'transparent',
-        paddingBottom: 20,
-        position: 'absolute',
-        top: 0,
-        width: '100%',
-        zIndex: 999,
-      },
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -51,6 +43,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        top: 0,
+        width: '100%',
+        zIndex: 991,
         borderBottom: 'none',
         backgroundColor: theme.palette.common.white,
         margin: 0,
@@ -69,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 328px)',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingTop: 20,
+        paddingTop: 50,
       },
     },
     backArrow: {
@@ -120,11 +116,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     scrollBar: {
       height: 'calc(100vh - 195px) !important',
+      zIndex: 1,
       [theme.breakpoints.down(992)]: {
         height: 'calc(100vh - 245px) !important',
       },
       [theme.breakpoints.down('xs')]: {
-        height: 'calc(100vh - 190px) !important',
+        height: 'calc(100vh - 185px) !important',
       },
     },
   };

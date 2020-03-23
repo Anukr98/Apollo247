@@ -168,7 +168,7 @@ export const MedicineListingCard: React.FC = (props) => {
             key={item.id}
             className={`${classes.medicineStrip} ${
               item.is_in_stock ? '' : classes.medicineStripDisabled
-              }`}
+            }`}
           >
             <div className={classes.medicineStripWrap}>
               <div className={classes.medicineInformation}>
