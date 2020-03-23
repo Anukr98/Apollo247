@@ -402,7 +402,7 @@ export const TestDetails: React.FC = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [tabValue, setTabValue] = useState<number>(0);
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-  const params = useParams<{ searchTestType: string, itemName: string, itemId: string }>();
+  const params = useParams<{ searchTestType: string; itemName: string; itemId: string }>();
 
   const [testDetails, setTestDetails] = React.useState<diagnosticTestDetails | null>(null);
   const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
@@ -425,7 +425,6 @@ export const TestDetails: React.FC = (props) => {
     Password: process.env.TEST_DETAILS_PACKAGE_PASSWORD,
     InterfaceClient: process.env.TEST_DETAILS_PACKAGE_INTERFACE_CLIENT,
   };
-
 
   const getPackageDetails = async () => {
     setLoading(true);
@@ -512,9 +511,11 @@ export const TestDetails: React.FC = (props) => {
                 >
                   <div className={classes.productInformation}>
                     <div className={classes.productBasicInfo}>
-
-                      <h2>{params.searchTestType === 'hot-seller' ?
-                        params.itemName : testDetails && testDetails.itemName}</h2>
+                      <h2>
+                        {params.searchTestType === 'hot-seller'
+                          ? params.itemName
+                          : testDetails && testDetails.itemName}
+                      </h2>
 
                       {!!testDetails.toAgeInDays && (
                         <div className={classes.textInfo}>
@@ -530,9 +531,9 @@ export const TestDetails: React.FC = (props) => {
                             testDetails.gender == 'B'
                               ? 'BOYS AND GIRLS'
                               : testDetails.gender == 'M'
-                                ? 'BOYS'
-                                : 'GIRLS'
-                            }`}
+                              ? 'BOYS'
+                              : 'GIRLS'
+                          }`}
                         </div>
                       )}
                       <div className={classes.textInfo}>
@@ -616,8 +617,8 @@ export const TestDetails: React.FC = (props) => {
                     isSmallScreen ? (
                       <div {...props} style={{ position: 'static' }} />
                     ) : (
-                        <div {...props} />
-                      )
+                      <div {...props} />
+                    )
                   }
                 >
                   <div className={classes.customScroll}>
@@ -655,8 +656,8 @@ export const TestDetails: React.FC = (props) => {
                         ) : itemIndexInCart(testDetails) === -1 ? (
                           'Add To Cart'
                         ) : (
-                              'Added To Cart'
-                            )}
+                          'Added To Cart'
+                        )}
                       </AphButton>
                     </div>
                   </div>
@@ -664,12 +665,12 @@ export const TestDetails: React.FC = (props) => {
               </div>
             </div>
           ) : (
-              loading && (
-                <div className={classes.progressLoader}>
-                  <CircularProgress size={30} />
-                </div>
-              )
-            )}
+            loading && (
+              <div className={classes.progressLoader}>
+                <CircularProgress size={30} />
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>

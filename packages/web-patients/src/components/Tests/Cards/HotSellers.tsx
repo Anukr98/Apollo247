@@ -180,15 +180,17 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       className={classes.productIcon}
                       onClick={() =>
                         (window.location.href = clientRoutes.testDetails(
-                          'hot-seller', hotSeller.packageName || '', hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
+                          'hot-seller',
+                          hotSeller.packageName || '',
+                          hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
                         ))
                       }
                     >
                       {hotSeller.packageImage ? (
                         <img src={hotSeller.packageImage} alt="" />
                       ) : (
-                          <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-                        )}
+                        <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                      )}
                     </div>
                     <div className={classes.productTitle}>{hotSeller.packageName}</div>
                     <div className={classes.bottomSection}>
@@ -219,18 +221,18 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             Add To Cart
                           </AphButton>
                         ) : (
-                            <AphButton
-                              onClick={() => {
-                                removeCartItem &&
-                                  removeCartItem(
-                                    hotSeller.id,
-                                    hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
-                                  );
-                              }}
-                            >
-                              remove
-                            </AphButton>
-                          )}
+                          <AphButton
+                            onClick={() => {
+                              removeCartItem &&
+                                removeCartItem(
+                                  hotSeller.id,
+                                  hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
+                                );
+                            }}
+                          >
+                            remove
+                          </AphButton>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -238,6 +240,6 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
               )
           )}
       </Slider>
-    </div >
+    </div>
   );
 };

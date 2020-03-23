@@ -358,8 +358,8 @@ export const TestsLanding: React.FC = (props) => {
                   </AphSelect>
                 </Typography>
               ) : (
-                  <Typography variant="h1">hello there!</Typography>
-                )}
+                <Typography variant="h1">hello there!</Typography>
+              )}
             </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
