@@ -18,44 +18,54 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     try {
-      if (Platform.OS === 'android') {
-        Linking.getInitialURL()
-          .then((url) => {
+      Linking.getInitialURL()
+        .then((url) => {
+          if (url) {
             handleOpenURL(url);
             console.log('linking', url);
-          })
-          .catch((e) => {
-            CommonBugFender('SplashScreen_Linking_URL', e);
-          });
-      } else {
-        console.log('linking');
-        Linking.addEventListener('url', handleOpenURL);
-      }
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('SplashScreen_Linking_URL', e);
+        });
+
+      Linking.addEventListener('url', (event) => handleOpenURL(event.url));
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
     }
   }, []);
 
-  const handleOpenURL = (event: any) => {
-    console.log('event', event);
-    let route;
+  const handleOpenURL = async (url: string) => {
+    const route = url.replace('apollodoctors://', '');
+    const data = route.split('?');
+    console.log(url, data, 'deeplinkpress');
 
-    if (Platform.OS === 'ios') {
-      route = event.url.replace('apolloDoctors://', '');
-    } else {
-      route = event.replace('apolloDoctors://', '');
-    }
-    const { navigate } = props.navigation;
-    const id = route && route.match(/\/([^\/]+)\/?$/) && route.match(/\/([^\/]+)\/?$/)![1];
-    const routeName = route.split('/')[0];
-    switch (routeName) {
-      case 'appointments':
-        navigate(AppRoutes.TabBar, { id });
-        break;
-      // Add other urls as required
-      default:
-        break;
+    const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+
+    if (data) {
+      switch (data[0]) {
+        case 'appointments':
+          props.navigation.pop();
+          if (isLoggedIn) {
+            if (data.length == 1) {
+              props.navigation.navigate(AppRoutes.TabBar);
+            } else if (data.length == 2) {
+              props.navigation.push(AppRoutes.ConsultRoomScreen, {
+                AppId: data[1],
+                DoctorId: '',
+                PatientId: '',
+                PatientConsultTime: null,
+                PatientInfoAll: '',
+                Appintmentdatetime: '',
+                AppoinementData: '',
+              });
+            }
+          }
+          break;
+        default:
+          break;
+      }
     }
     console.log('route', route);
   };
