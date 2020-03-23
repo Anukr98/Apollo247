@@ -224,15 +224,15 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const currentTime = new Date().getTime();
   const doctorName =
     doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.firstName
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.firstName
       ? doctorDetails.getDoctorDetailsById.firstName
       : '';
 
   const physicalConsultationFees =
     doctorDetails &&
-    doctorDetails.getDoctorDetailsById &&
-    doctorDetails.getDoctorDetailsById.physicalConsultationFees
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.physicalConsultationFees
       ? doctorDetails.getDoctorDetailsById.physicalConsultationFees
       : '';
   const [revisedAmount, setRevisedAmount] = useState(physicalConsultationFees);
@@ -285,9 +285,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       let a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRadian(fromLatitude)) *
-          Math.cos(toRadian(toLatitude)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+        Math.cos(toRadian(toLatitude)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
       let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       let d = R * c;
       return `${d.toFixed(2)} km`;
@@ -379,8 +379,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const defaultClinicAddress =
     clinics.length > 0 && clinics[0] && clinics[0].facility
       ? `${clinics[0].facility.streetLine1 ? clinics[0].facility.streetLine1 : ''} ${
-          clinics[0].facility.streetLine2 ? `${clinics[0].facility.streetLine2}` : ''
-        } ${clinics[0].facility.streetLine3 ? `${clinics[0].facility.streetLine3}` : ''}`
+      clinics[0].facility.streetLine2 ? `${clinics[0].facility.streetLine2}` : ''
+      } ${clinics[0].facility.streetLine3 ? `${clinics[0].facility.streetLine3}` : ''}`
       : '';
 
   const paymentMutation = useMutation(BOOK_APPOINTMENT);
@@ -452,9 +452,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
-            }&patientId=${
+              }&patientId=${
               currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB`;
+              }&price=${revisedAmount}&source=WEB`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -468,7 +468,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   };
   return (
     <div className={classes.root}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
+      IOS Testing
+      {/* <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             Please note that after booking, you will need to download the Apollo 247 app to continue
@@ -619,7 +620,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             Ok
           </AphButton>
         </div>
-      </AphDialog>
+      </AphDialog> */}
     </div>
   );
 };
