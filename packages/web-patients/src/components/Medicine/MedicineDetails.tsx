@@ -420,7 +420,17 @@ export const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'SIDE EFFECTS') {
           modifiedData.forEach((x) => {
             if (x.key === 'Side Effects') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = `${x.value}${v.CaptionDesc.split('&lt;')
+                .join('<')
+                .split('&gt;')
+                .join('>')
+                .replace(/(<([^>]+)>)/gi, '')
+                .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '')
+                .replace(/&gt/g, '')
+                .replace(/br \//g, '')}`;
             }
           });
         } else if (v.Caption === 'HOW TO USE' || v.Caption === 'HOW IT WORKS') {
@@ -459,7 +469,18 @@ export const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'DRUGS WARNINGS') {
           modifiedData.forEach((x) => {
             if (x.key === 'Drug Warnings') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = `${x.value}${v.CaptionDesc.split('&lt;')
+                .join('<')
+                .split('&gt;')
+                .join('>')
+                .replace(/(<([^>]+)>)/gi, '')
+                .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '')
+                .replace(/&gt/g, '')
+                .replace(/br \//g, '')
+                .replace(/&#039;/g, '')}`;
             }
           });
         } else if (v.Caption === 'STORAGE') {
