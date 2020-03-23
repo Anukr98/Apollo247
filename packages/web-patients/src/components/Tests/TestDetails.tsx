@@ -19,10 +19,15 @@ import { SEARCH_DIAGNOSTICS_BY_ID } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 
 import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
-import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
 import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
 import stripHtml from 'string-strip-html';
-
+import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
+} from 'graphql/types/getDiagnosticsData';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -398,12 +403,19 @@ export const TestDetails: React.FC = (props) => {
   const [tabValue, setTabValue] = useState<number>(0);
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
   const params = useParams<{ itemId: string }>();
+  const paramshotseller = useParams<{ searchTestType: string, itemId: string }>();
+
   const [testDetails, setTestDetails] = React.useState<diagnosticTestDetails | null>(null);
   const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
   const client = useApolloClient();
   const [loading, setLoading] = useState(false);
   const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
+
+  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+  const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
+    (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
+  >(null);
 
   const apiDetails = {
     url: process.env.GET_PACKAGE_DATA,
@@ -414,6 +426,7 @@ export const TestDetails: React.FC = (props) => {
     Password: process.env.TEST_DETAILS_PACKAGE_PASSWORD,
     InterfaceClient: process.env.TEST_DETAILS_PACKAGE_INTERFACE_CLIENT,
   };
+
 
   const getPackageDetails = async (itemId: string) => {
     setLoading(true);
@@ -437,6 +450,7 @@ export const TestDetails: React.FC = (props) => {
         setLoading(false);
       });
   };
+  console.log("setTestDetailsPackage", testDetailsPackage);
 
   const getTestDetails = async (itemId: string) => {
     setLoading(true);
@@ -461,6 +475,44 @@ export const TestDetails: React.FC = (props) => {
   };
 
   useEffect(() => {
+    if (paramshotseller.searchTestType && !diagnosisHotSellerData) {
+      setLoading(true);
+      client
+        .query<getDiagnosticsData>({
+          query: GET_DIAGNOSTIC_DATA,
+          variables: {
+
+          },
+          fetchPolicy: 'cache-first',
+        })
+        .then(({ data }) => {
+          if (
+            data &&
+            data.getDiagnosticsData &&
+            data.getDiagnosticsData.diagnosticHotSellers
+          ) {
+            const diagnosticdata = data.getDiagnosticsData.diagnosticHotSellers
+            if (diagnosticdata && diagnosticdata.length > 0) {
+              setDiagnosisHotSellerData(diagnosticdata);
+            } else {
+              setDiagnosisHotSellerData([]);
+            }
+            setDiagnosisDataError(false);
+          }
+        })
+        .catch((e) => {
+          alert(e);
+          setDiagnosisDataError(true);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [diagnosisHotSellerData, paramshotseller.searchTestType]);
+
+  console.log("DiagnosisHotSellerData", diagnosisHotSellerData);
+
+  useEffect(() => {
     if (!testDetails && !testDetailsPackage) {
       getTestDetails(params.itemId);
       getPackageDetails(params.itemId);
@@ -474,6 +526,7 @@ export const TestDetails: React.FC = (props) => {
   ) => {
     return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
   };
+
   return (
     <div className={classes.root}>
       <Header />
@@ -499,7 +552,10 @@ export const TestDetails: React.FC = (props) => {
                 >
                   <div className={classes.productInformation}>
                     <div className={classes.productBasicInfo}>
-                      <h2>{testDetails && testDetails.itemName}</h2>
+
+                      <h2>{diagnosisHotSellerData && diagnosisHotSellerData.length > 0 ?
+                        diagnosisHotSellerData[0].packageName : testDetails && testDetails.itemName}</h2>
+
                       {!!testDetails.toAgeInDays && (
                         <div className={classes.textInfo}>
                           <label>Age Group</label>
@@ -514,9 +570,9 @@ export const TestDetails: React.FC = (props) => {
                             testDetails.gender == 'B'
                               ? 'BOYS AND GIRLS'
                               : testDetails.gender == 'M'
-                              ? 'BOYS'
-                              : 'GIRLS'
-                          }`}
+                                ? 'BOYS'
+                                : 'GIRLS'
+                            }`}
                         </div>
                       )}
                       <div className={classes.textInfo}>
@@ -600,8 +656,8 @@ export const TestDetails: React.FC = (props) => {
                     isSmallScreen ? (
                       <div {...props} style={{ position: 'static' }} />
                     ) : (
-                      <div {...props} />
-                    )
+                        <div {...props} />
+                      )
                   }
                 >
                   <div className={classes.customScroll}>
@@ -639,8 +695,8 @@ export const TestDetails: React.FC = (props) => {
                         ) : itemIndexInCart(testDetails) === -1 ? (
                           'Add To Cart'
                         ) : (
-                          'Added To Cart'
-                        )}
+                              'Added To Cart'
+                            )}
                       </AphButton>
                     </div>
                   </div>
@@ -648,12 +704,12 @@ export const TestDetails: React.FC = (props) => {
               </div>
             </div>
           ) : (
-            loading && (
-              <div className={classes.progressLoader}>
-                <CircularProgress size={30} />
-              </div>
-            )
-          )}
+              loading && (
+                <div className={classes.progressLoader}>
+                  <CircularProgress size={30} />
+                </div>
+              )
+            )}
         </div>
       </div>
     </div>
