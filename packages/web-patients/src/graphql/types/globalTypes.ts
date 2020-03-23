@@ -64,6 +64,11 @@ export enum DIAGNOSTICS_TYPE {
   TEST = "TEST",
 }
 
+export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
+  COD = "COD",
+  ONLINE_PAYMENT = "ONLINE_PAYMENT",
+}
+
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
   ORDER_FAILED = "ORDER_FAILED",
@@ -374,6 +379,35 @@ export interface CancelAppointmentInput {
   cancelReason?: string | null;
   cancelledBy: REQUEST_ROLES;
   cancelledById: string;
+}
+
+export interface DiagnosticLineItem {
+  itemId?: number | null;
+  price?: number | null;
+  quantity?: number | null;
+}
+
+export interface DiagnosticOrderInput {
+  patientId: string;
+  patientAddressId: string;
+  city: string;
+  cityId: string;
+  state: string;
+  stateId: string;
+  slotTimings: string;
+  employeeSlotId: number;
+  diagnosticEmployeeCode: string;
+  diagnosticBranchCode: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  centerName: string;
+  centerCode: string;
+  centerCity: string;
+  centerState: string;
+  centerLocality: string;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
 }
 
 export interface DoctorAvailabilityInput {

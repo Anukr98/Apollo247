@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, MenuItem } from '@material-ui/core';
+import { Theme, Typography, MenuItem, Popover } from '@material-ui/core';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { Header } from 'components/Header';
 import { BrowsePackages } from 'components/Tests/Cards/BrowsePackages';
@@ -20,6 +20,7 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
 } from 'graphql/types/getDiagnosticsData';
 import { useApolloClient } from 'react-apollo-hooks';
+import { OrderPlacedTest } from 'components/Tests/Cart/OrderPlacedTest';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -260,12 +261,56 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const TestsLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const addToCartRef = useRef(null);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const client = useApolloClient();
   const params = useParams<{ orderAutoId: string; orderStatus: string }>();
@@ -281,6 +326,9 @@ export const TestsLanding: React.FC = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
 
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
+    params.orderStatus ? true : false
+  );
   useEffect(() => {
     if (!diagnosisHotSellerData && !diagnosticOrgansData) {
       setIsLoading(true);
@@ -358,8 +406,8 @@ export const TestsLanding: React.FC = (props) => {
                   </AphSelect>
                 </Typography>
               ) : (
-                <Typography variant="h1">hello there!</Typography>
-              )}
+                  <Typography variant="h1">hello there!</Typography>
+                )}
             </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
@@ -414,6 +462,31 @@ export const TestsLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <Popover
+        open={showOrderPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <OrderPlacedTest
+              orderAutoId={params.orderAutoId}
+              setShowOrderPopup={setShowOrderPopup}
+            />
+          </div>
+        </div>
+      </Popover>
       <NavigationBottom />
     </div>
   );

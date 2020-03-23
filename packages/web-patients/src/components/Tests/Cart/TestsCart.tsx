@@ -20,6 +20,15 @@ import { AppointmentsSlot } from 'components/Tests/Cart/AppointmentsSlot';
 import { ClinicHours } from 'components/Tests/Cart/ClinicHours';
 import { HomeVisit } from 'components/Tests/Cart/HomeVisit';
 import { ClinicVisit } from 'components/Tests/Cart/ClinicVisit';
+import { SaveDiagnosticOrder, SaveDiagnosticOrderVariables } from 'graphql/types/SaveDiagnosticOrder';
+import {
+  DiagnosticLineItem,
+  DiagnosticOrderInput,
+  DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+} from 'graphql/types/globalTypes';
+import { SAVE_DIAGNOSTIC_ORDER } from 'graphql/profiles';
+import { useMutation, useApolloClient } from 'react-apollo-hooks';
+import moment from 'moment';
 import {
   AphButton,
   AphRadio,
@@ -27,6 +36,7 @@ import {
   AphDialogTitle,
   AphDialogClose,
 } from '@aph/web-ui-components';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -477,7 +487,6 @@ const TabContainer: React.FC = (props) => {
 
 export const TestsCart: React.FC = (props) => {
   const classes = useStyles({});
-  const { cartTotal, diagnosticsCartItems } = useDiagnosticsCart();
   const [tabValue, setTabValue] = useState<number>(0);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
@@ -492,6 +501,8 @@ export const TestsCart: React.FC = (props) => {
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'Clinic';
   const disablePayButton = paymentMethod === '';
+  const { currentPatient } = useAllCurrentPatients();
+  const { cartTotal, diagnosticsCartItems, diagnosticSlot } = useDiagnosticsCart();
 
   // business rule defined if the total is greater than 200 no delivery charges.
   // if the total is less than 200 +20 is added.
@@ -502,7 +513,73 @@ export const TestsCart: React.FC = (props) => {
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
   const isPaymentButtonEnable = diagnosticsCartItems && diagnosticsCartItems.length > 0;
+  const saveDiagnosticOrder = useMutation<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>(SAVE_DIAGNOSTIC_ORDER);
 
+  // const {
+  //   slotStartTime,
+  //   slotEndTime,
+  //   employeeSlotId,
+  //   date,
+  //   diagnosticEmployeeCode,
+  //   diagnosticBranchCode,
+  // } = diagnosticSlot || {};
+
+  // const slotTimings = (slotStartTime && slotEndTime
+  //   ? `${slotStartTime}-${slotEndTime}`
+  //   : ''
+  // ).replace(' ', '');
+
+  const paymentOrderTest = (orderInfo: DiagnosticOrderInput) => {
+    saveDiagnosticOrder({
+      variables: { diagnosticOrderInput: orderInfo },
+      fetchPolicy: 'no-cache',
+    })
+      .then((data: any) => {
+        console.log("data", data);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  // const orderInfo: DiagnosticOrderInput = {
+  //   // <- for home collection order
+  //   diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
+  //   diagnosticEmployeeCode: diagnosticEmployeeCode || '',
+  //   employeeSlotId: employeeSlotId! || 0,
+  //   slotTimings: slotTimings,
+  //   patientAddressId: deliveryAddressId!,
+  //   // for home collection order ->
+  //   // <- for clinic order
+  //   centerName: CentreName || '',
+  //   centerCode: CentreCode || '',
+  //   centerCity: City || '',
+  //   centerState: State || '',
+  //   centerLocality: Locality || '',
+  //   // for clinic order ->
+  //   city: (locationForDiagnostics || {}).city!,
+  //   state: (locationForDiagnostics || {}).state!,
+  //   stateId: `${(locationForDiagnostics || {}).stateId!}`,
+  //   cityId: `${(locationForDiagnostics || {}).cityId!}`,
+  //   diagnosticDate: moment(date).format('YYYY-MM-DD'),
+  //   prescriptionUrl: [
+  //     ...physicalPrescriptions.map((item) => item.uploadedUrl),
+  //     ...ePrescriptions.map((item) => item.uploadedUrl),
+  //   ].join(','),
+  //   paymentType: isCashOnDelivery
+  //     ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+  //     : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
+  //   totalPrice: grandTotal,
+  //   patientId: (currentPatient && currentPatient.id) || '',
+  //   items: diagnosticsCartItems.map(
+  //     (item) =>
+  //       ({
+  //         itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+  //         price: (item.specialPrice as number) || item.price,
+  //         quantity: 1,
+  //       } as DiagnosticLineItem)
+  //   ),
+  // };
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -682,6 +759,7 @@ export const TestsCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 setMutationLoading(true);
+                // paymentOrderTest(orderInfo);
               }}
               color="primary"
               fullWidth
@@ -691,8 +769,8 @@ export const TestsCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                `Pay - RS. ${totalAmount}`
-              )}
+                  `Pay - RS. ${totalAmount}`
+                )}
             </AphButton>
           </div>
         </div>
