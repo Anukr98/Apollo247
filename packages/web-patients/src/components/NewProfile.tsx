@@ -451,30 +451,23 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             value={referralCode}
                             onChange={(e) => {
                               const inputValue = e.target.value;
-                              setReferralCode(inputValue.toUpperCase());
-                              if (inputValue.length > 0) {
-                                const alphabets = inputValue.substr(0, 4);
-                                const digits = inputValue.substr(4, 4);
-                                const isValidReferralCode =
-                                  /^[a-zA-Z]+$/.test(alphabets) &&
-                                  alphabets.length === 4 &&
-                                  /^\d+$/.test(digits) &&
-                                  digits.length === 4;
-                                setIsValidReferralCode(isValidReferralCode);
-                              }
+                              setReferralCode(inputValue);
+
+                              const isValidReferralCode = inputValue.length > 0;
+                              setIsValidReferralCode(isValidReferralCode);
                             }}
-                            inputProps={{ type: 'text', maxLength: 8 }}
+                            inputProps={{ type: 'text', maxLength: 25 }}
                           />
-                          {!isValidReferralCode && referralCode.length === 8 ? (
+                          {!isValidReferralCode ? (
                             <FormHelperText
                               className={classes.errorMessage}
                               component="div"
                               error={true}
                             >
-                              Referral code should start with 4 alphabets followed by 4 digits.
+                              Referral code should be minimum 1 character.
                             </FormHelperText>
                           ) : (
-                            referralCode.length === 8 && (
+                            referralCode.length > 0 && (
                               <img
                                 className={classes.tickIcon}
                                 src={require('images/ic_check_white.svg')}
