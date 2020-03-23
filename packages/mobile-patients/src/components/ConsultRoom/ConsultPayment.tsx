@@ -23,7 +23,10 @@ import {
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
-import { WebEngageEvents } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -41,7 +44,7 @@ export interface ConsultPaymentProps extends NavigationScreenProps {
   doctorName: string;
   appointmentId: string;
   price: number;
-  webEngageEventAttributes: WebEngageEvents['Consult- Consultation booked'];
+  webEngageEventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED];
 }
 {
 }
@@ -82,7 +85,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
 
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    postWebEngageEvent('Consult- Consultation booked', webEngageEventAttributes);
+    postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({
@@ -170,7 +173,6 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
         onLoadStart={() => setLoading!(true)}
         onLoadEnd={() => setLoading!(false)}
         bounces={false}
-        useWebKit={true}
         source={{ uri: url }}
         onNavigationStateChange={onWebViewStateChange}
       />
