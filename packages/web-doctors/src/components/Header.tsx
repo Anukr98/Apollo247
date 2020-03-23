@@ -17,6 +17,7 @@ import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 import { LoggedInUserType, DOCTOR_ONLINE_STATUS, REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { Offline, Online } from 'react-detect-offline';
 import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/profiles';
 import Pubnub from 'pubnub';
 import {
@@ -314,6 +315,16 @@ export const Header: React.FC = (props) => {
   }, []);
   return (
     <header className={classes.header}>
+      <Offline>
+        <Dialog open={true}>
+          <DialogTitle>{''}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Seems like you are offline. Please check your internet connection
+            </DialogContentText>
+          </DialogContent>
+        </Dialog>
+      </Offline>
       {!isJuniorDoctor &&
         isSignedIn &&
         getCookieValue() !== 'audiocall' &&
