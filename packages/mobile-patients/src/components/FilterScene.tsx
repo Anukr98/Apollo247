@@ -110,175 +110,177 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const filterCardsView = () => {
     return (
       <View style={{ marginVertical: 16 }}>
-        {data.map(({ label, options, selectedOptions }: filterDataType, index: number) => {
-          console.log(selectedOptions, '1234567890');
-          const allSelected =
-            options.length > 0 && selectedOptions && options.length === selectedOptions.length;
-          return (
-            <View
-              style={[
-                styles.cardContainer,
-                label === 'Availability' ? { paddingHorizontal: 0 } : {},
-              ]}
-            >
+        {data
+          .filter((item) => item.label != 'City')
+          .map(({ label, options, selectedOptions }: filterDataType, index: number) => {
+            console.log(selectedOptions, '1234567890');
+            const allSelected =
+              options.length > 0 && selectedOptions && options.length === selectedOptions.length;
+            return (
               <View
                 style={[
-                  styles.labelView,
-                  label === 'Availability' ? { paddingBottom: 5, paddingHorizontal: 20 } : {},
+                  styles.cardContainer,
+                  label === 'Availability' ? { paddingHorizontal: 0 } : {},
                 ]}
               >
-                <Text style={styles.leftText}>{label}</Text>
-                {label === 'Availability' && (
-                  <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => {
-                        setshowCalander(!showCalander);
-                        const selectedData = [];
-
-                        if (!showCalander) {
-                          const selectedDate = moment(date).format('YYYY-MM-DD');
-                          selectedData.push(selectedDate);
-                        }
-                        const dataCopy = [...data];
-                        dataCopy[index] = {
-                          ...dataCopy[index],
-                          selectedOptions: selectedData,
-                        };
-                        setData(dataCopy);
-                      }}
-                    >
-                      {showCalander ? <CalendarClose /> : <CalendarShow />}
-                    </TouchableOpacity>
-                  </View>
-                )}
-                <Text
-                  style={styles.rightText}
-                  onPress={() => {
-                    const dataCopy = [...data];
-                    dataCopy[index] = {
-                      ...dataCopy[index],
-                      selectedOptions: allSelected ? [] : dataCopy[index].options,
-                    };
-                    console.log(dataCopy, 'dataCopy');
-                    setData(dataCopy);
-                  }}
-                >
-                  {allSelected ? 'DESELECT ALL' : 'SELECT ALL'}
-                </Text>
-              </View>
-              {showCalander && label === 'Availability' ? (
-                <CalendarView
-                  styles={styles.calendarStyle}
-                  date={date}
-                  minDate={new Date()}
-                  onPressDate={(date) => {
-                    // setDate(date);
-                    console.log(date, 'selected date ');
-                    const selectedDate = moment(date).format('YYYY-MM-DD');
-                    const selectedData = [...data][index]['selectedOptions'] || [];
-                    const dataCopy = [...data];
-                    selectedData.push(selectedDate);
-                    dataCopy[index] = {
-                      ...dataCopy[index],
-                      selectedOptions: selectedData,
-                    };
-
-                    setData(dataCopy);
-
-                    setDate(date);
-                  }}
-                  showWeekView={false}
-                  // calendarType={type}
-                  // onCalendarTypeChanged={(type) => {
-                  //   setType(type);
-                  // }}
-                  // minDate={new Date()}
-                />
-              ) : (
-                // <Calendar
-                //   style={styles.calendarStyle}
-                //   theme={{
-                //     backgroundColor: '#f7f8f5',
-                //     calendarBackground: '#f7f8f5',
-                //     textSectionTitleColor: '#80a3ad',
-                //     selectedDayBackgroundColor: '#00adf5',
-                //     selectedDayTextColor: '#ffffff',
-                //     todayTextColor: theme.colors.LIGHT_BLUE,
-                //     dayTextColor: theme.colors.APP_GREEN,
-                //     textDisabledColor: '#d9e1e8',
-                //     dotColor: '#00adf5',
-                //     selectedDotColor: '#ffffff',
-                //     arrowColor: theme.colors.LIGHT_BLUE,
-                //     monthTextColor: theme.colors.LIGHT_BLUE,
-                //     indicatorColor: 'blue',
-                //     textDayFontFamily: 'IBMPlexSans-SemiBold',
-                //     textMonthFontFamily: 'IBMPlexSans-SemiBold',
-                //     textDayHeaderFontFamily: 'IBMPlexSans-SemiBold',
-                //     // textDayFontWeight: '300',
-                //     textMonthFontWeight: 'normal',
-                //     textDayHeaderFontWeight: '300',
-                //     textDayFontSize: 14,
-                //     textMonthFontSize: 14,
-                //     textDayHeaderFontSize: 14,
-                //   }}
-                //   hideExtraDays={true}
-                //   firstDay={1}
-                //   markedDates={{ dateSelected }}
-                //   onDayPress={(day: DateObject) => {
-                //     console.log(day, '234567890');
-                //     setdateSelected({
-                //       [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
-                //     });
-                //   }}
-                // />
                 <View
                   style={[
-                    styles.optionsView,
-                    !showCalander && label === 'Availability' ? { paddingHorizontal: 20 } : {},
+                    styles.labelView,
+                    label === 'Availability' ? { paddingBottom: 5, paddingHorizontal: 20 } : {},
                   ]}
                 >
-                  {selectedOptions &&
-                    options &&
-                    options.length > 0 &&
-                    options.map((name) => (
-                      <Button
-                        title={name.replace(
-                          /\w+/g,
-                          (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
-                        )}
-                        style={[
-                          styles.buttonStyle,
-                          selectedOptions.includes(name)
-                            ? { backgroundColor: theme.colors.APP_GREEN }
-                            : null,
-                        ]}
-                        titleTextStyle={[
-                          styles.buttonTextStyle,
-                          selectedOptions.includes(name) ? { color: theme.colors.WHITE } : null,
-                        ]}
+                  <Text style={styles.leftText}>{label}</Text>
+                  {label === 'Availability' && (
+                    <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
+                      <TouchableOpacity
+                        activeOpacity={1}
                         onPress={() => {
-                          let selectedData = [...data][index]['selectedOptions'] || [];
-                          const dataCopy = [...data];
+                          setshowCalander(!showCalander);
+                          const selectedData = [];
 
-                          if (selectedData.includes(name)) {
-                            selectedData = selectedData.filter((item: string) => item !== name);
-                          } else {
-                            selectedData.push(name);
+                          if (!showCalander) {
+                            const selectedDate = moment(date).format('YYYY-MM-DD');
+                            selectedData.push(selectedDate);
                           }
+                          const dataCopy = [...data];
                           dataCopy[index] = {
                             ...dataCopy[index],
                             selectedOptions: selectedData,
                           };
                           setData(dataCopy);
                         }}
-                      />
-                    ))}
+                      >
+                        {showCalander ? <CalendarClose /> : <CalendarShow />}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  <Text
+                    style={styles.rightText}
+                    onPress={() => {
+                      const dataCopy = [...data];
+                      dataCopy[index] = {
+                        ...dataCopy[index],
+                        selectedOptions: allSelected ? [] : dataCopy[index].options,
+                      };
+                      console.log(dataCopy, 'dataCopy');
+                      setData(dataCopy);
+                    }}
+                  >
+                    {allSelected ? 'DESELECT ALL' : 'SELECT ALL'}
+                  </Text>
                 </View>
-              )}
-            </View>
-          );
-        })}
+                {showCalander && label === 'Availability' ? (
+                  <CalendarView
+                    styles={styles.calendarStyle}
+                    date={date}
+                    minDate={new Date()}
+                    onPressDate={(date) => {
+                      // setDate(date);
+                      console.log(date, 'selected date ');
+                      const selectedDate = moment(date).format('YYYY-MM-DD');
+                      const selectedData = [...data][index]['selectedOptions'] || [];
+                      const dataCopy = [...data];
+                      selectedData.push(selectedDate);
+                      dataCopy[index] = {
+                        ...dataCopy[index],
+                        selectedOptions: selectedData,
+                      };
+
+                      setData(dataCopy);
+
+                      setDate(date);
+                    }}
+                    showWeekView={false}
+                    // calendarType={type}
+                    // onCalendarTypeChanged={(type) => {
+                    //   setType(type);
+                    // }}
+                    // minDate={new Date()}
+                  />
+                ) : (
+                  // <Calendar
+                  //   style={styles.calendarStyle}
+                  //   theme={{
+                  //     backgroundColor: '#f7f8f5',
+                  //     calendarBackground: '#f7f8f5',
+                  //     textSectionTitleColor: '#80a3ad',
+                  //     selectedDayBackgroundColor: '#00adf5',
+                  //     selectedDayTextColor: '#ffffff',
+                  //     todayTextColor: theme.colors.LIGHT_BLUE,
+                  //     dayTextColor: theme.colors.APP_GREEN,
+                  //     textDisabledColor: '#d9e1e8',
+                  //     dotColor: '#00adf5',
+                  //     selectedDotColor: '#ffffff',
+                  //     arrowColor: theme.colors.LIGHT_BLUE,
+                  //     monthTextColor: theme.colors.LIGHT_BLUE,
+                  //     indicatorColor: 'blue',
+                  //     textDayFontFamily: 'IBMPlexSans-SemiBold',
+                  //     textMonthFontFamily: 'IBMPlexSans-SemiBold',
+                  //     textDayHeaderFontFamily: 'IBMPlexSans-SemiBold',
+                  //     // textDayFontWeight: '300',
+                  //     textMonthFontWeight: 'normal',
+                  //     textDayHeaderFontWeight: '300',
+                  //     textDayFontSize: 14,
+                  //     textMonthFontSize: 14,
+                  //     textDayHeaderFontSize: 14,
+                  //   }}
+                  //   hideExtraDays={true}
+                  //   firstDay={1}
+                  //   markedDates={{ dateSelected }}
+                  //   onDayPress={(day: DateObject) => {
+                  //     console.log(day, '234567890');
+                  //     setdateSelected({
+                  //       [day.dateString]: { selected: true, selectedColor: theme.colors.APP_GREEN },
+                  //     });
+                  //   }}
+                  // />
+                  <View
+                    style={[
+                      styles.optionsView,
+                      !showCalander && label === 'Availability' ? { paddingHorizontal: 20 } : {},
+                    ]}
+                  >
+                    {selectedOptions &&
+                      options &&
+                      options.length > 0 &&
+                      options.map((name) => (
+                        <Button
+                          title={name.replace(
+                            /\w+/g,
+                            (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
+                          )}
+                          style={[
+                            styles.buttonStyle,
+                            selectedOptions.includes(name)
+                              ? { backgroundColor: theme.colors.APP_GREEN }
+                              : null,
+                          ]}
+                          titleTextStyle={[
+                            styles.buttonTextStyle,
+                            selectedOptions.includes(name) ? { color: theme.colors.WHITE } : null,
+                          ]}
+                          onPress={() => {
+                            let selectedData = [...data][index]['selectedOptions'] || [];
+                            const dataCopy = [...data];
+
+                            if (selectedData.includes(name)) {
+                              selectedData = selectedData.filter((item: string) => item !== name);
+                            } else {
+                              selectedData.push(name);
+                            }
+                            dataCopy[index] = {
+                              ...dataCopy[index],
+                              selectedOptions: selectedData,
+                            };
+                            setData(dataCopy);
+                          }}
+                        />
+                      ))}
+                  </View>
+                )}
+              </View>
+            );
+          })}
       </View>
     );
   };
