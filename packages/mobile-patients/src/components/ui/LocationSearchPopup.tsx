@@ -137,24 +137,6 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
           clearCartInfo && clearCartInfo();
         }
         if (addrComponents.length > 0) {
-          console.log({
-            displayName: item.name,
-            latitude: lat,
-            longitude: lng,
-            area: [
-              findAddrComponents('route', addrComponents),
-              findAddrComponents('sublocality_level_2', addrComponents),
-              findAddrComponents('sublocality_level_1', addrComponents),
-            ]
-              .filter((i) => i)
-              .join(', '),
-            city,
-            state: findAddrComponents('administrative_area_level_1', addrComponents),
-            country: findAddrComponents('country', addrComponents),
-            pincode: findAddrComponents('postal_code', addrComponents),
-            lastUpdated: new Date().getTime(),
-          });
-
           const locationData: LocationData = {
             displayName: item.name,
             latitude: lat,
