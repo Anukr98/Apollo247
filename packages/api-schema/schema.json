@@ -21025,6 +21025,18 @@
             "deprecationReason": null
           },
           {
+            "name": "updateUserType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "UpdateUserTypeResult",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updatePhrDocSummary",
             "description": null,
             "args": [
@@ -30096,6 +30108,29 @@
       {
         "kind": "OBJECT",
         "name": "UpdatePatientTypeResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "status",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "UpdateUserTypeResult",
         "description": null,
         "fields": [
           {

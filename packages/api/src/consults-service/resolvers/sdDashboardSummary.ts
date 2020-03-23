@@ -10,6 +10,7 @@ import {
   DoctorFeeSummary,
   TRANSFER_INITIATED_TYPE,
   PATIENT_TYPE,
+  AppointmentDocuments,
 } from 'consults-service/entities';
 import { ConsultMode, WeekDay, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
@@ -33,6 +34,7 @@ import { AphError } from 'AphError';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { format, differenceInMinutes, isWithinInterval } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
+import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
 
 export const sdDashboardSummaryTypeDefs = gql`
   type DashboardSummaryResult {
@@ -73,6 +75,9 @@ export const sdDashboardSummaryTypeDefs = gql`
   type updateUtilizationCapacityResult {
     updated: Boolean
   }
+  type UpdateUserTypeResult {
+    status: Boolean
+  }
   enum WeekDay {
     SUNDAY
     MONDAY
@@ -87,6 +92,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePatientType(doctorId: ID!): UpdatePatientTypeResult
+    updateUserType: UpdateUserTypeResult
     updatePhrDocSummary(summaryDate: Date): DocumentSummaryResult
     updateSpecialtyCount(specialityId: String): updateSpecialtyCountResult
     updateUtilizationCapacity(
@@ -107,6 +113,9 @@ type DashboardSummaryResult = {
   totalConsultation: number;
 };
 
+type UpdateUserTypeResult = {
+  status: boolean;
+};
 type UpdatePatientTypeResult = {
   status: boolean;
 };
@@ -152,8 +161,32 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   CurrentAvailStatusRepo: consultsDb.getCustomRepository(CurrentAvailStatusRepository),
   UtilizationCapacityRepo: consultsDb.getCustomRepository(UtilizationCapacityRepository),
   consultHoursRepo: doctorsDb.getCustomRepository(DoctorConsultHoursRepository),
+  apptDocRepo: consultsDb.getCustomRepository(AppointmentDocumentRepository),
 });
 
+const updateUserType: Resolver<
+  null,
+  { summaryDate: Date; appt: AppointmentDocuments },
+  ConsultServiceContext,
+  UpdateUserTypeResult
+> = async (parent, args, context) => {
+  const { apptDocRepo, patRepo } = getRepos(context);
+  const appointmentdocuments = await apptDocRepo.getAllDocuments();
+  if (appointmentdocuments.length > 0) {
+    appointmentdocuments.forEach(async (appointmentdocdata) => {
+      const data = appointmentdocdata.appointment.patientId;
+      const patientDetails = await patRepo.getPatientDetails(data);
+      if (patientDetails) {
+        if (patientDetails.uhidCreatedDate === null) {
+          await apptDocRepo.updateUserType(0, appointmentdocdata);
+        } else {
+          await apptDocRepo.updateUserType(1, appointmentdocdata);
+        }
+      }
+    });
+  }
+  return { status: true };
+};
 const updateConsultRating: Resolver<
   null,
   { summaryDate: Date },
@@ -554,6 +587,7 @@ export const sdDashboardSummaryResolvers = {
     updateSpecialtyCount,
     updateUtilizationCapacity,
     updatePatientType,
+    updateUserType,
   },
   Query: {
     getopenTokFileUrl,
