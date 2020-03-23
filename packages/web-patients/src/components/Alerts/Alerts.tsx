@@ -6,9 +6,6 @@ import { createMuiTheme } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    root: {
-      width: '100%',
-    },
     dialogBox: {
       '& > div': {
         display: 'flex',
@@ -96,7 +93,7 @@ export const Alerts: React.FC = (props) => {
   const classes = useStyles({});
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(true);
   return (
-    <div className={classes.root}>
+    <div>
       <AphDialog
         className={classes.dialogBox}
         open={isAlertOpen}
