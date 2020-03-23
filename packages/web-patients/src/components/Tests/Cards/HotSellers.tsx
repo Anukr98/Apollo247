@@ -180,6 +180,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       className={classes.productIcon}
                       onClick={() =>
                         (window.location.href = clientRoutes.testDetails(
+                          'hot-seller',
+                          hotSeller.packageName || '',
                           hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
                         ))
                       }

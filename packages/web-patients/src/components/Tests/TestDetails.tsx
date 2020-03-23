@@ -19,10 +19,15 @@ import { SEARCH_DIAGNOSTICS_BY_ID } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 
 import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
-import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
 import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
 import stripHtml from 'string-strip-html';
-
+import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
+} from 'graphql/types/getDiagnosticsData';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -397,13 +402,19 @@ export const TestDetails: React.FC = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [tabValue, setTabValue] = useState<number>(0);
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
-  const params = useParams<{ itemId: string }>();
+  const params = useParams<{ searchTestType: string; itemName: string; itemId: string }>();
+
   const [testDetails, setTestDetails] = React.useState<diagnosticTestDetails | null>(null);
   const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
   const client = useApolloClient();
   const [loading, setLoading] = useState(false);
   const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
+
+  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+  const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
+    (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers) | null
+  >(null);
 
   const apiDetails = {
     url: process.env.GET_PACKAGE_DATA,
@@ -415,12 +426,12 @@ export const TestDetails: React.FC = (props) => {
     InterfaceClient: process.env.TEST_DETAILS_PACKAGE_INTERFACE_CLIENT,
   };
 
-  const getPackageDetails = async (itemId: string) => {
+  const getPackageDetails = async () => {
     setLoading(true);
     axios
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
-        ItemID: itemId,
+        ItemID: params.itemId,
       })
       .then((data: any) => {
         if (data && data.data && data.data.data && data.data.data) {
@@ -438,13 +449,13 @@ export const TestDetails: React.FC = (props) => {
       });
   };
 
-  const getTestDetails = async (itemId: string) => {
+  const getTestDetails = async () => {
     setLoading(true);
     client
       .query<searchDiagnosticsById>({
         query: SEARCH_DIAGNOSTICS_BY_ID,
         variables: {
-          itemIds: itemId,
+          itemIds: params.itemId,
         },
         fetchPolicy: 'no-cache',
       })
@@ -462,8 +473,8 @@ export const TestDetails: React.FC = (props) => {
 
   useEffect(() => {
     if (!testDetails && !testDetailsPackage) {
-      getTestDetails(params.itemId);
-      getPackageDetails(params.itemId);
+      getTestDetails();
+      getPackageDetails();
     }
   }, [testDetails, testDetailsPackage]);
 
@@ -474,6 +485,7 @@ export const TestDetails: React.FC = (props) => {
   ) => {
     return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
   };
+
   return (
     <div className={classes.root}>
       <Header />
@@ -499,7 +511,12 @@ export const TestDetails: React.FC = (props) => {
                 >
                   <div className={classes.productInformation}>
                     <div className={classes.productBasicInfo}>
-                      <h2>{testDetails && testDetails.itemName}</h2>
+                      <h2>
+                        {params.searchTestType === 'hot-seller'
+                          ? params.itemName
+                          : testDetails && testDetails.itemName}
+                      </h2>
+
                       {!!testDetails.toAgeInDays && (
                         <div className={classes.textInfo}>
                           <label>Age Group</label>
