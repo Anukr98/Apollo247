@@ -384,7 +384,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
           }
         >
           <div className={classes.customScroll}>
-            <div className={classes.filterBox}>
+            {/* <div className={classes.filterBox}>
               <div className={classes.filterType}>City</div>
               <div className={classes.boxContent}>
                 {_map(filterCities, (filterCityName, index) => {
@@ -419,7 +419,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                   );
                 })}
               </div>
-            </div>
+            </div> */}
             <div className={classes.filterBox}>
               <div className={classes.filterType}>Experience In Years</div>
               <div className={classes.boxContent}>
