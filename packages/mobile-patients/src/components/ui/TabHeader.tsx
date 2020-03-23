@@ -1,7 +1,7 @@
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CartIcon, HomeIcon, NotificationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, HomeIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -11,6 +11,7 @@ import {
   NavigationScreenProp,
   StackActions,
 } from 'react-navigation';
+import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -33,6 +34,8 @@ const styles = StyleSheet.create({
 export interface TabHeaderProps {
   containerStyle?: StyleProp<ViewStyle>;
   hideHomeIcon?: boolean;
+  locationVisible?: boolean;
+  onLocationPress?: () => void;
   navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
 }
 
@@ -79,6 +82,11 @@ export const TabHeader: React.FC<TabHeaderProps> = (props) => {
         {!props.hideHomeIcon ? <HomeIcon /> : null}
       </TouchableOpacity>
       <View style={{ flexDirection: 'row' }}>
+        {props.locationVisible && (
+          <LocationSearchHeader
+            onLocationProcess={() => props.onLocationPress && props.onLocationPress()}
+          />
+        )}
         <TouchableOpacity
           activeOpacity={1}
           onPress={() =>

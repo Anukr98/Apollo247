@@ -469,7 +469,7 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
           if (response === 'denied' || response === 'restricted') {
             Alert.alert('Location', 'Enable location access form settings', [
               {
-                text: 'Cancle',
+                text: 'Cancel',
                 onPress: () => {
                   AsyncStorage.setItem('settingsCalled', 'false');
                 },
@@ -786,7 +786,7 @@ export const permissionHandler = (
       } else if (message === 'denied' || message === 'restricted') {
         Alert.alert(permission.toUpperCase(), deniedMessage, [
           {
-            text: 'Cancle',
+            text: 'Cancel',
             onPress: () => {},
           },
           {
