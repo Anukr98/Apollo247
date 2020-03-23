@@ -4,25 +4,32 @@ import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDown
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   BackArrow,
+  Loader,
   OkText,
   OkTextDisabled,
-  Loader,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getNetStatus, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
+  AppState,
+  AppStateStatus,
   BackHandler,
   Dimensions,
   EmitterSubscription,
@@ -31,29 +38,20 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  AppState,
-  AppStateStatus,
-  TextInput,
 } from 'react-native';
 // import { WebView } from 'react-native-webview';
 import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
+import { WebView } from 'react-native-webview';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { BottomPopUp } from './ui/BottomPopUp';
-import moment from 'moment';
-import { verifyOTP, resendOTP } from '../helpers/loginCalls';
-import { WebView } from 'react-native-webview';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useApolloClient } from 'react-apollo-hooks';
 import { Relation } from '../graphql/types/globalTypes';
+import { resendOTP, verifyOTP } from '../helpers/loginCalls';
 import { ApolloLogo } from './ApolloLogo';
-import AsyncStorage from '@react-native-community/async-storage';
+import { BottomPopUp } from './ui/BottomPopUp';
 
 const { height, width } = Dimensions.get('window');
 
@@ -153,15 +151,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     getPatientByPrism,
     getFirebaseToken,
     getPatientApiCall,
-    setMobileAPICalled,
-    setAllPatients,
   } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
-  const { currentPatient } = useAllCurrentPatients();
-  const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
-
-  const client = useApolloClient();
+  const [setAuthChanged] = useState<boolean>(false);
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -467,8 +460,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     getPatientApiCall()
       .then((data: any) => {
         console.log('getOTPPatientApiCall_OTPVerification', data);
-        AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-        AsyncStorage.setItem('callByPrism', 'false');
+        const allPatientsData =
+          data && data.data && data.data.getPatientByMobileNumber
+            ? data.data.getPatientByMobileNumber.patients
+            : null;
+        const mePatient = allPatientsData
+          ? allPatientsData.find((patient: any) => patient.relation === Relation.ME) ||
+            allPatientsData[0]
+          : null;
+        mePatient && AsyncStorage.setItem('currentPatient', JSON.stringify(mePatient));
+        // AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+        // AsyncStorage.setItem('callByPrism', 'false');
         dataFetchFromMobileNumber(data);
       })
       .catch(async (error) => {
@@ -493,9 +495,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           const mePatient = allPatients
             ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
             : null;
-          // setMobileAPICalled && setMobileAPICalled(true);
-          // setAllPatients(allPatients);
-
           moveScreenForward(mePatient);
         })
         .catch(async (error) => {
@@ -505,9 +504,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       const mePatient = profileData
         ? profileData.find((patient: any) => patient.relation === Relation.ME) || profileData[0]
         : null;
-      // setAllPatients(profileData);
-      // setMobileAPICalled && setMobileAPICalled(false);
-
       moveScreenForward(mePatient);
     }
   };
