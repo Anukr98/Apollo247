@@ -623,7 +623,7 @@ export const TestsCart: React.FC = (props) => {
         ) {
           window.location.href = `${clientRoutes.tests()}?orderid=${
             data.data.SaveDiagnosticOrder.orderId
-            }
+          }
           &orderstatus=success`;
         } else {
           window.location.href = `${clientRoutes.tests()}?orderid=0&orderstatus=failure`;
@@ -826,8 +826,8 @@ export const TestsCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                  `Pay - RS. ${totalAmount}`
-                )}
+                `Pay - RS. ${totalAmount}`
+              )}
             </AphButton>
           </div>
         </div>
