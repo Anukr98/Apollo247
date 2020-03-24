@@ -477,7 +477,7 @@ const TabContainer: React.FC = (props) => {
 
 export const TestsCart: React.FC = (props) => {
   const classes = useStyles({});
-  const { cartTotal, diagnosticsCartItems } = useDiagnosticsCart();
+  const { cartTotal, diagnosticsCartItems, deliveryAddressId } = useDiagnosticsCart();
   const [tabValue, setTabValue] = useState<number>(0);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
@@ -597,7 +597,7 @@ export const TestsCart: React.FC = (props) => {
                 )}
               </div>
             </div>
-            {tabValue === 0 ? <AppointmentsSlot /> : <ClinicHours />}
+            {tabValue === 0 ? deliveryAddressId ? <AppointmentsSlot /> : null : <ClinicHours />}
             {diagnosticsCartItems && diagnosticsCartItems.length > 0 && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
