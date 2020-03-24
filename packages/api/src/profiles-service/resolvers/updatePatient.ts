@@ -85,6 +85,8 @@ const updatePatient: Resolver<
 
   if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
     const referralCode = updateAttrs.referralCode.toUpperCase();
+    if (!isValidReferralCode(referralCode))
+      throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     updateAttrs.referralCode = referralCode;
   }
 

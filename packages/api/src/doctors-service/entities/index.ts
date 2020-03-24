@@ -920,6 +920,9 @@ export class Auditor extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
   @Column()
   displayName: string;
 
@@ -961,6 +964,14 @@ export class Auditor extends BaseEntity {
 
   @Column({ nullable: true, default: 0 })
   auditedAppointments: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 
   @OneToMany((type) => AdminAuditorMapper, (adminauditormapper) => adminauditormapper.auditor)
   adminauditormapper: AdminAuditorMapper[];

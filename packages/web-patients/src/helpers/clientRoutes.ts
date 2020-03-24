@@ -13,8 +13,7 @@ export const clientRoutes = {
   testsAndMedicine: () => '/tests-medicines',
   medicines: () => `/medicines`,
   medicinesLandingViewCart: () => `/medicines/added-to-cart`,
-  medicinesCartInfo: (orderAutoId: string, orderStatus: string) =>
-    `/medicines/${orderAutoId}/${orderStatus}`,
+  medicinesCartInfo: (orderAutoId: string) => `/medicines/${orderAutoId}`,
   healthRecords: () => '/health-records',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
