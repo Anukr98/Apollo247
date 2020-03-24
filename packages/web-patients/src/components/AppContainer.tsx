@@ -46,6 +46,7 @@ import { SearchByTest } from 'components/Tests/SearchByTest';
 import { OrderDetails } from 'components/Tests/OrderDetails';
 import { Help } from 'components/Help/Help';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
+import { OrderSummary } from 'components/Tests/OrderSummary';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -158,6 +159,7 @@ const App: React.FC = () => {
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
+          <AuthRouted exact path={clientRoutes.orderSummary()} component={OrderSummary} />
         </Switch>
         {isSignedIn && (
           <div className={classes.helpIcon}>

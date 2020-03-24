@@ -88,14 +88,7 @@ interface ViewAllStoreAddressProps {
 
 export const ViewAllClinicAddress: React.FC<ViewAllStoreAddressProps> = (props) => {
   const classes = useStyles({});
-  const { clinicId, setClinicId, setDeliveryAddressId, deliveryAddressId } = useDiagnosticsCart();
-
-  useEffect(() => {
-    if (props.pincode && props.pincode.length === 6 && props.filteredClinicList.length === 0) {
-      props.setLoading(true);
-      props.filterClinics(props.pincode);
-    }
-  }, [props.pincode]);
+  const { clinicId, setClinicId } = useDiagnosticsCart();
 
   return (
     <div className={classes.root}>
@@ -113,9 +106,7 @@ export const ViewAllClinicAddress: React.FC<ViewAllStoreAddressProps> = (props) 
             }}
             onChange={(e) => {
               const newPincode = e.target.value;
-              if (newPincode.length === 6) {
-                props.setLoading(true);
-              } else if (newPincode === '') {
+              if (newPincode === '') {
                 props.setFilteredClinicList([]);
                 props.setPincodeError(false);
               }

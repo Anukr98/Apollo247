@@ -243,7 +243,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
   }, [clinics]);
 
   useEffect(() => {
-    if (pincode && clinics.length > 0) {
+    if (pincode && pincode.length === 6) {
       setLoading(true);
       filterClinics(pincode);
     } else if (!pincode && pincode !== '') {
@@ -251,7 +251,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
         getCurrentLocationPincode(currentLat, currentLong);
       }
     }
-  }, [pincode, clinicId, clinics]);
+  }, [pincode]);
 
   return (
     <div className={classes.root}>
