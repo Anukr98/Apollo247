@@ -1170,6 +1170,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 7 }}>
                 <TextInputComponent
+                  textInputprops={{ autoFocus: true }}
                   value={currentLocation}
                   onChangeText={(value) => {
                     setcurrentLocation(value);
