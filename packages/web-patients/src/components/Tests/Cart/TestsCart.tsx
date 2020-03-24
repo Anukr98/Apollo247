@@ -744,12 +744,12 @@ export const TestsCart: React.FC = (props) => {
                         <span>Subtotal</span>
                         <span className={classes.priceCol}>Rs. {cartTotal.toFixed(2)}</span>
                       </div>
-                      <div className={classes.priceRow}>
+                      {/* <div className={classes.priceRow}>
                         <span>Delivery Charges</span>
                         <span className={classes.priceCol}>
                           {deliveryCharges > 0 ? `+ Rs. ${deliveryCharges}` : '+ Rs. 0'}
                         </span>
-                      </div>
+                      </div> */}
                     </div>
                     <div className={classes.bottomSection}>
                       <div className={classes.priceRow}>
@@ -774,8 +774,8 @@ export const TestsCart: React.FC = (props) => {
             }}
             color="primary"
             fullWidth
-            disabled={!isPaymentButtonEnable}
-            className={mutationLoading ? classes.buttonDisable : ''}
+            disabled={!isPaymentButtonEnable || !diagnosticSlot}
+            className={mutationLoading || !diagnosticSlot ? classes.buttonDisable : ''}
             title={'Proceed to pay bill'}
           >
             {`Proceed to pay — RS. ${totalAmount}`}
