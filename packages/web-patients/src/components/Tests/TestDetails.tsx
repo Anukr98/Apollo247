@@ -513,7 +513,7 @@ export const TestDetails: React.FC = (props) => {
                     <div className={classes.productBasicInfo}>
                       <h2>
                         {params.searchTestType === 'hot-seller'
-                          ? params.itemName
+                          ? params.itemName.replace('_', ' ')
                           : testDetails && testDetails.itemName}
                       </h2>
 

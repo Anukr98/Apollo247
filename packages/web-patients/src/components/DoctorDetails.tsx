@@ -251,15 +251,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
         ? true
         : false;
 
     const isPayrollDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
         ? true
         : false;
 
@@ -289,8 +289,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 240px)'
                   : isSmallScreen
-                    ? 'auto'
-                    : 'calc(100vh - 154px)'
+                  ? 'auto'
+                  : 'calc(100vh - 154px)'
               }
             >
               <div className={classes.doctorProfileSection}>
