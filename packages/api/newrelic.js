@@ -5,6 +5,11 @@
  * See lib/config/default.js in the agent distribution for a more complete
  * description of configuration variables and their potential values.
  */
+console.log(
+  'Relic Path==',
+  require('path').join(process.cwd(), '/newRelic-logs/newrelic_agent.log')
+);
+
 exports.config = {
   /**
    * Array of application names.
