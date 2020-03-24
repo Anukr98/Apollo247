@@ -146,7 +146,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
                 {props.wayOfContact == 'video' ? <Video /> : <Audio />}
               </View>
             </View>
-            {props.symptoms.length > 0 && (
+            {props.symptoms && props.symptoms.length > 0 && (
               <>
                 <View style={styles.seperatorline} />
                 <View style={{ marginTop: 5.5, marginBottom: 12, flexDirection: 'row' }}>
