@@ -158,6 +158,15 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:focus': {
         backgroundColor: 'transparent',
       },
+      [theme.breakpoints.down(767)]: {
+        maxWidth: 200,
+      },
+      [theme.breakpoints.down(500)]: {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxWidth: 55,
+      },
     },
     menuRoot: {
       fontSize: 13,
@@ -367,8 +376,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
       ? moment()
-          .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
-          .toString()
+        .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
+        .toString()
       : '1';
   const patientGender =
     currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : 'male';
@@ -434,8 +443,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 isSmallScreen
                   ? 'calc(100vh - 135px)'
                   : isMediumScreen
-                  ? 'calc(100vh - 205px)'
-                  : 'calc(100vh - 155px)'
+                    ? 'calc(100vh - 205px)'
+                    : 'calc(100vh - 155px)'
               }
             >
               <div className={classes.subHeader}>
