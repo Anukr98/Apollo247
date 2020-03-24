@@ -155,8 +155,6 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
             `https://maps.googleapis.com/maps/api/geocode/json?address=${key}&key=${apiDetails.googleAPIKey}`
           )
           .then((data) => {
-            if (clinicId) {
-            }
             const city = (
               (data.data.results[0].address_components || []).find(
                 (item: any) => item.types.indexOf('locality') > -1

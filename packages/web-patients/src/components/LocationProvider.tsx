@@ -11,6 +11,8 @@ export interface LocationContextProps {
   state: string | null;
   country: string | null;
   area: string | null;
+  stateId: number | null;
+  cityId: number | null;
   setCurrentLocation: (currentLocation: string) => void;
   setCurrentLat: (currentLat: string) => void;
   setCurrentLong: (currentLong: string) => void;
@@ -21,6 +23,8 @@ export interface LocationContextProps {
   setState: (state: string) => void;
   setCountry: (country: string) => void;
   setArea: (area: string) => void;
+  setStateId: (stateId: number | null) => void;
+  setCityId: (cityId: number | null) => void;
 }
 
 export interface Address {
@@ -49,6 +53,10 @@ export const LocationContext = React.createContext<LocationContextProps>({
   setState: () => {},
   setCountry: () => {},
   setArea: () => {},
+  stateId: null,
+  setStateId: () => {},
+  cityId: null,
+  setCityId: () => {},
 });
 
 export type GooglePlacesType =
@@ -71,6 +79,8 @@ export const LocationProvider: React.FC = (props) => {
   const [state, setState] = useState<string>('');
   const [country, setCountry] = useState<string>('');
   const [area, setArea] = useState<string>('');
+  const [cityId, setCityId] = useState<number | null>(null);
+  const [stateId, setStateId] = useState<number | null>(null);
 
   const locateCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
@@ -139,8 +149,8 @@ export const LocationProvider: React.FC = (props) => {
           ).long_name;
           const placeId = res.data.results[0].place_id;
           const city =
-            findAddrComponents('locality', addrComponents) ||
-            findAddrComponents('administrative_area_level_2', addrComponents);
+            findAddrComponents('administrative_area_level_2', addrComponents) ||
+            findAddrComponents('locality', addrComponents);
           const state = findAddrComponents('administrative_area_level_1', addrComponents);
           const country = findAddrComponents('country', addrComponents);
           const area = [
@@ -185,6 +195,10 @@ export const LocationProvider: React.FC = (props) => {
         setCountry,
         state,
         setState,
+        setCityId,
+        cityId,
+        stateId,
+        setStateId,
       }}
     >
       {props.children}
@@ -214,4 +228,8 @@ export const useLocationDetails = () => ({
   setCountry: useLocationContext().setCountry,
   state: useLocationContext().state,
   setState: useLocationContext().setState,
+  setStateId: useLocationContext().setStateId,
+  setCityId: useLocationContext().setCityId,
+  cityId: useLocationContext().cityId,
+  stateId: useLocationContext().stateId,
 });
