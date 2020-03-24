@@ -10,8 +10,6 @@ import {
   GetDoctorDetailsById as DoctorDetails,
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
 } from 'graphql/types/GetDoctorDetailsById';
-import moment from 'moment';
-
 import {
   GetDoctorPhysicalAvailableSlots,
   GetDoctorPhysicalAvailableSlotsVariables,
@@ -244,10 +242,9 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
 
-  // const apiDateFormat =
-  //   dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
   const apiDateFormat =
-    dateSelected === '' ? moment(new Date()).format('YYYY-MM-DD') : getYyMmDd(dateSelected);
+    dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
+
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
