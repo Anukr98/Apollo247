@@ -168,7 +168,6 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     return <CircularProgress size={22} />;
   }
 
-
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -176,14 +175,16 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
           data.map(
             (hotSeller: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null) =>
               hotSeller && (
-                < div className={classes.card} >
+                <div className={classes.card}>
                   <div className={classes.cardWrap}>
                     <div
                       className={classes.productIcon}
                       onClick={() =>
                         (window.location.href = clientRoutes.testDetails(
                           'hot-seller',
-                          hotSeller.packageName ? hotSeller.packageName.replace(/\s/g, '_').replace('_-_', '-') : ' ',
+                          hotSeller.packageName
+                            ? hotSeller.packageName.replace(/\s/g, '_').replace('_-_', '-')
+                            : ' ',
                           hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ' '
                         ))
                       }
@@ -191,8 +192,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       {hotSeller.packageImage ? (
                         <img src={hotSeller.packageImage} alt="" />
                       ) : (
-                          <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-                        )}
+                        <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                      )}
                     </div>
                     <div className={classes.productTitle}>{hotSeller.packageName}</div>
                     <div className={classes.bottomSection}>
@@ -223,18 +224,18 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             Add To Cart
                           </AphButton>
                         ) : (
-                            <AphButton
-                              onClick={() => {
-                                removeCartItem &&
-                                  removeCartItem(
-                                    hotSeller.id,
-                                    hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
-                                  );
-                              }}
-                            >
-                              remove
-                            </AphButton>
-                          )}
+                          <AphButton
+                            onClick={() => {
+                              removeCartItem &&
+                                removeCartItem(
+                                  hotSeller.id,
+                                  hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
+                                );
+                            }}
+                          >
+                            remove
+                          </AphButton>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -242,6 +243,6 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
               )
           )}
       </Slider>
-    </div >
+    </div>
   );
 };
