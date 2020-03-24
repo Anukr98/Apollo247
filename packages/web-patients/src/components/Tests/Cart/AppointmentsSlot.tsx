@@ -173,6 +173,7 @@ export const AppointmentsSlot: React.FC = (props) => {
   const [options, setOptions] = useState<{ key: string; value: string; data: any }[] | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [slotsError, setSlotsError] = useState<boolean>(false);
 
   const appStaticVariables = {
     Minutes: 60, // slots visible after this period for current date
@@ -249,7 +250,13 @@ export const AppointmentsSlot: React.FC = (props) => {
           zipCode: parseInt(selectedAddress.zipcode),
         },
       })
-      .then(({ data }) => {
+      .then((res) => {
+        const { data, errors } = res;
+        if (errors && errors[0].message.length > 0 && !data) {
+          setSlotsError(true);
+          return;
+        }
+
         if (data && data.getDiagnosticSlots && data.getDiagnosticSlots.diagnosticSlot) {
           const diagnosticSlots = data.getDiagnosticSlots.diagnosticSlot || [];
           const slotsArray: TestSlot[] = [];
@@ -298,14 +305,15 @@ export const AppointmentsSlot: React.FC = (props) => {
             setSelectedTimeSlot(null);
             setSelectedOption('');
             setOptions([]);
-            // setDiagnosticSlot(null);
           }
           setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
           setLoading(false);
-          // setPinCode && setPinCode(selectedAddress.zipcode!);
+          setSlotsError(false);
         }
       })
       .catch((e) => {
+        setSlotsError(true);
+        setLoading(false);
         console.log(
           'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.'
         );
@@ -346,7 +354,7 @@ export const AppointmentsSlot: React.FC = (props) => {
 
   const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-  return (
+  return !slotsError ? (
     <div className={classes.root}>
       <div className={classes.appointmentWrapper}>
         <div className={classes.header}>
@@ -447,5 +455,5 @@ export const AppointmentsSlot: React.FC = (props) => {
         </AphDialog>
       </div>
     </div>
-  );
+  ) : null;
 };
