@@ -6,7 +6,6 @@ import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 import _uniqueId from 'lodash/uniqueId';
-import moment from 'moment';
 import {
   GetDoctorDetailsById as DoctorDetails,
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
@@ -244,7 +243,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     lateNightSlots: number[] = [];
 
   const apiDateFormat =
-    dateSelected === '' ? moment(new Date()).format('YYYY-MM-DD') : getYyMmDd(dateSelected);
+    dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
 
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
@@ -362,7 +361,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
     // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
     const slotTime = new Date(slot).getTime();
-    const currentTime = new Date().getTime();
+    const currentTime = new Date(new Date().toISOString()).getTime();
     if (slotTime > currentTime) {
       if (slotTime < morningTime) morningSlots.push(slotTime);
       else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
