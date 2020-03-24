@@ -268,9 +268,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
           value={pincode}
           onChange={(e) => {
             const newPincode = e.target.value;
-            if (newPincode.length === 6) {
-              setPincode(newPincode);
-            }
+            setPincode(newPincode);
           }}
           autoFocus
         />
@@ -293,19 +291,19 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
               />
             </li>
           ) : (
-            <>
-              {pincodeError && (
-                <div className={classes.noAddress}>
-                  Sorry! We're working hard to get to this area! In the meantime, you can either
-                  pick up from a nearby store, or change the pincode.
-                </div>
-              )}
-            </>
-          )}
+              <>
+                {pincodeError && (
+                  <div className={classes.noAddress}>
+                    Sorry! We're working hard to get to this area! In the meantime, you can either
+                    pick up from a nearby store, or change the pincode.
+                  </div>
+                )}
+              </>
+            )}
         </ul>
       ) : (
-        <CircularProgress />
-      )}
+          <CircularProgress />
+        )}
       {filteredClinicList.length > 2 && (
         <div className={classes.bottomActions}>
           <AphButton
