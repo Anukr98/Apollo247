@@ -438,9 +438,10 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       AppRoutes.MultiSignup,
                       'There should be 1 profile with relation set as Me'
                     );
-                  } else if (referral !== '') {
-                    trimReferral = trimReferral.trim();
                   } else {
+                    if (referral !== '') {
+                      trimReferral = trimReferral.trim();
+                    }
                     setVerifyingPhoneNumber(true);
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
