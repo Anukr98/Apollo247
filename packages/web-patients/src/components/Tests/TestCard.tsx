@@ -137,9 +137,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface TestListCardProps {
   testData:
-    | searchDiagnostics_searchDiagnostics_diagnostics
-    | getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics
-    | null;
+  | searchDiagnostics_searchDiagnostics_diagnostics
+  | getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics
+  | null;
   mou: number;
 }
 
@@ -164,7 +164,7 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
             <Link
               to={clientRoutes.testDetails(
                 'search-test',
-                testData.itemName,
+                testData.itemName.replace(/\s/g, '_'),
                 testData.itemId.toString()
               )}
             >
@@ -200,17 +200,17 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
                     />
                   </AphButton>
                 ) : (
-                  <AphButton>
-                    <img
-                      src={require('images/ic_cross_onorange_small.svg')}
-                      alt="Remove Item"
-                      title="Remove item from Cart"
-                      onClick={() => {
-                        removeCartItem && removeCartItem(testData.id, `${testData.itemId}`);
-                      }}
-                    />
-                  </AphButton>
-                )}
+                    <AphButton>
+                      <img
+                        src={require('images/ic_cross_onorange_small.svg')}
+                        alt="Remove Item"
+                        title="Remove item from Cart"
+                        onClick={() => {
+                          removeCartItem && removeCartItem(testData.id, `${testData.itemId}`);
+                        }}
+                      />
+                    </AphButton>
+                  )}
                 {/* <AphButton>
                   <img
                     src={require('images/ic_plus.svg')}
