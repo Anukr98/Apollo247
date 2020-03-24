@@ -90,6 +90,7 @@ export const DatePicker: React.FC<DatePickerProps> = (props) => {
         minimumDate={props.minimumDate}
         maximumDate={props.maximumDate}
         mode={props.mode || 'date'}
+        is24Hour={false}
       />
     </View>
   );
