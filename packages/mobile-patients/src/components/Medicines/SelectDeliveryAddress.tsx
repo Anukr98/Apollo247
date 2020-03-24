@@ -16,7 +16,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatAddress, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -39,7 +40,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
   const isTest = props.navigation.getParam('isTest');
   const selectedAddress = props.navigation.getParam('selectedAddressId');
   const isChanged = props.navigation.getParam('isChanged');
-
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const {
     addresses: addressList,
     deliveryAddressId: selectedAddressId,
@@ -58,35 +59,42 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           style={{ flex: 1, marginHorizontal: 60 }}
           disabled={!selectedId}
           onPress={() => {
-            setLoading(true);
-            if (isTest) {
-              isChanged(true, selectedId);
-              props.navigation.goBack();
-            } else {
-              pinCodeServiceabilityApi(selectedPinCode)
-                .then(({ data: { Availability } }) => {
-                  if (Availability) {
-                    setSelectedAddressId && setSelectedAddressId(selectedId);
-                    props.navigation.goBack();
-                    CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
-                  } else {
-                    showAphAlert!({
-                      title: 'Uh oh.. :(',
-                      description:
-                        'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            getNetStatus().then(async (status) => {
+              if (status) {
+                setLoading(true);
+                if (isTest) {
+                  isChanged(true, selectedId);
+                  props.navigation.goBack();
+                } else {
+                  pinCodeServiceabilityApi(selectedPinCode)
+                    .then(({ data: { Availability } }) => {
+                      if (Availability) {
+                        setSelectedAddressId && setSelectedAddressId(selectedId);
+                        props.navigation.goBack();
+                        CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
+                      } else {
+                        showAphAlert!({
+                          title: 'Uh oh.. :(',
+                          description:
+                            'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+                        });
+                        CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Pincode unserviceable.');
+                        setSelectedAddressId && setSelectedAddressId('');
+                      }
+                    })
+                    .catch((e) => {
+                      CommonBugFender('SelectDeliveryAddress_pinCodeServiceabilityApi', e);
+                      Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
+                    })
+                    .finally(() => {
+                      setLoading(false);
                     });
-                    CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Pincode unserviceable.');
-                    setSelectedAddressId && setSelectedAddressId('');
-                  }
-                })
-                .catch((e) => {
-                  CommonBugFender('SelectDeliveryAddress_pinCodeServiceabilityApi', e);
-                  Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
-                })
-                .finally(() => {
-                  setLoading(false);
-                });
-            }
+                }
+              } else {
+                console.log('setshowOfflinePopup');
+                setshowOfflinePopup(true);
+              }
+            });
           }}
         />
       </StickyBottomComponent>
@@ -137,6 +145,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
         </ScrollView>
         {renderBottomButtons()}
       </SafeAreaView>
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
       {loading && <Spinner />}
     </View>
   );
