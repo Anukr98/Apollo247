@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -29,8 +29,12 @@ import {
   DiagnosticOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
 } from 'graphql/types/globalTypes';
-import { SAVE_DIAGNOSTIC_ORDER } from 'graphql/profiles';
-import { useMutation, useApolloClient } from 'react-apollo-hooks';
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+} from 'graphql/types/getDiagnosticsCites';
+import { SAVE_DIAGNOSTIC_ORDER, GET_DIAGNOSTICS_CITES } from 'graphql/profiles';
+import { useMutation } from 'react-apollo-hooks';
 import moment from 'moment';
 import {
   AphButton,
@@ -40,6 +44,8 @@ import {
   AphDialogClose,
 } from '@aph/web-ui-components';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useLocationDetails } from 'components/LocationProvider';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -490,7 +496,15 @@ const TabContainer: React.FC = (props) => {
 
 export const TestsCart: React.FC = (props) => {
   const classes = useStyles({});
-  const { cartTotal, diagnosticsCartItems, deliveryAddressId } = useDiagnosticsCart();
+  const {
+    cartTotal,
+    diagnosticsCartItems,
+    deliveryAddressId,
+    diagnosticSlot,
+  } = useDiagnosticsCart();
+  const { state, city, setCityId, setStateId, stateId, cityId } = useLocationDetails();
+  const client = useApolloClient();
+
   const [tabValue, setTabValue] = useState<number>(0);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
@@ -506,7 +520,6 @@ export const TestsCart: React.FC = (props) => {
   const deliveryMode = tabValue === 0 ? 'HOME' : 'Clinic';
   const disablePayButton = paymentMethod === '';
   const { currentPatient } = useAllCurrentPatients();
-  const { cartTotal, diagnosticsCartItems, diagnosticSlot } = useDiagnosticsCart();
 
   // business rule defined if the total is greater than 200 no delivery charges.
   // if the total is less than 200 +20 is added.
@@ -521,71 +534,109 @@ export const TestsCart: React.FC = (props) => {
     SAVE_DIAGNOSTIC_ORDER
   );
 
-  // const {
-  //   slotStartTime,
-  //   slotEndTime,
-  //   employeeSlotId,
-  //   date,
-  //   diagnosticEmployeeCode,
-  //   diagnosticBranchCode,
-  // } = diagnosticSlot || {};
+  const slotStartTime = diagnosticSlot ? diagnosticSlot.slotStartTime : '';
+  const slotEndTime = diagnosticSlot ? diagnosticSlot.slotEndTime : '';
+  const employeeSlotId = diagnosticSlot ? diagnosticSlot.employeeSlotId : 0;
+  const diagnosticEmployeeCode = diagnosticSlot ? diagnosticSlot.diagnosticEmployeeCode : '';
+  const diagnosticBranchCode = diagnosticSlot ? diagnosticSlot.diagnosticBranchCode : '';
+  const date = diagnosticSlot
+    ? moment(diagnosticSlot.date).format('YYYY-MM-DD')
+    : moment().format('YYYY-MM-DD');
 
-  // const slotTimings = (slotStartTime && slotEndTime
-  //   ? `${slotStartTime}-${slotEndTime}`
-  //   : ''
-  // ).replace(' ', '');
+  useEffect(() => {
+    client
+      .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+        query: GET_DIAGNOSTICS_CITES,
+        variables: {
+          cityName: city || '',
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+      })
+      .then(({ data }) => {
+        if (data && data.getDiagnosticsCites && data.getDiagnosticsCites.diagnosticsCities) {
+          const citiesList = data.getDiagnosticsCites.diagnosticsCities;
+          const requredCityDetails =
+            city &&
+            citiesList.length > 0 &&
+            citiesList.find((cityData) => cityData && cityData.cityname === city);
+          if (requredCityDetails) {
+            setCityId(requredCityDetails.cityid);
+            setStateId(requredCityDetails.stateid);
+          }
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  });
 
-  const paymentOrderTest = (orderInfo: DiagnosticOrderInput) => {
+  const paymentOrderTest = () => {
+    const slotTimings = (slotStartTime && slotEndTime
+      ? `${slotStartTime}-${slotEndTime}`
+      : ''
+    ).replace(' ', '');
+
+    const orderInfo: DiagnosticOrderInput = {
+      // <- for home collection order
+      diagnosticBranchCode: deliveryMode === 'HOME' ? diagnosticBranchCode : '',
+      diagnosticEmployeeCode: deliveryMode === 'HOME' ? diagnosticEmployeeCode : '',
+      employeeSlotId: deliveryMode === 'HOME' ? employeeSlotId : 0,
+      slotTimings: slotTimings,
+      patientAddressId: deliveryAddressId!,
+      // for home collection order ->
+      // <- for clinic order
+      centerName: deliveryMode !== 'HOME' && selectedClinic ? selectedClinic.CentreName : '',
+      centerCode: deliveryMode !== 'HOME' && selectedClinic ? selectedClinic.CentreCode : '',
+      centerCity: deliveryMode !== 'HOME' && selectedClinic ? selectedClinic.City : '',
+      centerState: deliveryMode !== 'HOME' && selectedClinic ? selectedClinic.State : '',
+      centerLocality: deliveryMode !== 'HOME' && selectedClinic ? selectedClinic.Locality : '',
+      // for clinic order ->
+      city: city || '',
+      state: state || '',
+      stateId: stateId ? stateId.toString() : '',
+      cityId: cityId ? cityId.toString() : '',
+      diagnosticDate: date,
+      prescriptionUrl: '',
+      paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
+      totalPrice: parseFloat(totalAmount),
+      patientId: (currentPatient && currentPatient.id) || '',
+      items: diagnosticsCartItems.map(
+        (item) =>
+          ({
+            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+            price: (item.specialPrice as number) || item.price,
+            quantity: 1,
+          } as DiagnosticLineItem)
+      ),
+    };
     saveDiagnosticOrder({
       variables: { diagnosticOrderInput: orderInfo },
       fetchPolicy: 'no-cache',
     })
       .then((data: any) => {
         console.log('data', data);
+        if (
+          data &&
+          data.data.SaveDiagnosticOrder &&
+          data.data.SaveDiagnosticOrder.orderId &&
+          data.data.SaveDiagnosticOrder.orderId.length > 0
+        ) {
+          window.location.href = `${clientRoutes.tests()}?orderid=${
+            data.data.SaveDiagnosticOrder.orderId
+          }
+          &orderstatus=success`;
+        } else {
+          window.location.href = `${clientRoutes.tests()}?orderid=0&orderstatus=failure`;
+        }
       })
       .catch((e) => {
         console.log(e);
+      })
+      .finally(() => {
+        setMutationLoading(false);
       });
   };
 
-  // const orderInfo: DiagnosticOrderInput = {
-  //   // <- for home collection order
-  //   diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
-  //   diagnosticEmployeeCode: diagnosticEmployeeCode || '',
-  //   employeeSlotId: employeeSlotId! || 0,
-  //   slotTimings: slotTimings,
-  //   patientAddressId: deliveryAddressId!,
-  //   // for home collection order ->
-  //   // <- for clinic order
-  //   centerName: CentreName || '',
-  //   centerCode: CentreCode || '',
-  //   centerCity: City || '',
-  //   centerState: State || '',
-  //   centerLocality: Locality || '',
-  //   // for clinic order ->
-  //   city: (locationForDiagnostics || {}).city!,
-  //   state: (locationForDiagnostics || {}).state!,
-  //   stateId: `${(locationForDiagnostics || {}).stateId!}`,
-  //   cityId: `${(locationForDiagnostics || {}).cityId!}`,
-  //   diagnosticDate: moment(date).format('YYYY-MM-DD'),
-  //   prescriptionUrl: [
-  //     ...physicalPrescriptions.map((item) => item.uploadedUrl),
-  //     ...ePrescriptions.map((item) => item.uploadedUrl),
-  //   ].join(','),
-  //   paymentType: isCashOnDelivery
-  //     ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
-  //     : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
-  //   totalPrice: grandTotal,
-  //   patientId: (currentPatient && currentPatient.id) || '',
-  //   items: diagnosticsCartItems.map(
-  //     (item) =>
-  //       ({
-  //         itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
-  //         price: (item.specialPrice as number) || item.price,
-  //         quantity: 1,
-  //       } as DiagnosticLineItem)
-  //   ),
-  // };
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -765,7 +816,7 @@ export const TestsCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 setMutationLoading(true);
-                // paymentOrderTest(orderInfo);
+                paymentOrderTest();
               }}
               color="primary"
               fullWidth

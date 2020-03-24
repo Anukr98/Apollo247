@@ -313,7 +313,6 @@ export const TestsLanding: React.FC = (props) => {
   const addToCartRef = useRef(null);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const client = useApolloClient();
-  const params = useParams<{ orderAutoId: string; orderStatus: string }>();
 
   const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
     (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
@@ -325,9 +324,10 @@ export const TestsLanding: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+  const urlParams = new URLSearchParams(window.location.search);
 
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
-    params.orderStatus ? true : false
+    urlParams.get('orderstatus') === 'success' ? true : false
   );
   useEffect(() => {
     if (!diagnosisHotSellerData && !diagnosticOrgansData) {
@@ -406,8 +406,8 @@ export const TestsLanding: React.FC = (props) => {
                   </AphSelect>
                 </Typography>
               ) : (
-                  <Typography variant="h1">hello there!</Typography>
-                )}
+                <Typography variant="h1">hello there!</Typography>
+              )}
             </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
@@ -481,7 +481,7 @@ export const TestsLanding: React.FC = (props) => {
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <OrderPlacedTest
-              orderAutoId={params.orderAutoId}
+              orderAutoId={urlParams.get('orderid') || '0'}
               setShowOrderPopup={setShowOrderPopup}
             />
           </div>
