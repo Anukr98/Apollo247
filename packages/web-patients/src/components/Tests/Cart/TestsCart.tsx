@@ -20,7 +20,10 @@ import { AppointmentsSlot } from 'components/Tests/Cart/AppointmentsSlot';
 import { ClinicHours } from 'components/Tests/Cart/ClinicHours';
 import { HomeVisit } from 'components/Tests/Cart/HomeVisit';
 import { ClinicVisit } from 'components/Tests/Cart/ClinicVisit';
-import { SaveDiagnosticOrder, SaveDiagnosticOrderVariables } from 'graphql/types/SaveDiagnosticOrder';
+import {
+  SaveDiagnosticOrder,
+  SaveDiagnosticOrderVariables,
+} from 'graphql/types/SaveDiagnosticOrder';
 import {
   DiagnosticLineItem,
   DiagnosticOrderInput,
@@ -487,6 +490,7 @@ const TabContainer: React.FC = (props) => {
 
 export const TestsCart: React.FC = (props) => {
   const classes = useStyles({});
+  const { cartTotal, diagnosticsCartItems, deliveryAddressId } = useDiagnosticsCart();
   const [tabValue, setTabValue] = useState<number>(0);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
@@ -513,7 +517,9 @@ export const TestsCart: React.FC = (props) => {
   const showGross = deliveryCharges < 0 || discountAmount > 0;
 
   const isPaymentButtonEnable = diagnosticsCartItems && diagnosticsCartItems.length > 0;
-  const saveDiagnosticOrder = useMutation<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>(SAVE_DIAGNOSTIC_ORDER);
+  const saveDiagnosticOrder = useMutation<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>(
+    SAVE_DIAGNOSTIC_ORDER
+  );
 
   // const {
   //   slotStartTime,
@@ -535,7 +541,7 @@ export const TestsCart: React.FC = (props) => {
       fetchPolicy: 'no-cache',
     })
       .then((data: any) => {
-        console.log("data", data);
+        console.log('data', data);
       })
       .catch((e) => {
         console.log(e);
@@ -674,7 +680,7 @@ export const TestsCart: React.FC = (props) => {
                 )}
               </div>
             </div>
-            {tabValue === 0 ? <AppointmentsSlot /> : <ClinicHours />}
+            {tabValue === 0 ? deliveryAddressId ? <AppointmentsSlot /> : null : <ClinicHours />}
             {diagnosticsCartItems && diagnosticsCartItems.length > 0 && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
@@ -769,8 +775,8 @@ export const TestsCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                  `Pay - RS. ${totalAmount}`
-                )}
+                `Pay - RS. ${totalAmount}`
+              )}
             </AphButton>
           </div>
         </div>
