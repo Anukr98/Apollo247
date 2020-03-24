@@ -3,6 +3,7 @@ import {
   formatAddress,
   handleGraphQlError,
   postWebEngageEvent,
+  getNetStatus,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
@@ -57,6 +58,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -158,6 +161,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const { locationDetails } = useAppCommonData();
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   useEffect(() => {
     if (cartItems.length) {
@@ -193,29 +198,38 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       Geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          getPlaceInfoByLatLng(latitude, longitude)
-            .then((obj) => {
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const _pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
-                  !pinCode && fetchStorePickup(_pincode || '');
-                }
-              } catch (e) {
-                CommonBugFender('YourCart_getPlaceInfoByLatLng_try', e);
-              }
-            })
-            .catch((error) => {
-              CommonBugFender('YourCart_getPlaceInfoByLatLng', error);
-              console.log(error, 'geocode error');
-            });
+          getNetStatus().then(async (status) => {
+            if (status) {
+              getPlaceInfoByLatLng(latitude, longitude)
+                .then((obj) => {
+                  try {
+                    if (
+                      obj.data.results.length > 0 &&
+                      obj.data.results[0].address_components.length > 0
+                    ) {
+                      const address = obj.data.results[0].address_components[0].short_name;
+                      console.log(address, 'address obj');
+                      const addrComponents = obj.data.results[0].address_components || [];
+                      const _pincode = (
+                        addrComponents.find(
+                          (item: any) => item.types.indexOf('postal_code') > -1
+                        ) || {}
+                      ).long_name;
+                      !pinCode && fetchStorePickup(_pincode || '');
+                    }
+                  } catch (e) {
+                    CommonBugFender('YourCart_getPlaceInfoByLatLng_try', e);
+                  }
+                })
+                .catch((error) => {
+                  CommonBugFender('YourCart_getPlaceInfoByLatLng', error);
+                  console.log(error, 'geocode error');
+                });
+            } else {
+              setshowOfflinePopup(true);
+              // setShowSpinner(false);
+            }
+          });
         },
         (error) => {
           console.log(error.code, error.message, 'getCurrentPosition error');
@@ -229,32 +243,42 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (deliveryAddressId && addresses) {
-      const selectedAddressIndex = addresses.findIndex(
-        (address) => address.id == deliveryAddressId
-      );
-      addresses &&
-        pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
-          .then(({ data: { Availability } }) => {
-            setCheckingServicability(false);
-            if (Availability) {
-              setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
-            } else {
-              setDeliveryAddressId && setDeliveryAddressId('');
-              showAphAlert!({
-                title: 'Uh oh.. :(',
-                description:
-                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+    getNetStatus().then(async (status) => {
+      if (status) {
+        setshowSpinner(true);
+        if (deliveryAddressId && addresses) {
+          const selectedAddressIndex = addresses.findIndex(
+            (address) => address.id == deliveryAddressId
+          );
+          addresses &&
+            pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
+              .then(({ data: { Availability } }) => {
+                setshowSpinner(false);
+                setCheckingServicability(false);
+                if (Availability) {
+                  setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
+                } else {
+                  setDeliveryAddressId && setDeliveryAddressId('');
+                  showAphAlert!({
+                    title: 'Uh oh.. :(',
+                    description:
+                      'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+                  });
+                }
+              })
+              .catch((e) => {
+                CommonBugFender('YourCart_pinCodeServiceabilityApi', e);
+                aphConsole.log({ e });
+                setCheckingServicability(false);
+                handleGraphQlError(e);
+                setshowSpinner(false);
               });
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('YourCart_pinCodeServiceabilityApi', e);
-            aphConsole.log({ e });
-            setCheckingServicability(false);
-            handleGraphQlError(e);
-          });
-    }
+        }
+      } else {
+        setshowOfflinePopup(true);
+        setshowSpinner(false);
+      }
+    });
   }, []);
 
   // useEffect(() => {
@@ -294,56 +318,65 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         return { sku: item.id, qty: item.quantity };
       });
       if (selectedAddress) {
-        getDeliveryTime({
-          postalcode: selectedAddress.zipcode || '',
-          ordertype: 'pharma',
-          lookup: lookUp,
-        })
-          .then((res) => {
-            setdeliveryTime('');
-            try {
-              console.log('resresres', res);
-              if (res && res.data) {
-                if (
-                  typeof res.data === 'object' &&
-                  Array.isArray(res.data.tat) &&
-                  res.data.tat.length
-                ) {
-                  let tatItems = res.data.tat;
-                  tatItems.sort(({ deliverydate: item1 }, { deliverydate: item2 }) => {
-                    return moment(item1, 'D-MMM-YYYY HH:mm a') > moment(item2, 'D-MMM-YYYY HH:mm a')
-                      ? -1
-                      : moment(item1, 'D-MMM-YYYY HH:mm a') < moment(item2, 'D-MMM-YYYY HH:mm a')
-                      ? 1
-                      : 0;
-                  });
-                  setdeliveryTime(
-                    moment(tatItems[0].deliverydate, 'D-MMM-YYYY HH:mm a').toString()
-                  );
-                } else if (typeof res.data === 'string') {
-                  setdeliveryError(res.data);
-                } else if (typeof res.data.errorMSG === 'string') {
-                  setdeliveryError(res.data.errorMSG);
+        getNetStatus().then(async (status) => {
+          if (status) {
+            getDeliveryTime({
+              postalcode: selectedAddress.zipcode || '',
+              ordertype: 'pharma',
+              lookup: lookUp,
+            })
+              .then((res) => {
+                setdeliveryTime('');
+                try {
+                  console.log('resresres', res);
+                  if (res && res.data) {
+                    if (
+                      typeof res.data === 'object' &&
+                      Array.isArray(res.data.tat) &&
+                      res.data.tat.length
+                    ) {
+                      let tatItems = res.data.tat;
+                      tatItems.sort(({ deliverydate: item1 }, { deliverydate: item2 }) => {
+                        return moment(item1, 'D-MMM-YYYY HH:mm a') >
+                          moment(item2, 'D-MMM-YYYY HH:mm a')
+                          ? -1
+                          : moment(item1, 'D-MMM-YYYY HH:mm a') <
+                            moment(item2, 'D-MMM-YYYY HH:mm a')
+                          ? 1
+                          : 0;
+                      });
+                      setdeliveryTime(
+                        moment(tatItems[0].deliverydate, 'D-MMM-YYYY HH:mm a').toString()
+                      );
+                    } else if (typeof res.data === 'string') {
+                      setdeliveryError(res.data);
+                    } else if (typeof res.data.errorMSG === 'string') {
+                      setdeliveryError(res.data.errorMSG);
+                    }
+                  }
+                } catch (error) {
+                  CommonBugFender('YourCart_getDeliveryTime_try', error);
+                  console.log(error);
                 }
-              }
-            } catch (error) {
-              CommonBugFender('YourCart_getDeliveryTime_try', error);
-              console.log(error);
-            }
+                setshowDeliverySpinner(false);
+              })
+              .catch((err) => {
+                CommonBugFender('YourCart_getDeliveryTime', err);
+                if (!Axios.isCancel(err)) {
+                  setdeliveryTime('');
+                  showAphAlert &&
+                    showAphAlert({
+                      title: 'Uh oh.. :(',
+                      description: 'Something went wrong, Unable to fetch delivery time',
+                    });
+                  setshowDeliverySpinner(false);
+                }
+              });
+          } else {
+            setshowOfflinePopup(true);
             setshowDeliverySpinner(false);
-          })
-          .catch((err) => {
-            CommonBugFender('YourCart_getDeliveryTime', err);
-            if (!Axios.isCancel(err)) {
-              setdeliveryTime('');
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Uh oh.. :(',
-                  description: 'Something went wrong, Unable to fetch delivery time',
-                });
-              setshowDeliverySpinner(false);
-            }
-          });
+          }
+        });
       }
     }
   }, [deliveryAddressId, cartItems]);
@@ -509,25 +542,34 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setdeliveryError('');
     setshowDeliverySpinner(false);
     setCheckingServicability(true);
-    pinCodeServiceabilityApi(address.zipcode!)
-      .then(({ data: { Availability } }) => {
-        setCheckingServicability(false);
-        if (Availability) {
-          setDeliveryAddressId && setDeliveryAddressId(address.id);
-        } else {
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+
+    getNetStatus().then(async (status) => {
+      if (status) {
+        Spinner;
+        pinCodeServiceabilityApi(address.zipcode!)
+          .then(({ data: { Availability } }) => {
+            setCheckingServicability(false);
+            if (Availability) {
+              setDeliveryAddressId && setDeliveryAddressId(address.id);
+            } else {
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description:
+                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+              });
+            }
+          })
+          .catch((e) => {
+            CommonBugFender('YourCart_checkServicability', e);
+            aphConsole.log({ e });
+            setCheckingServicability(false);
+            handleGraphQlError(e);
           });
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('YourCart_checkServicability', e);
-        aphConsole.log({ e });
+      } else {
+        setshowOfflinePopup(true);
         setCheckingServicability(false);
-        handleGraphQlError(e);
-      });
+      }
+    });
   };
 
   const renderHomeDelivery = () => {
@@ -1045,7 +1087,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     postwebEngageProceedToPayEvent();
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+      getNetStatus().then(async (status) => {
+        if (status) {
+          props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+        } else {
+          setshowOfflinePopup(true);
+        }
+      });
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();
@@ -1082,6 +1130,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };
