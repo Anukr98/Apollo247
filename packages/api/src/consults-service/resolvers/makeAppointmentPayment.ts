@@ -221,7 +221,6 @@ const sendPatientAcknowledgements = async (
   <body>  
   <ol>
   <p>New Appointment has been booked on Apollo 247 app with the following details </p>
-  <li>
   <ul>
   <li>Appointment No : <%- displayId %></li>
   <li>Patient Name : <%- firstName %></li>
@@ -232,7 +231,6 @@ const sendPatientAcknowledgements = async (
   <li>Appointment Slot : <%- getHours +':'+ getMinutes %></li>
   <li>Mode of Consult : <%- appointmentType %> </li>
   </ul>
-  </li>
   </ol>
   </body>
   </html>
