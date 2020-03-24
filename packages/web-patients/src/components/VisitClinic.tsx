@@ -6,6 +6,8 @@ import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
 import _uniqueId from 'lodash/uniqueId';
+import moment from 'moment';
+
 import {
   GetDoctorDetailsById as DoctorDetails,
   GetDoctorDetailsById_getDoctorDetailsById_doctorHospital as Facility,
@@ -243,7 +245,12 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     lateNightSlots: number[] = [];
 
   const apiDateFormat =
-    dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
+    dateSelected === ''
+      ? moment(new Date())
+          .toDate()
+          .toString()
+          .substring(0, 10)
+      : getYyMmDd(dateSelected);
 
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
