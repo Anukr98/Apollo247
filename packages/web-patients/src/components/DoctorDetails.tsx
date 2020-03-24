@@ -373,12 +373,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               )}
             </Tabs>
-            {tabValue === 0 && availableForPhysicalConsultation && !isPayrollDoctor && (
-              <TabContainer>
-                IOS testing
-              </TabContainer>
-            )}
-            {tabValue === 1 && availableForVirtualConsultation && (
+            {tabValue === 0 && availableForVirtualConsultation && (
               <TabContainer>
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
@@ -389,6 +384,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}
                 />
+              </TabContainer>
+            )}
+
+            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
+              <TabContainer>
+                <LocationProvider>
+                  <VisitClinic doctorDetails={doctorDetails} />
+                </LocationProvider>
               </TabContainer>
             )}
           </Paper>
