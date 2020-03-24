@@ -1165,6 +1165,9 @@ export class DoctorFeeSummary extends BaseEntity {
   @Column()
   doctorId: string;
 
+  @Column()
+  isActive: boolean;
+
   @Column({ default: '' })
   doctorName: string;
 
