@@ -369,7 +369,7 @@ export const OrderDetails: React.FC = () => {
           <Scrollbars
             autoHide={true}
             autoHeight
-            autoHeightMin={isSmallScreen ? 'calc(100vh - 180px)' : 'calc(100vh - 210px)'}
+            autoHeightMin={isSmallScreen ? 'calc(100vh - 160px)' : 'calc(100vh - 210px)'}
           >
             <div className={classes.content}>
               {testOrderListData && testOrderListData.length > 0
@@ -377,35 +377,37 @@ export const OrderDetails: React.FC = () => {
                     (testOrderInfo) =>
                       testOrderInfo &&
                       testOrderInfo.orderStatus && (
-                        <div
-                          key={testOrderInfo.id}
-                          className={classes.medicineStrip}
-                          onClick={() => setDisplayId(testOrderInfo.displayId)}
-                        >
-                          <div className={classes.medicineStripWrap}>
-                            <div className={classes.medicineInformation}>
-                              <div className={classes.medicineIcon}>
-                                <img src={require('images/ic_tests_icon.svg')} alt="" />
-                              </div>
-                              <div>
-                                <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
-                                <div className={classes.labelText}>
-                                  {testOrderInfo.orderStatus &&
-                                    `Scheduled For: ${moment(testOrderInfo!.diagnosticDate).format(
-                                      `D MMM YYYY`
-                                    )}${
-                                      !!testOrderInfo.slotTimings
-                                        ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
-                                        : ''
-                                    }`}
+                        <Link to={clientRoutes.orderSummary()}>
+                          <div
+                            key={testOrderInfo.id}
+                            className={classes.medicineStrip}
+                            onClick={() => setDisplayId(testOrderInfo.displayId)}
+                          >
+                            <div className={classes.medicineStripWrap}>
+                              <div className={classes.medicineInformation}>
+                                <div className={classes.medicineIcon}>
+                                  <img src={require('images/ic_tests_icon.svg')} alt="" />
+                                </div>
+                                <div>
+                                  <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
+                                  <div className={classes.labelText}>
+                                    {testOrderInfo.orderStatus &&
+                                      `Scheduled For: ${moment(
+                                        testOrderInfo!.diagnosticDate
+                                      ).format(`D MMM YYYY`)}${
+                                        !!testOrderInfo.slotTimings
+                                          ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
+                                          : ''
+                                      }`}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <div className={classes.labelText}>
-                              {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                              <div className={classes.labelText}>
+                                {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        </Link>
                       )
                   )
                 : 'No Orders Found'}
