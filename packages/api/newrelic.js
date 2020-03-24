@@ -21,7 +21,7 @@ exports.config = {
      * production applications.
      */
     level: 'info',
-    filepath: require('path').join(process.cwd(), '/src/assets/newrelic_agent.log'),
+    filepath: require('path').join(process.cwd(), '/newRelic-logs/newrelic_agent.log'),
   },
   /**
    * When true, all request headers except for those listed in attributes.exclude
