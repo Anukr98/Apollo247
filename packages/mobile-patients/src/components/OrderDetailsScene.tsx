@@ -289,7 +289,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
     );
     const isCancelled = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+      (item) =>
+        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST
     );
     const isDeliveryOrder = orderDetails.patientAddressId;
     const tatInfo = orderDetails.orderTat;
@@ -638,7 +640,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
         item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
-        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCEL_REQUEST
     );
     const isCancelOrderAllowed = orderStatusList.find(
       (item) =>
