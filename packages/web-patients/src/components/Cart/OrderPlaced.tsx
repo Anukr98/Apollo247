@@ -112,7 +112,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface OrderPlacedProps {
   orderAutoId: string;
-  orderStatus: string;
+  orderStatus: string | null;
   setShowOrderPopup: (showOrderPopup: boolean) => void;
 }
 
@@ -140,13 +140,17 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
               </div>
               <div className={classes.bottomActions}>
                 <AphButton
-                  onClick={() => (window.location.href = `${clientRoutes.yourOrders()}?v=invoice`)}
+                  onClick={() => {
+                    localStorage.removeItem('orderStatus');
+                    window.location.href = `${clientRoutes.yourOrders()}?v=invoice`;
+                  }}
                 >
                   View Invoice
                 </AphButton>
                 <AphButton
                   className={classes.trackBtn}
                   onClick={() => {
+                    localStorage.removeItem('orderStatus');
                     window.location.href = clientRoutes.yourOrders();
                   }}
                   title={'Open track orders'}
