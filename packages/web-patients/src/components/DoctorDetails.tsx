@@ -375,7 +375,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </Tabs>
             {tabValue === 0 && availableForPhysicalConsultation && !isPayrollDoctor && (
               <TabContainer>
-                <VisitClinic doctorDetails={doctorDetails} />
+                IOS testing
               </TabContainer>
             )}
             {tabValue === 1 && availableForVirtualConsultation && (
