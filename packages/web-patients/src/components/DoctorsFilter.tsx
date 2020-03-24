@@ -294,7 +294,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
     handleFilterOptions(filterOptions);
   };
   const clearFilters = () => {
-    emptySpeciality('');
+    // emptySpeciality('');
     setCityName([]);
     setGender([]);
     setExperience([]);
