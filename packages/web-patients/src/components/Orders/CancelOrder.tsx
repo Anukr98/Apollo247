@@ -206,7 +206,7 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
           }}
           color="primary"
         >
-          {showLoader ? <CircularProgress /> : 'Submit Request'}
+          {showLoader ? <CircularProgress size={20} /> : 'Submit Request'}
         </AphButton>
       </div>
       <Popover

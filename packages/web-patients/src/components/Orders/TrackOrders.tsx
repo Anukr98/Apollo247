@@ -206,6 +206,19 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   }, [props.orderAutoId]);
 
+  let isDisable = false;
+  if (
+    orderDetailsData &&
+    orderDetailsData.medicineOrdersStatus &&
+    orderDetailsData.medicineOrdersStatus.length > 0
+  ) {
+    const orderStatus =
+      orderDetailsData.medicineOrdersStatus[orderDetailsData.medicineOrdersStatus.length - 1];
+    if (orderStatus && orderStatus.orderStatus == 'CANCELLED') {
+      isDisable = true;
+    }
+  }
+
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
@@ -221,7 +234,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             </div>
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId}
+                disabled={!props.orderAutoId || isDisable}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >
