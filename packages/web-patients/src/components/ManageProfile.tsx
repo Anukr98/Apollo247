@@ -119,8 +119,8 @@ export const ManageProfile: React.FC = (props) => {
               <ExistingProfile
                 patients={allCurrentPatients!}
                 onComplete={() => {
-                  window.location.reload();
                   setIsPopoverOpen(false);
+                  window.location.reload();
                 }}
               />
             ) : defaultNewProfile ? (
