@@ -808,9 +808,17 @@ export class DoctorRepository extends Repository<Doctor> {
 
 @EntityRepository(CityPincodeMapper)
 export class CityPincodeMapperRepository extends Repository<CityPincodeMapper> {
-  addPincodeDetails(pincodeAttrs: Partial<CityPincodeMapper>) {
-    return this.save(pincodeAttrs).catch((error) => {
-      throw new AphError(AphErrorMessages.SAVE_PINCODES_ERROR, undefined, { error });
-    });
+  async addPincodeDetails(pincodeAttrs: Partial<CityPincodeMapper>, flag: boolean) {
+    if (flag) {
+      const pincodeExist = await this.findOne({ where: { pincode: pincodeAttrs.pincode } });
+      if (pincodeExist)
+        return this.update(pincodeExist.id, pincodeAttrs).catch((error) => {
+          throw new AphError(AphErrorMessages.UPDATE_PINCODES_ERROR, undefined, { error });
+        });
+    } else {
+      return this.save(pincodeAttrs).catch((error) => {
+        throw new AphError(AphErrorMessages.SAVE_PINCODES_ERROR, undefined, { error });
+      });
+    }
   }
 }

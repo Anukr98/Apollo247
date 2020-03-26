@@ -309,14 +309,21 @@ const insertPincodeData: Resolver<null, {}, DoctorsServiceContext, string> = asy
       },
     ],
   });
+  const pincodes: string[] = [];
   const cityPincodeMapperRepositoryRepo = doctorsDb.getCustomRepository(
     CityPincodeMapperRepository
   );
   rowData.Sheet1.map(async (row: Partial<CityPincodeMapper>) => {
-    await cityPincodeMapperRepositoryRepo.addPincodeDetails(row);
+    if (row.pincode) {
+      const flag = pincodes.includes(row.pincode);
+      if (!flag) {
+        pincodes.push(row.pincode);
+      }
+      await cityPincodeMapperRepositoryRepo.addPincodeDetails(row, flag);
+    }
   });
 
-  return ApiConstants.PINCODE_API_RESPONSE;
+  return ApiConstants.PINCODE_API_RESPONSE.toString();
 };
 
 export const doctorDataResolvers = {
