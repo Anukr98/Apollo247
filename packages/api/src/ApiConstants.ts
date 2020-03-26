@@ -137,7 +137,7 @@ export enum ApiConstants {
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,raj@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -182,7 +182,7 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com,sumeeth.kumar@popcornapps.com,raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
@@ -260,4 +260,7 @@ export enum ApiConstants {
   COUPON_WITH_BU_RESTRICTION = 'This coupon is applicable for {0} only',
   LOWER_CART_LIMIT = 'Coupon applicable for Minimum order value Rs.{0} or more',
   UPPER_CART_LIMIT = 'Coupon applicable for Maximum order value Rs.{0} or less',
+
+  DOCTOR_SEARCH_DEFAULT_CITY1 = 'Hyderabad',
+  DOCTOR_SEARCH_DEFAULT_CITY2 = 'Chennai',
 }

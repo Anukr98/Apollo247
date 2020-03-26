@@ -88,7 +88,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   searchLogger('API_CALL___STARTED');
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
-
   let matchedDoctors: Doctor[] = [],
     matchedSpecialties: DoctorSpecialty[] = [],
     matchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
@@ -112,7 +111,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
 
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
-    matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase);
+    let pincodeCity = '';
+    if (args.pincode) {
+      const pincodeCityDetails = await doctorRepository.getCityMappingPincode(args.pincode);
+      if (pincodeCityDetails) pincodeCity = pincodeCityDetails.city;
+    }
+    matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase, pincodeCity);
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
@@ -202,7 +206,7 @@ const getPossibleDoctorsAndSpecialties = async (
   if (specialtyId.length === 1) {
     allPossibleDoctors = await doctorRepository.searchBySpecialty(specialtyId[0].id);
   } else {
-    allPossibleDoctors = await doctorRepository.searchByName('');
+    allPossibleDoctors = await doctorRepository.searchByName('', '');
   }
   allPossibleSpecialties = await specialtyRepository.searchByName('');
 

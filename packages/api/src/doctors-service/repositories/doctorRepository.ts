@@ -1,5 +1,11 @@
 import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
-import { Doctor, ConsultMode, DoctorType, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
+import {
+  Doctor,
+  ConsultMode,
+  DoctorType,
+  DOCTOR_ONLINE_STATUS,
+  CityPincodeMapper,
+} from 'doctors-service/entities';
 import {
   Range,
   FilterDoctorInput,
@@ -17,6 +23,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { ApiConstants } from 'ApiConstants';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Doctor)
@@ -26,6 +33,10 @@ export class DoctorRepository extends Repository<Doctor> {
       where: [{ id, isActive: true }],
       relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
     });
+  }
+
+  getCityMappingPincode(pincode: string) {
+    return CityPincodeMapper.findOne({ pincode });
   }
 
   getDoctorDetails(firebaseToken: string) {
@@ -124,7 +135,14 @@ export class DoctorRepository extends Repository<Doctor> {
       .getRawMany();
   }
 
-  searchByName(searchString: string) {
+  searchByName(searchString: string, cityName: string) {
+    const cities: string[] = [
+      ApiConstants.DOCTOR_SEARCH_DEFAULT_CITY1.toString(),
+      ApiConstants.DOCTOR_SEARCH_DEFAULT_CITY2.toString(),
+    ];
+    if (cityName.trim() != '') {
+      cities.push(cityName);
+    }
     return this.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.specialty', 'specialty')
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
@@ -132,6 +150,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
       .andWhere('doctor.isActive = true')
+      .andWhere('facility.city IN (:...cities)', { cities })
       .andWhere(
         new Brackets((qb) => {
           qb.andWhere('LOWER(doctor.firstName) LIKE :searchString', {
@@ -394,7 +413,18 @@ export class DoctorRepository extends Repository<Doctor> {
 
   async filterDoctors(filterInput: FilterDoctorInput) {
     const { specialty, city, experience, gender, fees, language } = filterInput;
-
+    let pincodeCity = '';
+    if (filterInput.pincode) {
+      const pincodeCityDetails = await this.getCityMappingPincode(filterInput.pincode);
+      if (pincodeCityDetails) pincodeCity = pincodeCityDetails.city;
+    }
+    const cities: string[] = [
+      ApiConstants.DOCTOR_SEARCH_DEFAULT_CITY1.toString(),
+      ApiConstants.DOCTOR_SEARCH_DEFAULT_CITY2.toString(),
+    ];
+    if (pincodeCity.trim() != '') {
+      cities.push(pincodeCity);
+    }
     const queryBuilder = this.createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.specialty', 'specialty')
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
@@ -402,6 +432,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.specialty = :specialty', { specialty })
       .andWhere('doctor.isActive = true')
+      .andWhere('facility.city IN (:...cities)', { cities })
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
 
     if (gender && gender.length > 0) {
