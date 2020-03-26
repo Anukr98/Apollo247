@@ -354,8 +354,6 @@ export const AppointmentsSlot: React.FC = (props) => {
 
   const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-  console.log(options);
-
   return !slotsError ? (
     <div className={classes.root}>
       <div className={classes.appointmentWrapper}>
