@@ -256,4 +256,15 @@ export const styles = StyleSheet.create({
     width: 1,
     // backgroundColor: theme.colors.LIGHT_BLUE,
   },
+  healthvaultMainContainer: {
+    flexDirection: 'row',
+  },
+  healthvaultImageContainer: {
+    margin: 2,
+  },
+  healthvaultImage: {
+    height: 100,
+    width: 100,
+    resizeMode: 'contain',
+  },
 });
