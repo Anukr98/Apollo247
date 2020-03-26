@@ -374,42 +374,42 @@ export const OrderDetails: React.FC = () => {
             <div className={classes.content}>
               {testOrderListData && testOrderListData.length > 0
                 ? testOrderListData.map(
-                    (testOrderInfo) =>
-                      testOrderInfo &&
-                      testOrderInfo.orderStatus && (
-                        <Link to={clientRoutes.orderSummary()}>
-                          <div
-                            key={testOrderInfo.id}
-                            className={classes.medicineStrip}
-                            onClick={() => setDisplayId(testOrderInfo.displayId)}
-                          >
-                            <div className={classes.medicineStripWrap}>
-                              <div className={classes.medicineInformation}>
-                                <div className={classes.medicineIcon}>
-                                  <img src={require('images/ic_tests_icon.svg')} alt="" />
-                                </div>
-                                <div>
-                                  <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
-                                  <div className={classes.labelText}>
-                                    {testOrderInfo.orderStatus &&
-                                      `Scheduled For: ${moment(
-                                        testOrderInfo!.diagnosticDate
-                                      ).format(`D MMM YYYY`)}${
-                                        !!testOrderInfo.slotTimings
-                                          ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
-                                          : ''
-                                      }`}
-                                  </div>
-                                </div>
+                  (testOrderInfo) =>
+                    testOrderInfo &&
+                    testOrderInfo.orderStatus && (
+                      <Link to={clientRoutes.orderSummary(testOrderInfo.id ? testOrderInfo.id.toString() : '')}>
+                        <div
+                          key={testOrderInfo.id}
+                          className={classes.medicineStrip}
+                          onClick={() => setDisplayId(testOrderInfo.displayId)}
+                        >
+                          <div className={classes.medicineStripWrap}>
+                            <div className={classes.medicineInformation}>
+                              <div className={classes.medicineIcon}>
+                                <img src={require('images/ic_tests_icon.svg')} alt="" />
                               </div>
-                              <div className={classes.labelText}>
-                                {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                              <div>
+                                <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
+                                <div className={classes.labelText}>
+                                  {testOrderInfo.orderStatus &&
+                                    `Scheduled For: ${moment(
+                                      testOrderInfo!.diagnosticDate
+                                    ).format(`D MMM YYYY`)}${
+                                    !!testOrderInfo.slotTimings
+                                      ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
+                                      : ''
+                                    }`}
+                                </div>
                               </div>
                             </div>
+                            <div className={classes.labelText}>
+                              {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                            </div>
                           </div>
-                        </Link>
-                      )
-                  )
+                        </div>
+                      </Link>
+                    )
+                )
                 : 'No Orders Found'}
             </div>
           </Scrollbars>
@@ -424,6 +424,6 @@ export const OrderDetails: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };

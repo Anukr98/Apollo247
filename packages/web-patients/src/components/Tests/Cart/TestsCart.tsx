@@ -501,6 +501,7 @@ export const TestsCart: React.FC = (props) => {
     diagnosticsCartItems,
     deliveryAddressId,
     diagnosticSlot,
+    clinicId,
     clearCartInfo,
   } = useDiagnosticsCart();
   const { state, city, setCityId, setStateId, stateId, cityId } = useLocationDetails();
@@ -625,7 +626,7 @@ export const TestsCart: React.FC = (props) => {
           setTimeout(() => {
             window.location.href = `${clientRoutes.tests()}?orderid=${
               data.data.SaveDiagnosticOrder.orderId
-            }
+              }
             &orderstatus=success`;
           }, 3000);
         } else {
@@ -775,8 +776,13 @@ export const TestsCart: React.FC = (props) => {
             }}
             color="primary"
             fullWidth
-            disabled={!isPaymentButtonEnable || !diagnosticSlot}
-            className={mutationLoading || !diagnosticSlot ? classes.buttonDisable : ''}
+
+            disabled={!isPaymentButtonEnable || !diagnosticSlot || (deliveryMode === 'Clinic' && !clinicId) ||
+              (!deliveryAddressId && deliveryMode === 'HOME')}
+
+            className={!isPaymentButtonEnable || mutationLoading || !diagnosticSlot || (deliveryMode === 'Clinic' && !clinicId) ||
+              (!deliveryAddressId && deliveryMode === 'HOME') ? classes.buttonDisable : ''}
+
             title={'Proceed to pay bill'}
           >
             {`Proceed to pay — RS. ${cartTotal.toFixed(2)}`}
@@ -827,8 +833,8 @@ export const TestsCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                `Pay - RS. ${cartTotal.toFixed(2)}`
-              )}
+                  `Pay - RS. ${cartTotal.toFixed(2)}`
+                )}
             </AphButton>
           </div>
         </div>

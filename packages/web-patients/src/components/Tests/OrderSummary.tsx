@@ -7,6 +7,20 @@ import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
+import {
+  GetDiagnosticOrderDetails,
+  GetDiagnosticOrderDetailsVariables,
+  GetDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList as orderDetails,
+  GetDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems as orderLineItems,
+} from 'graphql/types/GetDiagnosticOrderDetails';
+
+import moment from 'moment';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_DIAGNOSTIC_ORDER_LIST_DETAILS } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useParams } from 'hooks/routerHooks';
+import { useApolloClient } from 'react-apollo-hooks';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     container: {
@@ -183,6 +197,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       marginTop: 18,
     },
+    loader: {
+      margin: '20px auto',
+      textAlign: 'center',
+      display: 'block',
+    },
     totalCharges: {
       backgroundColor: '#f7f8f5',
       display: 'flex',
@@ -201,16 +220,76 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+type Params = { id: string };
 
 export const OrderSummary: React.FC = () => {
   const classes = useStyles({});
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const params = useParams<Params>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const client = useApolloClient();
+  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+  const [diagnosticOrderDetail, setDiagnosticOrderDetail] = useState<
+    (orderDetails | null) | null
+  >(null);
+  const [orderLineItem, setOrderLineItem] = useState<
+    (orderLineItems | null)[] | null
+  >(null);
+
+
+  useEffect(() => {
+    if (!diagnosticOrderDetail) {
+      setIsLoading(true);
+      client
+        .query<GetDiagnosticOrderDetails,
+          GetDiagnosticOrderDetailsVariables>({
+            query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+            variables: { diagnosticOrderId: params.id },
+            fetchPolicy: 'cache-first',
+          })
+        .then(({ data }) => {
+          console.log("data", data);
+          if (data && data.getDiagnosticOrderDetails.ordersList) {
+            setDiagnosticOrderDetail(data.getDiagnosticOrderDetails.ordersList)
+            const details = data.getDiagnosticOrderDetails.ordersList.diagnosticOrderLineItems
+            if (details && details.length > 0) {
+              setOrderLineItem(details);
+            } else {
+              setOrderLineItem([]);
+            }
+            setDiagnosisDataError(false);
+          }
+        })
+        .catch((e) => {
+          alert(e);
+          setDiagnosisDataError(true);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [])
+
+  console.log("ddddd", orderLineItem);
+
+  const getFormattedDateTime = (time: string) => {
+    return moment(time).format('D MMM YYYY | hh:mm A');
+  };
+  const formatSlot = (slot: string /*07:00-07:30 */) => {
+    return slot
+      .split('-')
+      .map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A'))
+      .join(' - ');
+  };
+
+  const orderLineItems = diagnosticOrderDetail && diagnosticOrderDetail.diagnosticOrderLineItems || [];
+
   return (
     <div>
       <Header />
-      <div className={classes.container}>
+      {diagnosticOrderDetail && <div className={classes.container}>
         <div className={classes.contentWrapper}>
-          <div className={classes.heading}>ORDER #247000260</div>
+          <div className={classes.heading}>ORDER #{diagnosticOrderDetail && diagnosticOrderDetail.displayId}</div>
           <div className={classes.breadcrumbs}>
             <Link to={clientRoutes.testOrders()}>
               <div className={classes.backArrow}>
@@ -218,7 +297,7 @@ export const OrderSummary: React.FC = () => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </Link>
-            <div className={classes.detailsHeader}>ORDER #247000260</div>
+            <div className={classes.detailsHeader}>ORDER #{diagnosticOrderDetail && diagnosticOrderDetail.displayId}</div>
           </div>
           <Scrollbars
             autoHide={true}
@@ -228,15 +307,26 @@ export const OrderSummary: React.FC = () => {
             <div className={classes.content}>
               <div className={classes.orderDetails}>
                 <div>Order ID</div>
-                <div>#247000260</div>
+                <div>#{diagnosticOrderDetail && diagnosticOrderDetail.displayId}</div>
               </div>
               <div className={classes.orderTime}>
                 <div>Date/Time</div>
                 <div className={classes.timeAndDate}>
-                  <div className={classes.orderDate}>13 Mar 2020 | </div>
-                  <div>12:52 PM</div>
+                  <div className={classes.orderDate}>{getFormattedDateTime(diagnosticOrderDetail && diagnosticOrderDetail.createdDate)}</div>
                 </div>
               </div>
+              {!!diagnosticOrderDetail.slotTimings && <div className={classes.orderTime}>
+                <div>Pickup Date</div>
+                <div className={classes.timeAndDate}>
+                  <div className={classes.orderDate}> {`${moment(diagnosticOrderDetail && diagnosticOrderDetail.diagnosticDate).format(`D MMM YYYY`)}`}</div>
+                </div>
+              </div>}
+              {!!diagnosticOrderDetail.slotTimings && <div className={classes.orderTime}>
+                <div>Pickup Time</div>
+                <div className={classes.timeAndDate}>
+                  <div className={classes.orderDate}>{`${formatSlot(diagnosticOrderDetail && diagnosticOrderDetail.slotTimings)}`}</div>
+                </div>
+              </div>}
               <div className={classes.consultRow}>
                 <div className={classes.consultDetails}>
                   <div>Consult Details</div>
@@ -245,22 +335,24 @@ export const OrderSummary: React.FC = () => {
                     <div>Charges</div>
                   </div>
                 </div>
-                <div className={`${classes.consultDetails} ${classes.testsDetailedRow}`}>
-                  <div>Scrub tyhus Igg/Igm Rapid </div>
-                  <div className={classes.priceDetails}>
-                    <div>1</div>
-                    <div>Rs.100</div>
+                {orderLineItem && orderLineItem.length > 0 && orderLineItem.map((item) => (item &&
+                  <div className={`${classes.consultDetails} ${classes.testsDetailedRow}`}>
+                    <div>{item.diagnostics ? item.diagnostics.itemName : ''}</div>
+                    <div className={classes.priceDetails}>
+                      <div>{item.quantity ? item.quantity : 0}</div>
+                      <div>{item.price ? item.price : ''}</div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
               <div className={classes.totalCharges}>
                 <div>Total</div>
-                <div>Rs.100</div>
+                <div>Rs. {diagnosticOrderDetail && diagnosticOrderDetail.totalPrice}</div>
               </div>
             </div>
           </Scrollbars>
         </div>
-      </div>
+      </div>}
     </div>
   );
 };
