@@ -37,7 +37,7 @@ export const clientRoutes = {
     `/test-details/${searchTestType}/${itemName}/${itemId}`,
   searchByTest: (searchTestText: string) => `/tests-list/search-test/${searchTestText}`,
   testOrders: () => '/order-details',
-  orderSummary: () => '/order-summary',
+  orderSummary: (id: string) => `/orders/order-summary/${id}`,
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

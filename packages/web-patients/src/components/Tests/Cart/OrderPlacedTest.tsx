@@ -172,7 +172,8 @@ export const OrderPlacedTest: React.FC<OrderPlacedProps> = (props) => {
           <div className={classes.contactNo}>
             For <b>Test Orders,</b> to know the Order Status /<br />
             Reschedule / Cancel, please call — <br />
-            <span className={classes.primaryColor}>040 44442424</span> / <span className={classes.primaryColor}>040 33442424</span>
+            <span className={classes.primaryColor}>040 44442424</span> /{' '}
+            <span className={classes.primaryColor}>040 33442424</span>
           </div>
         </>
       </div>

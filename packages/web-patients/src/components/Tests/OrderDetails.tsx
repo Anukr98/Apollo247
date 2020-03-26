@@ -377,7 +377,11 @@ export const OrderDetails: React.FC = () => {
                     (testOrderInfo) =>
                       testOrderInfo &&
                       testOrderInfo.orderStatus && (
-                        <Link to={clientRoutes.orderSummary()}>
+                        <Link
+                          to={clientRoutes.orderSummary(
+                            testOrderInfo.id ? testOrderInfo.id.toString() : ''
+                          )}
+                        >
                           <div
                             key={testOrderInfo.id}
                             className={classes.medicineStrip}
