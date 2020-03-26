@@ -1,4 +1,7 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  LocationData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -29,12 +32,17 @@ import {
   Range,
   SpecialtySearchType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPlaceInfoByPlaceId, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  getPlaceInfoByPlaceId,
+  GooglePlacesType,
+  getPlaceInfoByLatLng,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocation,
   g,
   getNetStatus,
   postWebEngageEvent,
+  callPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -107,11 +115,11 @@ export type filterDataType = {
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const filterData: filterDataType[] = [
-    {
-      label: 'City',
-      options: ['Hyderabad', 'Chennai'],
-      selectedOptions: [],
-    },
+    // {
+    //   label: 'City',
+    //   options: ['Hyderabad', 'Chennai'],
+    //   selectedOptions: [],
+    // },
     {
       label: 'Experience In Years',
       options: ['0 - 5', '6 - 10', '11 - 15', '15+'],
@@ -345,7 +353,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       fetchSpecialityFilterData(filterMode, FilterData, latlng);
       setcurrentLocation(locationDetails.displayName);
     }
-
+    callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
@@ -417,8 +425,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     location: locationType | null = latlng
   ) => {
     const experienceArray: Range[] = [];
-    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
-      SearchData[1].selectedOptions.forEach((element: string) => {
+    if (SearchData[0].selectedOptions && SearchData[0].selectedOptions.length > 0)
+      SearchData[0].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -432,8 +440,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
 
     const feesArray: Range[] = [];
-    if (SearchData[3].selectedOptions && SearchData[3].selectedOptions.length > 0)
-      SearchData[3].selectedOptions.forEach((element: string) => {
+    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
+      SearchData[2].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -450,8 +458,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     let availableNow = {};
     const availabilityArray: string[] = [];
     const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
-      SearchData[2].selectedOptions.forEach((element: string) => {
+    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
+      SearchData[1].selectedOptions.forEach((element: string) => {
         if (element === 'Now') {
           availableNow = {
             availableNow: moment(new Date())
@@ -506,12 +514,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const FilterInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.getParam('specialityId') || '',
-      city: SearchData[0].selectedOptions,
+      // city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
-      gender: SearchData[4].selectedOptions,
-      language: SearchData[5].selectedOptions,
+      gender: SearchData[3].selectedOptions,
+      language: SearchData[4].selectedOptions,
       ...availableNow,
       // consultMode: filterMode,
       ...specialtyName,
@@ -649,10 +657,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             lat: coordinates.lat,
             lng: coordinates.lng,
           };
-          setLocationDetails!({
+          const locationData: LocationData = {
             displayName: item.name,
-            latitude: coordinates.lat,
-            longitude: coordinates.lng,
+            latitude:
+              typeof coordinates.lat == 'string' ? Number(coordinates.lat) : coordinates.lat,
+            longitude:
+              typeof coordinates.lng == 'string' ? Number(coordinates.lng) : coordinates.lng,
             area: [
               findAddrComponents('route', addrComponents),
               findAddrComponents('sublocality_level_2', addrComponents),
@@ -665,7 +675,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             country: findAddrComponents('country', addrComponents),
             pincode: findAddrComponents('postal_code', addrComponents),
             lastUpdated: new Date().getTime(),
-          });
+          };
+
+          setLocationDetails!(locationData);
+
+          getPlaceInfoByLatLng(coordinates.lat, coordinates.lng)
+            .then((response) => {
+              const addrComponents =
+                g(response, 'data', 'results', '0' as any, 'address_components') || [];
+              if (addrComponents.length > 0) {
+                setLocationDetails!({
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                  lastUpdated: new Date().getTime(),
+                });
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('LocationSearchPopup_saveLatlong', error);
+            });
         }
       })
       .catch((error) => {

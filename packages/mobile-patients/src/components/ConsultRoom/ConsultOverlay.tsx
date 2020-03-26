@@ -38,6 +38,7 @@ import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  callPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -418,7 +419,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const onPressPay = () => {
     // Pay Button Clicked	event
     postWebEngagePayButtonClickedEvent();
-
+    callPermissions();
     CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
     CommonLogEvent(
       AppRoutes.DoctorDetails,

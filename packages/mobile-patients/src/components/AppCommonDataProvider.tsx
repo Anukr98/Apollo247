@@ -1,5 +1,5 @@
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
-import { g, doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -117,15 +117,16 @@ export const AppCommonDataProvider: React.FC = (props) => {
         const locationFromStorage = await AsyncStorage.multiGet(['locationDetails']);
         const location = locationFromStorage[0][1];
         _setLocationDetails(JSON.parse(location || 'null'));
-        if (location) {
-          doRequestAndAccessLocation()
-            .then((response) => {
-              response && _setLocationDetails(response);
-            })
-            .catch((e) => {
-              CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage', e);
-            });
-        }
+        // Instead of asking location here, asking in Home screen
+        // if (location) {
+        //   doRequestAndAccessLocation()
+        //     .then((response) => {
+        //       response && _setLocationDetails(response);
+        //     })
+        //     .catch((e) => {
+        //       CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage', e);
+        //     });
+        // }
       } catch (error) {
         console.log('Failed to get cart items from local storage.');
         CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage_try', error);

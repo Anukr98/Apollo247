@@ -133,7 +133,7 @@ import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumen
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { ChatQuestions } from './ChatQuestions';
 import { FeedbackPopup } from '../FeedbackPopup';
-import { g } from '../../helpers/helperFunctions';
+import { g, callPermissions } from '../../helpers/helperFunctions';
 import { useUIElements } from '../UIElementsProvider';
 import {
   cancelAppointment,
@@ -146,6 +146,7 @@ import { colors } from '../../theme/colors';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { WebView } from 'react-native-webview';
+// import NetworkTest, { ErrorNames } from 'opentok-network-test-js';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -155,7 +156,7 @@ let timerId: any;
 let joinTimerId: any;
 let diffInHours: number;
 let callAbandonmentTimer: any;
-let callAbandonmentStoppedTimer: number = 440;
+let callAbandonmentStoppedTimer: number = 620;
 let messageSent: string;
 let rescheduleInitiatedBy: string;
 let callhandelBack: boolean = true;
@@ -445,7 +446,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     try {
       console.log(callhandelBack, 'is back called');
       if (callhandelBack) {
-        props.navigation.replace(AppRoutes.TabBar);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+          })
+        );
+        handleCallTheEdSessionAPI();
         return true;
       } else {
         return true;
@@ -455,6 +463,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(error, 'error');
     }
   };
+
+  // useEffect(() => {}, []);
+
+  // const otNetworkTest = new NetworkTest(OT, {
+  //   apiKey: '123456', // Add the API key for your OpenTok project here.
+  //   sessionId: '1_MX40NzIwMzJ-fjE1MDElGQkJJfn4', // Add a test session ID for that project
+  //   token: 'T1==cGFydG5lcXN0PQ==', // Add a token for that session here
+  // });
 
   useEffect(() => {
     const userName =
@@ -475,20 +491,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     console.log('callType', callType);
-    if (callType === 'VIDEO') {
-      setOnSubscribe(true);
-      callhandelBack = false;
-      setIsAudio(false);
-      InCallManager.startRingtone('_BUNDLE_');
-      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
-    } else if (callType === 'AUDIO') {
-      setIsAudio(true);
-      setOnSubscribe(true);
-      callhandelBack = false;
-      InCallManager.startRingtone('_BUNDLE_');
-      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+    if (callType) {
+      callPermissions(() => {
+        if (callType === 'VIDEO') {
+          setOnSubscribe(true);
+          setIsAudio(false);
+          InCallManager.startRingtone('_BUNDLE_');
+          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        } else if (callType === 'AUDIO') {
+          setOnSubscribe(true);
+          setIsAudio(true);
+          callhandelBack = false;
+          InCallManager.startRingtone('_BUNDLE_');
+          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        }
+      });
     }
-
     if (prescription) {
       // write code for opening prescripiton
     }
@@ -806,10 +824,54 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+  const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('nextAppState :' + nextAppState, abondmentStarted);
-      // handleCallTheEdSessionAPI();
+      if (onSubscribe) {
+        props.navigation.setParams({ callType: isAudio ? 'AUDIO' : 'VIDEO' });
+      }
+    } else if (nextAppState === 'active') {
+      const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
+      if (permissionSettings && permissionSettings === 'true') {
+        callPermissions(() => {
+          if (callType) {
+            if (callType === 'VIDEO') {
+              setOnSubscribe(true);
+              setIsAudio(false);
+              InCallManager.startRingtone('_BUNDLE_');
+              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+            } else if (callType === 'AUDIO') {
+              setOnSubscribe(true);
+              setIsAudio(true);
+              callhandelBack = false;
+              InCallManager.startRingtone('_BUNDLE_');
+              InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+            }
+          } else {
+            if (onSubscribe) {
+              setOnSubscribe(false);
+              stopTimer();
+              startTimer(0);
+              setCallAccepted(true);
+              setHideStatusBar(true);
+              setChatReceived(false);
+              Keyboard.dismiss();
+              InCallManager.stopRingtone();
+              InCallManager.stop();
+              changeAudioStyles();
+              setConvertVideo(false);
+              changeVideoStyles();
+              setDropdownVisible(false);
+              if (token) {
+                PublishAudioVideo();
+              } else {
+                APICallAgain();
+              }
+            }
+          }
+        });
+        AsyncStorage.removeItem('permissionHandler');
+      }
     }
   };
 
@@ -1225,14 +1287,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               return obj.message === startConsultMsg;
             });
             // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
-            if (diffInMins < 15) {
-              if (response.totalOccupancy >= 2) {
-                if (callAbandonmentStoppedTimer == 440) return;
-                if (callAbandonmentStoppedTimer < 440) {
-                  // console.log('calljoined');
-                  APIForUpdateAppointmentData(true);
-                }
-              } else {
+            if (response.totalOccupancy >= 2) {
+              if (callAbandonmentStoppedTimer == 620) return;
+              if (callAbandonmentStoppedTimer < 620) {
+                // console.log('calljoined');
+                APIForUpdateAppointmentData(true);
+              }
+            } else {
+              if (diffInMins < 15) {
                 if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
                   // console.log('abondmentStarted -------> ', abondmentStarted);
 
@@ -1285,7 +1347,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(440);
+  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(620);
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
@@ -1308,7 +1370,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
 
       abondmentStarted = true;
-      startCallAbondmentTimer(440, true);
+      startCallAbondmentTimer(620, true);
     } else {
       console.log(
         'doctor no show scenario',
@@ -1331,7 +1393,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (appointmentData.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) return;
 
         abondmentStarted = true;
-        startCallAbondmentTimer(440, false);
+        startCallAbondmentTimer(620, false);
       } else {
         abondmentStarted = false;
       }
@@ -1357,8 +1419,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           } else {
             NextAvailableSlot(appointmentData, 'Transfer', true);
           }
-          setCallAbundantCallTime(440);
-          callAbandonmentStoppedTimer = 440;
+          setCallAbundantCallTime(620);
+          callAbandonmentStoppedTimer = 620;
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
       }, 1000);
@@ -1371,8 +1433,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
     callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-    setCallAbundantCallTime(440);
-    callAbandonmentStoppedTimer = 440;
+    setCallAbundantCallTime(620);
+    callAbandonmentStoppedTimer = 620;
     abondmentStarted = false;
   };
 
@@ -4965,24 +5027,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             position: 'absolute',
           }}
           onPress={() => {
-            setOnSubscribe(false);
-            stopTimer();
-            startTimer(0);
-            setCallAccepted(true);
-            setHideStatusBar(true);
-            setChatReceived(false);
-            Keyboard.dismiss();
-            InCallManager.stopRingtone();
-            InCallManager.stop();
-            changeAudioStyles();
-            setConvertVideo(false);
-            changeVideoStyles();
-            setDropdownVisible(false);
-            if (token) {
-              PublishAudioVideo();
-            } else {
-              APICallAgain();
-            }
+            callPermissions(() => {
+              setOnSubscribe(false);
+              stopTimer();
+              startTimer(0);
+              setCallAccepted(true);
+              setHideStatusBar(true);
+              setChatReceived(false);
+              Keyboard.dismiss();
+              InCallManager.stopRingtone();
+              InCallManager.stop();
+              changeAudioStyles();
+              setConvertVideo(false);
+              changeVideoStyles();
+              setDropdownVisible(false);
+              if (token) {
+                PublishAudioVideo();
+              } else {
+                APICallAgain();
+              }
+            });
           }}
         >
           <PickCallIcon

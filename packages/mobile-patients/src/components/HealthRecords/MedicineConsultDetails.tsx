@@ -47,7 +47,7 @@ import { useUIElements } from '../UIElementsProvider';
 import { RenderPdf } from '../ui/RenderPdf';
 import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
-import { WebEngageEvents } from '../../helpers/webEngageEvents';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { postWebEngageEvent, g } from '../../helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
@@ -470,7 +470,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                 addToCart();
                 CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
 
-                const eventAttributes: WebEngageEvents['Reorder Medicines'] = {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.REORDER_MEDICINES] = {
                   'Patient Name': `${g(currentPatient, 'firstName')} ${g(
                     currentPatient,
                     'lastName'
@@ -482,7 +482,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                   'Mobile Number': g(currentPatient, 'mobileNumber'),
                   'Customer ID': g(currentPatient, 'id'),
                 };
-                postWebEngageEvent('Reorder Medicines', eventAttributes);
+                postWebEngageEvent(WebEngageEventName.REORDER_MEDICINES, eventAttributes);
               }}
             />
           </View>

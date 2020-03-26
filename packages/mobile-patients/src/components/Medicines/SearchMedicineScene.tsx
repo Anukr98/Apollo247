@@ -243,8 +243,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         setMedicineList([]);
         return;
       }
-      const eventAttributes: WebEngageEvents['Search'] = { keyword: _searchText };
-      postWebEngageEvent('Search', eventAttributes);
+      const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+        keyword: _searchText,
+        Source: 'Pharmacy List',
+      };
+      postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
 
       setShowMatchingMedicines(true);
       setIsLoading(true);
