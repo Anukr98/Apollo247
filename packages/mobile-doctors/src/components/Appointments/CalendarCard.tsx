@@ -137,7 +137,7 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
               <UserPlaceHolder style={styles.imageStyle} />
             )}
           </View>
-          <View style={{ flex: 1, justifyContent: 'center' }}>
+          <View style={{ flex: 1, justifyContent: 'center', marginVertical: 12 }}>
             <View style={styles.iconview}>
               <Text style={styles.doctorNameStyles} numberOfLines={1}>
                 {props.doctorname}
@@ -146,14 +146,20 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
                 {props.wayOfContact == 'video' ? <Video /> : <Audio />}
               </View>
             </View>
-            {props.symptoms.length > 0 && (
+            {props.symptoms && props.symptoms.length > 0 && (
               <>
                 <View style={styles.seperatorline} />
-                <View style={{ marginTop: 5.5, marginBottom: 12, flexDirection: 'row' }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                   {props.symptoms &&
-                    props.symptoms.map((symptom) => (
-                      <CapsuleView diseaseName={symptom} containerStyle={{ marginRight: 6 }} />
-                    ))}
+                    props.symptoms.map(
+                      (symptom) =>
+                        symptom.symptom && (
+                          <CapsuleView
+                            diseaseName={symptom.symptom}
+                            containerStyle={{ marginRight: 6, marginTop: 5.5 }}
+                          />
+                        )
+                    )}
                 </View>
               </>
             )}
