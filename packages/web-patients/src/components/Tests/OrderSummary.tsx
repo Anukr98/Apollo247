@@ -229,29 +229,25 @@ export const OrderSummary: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const client = useApolloClient();
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
-  const [diagnosticOrderDetail, setDiagnosticOrderDetail] = useState<
-    (orderDetails | null) | null
-  >(null);
-  const [orderLineItem, setOrderLineItem] = useState<
-    (orderLineItems | null)[] | null
-  >(null);
-
+  const [diagnosticOrderDetail, setDiagnosticOrderDetail] = useState<(orderDetails | null) | null>(
+    null
+  );
+  const [orderLineItem, setOrderLineItem] = useState<(orderLineItems | null)[] | null>(null);
 
   useEffect(() => {
     if (!diagnosticOrderDetail) {
       setIsLoading(true);
       client
-        .query<GetDiagnosticOrderDetails,
-          GetDiagnosticOrderDetailsVariables>({
-            query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-            variables: { diagnosticOrderId: params.id },
-            fetchPolicy: 'cache-first',
-          })
+        .query<GetDiagnosticOrderDetails, GetDiagnosticOrderDetailsVariables>({
+          query: GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+          variables: { diagnosticOrderId: params.id },
+          fetchPolicy: 'cache-first',
+        })
         .then(({ data }) => {
-          console.log("data", data);
+          console.log('data', data);
           if (data && data.getDiagnosticOrderDetails.ordersList) {
-            setDiagnosticOrderDetail(data.getDiagnosticOrderDetails.ordersList)
-            const details = data.getDiagnosticOrderDetails.ordersList.diagnosticOrderLineItems
+            setDiagnosticOrderDetail(data.getDiagnosticOrderDetails.ordersList);
+            const details = data.getDiagnosticOrderDetails.ordersList.diagnosticOrderLineItems;
             if (details && details.length > 0) {
               setOrderLineItem(details);
             } else {
@@ -268,9 +264,9 @@ export const OrderSummary: React.FC = () => {
           setIsLoading(false);
         });
     }
-  }, [])
+  }, []);
 
-  console.log("ddddd", orderLineItem);
+  console.log('ddddd', orderLineItem);
 
   const getFormattedDateTime = (time: string) => {
     return moment(time).format('D MMM YYYY | hh:mm A');
@@ -282,77 +278,104 @@ export const OrderSummary: React.FC = () => {
       .join(' - ');
   };
 
-  const orderLineItems = diagnosticOrderDetail && diagnosticOrderDetail.diagnosticOrderLineItems || [];
+  const orderLineItems =
+    (diagnosticOrderDetail && diagnosticOrderDetail.diagnosticOrderLineItems) || [];
 
   return (
     <div>
       <Header />
-      {diagnosticOrderDetail && <div className={classes.container}>
-        <div className={classes.contentWrapper}>
-          <div className={classes.heading}>ORDER #{diagnosticOrderDetail && diagnosticOrderDetail.displayId}</div>
-          <div className={classes.breadcrumbs}>
-            <Link to={clientRoutes.testOrders()}>
-              <div className={classes.backArrow}>
-                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
-            </Link>
-            <div className={classes.detailsHeader}>ORDER #{diagnosticOrderDetail && diagnosticOrderDetail.displayId}</div>
-          </div>
-          <Scrollbars
-            autoHide={true}
-            autoHeight
-            autoHeightMin={isSmallScreen ? 'calc(100vh - 90px)' : 'calc(100vh - 210px)'}
-          >
-            <div className={classes.content}>
-              <div className={classes.orderDetails}>
-                <div>Order ID</div>
-                <div>#{diagnosticOrderDetail && diagnosticOrderDetail.displayId}</div>
-              </div>
-              <div className={classes.orderTime}>
-                <div>Date/Time</div>
-                <div className={classes.timeAndDate}>
-                  <div className={classes.orderDate}>{getFormattedDateTime(diagnosticOrderDetail && diagnosticOrderDetail.createdDate)}</div>
+      {diagnosticOrderDetail && (
+        <div className={classes.container}>
+          <div className={classes.contentWrapper}>
+            <div className={classes.heading}>
+              ORDER #{diagnosticOrderDetail && diagnosticOrderDetail.displayId}
+            </div>
+            <div className={classes.breadcrumbs}>
+              <Link to={clientRoutes.testOrders()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
-              </div>
-              {!!diagnosticOrderDetail.slotTimings && <div className={classes.orderTime}>
-                <div>Pickup Date</div>
-                <div className={classes.timeAndDate}>
-                  <div className={classes.orderDate}> {`${moment(diagnosticOrderDetail && diagnosticOrderDetail.diagnosticDate).format(`D MMM YYYY`)}`}</div>
-                </div>
-              </div>}
-              {!!diagnosticOrderDetail.slotTimings && <div className={classes.orderTime}>
-                <div>Pickup Time</div>
-                <div className={classes.timeAndDate}>
-                  <div className={classes.orderDate}>{`${formatSlot(diagnosticOrderDetail && diagnosticOrderDetail.slotTimings)}`}</div>
-                </div>
-              </div>}
-              <div className={classes.consultRow}>
-                <div className={classes.consultDetails}>
-                  <div>Consult Details</div>
-                  <div className={classes.priceDetails}>
-                    <div>Qty</div>
-                    <div>Charges</div>
-                  </div>
-                </div>
-                {orderLineItem && orderLineItem.length > 0 && orderLineItem.map((item) => (item &&
-                  <div className={`${classes.consultDetails} ${classes.testsDetailedRow}`}>
-                    <div>{item.diagnostics ? item.diagnostics.itemName : ''}</div>
-                    <div className={classes.priceDetails}>
-                      <div>{item.quantity ? item.quantity : 0}</div>
-                      <div>{item.price ? item.price : ''}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className={classes.totalCharges}>
-                <div>Total</div>
-                <div>Rs. {diagnosticOrderDetail && diagnosticOrderDetail.totalPrice}</div>
+              </Link>
+              <div className={classes.detailsHeader}>
+                ORDER #{diagnosticOrderDetail && diagnosticOrderDetail.displayId}
               </div>
             </div>
-          </Scrollbars>
+            <Scrollbars
+              autoHide={true}
+              autoHeight
+              autoHeightMin={isSmallScreen ? 'calc(100vh - 90px)' : 'calc(100vh - 210px)'}
+            >
+              <div className={classes.content}>
+                <div className={classes.orderDetails}>
+                  <div>Order ID</div>
+                  <div>#{diagnosticOrderDetail && diagnosticOrderDetail.displayId}</div>
+                </div>
+                <div className={classes.orderTime}>
+                  <div>Date/Time</div>
+                  <div className={classes.timeAndDate}>
+                    <div className={classes.orderDate}>
+                      {getFormattedDateTime(
+                        diagnosticOrderDetail && diagnosticOrderDetail.createdDate
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {!!diagnosticOrderDetail.slotTimings && (
+                  <div className={classes.orderTime}>
+                    <div>Pickup Date</div>
+                    <div className={classes.timeAndDate}>
+                      <div className={classes.orderDate}>
+                        {' '}
+                        {`${moment(
+                          diagnosticOrderDetail && diagnosticOrderDetail.diagnosticDate
+                        ).format(`D MMM YYYY`)}`}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {!!diagnosticOrderDetail.slotTimings && (
+                  <div className={classes.orderTime}>
+                    <div>Pickup Time</div>
+                    <div className={classes.timeAndDate}>
+                      <div className={classes.orderDate}>{`${formatSlot(
+                        diagnosticOrderDetail && diagnosticOrderDetail.slotTimings
+                      )}`}</div>
+                    </div>
+                  </div>
+                )}
+                <div className={classes.consultRow}>
+                  <div className={classes.consultDetails}>
+                    <div>Consult Details</div>
+                    <div className={classes.priceDetails}>
+                      <div>Qty</div>
+                      <div>Charges</div>
+                    </div>
+                  </div>
+                  {orderLineItem &&
+                    orderLineItem.length > 0 &&
+                    orderLineItem.map(
+                      (item) =>
+                        item && (
+                          <div className={`${classes.consultDetails} ${classes.testsDetailedRow}`}>
+                            <div>{item.diagnostics ? item.diagnostics.itemName : ''}</div>
+                            <div className={classes.priceDetails}>
+                              <div>{item.quantity ? item.quantity : 0}</div>
+                              <div>{item.price ? item.price : ''}</div>
+                            </div>
+                          </div>
+                        )
+                    )}
+                </div>
+                <div className={classes.totalCharges}>
+                  <div>Total</div>
+                  <div>Rs. {diagnosticOrderDetail && diagnosticOrderDetail.totalPrice}</div>
+                </div>
+              </div>
+            </Scrollbars>
+          </div>
         </div>
-      </div>}
+      )}
     </div>
   );
 };
