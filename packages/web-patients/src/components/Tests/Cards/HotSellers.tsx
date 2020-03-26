@@ -68,6 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       opacity: 0.6,
       paddingRight: 5,
+      textDecoration: 'line-through',
     },
     addToCart: {
       paddingTop: 8,
@@ -198,8 +199,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     <div className={classes.productTitle}>{hotSeller.packageName}</div>
                     <div className={classes.bottomSection}>
                       <div className={classes.priceGroup}>
-                        {/* <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span> */}
-                        <span>Rs. {hotSeller.price} </span>
+                        <div>Rs. {hotSeller.price} </div>
+                        {/* <div className={classes.regularPrice}>(Rs. {hotSeller.price})</div> */}
                       </div>
                       <div className={classes.addToCart}>
                         {itemIndexInCart(hotSeller) === -1 ? (
