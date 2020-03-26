@@ -182,9 +182,9 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
                       <div className={classes.bottomSection}>
                         {diagnosticOrgans && diagnosticOrgans.diagnostics && (
                           <div className={classes.priceGroup}>
-                            <span className={classes.regularPrice}>
+                            {/* <span className={classes.regularPrice}>
                               ({diagnosticOrgans.diagnostics.rate})
-                            </span>
+                            </span> */}
                             <span>Rs. {diagnosticOrgans.diagnostics.rate} </span>
                           </div>
                         )}
