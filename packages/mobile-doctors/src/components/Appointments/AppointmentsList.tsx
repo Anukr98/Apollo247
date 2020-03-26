@@ -205,7 +205,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           title: 'PRESCRIPTION',
                           CTAs: [
                             {
-                              title: 'PRESCRIPTION SENT',
+                              title: 'RESEND PRESCRIPTION ', //'PRESCRIPTION SENT',
                               variant: 'white',
                               onPress: () => {
                                 if (caseSheetId) {
