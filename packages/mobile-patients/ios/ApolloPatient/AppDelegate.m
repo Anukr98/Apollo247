@@ -96,8 +96,54 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
     pushToken= @"";
   }
   
-  [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"deviceToken"];
+  if (self.chatClient && self.chatClient.user) {
+
+      [self.chatClient registerWithNotificationToken:deviceToken
+
+                                          completion:^(TCHResult *result) {
+          if (![result isSuccessful]) {
+
+              // try registration again or verify token
+          }
+
+      }];
+
+  } else {
+
+      [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:@"deviceToken"];
+  }
+  
+  [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"devicePushToken"];
   [[NSUserDefaults standardUserDefaults]synchronize];
+}
+
+-(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse* )response
+        withCompletionHandler:(void(^)(void))completionHandler
+
+API_AVAILABLE(ios(10.0)){
+
+    NSLog(@"didReceiveNotificationResponse ----> %@", response.notification.request.content.userInfo);
+
+    NSDictionary *userInfo = response.notification.request.content.userInfo;
+
+
+    if (userInfo[@"twi_message_type"]) {
+
+        NSBundle *vitalsBundle = [NSBundle bundleWithIdentifier:@"com.apollo.ApolloVitalsFramework"];
+
+        UIStoryboard *chatStoryBoard = [UIStoryboard storyboardWithName:@"Chat" bundle:vitalsBundle];
+
+        ChatViewController *chatVC = [chatStoryBoard instantiateViewControllerWithIdentifier:@"ChatViewController"];
+      [self.window.rootViewController.navigationController pushViewController:chatVC animated:YES];
+      
+    }
+  
+//     NSLog(@"center: %@, response: %@", center, response);
+  
+     [WEGManualIntegration userNotificationCenter:center didReceiveNotificationResponse:response];
+
+    completionHandler();
+
 }
 
 #pragma mark - Open URL / deep link
@@ -152,15 +198,15 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
     completionHandler(UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionSound | UNNotificationPresentationOptionBadge);
 }
 
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-didReceiveNotificationResponse:(UNNotificationResponse *)response
-         withCompletionHandler:(void (^)(void))completionHandler {
+// - (void)userNotificationCenter:(UNUserNotificationCenter *)center
+// didReceiveNotificationResponse:(UNNotificationResponse *)response
+//          withCompletionHandler:(void (^)(void))completionHandler {
     
-    NSLog(@"center: %@, response: %@", center, response);
+//     NSLog(@"center: %@, response: %@", center, response);
     
-    [WEGManualIntegration userNotificationCenter:center didReceiveNotificationResponse:response];
+//     [WEGManualIntegration userNotificationCenter:center didReceiveNotificationResponse:response];
     
-    completionHandler();
-}
+//     completionHandler();
+// }
 
 @end

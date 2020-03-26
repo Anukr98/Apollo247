@@ -360,7 +360,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       {mobileFollowup && (
         <BottomPopUp
           title={'Hi:)'}
-          description="Thank you for reaching out. Our team will call you back within 3 hours."
+          description="Thank you for reaching out. As we are experiencing a very heavy load, our team will call you back in 24 to 48 hours."
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
