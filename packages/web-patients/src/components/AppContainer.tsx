@@ -47,6 +47,7 @@ import { OrderDetails } from 'components/Tests/OrderDetails';
 import { Help } from 'components/Help/Help';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { OrderSummary } from 'components/Tests/OrderSummary';
+import { Helmet } from 'react-helmet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -86,6 +87,11 @@ const App: React.FC = () => {
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
       <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
+        <Helmet>
+          <script
+            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
+          ></script>
+        </Helmet>
         <Switch>
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export interface LocationContextProps {
   currentLocation: string | null;
@@ -128,11 +128,6 @@ export const LocationProvider: React.FC = (props) => {
   useEffect(() => {
     const currentAddress = localStorage.getItem('currentAddress');
     if (currentAddress) {
-      if (currentAddress.includes(',')) {
-        setCurrentLocation(currentAddress.substring(0, currentAddress.indexOf(',')));
-      } else {
-        setCurrentLocation(currentAddress);
-      }
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${process.env.GOOGLE_API_KEY}`;
       axios.get(url).then((res) => {
         if (res && res.data && res.data.results[0]) {
@@ -144,30 +139,42 @@ export const LocationProvider: React.FC = (props) => {
               res.data.results.length > 0 &&
               res.data.results[0].address_components) ||
             [];
-          const _pincode = (
-            addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
-          ).long_name;
+          // const _pincode = (
+          //   addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
+          // ).long_name;
           const placeId = res.data.results[0].place_id;
-          const city =
-            findAddrComponents('administrative_area_level_2', addrComponents) ||
-            findAddrComponents('locality', addrComponents);
-          const state = findAddrComponents('administrative_area_level_1', addrComponents);
-          const country = findAddrComponents('country', addrComponents);
-          const area = [
-            findAddrComponents('route', addrComponents),
-            findAddrComponents('sublocality_level_2', addrComponents),
-            findAddrComponents('sublocality_level_1', addrComponents),
-          ]
-            .filter((i) => i)
-            .join(', ');
-          setCity(city);
-          setState(state);
-          setCountry(country);
-          setArea(area);
-          setPlaceId(placeId);
-          setCurrentLat(lat.toString());
-          setCurrentLong(lng.toString());
-          setCurrentPincode(_pincode);
+          if (placeId) {
+            const requestUrl = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${process.env.GOOGLE_API_KEY}`;
+            axios.get(requestUrl).then((res) => console.log(res));
+            const pincode = findAddrComponents('postal_code', addrComponents);
+            const city =
+              findAddrComponents('administrative_area_level_2', addrComponents) ||
+              findAddrComponents('locality', addrComponents);
+            const state = findAddrComponents('administrative_area_level_1', addrComponents);
+            const country = findAddrComponents('country', addrComponents);
+            const area = [
+              findAddrComponents('route', addrComponents),
+              findAddrComponents('sublocality_level_2', addrComponents),
+              findAddrComponents('sublocality_level_1', addrComponents),
+            ]
+              .filter((i) => i)
+              .join(', ');
+            setCity(city);
+            setState(state);
+            setCountry(country);
+            setArea(area);
+            setPlaceId(placeId);
+            setCurrentLat(lat.toString());
+            setCurrentLong(lng.toString());
+            if (!pincode) {
+              locateCurrentLocation();
+            }
+          }
+          if (currentAddress.includes(',')) {
+            setCurrentLocation(currentAddress.substring(0, currentAddress.indexOf(',')));
+          } else {
+            setCurrentLocation(currentAddress);
+          }
         }
       });
     }
