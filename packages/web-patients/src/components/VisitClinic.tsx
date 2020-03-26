@@ -336,7 +336,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         facilityId: defaultClinicId,
       },
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
 
   useEffect(() => {
@@ -356,20 +356,21 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   }
 
   const availableSlots = (data && data.getDoctorPhysicalAvailableSlots.availableSlots) || [];
-  availableSlots.map((slot) => {
-    // const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
-    // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
-    // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
-    const slotTime = new Date(slot).getTime();
-    const currentTime = new Date(new Date().toISOString()).getTime();
-    if (slotTime > currentTime) {
-      if (slotTime < morningTime) morningSlots.push(slotTime);
-      else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
-      else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
-      else lateNightSlots.push(slotTime);
-    }
-  });
-
+  if (availableSlots && availableSlots.length > 0) {
+    availableSlots.map((slot) => {
+      // const slotTimeUtc = new Date(new Date(`${apiDateFormat} ${slot}:00`).toISOString()).getTime();
+      // const localTimeOffset = new Date().getTimezoneOffset() * 60000;
+      // const slotTime = new Date(slotTimeUtc - localTimeOffset).getTime();
+      const slotTime = new Date(slot && slot).getTime();
+      const currentTime = new Date(new Date().toISOString()).getTime();
+      if (slotTime > currentTime) {
+        if (slotTime < morningTime) morningSlots.push(slotTime);
+        else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
+        else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
+        else lateNightSlots.push(slotTime);
+      }
+    });
+  }
   const disableSubmit =
     (morningSlots.length === 0 &&
       afternoonSlots.length === 0 &&
