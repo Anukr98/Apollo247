@@ -422,7 +422,7 @@ export const TestsLanding: React.FC = (props) => {
                       <span className={classes.serviceIcon}>
                         <img src={require('images/ic_tests_icon.svg')} alt="" />
                       </span>
-                      <span className={classes.linkText}>Your Orders</span>
+                      <span className={classes.linkText}>My Orders</span>
                       <span className={classes.rightArrow}>
                         <img src={require('images/ic_arrow_right.svg')} alt="" />
                       </span>
