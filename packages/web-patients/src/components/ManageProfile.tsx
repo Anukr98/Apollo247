@@ -118,7 +118,10 @@ export const ManageProfile: React.FC = (props) => {
             {hasExistingProfile ? (
               <ExistingProfile
                 patients={allCurrentPatients!}
-                onComplete={() => setIsPopoverOpen(false)}
+                onComplete={() => {
+                  setIsPopoverOpen(false);
+                  window.location.reload();
+                }}
               />
             ) : defaultNewProfile ? (
               <NewProfile patient={defaultNewProfile} onClose={() => setIsPopoverOpen(false)} />
