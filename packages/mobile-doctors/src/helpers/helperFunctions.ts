@@ -184,7 +184,7 @@ export const getDateArray = (start: Date, end: Date) => {
   const arr = [];
   const dt = new Date(start);
   arr.push(new Date(dt));
-  while (dt <= end) {
+  while (dt < end) {
     dt.setDate(dt.getDate() + 1);
     arr.push(new Date(dt));
   }

@@ -197,7 +197,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
-
+  const [chatFiles, setChatFiles] = useState<{ prismId: string | null; url: string }[]>([]);
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -896,7 +896,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 patientJoined,
                 abondmentStarted
               );
-              if (!abondmentStarted && patientJoined) {
+              if (
+                !abondmentStarted &&
+                patientJoined &&
+                ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
+                  (appointmentData || {}).status
+                )
+              ) {
                 abondmentStarted = true;
                 startNoShow(600, () => {
                   callAbandonmentCall();
@@ -959,10 +965,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             newmessage[newmessage.length] = item;
           });
         try {
+          const files: { prismId: string | null; url: string }[] = [];
           res.messages.forEach((element, index) => {
             newmessage[index] = element.entry;
+            if (
+              element.entry.id === patientId &&
+              element.entry.message === messageCodes.imageconsult
+            ) {
+              files.push({ prismId: element.entry.prismId, url: element.entry.url });
+            }
           });
           console.log('res', res.messages);
+          setChatFiles(files);
 
           if (messages.length !== newmessage.length) {
             console.log('set saved');
@@ -1260,6 +1274,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   (status, response) => {}
                 );
               }}
+              chatFiles={chatFiles}
+              setUrl={setUrl}
+              setPatientImageshow={setPatientImageshow}
+              setShowPDF={setShowPDF}
               favList={favList}
               favMed={favMed}
               favTest={favTest}

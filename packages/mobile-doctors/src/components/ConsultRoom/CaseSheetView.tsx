@@ -33,6 +33,7 @@ import {
   UserPlaceHolder,
   Video,
   Selected,
+  FileBig,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
@@ -92,7 +93,7 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
-import React, { Dispatch, useEffect, useState } from 'react';
+import React, { Dispatch, useEffect, useState, SetStateAction } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -103,6 +104,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -112,6 +114,7 @@ import {
   NavigationScreenProp,
   NavigationScreenProps,
 } from 'react-navigation';
+import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
 
 const { width } = Dimensions.get('window');
 
@@ -221,6 +224,13 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setDisplayId: React.Dispatch<React.SetStateAction<string>>;
   prescriptionPdf: string;
   setPrescriptionPdf: React.Dispatch<React.SetStateAction<string>>;
+  chatFiles?: {
+    prismId: string | null;
+    url: string;
+  }[];
+  setShowPDF: Dispatch<SetStateAction<boolean>>;
+  setPatientImageshow: Dispatch<SetStateAction<boolean>>;
+  setUrl: Dispatch<SetStateAction<string>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -296,6 +306,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     displayId,
     prescriptionPdf,
     setPrescriptionPdf,
+    chatFiles,
+    setShowPDF,
+    setPatientImageshow,
+    setUrl,
   } = props;
   console.log(props.caseSheetEdit, 'caseSheetEdit');
 
@@ -2093,11 +2107,96 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderPatientHealthWallet = () => {
-    const patientImages =
-      (healthWalletArrayData && healthWalletArrayData.filter((i) => i && i.imageUrls)) || [];
+  const renderRecordImages = (urls: (string | null)[]) => {
+    return (
+      <View style={styles.healthvaultMainContainer}>
+        {urls.map((url) => {
+          if (url) {
+            return (
+              <View style={styles.healthvaultImageContainer}>
+                {url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setUrl(url);
+                      setPatientImageshow(true);
+                    }}
+                  >
+                    <Image source={{ uri: url }} style={styles.healthvaultImage} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setUrl(url);
+                      if (url.match(/\.(pdf)$/)) {
+                        setShowPDF(true);
+                      } else {
+                        Linking.openURL(url);
+                      }
+                    }}
+                  >
+                    <FileBig style={styles.healthvaultImage} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          } else {
+            return null;
+          }
+        })}
+      </View>
+    );
+  };
+  const [patientImages, setPatientImages] = useState<(string | null)[]>([]);
+  const [records, setRecords] = useState<(string | null)[]>([]);
+  const sortPDF = (urls: (string | null)[], ispdf: boolean) => {
+    return urls.map((url) => {
+      if (ispdf && url && url.match(/\.(pdf)$/)) {
+        return url;
+      } else if (!ispdf && url && !url.match(/\.(pdf)$/)) {
+        return url;
+      } else {
+        return null;
+      }
+    });
+  };
+  useEffect(() => {
+    const images =
+      (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.imageUrls)) || [];
     const records =
-      (healthWalletArrayData && healthWalletArrayData.filter((i) => i && i.reportUrls)) || [];
+      (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.reportUrls)) || [];
+    if (chatFiles) {
+      const prismIds: string[] = chatFiles.map((i) => i.prismId || '').filter((i) => i !== '');
+      const onlyUrl: string[] = chatFiles
+        .filter((i) => i.prismId === null || i.prismId === '')
+        .map((i) => i.url);
+      images.push(...sortPDF(onlyUrl, false));
+      records.push(...sortPDF(onlyUrl, true));
+      getPrismUrls(
+        client,
+        (doctorDetails && doctorDetails.id) || (patientDetails && patientDetails.id) || '',
+        prismIds
+      )
+        .then((data) => {
+          if (data && data.urls) {
+            images.push(...sortPDF(data.urls, false));
+            records.push(...sortPDF(data.urls, true));
+          }
+          setPatientImages(images);
+          setRecords(records);
+        })
+        .catch((e) => {
+          setPatientImages(images);
+          setRecords(records);
+        });
+    } else {
+      setPatientImages(images);
+      setRecords(records);
+    }
+  }, [healthWalletArrayData, chatFiles]);
+
+  const renderPatientHealthWallet = () => {
     return (
       <View>
         <CollapseCard
@@ -2107,9 +2206,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <View style={{ marginHorizontal: 16 }}>
             {renderHeaderText(strings.case_sheet.photos_uploaded_by_patient)}
-            {patientImages.length > 0 ? <View></View> : renderInfoText(strings.common.no_data)}
+            {patientImages.length > 0
+              ? renderRecordImages(patientImages)
+              : renderInfoText(strings.common.no_data)}
             {renderHeaderText(strings.case_sheet.reports)}
-            {records.length > 0 ? <View></View> : renderInfoText(strings.common.no_data)}
+            {records.length > 0
+              ? renderRecordImages(records)
+              : renderInfoText(strings.common.no_data)}
             {renderHeaderText(strings.case_sheet.past_consultations)}
             {renderPastConsults()}
           </View>
