@@ -326,7 +326,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return '';
     }
   };
-  const { setLocationDetails } = useAppCommonData();
+  const { setLocationDetails, setNeedHelpToContactInMessage } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
@@ -379,9 +379,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Enable_Conditional_Management',
               'Virtual_consultation_fee',
               'QA_Virtual_consultation_fee',
+              'NeedHelpToContactIn',
             ]);
         })
         .then((snapshot) => {
+          const needHelpToContactInMessage = snapshot['NeedHelpToContactIn'].val();
+          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
           const myValye = snapshot;
           let index: number = 0;
           const nietos = [];
