@@ -265,12 +265,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     successPopoverWindow: {
       display: 'flex',
@@ -278,7 +272,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 5,
     },
     windowWrap: {
-      width: 368,
+      width: 508,
       borderRadius: 10,
       paddingTop: 36,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
@@ -406,8 +400,8 @@ export const TestsLanding: React.FC = (props) => {
                   </AphSelect>
                 </Typography>
               ) : (
-                <Typography variant="h1">hello there!</Typography>
-              )}
+                  <Typography variant="h1">hello there!</Typography>
+                )}
             </div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>

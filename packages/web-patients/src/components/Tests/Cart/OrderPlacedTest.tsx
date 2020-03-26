@@ -23,6 +23,9 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       paddingTop: 0,
       paddingBottom: 0,
+      '& h2': {
+        fontSize: 17,
+      },
     },
     orderPlaced: {
       borderRadius: 10,
@@ -50,21 +53,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     orderHeader: {
       display: 'flex',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       paddingBottom: 8,
-      alignItems: 'center',
     },
     medicineName: {
       fontSize: 17,
       fontWeight: 500,
       color: '#01475b',
       display: 'flex',
-      alignItems: 'center',
     },
     medicineIcon: {
-      paddingRight: 16,
+      paddingRight: 10,
       '& img': {
-        verticalAlign: 'middle',
+        verticalAlign: 'top',
       },
     },
     invoiceNo: {
@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#01475b',
       marginLeft: 'auto',
+      paddingLeft: 20,
     },
     orderBody: {
       fontSize: 12,
@@ -108,6 +109,17 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    contactNo: {
+      padding: 16,
+      fontSize: 14,
+      fontWeight: 500,
+      paddingBottom: 20,
+      paddingTop: 0,
+      color: '#01475b',
+    },
+    primaryColor: {
+      color: '#fc9916',
+    },
   };
 });
 
@@ -131,7 +143,7 @@ export const OrderPlacedTest: React.FC<OrderPlacedProps> = (props) => {
             <div className={classes.orderHeader}>
               <div className={classes.medicineName}>
                 <span className={classes.medicineIcon}>
-                  <img src={require('images/ic_tablets.svg')} alt="" />
+                  <img src={require('images/ic_tests_icon.svg')} alt="" />
                 </span>
                 <span>Tests</span>
               </div>
@@ -139,24 +151,28 @@ export const OrderPlacedTest: React.FC<OrderPlacedProps> = (props) => {
             </div>
             <div className={classes.bottomActions}>
               <AphButton
-                className={classes.trackBtn}
                 onClick={() => {
                   props.setShowOrderPopup(false);
                 }}
-                title={'Open track orders'}
+                title={'Ok, Got It'}
               >
-                Okay
+                Ok, Got It
               </AphButton>
               <AphButton
                 className={classes.trackBtn}
                 onClick={() => {
                   window.location.href = clientRoutes.testOrders();
                 }}
-                title={'Open track orders'}
+                title={'View Order Summary'}
               >
-                VIEW ORDER SUMMARY
+                View Order Summary
               </AphButton>
             </div>
+          </div>
+          <div className={classes.contactNo}>
+            For <b>Test Orders,</b> to know the Order Status /<br />
+            Reschedule / Cancel, please call — <br />
+            <span className={classes.primaryColor}>040 44442424</span> / <span className={classes.primaryColor}>040 33442424</span>
           </div>
         </>
       </div>

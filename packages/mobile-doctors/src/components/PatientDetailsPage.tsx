@@ -62,7 +62,21 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             if (result.patientDetails) {
               setPatientDetails(result.patientDetails);
             }
-            setPastList(result.pastAppointments);
+            const sortedActivities =
+              result.pastAppointments &&
+              result.pastAppointments.sort(
+                (a: any, b: any) =>
+                  moment(b.appointmentDateTime || b.appointmentDateTime)
+                    .toDate()
+                    .getTime() -
+                  moment(a.appointmentDateTime || a.appointmentDateTime)
+                    .toDate()
+                    .getTime()
+              );
+            console.log(sortedActivities, 'sortedActivities');
+
+            //setPastList(result.pastAppointments);
+            setPastList(sortedActivities);
           }
           setshowSpinner(false);
         } catch (e) {
