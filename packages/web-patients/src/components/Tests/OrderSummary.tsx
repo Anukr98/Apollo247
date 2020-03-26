@@ -244,7 +244,6 @@ export const OrderSummary: React.FC = () => {
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
-          console.log('data', data);
           if (data && data.getDiagnosticOrderDetails.ordersList) {
             setDiagnosticOrderDetail(data.getDiagnosticOrderDetails.ordersList);
             const details = data.getDiagnosticOrderDetails.ordersList.diagnosticOrderLineItems;
@@ -265,8 +264,6 @@ export const OrderSummary: React.FC = () => {
         });
     }
   }, []);
-
-  console.log('ddddd', orderLineItem);
 
   const getFormattedDateTime = (time: string) => {
     return moment(time).format('D MMM YYYY | hh:mm A');
