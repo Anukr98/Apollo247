@@ -25,7 +25,7 @@ import {
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -33,6 +33,7 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -135,6 +136,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [mobileFollowup, setMobileFollowup] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+  const { needHelpToContactInMessage } = useAppCommonData();
 
   useEffect(() => {
     setSelectedQuery('');
@@ -298,11 +300,6 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       .then(() => {
         setShowSpinner(false);
         setMobileFollowup(true);
-        // Alert.alert(
-        //   'Alert',
-        //   'Thank you for reaching out. Our team will call you back within 3 hours.',
-        //   [{ text: 'OK, GOT IT', onPress: () => props.navigation.goBack() }]
-        // );
       })
       .catch((e) => {
         CommonBugFender('MobileHelp_onSubmit', e);
@@ -372,7 +369,13 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
               onPress={() => {
                 setMobileFollowup(false);
                 CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
-                props.navigation.replace(AppRoutes.TabBar);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                  })
+                );
               }}
             >
               <Text
