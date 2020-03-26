@@ -145,6 +145,12 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 0,
       },
     },
+    noAddress: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#0087ba',
+      paddingBottom: 10,
+    },
   };
 });
 
@@ -165,11 +171,12 @@ export const AppointmentsSlot: React.FC = (props) => {
     setDiagnosticSlot,
     diagnosticSlot,
     deliveryAddresses,
-    setDeliveryAddressId,
   } = useDiagnosticsCart();
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = useState<boolean>(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TestSlot | null>();
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(
+    diagnosticSlot ? new Date(diagnosticSlot.date) : new Date()
+  );
   const [options, setOptions] = useState<{ key: string; value: string; data: any }[] | null>(null);
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -257,7 +264,21 @@ export const AppointmentsSlot: React.FC = (props) => {
           return;
         }
 
-        if (data && data.getDiagnosticSlots && data.getDiagnosticSlots.diagnosticSlot) {
+        if (diagnosticSlot && date === new Date(diagnosticSlot.date)) {
+          setSelectedTimeSlot({
+            date: new Date(diagnosticSlot.date),
+            diagnosticBranchCode: '',
+            employeeCode: diagnosticSlot.diagnosticEmployeeCode,
+            employeeName: '', // not sending name to API hence keeping empty
+            slotInfo: {
+              __typename: 'SlotInfo',
+              endTime: diagnosticSlot.slotEndTime,
+              slot: diagnosticSlot.employeeSlotId,
+              startTime: diagnosticSlot.slotStartTime,
+              status: 'empty',
+            },
+          });
+        } else if (data && data.getDiagnosticSlots && data.getDiagnosticSlots.diagnosticSlot) {
           const diagnosticSlots = data.getDiagnosticSlots.diagnosticSlot || [];
           const slotsArray: TestSlot[] = [];
           diagnosticSlots!.forEach((item) => {
@@ -299,21 +320,21 @@ export const AppointmentsSlot: React.FC = (props) => {
               employeeSlotId: uniqueSlots[0].slotInfo.slot,
               diagnosticBranchCode: uniqueSlots[0].diagnosticBranchCode,
               diagnosticEmployeeCode: uniqueSlots[0].diagnosticEmployeeCode,
-              city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+              city: selectedAddress ? selectedAddress.city! : '', // not using city from this in order place API
             });
           } else {
             setSelectedTimeSlot(null);
             setSelectedOption('No Slot Selected');
             setOptions([]);
           }
-          setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
-          setLoading(false);
-          setSlotsError(false);
         }
+        setLoading(false);
+        setSlotsError(false);
       })
       .catch((e) => {
         setSlotsError(true);
         setLoading(false);
+        setOptions(null);
         console.log(
           'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.'
         );
@@ -321,69 +342,48 @@ export const AppointmentsSlot: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (deliveryAddressId) {
-      if (diagnosticSlot) {
-        setDate(new Date(diagnosticSlot.date));
-        setSelectedTimeSlot({
-          date: new Date(diagnosticSlot.date),
-          diagnosticBranchCode: '',
-          employeeCode: diagnosticSlot.diagnosticEmployeeCode,
-          employeeName: '', // not sending name to API hence keeping empty
-          slotInfo: {
-            __typename: 'SlotInfo',
-            endTime: diagnosticSlot.slotEndTime,
-            slot: diagnosticSlot.employeeSlotId,
-            startTime: diagnosticSlot.slotStartTime,
-            status: 'empty',
-          },
-        });
-      } else if (!diagnosticSlot && !selectedTimeSlot) {
-        setDate(new Date());
-        const selectedAddress = deliveryAddresses.find(
-          (address) => address.id == deliveryAddressId
-        );
-        selectedAddress && checkServicability(selectedAddress);
-      }
+    if (deliveryAddresses && (deliveryAddressId || !selectedTimeSlot || date)) {
+      const selectedAddress = deliveryAddresses.find((item) => item.id == deliveryAddressId);
+      selectedAddress && checkServicability(selectedAddress);
     }
-  }, [deliveryAddressId]);
-
-  useEffect(() => {
-    const selectedAddress = deliveryAddresses.find((address) => address.id == deliveryAddressId);
-    selectedAddress && checkServicability(selectedAddress);
-  }, [date]);
+  }, [deliveryAddressId, date, deliveryAddresses]);
 
   const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
   return !slotsError ? (
     <div className={classes.root}>
       <div className={classes.appointmentWrapper}>
-        <div className={classes.header}>
-          <img src={require('images/ic_calendar_show.svg')} alt="" />
-          <span>Appointment Slot</span>
-        </div>
-        <div className={classes.appointmentInfo}>
-          <div className={classes.details}>
-            <div>Date</div>
-            <div className={classes.date}>{moment(date).format('DD MMM, YYYY')}</div>
-          </div>
-          <div className={classes.details}>
-            <div>Time</div>
-            <div className={classes.time}>
-              {selectedTimeSlot ? (
-                `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)} - ${formatTestSlot(
-                  selectedTimeSlot.slotInfo.endTime!
-                )}`
-              ) : loading ? (
-                <CircularProgress />
-              ) : (
-                'No slot selected'
-              )}
+        {loading ? (
+          <CircularProgress size={22} />
+        ) : (
+          <>
+            <div className={classes.header}>
+              <img src={require('images/ic_calendar_show.svg')} alt="" />
+              <span>Appointment Slot</span>
             </div>
-          </div>
-        </div>
-        <div className={classes.pickSlot}>
-          <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>Pick Another Slot</AphButton>
-        </div>
+            <div className={classes.appointmentInfo}>
+              <div className={classes.details}>
+                <div>Date</div>
+                <div className={classes.date}>{moment(date).format('DD MMM, YYYY')}</div>
+              </div>
+              <div className={classes.details}>
+                <div>Time</div>
+                <div className={classes.time}>
+                  {selectedTimeSlot
+                    ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)} - ${formatTestSlot(
+                        selectedTimeSlot.slotInfo.endTime!
+                      )}`
+                    : 'No slot selected'}
+                </div>
+              </div>
+            </div>
+            <div className={classes.pickSlot}>
+              <AphButton onClick={() => setIsUploadPreDialogOpen(true)}>
+                Pick Another Slot
+              </AphButton>
+            </div>
+          </>
+        )}
 
         <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
           <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
@@ -464,5 +464,10 @@ export const AppointmentsSlot: React.FC = (props) => {
         </AphDialog>
       </div>
     </div>
-  ) : null;
+  ) : (
+    <div className={classes.noAddress}>
+      Sorry! We're working hard to get to this area! In the meantime, you can either pick up from a
+      nearby store, or change the pincode.
+    </div>
+  );
 };
