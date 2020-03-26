@@ -51,9 +51,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       textTransform: 'capitalize',
-      [theme.breakpoints.down('xs')]: {
-        fontSize: 16,
-      },
       backgroundColor: 'transparent',
       '&:focus': {
         backgroundColor: 'transparent',
