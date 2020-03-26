@@ -232,7 +232,7 @@ export const styles = StyleSheet.create({
 
   dataCardsStyle: {
     minHeight: 44,
-    alignItems: 'center',
+    // alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
     marginVertical: 6,

@@ -160,7 +160,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
 
           const consultDuration = filterData ? filterData.consultDuration : 0;
           const showNext = showUpNext(i.appointmentDateTime, index, i.status);
-
+          const caseSheet =
+            i.caseSheet && i.caseSheet.find((i) => i && i.doctorType !== DoctorType.JUNIOR);
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
@@ -176,6 +177,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
                     console.log('appppp', appId, i);
+                    // console.log( || null);
+
                     if (
                       i.caseSheet &&
                       i.caseSheet.length > 0 &&
@@ -195,9 +198,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           .filter((i) => i !== null)[0];
                         setLoading && setLoading(false);
                         console.log(i, 'i.caseSheet');
-                        const caseSheet =
-                          i.caseSheet &&
-                          i.caseSheet.find((i) => i && i.doctorType !== DoctorType.JUNIOR);
+
                         const caseSheetId = caseSheet && caseSheet.id;
 
                         props.navigation.push(AppRoutes.RenderPdf, {
@@ -205,7 +206,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           title: 'PRESCRIPTION',
                           CTAs: [
                             {
-                              title: 'PRESCRIPTION SENT',
+                              title: 'RESEND PRESCRIPTION ', //'PRESCRIPTION SENT',
                               variant: 'white',
                               onPress: () => {
                                 if (caseSheetId) {
@@ -283,7 +284,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   appointmentStatus={i.appointmentState || ''}
                   doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime, consultDuration || undefined)}
-                  symptoms={[]}
+                  symptoms={caseSheet ? caseSheet.symptoms : null}
                   doctorId={i.doctorId}
                   patientId={i.patientId}
                   status={getStatus(i)}
