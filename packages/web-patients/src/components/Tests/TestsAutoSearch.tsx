@@ -233,7 +233,7 @@ export const TestsAutoSearch: React.FC = (props) => {
                         <Link
                           to={clientRoutes.testDetails(
                             'search-test',
-                            test.itemName.replace(/\s/g, '_'),
+                            test.itemName.replace(/\s/g, '_').toLowerCase(),
                             test.itemId.toString()
                           )}
                         >
