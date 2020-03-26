@@ -599,7 +599,7 @@ export const TestsCart: React.FC = (props) => {
       diagnosticDate: date,
       prescriptionUrl: '',
       paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD,
-      totalPrice: parseFloat(totalAmount),
+      totalPrice: parseFloat(cartTotal.toFixed(2)),
       patientId: (currentPatient && currentPatient.id) || '',
       items: diagnosticsCartItems.map(
         (item) =>
@@ -615,7 +615,6 @@ export const TestsCart: React.FC = (props) => {
       fetchPolicy: 'no-cache',
     })
       .then((data: any) => {
-        console.log('data', data);
         if (
           data &&
           data.data.SaveDiagnosticOrder &&
@@ -634,10 +633,8 @@ export const TestsCart: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        console.log(e);
-      })
-      .finally(() => {
         setMutationLoading(false);
+        alert('Error while placing order.');
       });
   };
 
@@ -759,7 +756,7 @@ export const TestsCart: React.FC = (props) => {
                       <div className={classes.priceRow}>
                         <span>To Pay</span>
                         <span className={classes.totalPrice}>
-                          {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {totalAmount}
+                          {showGross ? `(${cartTotal.toFixed(2)})` : ''} Rs. {cartTotal.toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -782,7 +779,7 @@ export const TestsCart: React.FC = (props) => {
             className={mutationLoading || !diagnosticSlot ? classes.buttonDisable : ''}
             title={'Proceed to pay bill'}
           >
-            {`Proceed to pay — RS. ${totalAmount}`}
+            {`Proceed to pay — RS. ${cartTotal.toFixed(2)}`}
           </AphButton>
         </div>
       </div>
@@ -830,7 +827,7 @@ export const TestsCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                `Pay - RS. ${totalAmount}`
+                `Pay - RS. ${cartTotal.toFixed(2)}`
               )}
             </AphButton>
           </div>

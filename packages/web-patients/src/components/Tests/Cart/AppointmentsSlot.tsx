@@ -303,7 +303,7 @@ export const AppointmentsSlot: React.FC = (props) => {
             });
           } else {
             setSelectedTimeSlot(null);
-            setSelectedOption('');
+            setSelectedOption('No Slot Selected');
             setOptions([]);
           }
           setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
@@ -403,47 +403,56 @@ export const AppointmentsSlot: React.FC = (props) => {
             <div className={classes.wrapperCards}>
               <p>Slot</p>
               <div className={classes.selectContainer}>
-                <AphSelect
-                  classes={{
-                    root: classes.selectMenuRoot,
-                    selectMenu: classes.selectMenuItem,
-                  }}
-                  value={options && options.length === 0 ? 'No Slots Available' : selectedOption}
-                  onChange={(e) => {
-                    const value = e.target.value as TestSlot;
-                    setSelectedOption(
-                      `${formatTestSlot(value.slotInfo.startTime)} - ${formatTestSlot(
-                        value.slotInfo.endTime
-                      )}`
-                    );
-                    setSelectedTimeSlot(value);
-                    setDiagnosticSlot!({
-                      slotStartTime: value.slotInfo.startTime!,
-                      slotEndTime: value.slotInfo.endTime!,
-                      date: value.date,
-                      employeeSlotId: value.slotInfo.slot,
-                      diagnosticBranchCode: value.diagnosticBranchCode,
-                      diagnosticEmployeeCode: value.employeeCode,
-                      city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
-                    });
-                  }}
-                >
-                  {loading ? (
-                    <CircularProgress size={22} />
-                  ) : (
-                    options &&
-                    options.length > 0 &&
-                    options.map((option: { key: string; value: string; data: any }) => (
-                      <MenuItem
-                        value={option.data}
-                        key={option.key}
-                        classes={{ selected: classes.menuSelected }}
-                      >
-                        {option.value}
-                      </MenuItem>
-                    ))
-                  )}
-                </AphSelect>
+                {loading ? (
+                  <CircularProgress size={22} />
+                ) : (
+                  <AphSelect
+                    value={selectedOption}
+                    disabled={options ? options.length === 0 : true}
+                    onChange={(e) => {
+                      const value = e.target.value as string;
+                      const filteredData =
+                        options && options.find((option) => option.key === value);
+                      if (filteredData) {
+                        setSelectedTimeSlot(filteredData.data);
+                        setDiagnosticSlot!({
+                          slotStartTime: filteredData.data.slotInfo.startTime!,
+                          slotEndTime: filteredData.data.slotInfo.endTime!,
+                          date: filteredData.data.date,
+                          employeeSlotId: filteredData.data.slotInfo.slot,
+                          diagnosticBranchCode: filteredData.data.diagnosticBranchCode,
+                          diagnosticEmployeeCode: filteredData.data.employeeCode,
+                          city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+                        });
+                      }
+                      setSelectedOption(value);
+                    }}
+                    MenuProps={{
+                      anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                  >
+                    {options &&
+                      options.length > 0 &&
+                      options.map((option: { key: string; value: string; data: any }) => {
+                        return (
+                          <MenuItem
+                            value={option.key}
+                            key={option.key}
+                            classes={{ selected: classes.menuSelected }}
+                          >
+                            {option.value}
+                          </MenuItem>
+                        );
+                      })}
+                  </AphSelect>
+                )}
               </div>
             </div>
           </Scrollbars>
