@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DoctorType } from "./globalTypes";
+import { Geolocation, Salutation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
@@ -194,4 +194,7 @@ export interface SearchDoctorAndSpecialtyByName {
 
 export interface SearchDoctorAndSpecialtyByNameVariables {
   searchText: string;
+  patientId?: string | null;
+  geolocation?: Geolocation | null;
+  pincode?: string | null;
 }
