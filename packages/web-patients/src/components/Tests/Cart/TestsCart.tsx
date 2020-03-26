@@ -501,6 +501,7 @@ export const TestsCart: React.FC = (props) => {
     diagnosticsCartItems,
     deliveryAddressId,
     diagnosticSlot,
+    clearCartInfo,
   } = useDiagnosticsCart();
   const { state, city, setCityId, setStateId, stateId, cityId } = useLocationDetails();
   const client = useApolloClient();
@@ -621,10 +622,13 @@ export const TestsCart: React.FC = (props) => {
           data.data.SaveDiagnosticOrder.orderId &&
           data.data.SaveDiagnosticOrder.orderId.length > 0
         ) {
-          window.location.href = `${clientRoutes.tests()}?orderid=${
-            data.data.SaveDiagnosticOrder.orderId
-          }
-          &orderstatus=success`;
+          clearCartInfo && clearCartInfo();
+          setTimeout(() => {
+            window.location.href = `${clientRoutes.tests()}?orderid=${
+              data.data.SaveDiagnosticOrder.orderId
+            }
+            &orderstatus=success`;
+          }, 3000);
         } else {
           window.location.href = `${clientRoutes.tests()}?orderid=0&orderstatus=failure`;
         }

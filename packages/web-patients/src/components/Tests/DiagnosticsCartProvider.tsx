@@ -319,4 +319,5 @@ export const useDiagnosticsCart = () => ({
   setClinics: useDiagnosticsContext().setClinics,
   clinicId: useDiagnosticsContext().clinicId,
   setClinicId: useDiagnosticsContext().setClinicId,
+  clearCartInfo: useDiagnosticsContext().clearCartInfo,
 });
