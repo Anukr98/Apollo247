@@ -466,6 +466,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         setMutationLoading(false);
       });
   };
+  const disableCoupon = disableSubmit || mutationLoading || isDialogOpen || !timeSelected;
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
@@ -548,6 +549,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             </Grid>
           </Grid>
           <CouponCode
+            disableSubmit={disableCoupon}
             setCouponCode={setCouponCode}
             subtotal={physicalConsultationFees}
             doctorId={doctorId}

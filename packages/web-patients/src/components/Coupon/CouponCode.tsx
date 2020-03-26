@@ -123,6 +123,7 @@ interface CouponProps {
   revisedAmount: string;
   subtotal: string;
   setCouponCode: any;
+  disableSubmit: boolean;
 }
 
 export const CouponCode: React.FC<CouponProps> = (props) => {
@@ -184,7 +185,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
           {!couponCodeApplied && (
             <AphButton
               className={classes.button}
-              disabled={couponText.length < 2}
+              disabled={couponText.length < 2 || props.disableSubmit}
               onClick={() => {
                 const variables = {
                   doctorId: props.doctorId,
