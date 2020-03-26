@@ -9,16 +9,22 @@ import {
   DoctorAndHospital,
   ConsultType,
   Salutation,
+  CityPincodeMapper,
 } from 'doctors-service/entities';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import {
+  DoctorRepository,
+  CityPincodeMapperRepository,
+} from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import path from 'path';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { ApiConstants } from 'ApiConstants';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
     insertData: String
+    insertPincodeData: String
   }
 `;
 
@@ -90,7 +96,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       },
     ],
   });
-
   const specialtyData = rowData.sheet2;
   const doctorData = rowData.sheet1;
 
@@ -272,6 +277,48 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 };
 //insert data features ends here
 
+const insertPincodeData: Resolver<null, {}, DoctorsServiceContext, string> = async (
+  parent,
+  args,
+  { doctorsDb }
+) => {
+  const excelToJson = require('convert-excel-to-json');
+  let assetsDir = path.resolve(ApiConstants.ASSETS_DIR);
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  const rowData = excelToJson({
+    sourceFile: assetsDir + '/pincodeData.xlsx',
+    header: {
+      rows: 1,
+    },
+    sheets: [
+      {
+        name: 'Sheet1',
+        columnToKey: {
+          A: 'facilityId',
+          B: 'pincode',
+          c: 'place',
+          D: 'city',
+          E: 'demo',
+          F: 'district',
+          G: 'region',
+          H: 'demo2',
+          I: 'zone',
+        },
+      },
+    ],
+  });
+  const cityPincodeMapperRepositoryRepo = doctorsDb.getCustomRepository(
+    CityPincodeMapperRepository
+  );
+  rowData.Sheet1.map(async (row: Partial<CityPincodeMapper>) => {
+    await cityPincodeMapperRepositoryRepo.addPincodeDetails(row);
+  });
+
+  return ApiConstants.PINCODE_API_RESPONSE;
+};
+
 export const doctorDataResolvers = {
-  Query: { insertData },
+  Query: { insertData, insertPincodeData },
 };

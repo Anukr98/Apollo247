@@ -805,3 +805,12 @@ export class DoctorRepository extends Repository<Doctor> {
     return doctorsResult;
   }
 }
+
+@EntityRepository(CityPincodeMapper)
+export class CityPincodeMapperRepository extends Repository<CityPincodeMapper> {
+  addPincodeDetails(pincodeAttrs: Partial<CityPincodeMapper>) {
+    return this.save(pincodeAttrs).catch((error) => {
+      throw new AphError(AphErrorMessages.SAVE_PINCODES_ERROR, undefined, { error });
+    });
+  }
+}

@@ -1013,7 +1013,22 @@ export class CityPincodeMapper extends BaseEntity {
   @Column()
   city: string;
 
+  @Column({ nullable: true })
+  district: string;
+
+  @Column({ nullable: true })
+  facilityId: string;
+
   @Column()
   pincode: string;
+
+  @Column({ nullable: true })
+  place: string;
+
+  @Column({ nullable: true })
+  region: string;
+
+  @Column({ nullable: true })
+  zone: string;
 }
 // citypincode mapper ends
