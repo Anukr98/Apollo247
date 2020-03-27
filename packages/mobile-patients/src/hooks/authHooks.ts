@@ -22,6 +22,9 @@ export const useAuth = () => {
   const getPatientApiCall = useAuthContext().getPatientApiCall!;
   const getPatientByPrism = useAuthContext().getPatientByPrism!;
 
+  const mobileAPICalled = useAuthContext().mobileAPICalled;
+  const setMobileAPICalled = useAuthContext().setMobileAPICalled;
+
   const getFirebaseToken = useAuthContext().getFirebaseToken;
 
   return {
@@ -40,6 +43,8 @@ export const useAuth = () => {
     getPatientApiCall,
     getPatientByPrism,
 
+    mobileAPICalled,
+    setMobileAPICalled,
     getFirebaseToken,
   };
 };
@@ -47,25 +52,26 @@ export const useAuth = () => {
 export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
 
 export const useAllCurrentPatients = () => {
-  const allCurrentPatients = useAuthContext().allPatients;
-  // const mobileAPICalled = useAuthContext().mobileAPICalled;
+  const patientsArray = useAuthContext().allPatients;
+  const mobileAPICalled = useAuthContext().mobileAPICalled;
 
   // console.log('patientsArray', patientsArray);
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;
+  let allCurrentPatients: any;
 
-  // if (mobileAPICalled) {
-  //   allCurrentPatients =
-  //     patientsArray && patientsArray.data && patientsArray.data.getCurrentPatients
-  //       ? patientsArray.data.getCurrentPatients.patients
-  //       : null;
-  // } else {
-  //   allCurrentPatients =
-  //     patientsArray && patientsArray.data && patientsArray.data.getPatientByMobileNumber
-  //       ? patientsArray.data.getPatientByMobileNumber.patients
-  //       : null;
-  // }
+  if (mobileAPICalled) {
+    allCurrentPatients =
+      patientsArray && patientsArray.data && patientsArray.data.getCurrentPatients
+        ? patientsArray.data.getCurrentPatients.patients
+        : null;
+  } else {
+    allCurrentPatients =
+      patientsArray && patientsArray.data && patientsArray.data.getPatientByMobileNumber
+        ? patientsArray.data.getPatientByMobileNumber.patients
+        : null;
+  }
 
   const currentPatient = allCurrentPatients
     ? allCurrentPatients.find((patient: any) => patient.id === currentPatientId) ||
