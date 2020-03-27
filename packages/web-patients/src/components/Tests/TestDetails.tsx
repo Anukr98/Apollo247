@@ -410,7 +410,11 @@ export const TestDetails: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
-
+  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+  const [
+    diagnosisHotSellerData,
+    setDiagnosisHotSellerData,
+  ] = useState<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null>(null);
   const apiDetails = {
     url: process.env.GET_PACKAGE_DATA,
   };
@@ -423,7 +427,7 @@ export const TestDetails: React.FC = (props) => {
 
   const getPackageDetails = async () => {
     setLoading(true);
-    await axios
+    axios
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
         ItemID: params.itemId,
@@ -446,7 +450,7 @@ export const TestDetails: React.FC = (props) => {
 
   const getTestDetails = async () => {
     setLoading(true);
-    await client
+    client
       .query<searchDiagnosticsById>({
         query: SEARCH_DIAGNOSTICS_BY_ID,
         variables: {
