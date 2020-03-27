@@ -199,10 +199,8 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       margin: '20px auto',
       maxWidth: 320,
-      '& div': {
-        fontSize: 16,
-        fontWeight: 600,
-      },
+      fontSize: 16,
+      fontWeight: 600,
     },
     noOrdersText: {
       color: '#0087ba',
