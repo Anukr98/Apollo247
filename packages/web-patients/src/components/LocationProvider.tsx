@@ -120,10 +120,12 @@ export const LocationProvider: React.FC = (props) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
             const addressComponents = data.results[0].address_components || [];
+            localStorage.setItem('currentAddress', addressComponents[2].short_name);
             const pincode = (
               addressComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) ||
               {}
             ).long_name;
+            setCurrentLocation(addressComponents[2].short_name);
             if (pincode && pincode.length === 6) {
               localStorage.setItem('currentPincode', pincode);
               setCurrentPincode(pincode);
