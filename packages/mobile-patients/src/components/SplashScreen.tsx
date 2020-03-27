@@ -128,6 +128,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       route = event.replace('apollopatients://', '');
     }
 
+    const data = route.split('?');
+    route = data[0];
+
+    console.log(data, 'data');
+
+    // const id = data[1];
+
     switch (route) {
       case 'Consult':
         console.log('Consult');
@@ -141,6 +148,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('Test');
         getData('Test');
         break;
+      case 'Speciality':
+        console.log('Speciality handleopen');
+        if (data.length === 2) getData('Speciality', data[1]);
+        break;
       default:
         break;
     }
@@ -153,7 +164,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const getData = (routeName: String) => {
+  const getData = (routeName: String, id?: String) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       const onboarding = await AsyncStorage.getItem('onboarding');
@@ -227,7 +238,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           if (mePatient) {
             if (mePatient.firstName !== '') {
-              pushTheView(routeName);
+              pushTheView(routeName, id ? id : undefined);
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
@@ -254,7 +265,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     fetchData();
   };
 
-  const pushTheView = (routeName: String) => {
+  const pushTheView = (routeName: String, id?: String) => {
     console.log('pushTheView', routeName);
 
     switch (routeName) {
@@ -283,6 +294,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'ConsultRoom':
         console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
+        break;
+      case 'Speciality':
+        console.log('Speciality id', id);
+        props.navigation.navigate(AppRoutes.DoctorSearchListing);
+        // props.navigation.replace(AppRoutes.DoctorSearchListing, {
+        //   specialityId: id ? id : '',
+        // });
         break;
 
       default:
