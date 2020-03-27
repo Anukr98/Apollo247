@@ -194,12 +194,10 @@ export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
               className={classes.radioLabel}
               value={selectedAddressData.id}
               control={<AphRadio color="primary" />}
-              // label={`${selectedAddressData.addressLine1} - ${selectedAddressData.zipcode}`}
               label={formatAddress(selectedAddressData)}
               onChange={() => {
                 setDeliveryAddressId &&
                   setDeliveryAddressId(selectedAddressData && selectedAddressData.id);
-                // setStoreAddressId && setStoreAddressId('');
               }}
             />
           </li>
