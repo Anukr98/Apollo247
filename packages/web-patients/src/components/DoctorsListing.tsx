@@ -17,7 +17,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Scrollbars from 'react-custom-scrollbars';
 import _find from 'lodash/find';
-import { LocationContext } from 'components/LocationProvider';
+import { useLocationDetails } from 'components/LocationProvider';
 import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -214,7 +214,17 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
 };
 
 export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
+  const isLargeScreen = useMediaQuery('(min-width:901px)');
+  const mascotRef = useRef(null);
+
+  const {
+    currentPincode,
+    currentLong,
+    currentLat,
+    getCurrentLocationPincode,
+  } = useLocationDetails();
 
   const { filter, specialityName, specialityId, prakticeSDKSpecialties, disableFilter } = props;
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
@@ -227,11 +237,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     PHYSICAL: 'Clinic Visit',
   };
 
-  const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
-  const isLargeScreen = useMediaQuery('(min-width:901px)');
-  const mascotRef = useRef(null);
-  const { currentLat, currentLong } = useContext(LocationContext);
-
   type Range = {
     [index: number]: {
       minimum: number;
@@ -241,6 +246,10 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   let expRange: Range = [],
     feeRange: Range = [];
+
+  if (!currentPincode && currentLat && currentLong) {
+    getCurrentLocationPincode && getCurrentLocationPincode(currentLat, currentLong);
+  }
 
   if (filter.experience && filter.experience.length > 0) {
     expRange = filter.experience.map((experience) => {
@@ -286,6 +295,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         : [],
     specialtySearchType:
       prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? 'NAME' : 'ID',
+    pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
   };
 
   const { data, loading, refetch } = useQueryWithSkip(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {

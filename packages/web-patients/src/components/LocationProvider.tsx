@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export interface LocationContextProps {
   currentLocation: string | null;
@@ -13,6 +13,7 @@ export interface LocationContextProps {
   area: string | null;
   stateId: number | null;
   cityId: number | null;
+  isUserDeniedLocationAccess: boolean | null;
   setCurrentLocation: (currentLocation: string) => void;
   setCurrentLat: (currentLat: string) => void;
   setCurrentLong: (currentLong: string) => void;
@@ -25,6 +26,8 @@ export interface LocationContextProps {
   setArea: (area: string) => void;
   setStateId: (stateId: number | null) => void;
   setCityId: (cityId: number | null) => void;
+  getCurrentLocationPincode: (currentLat: string, currentLong: string) => void;
+  setIsUserDeniedLocationAccess: (isUserDeniedLocationAccess: boolean | null) => void;
 }
 
 export interface Address {
@@ -43,20 +46,23 @@ export const LocationContext = React.createContext<LocationContextProps>({
   state: null,
   country: null,
   area: null,
+  cityId: null,
+  stateId: null,
+  isUserDeniedLocationAccess: null,
   setCurrentLocation: () => {},
   setCurrentLat: () => {},
   setCurrentLong: () => {},
   setCurrentPincode: () => {},
   locateCurrentLocation: () => {},
+  getCurrentLocationPincode: () => {},
   setPlaceId: () => {},
   setCity: () => {},
   setState: () => {},
   setCountry: () => {},
   setArea: () => {},
-  stateId: null,
   setStateId: () => {},
-  cityId: null,
   setCityId: () => {},
+  setIsUserDeniedLocationAccess: () => {},
 });
 
 export type GooglePlacesType =
@@ -81,28 +87,20 @@ export const LocationProvider: React.FC = (props) => {
   const [area, setArea] = useState<string>('');
   const [cityId, setCityId] = useState<number | null>(null);
   const [stateId, setStateId] = useState<number | null>(null);
+  const [isUserDeniedLocationAccess, setIsUserDeniedLocationAccess] = useState<boolean | null>(
+    null
+  );
 
   const locateCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
       ({ coords: { latitude, longitude } }) => {
         setCurrentLat(latitude.toString());
         setCurrentLong(longitude.toString());
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
-          )
-          .then((res) => {
-            const addrComponents =
-              (res && res.data && res.data.results && res.data.results[0].address_components) || [];
-            const _pincode = (
-              addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
-            ).long_name;
-            setCurrentLocation(addrComponents[2].short_name);
-            setCurrentPincode(_pincode);
-            localStorage.setItem('currentAddress', addrComponents[2].short_name);
-          });
+        setIsUserDeniedLocationAccess(false);
+        getCurrentLocationPincode(latitude.toString(), longitude.toString());
       },
       (err) => {
+        setIsUserDeniedLocationAccess(true);
         console.log(err.message);
       },
       {
@@ -111,6 +109,36 @@ export const LocationProvider: React.FC = (props) => {
         maximumAge: 0,
       }
     );
+  };
+
+  const getCurrentLocationPincode = async (currentLat: string, currentLong: string) => {
+    await axios
+      .get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
+      )
+      .then(({ data }) => {
+        try {
+          if (data && data.results[0] && data.results[0].address_components) {
+            const addressComponents = data.results[0].address_components || [];
+
+            const address =
+              findAddrComponents('sublocality_level_1', addressComponents) ||
+              findAddrComponents('sublocality_level_2', addressComponents);
+            const pincode = findAddrComponents('postal_code', addressComponents);
+            localStorage.setItem('currentAddress', address);
+            setCurrentLocation(address);
+            if (pincode && pincode.length === 6) {
+              localStorage.setItem('currentPincode', pincode);
+              setCurrentPincode(pincode);
+            }
+          }
+        } catch {
+          (e: AxiosError) => console.log(e);
+        }
+      })
+      .catch((e: AxiosError) => {
+        console.log(e);
+      });
   };
 
   const findAddrComponents = (
@@ -122,17 +150,12 @@ export const LocationProvider: React.FC = (props) => {
     }[]
   ) => {
     const findItem = addrComponents.find((item) => item.types.indexOf(proptoFind) > -1);
-    return findItem ? findItem.long_name : '';
+    return findItem ? findItem.short_name || findItem.long_name : '';
   };
 
   useEffect(() => {
     const currentAddress = localStorage.getItem('currentAddress');
     if (currentAddress) {
-      if (currentAddress.includes(',')) {
-        setCurrentLocation(currentAddress.substring(0, currentAddress.indexOf(',')));
-      } else {
-        setCurrentLocation(currentAddress);
-      }
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${process.env.GOOGLE_API_KEY}`;
       axios.get(url).then((res) => {
         if (res && res.data && res.data.results[0]) {
@@ -144,10 +167,8 @@ export const LocationProvider: React.FC = (props) => {
               res.data.results.length > 0 &&
               res.data.results[0].address_components) ||
             [];
-          const _pincode = (
-            addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
-          ).long_name;
           const placeId = res.data.results[0].place_id;
+          const pincode = findAddrComponents('postal_code', addrComponents);
           const city =
             findAddrComponents('administrative_area_level_2', addrComponents) ||
             findAddrComponents('locality', addrComponents);
@@ -167,7 +188,16 @@ export const LocationProvider: React.FC = (props) => {
           setPlaceId(placeId);
           setCurrentLat(lat.toString());
           setCurrentLong(lng.toString());
-          setCurrentPincode(_pincode);
+          if (!pincode) {
+            getCurrentLocationPincode(lat.toString(), lng.toString());
+          } else {
+            setCurrentPincode(pincode);
+          }
+          if (currentAddress.includes(',')) {
+            setCurrentLocation(currentAddress.substring(0, currentAddress.indexOf(',')));
+          } else {
+            setCurrentLocation(currentAddress);
+          }
         }
       });
     }
@@ -185,6 +215,9 @@ export const LocationProvider: React.FC = (props) => {
         currentPincode,
         setCurrentPincode,
         locateCurrentLocation,
+        getCurrentLocationPincode,
+        isUserDeniedLocationAccess,
+        setIsUserDeniedLocationAccess,
         placeId,
         setPlaceId,
         city,
@@ -232,4 +265,23 @@ export const useLocationDetails = () => ({
   setCityId: useLocationContext().setCityId,
   cityId: useLocationContext().cityId,
   stateId: useLocationContext().stateId,
+  getCurrentLocationPincode: useLocationContext().getCurrentLocationPincode,
+  isUserDeniedLocationAccess: useLocationContext().isUserDeniedLocationAccess,
+  setIsUserDeniedLocationAccess: useLocationContext().setIsUserDeniedLocationAccess,
 });
+
+// axios
+//   .get(
+//     `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_API_KEY}`
+//   )
+//   .then((res) => {
+//     const addrComponents =
+//       (res && res.data && res.data.results && res.data.results[0].address_components) || [];
+//     const _pincode = (
+//       addrComponents.find((item: Address) => item.types.indexOf('postal_code') > -1) || {}
+//     ).long_name;
+//     setCurrentLocation(addrComponents[2].short_name);
+//     setCurrentPincode(_pincode);
+//     localStorage.setItem('currentPincode', _pincode);
+//     localStorage.setItem('currentAddress', addrComponents[2].short_name);
+//   });
