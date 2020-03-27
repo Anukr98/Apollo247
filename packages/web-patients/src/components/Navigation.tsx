@@ -174,11 +174,7 @@ export const Navigation: React.FC = (props) => {
       </Link>
       <Link
         to={clientRoutes.tests()}
-        className={
-          currentPath === clientRoutes.tests() || currentPath === clientRoutes.testsCart()
-            ? classes.menuItemActive
-            : ''
-        }
+        className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
         title={'Tests'}
       >
         Tests
@@ -191,7 +187,7 @@ export const Navigation: React.FC = (props) => {
         tabIndex={0}
         className={`${classes.notificationBtn} ${
           currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-        }`}
+        }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
         title={'cart'}
       >
         <span>
