@@ -65,7 +65,9 @@ export const LocationSearchHeader: React.FC<LocationSearchHeaderProps> = (props)
           >
             {locationDetails ? (
               <Text style={styles.displayLocationTextStyle}>
-                {locationDetails.displayName && locationDetails.displayName.substring(0, 15)}
+                {locationDetails.displayName && locationDetails.displayName.length > 15
+                  ? `${locationDetails.displayName.substring(0, 15)}...`
+                  : locationDetails.displayName}
               </Text>
             ) : null}
             <LocationOn />
