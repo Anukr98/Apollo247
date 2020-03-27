@@ -289,7 +289,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
             'DD/MM/YYYY'
           )} at\n${moment(consultDetails.appointmentDateTime).format('hh.mm A')}`}</Text>
           <Text style={styles.apptId}>
-            {strings.case_sheet.appt_id}: {consultDetails.id}
+            {strings.case_sheet.appt_id}: {consultDetails.displayId}
           </Text>
           {renderChiefComplaints()}
           {renderVitals()}

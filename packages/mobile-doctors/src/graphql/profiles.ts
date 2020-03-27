@@ -557,6 +557,7 @@ export const GET_CASESHEET = gql`
       }
       pastAppointments {
         id
+        displayId
         appointmentDateTime
         appointmentState
         doctorId
