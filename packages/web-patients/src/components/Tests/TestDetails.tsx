@@ -425,7 +425,7 @@ export const TestDetails: React.FC = (props) => {
 
   const getPackageDetails = async () => {
     setLoading(true);
-    axios
+    await axios
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
         ItemID: params.itemId,
@@ -448,7 +448,7 @@ export const TestDetails: React.FC = (props) => {
 
   const getTestDetails = async () => {
     setLoading(true);
-    client
+    await client
       .query<searchDiagnosticsById>({
         query: SEARCH_DIAGNOSTICS_BY_ID,
         variables: {
