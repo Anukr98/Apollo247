@@ -214,7 +214,8 @@ export const LocationSearch: React.FC = (props) => {
     setCurrentLong,
     setCurrentLocation,
     locateCurrentLocation,
-    currentPincode,
+    isUserDeniedLocationAccess,
+    setIsUserDeniedLocationAccess,
   } = useLocationDetails();
   const { isSigningIn } = useAuth();
 
@@ -241,12 +242,17 @@ export const LocationSearch: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('currentAddress') && !isSigningIn && !isLocationDenied) {
+    if (
+      !localStorage.getItem('currentAddress') &&
+      !isSigningIn &&
+      (!isUserDeniedLocationAccess || !isLocationDenied)
+    ) {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
           if (PermissionStatus.state === 'denied') {
             setIsPopoverOpen(false);
             setIsLocationDenied(true);
+            setIsUserDeniedLocationAccess(true);
             setIsLocationPopoverOpen(true);
           } else if (PermissionStatus.state !== 'granted' && !detectBy) {
             setIsPopoverOpen(true);
@@ -255,7 +261,11 @@ export const LocationSearch: React.FC = (props) => {
             setIsPopoverOpen(false);
           }
         });
-    } else if (isLocationDenied && !localStorage.getItem('currentAddress') && !isSigningIn) {
+    } else if (
+      (isLocationDenied || isUserDeniedLocationAccess) &&
+      !localStorage.getItem('currentAddress') &&
+      !isSigningIn
+    ) {
       setIsLocationPopoverOpen(true);
     } else {
       setIsPopoverOpen(false);
@@ -332,7 +342,6 @@ export const LocationSearch: React.FC = (props) => {
           searchOptions={searchOptions}
         >
           {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => {
-            console.log(suggestions);
             return (
               <div className={classes.locationPopWrap}>
                 <label className={classes.inputLabel} title={'Current Location'}>
