@@ -123,7 +123,9 @@ export const LocationProvider: React.FC = (props) => {
 
             const address =
               findAddrComponents('sublocality_level_1', addressComponents) ||
-              findAddrComponents('sublocality_level_2', addressComponents);
+              findAddrComponents('sublocality_level_2', addressComponents) ||
+              findAddrComponents('locality', addressComponents) ||
+              findAddrComponents('administrative_area_level_2', addressComponents);
             const pincode = findAddrComponents('postal_code', addressComponents);
             localStorage.setItem('currentAddress', address);
             setCurrentLocation(address);
