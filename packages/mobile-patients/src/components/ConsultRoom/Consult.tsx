@@ -261,8 +261,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log('No current patients available');
       getPatientApiCall();
     }
-    setLoading && setLoading(true);
-    fetchAppointments();
     callPermissions();
   }, [currentPatient]);
 

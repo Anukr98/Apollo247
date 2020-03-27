@@ -100,7 +100,7 @@ const ConfigurationDev = {
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
   iOS_Version: '1.811',
-  Android_Version: '1.911',
+  Android_Version: '1.912',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
