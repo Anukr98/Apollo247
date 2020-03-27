@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { Image as ImageNative } from 'react-native-elements';
 import { theme } from '../../theme/theme';
+import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
 
 const styles = CalendarCardStyles;
 
@@ -39,7 +40,7 @@ export interface CalendarCardProps {
   imageStyle?: StyleProp<ImageStyle>;
   wayOfContact: 'clinic' | 'video';
   status: Appointments['timeslottype'];
-  symptoms: string[];
+  symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[];
   doctorId?: string;
   patientId?: string;
   isNewPatient: boolean;
@@ -151,15 +152,18 @@ export const CalendarCard: React.FC<CalendarCardProps> = (props) => {
                 <View style={styles.seperatorline} />
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                   {props.symptoms &&
-                    props.symptoms.map(
-                      (symptom) =>
-                        symptom.symptom && (
+                    props.symptoms.map((symptom) => {
+                      if (symptom) {
+                        return (
                           <CapsuleView
-                            diseaseName={symptom.symptom}
+                            diseaseName={symptom.symptom || ''}
                             containerStyle={{ marginRight: 6, marginTop: 5.5 }}
                           />
-                        )
-                    )}
+                        );
+                      } else {
+                        return null;
+                      }
+                    })}
                 </View>
               </>
             )}
