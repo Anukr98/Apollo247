@@ -1034,8 +1034,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       familyValues.forEach((i) => {
         if (i) {
           familyHistory += i.relation
-            ? i.relation + ': ' + i.description + '\n'
-            : i.description + '\n';
+            ? i.relation + ': ' + i.description || '' + '\n'
+            : i.description || '' + '\n';
         }
       });
       return familyHistory.slice(0, -1);
