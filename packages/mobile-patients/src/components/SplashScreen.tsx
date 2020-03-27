@@ -1,28 +1,29 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
-import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  AppState,
-  AppStateStatus,
-  Linking,
-  Platform,
   StyleSheet,
   View,
+  Platform,
+  ActivityIndicator,
+  Linking,
+  AppStateStatus,
+  AppState,
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
-import { NavigationScreenProps } from 'react-navigation';
-import { apiRoutes } from '../helpers/apiRoutes';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { AppConfig } from '../strings/AppConfig';
+import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
+import { apiRoutes } from '../helpers/apiRoutes';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -73,11 +74,13 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall, setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom', true);
+    getData('ConsultRoom');
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -96,8 +99,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     try {
-      // console.log(Linking.getInitialURL(), 'urllllllllll');
-
       if (Platform.OS === 'android') {
         Linking.getInitialURL()
           .then((url) => {
@@ -146,115 +147,109 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     console.log('route', route);
   };
 
-  // useEffect(() => {
-  //   if (!currentPatient) {
-  //     // getPatientApiCall();
-  //   }
-  // }, [currentPatient]);
+  useEffect(() => {
+    if (!currentPatient) {
+      // getPatientApiCall();
+    }
+  }, [currentPatient]);
 
-  const getData = (routeName: String, timeout: boolean = false) => {
+  const getData = (routeName: String) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
       const multiSignUp = await AsyncStorage.getItem('multiSignUp');
-      console.log(onboarding, userLoggedIn, signUp, multiSignUp, 'logggg');
-
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const mePatient = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem);
 
-      // const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-      // let allPatients;
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+      let allPatients;
 
-      // if (callByPrism === 'false') {
-      //   allPatients =
-      //     item && item.data && item.data.getPatientByMobileNumber
-      //       ? item.data.getPatientByMobileNumber.patients
-      //       : null;
-      //   setMobileAPICalled && setMobileAPICalled(false);
-      // } else {
-      //   allPatients =
-      //     item && item.data && item.data.getCurrentPatients
-      //       ? item.data.getCurrentPatients.patients
-      //       : null;
-      //   setMobileAPICalled && setMobileAPICalled(true);
-      // }
+      if (callByPrism === 'false') {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+        setMobileAPICalled && setMobileAPICalled(false);
+      } else {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+        setMobileAPICalled && setMobileAPICalled(true);
+      }
 
-      // const mePatient = allPatients
-      //   ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-      //   : null;
+      const mePatient = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
 
-      // setAllPatients(allPatients);
+      setAllPatients(allPatients);
 
-      // console.log(allPatients, 'allPatientssplash');
+      console.log(allPatients, 'allPatientssplash');
       console.log(mePatient, 'mePatientsplash');
       const navigationPropsString: string | null = await AsyncStorage.getItem('NAVIGATION_PROPS');
 
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
 
-      setTimeout(
-        () => {
-          if (JSON.parse(navigationPropsString || 'false')) {
-            const navigationProps = JSON.parse(navigationPropsString || '');
-            if (navigationProps) {
-              let navi: any[] = [];
-              navigationProps.scenes.map((i: any) => {
-                navi.push(
-                  NavigationActions.navigate({
-                    routeName: i.descriptor.navigation.state.routeName,
-                    params: i.descriptor.navigation.state.params,
-                  })
-                );
-                // props.navigation.push(
-                //   i.descriptor.navigation.state.routeName,
-                //   i.descriptor.navigation.state.params
-                // );
-              });
-              if (navi.length > 0) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: navi.length - 1,
-                    key: null,
-                    actions: navi,
-                  })
-                );
-              }
+      setTimeout(() => {
+        if (JSON.parse(navigationPropsString || 'false')) {
+          const navigationProps = JSON.parse(navigationPropsString || '');
+          if (navigationProps) {
+            let navi: any[] = [];
+            navigationProps.scenes.map((i: any) => {
+              navi.push(
+                NavigationActions.navigate({
+                  routeName: i.descriptor.navigation.state.routeName,
+                  params: i.descriptor.navigation.state.params,
+                })
+              );
+              // props.navigation.push(
+              //   i.descriptor.navigation.state.routeName,
+              //   i.descriptor.navigation.state.params
+              // );
+            });
+            if (navi.length > 0) {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: navi.length - 1,
+                  key: null,
+                  actions: navi,
+                })
+              );
             }
-          } else if (userLoggedIn == 'true') {
-            setshowSpinner(false);
+          }
+        } else if (userLoggedIn == 'true') {
+          setshowSpinner(false);
 
-            if (mePatient) {
-              if (mePatient.firstName !== '') {
-                pushTheView(routeName);
-              } else {
-                props.navigation.replace(AppRoutes.Login);
-              }
-            }
-          } else if (onboarding == 'true') {
-            setshowSpinner(false);
-
-            if (signUp == 'true') {
-              props.navigation.replace(AppRoutes.SignUp);
-            } else if (multiSignUp == 'true') {
-              if (mePatient) {
-                props.navigation.replace(AppRoutes.MultiSignup);
-              }
+          if (mePatient) {
+            if (mePatient.firstName !== '') {
+              pushTheView(routeName);
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
-          } else {
-            setshowSpinner(false);
-            props.navigation.replace(AppRoutes.Onboarding);
           }
-          SplashScreenView.hide();
-        },
-        // 2000
-        timeout ? 2000 : 0
-      );
+        } else if (onboarding == 'true') {
+          setshowSpinner(false);
+
+          if (signUp == 'true') {
+            props.navigation.replace(AppRoutes.SignUp);
+          } else if (multiSignUp == 'true') {
+            if (mePatient) {
+              props.navigation.replace(AppRoutes.MultiSignup);
+            }
+          } else {
+            props.navigation.replace(AppRoutes.Login);
+          }
+        } else {
+          setshowSpinner(false);
+          props.navigation.replace(AppRoutes.Onboarding);
+        }
+        SplashScreenView.hide();
+      }, 2000);
     }
     fetchData();
   };
