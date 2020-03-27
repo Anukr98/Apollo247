@@ -196,7 +196,12 @@ const tabBarOptions: TabBarOptions[] = [
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
-  const { setLocationDetails, locationDetails } = useAppCommonData();
+  const {
+    setLocationDetails,
+    locationDetails,
+    isCurrentLocationFetched,
+    setCurrentLocationFetched,
+  } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -273,7 +278,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     if (locationDetails && locationDetails.pincode) {
-      updateLocation();
+      if (!isCurrentLocationFetched) {
+        setCurrentLocationFetched!(true);
+        updateLocation();
+      }
     } else {
       askLocationPermission();
     }

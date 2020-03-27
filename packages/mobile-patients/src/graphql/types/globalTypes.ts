@@ -516,6 +516,7 @@ export interface FilterDoctorInput {
   language?: (string | null)[] | null;
   geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
+  pincode?: string | null;
 }
 
 export interface Geolocation {
