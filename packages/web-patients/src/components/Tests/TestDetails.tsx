@@ -408,13 +408,8 @@ export const TestDetails: React.FC = (props) => {
   const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
   const client = useApolloClient();
   const [loading, setLoading] = useState(false);
-  const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
+  const { addCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
-  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
-  const [
-    diagnosisHotSellerData,
-    setDiagnosisHotSellerData,
-  ] = useState<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null>(null);
   const apiDetails = {
     url: process.env.GET_PACKAGE_DATA,
   };
