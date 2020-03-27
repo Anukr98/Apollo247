@@ -20,6 +20,8 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_MEDICINE_ORDERS_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -189,6 +191,34 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 20,
       textAlign: 'center',
+    },
+
+    noOrdersWrapper: {
+      backgroundColor: '#F7F7F5',
+      borderRadius: 10,
+      padding: 20,
+      margin: '20px auto',
+      maxWidth: 320,
+      fontSize: 16,
+      fontWeight: 600,
+    },
+    noOrdersText: {
+      color: '#0087ba',
+      marginTop: 15,
+      marginBottom: 20,
+    },
+    orderNowButton: {
+      padding: '9px 13px',
+      width: '100%',
+      borderRadius: 10,
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      textTransform: 'uppercase',
+      display: 'block',
+      textAlign: 'center',
+      fontSize: 13,
+      fontWeight: 'bold',
+      boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
     },
   };
 });
@@ -433,5 +463,13 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       </div>
     );
   }
-  return <div className={classes.noData}>No Orders Found</div>;
+  return (
+    <div className={classes.noOrdersWrapper}>
+      <div>Uh oh! :)</div>
+      <div className={classes.noOrdersText}>No Orders Found!</div>
+      <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
+        Order Now
+      </Link>
+    </div>
+  );
 };
