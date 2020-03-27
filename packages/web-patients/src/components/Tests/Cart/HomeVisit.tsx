@@ -11,6 +11,7 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Tests/Cart/AddNewAddress';
 import { ViewAllAddress } from 'components/Tests/Cart/ViewAllAddress';
+import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
 
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
@@ -19,6 +20,7 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { formatAddress } from 'components/Locations/HomeDelivery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,7 +108,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type HomeVisitProps = {
   selectedAddressData: any | null;
-  setSelectedAddressData: (selectedAddressData: any | null) => void;
+  setSelectedAddressData: (selectedAddressData: Address | null) => void;
 };
 
 export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
@@ -192,11 +194,10 @@ export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
               className={classes.radioLabel}
               value={selectedAddressData.id}
               control={<AphRadio color="primary" />}
-              label={`${selectedAddressData.addressLine1} - ${selectedAddressData.zipcode}`}
+              label={formatAddress(selectedAddressData)}
               onChange={() => {
                 setDeliveryAddressId &&
                   setDeliveryAddressId(selectedAddressData && selectedAddressData.id);
-                // setStoreAddressId && setStoreAddressId('');
               }}
             />
           </li>
