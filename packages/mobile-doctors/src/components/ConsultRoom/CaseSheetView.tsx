@@ -343,7 +343,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 'blobName'
               )}`
             );
-            props.navigation.popToTop();
           }
           showAphAlert &&
             showAphAlert({
