@@ -285,7 +285,14 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   appointmentStatus={i.appointmentState || ''}
                   doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime, consultDuration || undefined)}
-                  symptoms={caseSheet ? caseSheet.symptoms : null}
+                  symptoms={
+                    (i.caseSheet &&
+                      g(
+                        i.caseSheet.find((i) => i && i.doctorType === DoctorType.JUNIOR),
+                        'symptoms'
+                      )) ||
+                    []
+                  }
                   doctorId={i.doctorId}
                   patientId={i.patientId}
                   status={getStatus(i)}
