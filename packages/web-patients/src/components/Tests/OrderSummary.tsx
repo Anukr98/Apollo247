@@ -137,7 +137,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       fontWeight: 500,
       color: '#02475b',
-      marginBottom: 15,
+      paddingBottom: 15,
       fontSize: 14,
       '& div:first-child': {
         color: '#658f9b',
@@ -150,8 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       fontWeight: 500,
       color: '#658f9b',
-      marginBottom: 15,
-      paddingBottom: 11,
+      paddingBottom: 15,
       fontSize: 14,
     },
     timeAndDate: {
@@ -163,8 +162,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 4,
     },
     consultRow: {
-      padding: '15px 68px 30px 0',
+      padding: '15px 0 30px 0',
       marginBottom: 30,
+      marginTop: 11,
       borderTop: '2px solid #02475b',
       borderBottom: '2px solid #02475b',
       [theme.breakpoints.down('xs')]: {
@@ -183,13 +183,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       display: 'flex',
       '& div:first-child': {
-        marginRight: 33,
-        minWidth: 40,
+        marginRight: 23,
+        minWidth: 50,
         textAlign: 'center',
       },
-      '& div': {
-        textAlign: 'center',
-      },
+    },
+    individualPrice: {
+      minWidth: 120,
+      textAlign: 'left',
+    },
+    chargesDiv: {
+      textAlign: 'left',
+      minWidth: 120,
     },
     testsDetailedRow: {
       fontSize: 15,
@@ -206,13 +211,14 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f8f5',
       display: 'flex',
       margin: '0 -30px',
-      padding: '20px 98px 20px 30px',
+      padding: '20px 30px 20px 30px',
       fontSize: 15,
       fontWeight: 600,
       color: '#02475b',
       textTransform: 'uppercase',
       '& div:last-child': {
         marginLeft: 'auto',
+        minWidth: 120,
       },
       [theme.breakpoints.down('xs')]: {
         paddingRight: 30,
@@ -346,7 +352,7 @@ export const OrderSummary: React.FC = () => {
                     <div>Consult Details</div>
                     <div className={classes.priceDetails}>
                       <div>Qty</div>
-                      <div>Charges</div>
+                      <div className={classes.chargesDiv}>Charges</div>
                     </div>
                   </div>
                   {orderLineItem &&
@@ -358,7 +364,9 @@ export const OrderSummary: React.FC = () => {
                             <div>{item.diagnostics ? item.diagnostics.itemName : ''}</div>
                             <div className={classes.priceDetails}>
                               <div>{item.quantity ? item.quantity : 0}</div>
-                              <div>{item.price ? item.price : ''}</div>
+                              <div className={classes.individualPrice}>
+                                Rs. {item.price ? item.price : ''}
+                              </div>
                             </div>
                           </div>
                         )
