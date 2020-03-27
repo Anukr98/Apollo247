@@ -221,8 +221,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setDiagnosticsCartItems([]);
     setDeliveryAddressId('');
     setClinicPinCode('');
+    setClinicId('');
     setCoupon(null);
-    // setClinics([]);
+    setIsCartUpdated(true);
   };
 
   const [diagnosticSlot, setDiagnosticSlot] = useState<

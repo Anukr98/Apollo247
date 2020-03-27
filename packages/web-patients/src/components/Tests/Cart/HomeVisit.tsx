@@ -130,7 +130,6 @@ export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isError, setIsError] = React.useState<boolean>(false);
-  // const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
 
   const getAddressDetails = () => {
     setIsLoading(true);
