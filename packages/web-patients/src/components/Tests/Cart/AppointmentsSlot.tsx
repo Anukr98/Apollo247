@@ -465,9 +465,13 @@ export const AppointmentsSlot: React.FC = (props) => {
       </div>
     </div>
   ) : (
-    <div className={classes.noAddress}>
-      Sorry! We're working hard to get to this area! In the meantime, you can either pick up from a
-      nearby store, or change the pincode.
-    </div>
+    <>
+      {slotsError && (
+        <div className={classes.noAddress}>
+          Sorry! We're working hard to get to this area! In the meantime, you can either pick up
+          from a nearby store, or change the pincode.
+        </div>
+      )}
+    </>
   );
 };
