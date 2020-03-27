@@ -146,7 +146,6 @@ import { colors } from '../../theme/colors';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { WebView } from 'react-native-webview';
-// import NetworkTest, { ErrorNames } from 'opentok-network-test-js';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -463,14 +462,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(error, 'error');
     }
   };
-
-  // useEffect(() => {}, []);
-
-  // const otNetworkTest = new NetworkTest(OT, {
-  //   apiKey: '123456', // Add the API key for your OpenTok project here.
-  //   sessionId: '1_MX40NzIwMzJ-fjE1MDElGQkJJfn4', // Add a test session ID for that project
-  //   token: 'T1==cGFydG5lcXN0PQ==', // Add a token for that session here
-  // });
 
   useEffect(() => {
     const userName =
