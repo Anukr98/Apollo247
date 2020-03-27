@@ -3,7 +3,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getDoctorsBySpecialtyAndFilters } from '../graphql/types/getDoctorsBySpecialtyAndFilters';
+import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 
 export interface LocationData {
   displayName: string;
@@ -39,6 +39,8 @@ export interface AppCommonDataContextProps {
   setUrology: ((arg0: { id: string; data: getDoctorsBySpecialtyAndFilters }) => void) | null;
   needHelpToContactInMessage: string;
   setNeedHelpToContactInMessage: ((value: string) => void) | null;
+  isCurrentLocationFetched: boolean;
+  setCurrentLocationFetched: ((value: boolean) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -59,9 +61,15 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setUrology: null,
   needHelpToContactInMessage: '',
   setNeedHelpToContactInMessage: null,
+  isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
+  setCurrentLocationFetched: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
+  const [isCurrentLocationFetched, setCurrentLocationFetched] = useState<
+    AppCommonDataContextProps['isCurrentLocationFetched']
+  >(false);
+
   const [locationDetails, _setLocationDetails] = useState<
     AppCommonDataContextProps['locationDetails']
   >(null);
@@ -123,32 +131,24 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   useEffect(() => {
     // update location from async storage the very first time app opened
-    const updateCartItemsFromStorage = async () => {
+    const updateLocationFromStorage = async () => {
       try {
         const locationFromStorage = await AsyncStorage.multiGet(['locationDetails']);
         const location = locationFromStorage[0][1];
         _setLocationDetails(JSON.parse(location || 'null'));
-        // Instead of asking location here, asking in Home screen
-        // if (location) {
-        //   doRequestAndAccessLocation()
-        //     .then((response) => {
-        //       response && _setLocationDetails(response);
-        //     })
-        //     .catch((e) => {
-        //       CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage', e);
-        //     });
-        // }
       } catch (error) {
-        console.log('Failed to get cart items from local storage.');
-        CommonBugFender('AppCommonDataProvider_updateCartItemsFromStorage_try', error);
+        console.log('Failed to get location from local storage.');
+        CommonBugFender('AppCommonDataProvider_updateLocationFromStorage_try', error);
       }
     };
-    updateCartItemsFromStorage();
+    updateLocationFromStorage();
   }, []);
 
   return (
     <AppCommonDataContext.Provider
       value={{
+        isCurrentLocationFetched,
+        setCurrentLocationFetched,
         locationDetails,
         setLocationDetails,
         diagnosticsCities,
