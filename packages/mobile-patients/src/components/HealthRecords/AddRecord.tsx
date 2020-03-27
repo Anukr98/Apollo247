@@ -72,7 +72,7 @@ import { BottomPopUp } from '../ui/BottomPopUp';
 import { string } from '../../strings/string';
 import { useUIElements } from '../UIElementsProvider';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { WebEngageEvents } from '../../helpers/webEngageEvents';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -741,17 +741,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 settypeofRecord(data.key as MedicRecordType);
 
                 if (data.key === 'TEST_REPORT') {
-                  const eventAttributes: WebEngageEvents['Items Clicked'] = {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_CLICKED] = {
                     Source: navigatedFrom,
                     Type: 'Test Result',
                   };
-                  postWebEngageEvent('Items Clicked', eventAttributes);
+                  postWebEngageEvent(WebEngageEventName.ITEMS_CLICKED, eventAttributes);
                 } else {
-                  const eventAttributes: WebEngageEvents['Items Clicked'] = {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_CLICKED] = {
                     Source: navigatedFrom,
                     Type: 'Prescription',
                   };
-                  postWebEngageEvent('Items Clicked', eventAttributes);
+                  postWebEngageEvent(WebEngageEventName.ITEMS_CLICKED, eventAttributes);
                 }
               }}
               selectedTextStyle={{ color: theme.colors.APP_GREEN }}

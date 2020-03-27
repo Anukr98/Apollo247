@@ -590,9 +590,19 @@ export const getPlaceInfoByPlaceId = (
   return Axios.get(url);
 };
 
+// let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
+
 export const autoCompletePlaceSearch = (searchText: string): Promise<AxiosResponse<any>> => {
+  // const CancelToken = Axios.CancelToken;
+  // cancelAutoCompletePlaceSearchApi && cancelAutoCompletePlaceSearchApi();
+
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${googlePlacesApiKey}`;
-  return Axios.get(url);
+  return Axios.get(url, {
+    // cancelToken: new CancelToken((c) => {
+    //   // An executor function receives a cancel function as a parameter
+    //   cancelSearchSuggestionsApi = c;
+    // }),
+  });
 };
 
 let cancelGetDeliveryTimeApi: Canceler | undefined;

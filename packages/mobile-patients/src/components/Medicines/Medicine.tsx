@@ -68,6 +68,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Image as ImageNative,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -76,6 +77,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   imagePlaceholderStyle: {
@@ -112,6 +115,7 @@ export interface MedicineProps
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
+  const { locationDetails } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const config = AppConfig.Configuration;
@@ -126,6 +130,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ordersFetched, setOrdersFetched] = useState<
     (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList | null)[]
   >([]);
+  const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
 
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const MEDICINE_LANDING_PAGE_DATA = 'MEDICINE_LANDING_PAGE_DATA';
@@ -309,7 +314,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderTopView = () => {
-    return <TabHeader navigation={props.navigation} />;
+    return (
+      <TabHeader
+        navigation={props.navigation}
+        locationVisible={true}
+        onLocationPress={() => {
+          setLocationSearchVisible(true);
+        }}
+      />
+    );
   };
 
   const renderEPrescriptionModal = () => {
@@ -367,23 +380,52 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [imgHeight, setImgHeight] = useState(120);
   const { width: winWidth } = Dimensions.get('window');
+  const [imageLoading, setImageLoading] = useState<boolean>(true);
   const renderOfferBanner = () => {
     if (loading) return null;
-    else if (offerBannerImage)
+    else if (offerBannerImage) {
       return (
-        <Image
-          // PlaceholderContent={renderSectionLoader(imgHeight)}
-          placeholderStyle={styles.imagePlaceholderStyle}
+        <ImageNative
+          onLoadStart={() => {
+            setImageLoading(true);
+          }}
+          onLoadEnd={() => {
+            setImageLoading(false);
+          }}
           onLoad={(value) => {
             const { height, width } = value.nativeEvent.source;
+            console.log(height, width, 'dsniu');
             setImgHeight(height * (winWidth / width));
           }}
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
-          // resizeMode="contain"
-          // style={{ width: Dimensions.get('screen').width, height: 120 }}
         />
       );
+    }
+  };
+
+  const renderOfferBannerCover = () => {
+    if (imageLoading && offerBannerImage) {
+      return (
+        <View
+          style={{
+            width: '100%',
+            height: imgHeight,
+            position: 'absolute',
+            top: 0,
+            alignContent: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Spinner
+            spinnerProps={{ size: 'small' }}
+            style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+          />
+        </View>
+      );
+    } else {
+      return null;
+    }
   };
 
   const uploadPrescriptionCTA = () => {
@@ -1286,6 +1328,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={{ flex: 1 }}
       >
         {renderOfferBanner()}
+        {renderOfferBannerCover()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
         {loading
@@ -1363,6 +1406,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
+      {isLocationSearchVisible && (
+        <LocationSearchPopup
+          onPressLocationSearchItem={() => {
+            setLocationSearchVisible(false);
+          }}
+          location={g(locationDetails, 'displayName')}
+          onClose={() => {
+            setLocationSearchVisible(false);
+          }}
+        />
+      )}
     </View>
   );
 };

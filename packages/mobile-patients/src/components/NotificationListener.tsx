@@ -43,6 +43,8 @@ import { FeedbackPopup } from './FeedbackPopup';
 import { MedicalIcon } from './ui/Icons';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import { RemoteMessage } from 'react-native-firebase/messaging';
+import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -661,10 +663,17 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         }
       });
 
+    const messageListener = firebase.messaging().onMessage((message: RemoteMessage) => {
+      // Process your message as required
+      console.log('RemoteMessage', message, message.data);
+      KotlinBridge.cmNotification(JSON.stringify(message.data));
+    });
+
     return function cleanup() {
-      aphConsole.log('didmount clean up');
+      console.log('didmount clean up');
       notificationListener();
       onNotificationListener();
+      messageListener();
     };
   }, []);
 

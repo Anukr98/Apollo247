@@ -2,20 +2,16 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   Ambulance,
   CartIcon,
   ConsultationRoom,
   Diabetes,
   DoctorIcon,
-  DoctorImage,
   DropdownGreen,
   MyHealth,
-  NotificationIcon,
   Person,
   PrescriptionMenu,
-  ShoppingCart,
   Symptomtracker,
   TestsCartIcon,
   TestsCartMedicineIcon,
@@ -40,7 +36,11 @@ import {
   saveDeviceToken,
   saveDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  doRequestAndAccessLocation,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -63,14 +63,14 @@ import {
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { getPatientFutureAppointmentCount } from '../../graphql/types/getPatientFutureAppointmentCount';
-import { apiRoutes } from '../../helpers/apiRoutes';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
-import { useShoppingCart } from '../ShoppingCartProvider';
-import { ListCard } from '../ui/ListCard';
-import KotlinBridge from '../../KotlinBridge';
-import { GenerateTokenforCM } from '../../helpers/apiCalls';
-import { useUIElements } from '../UIElementsProvider';
+import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
+import { GenerateTokenforCM } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
   WebEngageEvents,
@@ -80,6 +80,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import moment from 'moment';
 import WebEngage from 'react-native-webengage';
+import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
+import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const { Vitals } = NativeModules;
 
@@ -193,10 +196,14 @@ const tabBarOptions: TabBarOptions[] = [
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
+  const { setLocationDetails, locationDetails } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [selectedProfile, setSelectedProfile] = useState<string>('');
+  const [isLocationSearchVisible, setLocationSearchVisible] = useState(false);
+  const [showList, setShowList] = useState<boolean>(false);
+  const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
 
   const { cartItems } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
@@ -210,9 +217,67 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [currentAppointments, setCurrentAppointments] = useState<string>('0');
   const [appointmentLoading, setAppointmentLoading] = useState<boolean>(false);
   const [enableCM, setEnableCM] = useState<boolean>(true);
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isWEGFired, setWEGFired] = useState(false);
   const webengage = new WebEngage();
+
+  const updateLocation = () => {
+    doRequestAndAccessLocation()
+      .then((response) => {
+        response && setLocationDetails!(response);
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_updateLocation', e);
+      });
+  };
+
+  const askLocationPermission = () => {
+    showAphAlert!({
+      unDismissable: true,
+      title: 'Hi! :)',
+      description:
+        'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
+      CTAs: [
+        {
+          text: 'ENTER MANUALLY',
+          onPress: () => {
+            hideAphAlert!();
+            setLocationSearchVisible(true);
+          },
+          type: 'white-button',
+        },
+        {
+          text: 'ALLOW AUTO DETECT',
+          onPress: () => {
+            hideAphAlert!();
+            setLoading!(true);
+            doRequestAndAccessLocation()
+              .then((response) => {
+                setLoading!(false);
+                response && setLocationDetails!(response);
+              })
+              .catch((e) => {
+                CommonBugFender('ConsultRoom__ALLOW_AUTO_DETECT', e);
+                setLoading!(false);
+                showAphAlert!({
+                  title: 'Uh oh! :(',
+                  description: 'Unable to access location.',
+                });
+                setLocationSearchVisible(true);
+              });
+          },
+        },
+      ],
+    });
+  };
+
+  useEffect(() => {
+    if (locationDetails && locationDetails.pincode) {
+      updateLocation();
+    } else {
+      askLocationPermission();
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -257,6 +322,40 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postWebEngageEvent(eventName, eventAttributes);
   };
 
+  const onProfileChange = () => {
+    setShowList(false);
+    if (isFindDoctorCustomProfile) {
+      setFindDoctorCustomProfile(false);
+      props.navigation.navigate(AppRoutes.DoctorSearch);
+    }
+  };
+
+  const showProfileSelectionAlert = () => {
+    showAphAlert!({
+      title: 'Hi!',
+      description: 'Who is the patient today?',
+      ctaContainerStyle: { marginTop: 50 },
+      CTAs: [
+        {
+          text: 'MYSELF',
+          onPress: () => {
+            hideAphAlert!();
+            props.navigation.navigate(AppRoutes.DoctorSearch);
+          },
+        },
+        {
+          type: 'white-button',
+          text: 'SOMEONE ELSE',
+          onPress: () => {
+            setShowList(true);
+            hideAphAlert!();
+            setFindDoctorCustomProfile(true);
+          },
+        },
+      ],
+    });
+  };
+
   const menuOptions: menuOptions[] = [
     {
       id: 1,
@@ -264,7 +363,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
-        props.navigation.navigate(AppRoutes.DoctorSearch);
+        showProfileSelectionAlert();
       },
     },
     {
@@ -430,6 +529,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const item = JSON.parse(retrievedItem);
 
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+
     let allPatients;
 
     if (callByPrism === 'false') {
@@ -492,7 +595,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 'lastName'
               ) || ''}`;
               const UHID = `${g(patientDetails, 'uhid') || ''}`;
-              tokenValue && KotlinBridge.show(tokenValue, UHID, fullName, keyHash, buildSpecify);
+              tokenValue &&
+                KotlinBridge.show(
+                  tokenValue,
+                  UHID,
+                  fullName,
+                  keyHash,
+                  buildSpecify,
+                  currentDeviceToken.deviceToken
+                );
             }
           }
 
@@ -638,6 +749,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderProfileDrop = () => {
     return (
       <ProfileList
+        showList={showList}
+        onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
         childView={
@@ -828,6 +941,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
+          <LocationSearchHeader
+            onLocationProcess={() => setLocationSearchVisible(!isLocationSearchVisible)}
+          />
           <TouchableOpacity
             activeOpacity={1}
             onPress={() =>
@@ -904,6 +1020,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       )}
       {showSpinner && <Spinner />}
       <NotificationListener navigation={props.navigation} />
+      {isLocationSearchVisible && (
+        <LocationSearchPopup
+          onPressLocationSearchItem={() => {
+            setLocationSearchVisible(false);
+          }}
+          location={g(locationDetails, 'displayName')}
+          onClose={() => {
+            setLocationSearchVisible(false);
+            !g(locationDetails, 'displayName') && askLocationPermission();
+          }}
+        />
+      )}
     </View>
   );
 };

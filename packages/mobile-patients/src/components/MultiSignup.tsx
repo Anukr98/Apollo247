@@ -427,6 +427,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               disabled={isDisabled()}
               onPress={async () => {
                 Keyboard.dismiss();
+                let trimReferral = referral;
                 if (profiles) {
                   const result = profiles.filter((obj) => {
                     return obj.relation == Relation['ME'];
@@ -437,16 +438,17 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       AppRoutes.MultiSignup,
                       'There should be 1 profile with relation set as Me'
                     );
-                  } else if (referral !== '' && !isValidReferral) {
-                    Alert.alert('Apollo', 'Enter valid referral code');
                   } else {
+                    if (referral !== '') {
+                      trimReferral = trimReferral.trim();
+                    }
                     setVerifyingPhoneNumber(true);
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
                       const patientsDetails: UpdatePatientInput = {
                         id: profile.id,
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
-                        referralCode: (profile.relation == Relation.ME && referral) || null,
+                        referralCode: (profile.relation == Relation.ME && trimReferral) || null,
                       };
                       console.log('patientsDetails', { patientsDetails });
                       CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
@@ -526,7 +528,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
           <Gift style={{ marginRight: 20, marginTop: 12 }} />
           <TextInputComponent
-            maxLength={8}
+            maxLength={25}
             label={
               'Do You Have A Referral Code? (Optional)'
               // referredBy
@@ -543,7 +545,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             conatinerstyles={{ width: '78%' }}
             value={referral}
             onChangeText={(text) => setReferral(text)}
-            icon={isValidReferral ? <WhiteTickIcon /> : null}
+            icon={referral.length > 0 ? <WhiteTickIcon /> : null}
           />
         </View>
       </View>

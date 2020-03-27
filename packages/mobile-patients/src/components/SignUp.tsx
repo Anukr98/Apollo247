@@ -223,7 +223,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         <View style={{ marginHorizontal: 20, flexDirection: 'row', alignItems: 'flex-start' }}>
           <Gift style={{ marginRight: 20, marginTop: 12 }} />
           <TextInputComponent
-            maxLength={8}
+            maxLength={25}
             label={
               'Do You Have A Referral Code? (Optional)'
               // referredBy
@@ -240,7 +240,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             conatinerstyles={{ width: '78%' }}
             value={referral}
             onChangeText={(text) => setReferral(text)}
-            icon={isValidReferral ? <WhiteTickIcon /> : null}
+            icon={referral.length > 0 ? <WhiteTickIcon /> : null}
           />
         </View>
       </View>
@@ -418,6 +418,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                     Keyboard.dismiss();
                     CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
                     let validationMessage = '';
+                    let trimReferral = referral;
                     if (!(firstName && isSatisfyingNameRegex(firstName.trim()))) {
                       validationMessage = 'Enter valid first name';
                     } else if (!(lastName && isSatisfyingNameRegex(lastName.trim()))) {
@@ -431,9 +432,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                     } else if (!gender) {
                       validationMessage = 'Please select gender';
                     } else if (referral !== '') {
-                      if (!isValidReferral) {
-                        validationMessage = 'Enter valid referral code';
-                      }
+                      trimReferral = trimReferral.trim();
                     }
                     if (validationMessage) {
                       Alert.alert('Error', validationMessage);
@@ -480,7 +479,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         uhid: '',
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
-                        referralCode: referral ? referral : null,
+                        referralCode: trimReferral ? trimReferral : null,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({
