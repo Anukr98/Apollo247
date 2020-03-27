@@ -2171,23 +2171,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         .map((i) => i.url);
       images.push(...sortPDF(onlyUrl, false));
       records.push(...sortPDF(onlyUrl, true));
-      getPrismUrls(
-        client,
-        (doctorDetails && doctorDetails.id) || (patientDetails && patientDetails.id) || '',
-        prismIds
-      )
-        .then((data) => {
-          if (data && data.urls) {
-            images.push(...sortPDF(data.urls, false));
-            records.push(...sortPDF(data.urls, true));
-          }
-          setPatientImages(images);
-          setRecords(records);
-        })
-        .catch((e) => {
-          setPatientImages(images);
-          setRecords(records);
-        });
+      if (prismIds.length > 0) {
+        getPrismUrls(
+          client,
+          (doctorDetails && doctorDetails.id) || (patientDetails && patientDetails.id) || '',
+          prismIds
+        )
+          .then((data) => {
+            if (data && data.urls) {
+              images.push(...sortPDF(data.urls, false));
+              records.push(...sortPDF(data.urls, true));
+            }
+            setPatientImages(images);
+            setRecords(records);
+          })
+          .catch((e) => {
+            setPatientImages(images);
+            setRecords(records);
+          });
+      } else {
+        setPatientImages(images);
+        setRecords(records);
+      }
     } else {
       setPatientImages(images);
       setRecords(records);
