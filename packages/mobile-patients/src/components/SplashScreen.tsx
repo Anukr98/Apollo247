@@ -24,6 +24,8 @@ import { apiRoutes } from '../helpers/apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import appsFlyer from 'react-native-appsflyer';
+
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -78,6 +80,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { getPatientApiCall, setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   // const { setVirtualConsultationFee } = useAppCommonData();
+
+  useEffect(() => {
+    appsFlyer.initSdk(
+      {
+        devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
+        isDebug: true,
+        appId: Platform.OS === 'ios' ? '1496740273' : '',
+      },
+      (result) => {
+        console.log('result', result);
+      },
+      (error) => {
+        console.error('error', error);
+      }
+    );
+  }, []);
 
   useEffect(() => {
     getData('ConsultRoom');
