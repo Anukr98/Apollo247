@@ -72,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ViewAllAddressProps {
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
+  formatAddress: (address: any) => string;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
@@ -98,7 +99,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                           className={classes.radioLabel}
                           value={addressId}
                           control={<AphRadio color="primary" />}
-                          label={address}
+                          label={props.formatAddress(addressDetails)}
                           onChange={() => {
                             setDeliveryAddressId && setDeliveryAddressId(addressId);
                           }}
