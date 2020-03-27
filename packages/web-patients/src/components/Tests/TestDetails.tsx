@@ -503,7 +503,7 @@ export const TestDetails: React.FC = (props) => {
             </a>
             <div className={classes.detailsHeader}>Test Detail</div>
           </div>
-          {testDetails && testDetailsPackage ? (
+          {testDetails ? (
             <div className={classes.medicineDetailsGroup}>
               <div className={classes.searchSection}>
                 <Scrollbars

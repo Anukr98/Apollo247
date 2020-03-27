@@ -164,7 +164,7 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
             <Link
               to={clientRoutes.testDetails(
                 'search-test',
-                testData.itemName.replace(/\s/g, '_').toLowerCase(),
+                testData.itemName.replace(/\s/g, '_').replace(/\//g, '_').toLowerCase(),
                 testData.itemId.toString()
               )}
             >
