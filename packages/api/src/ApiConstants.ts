@@ -238,6 +238,7 @@ export enum ApiConstants {
   JUNIOR_DOC_TXT = 'Junior doctor: ',
   SENIOR_DOC_TXT = 'Senior doctor: ',
   PATIENT_TXT = 'Patient: ',
+  PINCODE_API_RESPONSE = 'Pincode Insertion Completed :)',
 
   SAMPLE_DATE = '2020-01-20T',
   SAMPLE_DATE_MORNING_START = '2020-01-20T08:00:00',

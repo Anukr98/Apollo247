@@ -45,17 +45,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     selectMenuItem: {
       color: theme.palette.secondary.dark,
-      fontSize: 26,
+      fontSize: 16,
       fontWeight: 500,
-      lineHeight: '36px',
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       textTransform: 'capitalize',
-      [theme.breakpoints.down('xs')]: {
-        fontSize: 36,
-        lineHeight: '46px',
-      },
       backgroundColor: 'transparent',
       '&:focus': {
         backgroundColor: 'transparent',

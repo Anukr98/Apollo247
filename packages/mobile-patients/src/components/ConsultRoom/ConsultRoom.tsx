@@ -529,6 +529,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const item = JSON.parse(retrievedItem);
 
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+
     let allPatients;
 
     if (callByPrism === 'false') {
@@ -591,7 +595,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 'lastName'
               ) || ''}`;
               const UHID = `${g(patientDetails, 'uhid') || ''}`;
-              tokenValue && KotlinBridge.show(tokenValue, UHID, fullName, keyHash, buildSpecify);
+              tokenValue &&
+                KotlinBridge.show(
+                  tokenValue,
+                  UHID,
+                  fullName,
+                  keyHash,
+                  buildSpecify,
+                  currentDeviceToken.deviceToken
+                );
             }
           }
 

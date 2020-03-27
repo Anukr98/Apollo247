@@ -202,7 +202,7 @@ export const TestsAutoSearch: React.FC = (props) => {
           }}
         />
         <AphButton
-          disabled={searchTests.length === 0}
+          disabled={searchText.length < 3}
           className={classes.searchBtn}
           onClick={() => {
             const text = searchText;
@@ -233,7 +233,7 @@ export const TestsAutoSearch: React.FC = (props) => {
                         <Link
                           to={clientRoutes.testDetails(
                             'search-test',
-                            test.itemName.replace(/\s/g, '_'),
+                            test.itemName.replace(/\s/g, '_').toLowerCase(),
                             test.itemId.toString()
                           )}
                         >

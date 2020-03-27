@@ -159,7 +159,7 @@ const App: React.FC = () => {
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
-          <AuthRouted exact path={clientRoutes.orderSummary()} component={OrderSummary} />
+          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
         </Switch>
         {isSignedIn && (
           <div className={classes.helpIcon}>

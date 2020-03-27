@@ -30,6 +30,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 10,
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 5,
+      },
     },
     cartRight: {
       marginLeft: 'auto',
@@ -86,6 +89,7 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'right',
         paddingRight: 12,
         borderTop: '1px solid rgba(2,71,91,0.2)',
+        borderLeft: 'none',
       },
       '& span': {
         fontWeight: 500,

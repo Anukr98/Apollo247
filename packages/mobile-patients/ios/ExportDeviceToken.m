@@ -18,7 +18,7 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(getPushNotificationToken:(RCTResponseSenderBlock)callback) {
-  callback(@[[[NSUserDefaults standardUserDefaults] objectForKey:@"deviceToken"]?[[NSUserDefaults standardUserDefaults] objectForKey:@"deviceToken"]:@""]);
+  callback(@[[[NSUserDefaults standardUserDefaults] objectForKey:@"devicePushToken"]?[[NSUserDefaults standardUserDefaults] objectForKey:@"devicePushToken"]:@""]);
 }
 
 @end

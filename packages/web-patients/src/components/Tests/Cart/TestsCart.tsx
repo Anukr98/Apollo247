@@ -501,6 +501,7 @@ export const TestsCart: React.FC = (props) => {
     diagnosticsCartItems,
     deliveryAddressId,
     diagnosticSlot,
+    clinicId,
     clearCartInfo,
   } = useDiagnosticsCart();
   const { state, city, setCityId, setStateId, stateId, cityId } = useLocationDetails();
@@ -683,7 +684,7 @@ export const TestsCart: React.FC = (props) => {
         >
           <div className={classes.medicineSection}>
             <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
-              <span>Where Should We Deliver?</span>
+              <span>Where to collect sample tests from?</span>
             </div>
             <div className={classes.sectionGroup}>
               <div className={classes.deliveryAddress}>
@@ -775,8 +776,21 @@ export const TestsCart: React.FC = (props) => {
             }}
             color="primary"
             fullWidth
-            disabled={!isPaymentButtonEnable || !diagnosticSlot}
-            className={mutationLoading || !diagnosticSlot ? classes.buttonDisable : ''}
+            disabled={
+              !isPaymentButtonEnable ||
+              !diagnosticSlot ||
+              (deliveryMode === 'Clinic' && !clinicId) ||
+              (!deliveryAddressId && deliveryMode === 'HOME')
+            }
+            className={
+              !isPaymentButtonEnable ||
+              mutationLoading ||
+              !diagnosticSlot ||
+              (deliveryMode === 'Clinic' && !clinicId) ||
+              (!deliveryAddressId && deliveryMode === 'HOME')
+                ? classes.buttonDisable
+                : ''
+            }
             title={'Proceed to pay bill'}
           >
             {`Proceed to pay — RS. ${cartTotal.toFixed(2)}`}
