@@ -184,19 +184,6 @@ export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
     return <p>Error while fetching addresses.</p>;
   }
 
-  // const formatAddress = (address: any) => {
-  //   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  //   const addrLine2 = [address.city, address.state]
-  //     .filter((v) => v)
-  //     .join(', ')
-  //     .split(',')
-  //     .map((v) => v.trim())
-  //     .filter((item, idx, array) => array.indexOf(item) === idx)
-  //     .join(', ');
-  //   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  //   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
-  // };
-
   return (
     <div className={classes.root}>
       {deliveryAddresses.length > 0 && selectedAddressData ? (
