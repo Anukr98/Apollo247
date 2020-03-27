@@ -13,6 +13,7 @@ import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
+import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import {
   getDiagnosticsData,
@@ -21,6 +22,8 @@ import {
 } from 'graphql/types/getDiagnosticsData';
 import { useApolloClient } from 'react-apollo-hooks';
 import { OrderPlacedTest } from 'components/Tests/Cart/OrderPlacedTest';
+import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
+import { MascotWithMessage } from 'components/MascotWithMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -307,6 +310,9 @@ export const TestsLanding: React.FC = (props) => {
   const addToCartRef = useRef(null);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const client = useApolloClient();
+  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
   const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
     (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
@@ -371,6 +377,7 @@ export const TestsLanding: React.FC = (props) => {
                     title={currentPatient.firstName || ''}
                   >
                     {allCurrentPatients.map((patient) => {
+                      // const isSelected = patient.id === currentPatient.id;
                       const isSelected = patient.relation === 'ME';
                       const name = (patient.firstName || '').toLocaleLowerCase();
                       return (
@@ -390,7 +397,7 @@ export const TestsLanding: React.FC = (props) => {
                         color="primary"
                         classes={{ root: classes.addMemberBtn }}
                         onClick={() => {
-                          // setIsAddNewProfileDialogOpen(true);
+                          setIsAddNewProfileDialogOpen(true);
                         }}
                         title={'Add Member'}
                       >
@@ -480,6 +487,41 @@ export const TestsLanding: React.FC = (props) => {
             />
           </div>
         </div>
+      </Popover>
+      <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle>Add New Member</AphDialogTitle>
+        <AddNewProfile
+          closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+            setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+          }
+          isMeClicked={isMeClicked}
+          selectedPatientId=""
+          successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+          isProfileDelete={false}
+        />
+      </AphDialog>
+      <Popover
+        open={isPopoverOpen}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <MascotWithMessage
+          messageTitle=""
+          message="Profile created successfully."
+          closeButtonLabel="OK"
+          closeMascot={() => {
+            setIsPopoverOpen(false);
+            window.location.reload(true);
+          }}
+        />
       </Popover>
       <NavigationBottom />
     </div>
