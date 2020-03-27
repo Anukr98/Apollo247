@@ -123,14 +123,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     fileType: '',
     baseFormat: '',
   };
-  const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>(
-    localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems') || '') : []
-  );
-  const [isCartUpdated, setIsCartUpdated] = useState<boolean>(false);
-
-  const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
-    JSON.stringify(cartItems || {})
-  );
+  const currentUser = localStorage.getItem('currentUser');
 
   const [storePickupPincode, setStorePickupPincode] = useState<
     MedicineCartContextProps['storePickupPincode']
@@ -167,11 +160,20 @@ export const MedicinesCartProvider: React.FC = (props) => {
       ? JSON.parse(localStorage.getItem('ePrescriptionData') || '')
       : []
   );
+  const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>(
+    localStorage.getItem(`${currentUser}`)
+      ? JSON.parse(localStorage.getItem(`${currentUser}`) || '')
+      : []
+  );
+  const [isCartUpdated, setIsCartUpdated] = useState<boolean>(false);
 
+  const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
+    JSON.stringify(cartItems || {})
+  );
   useEffect(() => {
     if (isCartUpdated) {
       const items = JSON.stringify(cartItems);
-      localStorage.setItem('cartItems', items);
+      localStorage.setItem(`${currentUser}`, items);
       setItemsStr(items);
       setIsCartUpdated(false);
     }
