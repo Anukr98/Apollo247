@@ -206,7 +206,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           title: 'PRESCRIPTION',
                           CTAs: [
                             {
-                              title: 'RESEND PRESCRIPTION ', //'PRESCRIPTION SENT',
+                              title: 'RESEND PRESCRIPTION', //'PRESCRIPTION SENT',
                               variant: 'white',
                               onPress: () => {
                                 if (caseSheetId) {
@@ -235,7 +235,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                         showAphAlert &&
                                           showAphAlert({
                                             title: 'Hi',
-                                            description: 'Resend Prescription Sent Successfuly',
+                                            description:
+                                              'Prescription has been sent to patient successfully',
                                             onPressOk: () => {
                                               props.navigation.popToTop();
                                               hideAphAlert && hideAphAlert();

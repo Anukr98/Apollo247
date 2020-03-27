@@ -344,18 +344,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               )}`
             );
             props.navigation.popToTop();
-          } else {
-            showAphAlert &&
-              showAphAlert({
-                title: 'Hi',
-                description: 'Resend Prescription Sent Successfuly',
-                onPressOk: () => {
-                  props.navigation.popToTop();
-                  hideAphAlert && hideAphAlert();
-                },
-                unDismissable: true,
-              });
           }
+          showAphAlert &&
+            showAphAlert({
+              title: 'Hi',
+              description: 'Prescription has been sent to patient successfully',
+              onPressOk: () => {
+                props.navigation.popToTop();
+                hideAphAlert && hideAphAlert();
+              },
+              unDismissable: true,
+            });
         }
       })
       .catch((e) => {
@@ -785,7 +784,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           <View style={styles.footerButtonsContainersave}>
             <Button
-              title={'RE-SEND TO PATIENT'}
+              title={'RESEND PRESCRIPTION'}
               onPress={() => {
                 sendToPatientAction();
               }}
