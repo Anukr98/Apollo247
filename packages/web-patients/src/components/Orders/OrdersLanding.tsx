@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     orderListingPage: {
       borderRadius: '0 0 10px 10px',
-      backgroundColor: '#f7f8f5',
+      backgroundColor: '#f0f1ec',
       [theme.breakpoints.down('xs')]: {
         backgroundColor: 'transparent',
         paddingBottom: 20,

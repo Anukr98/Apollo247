@@ -1,12 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
-import {
-  AphButton,
-  AphCustomDropdown,
-  AphTrackSlider,
-  AphDeliveredSlider,
-} from '@aph/web-ui-components';
 import { array } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -33,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       maxWidth: 1064,
       margin: 'auto',
-      backgroundColor: '#f7f8f5',
+      backgroundColor: '#f0f1ec',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         position: 'absolute',
@@ -131,6 +125,35 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 10,
       },
+    },
+    noOrdersWrapper: {
+      backgroundColor: '#F7F7F5',
+      borderRadius: 10,
+      padding: 20,
+      margin: '20px auto',
+      maxWidth: 320,
+      '& div': {
+        fontSize: 16,
+        fontWeight: 600,
+      },
+    },
+    noOrdersText: {
+      color: '#0087ba',
+      marginTop: 15,
+      marginBottom: 20,
+    },
+    orderNowButton: {
+      padding: '9px 13px',
+      width: '100%',
+      borderRadius: 10,
+      backgroundColor: '#fcb716',
+      color: '#fff',
+      textTransform: 'uppercase',
+      display: 'block',
+      textAlign: 'center',
+      fontSize: 13,
+      fontWeight: 'bold',
+      boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
     },
     medicineStrip: {
       backgroundColor: theme.palette.common.white,
@@ -372,49 +395,57 @@ export const OrderDetails: React.FC = () => {
             autoHeightMin={isSmallScreen ? 'calc(100vh - 160px)' : 'calc(100vh - 210px)'}
           >
             <div className={classes.content}>
-              {testOrderListData && testOrderListData.length > 0
-                ? testOrderListData.map(
-                    (testOrderInfo) =>
-                      testOrderInfo &&
-                      testOrderInfo.orderStatus && (
-                        <Link
-                          to={clientRoutes.orderSummary(
-                            testOrderInfo.id ? testOrderInfo.id.toString() : ''
-                          )}
+              {testOrderListData && testOrderListData.length > 0 ? (
+                testOrderListData.map(
+                  (testOrderInfo) =>
+                    testOrderInfo &&
+                    testOrderInfo.orderStatus && (
+                      <Link
+                        to={clientRoutes.orderSummary(
+                          testOrderInfo.id ? testOrderInfo.id.toString() : ''
+                        )}
+                      >
+                        <div
+                          key={testOrderInfo.id}
+                          className={classes.medicineStrip}
+                          onClick={() => setDisplayId(testOrderInfo.displayId)}
                         >
-                          <div
-                            key={testOrderInfo.id}
-                            className={classes.medicineStrip}
-                            onClick={() => setDisplayId(testOrderInfo.displayId)}
-                          >
-                            <div className={classes.medicineStripWrap}>
-                              <div className={classes.medicineInformation}>
-                                <div className={classes.medicineIcon}>
-                                  <img src={require('images/ic_tests_icon.svg')} alt="" />
-                                </div>
-                                <div>
-                                  <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
-                                  <div className={classes.labelText}>
-                                    {testOrderInfo.orderStatus &&
-                                      `Scheduled For: ${moment(
-                                        testOrderInfo!.diagnosticDate
-                                      ).format(`D MMM YYYY`)}${
-                                        !!testOrderInfo.slotTimings
-                                          ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
-                                          : ''
-                                      }`}
-                                  </div>
-                                </div>
+                          <div className={classes.medicineStripWrap}>
+                            <div className={classes.medicineInformation}>
+                              <div className={classes.medicineIcon}>
+                                <img src={require('images/ic_tests_icon.svg')} alt="" />
                               </div>
-                              <div className={classes.labelText}>
-                                {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                              <div>
+                                <div className={classes.orderID}>#{testOrderInfo.displayId}</div>
+                                <div className={classes.labelText}>
+                                  {testOrderInfo.orderStatus &&
+                                    `Scheduled For: ${moment(testOrderInfo!.diagnosticDate).format(
+                                      `D MMM YYYY`
+                                    )}${
+                                      !!testOrderInfo.slotTimings
+                                        ? `, ${getSlotStartTime(testOrderInfo!.slotTimings)}`
+                                        : ''
+                                    }`}
+                                </div>
                               </div>
                             </div>
+                            <div className={classes.labelText}>
+                              {!!testOrderInfo.slotTimings ? 'Home Visit' : 'Clinic Visit'}
+                            </div>
                           </div>
-                        </Link>
-                      )
-                  )
-                : 'No Orders Found'}
+                        </div>
+                      </Link>
+                    )
+                )
+              ) : (
+                <div className={classes.noOrdersWrapper}>
+                  <div>Uh oh! :)</div>
+                  <div className={classes.noOrdersText}>No Orders Found!</div>
+                  <Link to={clientRoutes.tests()} className={classes.orderNowButton}>
+                    Order Now
+                  </Link>
+                </div>
+              )}
             </div>
           </Scrollbars>
           <div className={`${classes.medicineStrip} ${classes.scheduledRowBottom}`}>

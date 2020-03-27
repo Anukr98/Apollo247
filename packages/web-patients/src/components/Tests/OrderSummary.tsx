@@ -188,13 +188,9 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'center',
       },
     },
-    individualPrice: {
-      minWidth: 120,
-      textAlign: 'left',
-    },
     chargesDiv: {
       textAlign: 'left',
-      minWidth: 120,
+      minWidth: 85,
     },
     testsDetailedRow: {
       fontSize: 15,
@@ -218,7 +214,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       '& div:last-child': {
         marginLeft: 'auto',
-        minWidth: 120,
+        minWidth: 85,
       },
       [theme.breakpoints.down('xs')]: {
         paddingRight: 30,
@@ -364,7 +360,7 @@ export const OrderSummary: React.FC = () => {
                             <div>{item.diagnostics ? item.diagnostics.itemName : ''}</div>
                             <div className={classes.priceDetails}>
                               <div>{item.quantity ? item.quantity : 0}</div>
-                              <div className={classes.individualPrice}>
+                              <div className={classes.chargesDiv}>
                                 Rs. {item.price ? item.price : ''}
                               </div>
                             </div>
