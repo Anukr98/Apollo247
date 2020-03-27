@@ -43,7 +43,6 @@ import {
   aphConsole,
   g,
   handleGraphQlError,
-  getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -65,7 +64,6 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
-import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -127,7 +125,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
-  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+
   const addressData = props.navigation.getParam('DataAddress');
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const {
@@ -253,109 +251,99 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     });
 
   const onSavePress = async () => {
-    console.log('On Save Press clicked');
-    getNetStatus().then(async (status) => {
-      if (status) {
+    setshowSpinner(true);
+    CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
+    if (props.navigation.getParam('KeyName') == 'Update') {
+      if (!isChanged) {
+        const updateaddressInput = {
+          id: addressData.id,
+          addressLine1: addressLine1,
+          addressLine2: '',
+          city: city,
+          state: state,
+          zipcode: pincode,
+          landmark: landMark,
+          mobileNumber: phoneNumber,
+          addressType: addressType,
+          otherAddressType: optionalAddress,
+        };
+        console.log(updateaddressInput, 'updateaddressInput');
         setshowSpinner(true);
-        CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
-        if (props.navigation.getParam('KeyName') == 'Update') {
-          if (!isChanged) {
-            const updateaddressInput = {
-              id: addressData.id,
-              addressLine1: addressLine1,
-              addressLine2: '',
-              city: city,
-              state: state,
-              zipcode: pincode,
-              landmark: landMark,
-              mobileNumber: phoneNumber,
-              addressType: addressType,
-              otherAddressType: optionalAddress,
-            };
-            console.log(updateaddressInput, 'updateaddressInput');
-
-            setshowSpinner(true);
-            client
-              .mutate<updatePatientAddress, updatePatientAddressVariables>({
-                mutation: UPDATE_PATIENT_ADDRESS,
-                variables: { UpdatePatientAddressInput: updateaddressInput },
-              })
-              .then((_data: any) => {
-                try {
-                  setshowSpinner(false);
-                  console.log('updateapicalled', _data);
-                  props.navigation.pop(2, { immediate: true });
-                  props.navigation.push(AppRoutes.AddressBook);
-                } catch (error) {
-                  CommonBugFender('AddAddress_onSavePress_try', error);
-                }
-              })
-              .catch((e: any) => {
-                CommonBugFender('AddAddress_onSavePress', e);
-                setshowSpinner(false);
-                const error = JSON.parse(JSON.stringify(e));
-                console.log('Error occured while updateapicalled', error);
-              });
-
-            //props.navigation.goBack();
-          } else {
-            props.navigation.goBack();
-          }
-        } else {
-          const addressInput = {
-            patientId: userId,
-            addressLine1: addressLine1,
-            addressLine2: '',
-            city: city,
-            state: state,
-            zipcode: pincode,
-            landmark: landMark,
-            mobileNumber: phoneNumber,
-            addressType: addressType,
-            otherAddressType: optionalAddress,
-          };
-          console.log(addressInput, 'addressInput');
-          try {
-            const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
-              saveAddress(addressInput),
-              addOnly ? null : pinCodeServiceabilityApi(pincode),
-            ]);
-
-            setshowSpinner(false);
-            // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
-            const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
-            addAddress!(address);
-            addDiagnosticAddress!(address);
-
-            if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
-              setDeliveryAddressId!(address.id || '');
-              setDiagnosticAddressId!(address.id || '');
-              props.navigation.goBack();
-            } else {
-              setDeliveryAddressId!('');
-              setDiagnosticAddressId!(address.id || '');
-
-              showAphAlert!({
-                title: 'Uh oh.. :(',
-                description:
-                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
-                onPressOk: () => {
-                  props.navigation.goBack();
-                  hideAphAlert!();
-                },
-              });
+        client
+          .mutate<updatePatientAddress, updatePatientAddressVariables>({
+            mutation: UPDATE_PATIENT_ADDRESS,
+            variables: { UpdatePatientAddressInput: updateaddressInput },
+          })
+          .then((_data: any) => {
+            try {
+              setshowSpinner(false);
+              console.log('updateapicalled', _data);
+              props.navigation.pop(2, { immediate: true });
+              props.navigation.push(AppRoutes.AddressBook);
+            } catch (error) {
+              CommonBugFender('AddAddress_onSavePress_try', error);
             }
-          } catch (error) {
-            CommonBugFender('AddAddress_SetOnSave_try', error);
+          })
+          .catch((e: any) => {
+            CommonBugFender('AddAddress_onSavePress', e);
             setshowSpinner(false);
-            handleGraphQlError(error);
-          }
-        }
+            const error = JSON.parse(JSON.stringify(e));
+            console.log('Error occured while updateapicalled', error);
+          });
+        //props.navigation.goBack();
       } else {
-        console.log('setshowOfflinePopup');
-        setshowOfflinePopup(true);
+        props.navigation.goBack();
       }
-    });
+    } else {
+      const addressInput = {
+        patientId: userId,
+        addressLine1: addressLine1,
+        addressLine2: '',
+        city: city,
+        state: state,
+        zipcode: pincode,
+        landmark: landMark,
+        mobileNumber: phoneNumber,
+        addressType: addressType,
+        otherAddressType: optionalAddress,
+      };
+      console.log(addressInput, 'addressInput');
+      try {
+        const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
+          saveAddress(addressInput),
+          addOnly ? null : pinCodeServiceabilityApi(pincode),
+        ]);
+
+        setshowSpinner(false);
+        // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
+        const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
+        addAddress!(address);
+        addDiagnosticAddress!(address);
+
+        if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
+          setDeliveryAddressId!(address.id || '');
+          setDiagnosticAddressId!(address.id || '');
+          props.navigation.goBack();
+        } else {
+          setDeliveryAddressId!('');
+          setDiagnosticAddressId!(address.id || '');
+
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            onPressOk: () => {
+              props.navigation.goBack();
+              hideAphAlert!();
+            },
+          });
+        }
+      } catch (error) {
+        CommonBugFender('AddAddress_SetOnSave_try', error);
+        setshowSpinner(false);
+        handleGraphQlError(error);
+      }
+    }
   };
 
   useEffect(() => {
@@ -827,7 +815,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         </KeyboardAvoidingView>
       </SafeAreaView>
       {showSpinner && <Spinner />}
-      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
       {deleteProfile && isEdit && renderDeleteButton()}
     </View>
   );
