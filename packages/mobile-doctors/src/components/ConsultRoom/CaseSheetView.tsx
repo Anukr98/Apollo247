@@ -34,6 +34,8 @@ import {
   Video,
   Selected,
   FileBig,
+  CheckboxSelected,
+  CheckboxUnSelected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
@@ -1193,7 +1195,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           setTests(tests.filter((i) => i.itemname !== item.itemname));
                       }}
                     >
-                      <Selected style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                      <CheckboxSelected
+                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                      />
                     </TouchableOpacity>
                   }
                 />
@@ -1389,9 +1393,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           }}
                         >
                           {isSelected ? (
-                            <Selected style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                            <CheckboxSelected
+                              style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                            />
                           ) : (
-                            <UnSelected
+                            <CheckboxUnSelected
                               style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
                             />
                           )}
@@ -2510,7 +2516,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       >
                         {item.value}
                       </Text>
-                      <Selected style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
+                      <CheckboxSelected
+                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                      />
                     </View>
                   </TouchableOpacity>
                 ))
