@@ -4,6 +4,7 @@ import React from 'react';
 import { AphRadio, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { formatAddress } from 'components/Locations/HomeDelivery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -72,7 +73,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ViewAllAddressProps {
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
-  formatAddress: (address: any) => string;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
@@ -91,7 +91,6 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 <ul>
                   {deliveryAddresses.map((addressDetails, index) => {
                     const addressId = addressDetails.id;
-                    const address = `${addressDetails.addressLine1} - ${addressDetails.zipcode}`;
                     return (
                       <li key={index}>
                         <FormControlLabel
@@ -99,7 +98,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                           className={classes.radioLabel}
                           value={addressId}
                           control={<AphRadio color="primary" />}
-                          label={props.formatAddress(addressDetails)}
+                          label={formatAddress(addressDetails)}
                           onChange={() => {
                             setDeliveryAddressId && setDeliveryAddressId(addressId);
                           }}
