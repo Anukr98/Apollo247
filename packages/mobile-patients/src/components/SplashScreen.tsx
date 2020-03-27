@@ -297,7 +297,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
       case 'Speciality':
         console.log('Speciality id', id);
-        props.navigation.navigate(AppRoutes.DoctorSearchListing);
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: id ? id : '',
+        });
         // props.navigation.replace(AppRoutes.DoctorSearchListing, {
         //   specialityId: id ? id : '',
         // });
