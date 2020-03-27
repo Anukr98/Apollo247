@@ -316,6 +316,7 @@ export const SearchByMedicine: React.FC = (props) => {
         }
       });
     }
+
     if (filterData && filterData.length > 0 && filterData[0] !== '') {
       const categoryFilterArray: MedicineProduct[] = [];
       const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
@@ -330,6 +331,7 @@ export const SearchByMedicine: React.FC = (props) => {
         });
       priceFilterArray = categoryFilterArray;
     }
+
     setMedicineListFiltered(priceFilterArray);
   }, [priceFilter, filterData, discountFilter, sortBy]);
 
