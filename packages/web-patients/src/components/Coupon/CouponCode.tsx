@@ -136,6 +136,17 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
   const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
     VALIDATE_CONSULT_COUPON
   );
+
+  useEffect(() => {
+    if (props.disableSubmit) {
+      setCouponCodeApplied(false);
+      setErrorMessage('');
+      setIsError(false);
+      setCouponText('');
+      setOpenCouponField(false);
+    }
+  }, [props.disableSubmit]);
+
   return (
     <div className={classes.root}>
       {!couponCodeApplied && (
