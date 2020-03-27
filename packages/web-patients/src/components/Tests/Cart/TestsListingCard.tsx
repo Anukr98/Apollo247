@@ -40,7 +40,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
     },
     medicineIcon: {
-      paddingRight: 10,
+      marginRight: 10,
+      minWidth: 35,
+      marginLeft: 'auto',
+      textAlign: 'center',
       '& img': {
         maxWidth: 35,
         verticalAlign: 'middle',
@@ -50,11 +53,17 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#02475b',
       fontWeight: 500,
+      marginBottom: 2,
       [theme.breakpoints.down('xs')]: {
         flexGrow: 1,
         paddingBottom: 5,
         paddingRight: 24,
       },
+    },
+    testsIncluded: {
+      fontSize: 10,
+      fontWeight: 600,
+      color: '#658f9b',
     },
     tabInfo: {
       fontSize: 10,
@@ -173,7 +182,10 @@ export const TestsListingCard: React.FC = (props) => {
                 <div className={classes.medicineIcon}>
                   <img src={item.thumbnail || require('images/ic_tests_icon.svg')} alt="" />
                 </div>
-                <div className={classes.medicineName}>{item.name}</div>
+                <div>
+                  <div className={classes.medicineName}>{item.name}</div>
+                  <div className={classes.testsIncluded}>Includes 8 tests</div>
+                </div>
               </div>
               <div className={classes.cartRight}>
                 <div className={classes.medicinePrice}>Rs. {item.price}</div>

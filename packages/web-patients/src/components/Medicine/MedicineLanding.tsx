@@ -337,7 +337,7 @@ export const MedicineLanding: React.FC = (props) => {
     orderStatus: string;
   }>();
   if (localStorage.getItem('orderStatus') === 'success') {
-    localStorage.removeItem('cartItems');
+    localStorage.removeItem(`${currentPatient && currentPatient.id}`);
     localStorage.removeItem('dp');
   }
 

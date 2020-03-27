@@ -188,4 +188,5 @@ export interface SearchDoctorAndSpecialtyByName {
 export interface SearchDoctorAndSpecialtyByNameVariables {
   searchText: string;
   patientId: string;
+  pincode?: string | null;
 }

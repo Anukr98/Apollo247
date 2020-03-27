@@ -292,7 +292,7 @@ export const SearchByTest: React.FC = (props) => {
   }, [testsList, diagnosticList]);
 
   useEffect(() => {
-    if (searchValue.length > 2) {
+    if (searchValue.trim().length > 2) {
       onSearchTests(searchValue);
     } else if ((testsList || diagnosticList) && searchValue.length === 0) {
       fetchResults();
