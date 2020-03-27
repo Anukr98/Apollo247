@@ -619,13 +619,13 @@ export const TestsCart: React.FC = (props) => {
         if (
           data &&
           data.data.SaveDiagnosticOrder &&
-          data.data.SaveDiagnosticOrder.orderId &&
-          data.data.SaveDiagnosticOrder.orderId.length > 0
+          data.data.SaveDiagnosticOrder.displayId &&
+          data.data.SaveDiagnosticOrder.displayId.length > 0
         ) {
           clearCartInfo && clearCartInfo();
           setTimeout(() => {
             window.location.href = `${clientRoutes.tests()}?orderid=${
-              data.data.SaveDiagnosticOrder.orderId
+              data.data.SaveDiagnosticOrder.displayId
             }
             &orderstatus=success`;
           }, 3000);
@@ -634,6 +634,7 @@ export const TestsCart: React.FC = (props) => {
         }
       })
       .catch((e) => {
+        console.log(e);
         setMutationLoading(false);
         alert('Error while placing order.');
       });

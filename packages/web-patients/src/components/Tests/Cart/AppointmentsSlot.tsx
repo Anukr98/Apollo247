@@ -421,7 +421,7 @@ export const AppointmentsSlot: React.FC = (props) => {
                           date: filteredData.data.date,
                           employeeSlotId: filteredData.data.slotInfo.slot,
                           diagnosticBranchCode: filteredData.data.diagnosticBranchCode,
-                          diagnosticEmployeeCode: filteredData.data.employeeCode,
+                          diagnosticEmployeeCode: filteredData.data.diagnosticEmployeeCode,
                           city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
                         });
                       }
