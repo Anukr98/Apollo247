@@ -6,6 +6,7 @@ import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard
 import {
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails,
+  GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { DoctorType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -71,17 +72,25 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
           onPress={() => setshowCF(!showCF)}
           containerStyle={{ marginVertical: 10 }}
         >
-          {symptoms.map(
-            (item) =>
-              item && (
-                <View style={styles.symptomView}>
-                  <Text style={styles.symptomText}>{item.symptom}</Text>
-                  <Text style={styles.symptomdetails}>
-                    {`${strings.common.since}: ${item.since}\n${strings.common.how_often}: ${item.howOften}\n ${strings.common.severity}: ${item.severity}`}
-                  </Text>
-                </View>
-              )
-          )}
+          {symptoms &&
+            symptoms.map((i) => {
+              if (i) {
+                const description = [
+                  `${strings.common.since}: ${i.since || '-'}`,
+                  `${strings.common.how_often}: ${i.howOften || '-'}`,
+                  `${strings.common.severity}: ${i.severity || '-'}`,
+                  `Details: ${i.details || '-'}`,
+                ]
+                  .filter((d) => d !== '')
+                  .join('\n');
+                return (
+                  <View style={styles.symptomView}>
+                    <Text style={styles.symptomText}>{i.symptom}</Text>
+                    <Text style={styles.symptomdetails}>{description}</Text>
+                  </View>
+                );
+              }
+            })}
         </CollapseCard>
       );
   };
@@ -152,15 +161,11 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
       },
       {
         label: 'Menstrual History',
-        desc: patientMedicalHistory ? patientMedicalHistory.menstrualHistory : '-',
+        desc: patientMedicalHistory ? patientMedicalHistory.menstrualHistory || '-' : '-',
       },
       {
         label: 'Family Medical History',
-        desc:
-          patientDetails.familyHistory &&
-          patientDetails.familyHistory
-            .map((item) => `${item.relation}: ${item.description}`)
-            .join('\n'), //'Father: Cardiac patient\nMother: Severely diabetic',
+        desc: patientDetails.familyHistory && getFamilyHistory(patientDetails.familyHistory),
       },
     ];
     return (
@@ -175,6 +180,24 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         </View>
       </CollapseCard>
     );
+  };
+
+  const getFamilyHistory = (
+    familyValues: (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
+  ) => {
+    if (familyValues) {
+      let familyHistory: string = '';
+      familyValues.forEach((i) => {
+        if (i) {
+          familyHistory += i.relation
+            ? i.relation + ': ' + i.description || '-' + '\n'
+            : i.description || '-' + '\n';
+        }
+      });
+      return familyHistory.slice(0, -1);
+    } else {
+      return '-';
+    }
   };
 
   const renderNotes = () => {
