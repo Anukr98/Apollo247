@@ -712,7 +712,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     textTransform: 'uppercase',
                   }}
                 >
-                  {locationDetails.displayName && locationDetails.displayName.substring(0, 15)}
+                  {locationDetails.displayName && locationDetails.displayName.length > 15
+                    ? `${locationDetails.displayName.substring(0, 15)}...`
+                    : locationDetails.displayName}
                 </Text>
               ) : null}
               <LocationOn />

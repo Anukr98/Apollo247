@@ -832,7 +832,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     textTransform: 'uppercase',
                   }}
                 >
-                  {currentLocation}
+                  {currentLocation.length > 15
+                    ? `${currentLocation.substring(0, 15)}...`
+                    : currentLocation}
                 </Text>
               ) : null}
               <LocationOn />
