@@ -240,12 +240,19 @@ SWIFT_CLASS("_TtC21ApolloVitalsFramework18ChatViewController")
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
 @end
 
+@class UITextField;
 
 @interface ChatViewController (SWIFT_EXTENSION(ApolloVitalsFramework)) <UITextFieldDelegate>
+- (BOOL)textFieldShouldReturn:(UITextField * _Nonnull)textField SWIFT_WARN_UNUSED_RESULT;
 @end
 
+@class TwilioChatClient;
+@class TCHChannel;
+@class TCHMessage;
 
 @interface ChatViewController (SWIFT_EXTENSION(ApolloVitalsFramework)) <TwilioChatClientDelegate>
+- (void)chatClient:(TwilioChatClient * _Nonnull)client synchronizationStatusUpdated:(TCHClientSynchronizationStatus)status;
+- (void)chatClient:(TwilioChatClient * _Nonnull)client channel:(TCHChannel * _Nonnull)channel messageAdded:(TCHMessage * _Nonnull)message;
 @end
 
 
@@ -574,12 +581,19 @@ SWIFT_CLASS("_TtC21ApolloVitalsFramework18ChatViewController")
 - (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
 @end
 
+@class UITextField;
 
 @interface ChatViewController (SWIFT_EXTENSION(ApolloVitalsFramework)) <UITextFieldDelegate>
+- (BOOL)textFieldShouldReturn:(UITextField * _Nonnull)textField SWIFT_WARN_UNUSED_RESULT;
 @end
 
+@class TwilioChatClient;
+@class TCHChannel;
+@class TCHMessage;
 
 @interface ChatViewController (SWIFT_EXTENSION(ApolloVitalsFramework)) <TwilioChatClientDelegate>
+- (void)chatClient:(TwilioChatClient * _Nonnull)client synchronizationStatusUpdated:(TCHClientSynchronizationStatus)status;
+- (void)chatClient:(TwilioChatClient * _Nonnull)client channel:(TCHChannel * _Nonnull)channel messageAdded:(TCHMessage * _Nonnull)message;
 @end
 
 
