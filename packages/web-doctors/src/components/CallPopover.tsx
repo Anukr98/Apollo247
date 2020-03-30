@@ -842,6 +842,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
 
+  const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [showRescheduleLoader, setShowRescheduleLoader] = React.useState<boolean>(false);
 
@@ -1019,15 +1020,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const startBtnInformationCheck = () => {
     if (currentUserType === LoggedInUserType.SECRETARY) {
-      console.log('Secretary can not start consult');
+      setStartConsultDisableReason("You don't have permission to start consult.");
     } else if (disableOnCancel) {
-      console.log('3rd condition');
+      console.log('your appointment is cancelled');
     } else if (
       appointmentInfo!.appointmentState !== 'NEW' &&
       appointmentInfo!.appointmentState !== 'TRANSFER' &&
       appointmentInfo!.appointmentState !== 'RESCHEDULE'
     ) {
-      console.log('Your appointment state is ' + appointmentInfo!.appointmentState);
+      setStartConsultDisableReason(
+        'This appointment is under reschedule and waiting for the patient to accept the new slot.'
+      );
     } else if (
       appointmentInfo!.status !== STATUS.IN_PROGRESS &&
       appointmentInfo!.status !== STATUS.PENDING
@@ -1790,9 +1793,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </div>
         <div className={classes.consultTest}>
           CONSULT ROOM
-          {!props.hasCameraMicPermission && (
-            <div className={classes.permission}>Note: Please allow access to Camera & Mic.</div>
-          )}
+          <div className={classes.permission}>
+            {startConsultDisableReason !== ''
+              ? startConsultDisableReason
+              : !props.hasCameraMicPermission
+              ? 'Note: Please allow access to Camera & Mic.'
+              : ''}
+          </div>
         </div>
         {/* <span className={classes.timeLeft}>
           {props.startAppointment
