@@ -19,6 +19,7 @@
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
 @import AppsFlyerLib;
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 
 #if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
 #import <AppsFlyerLib/AppsFlyerTracker.h>
@@ -68,6 +69,8 @@
   }];
   
   [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+  [[FBSDKApplicationDelegate sharedInstance] application:application
+    didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
 }
@@ -171,10 +174,14 @@ API_AVAILABLE(ios(10.0)){
     NSLog(@"%@",exception );
   }
   
-  [RCTLinkingManager application:application
-                         openURL:url
-               sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
-                      annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+  if ([[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options]) {
+    return YES;
+  }
+
+  if ([RCTLinkingManager application:application openURL:url options:options]) {
+    return YES;
+  }
+  
   NSLog(@"url -----> %@",url );
 
   [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
