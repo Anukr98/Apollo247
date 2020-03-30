@@ -18,6 +18,13 @@
 #import "RNFirebaseMessaging.h"
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
+@import AppsFlyerLib;
+
+#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
+#import <AppsFlyerLib/AppsFlyerTracker.h>
+#else
+#import "AppsFlyerTracker.h"
+#endif
 
 @implementation AppDelegate
 
@@ -87,6 +94,9 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
   NSLog(@"deviceToken %@",deviceToken);
+  
+  [[AppsFlyerTracker sharedTracker] registerUninstall:deviceToken];
+
   NSString *pushToken;
   pushToken = [deviceToken description];
   if(deviceToken){
@@ -165,6 +175,10 @@ API_AVAILABLE(ios(10.0)){
                          openURL:url
                sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
                       annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+  NSLog(@"url -----> %@",url );
+
+  [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
+
   return YES;
 }
 
@@ -173,6 +187,8 @@ API_AVAILABLE(ios(10.0)){
   [RCTLinkingManager application:application
             continueUserActivity:userActivity
               restorationHandler:restorationHandler];
+  [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
+
   return true;
 }
 
