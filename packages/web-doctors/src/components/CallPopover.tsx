@@ -1022,7 +1022,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (currentUserType === LoggedInUserType.SECRETARY) {
       setStartConsultDisableReason("You don't have permission to start consult.");
     } else if (disableOnCancel) {
-      console.log('3rd condition');
+      console.log('your appointment is cancelled');
     } else if (
       appointmentInfo!.appointmentState !== 'NEW' &&
       appointmentInfo!.appointmentState !== 'TRANSFER' &&
