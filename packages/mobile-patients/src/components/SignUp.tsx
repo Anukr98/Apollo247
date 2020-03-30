@@ -52,12 +52,14 @@ import {
 import {
   handleGraphQlError,
   postWebEngageEvent,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import AsyncStorage from '@react-native-community/async-storage';
+import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 
 const { height } = Dimensions.get('window');
 
@@ -383,6 +385,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
     } catch (error) {
       console.log({ error });
     }

@@ -173,6 +173,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         return 'PROD';
       case 'https://asapi.apollo247.com//graphql':
         return 'PRF';
+      case 'https://devapi.apollo247.com//graphql':
+        return 'DEVReplica';
       default:
         return '';
     }

@@ -44,6 +44,7 @@ import {
   getNetStatus,
   postWebEngageEvent,
   callPermissions,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -74,6 +75,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -889,6 +891,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       Source: source,
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
   };
 
   const renderSearchDoctorResultsRow = (

@@ -23,8 +23,12 @@ import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import appsFlyer from 'react-native-appsflyer';
+import {
+  doRequestAndAccessLocation,
+  InitiateAppsFlyer,
+  APPStateInActive,
+  APPStateActive,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -79,22 +83,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall, setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const [appState, setAppState] = useState(AppState.currentState);
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    appsFlyer.initSdk(
-      {
-        devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
-        isDebug: true,
-        appId: Platform.OS === 'ios' ? '1496740273' : '',
-      },
-      (result) => {
-        console.log('result', result);
-      },
-      (error) => {
-        console.error('error', error);
-      }
-    );
+    InitiateAppsFlyer();
   }, []);
 
   useEffect(() => {
@@ -340,6 +334,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return 'PROD';
       case 'https://asapi.apollo247.com//graphql':
         return 'PRF';
+      case 'https://devapi.apollo247.com//graphql':
+        return 'DEVReplica';
       default:
         return '';
     }
@@ -366,6 +362,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       } catch {}
     }
+    if (appState.match(/inactive|background/) && nextAppState === 'active') {
+      APPStateInActive();
+    }
+    if (appState.match(/active|foreground/) && nextAppState === 'background') {
+      APPStateActive();
+    }
+    setAppState(nextAppState);
   };
 
   const checkForVersionUpdate = () => {

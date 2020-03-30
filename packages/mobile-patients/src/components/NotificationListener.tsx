@@ -672,9 +672,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       // Process your message as required
       if (Platform.OS === 'android') {
         try {
-          console.log('RemoteMessage', message, message._data.source);
+          console.log('RemoteMessage', message, message.RemoteMessage._data);
+          // console.log('RemoteMessage', message, message._data);
+          // if((message._data.af-uinstall-tracking === true) return;
           if (message._data.source !== 'webengage') {
-            KotlinBridge.cmNotification(JSON.stringify(message.data));
+            // KotlinBridge.cmNotification(JSON.stringify(message.data));
           }
         } catch (error) {}
       }

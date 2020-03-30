@@ -35,6 +35,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   formatAddress,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -61,6 +62,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -232,6 +234,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Service Area': 'Pharmacy',
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
   };
 
   const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>
