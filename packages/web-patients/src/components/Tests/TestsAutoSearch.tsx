@@ -93,6 +93,12 @@ const useStyles = makeStyles((theme: Theme) => {
             display: 'flex',
             alignItems: 'center',
             padding: '12px 12px',
+            '&:hover': {
+              backgroundColor: '#f7f8f5',
+            },
+            '&:focus': {
+              backgroundColor: '#f7f8f5',
+            },
           },
           '&:last-child': {
             borderBottom: 0,
