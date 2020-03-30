@@ -220,6 +220,10 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 30,
       },
     },
+    progressLoader: {
+      textAlign: 'center',
+      padding: 20,
+    },
   };
 });
 type Params = { id: string };
@@ -277,13 +281,20 @@ export const OrderSummary: React.FC = () => {
       .join(' - ');
   };
 
-  const orderLineItems =
-    (diagnosticOrderDetail && diagnosticOrderDetail.diagnosticOrderLineItems) || [];
+  let totalPrice = 0
+  if (orderLineItem && orderLineItem.length > 0) {
+    for (let i = 0; i < orderLineItem.length; i++) {
+      if (orderLineItem) {
+        const itemPrice = orderLineItem && orderLineItem[i]! && orderLineItem[i]!!.price
+        totalPrice = totalPrice + itemPrice!
+      }
+    }
+  }
 
   return (
     <div>
       <Header />
-      {diagnosticOrderDetail && (
+      {diagnosticOrderDetail ? (
         <div className={classes.container}>
           <div className={classes.contentWrapper}>
             <div className={classes.heading}>
@@ -370,13 +381,19 @@ export const OrderSummary: React.FC = () => {
                 </div>
                 <div className={classes.totalCharges}>
                   <div>Total</div>
-                  <div>Rs. {diagnosticOrderDetail && diagnosticOrderDetail.totalPrice}</div>
+                  <div>Rs. {totalPrice}</div>
                 </div>
               </div>
             </Scrollbars>
           </div>
         </div>
-      )}
+      ) : (
+          isLoading && (
+            <div className={classes.progressLoader}>
+              <CircularProgress size={30} />
+            </div>
+          )
+        )}
     </div>
   );
 };
