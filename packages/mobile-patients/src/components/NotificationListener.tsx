@@ -27,13 +27,14 @@ import {
   aphConsole,
   handleGraphQlError,
   g,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
@@ -45,6 +46,10 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import AsyncStorage from '@react-native-community/async-storage';
 import { RemoteMessage } from 'react-native-firebase/messaging';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -665,8 +670,16 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
     const messageListener = firebase.messaging().onMessage((message: RemoteMessage) => {
       // Process your message as required
-      console.log('RemoteMessage', message, message.data);
-      KotlinBridge.cmNotification(JSON.stringify(message.data));
+      if (Platform.OS === 'android') {
+        try {
+          console.log('RemoteMessage', message, message.RemoteMessage._data);
+          // console.log('RemoteMessage', message, message._data);
+          // if((message._data.af-uinstall-tracking === true) return;
+          if (message._data.source !== 'webengage') {
+            // KotlinBridge.cmNotification(JSON.stringify(message.data));
+          }
+        } catch (error) {}
+      }
     });
 
     return function cleanup() {
@@ -879,6 +892,17 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         // handleGraphQlError(e);
       });
   };
+
+  const postRatingGivenWEGEvent = (rating: string, reason: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.RATING_GIVEN] = {
+      'Patient UHID': g(currentPatient, 'id'),
+      'Rating Value': rating,
+      'Rating Reason': reason,
+      Type: 'Medicine',
+    };
+    postWebEngageEvent(WebEngageEventName.RATING_GIVEN, eventAttributes);
+  };
+
   return (
     <>
       <FeedbackPopup
@@ -892,7 +916,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         transactionId={medFeedback.transactionId}
         type={FEEDBACKTYPE.PHARMACY}
         isVisible={medFeedback.visible}
-        onComplete={() => {
+        onComplete={(ratingStatus, ratingOption) => {
+          postRatingGivenWEGEvent(ratingStatus!, ratingOption);
           setmedFeedback({ visible: false, title: '', subtitle: '', transactionId: '' });
           showAphAlert!({
             title: 'Thanks :)',

@@ -70,6 +70,37 @@
 			</dict>
 		</dict>
 	</dict>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>fb215389816346094</string>
+    </array>
+    </dict>
+  </array>
+  <key>FacebookAppID</key>
+  <string>215389816346094</string>
+  <key>FacebookDisplayName</key>
+  <string>Apollo 247</string>
+  <key>LSApplicationQueriesSchemes</key>
+  <array>
+    <string>fbapi</string>
+    <string>fbapi20130214</string>
+    <string>fbapi20130410</string>
+    <string>fbapi20130702</string>
+    <string>fbapi20131010</string>
+    <string>fbapi20131219</string>
+    <string>fbapi20140410</string>
+    <string>fbapi20140116</string>
+    <string>fbapi20150313</string>
+    <string>fbapi20150629</string>
+    <string>fbapi20160328</string>
+    <string>fbauth</string>
+    <string>fb-messenger-share-api</string>
+    <string>fbauth2</string>
+    <string>fbshareextension</string>
+  </array>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>${PRODUCT_NAME} need access to the media to play sound.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
@@ -147,7 +178,7 @@
 	<key>WEGEnvironment</key>
 	<string>IN</string>
 	<key>WEGLicenseCode</key>
-	<string>in~~c2ab3533</string>
+	<string>in~~c2ab3529</string>
 	<key>WEGLogLevel</key>
 	<string>VERBOSE</string>
 	<key>WEGManualIntegration</key>

@@ -1,10 +1,9 @@
 type YesOrNo = { value: 'Yes' | 'No' };
 
-export enum WebEngageEventName {
+export enum AppsFlyerEventName {
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
-  OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
@@ -35,7 +34,6 @@ export enum WebEngageEventName {
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
   CONSULTATION_BOOKED = 'Consultation booked',
-  RATING_GIVEN = 'Rating Given',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -85,16 +83,13 @@ export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
 }
 
-export interface WebEngageEvents {
+export interface AppsFlyerEvents {
   // ********** AppEvents ********** \\
 
-  [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
-  [WebEngageEventName.OTP_ENTERED]: YesOrNo;
-  [WebEngageEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
-  [WebEngageEventName.OTP_VERIFICATION_SUCCESS]: {
-    'Mobile Number': string;
-  };
-  [WebEngageEventName.REGISTRATION_DONE]: {
+  [AppsFlyerEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
+  [AppsFlyerEventName.OTP_ENTERED]: YesOrNo;
+  [AppsFlyerEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
+  [AppsFlyerEventName.REGISTRATION_DONE]: {
     'Customer ID': string;
     'Customer First Name': string;
     'Customer Last Name': string;
@@ -103,28 +98,28 @@ export interface WebEngageEvents {
     Email: string;
     'Referral Code'?: string;
   };
-  [WebEngageEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
+  [AppsFlyerEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
 
   // ********** Home Screen Events ********** \\
 
-  [WebEngageEventName.BUY_MEDICINES]: PatientInfoWithSource;
-  [WebEngageEventName.ORDER_TESTS]: PatientInfoWithSource;
-  [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
-  [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
-  [WebEngageEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
-  [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
-  [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
-  [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
-  [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
-  [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
+  [AppsFlyerEventName.BUY_MEDICINES]: PatientInfoWithSource;
+  [AppsFlyerEventName.ORDER_TESTS]: PatientInfoWithSource;
+  [AppsFlyerEventName.MANAGE_DIABETES]: PatientInfo;
+  [AppsFlyerEventName.TRACK_SYMPTOMS]: PatientInfo;
+  [AppsFlyerEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
+  [AppsFlyerEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
+  [AppsFlyerEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [AppsFlyerEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
+  [AppsFlyerEventName.MY_ACCOUNT]: PatientInfo;
+  [AppsFlyerEventName.FIND_A_DOCTOR]: PatientInfo;
 
   // ********** PharmacyEvents ********** \\
 
-  [WebEngageEventName.SEARCH]: {
+  [AppsFlyerEventName.SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
   };
-  [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
+  [AppsFlyerEventName.PHARMACY_PRODUCT_CLICKED]: {
     'product name': string;
     'product id': string; // (SKUID)
     Brand: string;
@@ -134,13 +129,13 @@ export interface WebEngageEvents {
     Source: 'Home' | 'List' | 'Search';
     'Section Name': string;
   };
-  [WebEngageEventName.CATEGORY_CLICKED]: {
+  [AppsFlyerEventName.CATEGORY_CLICKED]: {
     'category name': string;
     'category ID': string;
     Source: 'Home'; // Home
     'Section Name': string;
   };
-  [WebEngageEventName.PHARMACY_ADD_TO_CART]: {
+  [AppsFlyerEventName.PHARMACY_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
@@ -159,7 +154,7 @@ export interface WebEngageEvents {
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
-  [WebEngageEventName.DIAGNOSTIC_ADD_TO_CART]: {
+  [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
@@ -178,7 +173,7 @@ export interface WebEngageEvents {
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
-  [WebEngageEventName.BUY_NOW]: {
+  [AppsFlyerEventName.BUY_NOW]: {
     'product name': string;
     'product id': string; // (SKUID)
     Brand: string;
@@ -190,7 +185,7 @@ export interface WebEngageEvents {
     Quantity: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.PHARMACY_CART_VIEWED]: {
+  [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -202,7 +197,7 @@ export interface WebEngageEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
+  [AppsFlyerEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -214,7 +209,7 @@ export interface WebEngageEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
+  [AppsFlyerEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -226,7 +221,7 @@ export interface WebEngageEvents {
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
+  [AppsFlyerEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -238,30 +233,30 @@ export interface WebEngageEvents {
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.PHARMACY_PAYMENT_INITIATED]: {
+  [AppsFlyerEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
+  [AppsFlyerEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
+  [AppsFlyerEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
   };
-  [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
+  [AppsFlyerEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
   };
-  [WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
+  [AppsFlyerEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
     'Order ID': string | number;
     'Delivery type': 'home' | 'store pickup';
     StoreId?: string; //(incase of store delivery)
     'Delivery address'?: string;
     Pincode: string | number;
   };
-  [WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED]: {
+  [AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
     'Order Type': 'Cart' | 'Non Cart';
     'Prescription Required': boolean;
@@ -278,7 +273,7 @@ export interface WebEngageEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
+  [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
     'Order Type': 'Cart' | 'Non Cart';
     'Prescription Required': boolean;
@@ -298,7 +293,7 @@ export interface WebEngageEvents {
 
   // ********** ConsultEvents ********** \\
 
-  [WebEngageEventName.DOCTOR_SEARCH]: {
+  [AppsFlyerEventName.DOCTOR_SEARCH]: {
     'Search Text': string;
     'Patient Name': string;
     'Patient UHID': string;
@@ -308,8 +303,8 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
-  [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
-  [WebEngageEventName.DOCTOR_PROFILE_VIEWED]: {
+  [AppsFlyerEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
+  [AppsFlyerEventName.DOCTOR_PROFILE_VIEWED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -317,7 +312,7 @@ export interface WebEngageEvents {
     Hospital: string;
     'Available in': string;
   };
-  [WebEngageEventName.BOOK_APPOINTMENT]: {
+  [AppsFlyerEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;
     'Type of Doctor': string;
@@ -330,11 +325,11 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
-  [WebEngageEventName.DOCTOR_CLICKED]: {
+  [AppsFlyerEventName.DOCTOR_CLICKED]: {
     'Doctor Name': string;
     Source: 'List' | 'Search';
   };
-  [WebEngageEventName.CONSULT_NOW_CLICKED]: {
+  [AppsFlyerEventName.CONSULT_NOW_CLICKED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -352,7 +347,7 @@ export interface WebEngageEvents {
     slot: string;
   };
   // confirm the type of data for the below
-  [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
+  [AppsFlyerEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -368,7 +363,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     slot: string;
   };
-  [WebEngageEventName.CONSULT_SLOT_SELECTED]: {
+  [AppsFlyerEventName.CONSULT_SLOT_SELECTED]: {
     slot: string;
     doctorName: string;
     specialisation: string;
@@ -377,13 +372,13 @@ export interface WebEngageEvents {
     hospital: string;
     consultType: 'clinic' | 'online';
   };
-  [WebEngageEventName.CONSULT_COUPON_APPLIED]: {
+  [AppsFlyerEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
     'Net Amount'?: number;
     'Discount Amount'?: number;
     'Coupon Applied': boolean;
   };
-  [WebEngageEventName.PAY_BUTTON_CLICKED]: {
+  [AppsFlyerEventName.PAY_BUTTON_CLICKED]: {
     Amount: number;
     'Doctor Name': string;
     'Doctor City': string;
@@ -403,7 +398,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     consultType: 'clinic' | 'online';
   };
-  [WebEngageEventName.CONSULTATION_BOOKED]: {
+  [AppsFlyerEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;
     name: string;
     specialisation: string;
@@ -420,14 +415,8 @@ export interface WebEngageEvents {
     'Mobile Number': number;
     'Customer ID': string;
   };
-  [WebEngageEventName.RATING_GIVEN]: {
-    'Patient UHID': string;
-    Type: 'Consult' | 'Medicine' | 'Diagnostics';
-    'Rating Value': string;
-    'Rating Reason': string;
-  };
 
-  [WebEngageEventName.FEATURED_TEST_CLICKED]: {
+  [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {
     'Product name': string;
     'Product id (SKUID)': string;
     Source: 'Home' | 'List';
@@ -440,7 +429,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
-  [WebEngageEventName.BROWSE_PACKAGE]: {
+  [AppsFlyerEventName.BROWSE_PACKAGE]: {
     'Package Name': string;
     // Category: string; we don't have category for test
     Source: 'Home' | 'List';
@@ -455,7 +444,7 @@ export interface WebEngageEvents {
 
   // ********** Health Records ********** \\
 
-  [WebEngageEventName.CONSULT_RX]: {
+  [AppsFlyerEventName.CONSULT_RX]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -465,7 +454,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
-  [WebEngageEventName.MEDICAL_RECORDS]: {
+  [AppsFlyerEventName.MEDICAL_RECORDS]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -475,11 +464,11 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
-  [WebEngageEventName.ADD_RECORD]: {
+  [AppsFlyerEventName.ADD_RECORD]: {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
   };
 
-  [WebEngageEventName.UPLOAD_PRESCRIPTION]: {
+  [AppsFlyerEventName.UPLOAD_PRESCRIPTION]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -489,16 +478,16 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
 
-  [WebEngageEventName.UPLOAD_PHOTO]: {
+  [AppsFlyerEventName.UPLOAD_PHOTO]: {
     Source: 'Take Photo' | 'Gallery'; // List/Profile
   };
 
-  [WebEngageEventName.ITEMS_CLICKED]: {
+  [AppsFlyerEventName.ITEMS_CLICKED]: {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
     Type: 'Prescription' | 'Test Result';
   };
 
-  [WebEngageEventName.REORDER_MEDICINES]: {
+  [AppsFlyerEventName.REORDER_MEDICINES]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;

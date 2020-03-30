@@ -26,6 +26,7 @@ import {
   statusBarHeight,
   postWebEngageEvent,
   callPermissions,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -60,6 +61,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import moment from 'moment';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -312,6 +314,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Available in': (availableInMin && `${availableInMin} minute(s)`) || '',
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
   };
 
   const todayDate = new Date().toISOString().slice(0, 10);
@@ -844,6 +847,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
   };
 
   return (

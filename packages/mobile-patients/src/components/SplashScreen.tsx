@@ -16,14 +16,20 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
-import { AppConfig } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  doRequestAndAccessLocation,
+  InitiateAppsFlyer,
+  APPStateInActive,
+  APPStateActive,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -77,10 +83,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall, setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const [appState, setAppState] = useState(AppState.currentState);
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     getData('ConsultRoom', undefined, true);
+    InitiateAppsFlyer();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -388,11 +397,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return 'PROD';
       case 'https://asapi.apollo247.com//graphql':
         return 'PRF';
+      case 'https://devapi.apollo247.com//graphql':
+        return 'DEVReplica';
       default:
         return '';
     }
   };
-  const { setLocationDetails } = useAppCommonData();
+  const { setLocationDetails, setNeedHelpToContactInMessage } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
@@ -414,6 +425,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       } catch {}
     }
+    if (appState.match(/inactive|background/) && nextAppState === 'active') {
+      APPStateInActive();
+    }
+    if (appState.match(/active|foreground/) && nextAppState === 'background') {
+      APPStateActive();
+    }
+    setAppState(nextAppState);
   };
 
   const checkForVersionUpdate = () => {
@@ -445,9 +463,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Enable_Conditional_Management',
               'Virtual_consultation_fee',
               'QA_Virtual_consultation_fee',
+              'NeedHelpToContactIn',
+              'MIN_VALUE_FOR_PHARMACY_FREE_DELIVERY',
+              'PHARMACY_DELIVERY_CHARGES',
             ]);
         })
         .then((snapshot) => {
+          const needHelpToContactInMessage = snapshot['NeedHelpToContactIn'].val();
+          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+          const minValueForPharmacyFreeDelivery = snapshot[
+            'MIN_VALUE_FOR_PHARMACY_FREE_DELIVERY'
+          ].val();
+          minValueForPharmacyFreeDelivery &&
+            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
+
+          const pharmacyDeliveryCharges = snapshot['PHARMACY_DELIVERY_CHARGES'].val();
+          pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
+
           const myValye = snapshot;
           let index: number = 0;
           const nietos = [];
@@ -459,7 +492,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               index++;
               const element = myValye[val];
               nietos.push({ index: index, value: element.val() });
-              if (nietos.length === 11) {
+              if (nietos.length === 13) {
                 console.log(
                   'nietos',
                   parseFloat(nietos[1].value),

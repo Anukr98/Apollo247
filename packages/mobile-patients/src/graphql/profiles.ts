@@ -496,8 +496,18 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
 `;
 
 export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
-  query SearchDoctorAndSpecialtyByName($searchText: String!) {
-    SearchDoctorAndSpecialtyByName(searchText: $searchText) {
+  query SearchDoctorAndSpecialtyByName(
+    $searchText: String!
+    $patientId: ID
+    $geolocation: Geolocation
+    $pincode: String
+  ) {
+    SearchDoctorAndSpecialtyByName(
+      searchText: $searchText
+      patientId: $patientId
+      geolocation: $geolocation
+      pincode: $pincode
+    ) {
       doctors {
         id
         salutation

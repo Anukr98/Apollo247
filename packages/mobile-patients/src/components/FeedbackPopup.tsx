@@ -68,7 +68,7 @@ export interface FeedbackPopupProps {
   transactionId: string;
   info: FeedbackInfoCardProps;
   isVisible: boolean;
-  onComplete?: () => void;
+  onComplete?: (ratingStatus: RatingStatus, ratingOption: string) => void;
 }
 
 export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
@@ -116,7 +116,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
         variables,
       })
       .then(({}) => {
-        props.onComplete && props.onComplete();
+        props.onComplete && props.onComplete(ratingStatus, ratingOption!);
       })
       .catch((e) => {
         CommonBugFender('FeedbackPopup', e);

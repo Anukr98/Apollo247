@@ -46,6 +46,7 @@ import {
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
   postWEGNeedHelpEvent,
+  postAppsFlyerAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -804,6 +805,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isInStock: true,
       });
       postwebEngageAddToCartEvent(data.item, 'Pharmacy Home');
+      postAppsFlyerAddToCartEvent(data.item, 'Pharmacy Home');
     };
 
     const removeFromCart = () => removeCartItem!(sku);

@@ -256,15 +256,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     currentPatient && setProfile(currentPatient!);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
-  // useEffect(() => {
-  //   if (!currentPatient) {
-  //     console.log('No current patients available');
-  //     getPatientApiCall();
-  //   }
-  //   setLoading && setLoading(true);
-  //   fetchAppointments();
-  //   callPermissions();
-  // }, [currentPatient]);
+  useEffect(() => {
+    // if (!currentPatient) {
+    //   console.log('No current patients available');
+    //   getPatientApiCall();
+    // }
+    callPermissions();
+  }, [currentPatient]);
 
   useEffect(() => {
     async function fetchData() {
