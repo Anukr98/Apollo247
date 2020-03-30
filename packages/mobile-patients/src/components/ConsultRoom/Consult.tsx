@@ -280,6 +280,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
+    setLoading && setLoading(true);
+
     // getNetStatus()
     //   .then((status) => {
     //     if (status) {
@@ -303,7 +305,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   // console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
-    setLoading && setLoading(true);
+    // setLoading && setLoading(true);
     console.log('inputdata', inputData);
     client
       .query<getPatientAllAppointments>({

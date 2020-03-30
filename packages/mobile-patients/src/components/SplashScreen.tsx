@@ -108,19 +108,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     try {
-      if (Platform.OS === 'android') {
-        Linking.getInitialURL()
-          .then((url) => {
+      Linking.getInitialURL()
+        .then((url) => {
+          if (url) {
             handleOpenURL(url);
             console.log('linking', url);
-          })
-          .catch((e) => {
-            CommonBugFender('SplashScreen_Linking_URL', e);
-          });
-      } else {
-        console.log('linking');
-        Linking.addEventListener('url', handleOpenURL);
-      }
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('SplashScreen_Linking_URL', e);
+        });
+
+      Linking.addEventListener('url', (event) => {
+        console.log('event', event);
+        handleOpenURL(event.url);
+      });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
@@ -131,11 +133,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     console.log('event', event);
     let route;
 
-    if (Platform.OS === 'ios') {
-      route = event.url.replace('apollopatients://', '');
-    } else {
-      route = event.replace('apollopatients://', '');
-    }
+    route = event.replace('apollopatients://', '');
 
     const data = route.split('?');
     route = data[0];
@@ -289,7 +287,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           }
           SplashScreenView.hide();
         },
-        timeout ? 2000 : 0
+        timeout ? 1500 : 0
       );
     }
     fetchData();
@@ -463,22 +461,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Enable_Conditional_Management',
               'Virtual_consultation_fee',
               'QA_Virtual_consultation_fee',
-              'NeedHelpToContactIn',
-              'MIN_VALUE_FOR_PHARMACY_FREE_DELIVERY',
-              'PHARMACY_DELIVERY_CHARGES',
+              'Need_Help_To_Contact_In',
+              'Min_Value_For_Pharmacy_Free_Delivery',
+              'Pharmacy_Delivery_Charges',
             ]);
         })
         .then((snapshot) => {
-          const needHelpToContactInMessage = snapshot['NeedHelpToContactIn'].val();
+          const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
           needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
           const minValueForPharmacyFreeDelivery = snapshot[
-            'MIN_VALUE_FOR_PHARMACY_FREE_DELIVERY'
+            'Min_Value_For_Pharmacy_Free_Delivery'
           ].val();
           minValueForPharmacyFreeDelivery &&
             updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
 
-          const pharmacyDeliveryCharges = snapshot['PHARMACY_DELIVERY_CHARGES'].val();
+          const pharmacyDeliveryCharges = snapshot['Pharmacy_Delivery_Charges'].val();
           pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
 
           const myValye = snapshot;
