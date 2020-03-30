@@ -21,6 +21,10 @@ const appStaticVariables = {
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
 };
 
+export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
+  Configuration[key] = value as never;
+};
+
 const PharmaApiConfig = {
   dev: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
