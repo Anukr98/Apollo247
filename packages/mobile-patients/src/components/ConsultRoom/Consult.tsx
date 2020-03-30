@@ -256,15 +256,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     currentPatient && setProfile(currentPatient!);
   }, [currentPatient, analytics, props.navigation.state.params]);
 
-  useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      getPatientApiCall();
-    }
-    setLoading && setLoading(true);
-    fetchAppointments();
-    callPermissions();
-  }, [currentPatient]);
+  // useEffect(() => {
+  //   if (!currentPatient) {
+  //     console.log('No current patients available');
+  //     getPatientApiCall();
+  //   }
+  //   setLoading && setLoading(true);
+  //   fetchAppointments();
+  //   callPermissions();
+  // }, [currentPatient]);
 
   useEffect(() => {
     async function fetchData() {
@@ -282,19 +282,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          // setLoading && setLoading(true);
-          fetchAppointments();
-        } else {
-          setLoading && setLoading(false);
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Consult_getNetStatus_useEffect', e);
-      });
+    // getNetStatus()
+    //   .then((status) => {
+    //     if (status) {
+    //       // setLoading && setLoading(true);
+    //       fetchAppointments();
+    //     } else {
+    //       setLoading && setLoading(false);
+    //       setshowOfflinePopup(true);
+    //     }
+    //   })
+    //   .catch((e) => {
+    //     CommonBugFender('Consult_getNetStatus_useEffect', e);
+    //   });
   }, [currentPatient]);
 
   // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });

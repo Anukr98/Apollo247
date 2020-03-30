@@ -138,11 +138,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     switch (route) {
       case 'Consult':
         console.log('Consult');
-        getData('Consult');
+        getData('Consult', data.length === 2 ? data[1] : undefined);
         break;
       case 'Medicine':
         console.log('Medicine');
-        getData('Medicine');
+        getData('Medicine', data.length === 2 ? data[1] : undefined);
         break;
       case 'Test':
         console.log('Test');
@@ -152,6 +152,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('Speciality handleopen');
         if (data.length === 2) getData('Speciality', data[1]);
         break;
+      case 'Doctor':
+        console.log('Doctor handleopen');
+        if (data.length === 2) getData('Doctor', data[1]);
+        break;
+      case 'DoctorSearch':
+        console.log('DoctorSearch handleopen');
+        getData('DoctorSearch');
+        break;
+
+      case 'MedicineSearch':
+        console.log('MedicineSearch handleopen');
+        getData('MedicineSearch', data.length === 2 ? data[1] : undefined);
+        break;
+
       default:
         break;
     }
@@ -271,19 +285,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
+        // if (id) {
+        //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
+        // } else
         props.navigation.navigate('APPOINTMENTS');
-        // props.navigation.dispatch(
-        //   StackActions.reset({
-        //     index: 0,
-        //     key: null,
-        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-        //   })
-        // );
         break;
 
       case 'Medicine':
         console.log('Medicine');
         props.navigation.navigate('MEDICINES');
+        break;
+
+      case 'MedicineDetail':
+        console.log('MedicineDetail');
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku: id,
+        });
         break;
 
       case 'Test':
@@ -303,6 +320,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         // props.navigation.replace(AppRoutes.DoctorSearchListing, {
         //   specialityId: id ? id : '',
         // });
+        break;
+
+      case 'Doctor':
+        props.navigation.navigate(AppRoutes.DoctorDetails, {
+          doctorId: id,
+        });
+        break;
+
+      case 'DoctorSearch':
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        break;
+
+      case 'MedicineSearch':
+        if (id) {
+          const [itemId, name] = id.split(',');
+          console.log(itemId, name);
+
+          props.navigation.navigate(AppRoutes.SearchByBrand, {
+            category_id: itemId,
+            title: `${name ? name : 'Products'}`.toUpperCase(),
+          });
+        }
         break;
 
       default:
