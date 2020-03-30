@@ -36,8 +36,12 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import appsFlyer from 'react-native-appsflyer';
+import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
+let onInstallConversionDataCanceller: any;
+let onAppOpenAttributionCanceller: any;
 
 interface AphConsole {
   error(message?: any, ...optionalParams: any[]): void;
@@ -636,6 +640,8 @@ export const getBuildEnvironment = () => {
       return 'PROD';
     case 'https://asapi.apollo247.com//graphql':
       return 'PRF';
+    case 'https://devapi.apollo247.com//graphql':
+      return 'DEVReplica';
     default:
       return '';
   }
@@ -812,4 +818,117 @@ export const callPermissions = (doRequest?: () => void) => {
       }
     );
   });
+};
+
+export const InitiateAppsFlyer = () => {
+  console.log('InitiateAppsFlyer');
+  onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
+    if (JSON.parse(res.data.is_first_launch) == true) {
+      if (res.data.af_status === 'Non-organic') {
+        const media_source = res.data.media_source;
+        const campaign = res.data.campaign;
+        console.log('media_source', media_source);
+        console.log('campaign', campaign);
+
+        // Alert.alert(
+        //   'This is first launch and a Non-Organic install. Media source: ' +
+        //     media_source +
+        //     ' Campaign: ' +
+        //     campaign
+        // );
+      } else if (res.data.af_status === 'Organic') {
+        // Alert.alert('This is first launch and a Organic Install');
+      }
+    } else {
+      // Alert.alert('This is not first launch');
+    }
+  });
+
+  appsFlyer.initSdk(
+    {
+      devKey: 'pP3MjHNkZGiMCamkJ7YpbH',
+      isDebug: true,
+      appId: Platform.OS === 'ios' ? '1496740273' : '',
+    },
+    (result) => {
+      console.log('result', result);
+    },
+    (error) => {
+      console.error('error', error);
+    }
+  );
+
+  onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution((res) => {
+    console.log(res);
+  });
+};
+
+export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
+  console.log('UnInstallAppsFlyer', newFirebaseToken);
+  appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {
+    console.log('UnInstallAppsFlyersuccess', success);
+  });
+};
+
+export const APPStateInActive = () => {
+  if (Platform.OS === 'ios') {
+    console.log('APPStateInActive');
+
+    appsFlyer.trackAppLaunch();
+  }
+};
+
+export const APPStateActive = () => {
+  console.log('APPStateActive');
+
+  if (onInstallConversionDataCanceller) {
+    onInstallConversionDataCanceller();
+    onInstallConversionDataCanceller = null;
+  }
+  if (onAppOpenAttributionCanceller) {
+    onAppOpenAttributionCanceller();
+    onAppOpenAttributionCanceller = null;
+  }
+};
+
+export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
+  try {
+    console.log('\n********* AppsFlyerEvent Start *********\n');
+    console.log(`AppsFlyerEvent ${eventName}`, { eventName, attributes });
+    console.log('\n********* AppsFlyerEvent End *********\n');
+    // if (getBuildEnvironment() !== 'DEV') {
+    // Don't post events in DEV environment
+    appsFlyer.trackEvent(
+      eventName,
+      attributes,
+      (res) => {
+        console.log('AppsFlyerEventSuccess', res);
+      },
+      (err) => {
+        console.error('AppsFlyerEventError', err);
+      }
+    );
+    // }
+  } catch (error) {
+    console.log('********* Unable to post AppsFlyerEvent *********', { error });
+  }
+};
+
+export const postAppsFlyerAddToCartEvent = (
+  { sku, name, category_id, price, special_price }: MedicineProduct,
+  source: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART]['Source']
+) => {
+  const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
+    'product name': name,
+    'product id': sku,
+    Brand: '',
+    'Brand ID': '',
+    'category name': '',
+    'category ID': category_id || '',
+    Price: price,
+    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+    Quantity: 1,
+    Source: source,
+  };
+  postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };

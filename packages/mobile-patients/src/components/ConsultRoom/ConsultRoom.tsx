@@ -40,6 +40,7 @@ import {
   g,
   postWebEngageEvent,
   doRequestAndAccessLocation,
+  UnInstallAppsFlyer,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -479,6 +480,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         return 'PROD';
       case 'https://asapi.apollo247.com//graphql':
         return 'PRF';
+      case 'https://devapi.apollo247.com//graphql':
+        return 'DEVReplica';
       default:
         return '';
     }
@@ -583,7 +586,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
             const buildSpecify = buildName();
             let keyHash;
-            if (buildSpecify === 'QA' || buildSpecify === 'DEV') {
+            if (buildSpecify === 'QA' || buildSpecify === 'DEV' || buildSpecify === 'DEVReplica') {
               keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
             } else {
               keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
@@ -642,6 +645,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((token) => {
         console.log('token', token);
         // console.log('DeviceInfo', DeviceInfo);
+        UnInstallAppsFlyer(token);
         if (token !== deviceToken2.deviceToken) {
           const input = {
             deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
