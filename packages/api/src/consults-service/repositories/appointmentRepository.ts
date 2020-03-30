@@ -725,6 +725,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.CANCELLED,
         status2: STATUS.PAYMENT_PENDING,
       })
+      .andWhere('appointment."doctorId" = :doctorId', { doctorId })
       .getMany();
 
     //calculating doctor consult hours slot intervals
