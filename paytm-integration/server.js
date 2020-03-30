@@ -1292,6 +1292,7 @@ app.get('/processOrders', (req, res) => {
                   if (isDeliveryChargeApplicable(amountPaid)) {
                     console.log('inside if...');
                     orderLineItems.push(getDeliveryChargesLineItem());
+                    orderLineItems.push(getDeliveryChargesLineItem());
                     console.log('serviceChargeObject', getDeliveryChargesLineItem());
                   }
                 }
@@ -1640,6 +1641,7 @@ app.get('/processOrderById', (req, res) => {
             if (isDeliveryChargeApplicable(amountPaid)) {
               console.log('inside if===');
               orderLineItems.push(getDeliveryChargesLineItem());
+              orderLineItems.push(getDeliveryChargesLineItem());
               console.log('chargesItem', getDeliveryChargesLineItem());
             }
             console.log('orderLineItems------', orderLineItems);
@@ -1868,7 +1870,7 @@ const isDeliveryChargeApplicable = (totalAmountPaid) => {
   }
 
   //return parseFloat(totalAmountPaid) - 25 < 200 ? true : false;
-  return parseFloat(totalAmountPaid) < 200 ? true : false;
+  return parseFloat(totalAmountPaid) < 300 ? true : false;
 };
 
 //returns constant response object
