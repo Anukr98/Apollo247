@@ -257,10 +257,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      getPatientApiCall();
-    }
+    // if (!currentPatient) {
+    //   console.log('No current patients available');
+    //   getPatientApiCall();
+    // }
     callPermissions();
   }, [currentPatient]);
 
@@ -280,19 +280,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          // setLoading && setLoading(true);
-          fetchAppointments();
-        } else {
-          setLoading && setLoading(false);
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Consult_getNetStatus_useEffect', e);
-      });
+    // getNetStatus()
+    //   .then((status) => {
+    //     if (status) {
+    //       // setLoading && setLoading(true);
+    //       fetchAppointments();
+    //     } else {
+    //       setLoading && setLoading(false);
+    //       setshowOfflinePopup(true);
+    //     }
+    //   })
+    //   .catch((e) => {
+    //     CommonBugFender('Consult_getNetStatus_useEffect', e);
+    //   });
   }, [currentPatient]);
 
   // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
@@ -303,7 +303,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   // console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
-    // setLoading && setLoading(true);
+    setLoading && setLoading(true);
     console.log('inputdata', inputData);
     client
       .query<getPatientAllAppointments>({

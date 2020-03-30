@@ -88,11 +88,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
+    getData('ConsultRoom', undefined, true);
     InitiateAppsFlyer();
-  }, []);
-
-  useEffect(() => {
-    getData('ConsultRoom');
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -140,19 +137,48 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       route = event.replace('apollopatients://', '');
     }
 
+    const data = route.split('?');
+    route = data[0];
+
+    console.log(data, 'data');
+
+    // const id = data[1];
+
     switch (route) {
       case 'Consult':
         console.log('Consult');
-        getData('Consult');
+        getData('Consult', data.length === 2 ? data[1] : undefined);
         break;
       case 'Medicine':
         console.log('Medicine');
-        getData('Medicine');
+        getData('Medicine', data.length === 2 ? data[1] : undefined);
         break;
       case 'Test':
         console.log('Test');
         getData('Test');
         break;
+      case 'Speciality':
+        console.log('Speciality handleopen');
+        if (data.length === 2) getData('Speciality', data[1]);
+        break;
+      case 'Doctor':
+        console.log('Doctor handleopen');
+        if (data.length === 2) getData('Doctor', data[1]);
+        break;
+      case 'DoctorSearch':
+        console.log('DoctorSearch handleopen');
+        getData('DoctorSearch');
+        break;
+
+      case 'MedicineSearch':
+        console.log('MedicineSearch handleopen');
+        getData('MedicineSearch', data.length === 2 ? data[1] : undefined);
+        break;
+      case 'MedicineDetail':
+        console.log('MedicineDetail handleopen');
+        getData('MedicineDetail', data.length === 2 ? data[1] : undefined);
+        break;
+
       default:
         break;
     }
@@ -165,7 +191,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const getData = (routeName: String) => {
+  const getData = (routeName: String, id?: String, timeout?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       const onboarding = await AsyncStorage.getItem('onboarding');
@@ -207,84 +233,90 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
 
-      setTimeout(() => {
-        if (JSON.parse(navigationPropsString || 'false')) {
-          const navigationProps = JSON.parse(navigationPropsString || '');
-          if (navigationProps) {
-            let navi: any[] = [];
-            navigationProps.scenes.map((i: any) => {
-              navi.push(
-                NavigationActions.navigate({
-                  routeName: i.descriptor.navigation.state.routeName,
-                  params: i.descriptor.navigation.state.params,
-                })
-              );
-              // props.navigation.push(
-              //   i.descriptor.navigation.state.routeName,
-              //   i.descriptor.navigation.state.params
-              // );
-            });
-            if (navi.length > 0) {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: navi.length - 1,
-                  key: null,
-                  actions: navi,
-                })
-              );
+      setTimeout(
+        () => {
+          if (JSON.parse(navigationPropsString || 'false')) {
+            const navigationProps = JSON.parse(navigationPropsString || '');
+            if (navigationProps) {
+              let navi: any[] = [];
+              navigationProps.scenes.map((i: any) => {
+                navi.push(
+                  NavigationActions.navigate({
+                    routeName: i.descriptor.navigation.state.routeName,
+                    params: i.descriptor.navigation.state.params,
+                  })
+                );
+                // props.navigation.push(
+                //   i.descriptor.navigation.state.routeName,
+                //   i.descriptor.navigation.state.params
+                // );
+              });
+              if (navi.length > 0) {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: navi.length - 1,
+                    key: null,
+                    actions: navi,
+                  })
+                );
+              }
             }
-          }
-        } else if (userLoggedIn == 'true') {
-          setshowSpinner(false);
+          } else if (userLoggedIn == 'true') {
+            setshowSpinner(false);
 
-          if (mePatient) {
-            if (mePatient.firstName !== '') {
-              pushTheView(routeName);
+            if (mePatient) {
+              if (mePatient.firstName !== '') {
+                pushTheView(routeName, id ? id : undefined);
+              } else {
+                props.navigation.replace(AppRoutes.Login);
+              }
+            }
+          } else if (onboarding == 'true') {
+            setshowSpinner(false);
+
+            if (signUp == 'true') {
+              props.navigation.replace(AppRoutes.SignUp);
+            } else if (multiSignUp == 'true') {
+              if (mePatient) {
+                props.navigation.replace(AppRoutes.MultiSignup);
+              }
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
-          }
-        } else if (onboarding == 'true') {
-          setshowSpinner(false);
-
-          if (signUp == 'true') {
-            props.navigation.replace(AppRoutes.SignUp);
-          } else if (multiSignUp == 'true') {
-            if (mePatient) {
-              props.navigation.replace(AppRoutes.MultiSignup);
-            }
           } else {
-            props.navigation.replace(AppRoutes.Login);
+            setshowSpinner(false);
+            props.navigation.replace(AppRoutes.Onboarding);
           }
-        } else {
-          setshowSpinner(false);
-          props.navigation.replace(AppRoutes.Onboarding);
-        }
-        SplashScreenView.hide();
-      }, 2000);
+          SplashScreenView.hide();
+        },
+        timeout ? 2000 : 0
+      );
     }
     fetchData();
   };
 
-  const pushTheView = (routeName: String) => {
+  const pushTheView = (routeName: String, id?: String) => {
     console.log('pushTheView', routeName);
 
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
+        // if (id) {
+        //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
+        // } else
         props.navigation.navigate('APPOINTMENTS');
-        // props.navigation.dispatch(
-        //   StackActions.reset({
-        //     index: 0,
-        //     key: null,
-        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-        //   })
-        // );
         break;
 
       case 'Medicine':
         console.log('Medicine');
         props.navigation.navigate('MEDICINES');
+        break;
+
+      case 'MedicineDetail':
+        console.log('MedicineDetail');
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku: id,
+        });
         break;
 
       case 'Test':
@@ -295,6 +327,37 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'ConsultRoom':
         console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
+        break;
+      case 'Speciality':
+        console.log('Speciality id', id);
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: id ? id : '',
+        });
+        // props.navigation.replace(AppRoutes.DoctorSearchListing, {
+        //   specialityId: id ? id : '',
+        // });
+        break;
+
+      case 'Doctor':
+        props.navigation.navigate(AppRoutes.DoctorDetails, {
+          doctorId: id,
+        });
+        break;
+
+      case 'DoctorSearch':
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        break;
+
+      case 'MedicineSearch':
+        if (id) {
+          const [itemId, name] = id.split(',');
+          console.log(itemId, name);
+
+          props.navigation.navigate(AppRoutes.SearchByBrand, {
+            category_id: itemId,
+            title: `${name ? name : 'Products'}`.toUpperCase(),
+          });
+        }
         break;
 
       default:
