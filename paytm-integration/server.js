@@ -1641,6 +1641,7 @@ app.get('/processOrderById', (req, res) => {
             if (isDeliveryChargeApplicable(amountPaid)) {
               console.log('inside if===');
               orderLineItems.push(getDeliveryChargesLineItem());
+              orderLineItems.push(getDeliveryChargesLineItem());
               console.log('chargesItem', getDeliveryChargesLineItem());
             }
             console.log('orderLineItems------', orderLineItems);
