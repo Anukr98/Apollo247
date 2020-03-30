@@ -406,52 +406,58 @@ export const AppointmentsSlot: React.FC = (props) => {
                 {loading ? (
                   <CircularProgress size={22} />
                 ) : (
-                  <AphSelect
-                    value={selectedOption}
-                    disabled={options ? options.length === 0 : true}
-                    onChange={(e) => {
-                      const value = e.target.value as string;
-                      const filteredData =
-                        options && options.find((option) => option.key === value);
-                      if (filteredData) {
-                        setSelectedTimeSlot(filteredData.data);
-                        setDiagnosticSlot!({
-                          slotStartTime: filteredData.data.slotInfo.startTime!,
-                          slotEndTime: filteredData.data.slotInfo.endTime!,
-                          date: filteredData.data.date,
-                          employeeSlotId: filteredData.data.slotInfo.slot,
-                          diagnosticBranchCode: filteredData.data.diagnosticBranchCode,
-                          diagnosticEmployeeCode: filteredData.data.diagnosticEmployeeCode,
-                          city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
-                        });
-                      }
-                      setSelectedOption(value);
-                    }}
-                    MenuProps={{
-                      anchorOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                      },
-                      transformOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                      },
-                    }}
-                  >
-                    {options &&
-                      options.length > 0 &&
-                      options.map((option: { key: string; value: string; data: any }) => {
-                        return (
-                          <MenuItem
-                            value={option.key}
-                            key={option.key}
-                            classes={{ selected: classes.menuSelected }}
-                          >
-                            {option.value}
-                          </MenuItem>
-                        );
-                      })}
-                  </AphSelect>
+                  <>
+                    {options && options.length > 0 ? (
+                      <AphSelect
+                        value={selectedOption}
+                        disabled={options ? options.length === 0 : true}
+                        onChange={(e) => {
+                          const value = e.target.value as string;
+                          const filteredData =
+                            options && options.find((option) => option.key === value);
+                          if (filteredData) {
+                            setSelectedTimeSlot(filteredData.data);
+                            setDiagnosticSlot!({
+                              slotStartTime: filteredData.data.slotInfo.startTime!,
+                              slotEndTime: filteredData.data.slotInfo.endTime!,
+                              date: filteredData.data.date,
+                              employeeSlotId: filteredData.data.slotInfo.slot,
+                              diagnosticBranchCode: filteredData.data.diagnosticBranchCode,
+                              diagnosticEmployeeCode: filteredData.data.diagnosticEmployeeCode,
+                              city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
+                            });
+                          }
+                          setSelectedOption(value);
+                        }}
+                        MenuProps={{
+                          anchorOrigin: {
+                            vertical: 'top',
+                            horizontal: 'right',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'right',
+                          },
+                        }}
+                      >
+                        {options &&
+                          options.length > 0 &&
+                          options.map((option: { key: string; value: string; data: any }) => {
+                            return (
+                              <MenuItem
+                                value={option.key}
+                                key={option.key}
+                                classes={{ selected: classes.menuSelected }}
+                              >
+                                {option.value}
+                              </MenuItem>
+                            );
+                          })}
+                      </AphSelect>
+                    ) : (
+                      'No slots available'
+                    )}
+                  </>
                 )}
               </div>
             </div>
