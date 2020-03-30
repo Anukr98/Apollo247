@@ -133,7 +133,7 @@ import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumen
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { ChatQuestions } from './ChatQuestions';
 import { FeedbackPopup } from '../FeedbackPopup';
-import { g, callPermissions } from '../../helpers/helperFunctions';
+import { g, callPermissions, postWebEngageEvent } from '../../helpers/helperFunctions';
 import { useUIElements } from '../UIElementsProvider';
 import {
   cancelAppointment,
@@ -146,6 +146,10 @@ import { colors } from '../../theme/colors';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { WebView } from 'react-native-webview';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -5506,6 +5510,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       </View>
     );
   };
+
+  const postRatingGivenWEGEvent = (rating: string, reason: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.RATING_GIVEN] = {
+      'Patient UHID': g(currentPatient, 'id'),
+      'Rating Value': rating,
+      'Rating Reason': reason,
+      Type: 'Consult',
+    };
+    postWebEngageEvent(WebEngageEventName.RATING_GIVEN, eventAttributes);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -6054,7 +6069,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {patientImageshow && imageOpen()}
       {showweb && showWeimageOpen()}
       <FeedbackPopup
-        onComplete={() => {
+        onComplete={(ratingStatus, ratingOption) => {
+          postRatingGivenWEGEvent(ratingStatus!, ratingOption);
           setShowFeedback(false);
           showAphAlert!({
             title: 'Thanks :)',
