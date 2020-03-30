@@ -172,13 +172,13 @@ export const Navigation: React.FC = (props) => {
       >
         Medicines
       </Link>
-      {/* <Link
+      <Link
         to={clientRoutes.tests()}
         className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
         title={'Tests'}
       >
         Tests
-      </Link> */}
+      </Link>
       <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
@@ -232,7 +232,7 @@ export const Navigation: React.FC = (props) => {
               <div className={classes.itemsAdded}>{`${cartItems.length} Items`}</div>
             </div>
           </Link>
-          {/* <Link
+          <Link
             className={classes.cartTypeGroup}
             to={clientRoutes.testsCart()}
             onClick={() => setIsCartPopoverOpen(false)}
@@ -249,7 +249,7 @@ export const Navigation: React.FC = (props) => {
               </div>
               <div className={classes.itemsAdded}>{`${diagnosticsCartItems.length} Items`}</div>
             </div>
-          </Link> */}
+          </Link>
         </div>
       </Popover>
     </div>

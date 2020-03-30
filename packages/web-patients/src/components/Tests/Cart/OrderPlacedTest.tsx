@@ -136,7 +136,7 @@ export const OrderPlacedTest: React.FC<OrderPlacedProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <>
-          <Typography variant="h2">{`Hi, ${(currentPatient && currentPatient.firstName) ||
+          <Typography variant="h2">{`Hi ${(currentPatient && currentPatient.firstName) ||
             ''} :)`}</Typography>
           <p>Your order has been placed successfully.</p>
           <div className={classes.orderPlaced}>

@@ -146,6 +146,7 @@ const TabContainer: React.FC = (props) => {
 
 type TrackOrdersProps = {
   orderAutoId: number;
+  setShowMobileDetails?: (showMobileDetails: boolean) => void;
 };
 
 export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
@@ -223,7 +224,13 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         <div className={classes.headerBackArrow}>
-          <AphButton onClick={() => window.history.back()}>
+          <AphButton
+            onClick={() => {
+              if (isSmallScreen && props.setShowMobileDetails) {
+                props.setShowMobileDetails(false);
+              }
+            }}
+          >
             <img src={require('images/ic_back.svg')} />
           </AphButton>
         </div>
