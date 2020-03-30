@@ -57,7 +57,7 @@ target 'ApolloPatient' do
   pod 'TGFoursquareLocationDetail'
   pod 'IQKeyboardManager'
   pod 'youtube-ios-player-helper', '~> 0.1.4'
-  pod 'TwilioChatClient', '2.2.0'
+  pod 'TwilioChatClient', '2.6.6'
   pod 'JWTDecode', '~> 2.4'
   pod 'OpenTok', '~> 2.16.3'
   pod 'Stylish'
@@ -84,7 +84,8 @@ target 'ApolloPatient' do
   pod 'WebEngage'
 
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
-#  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
+  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
+  pod 'react-native-fbsdk', :path => '../node_modules/react-native-fbsdk'
 
   # ServiceExtension Target
 
