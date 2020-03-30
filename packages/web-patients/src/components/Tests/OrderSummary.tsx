@@ -281,12 +281,12 @@ export const OrderSummary: React.FC = () => {
       .join(' - ');
   };
 
-  let totalPrice = 0
+  let totalPrice = 0;
   if (orderLineItem && orderLineItem.length > 0) {
     for (let i = 0; i < orderLineItem.length; i++) {
       if (orderLineItem) {
-        const itemPrice = orderLineItem && orderLineItem[i]! && orderLineItem[i]!!.price
-        totalPrice = totalPrice + itemPrice!
+        const itemPrice = orderLineItem && orderLineItem[i]! && orderLineItem[i]!!.price;
+        totalPrice = totalPrice + itemPrice!;
       }
     }
   }
@@ -388,12 +388,12 @@ export const OrderSummary: React.FC = () => {
           </div>
         </div>
       ) : (
-          isLoading && (
-            <div className={classes.progressLoader}>
-              <CircularProgress size={30} />
-            </div>
-          )
-        )}
+        isLoading && (
+          <div className={classes.progressLoader}>
+            <CircularProgress size={30} />
+          </div>
+        )
+      )}
     </div>
   );
 };
