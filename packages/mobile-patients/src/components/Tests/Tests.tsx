@@ -225,7 +225,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (locationDetails && locationDetails.city) {
+    if (locationDetails && locationDetails.city && currentPatient) {
       client
         .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
           query: GET_DIAGNOSTICS_CITES,

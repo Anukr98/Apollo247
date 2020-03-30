@@ -80,7 +80,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom');
+    getData('ConsultRoom', undefined, true);
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -165,6 +165,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('MedicineSearch handleopen');
         getData('MedicineSearch', data.length === 2 ? data[1] : undefined);
         break;
+      case 'MedicineDetail':
+        console.log('MedicineDetail handleopen');
+        getData('MedicineDetail', data.length === 2 ? data[1] : undefined);
+        break;
 
       default:
         break;
@@ -178,7 +182,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const getData = (routeName: String, id?: String) => {
+  const getData = (routeName: String, id?: String, timeout?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       const onboarding = await AsyncStorage.getItem('onboarding');
@@ -220,61 +224,64 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
 
-      setTimeout(() => {
-        if (JSON.parse(navigationPropsString || 'false')) {
-          const navigationProps = JSON.parse(navigationPropsString || '');
-          if (navigationProps) {
-            let navi: any[] = [];
-            navigationProps.scenes.map((i: any) => {
-              navi.push(
-                NavigationActions.navigate({
-                  routeName: i.descriptor.navigation.state.routeName,
-                  params: i.descriptor.navigation.state.params,
-                })
-              );
-              // props.navigation.push(
-              //   i.descriptor.navigation.state.routeName,
-              //   i.descriptor.navigation.state.params
-              // );
-            });
-            if (navi.length > 0) {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: navi.length - 1,
-                  key: null,
-                  actions: navi,
-                })
-              );
+      setTimeout(
+        () => {
+          if (JSON.parse(navigationPropsString || 'false')) {
+            const navigationProps = JSON.parse(navigationPropsString || '');
+            if (navigationProps) {
+              let navi: any[] = [];
+              navigationProps.scenes.map((i: any) => {
+                navi.push(
+                  NavigationActions.navigate({
+                    routeName: i.descriptor.navigation.state.routeName,
+                    params: i.descriptor.navigation.state.params,
+                  })
+                );
+                // props.navigation.push(
+                //   i.descriptor.navigation.state.routeName,
+                //   i.descriptor.navigation.state.params
+                // );
+              });
+              if (navi.length > 0) {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: navi.length - 1,
+                    key: null,
+                    actions: navi,
+                  })
+                );
+              }
             }
-          }
-        } else if (userLoggedIn == 'true') {
-          setshowSpinner(false);
+          } else if (userLoggedIn == 'true') {
+            setshowSpinner(false);
 
-          if (mePatient) {
-            if (mePatient.firstName !== '') {
-              pushTheView(routeName, id ? id : undefined);
+            if (mePatient) {
+              if (mePatient.firstName !== '') {
+                pushTheView(routeName, id ? id : undefined);
+              } else {
+                props.navigation.replace(AppRoutes.Login);
+              }
+            }
+          } else if (onboarding == 'true') {
+            setshowSpinner(false);
+
+            if (signUp == 'true') {
+              props.navigation.replace(AppRoutes.SignUp);
+            } else if (multiSignUp == 'true') {
+              if (mePatient) {
+                props.navigation.replace(AppRoutes.MultiSignup);
+              }
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
-          }
-        } else if (onboarding == 'true') {
-          setshowSpinner(false);
-
-          if (signUp == 'true') {
-            props.navigation.replace(AppRoutes.SignUp);
-          } else if (multiSignUp == 'true') {
-            if (mePatient) {
-              props.navigation.replace(AppRoutes.MultiSignup);
-            }
           } else {
-            props.navigation.replace(AppRoutes.Login);
+            setshowSpinner(false);
+            props.navigation.replace(AppRoutes.Onboarding);
           }
-        } else {
-          setshowSpinner(false);
-          props.navigation.replace(AppRoutes.Onboarding);
-        }
-        SplashScreenView.hide();
-      }, 2000);
+          SplashScreenView.hide();
+        },
+        timeout ? 2000 : 0
+      );
     }
     fetchData();
   };
