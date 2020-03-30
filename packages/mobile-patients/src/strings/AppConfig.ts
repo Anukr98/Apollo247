@@ -427,6 +427,7 @@ export const NeedHelp = [
       'Payment issues in online pharmacy',
       'Software not user-friendly',
       'Updates in order delivery or status of the order',
+      'Refund Required',
     ],
   },
   {
@@ -442,6 +443,7 @@ export const NeedHelp = [
       'No updates on delays, reschedules or cancellations of the consult',
       'Require reschedule',
       'Payment issues',
+      'Refund Required',
     ],
   },
   {
