@@ -277,8 +277,38 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
   }
 
-  const finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
-
+  let finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
+  let pincodeCity = '';
+  if (args.filterInput.pincode) {
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    const pincodeCityDetails = await doctorRepository.getCityMappingPincode(
+      args.filterInput.pincode
+    );
+    if (pincodeCityDetails) pincodeCity = pincodeCityDetails.city;
+  }
+  if (pincodeCity != '') {
+    //matching docs sorting city based start
+    const cityMatchedDocs: Doctor[] = [];
+    const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+    const otherCityMatchedDocs: Doctor[] = [];
+    const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+    let startSort = 0;
+    finalSortedDoctors.map((preFinalDoc) => {
+      if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
+        cityMatchedDocs.push(preFinalDoc);
+        cityMatchedDoctorsNextAvailability.push(finalDoctorNextAvailSlots[startSort]);
+      } else {
+        otherCityMatchedDocs.push(preFinalDoc);
+        otherCityMatchedDoctorsNextAvailability.push(finalDoctorNextAvailSlots[startSort]);
+      }
+      startSort++;
+    });
+    finalSortedDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
+    finalDoctorNextAvailSlots = cityMatchedDoctorsNextAvailability.concat(
+      otherCityMatchedDoctorsNextAvailability
+    );
+    //matching docs sorting city based end
+  }
   searchLogger(`API_CALL___END`);
   return {
     doctors: finalSortedDoctors,
