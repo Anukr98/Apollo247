@@ -295,7 +295,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
   const [showPopup, setShowPopup] = React.useState<boolean>(false);
   const [tatLoading, setTatLoading] = React.useState<boolean>(false);
-  const [errorMSG, setErrorMSG] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -369,7 +369,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             } else if (typeof res.data === 'string') {
               // console.log(res.data);
             } else if (typeof res.data.errorMSG === 'string') {
-              setErrorMSG(res.data.errorMSG);
+              setRrrorMessage(res.data.errorMSG);
               // console.log(res.data.errorMSG);
             }
           }
@@ -465,7 +465,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
                     </AphButton>
                   </div>
-                  {errorMSG && <span>{errorMSG}</span>}
+                  {errorMessage && <span>{errorMessage}</span>}
                   {deliveryTime.length > 0 && (
                     <div className={classes.deliveryTimeInfo}>
                       <span>Delivery Time</span>
