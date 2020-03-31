@@ -8,6 +8,7 @@ import {
   AphDeliveredSlider,
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
@@ -229,12 +230,14 @@ function valuetext(value: number) {
 
 type OrderCardProps = {
   setOrderAutoId: (orderAutoId: number) => void;
+  setShowMobileDetails: (showMobileDetails: boolean) => void;
   orderAutoId: number;
 };
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const { data, error, loading } = useQueryWithSkip<
     GetMedicineOrdersList,
@@ -420,7 +423,12 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
                         className={`${classes.root} ${
                           orderInfo.orderAutoId === props.orderAutoId ? classes.cardSelected : ''
                         }`}
-                        onClick={() => props.setOrderAutoId(orderInfo.orderAutoId || 0)}
+                        onClick={() => {
+                          if (isSmallScreen) {
+                            props.setShowMobileDetails(true);
+                          }
+                          props.setOrderAutoId(orderInfo.orderAutoId || 0);
+                        }}
                       >
                         <div className={classes.orderedItem}>
                           <div className={classes.itemImg}>

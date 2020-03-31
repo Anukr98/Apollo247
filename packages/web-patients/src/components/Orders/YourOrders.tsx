@@ -6,6 +6,7 @@ import { OrderCard } from 'components/Orders/OrderCard';
 import { OrdersMessage } from 'components/Orders/OrdersMessage';
 import { TrackOrders } from 'components/Orders/TrackOrders';
 import { NavigationBottom } from 'components/NavigationBottom';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -100,6 +101,8 @@ export const YourOrders: React.FC = (props) => {
   const currentPath = window.location.pathname;
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(false);
+  const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const [showMobileDetails, setShowMobileDetails] = React.useState<boolean>(false);
 
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
 
@@ -107,10 +110,18 @@ export const YourOrders: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.sectionHeader}>Your Orders</div>
-        <OrderCard orderAutoId={orderAutoId} setOrderAutoId={setOrderAutoId} />
+        <OrderCard
+          orderAutoId={orderAutoId}
+          setOrderAutoId={setOrderAutoId}
+          setShowMobileDetails={setShowMobileDetails}
+        />
       </div>
-      <div className={`${classes.rightSection} ${classes.mobileOverlay}`}>
-        <TrackOrders orderAutoId={orderAutoId} />
+      <div
+        className={`${classes.rightSection} ${
+          isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
+        }`}
+      >
+        <TrackOrders orderAutoId={orderAutoId} setShowMobileDetails={setShowMobileDetails} />
       </div>
       <NavigationBottom />
       <Popover

@@ -38,6 +38,9 @@ export const clientRoutes = {
   searchByTest: (searchTestText: string) => `/tests-list/search-test/${searchTestText}`,
   testOrders: () => '/order-details',
   orderSummary: (id: string) => `/orders/order-summary/${id}`,
+  termsConditions: () => '/terms',
+  privacy: () => '/privacy',
+  FAQ: () => '/faq',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

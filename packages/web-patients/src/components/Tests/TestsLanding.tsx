@@ -372,7 +372,10 @@ export const TestsLanding: React.FC = (props) => {
                   <span title={'hi'}>hi</span>
                   <AphSelect
                     value={currentPatient.id}
-                    onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                    onChange={(e) => {
+                      setCurrentPatientId(e.target.value as Patient['id']);
+                      window.location.reload();
+                    }}
                     classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
                     title={currentPatient.firstName || ''}
                   >

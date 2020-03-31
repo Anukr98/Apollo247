@@ -322,7 +322,9 @@ export const LocationSearch: React.FC = (props) => {
       <Popover
         open={isLocationPopoverOpen}
         anchorEl={locationRef.current}
-        onClose={() => setIsLocationPopoverOpen(false)}
+        onClose={() => {
+          if (getAddressFromLocalStorage() !== 'No location') setIsLocationPopoverOpen(false);
+        }}
         classes={{
           paper: classes.popPaperRoot,
         }}

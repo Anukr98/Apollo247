@@ -6,6 +6,7 @@ import {
 } from 'graphql/types/globalTypes';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 export interface DiagnosticsCartItem {
   id: string;
@@ -131,16 +132,13 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 export const DiagnosticsCartProvider: React.FC = (props) => {
   // const { currentPatient } = useAllCurrentPatients();
   const id = ''; //(currentPatient && currentPatient.id) || '';
+  const { currentPatient } = useAllCurrentPatients();
 
   const [forPatientId, setPatientId] = useState<string>('');
 
   const [diagnosticsCartItems, setDiagnosticsCartItems] = useState<
     DiagnosticsCartContextProps['diagnosticsCartItems']
-  >(
-    localStorage.getItem('diagnosticsCartItems')
-      ? JSON.parse(localStorage.getItem('diagnosticsCartItems') || '')
-      : []
-  );
+  >([]);
   const [couponDiscount, setCouponDiscount] = useState<
     DiagnosticsCartContextProps['couponDiscount']
   >(0);
@@ -188,12 +186,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       (item) => item.id !== id && item.itemId !== itemId
     );
     setDiagnosticsCartItems(newCartItems);
+    setIsCartUpdated(true);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = diagnosticsCartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       diagnosticsCartItems[foundIndex] = { ...diagnosticsCartItems[foundIndex], ...itemUpdates };
       setDiagnosticsCartItems([...diagnosticsCartItems]);
+      setIsCartUpdated(true);
     }
   };
 
@@ -232,14 +232,22 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [clinicId, setClinicId] = useState<DiagnosticsCartContextProps['clinicId']>('');
   const [clinics, setClinics] = useState<Clinic[]>([]);
-
   useEffect(() => {
     if (isCartUpdated) {
       const items = JSON.stringify(diagnosticsCartItems);
-      localStorage.setItem('diagnosticsCartItems', items);
+      localStorage.setItem(`${currentPatient && currentPatient.id}diagnostics`, items);
       setIsCartUpdated(false);
     }
   }, [diagnosticsCartItems, isCartUpdated]);
+  useEffect(() => {
+    if (currentPatient && currentPatient.id && currentPatient.id.length > 0) {
+      setDiagnosticsCartItems(
+        localStorage.getItem(`${currentPatient.id}diagnostics`)
+          ? JSON.parse(localStorage.getItem(`${currentPatient.id}diagnostics`) || '')
+          : []
+      );
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
