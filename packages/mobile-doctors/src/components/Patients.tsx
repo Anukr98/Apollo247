@@ -157,17 +157,13 @@ export const Patients: React.FC<PatientsProps> = (props) => {
   const renderDoctorGreeting = () => {
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansSemiBold(28),
-            color: '#02475b',
-            marginLeft: 20,
-            marginBottom: 2,
-            marginRight: 20,
-          }}
-        >{`${strings.case_sheet.hello_dr} ${
-          doctorDetails ? doctorDetails.displayName : ''
-        } :)`}</Text>
+        <View style={styles.doctornameContainer}>
+          <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} `}</Text>
+          <Text style={styles.doctorname1} numberOfLines={1}>
+            {doctorDetails ? doctorDetails.displayName : ''}
+          </Text>
+          <Text style={styles.doctorname}>{` :)`}</Text>
+        </View>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),

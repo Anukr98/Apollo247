@@ -236,8 +236,13 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const renderDoctorGreeting = () => {
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
-        <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} ${doctorName ||
-          ''} :)`}</Text>
+        <View style={styles.doctornameContainer}>
+          <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} `}</Text>
+          <Text style={styles.doctorname1} numberOfLines={1}>
+            {doctorName || ''}
+          </Text>
+          <Text style={styles.doctorname}>{` :)`}</Text>
+        </View>
         <Text style={styles.schedule}>{`${strings.appointments.here_your_schedule} ${
           moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
             ? 'today'
