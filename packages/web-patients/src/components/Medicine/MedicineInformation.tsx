@@ -465,11 +465,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       {tatLoading ? <CircularProgress size={20} /> : ' Check'}
                     </AphButton>
                   </div>
-
+                  {errorMSG && <span>{errorMSG}</span>}
                   {deliveryTime.length > 0 && (
                     <div className={classes.deliveryTimeInfo}>
                       <span>Delivery Time</span>
-                      {errorMSG && <span>{errorMSG}</span>}
+
                       {tatLoading ? <CircularProgress size={20} /> : <span>{deliveryTime}</span>}
                     </div>
                   )}
