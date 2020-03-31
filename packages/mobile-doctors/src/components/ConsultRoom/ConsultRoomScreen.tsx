@@ -112,6 +112,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -555,12 +556,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             text: strings.consult_room.reschedule,
             onPress: () => {
               endAppointmentApiCall(STATUS.CALL_ABANDON);
-              // hideAphAlert!();
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Alert!',
-                  description: 'Successfully Rescheduled',
-                });
+              hideAphAlert!();
             },
           },
         ],
@@ -570,6 +566,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const endAppointmentApiCall = (status: STATUS) => {
     stopNoShow();
     stopMissedCallTimer();
+    setShowLoading(true);
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
         mutation: END_APPOINTMENT_SESSION,
@@ -583,14 +580,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        //  setLoading(false);
+        setShowLoading(false);
         setShowPopUp(false);
         console.log('EndAppointmentSession', _data);
-        showAphAlert &&
-          showAphAlert({
-            title: 'Alert!',
-            description: 'Successfully Rescheduled',
-          });
         const text = {
           id: doctorId,
           message: messageCodes.callAbandonment,
@@ -607,10 +599,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           (status: any, response: any) => {}
         );
         //setShowButtons(false);
-        // props.onStopConsult();
+        onStopConsult();
+        showAphAlert &&
+          showAphAlert({
+            title: 'Alert!',
+            description: 'Successfully Rescheduled',
+            onPressOk: () => {
+              hideAphAlert && hideAphAlert();
+            },
+          });
       })
       .catch((e) => {
-        //  setLoading(false);
+        setShowLoading(false);
         setShowPopUp(false);
         console.log('Error occured while End casesheet', e);
         const error = JSON.parse(JSON.stringify(e));
@@ -1249,108 +1249,110 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             selectedTab={activeTabIndex}
           />
         </View>
-        <View
-          style={{
-            flex: 1,
-          }}
-        >
-          {activeTabIndex == tabsData[0].title ? (
-            <CaseSheetView
-              // disableConsultButton={!!PatientConsultTime}
-              overlayDisplay={(component) => {
-                setOverlayDisplay(component);
-              }}
-              onStartConsult={onStartConsult}
-              onStopConsult={onStopConsult}
-              startConsult={startConsult}
-              navigation={props.navigation}
-              messagePublish={(message: any) => {
-                pubnub.publish(
-                  {
-                    message,
-                    channel: channel,
-                    storeInHistory: true,
-                  },
-                  (status, response) => {}
-                );
-              }}
-              chatFiles={chatFiles}
-              setUrl={setUrl}
-              setPatientImageshow={setPatientImageshow}
-              setShowPDF={setShowPDF}
-              favList={favList}
-              favMed={favMed}
-              favTest={favTest}
-              caseSheet={caseSheet}
-              getdetails={() => getCaseSheetAPI()}
-              caseSheetEdit={caseSheetEdit}
-              setCaseSheetEdit={setCaseSheetEdit}
-              showEditPreviewButtons={showEditPreviewButtons}
-              setShowEditPreviewButtons={setShowEditPreviewButtons}
-              symptonsData={symptonsData}
-              setSymptonsData={(data) => setSymptonsData(data)}
-              pastList={pastList}
-              setPastList={setPastList}
-              lifeStyleData={lifeStyleData}
-              setLifeStyleData={setLifeStyleData}
-              medicalHistory={medicalHistory}
-              setMedicalHistory={setMedicalHistory}
-              familyValues={familyValues}
-              setFamilyValues={setFamilyValues}
-              patientDetails={patientDetails}
-              setPatientDetails={setPatientDetails}
-              healthWalletArrayData={healthWalletArrayData}
-              setHealthWalletArrayData={setHealthWalletArrayData}
-              tests={tests}
-              setTests={setTests}
-              addedAdvices={addedAdvices}
-              setAddedAdvices={setAddedAdvices}
-              juniordoctornotes={juniordoctornotes}
-              setJuniorDoctorNotes={setJuniorDoctorNotes}
-              diagnosisData={diagnosisData}
-              setDiagnosisData={setDiagnosisData}
-              medicinePrescriptionData={medicinePrescriptionData}
-              setMedicinePrescriptionData={setMedicinePrescriptionData}
-              selectedMedicinesId={selectedMedicinesId}
-              setSelectedMedicinesId={setSelectedMedicinesId}
-              switchValue={switchValue}
-              setSwitchValue={setSwitchValue}
-              followupDays={followupDays}
-              setFollowupDays={setFollowupDays}
-              followUpConsultationType={followUpConsultationType}
-              setFollowUpConsultationType={setFollowUpConsultationType}
-              doctorNotes={doctorNotes}
-              setDoctorNotes={setDoctorNotes}
-              displayId={displayId}
-              setDisplayId={setDisplayId}
-              prescriptionPdf={prescriptionPdf}
-              setPrescriptionPdf={setPrescriptionPdf}
-            />
-          ) : (
-            <View
-              style={{
-                flex: 1,
-                width: '100%',
-              }}
-            >
-              <ChatRoom
-                returnToCall={returnToCall}
-                setReturnToCall={setReturnToCall}
-                setChatReceived={setChatReceived}
+        {!loading ? (
+          <View
+            style={{
+              flex: 1,
+            }}
+          >
+            {activeTabIndex == tabsData[0].title ? (
+              <CaseSheetView
+                // disableConsultButton={!!PatientConsultTime}
+                overlayDisplay={(component) => {
+                  setOverlayDisplay(component);
+                }}
+                onStartConsult={onStartConsult}
+                onStopConsult={onStopConsult}
+                startConsult={startConsult}
                 navigation={props.navigation}
-                messages={messages}
-                send={send}
-                setAudioCallStyles={setAudioCallStyles}
-                flatListRef={flatListRef}
-                setShowPDF={setShowPDF}
-                setPatientImageshow={setPatientImageshow}
+                messagePublish={(message: any) => {
+                  pubnub.publish(
+                    {
+                      message,
+                      channel: channel,
+                      storeInHistory: true,
+                    },
+                    (status, response) => {}
+                  );
+                }}
+                chatFiles={chatFiles}
                 setUrl={setUrl}
-                isDropdownVisible={isDropdownVisible}
-                setDropdownVisible={setDropdownVisible}
+                setPatientImageshow={setPatientImageshow}
+                setShowPDF={setShowPDF}
+                favList={favList}
+                favMed={favMed}
+                favTest={favTest}
+                caseSheet={caseSheet}
+                getdetails={() => getCaseSheetAPI()}
+                caseSheetEdit={caseSheetEdit}
+                setCaseSheetEdit={setCaseSheetEdit}
+                showEditPreviewButtons={showEditPreviewButtons}
+                setShowEditPreviewButtons={setShowEditPreviewButtons}
+                symptonsData={symptonsData}
+                setSymptonsData={(data) => setSymptonsData(data)}
+                pastList={pastList}
+                setPastList={setPastList}
+                lifeStyleData={lifeStyleData}
+                setLifeStyleData={setLifeStyleData}
+                medicalHistory={medicalHistory}
+                setMedicalHistory={setMedicalHistory}
+                familyValues={familyValues}
+                setFamilyValues={setFamilyValues}
+                patientDetails={patientDetails}
+                setPatientDetails={setPatientDetails}
+                healthWalletArrayData={healthWalletArrayData}
+                setHealthWalletArrayData={setHealthWalletArrayData}
+                tests={tests}
+                setTests={setTests}
+                addedAdvices={addedAdvices}
+                setAddedAdvices={setAddedAdvices}
+                juniordoctornotes={juniordoctornotes}
+                setJuniorDoctorNotes={setJuniorDoctorNotes}
+                diagnosisData={diagnosisData}
+                setDiagnosisData={setDiagnosisData}
+                medicinePrescriptionData={medicinePrescriptionData}
+                setMedicinePrescriptionData={setMedicinePrescriptionData}
+                selectedMedicinesId={selectedMedicinesId}
+                setSelectedMedicinesId={setSelectedMedicinesId}
+                switchValue={switchValue}
+                setSwitchValue={setSwitchValue}
+                followupDays={followupDays}
+                setFollowupDays={setFollowupDays}
+                followUpConsultationType={followUpConsultationType}
+                setFollowUpConsultationType={setFollowUpConsultationType}
+                doctorNotes={doctorNotes}
+                setDoctorNotes={setDoctorNotes}
+                displayId={displayId}
+                setDisplayId={setDisplayId}
+                prescriptionPdf={prescriptionPdf}
+                setPrescriptionPdf={setPrescriptionPdf}
               />
-            </View>
-          )}
-        </View>
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  width: '100%',
+                }}
+              >
+                <ChatRoom
+                  returnToCall={returnToCall}
+                  setReturnToCall={setReturnToCall}
+                  setChatReceived={setChatReceived}
+                  navigation={props.navigation}
+                  messages={messages}
+                  send={send}
+                  setAudioCallStyles={setAudioCallStyles}
+                  flatListRef={flatListRef}
+                  setShowPDF={setShowPDF}
+                  setPatientImageshow={setPatientImageshow}
+                  setUrl={setUrl}
+                  isDropdownVisible={isDropdownVisible}
+                  setDropdownVisible={setDropdownVisible}
+                />
+              </View>
+            )}
+          </View>
+        ) : null}
       </>
     );
   };
@@ -1776,7 +1778,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 item.fileType == 'pdf' ||
                 item.fileType == 'png'
               ) {
-                // setLoading && setLoading(true);
+                setShowLoading(true);
                 client
                   .mutate<uploadChatDocument>({
                     mutation: UPLOAD_CHAT_FILE,
@@ -1789,7 +1791,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   })
                   .then((data) => {
                     console.log('upload data', data);
-                    // setLoading && setLoading(false);
+                    setShowLoading(false);
                     const text = {
                       id: doctorId,
                       message: messageCodes.imageconsult,
@@ -1808,7 +1810,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     );
                   })
                   .catch((e) => {
-                    setLoading && setLoading(false);
+                    setShowLoading(false);
                     console.log('upload data error', e);
                   });
               }
@@ -1898,193 +1900,200 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
       }}
     >
-      <StatusBar hidden={hideStatusBar} />
-      {showHeaderView()}
-      {overlayDisplay}
-      {displayReSchedulePopUp && (
-        <ReSchedulePopUp
-          doctorId={doctorId}
-          appointmentId={AppId}
-          onClose={() => setDisplayReSchedulePopUp(false)}
-          date={Appintmentdatetime}
-          loading={(val) => setLoading && setLoading(val)}
-          onDone={(reschduleObject) => {
-            console.log(reschduleObject, 'reschduleObject');
-            pubnub.publish(
-              {
-                message: {
-                  id: doctorId,
-                  message: messageCodes.rescheduleconsult,
-                  transferInfo: reschduleObject,
+      {showLoading && <Spinner />}
+      <SafeAreaView
+        style={{
+          flex: 1,
+        }}
+      >
+        <StatusBar hidden={hideStatusBar} />
+        {showHeaderView()}
+        {overlayDisplay}
+        {displayReSchedulePopUp && (
+          <ReSchedulePopUp
+            doctorId={doctorId}
+            appointmentId={AppId}
+            onClose={() => setDisplayReSchedulePopUp(false)}
+            date={Appintmentdatetime}
+            loading={(val) => setLoading && setLoading(val)}
+            onDone={(reschduleObject) => {
+              console.log(reschduleObject, 'reschduleObject');
+              pubnub.publish(
+                {
+                  message: {
+                    id: doctorId,
+                    message: messageCodes.rescheduleconsult,
+                    transferInfo: reschduleObject,
+                  },
+                  channel: AppId,
+                  storeInHistory: true,
                 },
-                channel: AppId,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-            props.navigation.push(AppRoutes.TabBar);
-          }}
-        />
-      )}
-      {dropdownShow ? renderDropdown() : null}
-      {!loading && renderTabPage()}
-      {showPopUp && CallPopUp()}
-      {isAudioCall && (
-        <AudioCall
-          minutes={minutes}
-          seconds={seconds}
-          convertVideo={convertVideo}
-          callTimerStarted={callTimerStarted}
-          audioCallStyles={audioCallStyles}
-          setAudioCallStyles={setAudioCallStyles}
-          cameraPosition={cameraPosition}
-          setCameraPosition={setCameraPosition}
-          firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
-          chatReceived={chatReceived}
-          callAccepted={callAccepted}
-          setChatReceived={setChatReceived}
-          setReturnToCall={setReturnToCall}
-          showVideo={showVideo}
-          otSessionRef={otSessionRef}
-          sessionId={sessionId}
-          token={token}
-          subscriberEventHandlers={subscriberEventHandlers}
-          publisherEventHandlers={publisherEventHandlers}
-          sessionEventHandlers={sessionEventHandlers}
-          navigation={props.navigation}
-          onVideoToggle={() => {
-            showVideo === true ? setShowVideo(false) : setShowVideo(true);
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message:
-                    showVideo === true ? messageCodes.covertVideoMsg : messageCodes.covertAudioMsg,
+                (status, response) => {}
+              );
+              props.navigation.push(AppRoutes.TabBar);
+            }}
+          />
+        )}
+        {dropdownShow ? renderDropdown() : null}
+        {renderTabPage()}
+        {showPopUp && CallPopUp()}
+        {isAudioCall && (
+          <AudioCall
+            minutes={minutes}
+            seconds={seconds}
+            convertVideo={convertVideo}
+            callTimerStarted={callTimerStarted}
+            audioCallStyles={audioCallStyles}
+            setAudioCallStyles={setAudioCallStyles}
+            cameraPosition={cameraPosition}
+            setCameraPosition={setCameraPosition}
+            firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
+            chatReceived={chatReceived}
+            callAccepted={callAccepted}
+            setChatReceived={setChatReceived}
+            setReturnToCall={setReturnToCall}
+            showVideo={showVideo}
+            otSessionRef={otSessionRef}
+            sessionId={sessionId}
+            token={token}
+            subscriberEventHandlers={subscriberEventHandlers}
+            publisherEventHandlers={publisherEventHandlers}
+            sessionEventHandlers={sessionEventHandlers}
+            navigation={props.navigation}
+            onVideoToggle={() => {
+              showVideo === true ? setShowVideo(false) : setShowVideo(true);
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message:
+                      showVideo === true
+                        ? messageCodes.covertVideoMsg
+                        : messageCodes.covertAudioMsg,
+                  },
+                  channel: channel,
+                  storeInHistory: false,
                 },
-                channel: channel,
-                storeInHistory: false,
-              },
-              (status, response) => {}
-            );
-          }}
-          onPressEndCall={() => {
-            setIsAudioCall(false);
-            setHideStatusBar(false);
-            stopTimer();
-            stopMissedCallTimer();
-            setChatReceived(false);
-            setConvertVideo(false);
-            setShowVideo(true);
-            endCallNotificationAPI(true);
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: strings.consult_room.audio_call_ended,
-                  duration: callTimerStarted,
-                  id: doctorId,
-                  messageDate: new Date(),
+                (status, response) => {}
+              );
+            }}
+            onPressEndCall={() => {
+              setIsAudioCall(false);
+              setHideStatusBar(false);
+              stopTimer();
+              stopMissedCallTimer();
+              setChatReceived(false);
+              setConvertVideo(false);
+              setShowVideo(true);
+              endCallNotificationAPI(true);
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: strings.consult_room.audio_call_ended,
+                    duration: callTimerStarted,
+                    id: doctorId,
+                    messageDate: new Date(),
+                  },
+                  channel: channel,
+                  storeInHistory: true,
                 },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-          }}
-        />
-      )}
-      {isCall && (
-        <VideoCall
-          navigation={props.navigation}
-          setChatReceived={setChatReceived}
-          chatReceived={chatReceived}
-          callAccepted={callAccepted}
-          callMinutes={callMinutes}
-          callSeconds={callSeconds}
-          minutes={minutes}
-          seconds={seconds}
-          firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
-          subscriberEventHandlers={subscriberEventHandlers}
-          sessionEventHandlers={sessionEventHandlers}
-          sessionId={sessionId}
-          token={token}
-          otSessionRef={otSessionRef}
-          publisherEventHandlers={publisherEventHandlers}
-          cameraPosition={cameraPosition}
-          setCameraPosition={setCameraPosition}
-          onPressBottomEndCall={() => {
-            setIsCall(false);
-            stopTimer();
-            setHideStatusBar(false);
-            setChatReceived(false);
-            stopMissedCallTimer();
-            endCallNotificationAPI(true);
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: strings.consult_room.video_call_ended,
-                  duration: callTimerStarted,
-                  id: doctorId,
+                (status, response) => {}
+              );
+            }}
+          />
+        )}
+        {isCall && (
+          <VideoCall
+            navigation={props.navigation}
+            setChatReceived={setChatReceived}
+            chatReceived={chatReceived}
+            callAccepted={callAccepted}
+            callMinutes={callMinutes}
+            callSeconds={callSeconds}
+            minutes={minutes}
+            seconds={seconds}
+            firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
+            subscriberEventHandlers={subscriberEventHandlers}
+            sessionEventHandlers={sessionEventHandlers}
+            sessionId={sessionId}
+            token={token}
+            otSessionRef={otSessionRef}
+            publisherEventHandlers={publisherEventHandlers}
+            cameraPosition={cameraPosition}
+            setCameraPosition={setCameraPosition}
+            onPressBottomEndCall={() => {
+              setIsCall(false);
+              stopTimer();
+              setHideStatusBar(false);
+              setChatReceived(false);
+              stopMissedCallTimer();
+              endCallNotificationAPI(true);
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: strings.consult_room.video_call_ended,
+                    duration: callTimerStarted,
+                    id: doctorId,
+                  },
+                  channel: channel,
+                  storeInHistory: true,
                 },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-          }}
-          onPressEnd={() => {
-            // setIsCall(false);
-            stopTimer();
-            setHideStatusBar(false);
-            setChatReceived(false);
-            stopMissedCallTimer();
-            endCallNotificationAPI(true);
-            pubnub.publish(
-              {
-                message: {
-                  isTyping: true,
-                  message: strings.consult_room.video_call_ended,
-                  duration: callTimerStarted,
-                  id: doctorId,
+                (status, response) => {}
+              );
+            }}
+            onPressEnd={() => {
+              // setIsCall(false);
+              stopTimer();
+              setHideStatusBar(false);
+              setChatReceived(false);
+              stopMissedCallTimer();
+              endCallNotificationAPI(true);
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: strings.consult_room.video_call_ended,
+                    duration: callTimerStarted,
+                    id: doctorId,
+                  },
+                  channel: channel,
+                  storeInHistory: true,
                 },
-                channel: channel,
-                storeInHistory: true,
-              },
-              (status, response) => {}
-            );
-          }}
-        />
-      )}
-      {/* {showLoading && <Spinner />} */}
-      {uploadPrescriptionPopup()}
-      {patientImageshow && imageOpen()}
-      {showweb && showWeimageOpen()}
-      {showPDF && (
-        <RenderPdf
-          uri={url}
-          title={
-            url
-              .split('/')
-              .pop()!
-              .split('=')
-              .pop() || 'Document'
-          }
-          isPopup={true}
-          setDisplayPdf={() => {
-            setShowPDF(false);
-            setUrl('');
-          }}
-          navigation={props.navigation}
-        />
-      )}
-      {showCancelPopup && renderCancelPopup()}
-      {/* {showMorePopup && (
+                (status, response) => {}
+              );
+            }}
+          />
+        )}
+        {uploadPrescriptionPopup()}
+        {patientImageshow && imageOpen()}
+        {showweb && showWeimageOpen()}
+        {showPDF && (
+          <RenderPdf
+            uri={url}
+            title={
+              url
+                .split('/')
+                .pop()!
+                .split('=')
+                .pop() || 'Document'
+            }
+            isPopup={true}
+            setDisplayPdf={() => {
+              setShowPDF(false);
+              setUrl('');
+            }}
+            navigation={props.navigation}
+          />
+        )}
+        {showCancelPopup && renderCancelPopup()}
+        {/* {showMorePopup && (
         <TouchableOpacity
           style={{
             position: 'absolute',
@@ -2128,6 +2137,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           </View>
         </TouchableOpacity>
       )} */}
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
