@@ -198,18 +198,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       // setLoading && setLoading(true);
       //setconsultations([]);
-      getNetStatus()
-        .then((status) => {
-          if (status) {
-            fetchAppointments();
-          } else {
-            setLoading && setLoading(false);
-            setshowOfflinePopup(true);
-          }
-        })
-        .catch((e) => {
-          CommonBugFender('Consult_getNetStatus', e);
-        });
+      // console.log('didFocus');
+      // getNetStatus()
+      //   .then((status) => {
+      //     if (status) {
+      //       fetchAppointments();
+      //     } else {
+      //       setLoading && setLoading(false);
+      //       setshowOfflinePopup(true);
+      //     }
+      //   })
+      //   .catch((e) => {
+      //     CommonBugFender('Consult_getNetStatus', e);
+      //   });
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
@@ -280,21 +281,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    setLoading && setLoading(true);
+    // setLoading && setLoading(true);
 
-    // getNetStatus()
-    //   .then((status) => {
-    //     if (status) {
-    //       // setLoading && setLoading(true);
-    //       fetchAppointments();
-    //     } else {
-    //       setLoading && setLoading(false);
-    //       setshowOfflinePopup(true);
-    //     }
-    //   })
-    //   .catch((e) => {
-    //     CommonBugFender('Consult_getNetStatus_useEffect', e);
-    //   });
+    getNetStatus()
+      .then((status) => {
+        if (status) {
+          // setLoading && setLoading(true);
+          fetchAppointments();
+        } else {
+          setLoading && setLoading(false);
+          setshowOfflinePopup(true);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('Consult_getNetStatus_useEffect', e);
+      });
   }, [currentPatient]);
 
   // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
@@ -305,7 +306,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   // console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
-    // setLoading && setLoading(true);
+    setLoading && setLoading(true);
     console.log('inputdata', inputData);
     client
       .query<getPatientAllAppointments>({

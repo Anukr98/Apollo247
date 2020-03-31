@@ -104,8 +104,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '1.914',
-  Android_Version: '1.914',
+  iOS_Version: '1.915',
+  Android_Version: '1.915',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
