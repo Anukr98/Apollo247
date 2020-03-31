@@ -1,6 +1,7 @@
 type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum WebEngageEventName {
+  MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
@@ -88,6 +89,7 @@ export interface SpecialityClickedEvent extends PatientInfo {
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
+  [WebEngageEventName.MOBILE_ENTRY]: {};
   [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
   [WebEngageEventName.OTP_ENTERED]: YesOrNo;
   [WebEngageEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
