@@ -118,6 +118,8 @@ export interface GetDoctorDetails_getDoctorDetails {
   emailAddress: string | null;
   experience: string | null;
   firebaseToken: string | null;
+  fullName: string | null;
+  displayName: string | null;
   firstName: string;
   isActive: boolean;
   id: string;

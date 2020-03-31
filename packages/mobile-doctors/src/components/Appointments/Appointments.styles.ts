@@ -75,6 +75,7 @@ export default StyleSheet.create({
     color: '#02475b',
     marginLeft: 20,
     marginBottom: 2,
+    marginRight: 20,
   },
   schedule: {
     ...theme.fonts.IBMPlexSansMedium(16),

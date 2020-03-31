@@ -114,9 +114,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     if (!getDoctorDetails.firstName) return null;
     return (
       <View>
-        <Text style={styles.profile}>
-          {strings.common.dr} {getDoctorDetails.firstName} {getDoctorDetails.lastName}
-        </Text>
+        <Text style={styles.profile}>{getDoctorDetails.displayName}</Text>
       </View>
     );
   };
