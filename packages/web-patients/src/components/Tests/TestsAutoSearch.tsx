@@ -13,6 +13,7 @@ import {
   searchDiagnostics,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from 'graphql/types/searchDiagnostics';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -141,6 +142,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       padding: 20,
     },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
   };
 });
 
@@ -192,6 +197,10 @@ export const TestsAutoSearch: React.FC = (props) => {
       setLoading(false);
     }
   }, [searchText]);
+
+  let showError = false;
+  if (!loading && searchTests && searchTests.length === 0 && searchText.length > 2) showError = true;
+
   return (
     <div className={classes.root}>
       <div className={classes.medicineSearchForm}>
@@ -199,6 +208,7 @@ export const TestsAutoSearch: React.FC = (props) => {
           placeholder="Search test and packages"
           className={classes.searchInput}
           value={searchText}
+          error={showError}
           onChange={(e) => {
             setSearchText(e.target.value.trimLeft().replace(/\s+/gi, ' '));
             if (e.target.value.length > 2) {
@@ -223,6 +233,13 @@ export const TestsAutoSearch: React.FC = (props) => {
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>
+      {showError ? (
+        <FormHelperText className={classes.helpText} component="div" error={showError}>
+          Sorry, we couldn't find what you are looking for :(
+        </FormHelperText>
+      ) : (
+          ''
+        )}
       <Paper className={classes.autoSearchPopover}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'45vh'}>
           {loading && (
