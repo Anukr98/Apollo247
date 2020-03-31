@@ -287,26 +287,44 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (pincodeCityDetails) pincodeCity = pincodeCityDetails.city;
   }
   if (pincodeCity != '') {
+    console.log('entered here');
     //matching docs sorting city based start
     const cityMatchedDocs: Doctor[] = [];
     const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
     const otherCityMatchedDocs: Doctor[] = [];
     const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
     let startSort = 0;
+    const matchedDocIds: string[] = [];
+    const matchedOtherDocIds: string[] = [];
     finalSortedDoctors.map((preFinalDoc) => {
       if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
         cityMatchedDocs.push(preFinalDoc);
+        matchedDocIds.push(preFinalDoc.id);
         cityMatchedDoctorsNextAvailability.push(finalDoctorNextAvailSlots[startSort]);
       } else {
         otherCityMatchedDocs.push(preFinalDoc);
+        matchedOtherDocIds.push(preFinalDoc.id);
         otherCityMatchedDoctorsNextAvailability.push(finalDoctorNextAvailSlots[startSort]);
       }
       startSort++;
     });
-    finalSortedDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
+    const cityMatchedDocsOrder: Doctor[] = [];
+    cityMatchedDoctorsNextAvailability.map((availDoc) => {
+      const docIndex = matchedDocIds.indexOf(availDoc.doctorId);
+      cityMatchedDocsOrder.push(cityMatchedDocs[docIndex]);
+    });
+
+    //const cityMatchedDocsOrder: Doctor[] = [];
+    otherCityMatchedDoctorsNextAvailability.map((availDoc) => {
+      const docIndex = matchedOtherDocIds.indexOf(availDoc.doctorId);
+      cityMatchedDocsOrder.push(otherCityMatchedDocs[docIndex]);
+    });
+
+    finalSortedDoctors = cityMatchedDocsOrder; //cityMatchedDocs.concat(otherCityMatchedDocs);
     finalDoctorNextAvailSlots = cityMatchedDoctorsNextAvailability.concat(
       otherCityMatchedDoctorsNextAvailability
     );
+
     //matching docs sorting city based end
   }
   searchLogger(`API_CALL___END`);
