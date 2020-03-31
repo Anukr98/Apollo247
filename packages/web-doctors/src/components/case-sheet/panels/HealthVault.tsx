@@ -347,7 +347,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
+  const { healthVault, appointmentDocuments, pastAppointments, patientDetails } = useContext(
+    CaseSheetContext
+  );
   const client = useApolloClient();
   var prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
@@ -369,19 +371,21 @@ export const HealthVault: React.FC = () => {
   });
   const downloadDocumentsInputVariable = {
     fileIds: prismIdList,
-    patientId: pastAppointments && pastAppointments[0] && pastAppointments[0].patientId,
+    patientId: patientDetails && patientDetails.id,
   };
   useEffect(() => {
-    client
-      .query<downloadDocuments>({
-        query: DOWNLOAD_DOCUMENTS,
-        variables: { downloadDocumentsInput: downloadDocumentsInputVariable },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        setPrismImageList(data.downloadDocuments.downloadPaths);
-        setLoading(false);
-      });
+    if (downloadDocumentsInputVariable.patientId) {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENTS,
+          variables: { downloadDocumentsInput: downloadDocumentsInputVariable },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          setPrismImageList(data.downloadDocuments.downloadPaths);
+          setLoading(false);
+        });
+    }
   }, []);
 
   return (
