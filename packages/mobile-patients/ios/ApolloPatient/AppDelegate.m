@@ -174,17 +174,16 @@ API_AVAILABLE(ios(10.0)){
     NSLog(@"%@",exception );
   }
   
+  [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
+  
+  [RCTLinkingManager application:application
+            openURL:url
+  sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
+         annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+
   if ([[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options]) {
     return YES;
   }
-
-  if ([RCTLinkingManager application:application openURL:url options:options]) {
-    return YES;
-  }
-  
-  NSLog(@"url -----> %@",url );
-
-  [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
 
   return YES;
 }

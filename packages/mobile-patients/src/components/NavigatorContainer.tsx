@@ -392,7 +392,8 @@ const stackConfig: StackNavigatorConfig = {
       CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
       logTabEvents(sceneProps.scene.route);
       if (sceneProps.scene.route.routeName === AppRoutes.ChatRoom) {
-        AsyncStorage.setItem('NAVIGATION_PROPS', JSON.stringify(sceneProps));
+        // AsyncStorage.setItem('NAVIGATION_PROPS', JSON.stringify(sceneProps));
+        AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
       } else if (sceneProps.scene.route.routeName !== AppRoutes.SplashScreen) {
         AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
       }

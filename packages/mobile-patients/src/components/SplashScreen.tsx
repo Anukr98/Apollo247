@@ -130,57 +130,59 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, []);
 
   const handleOpenURL = (event: any) => {
-    console.log('event', event);
-    let route;
+    try {
+      console.log('event', event);
+      let route;
 
-    route = event.replace('apollopatients://', '');
+      route = event.replace('apollopatients://', '');
 
-    const data = route.split('?');
-    route = data[0];
+      const data = route.split('?');
+      route = data[0];
 
-    console.log(data, 'data');
+      console.log(data, 'data');
 
-    // const id = data[1];
+      // const id = data[1];
 
-    switch (route) {
-      case 'Consult':
-        console.log('Consult');
-        getData('Consult', data.length === 2 ? data[1] : undefined);
-        break;
-      case 'Medicine':
-        console.log('Medicine');
-        getData('Medicine', data.length === 2 ? data[1] : undefined);
-        break;
-      case 'Test':
-        console.log('Test');
-        getData('Test');
-        break;
-      case 'Speciality':
-        console.log('Speciality handleopen');
-        if (data.length === 2) getData('Speciality', data[1]);
-        break;
-      case 'Doctor':
-        console.log('Doctor handleopen');
-        if (data.length === 2) getData('Doctor', data[1]);
-        break;
-      case 'DoctorSearch':
-        console.log('DoctorSearch handleopen');
-        getData('DoctorSearch');
-        break;
+      switch (route) {
+        case 'Consult':
+          console.log('Consult');
+          getData('Consult', data.length === 2 ? data[1] : undefined);
+          break;
+        case 'Medicine':
+          console.log('Medicine');
+          getData('Medicine', data.length === 2 ? data[1] : undefined);
+          break;
+        case 'Test':
+          console.log('Test');
+          getData('Test');
+          break;
+        case 'Speciality':
+          console.log('Speciality handleopen');
+          if (data.length === 2) getData('Speciality', data[1]);
+          break;
+        case 'Doctor':
+          console.log('Doctor handleopen');
+          if (data.length === 2) getData('Doctor', data[1]);
+          break;
+        case 'DoctorSearch':
+          console.log('DoctorSearch handleopen');
+          getData('DoctorSearch');
+          break;
 
-      case 'MedicineSearch':
-        console.log('MedicineSearch handleopen');
-        getData('MedicineSearch', data.length === 2 ? data[1] : undefined);
-        break;
-      case 'MedicineDetail':
-        console.log('MedicineDetail handleopen');
-        getData('MedicineDetail', data.length === 2 ? data[1] : undefined);
-        break;
+        case 'MedicineSearch':
+          console.log('MedicineSearch handleopen');
+          getData('MedicineSearch', data.length === 2 ? data[1] : undefined);
+          break;
+        case 'MedicineDetail':
+          console.log('MedicineDetail handleopen');
+          getData('MedicineDetail', data.length === 2 ? data[1] : undefined);
+          break;
 
-      default:
-        break;
-    }
-    console.log('route', route);
+        default:
+          break;
+      }
+      console.log('route', route);
+    } catch (error) {}
   };
 
   useEffect(() => {

@@ -497,6 +497,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (!currentPatient) {
       // getPatientApiCall();
     } else {
+      AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
         setAppointmentLoading(true);
         setSelectedProfile(currentPatient.id);
