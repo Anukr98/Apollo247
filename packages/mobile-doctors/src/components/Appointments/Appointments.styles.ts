@@ -78,7 +78,12 @@ export default StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(28),
     color: '#02475b',
     marginBottom: 2,
-    marginRight: 20,
+  },
+  doctorname1: {
+    ...theme.fonts.IBMPlexSansSemiBold(28),
+    color: '#02475b',
+    marginBottom: 2,
+    flex: 1,
   },
   doctorname1: {
     ...theme.fonts.IBMPlexSansSemiBold(28),
