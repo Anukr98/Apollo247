@@ -1188,16 +1188,36 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
                 <DiagnosicsCard
                   diseaseName={item.itemname}
+                  containerStyle={{
+                    backgroundColor: !item.isSelected ? theme.colors.WHITE : '#F9F9F9',
+                  }}
                   icon={
                     <TouchableOpacity
                       onPress={() => {
-                        caseSheetEdit &&
-                          setTests(tests.filter((i) => i.itemname !== item.itemname));
+                        if (caseSheetEdit) {
+                          const itemLocation = tests.findIndex((i) => i.itemname === item.itemname);
+                          const modifiedArray = tests.filter((i) => i.itemname !== item.itemname);
+                          modifiedArray.splice(
+                            itemLocation > -1 ? itemLocation : tests.length - 1,
+                            0,
+                            {
+                              itemname: item.itemname,
+                              isSelected: !item.isSelected,
+                            }
+                          );
+                          setTests(modifiedArray);
+                        }
                       }}
                     >
-                      <CheckboxSelected
-                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                      />
+                      {item.isSelected ? (
+                        <CheckboxSelected
+                          style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                        />
+                      ) : (
+                        <CheckboxUnSelected
+                          style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
+                        />
+                      )}
                     </TouchableOpacity>
                   }
                 />

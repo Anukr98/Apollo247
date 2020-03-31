@@ -58,17 +58,17 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
         console.log('length is greater than  zero');
         for (let i = 0; i < tempTestArray.length; i++) {
           console.log('for loop');
-          if (tempTestArray[i] === Testitemname) {
+          if (tempTestArray[i].itemname === Testitemname.itemname) {
             Alert.alert(strings.common.alert, 'Test existed in the list.');
             console.log('same test name');
           } else {
             console.log(' test name not same');
-            settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+            settempTestArray([...tempTestArray, Testitemname].filter((i) => i.itemname !== ''));
           }
         }
       } else {
         console.log('length is zero');
-        settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
+        settempTestArray([Testitemname].filter((i) => i.itemname !== ''));
       }
     }
     // settempTestArray([...new Set(tempTestArray.concat(Testitemname))]);
@@ -94,7 +94,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                   onPress: () => {
                     Keyboard.dismiss();
                     // getTempTestArray(item);
-                    getTempTestArray(item!.itemname);
+                    getTempTestArray(item);
                     setsearchTestVal(g(item, 'itemname') || '');
                     // isSearchTestListVisible;
                     setisSearchTestListVisible(!isSearchTestListVisible);
@@ -220,7 +220,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                           console.log('......tempTestArray:', tempTestArray);
                           return (
                             <ChipIconView
-                              title={item}
+                              title={item.itemname || ''}
                               onPress={(e: any) => {
                                 console.log('deleted');
                                 settempTestArray(tempTestArray.slice(1));
