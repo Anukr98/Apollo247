@@ -369,7 +369,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             } else if (typeof res.data === 'string') {
               // console.log(res.data);
             } else if (typeof res.data.errorMSG === 'string') {
-              setRrrorMessage(res.data.errorMSG);
+              setErrorMessage(res.data.errorMSG);
               // console.log(res.data.errorMSG);
             }
           }
