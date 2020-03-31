@@ -136,7 +136,7 @@ export enum ApiConstants {
 
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
-  PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
+  PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'support@apollohospitals.zohodesk.in',
   PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,raj@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
