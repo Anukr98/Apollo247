@@ -449,6 +449,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onChange={(e) => {
                         setPinCode(e.target.value);
+                        setErrorMessage('');
                         if (e.target.value.length < 6) {
                           setDeliveryTime('');
                         }
