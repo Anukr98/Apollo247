@@ -164,6 +164,9 @@ interface DoctorsListingProps {
 
 let availableNow = {};
 const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
+  if (availability.length === 0) {
+    availableNow = {};
+  }
   const availabilityArray: String[] = [];
   const today = moment(new Date())
     .utc()
