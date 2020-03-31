@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
 
 export const styles = StyleSheet.create({
   shadowview: {
@@ -37,5 +38,20 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 15,
+  },
+  doctornameContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+  },
+  doctorname: {
+    ...theme.fonts.IBMPlexSansSemiBold(28),
+    color: '#02475b',
+    marginBottom: 2,
+  },
+  doctorname1: {
+    ...theme.fonts.IBMPlexSansSemiBold(28),
+    color: '#02475b',
+    marginBottom: 2,
+    flex: 1,
   },
 });
