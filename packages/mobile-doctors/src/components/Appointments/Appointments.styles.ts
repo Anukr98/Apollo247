@@ -83,7 +83,7 @@ export default StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(28),
     color: '#02475b',
     marginBottom: 2,
-    flex: 1,
+    maxWidth: '75%',
   },
   schedule: {
     ...theme.fonts.IBMPlexSansMedium(16),
