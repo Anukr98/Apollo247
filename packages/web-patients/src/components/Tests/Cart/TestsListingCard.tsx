@@ -42,7 +42,6 @@ const useStyles = makeStyles((theme: Theme) => {
     medicineIcon: {
       marginRight: 10,
       minWidth: 35,
-      marginLeft: 'auto',
       textAlign: 'center',
       '& img': {
         maxWidth: 35,
