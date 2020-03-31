@@ -184,6 +184,9 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
       {openCouponField && (
         <div className={classes.couponForm}>
           <AphTextField
+            inputProps={{
+              maxLength: 15,
+            }}
             placeholder="Enter coupon code"
             onChange={(event) => {
               setErrorMessage('');
