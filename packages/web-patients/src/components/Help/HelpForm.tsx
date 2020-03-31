@@ -151,7 +151,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
   const classes = useStyles();
   const { submitStatus, closeHelpForm } = props;
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>(defaultSelectedCategory);
-  const [selectedReason, setSelectedReason] = useState<string>('');
+  const [selectedReason, setSelectedReason] = useState<string>('placeholder');
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
   const [comments, setComments] = useState<string>('');
   const reasonsList = _find(generalHelpSections, (helpSection: HelpSectionProps) => {
@@ -183,7 +183,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
                       onClick={(e) => {
                         const categoryName = e.currentTarget.value;
                         setSelectedCategoryName(categoryName);
-                        setSelectedReason('');
+                        setSelectedReason('placeholder');
                       }}
                     >
                       {categoryName}
@@ -202,6 +202,14 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
                   }}
                   value={selectedReason}
                 >
+                  <MenuItem
+                    value="placeholder"
+                    disabled
+                    classes={{ selected: classes.menuSelected }}
+                    key="placeholder"
+                  >
+                    <span>please select a reason that best matches your query.</span>
+                  </MenuItem>
                   {reasonsList &&
                     reasonsList.options &&
                     reasonsList.options.map((reasonName: string) => {
@@ -236,7 +244,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
       <div className={classes.bottomActions}>
         <AphButton
           onClick={() => {
-            setSelectedReason('');
+            setSelectedReason('placeholder');
             setSelectedCategoryName(defaultSelectedCategory);
             setComments('');
           }}
