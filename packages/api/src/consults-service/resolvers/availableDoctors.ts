@@ -50,7 +50,7 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
 
 const getAvailableDoctorsCount: Resolver<
   null,
-  { availabilityDate: Date },
+  { availabilityDate: Date; docLimit: number; docOffset: number },
   ConsultServiceContext,
   GetAvailableDoctorsCountResult
 > = async (parent, args, context) => {
@@ -58,7 +58,7 @@ const getAvailableDoctorsCount: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT, undefined, {});
   }
   const { docRepo, docSpecialityRepo } = getRepos(context);
-  const docsList = await docRepo.getAllDoctors('0');
+  const docsList = await docRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const specialityList = await docSpecialityRepo.findAll();
   const result: SpecialityAndCounts[] = [];
   const specialitys: { [k: string]: Doctor[] } = {};
