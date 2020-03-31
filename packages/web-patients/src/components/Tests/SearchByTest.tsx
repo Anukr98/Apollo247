@@ -10,6 +10,7 @@ import { useLocationDetails } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTICS, GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import {
   searchDiagnostics,
   searchDiagnostics_searchDiagnostics_diagnostics,
@@ -187,6 +188,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
       margin: 'auto',
     },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
     testsList: {
       color: '#0087ba',
       fontSize: 14,
@@ -299,6 +304,10 @@ export const SearchByTest: React.FC = (props) => {
     }
   }, [searchValue]);
 
+  let showError = false;
+
+  if (!loading && testsList && testsList.length === 0 && !diagnosticList) showError = true;
+
   return (
     <div className={classes.root}>
       <Header />
@@ -324,11 +333,20 @@ export const SearchByTest: React.FC = (props) => {
                     setSearchValue(e.target.value.replace(/\s+/gi, ' ').trimLeft());
                   }}
                   value={searchValue}
+                  error={showError}
                 />
+
                 <AphButton className={classes.searchBtn}>
                   <img src={require('images/ic_send.svg')} alt="" />
                 </AphButton>
               </div>
+              {showError ? (
+                <FormHelperText className={classes.helpText} component="div" error={showError}>
+                  Sorry, we couldn't find what you are looking for :(
+                </FormHelperText>
+              ) : (
+                  ''
+                )}
             </div>
             <div className={`${classes.searchSection}`}>
               <Scrollbars
@@ -343,8 +361,8 @@ export const SearchByTest: React.FC = (props) => {
                   ) : diagnosticList ? (
                     <TestCard testData={diagnosticList} mou={1} />
                   ) : (
-                    'No data found'
-                  )}
+                          'No data found'
+                        )}
                 </div>
               </Scrollbars>
             </div>
