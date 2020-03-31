@@ -12,6 +12,8 @@ export const GET_DOCTOR_DETAILS = gql`
       emailAddress
       experience
       firebaseToken
+      fullName
+      displayName
       firstName
       isActive
       id

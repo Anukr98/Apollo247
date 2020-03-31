@@ -35,18 +35,18 @@ const styles = ProfileSetupStyles;
 const headerContent = [
   {
     tab: 'Profile',
-    heading: (name: string) => `hi dr. ${name.toLowerCase()}!`,
+    heading: (name: string) => `hi ${name}!`,
     description:
       "It’s great to have you join us!\nHere's what your patients see when they\nview your profile",
   },
   {
     tab: 'Availability',
-    heading: (name: string) => `ok dr. ${name.toLowerCase()}!`,
+    heading: (name: string) => `ok ${name}!`,
     description: 'Now tell us what hours suit you for online \nand in-person consults',
   },
   {
     tab: 'Fees',
-    heading: (name: string) => `ok dr. ${name.toLowerCase()}!`,
+    heading: (name: string) => `ok ${name}!`,
     description:
       'Lastly, some money-related matters like \nfees, packages and how you take payments',
   },
@@ -179,7 +179,7 @@ export const ProfileSetup: React.FC<ProfileSetupProps> = (props) => {
 
   const renderProgressBar = (tabIndex: number, data: GetDoctorDetails_getDoctorDetails) => (
     <ProfileTabHeader
-      title={headerContent[tabIndex].heading(data!.lastName)}
+      title={headerContent[tabIndex].heading(data!.displayName || '')}
       description={headerContent[tabIndex].description}
       tabs={(data!.doctorType == DoctorType.PAYROLL
         ? [headerContent[0], headerContent[1]]

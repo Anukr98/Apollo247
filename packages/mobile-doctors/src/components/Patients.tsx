@@ -163,11 +163,11 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             color: '#02475b',
             marginLeft: 20,
             marginBottom: 2,
+            marginRight: 20,
           }}
-        >{`${strings.case_sheet.hello_dr} ${(doctorDetails
-          ? doctorDetails.firstName
-          : ''
-        ).toLowerCase()} :)`}</Text>
+        >{`${strings.case_sheet.hello_dr} ${
+          doctorDetails ? doctorDetails.displayName : ''
+        } :)`}</Text>
         <Text
           style={{
             ...theme.fonts.IBMPlexSansMedium(16),
