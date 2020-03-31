@@ -321,7 +321,7 @@ export const SearchByTest: React.FC = (props) => {
                 <AphTextField
                   placeholder="Search tests"
                   onChange={(e) => {
-                    setSearchValue(e.target.value);
+                    setSearchValue(e.target.value.replace(/\s+/gi, ' ').trimLeft());
                   }}
                   value={searchValue}
                 />

@@ -198,11 +198,11 @@ export const TestsAutoSearch: React.FC = (props) => {
         <AphTextField
           placeholder="Search test and packages"
           className={classes.searchInput}
-          value={searchText.replace(/\s+/gi, ' ').trimLeft()}
+          value={searchText}
           onChange={(e) => {
-            setSearchText(e.target.value);
+            setSearchText(e.target.value.trimLeft().replace(/\s+/gi, ' '));
             if (e.target.value.length > 2) {
-              onSearchTests(e.target.value);
+              onSearchTests(e.target.value.trimLeft().replace(/\s+/gi, ' '));
             } else {
               setSearchTests([]);
             }
