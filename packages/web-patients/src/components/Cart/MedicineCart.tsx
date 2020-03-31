@@ -937,7 +937,11 @@ export const MedicineCart: React.FC = (props) => {
             color="primary"
             fullWidth
             disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
-            className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+            className={
+              disableSubmit || !isPaymentButtonEnable || mutationLoading
+                ? classes.buttonDisable
+                : ''
+            }
             title={'Proceed to pay bill'}
           >
             {cartItems && cartItems.length > 0 ? (
