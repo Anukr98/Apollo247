@@ -39,8 +39,8 @@ import {
 import {
   g,
   postWebEngageEvent,
-  doRequestAndAccessLocation,
   UnInstallAppsFlyer,
+  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -228,7 +228,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
 
   const updateLocation = () => {
-    doRequestAndAccessLocation()
+    doRequestAndAccessLocationModified()
       .then((response) => {
         response && setLocationDetails!(response);
       })
@@ -257,7 +257,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onPress: () => {
             hideAphAlert!();
             setLoading!(true);
-            doRequestAndAccessLocation()
+            doRequestAndAccessLocationModified()
               .then((response) => {
                 setLoading!(false);
                 response && setLocationDetails!(response);
@@ -265,10 +265,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               .catch((e) => {
                 CommonBugFender('ConsultRoom__ALLOW_AUTO_DETECT', e);
                 setLoading!(false);
-                showAphAlert!({
-                  title: 'Uh oh! :(',
-                  description: 'Unable to access location.',
-                });
+                e &&
+                  typeof e == 'string' &&
+                  !e.includes('denied') &&
+                  showAphAlert!({
+                    title: 'Uh oh! :(',
+                    description: e,
+                  });
                 setLocationSearchVisible(true);
               });
           },
@@ -1035,6 +1038,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {
+            setCurrentLocationFetched!(true);
             setLocationSearchVisible(false);
           }}
           location={g(locationDetails, 'displayName')}

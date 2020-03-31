@@ -449,6 +449,56 @@ const getlocationData = (
   );
 };
 
+export const doRequestAndAccessLocationModified = (): Promise<LocationData> => {
+  return new Promise((resolve, reject) => {
+    Permissions.request('location')
+      .then((response) => {
+        if (response === 'authorized') {
+          if (Platform.OS === 'android') {
+            RNAndroidLocationEnabler.promptForEnableLocationIfNeeded({
+              interval: 10000,
+              fastInterval: 5000,
+            })
+              .then(() => {
+                getlocationData(resolve, reject);
+              })
+              .catch((e: Error) => {
+                CommonBugFender('helperFunctions_RNAndroidLocationEnabler', e);
+                reject('Unable to get location.');
+              });
+          } else {
+            getlocationData(resolve, reject);
+          }
+        } else {
+          if (response === 'denied' || response === 'restricted') {
+            Alert.alert('Location', 'Enable location access from settings', [
+              {
+                text: 'Cancel',
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'false');
+                },
+              },
+              {
+                text: 'Ok',
+                onPress: () => {
+                  AsyncStorage.setItem('settingsCalled', 'true');
+                  Linking.openSettings();
+                },
+              },
+            ]);
+            reject('Unable to get location, permission denied.');
+          } else {
+            reject('Unable to get location.');
+          }
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('helperFunctions_doRequestAndAccessLocation', e);
+        reject('Unable to get location.');
+      });
+  });
+};
+
 export const doRequestAndAccessLocation = (): Promise<LocationData> => {
   return new Promise((resolve, reject) => {
     Permissions.request('location')
@@ -471,7 +521,7 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
           }
         } else {
           if (response === 'denied' || response === 'restricted') {
-            Alert.alert('Location', 'Enable location access form settings', [
+            Alert.alert('Location', 'Enable location access from settings', [
               {
                 text: 'Cancel',
                 onPress: () => {
@@ -482,7 +532,7 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
                 text: 'Ok',
                 onPress: () => {
                   AsyncStorage.setItem('settingsCalled', 'true');
-                  Permissions.openSettings();
+                  Linking.openSettings();
                 },
               },
             ]);
