@@ -7,6 +7,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -141,6 +142,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const classes = useStyles({});
   const { setPrescriptionUploaded } = useShoppingCart();
 
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isUploading, setIsUploading] = useState(false);
 
   const toBase64 = (file: any) =>
@@ -183,7 +186,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                       const fileExtension = file.name.split('.').pop();
                       const fileSize = file.size;
                       if (fileSize > 2000000) {
-                        alert('Invalid File Size. File size must be less than 2MB');
+                        setIsAlertOpen(true);
+                        setAlertMessage('Invalid File Size. File size must be less than 2MB');
                       } else if (
                         fileExtension &&
                         (fileExtension.toLowerCase() === 'png' ||
@@ -220,7 +224,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                           }
                         }
                       } else {
-                        alert(
+                        setIsAlertOpen(true);
+                        setAlertMessage(
                           'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
                         );
                       }
@@ -270,6 +275,12 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           </div>
         </Scrollbars>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -46,6 +46,7 @@ import {
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useLocationDetails } from 'components/LocationProvider';
 import { useApolloClient } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -517,6 +518,9 @@ export const TestsCart: React.FC = (props) => {
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const deliveryMode = tabValue === 0 ? 'HOME' : 'Clinic';
@@ -636,7 +640,8 @@ export const TestsCart: React.FC = (props) => {
       .catch((e) => {
         console.log(e);
         setMutationLoading(false);
-        alert('Error while placing order.');
+        setIsAlertOpen(true);
+        setAlertMessage('Error while placing order.');
       });
   };
 
@@ -861,6 +866,12 @@ export const TestsCart: React.FC = (props) => {
           cartValue={cartTotal}
         />
       </AphDialog>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
       <NavigationBottom />
     </div>
   );

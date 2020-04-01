@@ -15,6 +15,7 @@ import { useAuth } from 'hooks/authHooks';
 import { MascotWithMessage } from '../MascotWithMessage';
 import { DELETE_PROFILE } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -173,6 +174,9 @@ export const ManageProfiles: React.FC = (props) => {
   const [isProfileDelete, setIsProfileDelete] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const { allCurrentPatients } = useAllCurrentPatients();
   const { isSigningIn } = useAuth();
@@ -315,7 +319,8 @@ export const ManageProfiles: React.FC = (props) => {
                   })
                   .catch(() => {
                     setIsProfileDelete(false);
-                    alert('An error occurred while deleting profile.');
+                    setIsAlertOpen(true);
+                    setAlertMessage('An error occurred while deleting profile.');
                   });
               }}
             >
@@ -354,6 +359,12 @@ export const ManageProfiles: React.FC = (props) => {
           }}
         />
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -12,6 +12,7 @@ import {
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -63,6 +64,8 @@ export const PatientsOverview: React.FC = () => {
     GetPatientFutureAppointmentCount,
     GetPatientFutureAppointmentCountVariables
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -82,7 +85,8 @@ export const PatientsOverview: React.FC = () => {
           setLoading(false);
         })
         .catch((error) => {
-          alert(error);
+          setIsAlertOpen(true);
+          setAlertMessage(error);
           setLoading(false);
         });
     }
@@ -115,6 +119,12 @@ export const PatientsOverview: React.FC = () => {
           </div>
         </Grid> */}
       </Grid>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

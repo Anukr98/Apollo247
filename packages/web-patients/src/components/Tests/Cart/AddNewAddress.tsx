@@ -12,6 +12,7 @@ import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql
 import axios, { AxiosError, Cancel } from 'axios';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { useMutation } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -121,7 +122,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient ? currentPatient.id : '';
   const { setDeliveryAddressId } = useDiagnosticsCart();
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const disableSubmit =
     address1.length === 0 || address2.length === 0 || addressType.length <= 0 || pincode.length < 6;
 
@@ -301,7 +303,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 }
               })
               .catch((error) => {
-                alert(error);
+                setIsAlertOpen(true);
+                setAlertMessage(error);
               });
           }}
           title={'Save and use'}
@@ -309,6 +312,12 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           {mutationLoading ? <CircularProgress size={20} color="secondary" /> : 'SAVE AND USE'}
         </AphButton>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -199,7 +199,8 @@ export const TestsAutoSearch: React.FC = (props) => {
   }, [searchText]);
 
   let showError = false;
-  if (!loading && searchTests && searchTests.length === 0 && searchText.length > 2) showError = true;
+  if (!loading && searchTests && searchTests.length === 0 && searchText.length > 2)
+    showError = true;
 
   return (
     <div className={classes.root}>
@@ -238,8 +239,8 @@ export const TestsAutoSearch: React.FC = (props) => {
           Sorry, we couldn't find what you are looking for :(
         </FormHelperText>
       ) : (
-          ''
-        )}
+        ''
+      )}
       <Paper className={classes.autoSearchPopover}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'45vh'}>
           {loading && (

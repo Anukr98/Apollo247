@@ -10,6 +10,7 @@ import _find from 'lodash/find';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -160,7 +161,8 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
   const disableSubmit = !(selectedCategoryName.length > 0 && selectedReason.length > 0);
   const { currentPatient } = useAllCurrentPatients();
   const helpSectionMutation = useMutation<SendHelpEmail, SendHelpEmailVariables>(SEND_HELP_EMAIL);
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   return (
     <div className={classes.root}>
       <div className={classes.mascotIcon}>
@@ -284,13 +286,20 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
                 }
               })
               .catch(() => {
-                window.alert('An error occurred while processing your request');
+                setIsAlertOpen(true);
+                setAlertMessage('An error occurred while processing your request');
               });
           }}
         >
           {mutationLoading ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
         </AphButton>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
