@@ -128,7 +128,13 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const { setDeliveryAddressId } = useShoppingCart();
 
   const disableSubmit =
-    address1.length === 0 || address2.length === 0 || addressType.length <= 0 || pincode.length < 6;
+    address1.length === 0 ||
+    address2.length === 0 ||
+    addressType.length <= 0 ||
+    pincode.length < 6 ||
+    addressType === PATIENT_ADDRESS_TYPE.OTHER
+      ? !otherTextbox
+      : addressType.length === 0;
 
   const patientAddressTypes = [
     PATIENT_ADDRESS_TYPE.HOME,

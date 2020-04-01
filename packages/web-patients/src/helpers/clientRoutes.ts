@@ -13,8 +13,7 @@ export const clientRoutes = {
   testsAndMedicine: () => '/tests-medicines',
   medicines: () => `/medicines`,
   medicinesLandingViewCart: () => `/medicines/added-to-cart`,
-  medicinesCartInfo: (orderAutoId: string, orderStatus: string) =>
-    `/medicines/${orderAutoId}/${orderStatus}`,
+  medicinesCartInfo: (orderAutoId: string) => `/medicines/${orderAutoId}`,
   healthRecords: () => '/health-records',
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
@@ -38,6 +37,10 @@ export const clientRoutes = {
     `/test-details/${searchTestType}/${itemName}/${itemId}`,
   searchByTest: (searchTestText: string) => `/tests-list/search-test/${searchTestText}`,
   testOrders: () => '/order-details',
+  orderSummary: (id: string) => `/orders/order-summary/${id}`,
+  termsConditions: () => '/terms',
+  privacy: () => '/privacy',
+  FAQ: () => '/faq',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

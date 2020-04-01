@@ -1,8 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel } from '@material-ui/core';
 import React, { useState } from 'react';
-import { AphRadio, AphSlider } from '@aph/web-ui-components';
-import { AphCheckbox } from 'components/AphCheckbox';
+import { AphRadio } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,53 +128,6 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      {/* <div className={classes.sectionHeader}>
-        Would you like to use Apollo Health Credits for this payment?
-      </div> */}
-      {/* <div className={classes.checkoutType}>
-        <ul>
-          <li>
-            <FormControlLabel
-              className={classes.radioLabel}
-              value="ONEAPOLLO"
-              control={<AphCheckbox color="primary" />}
-              checked={'ONEAPOLLO' === paymentMethod}
-              onChange={() => {
-                setPaymentMethod('ONEAPOLLO');
-                props.setPaymentMethod('ONEAPOLLO');
-              }}
-              label={
-                <div className={classes.apolloOne}>
-                  <span>
-                    <img src={require('images/img_apolloone.png')} alt="" />
-                  </span>
-                  <span className={classes.creditesCount}>
-                    Available Health Credits
-                    <div className={classes.points}>2000</div>
-                  </span>
-                </div>
-              }
-            />
-            <div className={classes.slider}>
-              <AphSlider
-                defaultValue={20}
-                getAriaValueText={valuetext}
-                marks={apolloPoints}
-                min={0}
-                max={360}
-                valueLabelDisplay="on"
-              />
-            </div>
-            <div className={classes.balanceSection}>
-              <div className={classes.balanceAmount}>
-                <span>Balance amount to pay</span>
-                <span className={classes.totalAmount}>Rs. 160</span>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div> */}
-
       <div>
         <div className={classes.sectionHeader}>Pick a payment mode</div>
         <div className={classes.checkoutType}>

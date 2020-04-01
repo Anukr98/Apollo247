@@ -214,6 +214,8 @@ export const LocationSearch: React.FC = (props) => {
     setCurrentLong,
     setCurrentLocation,
     locateCurrentLocation,
+    isUserDeniedLocationAccess,
+    setIsUserDeniedLocationAccess,
   } = useLocationDetails();
   const { isSigningIn } = useAuth();
 
@@ -240,13 +242,18 @@ export const LocationSearch: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem('currentAddress') && !isSigningIn && !isLocationDenied) {
+    if (
+      !localStorage.getItem('currentAddress') &&
+      !isSigningIn &&
+      (!isUserDeniedLocationAccess || !isLocationDenied)
+    ) {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
-          console.log(PermissionStatus);
           if (PermissionStatus.state === 'denied') {
             setIsPopoverOpen(false);
             setIsLocationDenied(true);
+            setIsUserDeniedLocationAccess(true);
+            setIsLocationPopoverOpen(true);
           } else if (PermissionStatus.state !== 'granted' && !detectBy) {
             setIsPopoverOpen(true);
           } else if (PermissionStatus.state === 'granted' && !detectBy) {
@@ -254,6 +261,12 @@ export const LocationSearch: React.FC = (props) => {
             setIsPopoverOpen(false);
           }
         });
+    } else if (
+      (isLocationDenied || isUserDeniedLocationAccess) &&
+      !localStorage.getItem('currentAddress') &&
+      !isSigningIn
+    ) {
+      setIsLocationPopoverOpen(true);
     } else {
       setIsPopoverOpen(false);
     }
@@ -277,13 +290,9 @@ export const LocationSearch: React.FC = (props) => {
     }
     return 'No location';
   };
+
   return (
     <div className={classes.userLocation}>
-      <Helmet>
-        <script
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
-        ></script>
-      </Helmet>
       <div
         className={classes.locationWrap}
         ref={locationRef}
@@ -313,7 +322,9 @@ export const LocationSearch: React.FC = (props) => {
       <Popover
         open={isLocationPopoverOpen}
         anchorEl={locationRef.current}
-        onClose={() => setIsLocationPopoverOpen(false)}
+        onClose={() => {
+          if (getAddressFromLocalStorage() !== 'No location') setIsLocationPopoverOpen(false);
+        }}
         classes={{
           paper: classes.popPaperRoot,
         }}
@@ -332,42 +343,44 @@ export const LocationSearch: React.FC = (props) => {
           onSelect={handleSelect}
           searchOptions={searchOptions}
         >
-          {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => (
-            <div className={classes.locationPopWrap}>
-              <label className={classes.inputLabel} title={'Current Location'}>
-                Current Location
-              </label>
-              <div className={classes.searchInput}>
-                <AphTextField
-                  type="search"
-                  placeholder="Search Places..."
-                  {...getInputProps()}
-                  onKeyDown={(e) => {
-                    e.key === 'Enter' && e.preventDefault();
-                  }}
-                  title={'Search Places...'}
-                />
-                <div className={classes.popLocationIcon}>
-                  <img src={require('images/ic-location.svg')} alt="" title={'Location'} />
+          {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => {
+            return (
+              <div className={classes.locationPopWrap}>
+                <label className={classes.inputLabel} title={'Current Location'}>
+                  Current Location
+                </label>
+                <div className={classes.searchInput}>
+                  <AphTextField
+                    type="search"
+                    placeholder="Search Places..."
+                    {...getInputProps()}
+                    onKeyDown={(e) => {
+                      e.key === 'Enter' && e.preventDefault();
+                    }}
+                    title={'Search Places...'}
+                  />
+                  <div className={classes.popLocationIcon}>
+                    <img src={require('images/ic-location.svg')} alt="" title={'Location'} />
+                  </div>
+                </div>
+                <div className={classes.locationAutoComplete}>
+                  {loading && <div className={classes.dateLoader}>Loading...</div>}
+                  <ul>
+                    {suggestions.map((suggestion: SuggestionProps) => {
+                      return suggestion.index < 3 ? (
+                        <li {...getSuggestionItemProps(suggestion)}>
+                          {renderSuggestion(
+                            suggestion.formattedSuggestion.mainText,
+                            suggestion.matchedSubstrings[0].length
+                          )}
+                        </li>
+                      ) : null;
+                    })}
+                  </ul>
                 </div>
               </div>
-              <div className={classes.locationAutoComplete}>
-                {loading && <div className={classes.dateLoader}>Loading...</div>}
-                <ul>
-                  {suggestions.map((suggestion: SuggestionProps) => {
-                    return suggestion.index < 3 ? (
-                      <li {...getSuggestionItemProps(suggestion)}>
-                        {renderSuggestion(
-                          suggestion.formattedSuggestion.mainText,
-                          suggestion.matchedSubstrings[0].length
-                        )}
-                      </li>
-                    ) : null;
-                  })}
-                </ul>
-              </div>
-            </div>
-          )}
+            );
+          }}
         </PlacesAutocomplete>
       </Popover>
       <Popover

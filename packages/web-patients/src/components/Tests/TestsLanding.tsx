@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, MenuItem } from '@material-ui/core';
+import { Theme, Typography, MenuItem, Popover } from '@material-ui/core';
 import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { Header } from 'components/Header';
 import { BrowsePackages } from 'components/Tests/Cards/BrowsePackages';
@@ -13,6 +13,7 @@ import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
+import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import {
   getDiagnosticsData,
@@ -20,6 +21,9 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
 } from 'graphql/types/getDiagnosticsData';
 import { useApolloClient } from 'react-apollo-hooks';
+import { OrderPlacedTest } from 'components/Tests/Cart/OrderPlacedTest';
+import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
+import { MascotWithMessage } from 'components/MascotWithMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -260,15 +264,55 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 508,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const TestsLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const addToCartRef = useRef(null);
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const client = useApolloClient();
-  const params = useParams<{ orderAutoId: string; orderStatus: string }>();
+  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
   const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
     (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
@@ -280,7 +324,11 @@ export const TestsLanding: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+  const urlParams = new URLSearchParams(window.location.search);
 
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
+    urlParams.get('orderstatus') === 'success' ? true : false
+  );
   useEffect(() => {
     if (!diagnosisHotSellerData && !diagnosticOrgansData) {
       setIsLoading(true);
@@ -324,11 +372,15 @@ export const TestsLanding: React.FC = (props) => {
                   <span title={'hi'}>hi</span>
                   <AphSelect
                     value={currentPatient.id}
-                    onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                    onChange={(e) => {
+                      setCurrentPatientId(e.target.value as Patient['id']);
+                      window.location.reload();
+                    }}
                     classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
                     title={currentPatient.firstName || ''}
                   >
                     {allCurrentPatients.map((patient) => {
+                      // const isSelected = patient.id === currentPatient.id;
                       const isSelected = patient.relation === 'ME';
                       const name = (patient.firstName || '').toLocaleLowerCase();
                       return (
@@ -348,7 +400,7 @@ export const TestsLanding: React.FC = (props) => {
                         color="primary"
                         classes={{ root: classes.addMemberBtn }}
                         onClick={() => {
-                          // setIsAddNewProfileDialogOpen(true);
+                          setIsAddNewProfileDialogOpen(true);
                         }}
                         title={'Add Member'}
                       >
@@ -380,7 +432,7 @@ export const TestsLanding: React.FC = (props) => {
                       <span className={classes.serviceIcon}>
                         <img src={require('images/ic_tests_icon.svg')} alt="" />
                       </span>
-                      <span className={classes.linkText}>Your Orders</span>
+                      <span className={classes.linkText}>My Orders</span>
                       <span className={classes.rightArrow}>
                         <img src={require('images/ic_arrow_right.svg')} alt="" />
                       </span>
@@ -414,6 +466,66 @@ export const TestsLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <Popover
+        open={showOrderPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <OrderPlacedTest
+              orderAutoId={urlParams.get('orderid') || '0'}
+              setShowOrderPopup={setShowOrderPopup}
+            />
+          </div>
+        </div>
+      </Popover>
+      <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle>Add New Member</AphDialogTitle>
+        <AddNewProfile
+          closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+            setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+          }
+          isMeClicked={isMeClicked}
+          selectedPatientId=""
+          successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+          isProfileDelete={false}
+        />
+      </AphDialog>
+      <Popover
+        open={isPopoverOpen}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <MascotWithMessage
+          messageTitle=""
+          message="Profile created successfully."
+          closeButtonLabel="OK"
+          closeMascot={() => {
+            setIsPopoverOpen(false);
+            window.location.reload(true);
+          }}
+        />
+      </Popover>
       <NavigationBottom />
     </div>
   );

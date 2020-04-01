@@ -65,11 +65,12 @@ const defaultMaterialTheme = createMuiTheme({
 interface CustomAPHCalendarProps {
   getDate: (dateSelected: string) => void;
   selectedDate: Date;
+  maxDate?: Date;
 }
 
 export const AphCalendar: React.FC<CustomAPHCalendarProps> = (props) => {
-  const classes = useStyles();
-  const { getDate, selectedDate } = props;
+  const classes = useStyles({});
+  const { getDate, selectedDate, maxDate } = props;
   const [value, handleDateChange] = useState<MaterialUiPickersDate>(
     selectedDate ? selectedDate : new Date()
   );
@@ -100,6 +101,7 @@ export const AphCalendar: React.FC<CustomAPHCalendarProps> = (props) => {
           }}
           minDate={new Date()}
           {...pickerProps}
+          maxDate={props.maxDate}
         />
       </ThemeProvider>
     </div>

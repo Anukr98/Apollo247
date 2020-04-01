@@ -6,6 +6,7 @@ import {
 } from 'graphql/types/globalTypes';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 export interface DiagnosticsCartItem {
   id: string;
@@ -26,6 +27,20 @@ export interface DiagnosticSlot {
   slotEndTime: string;
   city: string;
   date: number; // timestamp
+}
+
+export interface Clinic {
+  CentreType: string;
+  CentreCode: string;
+  CentreName: string;
+  MobileNo: string;
+  BusinessZone: string;
+  State: string;
+  City: string;
+  Zone: string;
+  Locality: string;
+  IsNabl: boolean;
+  IsCap: boolean;
 }
 
 export interface DiagnosticsCartContextProps {
@@ -56,8 +71,14 @@ export interface DiagnosticsCartContextProps {
     | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
     | null;
 
-  pinCode: string;
-  setPinCode: ((pinCode: string) => void) | null;
+  clinicPinCode: string;
+  setClinicPinCode: ((clinicPinCode: string) => void) | null;
+
+  clinicId: string;
+  setClinicId: ((id: string) => void) | null;
+
+  clinics: Clinic[];
+  setClinics: ((clinic: Clinic[]) => void) | null;
 
   coupon: getCoupons_getCoupons_coupons | null;
   setCoupon: ((id: getCoupons_getCoupons_coupons) => void) | null;
@@ -94,8 +115,14 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   // addAddress: null,
   deliveryType: null,
 
-  pinCode: '',
-  setPinCode: null,
+  clinicPinCode: '',
+  setClinicPinCode: null,
+
+  clinics: [],
+  setClinics: null,
+
+  clinicId: '',
+  setClinicId: null,
 
   clearCartInfo: null,
   setDiagnosticSlot: null,
@@ -105,16 +132,13 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 export const DiagnosticsCartProvider: React.FC = (props) => {
   // const { currentPatient } = useAllCurrentPatients();
   const id = ''; //(currentPatient && currentPatient.id) || '';
+  const { currentPatient } = useAllCurrentPatients();
 
   const [forPatientId, setPatientId] = useState<string>('');
 
   const [diagnosticsCartItems, setDiagnosticsCartItems] = useState<
     DiagnosticsCartContextProps['diagnosticsCartItems']
-  >(
-    localStorage.getItem('diagnosticsCartItems')
-      ? JSON.parse(localStorage.getItem('diagnosticsCartItems') || '')
-      : []
-  );
+  >([]);
   const [couponDiscount, setCouponDiscount] = useState<
     DiagnosticsCartContextProps['couponDiscount']
   >(0);
@@ -123,7 +147,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [deliveryAddresses, setDeliveryAddresses] = useState<
     GetPatientAddressList_getPatientAddressList_addressList[]
   >([]);
-  const [pinCode, setPinCode] = useState<string>('');
+  const [clinicPinCode, setClinicPinCode] = useState<string>('');
 
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     DiagnosticsCartContextProps['deliveryAddressId']
@@ -162,12 +186,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       (item) => item.id !== id && item.itemId !== itemId
     );
     setDiagnosticsCartItems(newCartItems);
+    setIsCartUpdated(true);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = diagnosticsCartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       diagnosticsCartItems[foundIndex] = { ...diagnosticsCartItems[foundIndex], ...itemUpdates };
       setDiagnosticsCartItems([...diagnosticsCartItems]);
+      setIsCartUpdated(true);
     }
   };
 
@@ -194,22 +220,34 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const clearCartInfo = () => {
     setDiagnosticsCartItems([]);
     setDeliveryAddressId('');
-    setPinCode('');
+    setClinicPinCode('');
+    setClinicId('');
     setCoupon(null);
-    // setClinics([]);
+    setIsCartUpdated(true);
   };
 
   const [diagnosticSlot, setDiagnosticSlot] = useState<
     DiagnosticsCartContextProps['diagnosticSlot']
   >(null);
 
+  const [clinicId, setClinicId] = useState<DiagnosticsCartContextProps['clinicId']>('');
+  const [clinics, setClinics] = useState<Clinic[]>([]);
   useEffect(() => {
     if (isCartUpdated) {
       const items = JSON.stringify(diagnosticsCartItems);
-      localStorage.setItem('diagnosticsCartItems', items);
+      localStorage.setItem(`${currentPatient && currentPatient.id}diagnostics`, items);
       setIsCartUpdated(false);
     }
   }, [diagnosticsCartItems, isCartUpdated]);
+  useEffect(() => {
+    if (currentPatient && currentPatient.id && currentPatient.id.length > 0) {
+      setDiagnosticsCartItems(
+        localStorage.getItem(`${currentPatient.id}diagnostics`)
+          ? JSON.parse(localStorage.getItem(`${currentPatient.id}diagnostics`) || '')
+          : []
+      );
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
@@ -251,8 +289,12 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         deliveryType,
         coupon,
         setCoupon,
-        pinCode,
-        setPinCode,
+        clinicPinCode,
+        setClinicPinCode,
+        clinics,
+        setClinics,
+        clinicId,
+        setClinicId,
         clearCartInfo,
         diagnosticSlot,
         setDiagnosticSlot,
@@ -280,4 +322,11 @@ export const useDiagnosticsCart = () => ({
   setDeliveryAddressId: useDiagnosticsContext().setDeliveryAddressId,
   diagnosticSlot: useDiagnosticsContext().diagnosticSlot,
   setDiagnosticSlot: useDiagnosticsContext().setDiagnosticSlot,
+  clinicPinCode: useDiagnosticsContext().clinicPinCode,
+  setClinicPinCode: useDiagnosticsContext().setClinicPinCode,
+  clinics: useDiagnosticsContext().clinics,
+  setClinics: useDiagnosticsContext().setClinics,
+  clinicId: useDiagnosticsContext().clinicId,
+  setClinicId: useDiagnosticsContext().setClinicId,
+  clearCartInfo: useDiagnosticsContext().clearCartInfo,
 });

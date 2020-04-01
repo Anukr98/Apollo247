@@ -11,6 +11,7 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import { AddNewAddress } from 'components/Tests/Cart/AddNewAddress';
 import { ViewAllAddress } from 'components/Tests/Cart/ViewAllAddress';
+import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
 
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
@@ -19,6 +20,7 @@ import {
 } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { formatAddress } from 'components/Locations/HomeDelivery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,14 +106,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const apiDetails = {
-  url: process.env.PHARMACY_MED_INFO_URL,
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
-  deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
+type HomeVisitProps = {
+  selectedAddressData: any | null;
+  setSelectedAddressData: (selectedAddressData: Address | null) => void;
 };
 
-export const HomeVisit: React.FC = (props) => {
+export const HomeVisit: React.FC<HomeVisitProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const {
@@ -119,11 +119,10 @@ export const HomeVisit: React.FC = (props) => {
     deliveryAddressId,
     deliveryAddresses,
     setDeliveryAddresses,
-    diagnosticsCartItems,
-    // setStoreAddressId,
   } = useDiagnosticsCart();
   const { isSigningIn } = useAuth();
   const client = useApolloClient();
+  const { selectedAddressData, setSelectedAddressData } = props;
   const [isAddAddressDialogOpen, setIsAddAddressDialogOpen] = React.useState<boolean>(false);
   const [isViewAllAddressDialogOpen, setIsViewAllAddressDialogOpen] = React.useState<boolean>(
     false
@@ -131,8 +130,6 @@ export const HomeVisit: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isError, setIsError] = React.useState<boolean>(false);
-  const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
-  const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
 
   const getAddressDetails = () => {
     setIsLoading(true);
@@ -159,13 +156,9 @@ export const HomeVisit: React.FC = (props) => {
             } else {
               setSelectedAddressData(addresses[0]);
               setDeliveryAddressId && setDeliveryAddressId(addresses[0].id);
-              //   setStoreAddressId && setStoreAddressId('');
             }
 
             setDeliveryAddresses && setDeliveryAddresses(addresses);
-            // if (diagnosticsCartItems.length > 0) {
-            //   fetchDeliveryTime();
-            // }
           } else {
             setDeliveryAddresses && setDeliveryAddresses([]);
           }
@@ -200,11 +193,10 @@ export const HomeVisit: React.FC = (props) => {
               className={classes.radioLabel}
               value={selectedAddressData.id}
               control={<AphRadio color="primary" />}
-              label={`${selectedAddressData.addressLine1} - ${selectedAddressData.zipcode}`}
+              label={formatAddress(selectedAddressData)}
               onChange={() => {
                 setDeliveryAddressId &&
                   setDeliveryAddressId(selectedAddressData && selectedAddressData.id);
-                // setStoreAddressId && setStoreAddressId('');
               }}
             />
           </li>

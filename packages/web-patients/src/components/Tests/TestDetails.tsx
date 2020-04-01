@@ -383,6 +383,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       padding: 20,
     },
+    hotsellerName: {
+      textTransform: 'capitalize',
+    },
   };
 });
 
@@ -408,14 +411,8 @@ export const TestDetails: React.FC = (props) => {
   const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
   const client = useApolloClient();
   const [loading, setLoading] = useState(false);
-  const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
+  const { addCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
-
-  const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
-  const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
-    (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers) | null
-  >(null);
-
   const apiDetails = {
     url: process.env.GET_PACKAGE_DATA,
   };
@@ -428,7 +425,7 @@ export const TestDetails: React.FC = (props) => {
 
   const getPackageDetails = async () => {
     setLoading(true);
-    axios
+    await axios
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
         ItemID: params.itemId,
@@ -451,7 +448,7 @@ export const TestDetails: React.FC = (props) => {
 
   const getTestDetails = async () => {
     setLoading(true);
-    client
+    await client
       .query<searchDiagnosticsById>({
         query: SEARCH_DIAGNOSTICS_BY_ID,
         variables: {
@@ -500,7 +497,7 @@ export const TestDetails: React.FC = (props) => {
             </a>
             <div className={classes.detailsHeader}>Test Detail</div>
           </div>
-          {testDetails && testDetailsPackage ? (
+          {testDetails ? (
             <div className={classes.medicineDetailsGroup}>
               <div className={classes.searchSection}>
                 <Scrollbars
@@ -511,9 +508,9 @@ export const TestDetails: React.FC = (props) => {
                 >
                   <div className={classes.productInformation}>
                     <div className={classes.productBasicInfo}>
-                      <h2>
+                      <h2 className={classes.hotsellerName}>
                         {params.searchTestType === 'hot-seller'
-                          ? params.itemName
+                          ? params.itemName.replace('_', ' ')
                           : testDetails && testDetails.itemName}
                       </h2>
 

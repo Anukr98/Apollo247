@@ -41,6 +41,7 @@ import {
   StarTeam,
   Auditor,
   AdminAuditorMapper,
+  CityPincodeMapper,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -105,6 +106,7 @@ export const connect = async () => {
         StarTeam,
         Auditor,
         AdminAuditorMapper,
+        CityPincodeMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

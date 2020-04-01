@@ -453,6 +453,7 @@ const updateSdSummary: Resolver<
         awayHours,
         onlineConsultationFees: Number(doctor.onlineConsultationFees),
         physicalConsultationFees: Number(doctor.physicalConsultationFees),
+        isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
     });
@@ -503,6 +504,7 @@ const updateDoctorFeeSummary: Resolver<
         specialityName: doctor.specialty.name,
         areaName: doctor.doctorHospital[0].facility.city,
         appointmentsCount: totalConsults,
+        isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
     }

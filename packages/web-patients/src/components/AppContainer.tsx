@@ -41,11 +41,15 @@ import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
 import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
 import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
-import { YourOrders } from 'components/Tests/YourOrders';
 import { SearchByTest } from 'components/Tests/SearchByTest';
 import { OrderDetails } from 'components/Tests/OrderDetails';
 import { Help } from 'components/Help/Help';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
+import { OrderSummary } from 'components/Tests/OrderSummary';
+import { Helmet } from 'react-helmet';
+import { TermsAndConditions } from 'components/TermsAndConditions';
+import { Privacy } from 'components/Privacy';
+import { Faq } from 'components/Faq';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -85,11 +89,19 @@ const App: React.FC = () => {
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
       <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
+        <Helmet>
+          <script
+            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
+          ></script>
+        </Helmet>
         <Switch>
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
           <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
           <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
+          <Route exact path={clientRoutes.termsConditions()} component={TermsAndConditions} />
+          <Route exact path={clientRoutes.privacy()} component={Privacy} />
+          <Route exact path={clientRoutes.FAQ()} component={Faq} />
           <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
           <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
@@ -102,7 +114,7 @@ const App: React.FC = () => {
           />
           <AuthRouted
             exact
-            path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
+            path={clientRoutes.medicinesCartInfo(':orderAutoId')}
             component={MedicineLanding}
           />
           <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
@@ -158,6 +170,7 @@ const App: React.FC = () => {
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
+          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
         </Switch>
         {isSignedIn && (
           <div className={classes.helpIcon}>

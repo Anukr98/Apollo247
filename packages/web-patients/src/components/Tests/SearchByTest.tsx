@@ -10,6 +10,7 @@ import { useLocationDetails } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTICS, GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import {
   searchDiagnostics,
   searchDiagnostics_searchDiagnostics_diagnostics,
@@ -64,6 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
         top: 0,
         zIndex: 999,
         width: '100%',
+        height: '100%',
         backgroundColor: 'transparent',
       },
     },
@@ -105,8 +107,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchSection: {
       width: 'calc(100% - 328px)',
-      padding: '0 10px 0 0',
-      marginRight: 10,
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         padding: 0,
@@ -169,32 +169,33 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        backgroundColor: '#f7f8f5',
+        paddingBottom: 20,
+        borderRadius: 0,
+        boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+        zIndex: 99,
       },
     },
     customScroll: {
       width: '100%',
-      paddingLeft: 20,
-      paddingRight: 15,
       paddingBottom: 10,
+      paddingLeft: 20,
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 0,
         padding: '25px 20px 80px 20px',
       },
     },
+    loader: {
+      display: 'block',
+      margin: 'auto',
+    },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
     testsList: {
       color: '#0087ba',
       fontSize: 14,
       fontWeight: 500,
-    },
-    scrollBar: {
-      height: 'calc(100vh - 195px) !important',
-      [theme.breakpoints.down(992)]: {
-        height: 'calc(100vh - 245px) !important',
-      },
-      [theme.breakpoints.down('xs')]: {
-        height: 'auto !important',
-      },
     },
   };
 });
@@ -296,12 +297,16 @@ export const SearchByTest: React.FC = (props) => {
   }, [testsList, diagnosticList]);
 
   useEffect(() => {
-    if (searchValue.length > 2) {
+    if (searchValue.trim().length > 2) {
       onSearchTests(searchValue);
     } else if ((testsList || diagnosticList) && searchValue.length === 0) {
       fetchResults();
     }
   }, [searchValue]);
+
+  let showError = false;
+
+  if (!loading && testsList && testsList.length === 0 && !diagnosticList) showError = true;
 
   return (
     <div className={classes.root}>
@@ -325,37 +330,39 @@ export const SearchByTest: React.FC = (props) => {
                 <AphTextField
                   placeholder="Search tests"
                   onChange={(e) => {
-                    setSearchValue(e.target.value);
+                    setSearchValue(e.target.value.replace(/\s+/gi, ' ').trimLeft());
                   }}
                   value={searchValue}
+                  error={showError}
                 />
+
                 <AphButton className={classes.searchBtn}>
                   <img src={require('images/ic_send.svg')} alt="" />
                 </AphButton>
               </div>
+              {showError ? (
+                <FormHelperText className={classes.helpText} component="div" error={showError}>
+                  Sorry, we couldn't find what you are looking for :(
+                </FormHelperText>
+              ) : (
+                  ''
+                )}
             </div>
             <div className={`${classes.searchSection}`}>
               <Scrollbars
-                className={classes.scrollBar}
-                autoHide={true}
-                renderView={(props) =>
-                  isSmallScreen ? (
-                    <div {...props} style={{ position: 'static' }} />
-                  ) : (
-                    <div {...props} />
-                  )
-                }
+                autoHeight
+                autoHeightMin={isSmallScreen ? 'calc(100vh - 120px)' : 'calc(100vh - 195px)'}
               >
                 <div className={classes.customScroll}>
                   {loading ? (
-                    <CircularProgress />
+                    <CircularProgress className={classes.loader} />
                   ) : testsList && testsList.length > 0 ? (
                     testsList.map((test) => <TestCard testData={test} mou={testsList.length} />)
                   ) : diagnosticList ? (
                     <TestCard testData={diagnosticList} mou={1} />
                   ) : (
-                    'No data found'
-                  )}
+                          'No data found'
+                        )}
                 </div>
               </Scrollbars>
             </div>

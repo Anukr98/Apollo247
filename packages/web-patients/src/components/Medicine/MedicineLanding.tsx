@@ -336,8 +336,8 @@ export const MedicineLanding: React.FC = (props) => {
     orderAutoId: string;
     orderStatus: string;
   }>();
-  if (params.orderStatus === 'success') {
-    localStorage.removeItem('cartItems');
+  if (localStorage.getItem('orderStatus') === 'success') {
+    localStorage.removeItem(`${currentPatient && currentPatient.id}`);
     localStorage.removeItem('dp');
   }
 
@@ -351,7 +351,7 @@ export const MedicineLanding: React.FC = (props) => {
     params.orderAutoId && params.orderAutoId === 'prescription' ? true : false
   );
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
-    params.orderStatus && params.orderAutoId !== 'prescription' ? true : false
+    localStorage.getItem('orderStatus') && params.orderAutoId !== 'prescription' ? true : false
   );
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
@@ -361,7 +361,7 @@ export const MedicineLanding: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
-
+  const savedLocalStatus = localStorage.getItem('orderStatus');
   const getMedicinePageProducts = async () => {
     await axios
       .post(
@@ -543,7 +543,7 @@ export const MedicineLanding: React.FC = (props) => {
             </div>
             <OrderPlaced
               orderAutoId={params.orderAutoId}
-              orderStatus={params.orderStatus}
+              orderStatus={savedLocalStatus}
               setShowOrderPopup={setShowOrderPopup}
             />
           </div>

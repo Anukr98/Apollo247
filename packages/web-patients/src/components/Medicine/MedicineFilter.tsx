@@ -390,7 +390,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
             localStorage.setItem('searchText', e.target.value);
             setSubtxt(e.target.value);
           }}
-          value={subtxt}
+          value={subtxt.replace(/\s+/gi, ' ').trimLeft()}
         />
       </div>
       <div

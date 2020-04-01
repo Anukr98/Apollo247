@@ -302,8 +302,7 @@ export const SearchByMedicine: React.FC = (props) => {
         );
       }
     }
-
-    if (discountFilter && discountFilter.fromDiscount >= 0 && discountFilter.toDiscount <= 100) {
+    if (discountFilter && !(discountFilter.fromDiscount == 0 && discountFilter.toDiscount == 100)) {
       const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
       priceFilterArray = filteredArray.filter((item) => {
         if (item.special_price) {
@@ -317,6 +316,7 @@ export const SearchByMedicine: React.FC = (props) => {
         }
       });
     }
+
     if (filterData && filterData.length > 0 && filterData[0] !== '') {
       const categoryFilterArray: MedicineProduct[] = [];
       const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
@@ -331,6 +331,7 @@ export const SearchByMedicine: React.FC = (props) => {
         });
       priceFilterArray = categoryFilterArray;
     }
+
     setMedicineListFiltered(priceFilterArray);
   }, [priceFilter, filterData, discountFilter, sortBy]);
 

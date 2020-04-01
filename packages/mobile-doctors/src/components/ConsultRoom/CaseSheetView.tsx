@@ -14,8 +14,7 @@ import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard
 import {
   AddPlus,
   Audio,
-  CheckboxSelected,
-  CheckboxUnSelected,
+  UnSelected,
   ClosePopup,
   DiagonisisRemove,
   Edit,
@@ -33,6 +32,7 @@ import {
   ToogleOn,
   UserPlaceHolder,
   Video,
+  Selected,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
@@ -1181,9 +1181,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           setTests(tests.filter((i) => i.itemname !== item.itemname));
                       }}
                     >
-                      <CheckboxSelected
-                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                      />
+                      <Selected style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
                     </TouchableOpacity>
                   }
                 />
@@ -1379,11 +1377,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           }}
                         >
                           {isSelected ? (
-                            <CheckboxSelected
-                              style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                            />
+                            <Selected style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
                           ) : (
-                            <CheckboxUnSelected
+                            <UnSelected
                               style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
                             />
                           )}
@@ -2408,9 +2404,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                       >
                         {item.value}
                       </Text>
-                      <CheckboxSelected
-                        style={{ alignSelf: 'flex-start', height: 20, width: 20 }}
-                      />
+                      <Selected style={{ alignSelf: 'flex-start', height: 20, width: 20 }} />
                     </View>
                   </TouchableOpacity>
                 ))

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
@@ -11,6 +11,7 @@ import {
 } from 'graphql/types/GetPatientFutureAppointmentCount';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -56,23 +57,36 @@ export const PatientsOverview: React.FC = () => {
   const classes = useStyles();
 
   const { currentPatient } = useAllCurrentPatients();
-
-  const { data, loading, error } = useQueryWithSkip<
+  const [loading, setLoading] = useState(true);
+  const [activeAppointments, setActiveAppointments] = useState<number | null>(0);
+  const futureAppointmentMutation = useMutation<
     GetPatientFutureAppointmentCount,
     GetPatientFutureAppointmentCountVariables
-  >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT, {
-    variables: { patientId: currentPatient ? currentPatient.id : '' },
-    ssr: currentPatient && currentPatient.id ? true : false,
-    fetchPolicy: 'no-cache',
-  });
+  >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT);
 
-  const activeAppointments =
-    data &&
-    data.getPatientFutureAppointmentCount &&
-    data.getPatientFutureAppointmentCount.consultsCount
-      ? data.getPatientFutureAppointmentCount.consultsCount
-      : 0;
-
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      futureAppointmentMutation({
+        variables: {
+          patientId: currentPatient ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+        .then((res) => {
+          const responseData = res && res.data;
+          if (responseData && responseData.getPatientFutureAppointmentCount) {
+            setActiveAppointments(
+              responseData && responseData.getPatientFutureAppointmentCount.consultsCount
+            );
+          }
+          setLoading(false);
+        })
+        .catch((error) => {
+          alert(error);
+          setLoading(false);
+        });
+    }
+  }, [currentPatient]);
   return (
     <div className={classes.root}>
       <Grid spacing={2} container>

@@ -115,8 +115,8 @@ export enum ApiConstants {
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
 
-  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "WELCOME" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. #ExpertiseIsForEveryone. Click to learn https://youtu.be/gwIRbcO3hpk',
-  REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. #ExpertiseIsForEveryone. Click to learn https://youtu.be/XF7MWPebtkw',
+  REFERRAL_CODE_TEXT = 'Hi {0}, Use code "WELCOME" to avail discount up to Rs. 999  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
+  REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
 
   /*** push-notification messages end here ***/
 
@@ -130,14 +130,14 @@ export enum ApiConstants {
   //Patient app, help form email configurations
   PATIENT_HELP_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
   PATIENT_HELP_SUPPORT_CC_EMAILID = 'sriram.kanchan@popcornapps.com,sumeeth.kumar@popcornapps.com',
-  PATIENT_HELP_FROM_EMAILID = 'info@pepisandbox.com',
+  PATIENT_HELP_FROM_EMAILID = 'info@apollo247.com', // 'info@pepisandbox.com',
   PATIENT_HELP_FROM_NAME = 'Apollo24*7',
   PATIENT_HELP_SUBJECT = 'Issue raised by customer : {0} - {1}, {2}',
 
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
-  PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com,Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'support@apollohospitals.zohodesk.in',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,raj@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -182,7 +182,7 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com,sumeeth.kumar@popcornapps.com,raj@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
@@ -238,6 +238,7 @@ export enum ApiConstants {
   JUNIOR_DOC_TXT = 'Junior doctor: ',
   SENIOR_DOC_TXT = 'Senior doctor: ',
   PATIENT_TXT = 'Patient: ',
+  PINCODE_API_RESPONSE = 'Pincode Insertion Completed :)',
 
   SAMPLE_DATE = '2020-01-20T',
   SAMPLE_DATE_MORNING_START = '2020-01-20T08:00:00',
@@ -260,4 +261,7 @@ export enum ApiConstants {
   COUPON_WITH_BU_RESTRICTION = 'This coupon is applicable for {0} only',
   LOWER_CART_LIMIT = 'Coupon applicable for Minimum order value Rs.{0} or more',
   UPPER_CART_LIMIT = 'Coupon applicable for Maximum order value Rs.{0} or less',
+
+  DOCTOR_SEARCH_DEFAULT_CITY1 = 'Hyderabad',
+  DOCTOR_SEARCH_DEFAULT_CITY2 = 'Chennai',
 }

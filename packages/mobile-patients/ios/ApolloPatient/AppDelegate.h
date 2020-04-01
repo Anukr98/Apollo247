@@ -7,11 +7,14 @@
 
 #import <React/RCTBridgeDelegate.h>
 #import <UIKit/UIKit.h>
+#import <TwilioChatClient/TwilioChatClient.h>
 @import UserNotifications;
+@import ApolloVitalsFramework;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate, RCTBridgeDelegate, UNUserNotificationCenterDelegate>
 
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic) NSString *bridge;
+@property (nonatomic, strong) TwilioChatClient * chatClient;
 
 @end

@@ -123,6 +123,7 @@ interface CouponProps {
   revisedAmount: string;
   subtotal: string;
   setCouponCode: any;
+  disableSubmit: boolean;
 }
 
 export const CouponCode: React.FC<CouponProps> = (props) => {
@@ -135,6 +136,17 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
   const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
     VALIDATE_CONSULT_COUPON
   );
+
+  useEffect(() => {
+    if (props.disableSubmit) {
+      setCouponCodeApplied(false);
+      setErrorMessage('');
+      setIsError(false);
+      setCouponText('');
+      setOpenCouponField(false);
+    }
+  }, [props.disableSubmit]);
+
   return (
     <div className={classes.root}>
       {!couponCodeApplied && (
@@ -172,6 +184,9 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
       {openCouponField && (
         <div className={classes.couponForm}>
           <AphTextField
+            inputProps={{
+              maxLength: 15,
+            }}
             placeholder="Enter coupon code"
             onChange={(event) => {
               setErrorMessage('');
@@ -184,7 +199,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
           {!couponCodeApplied && (
             <AphButton
               className={classes.button}
-              disabled={couponText.length < 2}
+              disabled={couponText.length < 2 || props.disableSubmit}
               onClick={() => {
                 const variables = {
                   doctorId: props.doctorId,
@@ -208,6 +223,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
                       setIsError(!res.data.validateConsultCoupon.validityStatus);
                       if (res.data.validateConsultCoupon.validityStatus) {
                         props.setCouponCode(couponText);
+                        setOpenCouponField(false);
                       }
                       props.setRevisedAmount(res.data.validateConsultCoupon.revisedAmount);
                     }
@@ -218,7 +234,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
               Apply
             </AphButton>
           )}
-          {couponCodeApplied && (
+          {/* {couponCodeApplied && (
             <AphButton
               className={classes.button}
               onClick={() => {
@@ -230,7 +246,7 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
             >
               Remove
             </AphButton>
-          )}
+          )} */}
           {couponCodeApplied && <div className={classes.successMsg}>Success.</div>}
           {isError && <div className={classes.errorMsg}>{errorMessage}</div>}
         </div>

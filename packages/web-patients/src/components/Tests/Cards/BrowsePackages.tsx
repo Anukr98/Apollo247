@@ -57,8 +57,16 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#0087ba',
     },
+    testsWrapper: {
+      flexGrow: 1,
+    },
     cardIcon: {
-      // width: '100%',
+      height: 120,
+      marginLeft: 'auto',
+      '& img': {
+        maxHeight: 120,
+        maxWidth: 120,
+      },
     },
     bottomSection: {
       borderTop: 'solid 0.5px rgba(2, 71, 91, 0.3)',
@@ -76,6 +84,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       opacity: 0.6,
       paddingRight: 5,
+      textDecoration: 'line-through',
+      marginLeft: 8,
     },
     addToCart: {
       marginLeft: 'auto',
@@ -164,7 +174,7 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
                   >
                     <div className={classes.cardWrap}>
                       <div className={classes.testDetails}>
-                        <div>
+                        <div className={classes.testsWrapper}>
                           <div className={classes.testName}>{diagnosticOrgans.organName} </div>
                           {/* <div className={classes.testsIncluded}>66 TESTS INCLUDED</div>
                       <div className={classes.testsCondition}>
@@ -182,10 +192,10 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
                       <div className={classes.bottomSection}>
                         {diagnosticOrgans && diagnosticOrgans.diagnostics && (
                           <div className={classes.priceGroup}>
-                            <span className={classes.regularPrice}>
-                              ({diagnosticOrgans.diagnostics.rate})
-                            </span>
                             <span>Rs. {diagnosticOrgans.diagnostics.rate} </span>
+                            {/* <span className={classes.regularPrice}>
+                              ({diagnosticOrgans.diagnostics.rate})
+                            </span> */}
                           </div>
                         )}
                         <div className={classes.addToCart}>

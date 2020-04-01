@@ -162,6 +162,22 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f7f8f5',
       },
     },
+    noImageWrapper: {
+      width: 290,
+      border: 'solid 1px rgba(151,151,151,0.24)',
+      borderRadius: 10,
+      [theme.breakpoints.down(991)]: {
+        width: '100%',
+      },
+      [theme.breakpoints.down('xs')]: {
+        width: 80,
+        position: 'absolute',
+        marginLeft: 20,
+      },
+      '& img': {
+        width: '100%',
+      },
+    },
     productDetails: {
       paddingLeft: 20,
       width: 'calc(100% - 290px)',
@@ -579,7 +595,9 @@ export const MedicineDetails: React.FC = (props) => {
                           {medicineDetails.image && medicineDetails.image.includes('.') ? (
                             <MedicineImageGallery data={medicineDetails} />
                           ) : (
-                            <img src={require('images/medicine.svg')} alt="" />
+                            <div className={classes.noImageWrapper}>
+                              <img src={require('images/medicine.svg')} alt="" />
+                            </div>
                           )}
                           <div className={classes.productDetails}>
                             <div className={classes.productBasicInfo}>

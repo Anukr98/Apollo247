@@ -1,4 +1,7 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  LocationData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
@@ -58,6 +61,7 @@ import {
   TestPackage,
   PackageInclusion,
   getPackageData,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -528,7 +532,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           clearCartInfo && clearCartInfo();
         }
         if (addrComponents.length > 0) {
-          setLocationDetails!({
+          const locationData: LocationData = {
             displayName: item.name,
             latitude: lat,
             longitude: lng,
@@ -544,7 +548,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
             country: findAddrComponents('country', addrComponents),
             pincode: findAddrComponents('postal_code', addrComponents),
             lastUpdated: new Date().getTime(),
-          });
+          };
+
+          setLocationDetails!(locationData);
+
+          getPlaceInfoByLatLng(lat, lng)
+            .then((response) => {
+              const addrComponents =
+                g(response, 'data', 'results', '0' as any, 'address_components') || [];
+              if (addrComponents.length > 0) {
+                setLocationDetails!({
+                  ...locationData,
+                  pincode: findAddrComponents('postal_code', addrComponents),
+                  lastUpdated: new Date().getTime(),
+                });
+              }
+            })
+            .catch((error) => {
+              CommonBugFender('LocationSearchPopup_saveLatlong', error);
+            });
         }
       })
       .catch((error) => {

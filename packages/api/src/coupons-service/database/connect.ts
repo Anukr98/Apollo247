@@ -40,6 +40,7 @@ import {
   StarTeam,
   Auditor,
   AdminAuditorMapper,
+  CityPincodeMapper,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -133,6 +134,7 @@ export const connect = async () => {
         StarTeam,
         Auditor,
         AdminAuditorMapper,
+        CityPincodeMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

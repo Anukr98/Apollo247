@@ -1127,6 +1127,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "pincode",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -1229,6 +1239,18 @@
           },
           {
             "name": "insertData",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "insertPincodeData",
             "description": null,
             "args": [],
             "type": {
@@ -8102,6 +8124,16 @@
             "type": {
               "kind": "ENUM",
               "name": "ConsultMode",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "pincode",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "defaultValue": null

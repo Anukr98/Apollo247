@@ -85,6 +85,8 @@ const updatePatient: Resolver<
 
   if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
     const referralCode = updateAttrs.referralCode.toUpperCase();
+    if (!isValidReferralCode(referralCode))
+      throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     updateAttrs.referralCode = referralCode;
   }
 
@@ -111,7 +113,7 @@ const updatePatient: Resolver<
   console.log(getPatientList, 'getPatientList for count');
   if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
     //send registration success notification here
-    sendPatientRegistrationNotification(patient, profilesDb, regCode);
+    sendPatientRegistrationNotification(updatePatient, profilesDb, regCode);
     if (updateAttrs.referralCode) {
       const referralCodesMasterRepo = await profilesDb.getCustomRepository(
         ReferralCodesMasterRepository
@@ -119,7 +121,7 @@ const updatePatient: Resolver<
       const referralCodeExist = await referralCodesMasterRepo.findByReferralCode(
         updateAttrs.referralCode
       );
-      let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', patient.firstName);
+      let smsText = ApiConstants.REFERRAL_CODE_TEXT.replace('{0}', updatePatient.firstName);
       if (referralCodeExist) {
         const referalCouponMappingRepo = await profilesDb.getCustomRepository(
           ReferalCouponMappingRepository
@@ -130,11 +132,11 @@ const updatePatient: Resolver<
         if (mappingData)
           smsText = ApiConstants.REFERRAL_CODE_TEXT_WITH_COUPON.replace(
             '{0}',
-            patient.firstName
+            updatePatient.firstName
           ).replace('{1}', mappingData.coupon.code);
-        sendNotificationSMS(patient.mobileNumber, smsText);
+        sendNotificationSMS(updatePatient.mobileNumber, smsText);
       } else {
-        sendNotificationSMS(patient.mobileNumber, smsText);
+        sendNotificationSMS(updatePatient.mobileNumber, smsText);
       }
     }
   }

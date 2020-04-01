@@ -920,6 +920,9 @@ export class Auditor extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
   @Column()
   displayName: string;
 
@@ -962,6 +965,14 @@ export class Auditor extends BaseEntity {
   @Column({ nullable: true, default: 0 })
   auditedAppointments: number;
 
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
   @OneToMany((type) => AdminAuditorMapper, (adminauditormapper) => adminauditormapper.auditor)
   adminauditormapper: AdminAuditorMapper[];
 }
@@ -986,3 +997,38 @@ export class AdminAuditorMapper extends BaseEntity {
   adminuser: AdminUsers;
 }
 // QAadmin_auditor_mapper ends
+
+//citypincode mapper starts
+@Entity()
+export class CityPincodeMapper extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @Column()
+  city: string;
+
+  @Column({ nullable: true })
+  district: string;
+
+  @Column({ nullable: true })
+  facilityId: string;
+
+  @Column()
+  pincode: string;
+
+  @Column({ nullable: true })
+  place: string;
+
+  @Column({ nullable: true })
+  region: string;
+
+  @Column({ nullable: true })
+  zone: string;
+}
+// citypincode mapper ends

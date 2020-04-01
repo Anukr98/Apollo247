@@ -295,6 +295,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
   const [showPopup, setShowPopup] = React.useState<boolean>(false);
   const [tatLoading, setTatLoading] = React.useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -366,16 +367,21 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             ) {
               setDeliveryTime(res.data.tat[0].deliverydate);
             } else if (typeof res.data === 'string') {
-              console.log(res.data);
+              // console.log(res.data);
             } else if (typeof res.data.errorMSG === 'string') {
-              console.log(res.data.errorMSG);
+              setErrorMessage(res.data.errorMSG);
+              // console.log(res.data.errorMSG);
             }
           }
         } catch (error) {
-          console.log(error);
+          // console.log(error);
+          setTatLoading(false);
         }
       })
-      .catch((error: any) => console.log(error));
+      .catch((error: any) => {
+        setTatLoading(false);
+        // console.log(error);
+      });
   };
 
   useEffect(() => {
@@ -443,6 +449,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onChange={(e) => {
                         setPinCode(e.target.value);
+                        setErrorMessage('');
                         if (e.target.value.length < 6) {
                           setDeliveryTime('');
                         }
@@ -456,12 +463,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onClick={() => fetchDeliveryTime()}
                     >
-                      Check
+                      {tatLoading ? <CircularProgress size={20} /> : ' Check'}
                     </AphButton>
                   </div>
+                  {errorMessage && <span>{errorMessage}</span>}
                   {deliveryTime.length > 0 && (
                     <div className={classes.deliveryTimeInfo}>
                       <span>Delivery Time</span>
+
                       {tatLoading ? <CircularProgress size={20} /> : <span>{deliveryTime}</span>}
                     </div>
                   )}

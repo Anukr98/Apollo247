@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers } from 'graphql/types/getDiagnosticsData';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { TEST_COLLECTION_TYPE } from 'graphql/types/globalTypes';
+import _replace from 'lodash/replace';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -67,6 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       opacity: 0.6,
       paddingRight: 5,
+      textDecoration: 'line-through',
     },
     addToCart: {
       paddingTop: 8,
@@ -181,8 +183,13 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       onClick={() =>
                         (window.location.href = clientRoutes.testDetails(
                           'hot-seller',
-                          hotSeller.packageName || '',
-                          hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ''
+                          hotSeller.packageName
+                            ? hotSeller.packageName
+                                .replace(/\s/g, '_')
+                                .replace('_-_', '-')
+                                .toLowerCase()
+                            : ' ',
+                          hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ' '
                         ))
                       }
                     >
@@ -195,8 +202,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     <div className={classes.productTitle}>{hotSeller.packageName}</div>
                     <div className={classes.bottomSection}>
                       <div className={classes.priceGroup}>
-                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
-                        <span>Rs. {hotSeller.price} </span>
+                        <div>Rs. {hotSeller.price} </div>
+                        {/* <div className={classes.regularPrice}>(Rs. {hotSeller.price})</div> */}
                       </div>
                       <div className={classes.addToCart}>
                         {itemIndexInCart(hotSeller) === -1 ? (

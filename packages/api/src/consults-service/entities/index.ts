@@ -938,6 +938,9 @@ export class JdDashboardSummary extends BaseEntity {
   @Column()
   doctorId: string;
 
+  @Column({ default: true })
+  isActive: boolean;
+
   @Column()
   doctorName: string;
 
@@ -1041,6 +1044,9 @@ export class SdDashboardSummary extends BaseEntity {
 
   @Column()
   doctorId: string;
+
+  @Column({ default: true })
+  isActive: boolean;
 
   @Column()
   doctorName: string;
@@ -1158,6 +1164,9 @@ export class DoctorFeeSummary extends BaseEntity {
 
   @Column()
   doctorId: string;
+
+  @Column()
+  isActive: boolean;
 
   @Column({ default: '' })
   doctorName: string;

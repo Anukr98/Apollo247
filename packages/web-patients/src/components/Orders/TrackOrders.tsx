@@ -146,6 +146,7 @@ const TabContainer: React.FC = (props) => {
 
 type TrackOrdersProps = {
   orderAutoId: number;
+  setShowMobileDetails?: (showMobileDetails: boolean) => void;
 };
 
 export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
@@ -206,11 +207,30 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   }, [props.orderAutoId]);
 
+  let isDisable = false;
+  if (
+    orderDetailsData &&
+    orderDetailsData.medicineOrdersStatus &&
+    orderDetailsData.medicineOrdersStatus.length > 0
+  ) {
+    const orderStatus =
+      orderDetailsData.medicineOrdersStatus[orderDetailsData.medicineOrdersStatus.length - 1];
+    if (orderStatus && orderStatus.orderStatus == 'CANCELLED') {
+      isDisable = true;
+    }
+  }
+
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
         <div className={classes.headerBackArrow}>
-          <AphButton onClick={() => window.history.back()}>
+          <AphButton
+            onClick={() => {
+              if (isSmallScreen && props.setShowMobileDetails) {
+                props.setShowMobileDetails(false);
+              }
+            }}
+          >
             <img src={require('images/ic_back.svg')} />
           </AphButton>
         </div>
@@ -221,7 +241,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
             </div>
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId}
+                disabled={!props.orderAutoId || isDisable}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >

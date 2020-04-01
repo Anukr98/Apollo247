@@ -373,6 +373,11 @@ const stackConfig: StackNavigatorConfig = {
       AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
       CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
       logTabEvents(sceneProps.scene.route);
+      if (sceneProps.scene.route.routeName === AppRoutes.ChatRoom) {
+        AsyncStorage.setItem('NAVIGATION_PROPS', JSON.stringify(sceneProps));
+      } else if (sceneProps.scene.route.routeName !== AppRoutes.SplashScreen) {
+        AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
+      }
       // console.log('sceneProps success', sceneProps.scene.route);
     } catch (error) {
       CommonBugFender('NavigatorContainer_stackConfig_try', error);

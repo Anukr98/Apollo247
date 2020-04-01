@@ -17,10 +17,23 @@ import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
-  GetPatientAddressList_getPatientAddressList_addressList,
+  GetPatientAddressList_getPatientAddressList_addressList as Address,
 } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
+
+export const formatAddress = (address: Address) => {
+  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const addrLine2 = [address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -269,7 +282,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               className={classes.radioLabel}
               value={selectedAddressData.id}
               control={<AphRadio color="primary" />}
-              label={`${selectedAddressData.addressLine1} - ${selectedAddressData.zipcode}`}
+              label={formatAddress(selectedAddressData)}
               onChange={() => {
                 setDeliveryAddressId &&
                   setDeliveryAddressId(selectedAddressData && selectedAddressData.id);
@@ -325,7 +338,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           </div>
           Select Delivery Address
         </AphDialogTitle>
-        <ViewAllAddress setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen} />
+        <ViewAllAddress
+          setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
+          formatAddress={formatAddress}
+        />
       </AphDialog>
     </div>
   );

@@ -25,6 +25,7 @@ import {
   getNetStatus,
   statusBarHeight,
   postWebEngageEvent,
+  callPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -223,6 +224,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('DoctorDetails_getNetStatus', e);
       });
+    callPermissions();
   }, []);
 
   useEffect(() => {
@@ -881,6 +883,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               title={'BOOK APPOINTMENT'}
               onPress={() => {
                 postBookAppointmentWEGEvent();
+                callPermissions();
                 getNetStatus()
                   .then((status) => {
                     if (status) {

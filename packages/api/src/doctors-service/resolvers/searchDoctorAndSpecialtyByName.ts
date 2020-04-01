@@ -45,6 +45,7 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
       searchText: String!
       patientId: ID
       geolocation: Geolocation
+      pincode: String
     ): SearchDoctorAndSpecialtyByNameResult
   }
 `;
@@ -69,7 +70,7 @@ let identifier: string;
 let callStartTime: Date;
 const SearchDoctorAndSpecialtyByName: Resolver<
   null,
-  { searchText: string; patientId: string; geolocation: Geolocation },
+  { searchText: string; patientId: string; geolocation: Geolocation; pincode: string },
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
@@ -87,7 +88,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   searchLogger('API_CALL___STARTED');
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
-
   let matchedDoctors: Doctor[] = [],
     matchedSpecialties: DoctorSpecialty[] = [],
     matchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
@@ -111,7 +111,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
 
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
-    matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase);
+    let pincodeCity = '';
+    if (args.pincode) {
+      const pincodeCityDetails = await doctorRepository.getCityMappingPincode(args.pincode);
+      if (pincodeCityDetails) pincodeCity = pincodeCityDetails.city;
+    }
+    matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase, pincodeCity);
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
@@ -125,6 +130,29 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     );
     matchedDoctors = sortedDoctors;
     matchedDoctorsNextAvailability = sortedDoctorsNextAvailability;
+    if (pincodeCity != '') {
+      //matching docs sorting city based start
+      const cityMatchedDocs: Doctor[] = [];
+      const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+      const otherCityMatchedDocs: Doctor[] = [];
+      const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+      let startSort = 0;
+      matchedDoctors.map((preFinalDoc) => {
+        if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
+          cityMatchedDocs.push(preFinalDoc);
+          cityMatchedDoctorsNextAvailability.push(matchedDoctorsNextAvailability[startSort]);
+        } else {
+          otherCityMatchedDocs.push(preFinalDoc);
+          otherCityMatchedDoctorsNextAvailability.push(matchedDoctorsNextAvailability[startSort]);
+        }
+        startSort++;
+      });
+      matchedDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
+      matchedDoctorsNextAvailability = cityMatchedDoctorsNextAvailability.concat(
+        otherCityMatchedDoctorsNextAvailability
+      );
+      //matching docs sorting city based end
+    }
 
     //fetch other doctors only if there is one matched doctor
     if (matchedDoctors.length === 1) {
@@ -144,6 +172,29 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
       otherDoctors = sortedDoctors;
       otherDoctorsNextAvailability = sortedDoctorsNextAvailability;
+      if (pincodeCity != '') {
+        //matching docs sorting city based start
+        const cityMatchedDocs: Doctor[] = [];
+        const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+        const otherCityMatchedDocs: Doctor[] = [];
+        const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+        let startSort = 0;
+        otherDoctors.map((preFinalDoc) => {
+          if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
+            cityMatchedDocs.push(preFinalDoc);
+            cityMatchedDoctorsNextAvailability.push(otherDoctorsNextAvailability[startSort]);
+          } else {
+            otherCityMatchedDocs.push(preFinalDoc);
+            otherCityMatchedDoctorsNextAvailability.push(otherDoctorsNextAvailability[startSort]);
+          }
+          startSort++;
+        });
+        otherDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
+        otherDoctorsNextAvailability = cityMatchedDoctorsNextAvailability.concat(
+          otherCityMatchedDoctorsNextAvailability
+        );
+        //matching docs sorting city based end
+      }
     }
 
     //fetch possible doctors only if there are not matched doctors and specialties
@@ -161,6 +212,31 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       possibleDoctors = sortedPossibleDoctors;
       possibleSpecialties = allPossibleSpecialties;
       possibleDoctorsNextAvailability = sortedPossibleDoctorsNextAvailability;
+      if (pincodeCity != '') {
+        //matching docs sorting city based start
+        const cityMatchedDocs: Doctor[] = [];
+        const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+        const otherCityMatchedDocs: Doctor[] = [];
+        const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+        let startSort = 0;
+        possibleDoctors.map((preFinalDoc) => {
+          if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
+            cityMatchedDocs.push(preFinalDoc);
+            cityMatchedDoctorsNextAvailability.push(possibleDoctorsNextAvailability[startSort]);
+          } else {
+            otherCityMatchedDocs.push(preFinalDoc);
+            otherCityMatchedDoctorsNextAvailability.push(
+              possibleDoctorsNextAvailability[startSort]
+            );
+          }
+          startSort++;
+        });
+        possibleDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
+        possibleDoctorsNextAvailability = cityMatchedDoctorsNextAvailability.concat(
+          otherCityMatchedDoctorsNextAvailability
+        );
+        //matching docs sorting city based end
+      }
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
@@ -201,7 +277,7 @@ const getPossibleDoctorsAndSpecialties = async (
   if (specialtyId.length === 1) {
     allPossibleDoctors = await doctorRepository.searchBySpecialty(specialtyId[0].id);
   } else {
-    allPossibleDoctors = await doctorRepository.searchByName('');
+    allPossibleDoctors = await doctorRepository.searchByName('', '');
   }
   allPossibleSpecialties = await specialtyRepository.searchByName('');
 
@@ -257,7 +333,6 @@ const getSortedDoctors = async (
   searchLogger(`GET_DOCTORS_NEXT_AVAILABILITY___END`);
 
   sortedDoctorsNextAvailability = doctorNextAvailSlots.doctorAvailalbeSlots;
-
   //apply sort algorithm
   searchLogger(`APPLY_RANKING_ALGORITHM___START`);
   if (doctors.length > 1) {
@@ -269,7 +344,6 @@ const getSortedDoctors = async (
       doctorNextAvailSlots.doctorAvailalbeSlots,
       doctors
     );
-
     //apply sort algorithm on ConsultNow doctors
     if (consultNowDoctors.length > 1) {
       //get patient and matched doctors previous appointments starts here
@@ -285,7 +359,6 @@ const getSortedDoctors = async (
         return appt.doctorId;
       });
       //get patient and matched doctors previous appointments ends here
-
       consultNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
         return doctorRepository.sortByRankingAlgorithm(
           doctorA,
@@ -310,7 +383,6 @@ const getSortedDoctors = async (
         return appt.doctorId;
       });
       //get patient and matched doctors previous appointments ends here
-
       bookNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
         return doctorRepository.sortByRankingAlgorithm(
           doctorA,

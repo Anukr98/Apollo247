@@ -538,7 +538,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         setMutationLoading(false);
       });
   };
-
+  const disableCoupon =
+    disableSubmit ||
+    mutationLoading ||
+    isDialogOpen ||
+    (!consultNowAvailable && timeSelected === '') ||
+    (scheduleLater && timeSelected === '');
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
@@ -664,6 +669,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             </>
           )}
           <CouponCode
+            disableSubmit={disableCoupon}
             setCouponCode={setCouponCode}
             subtotal={onlineConsultationFees}
             revisedAmount={revisedAmount}

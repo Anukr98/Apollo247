@@ -26,6 +26,7 @@ import { MascotWithMessage } from './MascotWithMessage';
 import { LocationContext } from './LocationProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useLocationDetails } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -190,7 +191,18 @@ const searchObject: SearchObject = {
 };
 
 export const DoctorsLanding: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const {
+    currentPincode,
+    currentLong,
+    currentLat,
+    getCurrentLocationPincode,
+  } = useLocationDetails();
+
+  if (!currentPincode && currentLat && currentLong) {
+    getCurrentLocationPincode && getCurrentLocationPincode(currentLat, currentLong);
+  }
+
   const [filterOptions, setFilterOptions] = useState<SearchObject>(searchObject);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [failedPopupOpened, setIsFailedPopupOpened] = React.useState<boolean>(false);
@@ -211,15 +223,6 @@ export const DoctorsLanding: React.FC = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   let showError = false;
-  //   matchingDoctorsFound = 0,
-  //   matchingSpecialitesFound = matchingSpecialities;
-
-  // let derivedSpecialites = [];
-  // let derivedSpecialityId = '';
-  // let otherDoctorsFound = 0;
-  // let doctorsNextAvailability = [];
-  // let otherDoctorsNextAvailability = [];
-  // let specialitiesList = [];
 
   useEffect(() => {
     if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
@@ -230,6 +233,7 @@ export const DoctorsLanding: React.FC = (props) => {
           variables: {
             searchText: filterOptions.searchKeyword,
             patientId: currentPatient ? currentPatient.id : '',
+            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
           },
           fetchPolicy: 'no-cache',
         })
@@ -238,7 +242,7 @@ export const DoctorsLanding: React.FC = (props) => {
           setLoading(false);
         });
     }
-  }, [filterOptions.searchKeyword, specialitySelected]);
+  }, [filterOptions.searchKeyword, specialitySelected, currentPincode]);
 
   useEffect(() => {
     if (specialitySelected.length > 0) {

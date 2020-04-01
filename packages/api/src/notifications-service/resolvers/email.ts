@@ -27,6 +27,7 @@ export async function sendMail(emailContent: EmailMessage) {
   body.subject = emailContent.subject;
   body.content = emailContent.messageContent;
   const mailStatus = await controller.createSendEmail(apiKey, body);
+  console.log(mailStatus, 'status of mail');
   return mailStatus;
 }
 
