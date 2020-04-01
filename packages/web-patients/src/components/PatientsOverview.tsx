@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
@@ -63,28 +63,30 @@ export const PatientsOverview: React.FC = () => {
     GetPatientFutureAppointmentCount,
     GetPatientFutureAppointmentCountVariables
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT);
-  if (currentPatient && currentPatient.id) {
-    futureAppointmentMutation({
-      variables: {
-        patientId: currentPatient ? currentPatient.id : '',
-      },
-      fetchPolicy: 'no-cache',
-    })
-      .then((res) => {
-        const responseData = res && res.data;
-        if (responseData && responseData.getPatientFutureAppointmentCount) {
-          setActiveAppointments(
-            responseData && responseData.getPatientFutureAppointmentCount.consultsCount
-          );
-        }
-        setLoading(false);
-      })
-      .catch((error) => {
-        alert(error);
-        setLoading(false);
-      });
-  }
 
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      futureAppointmentMutation({
+        variables: {
+          patientId: currentPatient ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+        .then((res) => {
+          const responseData = res && res.data;
+          if (responseData && responseData.getPatientFutureAppointmentCount) {
+            setActiveAppointments(
+              responseData && responseData.getPatientFutureAppointmentCount.consultsCount
+            );
+          }
+          setLoading(false);
+        })
+        .catch((error) => {
+          alert(error);
+          setLoading(false);
+        });
+    }
+  }, [currentPatient]);
   return (
     <div className={classes.root}>
       <Grid spacing={2} container>
