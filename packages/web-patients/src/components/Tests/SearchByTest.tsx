@@ -201,7 +201,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { searchTestText: string };
+type Params = { searchType: string; searchTestText: string };
 
 export const SearchByTest: React.FC = (props) => {
   const classes = useStyles({});
@@ -219,7 +219,9 @@ export const SearchByTest: React.FC = (props) => {
     (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
   >(null);
 
-  const [searchValue, setSearchValue] = useState<string>('');
+  const [searchValue, setSearchValue] = useState<string>(
+    params.searchType === 'search-test' ? params.searchTestText : ''
+  );
 
   const [
     diagnosticList,

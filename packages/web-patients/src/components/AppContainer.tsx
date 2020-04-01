@@ -166,7 +166,7 @@ const App: React.FC = () => {
 
           <AuthRouted
             exact
-            path={clientRoutes.searchByTest(':searchTestText')}
+            path={clientRoutes.searchByTest(':searchType', ':searchTestText')}
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />

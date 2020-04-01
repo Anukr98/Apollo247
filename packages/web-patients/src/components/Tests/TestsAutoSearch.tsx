@@ -225,7 +225,7 @@ export const TestsAutoSearch: React.FC = (props) => {
           onClick={() => {
             const text = searchText;
             setSearchText('');
-            window.location.href = clientRoutes.searchByTest(text);
+            window.location.href = clientRoutes.searchByTest('search-test', text);
           }}
           classes={{
             disabled: classes.searchBtnDisabled,
