@@ -55,6 +55,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  patientDetails.mobileNumber = patientDetails.mobileNumber.replace('+', '');
   const helpTicketRepo = profilesDb.getCustomRepository(PatientHelpTicketRepository);
   const helpTicketAttrs: Partial<PatientHelpTickets> = {
     category: helpEmailInput.category,
@@ -168,7 +169,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   const mailContentTemplate = _.template(
     `<html>
     <body>
-    <p> #original_sender{ <%- patientDetails.mobileNumber %>@apollo247.org} </p>
+    <p> #original_sender{<%- patientDetails.mobileNumber %>@apollo247.org} </p>
     <p> Patient Help Form</p>
     <ul>
     <li>Need help with  : <%- helpEmailInput.category %></li>
