@@ -277,7 +277,7 @@ export const Header: React.FC = (props) => {
           } else {
             // request permission from user
             Notification.requestPermission()
-              .then(function(p) {
+              .then(function (p) {
                 if (p === 'granted') {
                   // show notification here
                   sendNotification(message.message.message);
@@ -294,7 +294,7 @@ export const Header: React.FC = (props) => {
                   console.log('User blocked notifications.');
                 }
               })
-              .catch(function(err) {
+              .catch(function (err) {
                 const logObject = {
                   api: 'NotificationRequestPermission',
                   doctorId: currentPatient!.id,
@@ -316,7 +316,7 @@ export const Header: React.FC = (props) => {
   return (
     <header className={classes.header}>
       <Offline>
-        <Dialog open={true}>
+        <Dialog open={true} style={{ zIndex: 9999 }}>
           <DialogTitle>{''}</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -369,66 +369,66 @@ export const Header: React.FC = (props) => {
                       />
                     </div>
                   ) : (
-                    <div>
-                      {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Inbox">
-                          <img
-                            onClick={() => setSelectedTab(3)}
-                            src={require('images/ic_inbox.svg')}
-                          />
-                        </span>
-                      ) : null}
-                      {!isJuniorDoctor && !isAdminDoctor ? (
-                        <span title="Notification">
-                          <img
-                            onClick={() => setSelectedTab(4)}
-                            src={require('images/ic_notifications.svg')}
-                          />
-                        </span>
-                      ) : null}
-                      {!isAdminDoctor && (
-                        <span
-                          title="Help"
-                          className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
-                        >
-                          <img
-                            onClick={() => {
-                              isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
-                              setSelectedTab(5);
-                            }}
-                            src={require('images/ic_help.svg')}
-                          />
-                        </span>
-                      )}
-                      {isJuniorDoctor || isAdminDoctor ? (
-                        <span
-                          title="My Profile"
-                          className={`${window.location.href.includes('/jd-profile') &&
-                            classes.menuItemActive}`}
-                        >
-                          <Link to={clientRoutes.juniorDoctorProfile()}>
+                      <div>
+                        {!isJuniorDoctor && !isAdminDoctor ? (
+                          <span title="Inbox">
                             <img
-                              onClick={() => setSelectedTab(6)}
-                              src={require('images/ic_profile.svg')}
+                              onClick={() => setSelectedTab(3)}
+                              src={require('images/ic_inbox.svg')}
                             />
-                          </Link>
-                        </span>
-                      ) : (
-                        <span
-                          title="My Account"
-                          className={`${window.location.href.includes('/myaccount') &&
-                            classes.menuItemActive}`}
-                        >
-                          <Link to="/myaccount">
+                          </span>
+                        ) : null}
+                        {!isJuniorDoctor && !isAdminDoctor ? (
+                          <span title="Notification">
                             <img
-                              onClick={() => setSelectedTab(6)}
-                              src={require('images/ic_profile.svg')}
+                              onClick={() => setSelectedTab(4)}
+                              src={require('images/ic_notifications.svg')}
                             />
-                          </Link>
-                        </span>
-                      )}
-                    </div>
-                  )
+                          </span>
+                        ) : null}
+                        {!isAdminDoctor && (
+                          <span
+                            title="Help"
+                            className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
+                          >
+                            <img
+                              onClick={() => {
+                                isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                                setSelectedTab(5);
+                              }}
+                              src={require('images/ic_help.svg')}
+                            />
+                          </span>
+                        )}
+                        {isJuniorDoctor || isAdminDoctor ? (
+                          <span
+                            title="My Profile"
+                            className={`${window.location.href.includes('/jd-profile') &&
+                              classes.menuItemActive}`}
+                          >
+                            <Link to={clientRoutes.juniorDoctorProfile()}>
+                              <img
+                                onClick={() => setSelectedTab(6)}
+                                src={require('images/ic_profile.svg')}
+                              />
+                            </Link>
+                          </span>
+                        ) : (
+                            <span
+                              title="My Account"
+                              className={`${window.location.href.includes('/myaccount') &&
+                                classes.menuItemActive}`}
+                            >
+                              <Link to="/myaccount">
+                                <img
+                                  onClick={() => setSelectedTab(6)}
+                                  src={require('images/ic_profile.svg')}
+                                />
+                              </Link>
+                            </span>
+                          )}
+                      </div>
+                    )
                 ) : !isSecretary ? (
                   <div
                     className={classes.accontDiv}
@@ -454,34 +454,34 @@ export const Header: React.FC = (props) => {
                     />
                   </div>
                 ) : (
-                  <div>
-                    <span
-                      title="Help"
-                      className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
-                    >
-                      <img
-                        onClick={() => {
-                          setIsHelpPopupOpen(true);
-                          setSelectedTab(5);
-                        }}
-                        src={require('images/ic_help.svg')}
-                      />
-                    </span>
-                    {!window.location.href.includes('/secretary') && (
-                      <span
-                        title="My Profile"
-                        className={`${selectedTab === 6 && classes.menuItemActive}`}
-                      >
-                        <Link to="/myaccount">
-                          <img
-                            onClick={() => setSelectedTab(6)}
-                            src={require('images/ic_profile.svg')}
-                          />
-                        </Link>
-                      </span>
-                    )}
-                  </div>
-                )}
+                        <div>
+                          <span
+                            title="Help"
+                            className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
+                          >
+                            <img
+                              onClick={() => {
+                                setIsHelpPopupOpen(true);
+                                setSelectedTab(5);
+                              }}
+                              src={require('images/ic_help.svg')}
+                            />
+                          </span>
+                          {!window.location.href.includes('/secretary') && (
+                            <span
+                              title="My Profile"
+                              className={`${selectedTab === 6 && classes.menuItemActive}`}
+                            >
+                              <Link to="/myaccount">
+                                <img
+                                  onClick={() => setSelectedTab(6)}
+                                  src={require('images/ic_profile.svg')}
+                                />
+                              </Link>
+                            </span>
+                          )}
+                        </div>
+                      )}
               </div>
             )}
           </ProtectedWithLoginPopup>
@@ -527,43 +527,43 @@ export const Header: React.FC = (props) => {
                   <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
                 </Paper>
               ) : (
-                <Paper className={classes.loginForm}>
-                  <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
-                    <img src={require('images/ic_cross.svg')} alt="" />
-                  </Button>
-                  <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
-                </Paper>
-              )}
+                  <Paper className={classes.loginForm}>
+                    <Button onClick={() => setIsHelpPopupOpen(false)} className={classes.cross}>
+                      <img src={require('images/ic_cross.svg')} alt="" />
+                    </Button>
+                    <HelpPopup setBackArrow={() => setIsHelpPopupOpen(true)} />
+                  </Paper>
+                )}
             </Popover>
           ) : (
-            <Popover
-              open={isLoginPopupVisible}
-              anchorEl={avatarRef.current}
-              onClose={() => {
-                stickyPopup && setIsLoginPopupVisible(false);
-              }}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              classes={{ paper: classes.topPopover }}
-            >
-              <Paper className={classes.loginForm}>
-                <SignIn
-                  popup={() => {
-                    setIsLoginPopupVisible(false);
-                  }}
-                  setStickyPopupValue={() => {
-                    setStickyPopup(!stickyPopup);
-                  }}
-                />
-              </Paper>
-            </Popover>
-          )}
+              <Popover
+                open={isLoginPopupVisible}
+                anchorEl={avatarRef.current}
+                onClose={() => {
+                  stickyPopup && setIsLoginPopupVisible(false);
+                }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                classes={{ paper: classes.topPopover }}
+              >
+                <Paper className={classes.loginForm}>
+                  <SignIn
+                    popup={() => {
+                      setIsLoginPopupVisible(false);
+                    }}
+                    setStickyPopupValue={() => {
+                      setStickyPopup(!stickyPopup);
+                    }}
+                  />
+                </Paper>
+              </Popover>
+            )}
         </div>
         <Dialog
           open={showIdleTimer}
