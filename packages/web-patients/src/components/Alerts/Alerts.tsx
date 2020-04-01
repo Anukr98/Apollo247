@@ -110,9 +110,7 @@ export const Alerts: React.FC<Alertprops> = (props) => {
         },
       }}
     >
-      <div
-        className={`${classes.defaultWrapper} ${classes.errorAlertWrapper}`}
-      >
+      <div className={`${classes.defaultWrapper} ${classes.errorAlertWrapper}`}>
         <h3>Warning</h3>
         <div className={classes.contentWrapper}>
           <p>{props.alertMessage}</p>

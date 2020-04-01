@@ -24,6 +24,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { OrderPlacedTest } from 'components/Tests/Cart/OrderPlacedTest';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MascotWithMessage } from 'components/MascotWithMessage';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -314,6 +315,9 @@ export const TestsLanding: React.FC = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const [diagnosisHotSellerData, setDiagnosisHotSellerData] = useState<
     (getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers | null)[] | null
   >(null);
@@ -351,7 +355,8 @@ export const TestsLanding: React.FC = (props) => {
           }
         })
         .catch((e) => {
-          alert(e);
+          setIsAlertOpen(true);
+          setAlertMessage(e);
           setDiagnosisDataError(true);
         })
         .finally(() => {
@@ -526,6 +531,12 @@ export const TestsLanding: React.FC = (props) => {
           }}
         />
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
       <NavigationBottom />
     </div>
   );

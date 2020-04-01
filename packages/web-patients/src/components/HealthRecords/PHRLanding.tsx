@@ -25,6 +25,7 @@ import { useAuth } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useMutation } from 'react-apollo-hooks';
 import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,6 +104,9 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const [hospitalizations, setHospitalizations] = useState<(HospitalizationsType | null)[] | null>(
     null
   );
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const { isSigningIn } = useAuth();
   const [allCombinedData, setAllCombinedData] = useState<any | null>();
   const [activeMedicalData, setActiveMedicalData] = useState<any | null>(null);
@@ -205,7 +209,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         setMedicalRecordError(false);
       })
       .catch((error) => {
-        alert(error);
+        setIsAlertOpen(true);
+        setAlertMessage(error);
         setMedicalRecordError(true);
         setMedicalLoading(false);
       });
@@ -362,6 +367,12 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
             </TabContainer>
           )}
         </div>
+        <Alerts
+          setAlertMessage={setAlertMessage}
+          alertMessage={alertMessage}
+          isAlertOpen={isAlertOpen}
+          setIsAlertOpen={setIsAlertOpen}
+        />
       </div>
       <NavigationBottom />
     </div>

@@ -35,6 +35,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 // import { ChatMessage } from "components/ChatRoom/ChatMessage";
 import { useMutation } from 'react-apollo-hooks';
 import Scrollbars from 'react-custom-scrollbars';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -441,6 +442,9 @@ export const ChatRoom: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
     GetDoctorDetailsByIdVariables
@@ -496,11 +500,13 @@ export const ChatRoom: React.FC = (props) => {
           }
         } catch (error) {
           setNextSlotAvailable('');
-          alert(error);
+          setIsAlertOpen(true);
+          setAlertMessage(error);
         }
       })
       .catch((e: string) => {
-        alert(e);
+        setIsAlertOpen(true);
+        setAlertMessage(e);
       });
   };
 
@@ -846,6 +852,12 @@ export const ChatRoom: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

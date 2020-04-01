@@ -318,7 +318,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         }
       })
       .catch((error) => {
-        alert(error);
+        setIsAlertOpen(true);
+        setAlertMessage(error);
         setMutationLoading(false);
       });
   };
@@ -525,7 +526,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               .then((res) => {
                 window.location.href = clientRoutes.appointments();
               })
-              .catch((error) => alert(error));
+              .catch((error) => {
+                setIsAlertOpen(true);
+                setAlertMessage(error);
+              });
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
@@ -539,7 +543,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         }
       })
       .catch((errorResponse) => {
-        alert(errorResponse);
+        setIsAlertOpen(true);
+        setAlertMessage(errorResponse);
         disableSubmit = false;
         setMutationLoading(false);
       });

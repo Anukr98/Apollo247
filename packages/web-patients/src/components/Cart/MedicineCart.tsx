@@ -35,6 +35,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -478,6 +479,9 @@ export const MedicineCart: React.FC = (props) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [uploadingFiles, setUploadingFiles] = React.useState<boolean>(false);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
 
   const removeImagePrescription = (fileName: string) => {
@@ -620,7 +624,8 @@ export const MedicineCart: React.FC = (props) => {
       })
       .catch((e) => {
         console.log({ e });
-        alert(`Something went wrong, please try later.`);
+        setIsAlertOpen(true);
+        setAlertMessage(`Something went wrong, please try later.`);
       })
       .finally(() => {
         // setLoading!(false);
@@ -690,7 +695,8 @@ export const MedicineCart: React.FC = (props) => {
         .catch((e) => {
           console.log(e);
           setUploadingFiles(false);
-          alert(e);
+          setIsAlertOpen(true);
+          setAlertMessage(e);
         });
     }
   };
@@ -989,7 +995,8 @@ export const MedicineCart: React.FC = (props) => {
                     }
                   })
                   .catch((e) => {
-                    alert(e);
+                    setIsAlertOpen(true);
+                    setAlertMessage(e);
                     setMutationLoading(false);
                   });
               }}
@@ -1037,6 +1044,12 @@ export const MedicineCart: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
       <NavigationBottom />
     </div>
   );

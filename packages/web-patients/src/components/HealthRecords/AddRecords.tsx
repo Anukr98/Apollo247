@@ -610,7 +610,8 @@ export const AddRecords: React.FC = (props) => {
           });
       }
     } else {
-      alert(valid.message);
+      setIsAlertOpen(true);
+      setAlertMessage(valid.message);
     }
   };
 
