@@ -17,6 +17,7 @@ import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import { useMutation } from 'react-apollo-hooks';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -207,7 +208,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const [referralCode, setReferralCode] = useState<string>('');
   const [isValidReferralCode, setIsValidReferralCode] = useState<boolean>(true);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const orderedGenders = [Gender.MALE, Gender.FEMALE];
 
   if (showProfileSuccess) {
@@ -244,7 +246,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
             })
             .catch((error) => {
               console.error(error);
-              window.alert('Something went wrong :(');
+              setIsAlertOpen(true);
+              setAlertMessage('Something went wrong :(');
             });
         }}
         render={({
@@ -493,6 +496,12 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   {isSubmitting ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
                 </AphButton>
               </div>
+              <Alerts
+                setAlertMessage={setAlertMessage}
+                alertMessage={alertMessage}
+                isAlertOpen={isAlertOpen}
+                setIsAlertOpen={setIsAlertOpen}
+              />
             </Form>
           );
         }}

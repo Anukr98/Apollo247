@@ -345,8 +345,8 @@ export const SearchByTest: React.FC = (props) => {
                   Sorry, we couldn't find what you are looking for :(
                 </FormHelperText>
               ) : (
-                  ''
-                )}
+                ''
+              )}
             </div>
             <div className={`${classes.searchSection}`}>
               <Scrollbars
@@ -361,8 +361,8 @@ export const SearchByTest: React.FC = (props) => {
                   ) : diagnosticList ? (
                     <TestCard testData={diagnosticList} mou={1} />
                   ) : (
-                          'No data found'
-                        )}
+                    'No data found'
+                  )}
                 </div>
               </Scrollbars>
             </div>

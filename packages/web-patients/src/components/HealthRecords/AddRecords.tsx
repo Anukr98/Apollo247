@@ -25,6 +25,7 @@ import { AphCalendarPastDate } from '../AphCalendarPastDate';
 import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -395,6 +396,9 @@ export const AddRecords: React.FC = (props) => {
   const [showCalendar, setShowCalendar] = React.useState<boolean>(false);
   const [forceRender, setForceRender] = React.useState<boolean>(false);
 
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const uploadDocumentMutation = useMutation(UPLOAD_DOCUMENT);
@@ -547,20 +551,24 @@ export const AddRecords: React.FC = (props) => {
                   })
                   .catch((e) => {
                     setshowSpinner(false);
-                    alert('Please fill all the details');
+                    setIsAlertOpen(true);
+                    setAlertMessage('Please fill all the details');
                   });
               } else {
                 setshowSpinner(false);
-                alert('An error occurred while loading the image.');
+                setIsAlertOpen(true);
+                setAlertMessage('An error occurred while loading the image.');
               }
             } else {
               setshowSpinner(false);
-              alert('An error occurred while uploading the image.');
+              setIsAlertOpen(true);
+              setAlertMessage('An error occurred while uploading the image.');
             }
           })
           .catch((e) => {
             setshowSpinner(false);
-            alert('An error occurred while uploading the image.');
+            setIsAlertOpen(true);
+            setAlertMessage('An error occurred while uploading the image.');
           });
       } else {
         const inputData = {
@@ -597,7 +605,8 @@ export const AddRecords: React.FC = (props) => {
           })
           .catch((e) => {
             setshowSpinner(false);
-            alert('Please fill all the details');
+            setIsAlertOpen(true);
+            setAlertMessage('Please fill all the details');
           });
       }
     } else {
@@ -718,7 +727,10 @@ export const AddRecords: React.FC = (props) => {
                                 const fileExtension = file.name.split('.').pop();
                                 const fileSize = file.size;
                                 if (fileSize > 2000000) {
-                                  alert('Invalid File Size. File size must be less than 2MB');
+                                  setIsAlertOpen(true);
+                                  setAlertMessage(
+                                    'Invalid File Size. File size must be less than 2MB'
+                                  );
                                 } else if (
                                   fileExtension &&
                                   (fileExtension.toLowerCase() === 'png' ||
@@ -749,12 +761,14 @@ export const AddRecords: React.FC = (props) => {
                                         })
                                         .catch((e: any) => {
                                           setIsUploading(false);
-                                          alert('Error while uploading the file');
+                                          setIsAlertOpen(true);
+                                          setAlertMessage('Error while uploading the file');
                                         });
                                     }
                                   }
                                 } else {
-                                  alert(
+                                  setIsAlertOpen(true);
+                                  setAlertMessage(
                                     'Invalid File Extension. Only files with .jpg,.jpeg or .png  extensions are allowed.'
                                   );
                                 }
@@ -1061,6 +1075,12 @@ export const AddRecords: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

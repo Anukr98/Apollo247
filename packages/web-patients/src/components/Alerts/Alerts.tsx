@@ -89,13 +89,20 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-export const Alerts: React.FC = (props) => {
+
+interface Alertprops {
+  isAlertOpen: boolean;
+  alertMessage: string;
+  setAlertMessage: (alertMessage: string) => void;
+  setIsAlertOpen: (isAlertOpen: boolean) => void;
+}
+
+export const Alerts: React.FC<Alertprops> = (props) => {
   const classes = useStyles({});
-  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(true);
   return (
     <AphDialog
       className={classes.dialogBox}
-      open={isAlertOpen}
+      open={props.isAlertOpen}
       maxWidth="md"
       BackdropProps={{
         classes: {
@@ -104,16 +111,26 @@ export const Alerts: React.FC = (props) => {
       }}
     >
       <div
-        className={`${classes.defaultWrapper} ${classes.errorAlertWrapper} ${classes.successAlertWrapper}`}
+        className={`${classes.defaultWrapper} ${classes.errorAlertWrapper}`}
       >
-        <h3>Success</h3>
+        <h3>Warning</h3>
         <div className={classes.contentWrapper}>
-          <p>The file was uploaded successfully.</p>
+          <p>{props.alertMessage}</p>
           <div className={classes.buttonsWrapper}>
-            <AphButton onClick={() => setIsAlertOpen(false)} title={'Close'}>
+            {/* <AphButton
+              onClick={() => {
+                props.setIsAlertOpen(false), props.setAlertMessage('');
+              }}
+              title={'Close'}
+            >
               Ignore
-            </AphButton>
-            <AphButton onClick={() => setIsAlertOpen(false)} title={'Close'}>
+            </AphButton> */}
+            <AphButton
+              onClick={() => {
+                props.setIsAlertOpen(false), props.setAlertMessage('');
+              }}
+              title={'Close'}
+            >
               Done
             </AphButton>
           </div>
