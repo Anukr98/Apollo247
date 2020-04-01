@@ -257,15 +257,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .then(({ data }) => {
         console.log(data, 'dataaaaa');
         if (speciality === 'General Physician/ Internal Medicine')
-          setGeneralPhysicians &&
-            setGeneralPhysicians({ id: id, pinCode: g(locationDetails, 'pincode')!, data: data });
+          setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
         else if (speciality === 'Urology') {
-          setUrology && setUrology({ id: id, pinCode: g(locationDetails, 'pincode')!, data: data });
+          setUrology && setUrology({ id: id, data: data });
         } else if (speciality === 'ENT') {
-          setEnt && setEnt({ id: id, pinCode: g(locationDetails, 'pincode')!, data: data });
+          setEnt && setEnt({ id: id, data: data });
         } else if (speciality === 'Dermatology') {
-          setDermatology &&
-            setDermatology({ id: id, pinCode: g(locationDetails, 'pincode')!, data: data });
+          setDermatology && setDermatology({ id: id, data: data });
         }
 
         // try {

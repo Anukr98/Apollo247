@@ -27,31 +27,16 @@ export interface AppCommonDataContextProps {
   locationForDiagnostics: { cityId: string; stateId: string; city: string; state: string } | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
-  generalPhysicians:
-    | { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters }
-    | null
-    | undefined;
+  generalPhysicians: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
   setGeneralPhysicians:
-    | ((arg0: { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters }) => void)
+    | ((arg0: { id: string; data: getDoctorsBySpecialtyAndFilters }) => void)
     | null;
-  ent: { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
-  setEnt:
-    | ((arg0: { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters }) => void)
-    | null;
-  Dermatology:
-    | { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters }
-    | null
-    | undefined;
-  setDermatology:
-    | ((arg0: { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters }) => void)
-    | null;
-  Urology:
-    | { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters }
-    | null
-    | undefined;
-  setUrology:
-    | ((arg0: { id: string; pinCode: string; data: getDoctorsBySpecialtyAndFilters }) => void)
-    | null;
+  ent: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
+  setEnt: ((arg0: { id: string; data: getDoctorsBySpecialtyAndFilters }) => void) | null;
+  Dermatology: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
+  setDermatology: ((arg0: { id: string; data: getDoctorsBySpecialtyAndFilters }) => void) | null;
+  Urology: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
+  setUrology: ((arg0: { id: string; data: getDoctorsBySpecialtyAndFilters }) => void) | null;
   needHelpToContactInMessage: string;
   setNeedHelpToContactInMessage: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
@@ -95,22 +80,18 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
     id: string;
-    pinCode: string;
     data: getDoctorsBySpecialtyAndFilters;
   }>();
   const [ent, setEnt] = useState<{
     id: string;
-    pinCode: string;
     data: getDoctorsBySpecialtyAndFilters;
   }>();
   const [Dermatology, setDermatology] = useState<{
     id: string;
-    pinCode: string;
     data: getDoctorsBySpecialtyAndFilters;
   }>();
   const [Urology, setUrology] = useState<{
     id: string;
-    pinCode: string;
     data: getDoctorsBySpecialtyAndFilters;
   }>();
 
