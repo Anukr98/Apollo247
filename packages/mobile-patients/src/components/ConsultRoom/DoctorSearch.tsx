@@ -20,7 +20,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
 import { getPastSearches_getPastSearches } from '@aph/mobile-patients/src/graphql/types/getPastSearches';
 import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SEARCH_TYPE, FilterDoctorInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   SearchDoctorAndSpecialtyByName,
@@ -30,6 +30,7 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
+  SearchDoctorAndSpecialtyByNameVariables,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
 import {
   getNetStatus,
@@ -237,9 +238,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
     console.log(geolocation, 'geolocation');
 
-    const FilterInput = {
+    const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: id,
+      pincode: g(locationDetails, 'pincode') || null,
       ...geolocation,
     };
     console.log(FilterInput, 'FilterInput1111');
@@ -318,12 +320,19 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       postwebEngageSearchEvent(searchTextString);
       setisSearching(true);
       client
-        .query<SearchDoctorAndSpecialtyByName>({
+        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
           query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
           fetchPolicy: 'no-cache',
           variables: {
             searchText: searchTextString,
             patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+            pincode: g(locationDetails, 'pincode') || null,
+            geolocation: g(locationDetails, 'latitude')
+              ? {
+                  latitude: parseFloat(locationDetails!.latitude!.toString()),
+                  longitude: parseFloat(locationDetails!.longitude!.toString()),
+                }
+              : null,
           },
         })
         .then(({ data }) => {
