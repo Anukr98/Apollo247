@@ -316,30 +316,28 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       setMedicalLoading(false);
     }
   }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
-
   return (
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
         <div className={classes.healthRecordsPage}>
-          {consultsData && allCombinedData && (
-            <Tabs
-              value={tabValue}
-              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-              onChange={(e, newValue) => {
-                setTabValue(newValue);
-              }}
-            >
-              <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                label={`Consults & Rx — ${consultsData && consultsData.length}`}
-              />
-              <Tab
-                classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                label={`Medical Records — ${allCombinedData && allCombinedData.length}`}
-              />
-            </Tabs>
-          )}
+          <Tabs
+            value={tabValue}
+            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+            onChange={(e, newValue) => {
+              setTabValue(newValue);
+            }}
+          >
+            <Tab
+              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+              label={`Consults & Rx — ${consultsData ? consultsData.length : 0}`}
+            />
+            <Tab
+              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+              label={`Medical Records — ${allCombinedData ? allCombinedData.length : 0}`}
+            />
+          </Tabs>
+
           {tabValue === 0 && (
             <TabContainer>
               <Consultations
