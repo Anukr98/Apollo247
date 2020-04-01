@@ -287,26 +287,49 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (pincodeCityDetails) pincodeCity = pincodeCityDetails.city;
   }
   if (pincodeCity != '') {
+    console.log('entered here');
     //matching docs sorting city based start
     const cityMatchedDocs: Doctor[] = [];
     const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
     const otherCityMatchedDocs: Doctor[] = [];
     const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
     let startSort = 0;
+    const matchedDocIds: string[] = [];
+    const matchedOtherDocIds: string[] = [];
     finalSortedDoctors.map((preFinalDoc) => {
       if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
         cityMatchedDocs.push(preFinalDoc);
+        matchedDocIds.push(preFinalDoc.id);
         cityMatchedDoctorsNextAvailability.push(finalDoctorNextAvailSlots[startSort]);
       } else {
         otherCityMatchedDocs.push(preFinalDoc);
+        matchedOtherDocIds.push(preFinalDoc.id);
         otherCityMatchedDoctorsNextAvailability.push(finalDoctorNextAvailSlots[startSort]);
       }
       startSort++;
     });
-    finalSortedDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
+    console.log(cityMatchedDoctorsNextAvailability, 'cityMatchedDoctorsNextAvailability');
+
+    const cityMatchedDocsOrder: Doctor[] = [];
+    cityMatchedDoctorsNextAvailability.map((availDoc) => {
+      const docIndex = matchedDocIds.indexOf(availDoc.doctorId);
+      console.log(docIndex, availDoc.doctorId, 'docIndex');
+      cityMatchedDocsOrder.push(cityMatchedDocs[docIndex]);
+    });
+    console.log(otherCityMatchedDoctorsNextAvailability, 'otherCityMatchedDoctorsNextAvailability');
+    const otherCityMatchedDocsOrder: Doctor[] = [];
+    otherCityMatchedDoctorsNextAvailability.map((availDoc) => {
+      const docIndex = matchedOtherDocIds.indexOf(availDoc.doctorId);
+      console.log(docIndex, availDoc.doctorId, 'docIndex 2');
+      otherCityMatchedDocsOrder.push(otherCityMatchedDocs[docIndex]);
+    });
+    console.log('----------final list--------------');
+    console.log(cityMatchedDocsOrder, otherCityMatchedDocsOrder);
+    finalSortedDoctors = cityMatchedDocsOrder.concat(otherCityMatchedDocsOrder); //cityMatchedDocs.concat(otherCityMatchedDocs);
     finalDoctorNextAvailSlots = cityMatchedDoctorsNextAvailability.concat(
       otherCityMatchedDoctorsNextAvailability
     );
+
     //matching docs sorting city based end
   }
   searchLogger(`API_CALL___END`);
