@@ -16,6 +16,7 @@ export const DatePicker: React.FC<DatePickerProps> = (props) => {
       onConfirm={props.handleDatePicked}
       onCancel={props.hideDateTimePicker}
       maximumDate={new Date()}
+      datePickerModeAndroid={'spinner'}
     />
   );
 };

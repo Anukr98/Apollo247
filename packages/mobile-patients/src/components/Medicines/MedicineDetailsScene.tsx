@@ -36,6 +36,7 @@ import {
   doRequestAndAccessLocation,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postAppsFlyerAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -400,6 +401,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       isInStock: true,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
+    postAppsFlyerAddToCartEvent(item, 'Pharmacy PDP');
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {

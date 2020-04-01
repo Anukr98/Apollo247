@@ -31,6 +31,7 @@ import {
   Gender,
   Range,
   SpecialtySearchType,
+  FilterDoctorInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   getPlaceInfoByPlaceId,
@@ -43,6 +44,7 @@ import {
   getNetStatus,
   postWebEngageEvent,
   callPermissions,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -73,6 +75,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -156,6 +159,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
+  const [locationSearchText, setLocationSearchText] = useState<string>('');
   // const [latlng, setlatlng] = useState<locationType | null>(null);
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
@@ -320,11 +324,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     console.log('response', { response });
                     response && setLocationDetails!(response);
                     response && setcurrentLocation(response.displayName);
+                    response && setLocationSearchText(response.displayName);
                     response &&
-                      fetchSpecialityFilterData(filterMode, FilterData, {
-                        lat: response.latitude || '',
-                        lng: response.longitude || '',
-                      });
+                      fetchSpecialityFilterData(
+                        filterMode,
+                        FilterData,
+                        {
+                          lat: response.latitude || '',
+                          lng: response.longitude || '',
+                        },
+                        response.pincode
+                      );
                   })
                   .catch((e) => {
                     CommonBugFender('DoctorSearchListing_ALLOW_AUTO_DETECT', e);
@@ -352,6 +362,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
       fetchSpecialityFilterData(filterMode, FilterData, latlng);
       setcurrentLocation(locationDetails.displayName);
+      setLocationSearchText(locationDetails.displayName);
     }
     callPermissions();
     return () => {
@@ -422,7 +433,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const fetchSpecialityFilterData = (
     filterMode: ConsultMode = ConsultMode.BOTH,
     SearchData: filterDataType[] = FilterData,
-    location: locationType | null = latlng
+    location: locationType | null = latlng,
+    pinCode?: string
   ) => {
     const experienceArray: Range[] = [];
     if (SearchData[0].selectedOptions && SearchData[0].selectedOptions.length > 0)
@@ -511,10 +523,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     console.log(geolocation, 'geolocation');
 
-    const FilterInput = {
+    const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.getParam('specialityId') || '',
       // city: SearchData[0].selectedOptions,
+      pincode: pinCode || g(locationDetails, 'pincode') || null,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
@@ -648,15 +661,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);
+          setLocationSearchText(item.name);
           setshowSpinner(true);
-          fetchSpecialityFilterData(filterMode, FilterData, {
-            lat: coordinates.lat,
-            lng: coordinates.lng,
-          });
-          latlng = {
-            lat: coordinates.lat,
-            lng: coordinates.lng,
-          };
           const locationData: LocationData = {
             displayName: item.name,
             latitude:
@@ -684,6 +690,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               const addrComponents =
                 g(response, 'data', 'results', '0' as any, 'address_components') || [];
               if (addrComponents.length > 0) {
+                fetchSpecialityFilterData(
+                  filterMode,
+                  FilterData,
+                  {
+                    lat: coordinates.lat,
+                    lng: coordinates.lng,
+                  },
+                  findAddrComponents('postal_code', addrComponents)
+                );
+                latlng = {
+                  lat: coordinates.lat,
+                  lng: coordinates.lng,
+                };
+
                 setLocationDetails!({
                   ...locationData,
                   pincode: findAddrComponents('postal_code', addrComponents),
@@ -814,7 +834,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     textTransform: 'uppercase',
                   }}
                 >
-                  {currentLocation}
+                  {currentLocation.length > 15
+                    ? `${currentLocation.substring(0, 15)}...`
+                    : currentLocation}
                 </Text>
               ) : null}
               <LocationOn />
@@ -869,6 +891,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       Source: source,
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
   };
 
   const renderSearchDoctorResultsRow = (
@@ -1170,9 +1193,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 7 }}>
                 <TextInputComponent
-                  value={currentLocation}
+                  textInputprops={{ autoFocus: true }}
+                  value={locationSearchText}
                   onChangeText={(value) => {
-                    setcurrentLocation(value);
+                    setLocationSearchText(value);
                     autoSearch(value);
                   }}
                 />
@@ -1206,6 +1230,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     onPress={() => {
                       CommonLogEvent(AppRoutes.DoctorSearchListing, 'Search List clicked');
                       setcurrentLocation(item.name);
+                      setLocationSearchText(item.name);
                       saveLatlong(item);
                       setshowLocationpopup(false);
                     }}

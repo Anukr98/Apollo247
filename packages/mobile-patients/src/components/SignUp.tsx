@@ -52,12 +52,15 @@ import {
 import {
   handleGraphQlError,
   postWebEngageEvent,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import AsyncStorage from '@react-native-community/async-storage';
+import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
+import moment from 'moment';
 
 const { height } = Dimensions.get('window');
 
@@ -313,6 +316,13 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             </View>
           </View>
           <DatePicker
+            date={
+              date
+                ? moment(date, 'DD/MM/YYYY').toDate()
+                : moment()
+                    .subtract(25, 'years')
+                    .toDate()
+            }
             isDateTimePickerVisible={isDateTimePickerVisible}
             handleDatePicked={(date) => {
               const formatDate = Moment(date).format('DD/MM/YYYY');
@@ -383,6 +393,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       }
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
     } catch (error) {
       console.log({ error });
     }

@@ -39,6 +39,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   callPermissions,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -78,6 +79,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -256,6 +258,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         console.log('makeAppointmentPayment', '\n', JSON.stringify(data!.makeAppointmentPayment));
         postWebEngageEvent(
           WebEngageEventName.CONSULTATION_BOOKED,
+          getConsultationBookedEventAttributes(
+            paymentDateTime,
+            g(data, 'makeAppointmentPayment', 'appointment', 'id')!
+          )
+        );
+        postAppsFlyerEvent(
+          AppsFlyerEventName.CONSULTATION_BOOKED,
           getConsultationBookedEventAttributes(
             paymentDateTime,
             g(data, 'makeAppointmentPayment', 'appointment', 'id')!
