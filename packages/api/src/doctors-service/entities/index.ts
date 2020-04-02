@@ -125,7 +125,7 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('blocked_calendar_item_doctor_id')
+  @Index('BlockedCalendarItem_doctorId')
   @Column()
   doctorId: string;
 
@@ -161,7 +161,7 @@ export class ConsultHours extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('consult_hours_doctor_id')
+  @Index('ConsultHours_doctorId')
   @ManyToOne((type) => Doctor, (doctor) => doctor.consultHours)
   doctor: Doctor;
 
@@ -189,7 +189,7 @@ export class ConsultHours extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @Index('consult_hours_week_day')
+  @Index('ConsultHours_weekDay')
   @Column()
   weekDay: WeekDay;
 
@@ -258,7 +258,7 @@ export class Doctor extends BaseEntity {
   @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
   doctorSecretary: DoctorSecretary;
 
-  @Index('doctor_doctor_type')
+  @Index('Doctor_doctorType')
   @Column()
   doctorType: DoctorType;
 
@@ -281,7 +281,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   experience: Number;
 
-  @Index('doctor_first_name')
+  @Index('Doctor_firstName')
   @Column()
   @Validate(NameValidator)
   firstName: string;
@@ -292,18 +292,18 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   gender: Gender;
 
-  @Index('doctor_id')
+  @Index('Doctor_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('doctor_is_active')
+  @Index('Doctor_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
   @Column({ nullable: true, type: 'text' })
   languages: string;
 
-  @Index('doctor_last_name')
+  @Index('Doctor_lastName')
   @Column()
   @Validate(NameValidator)
   lastName: string;
@@ -314,7 +314,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   middleName: string;
 
-  @Index('doctor_mobile_number')
+  @Index('Doctor_mobileNumber')
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;

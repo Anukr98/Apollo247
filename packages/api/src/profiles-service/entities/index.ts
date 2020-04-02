@@ -210,7 +210,7 @@ export class MedicineOrders extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2 })
   estimatedAmount: number;
 
-  @Index('medicine_orders_id')
+  @Index('MedicineOrders_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -263,7 +263,7 @@ export class MedicineOrders extends BaseEntity {
     this.updatedDate = new Date();
   }
 
-  @Index('medicine_orders_patient_id')
+  @Index('MedicineOrders_patientId')
   @ManyToOne((type) => Patient, (patient) => patient.medicineOrders)
   patient: Patient;
 
@@ -563,7 +563,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientHealthVault, (healthVault) => healthVault.patient)
   healthVault: PatientHealthVault[];
 
-  @Index('patient_id')
+  @Index('Patient_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -588,7 +588,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientFeedback, (patientfeedback) => patientfeedback.patient)
   patientfeedback: PatientFeedback[];
 
-  @Index('patient_mobile_number')
+  @Index('Patient_mobileNumber')
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
@@ -626,7 +626,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   relation: Relation;
 
-  @Index('patient_is_active')
+  @Index('Patient_isActive')
   @Column({ nullable: true, default: true })
   isActive: Boolean;
 
@@ -1296,7 +1296,7 @@ export class Diagnostics extends BaseEntity {
 // Diagnostic orders
 @Entity()
 export class DiagnosticOrders extends BaseEntity {
-  @Index('diagnostic_orders_id')
+  @Index('DiagnosticOrders_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1382,7 +1382,7 @@ export class DiagnosticOrders extends BaseEntity {
     this.updatedDate = new Date();
   }
 
-  @Index('diagnostic_orders_patient_id')
+  @Index('DiagnosticOrders_patientId')
   @ManyToOne((type) => Patient, (patient) => patient.diagnosticOrders)
   patient: Patient;
 
@@ -1726,19 +1726,19 @@ export class LoginOtp extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('login_otp_id')
+  @Index('LoginOtp_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('login_otp_login_type')
+  @Index('LoginOtp_loginType')
   @Column()
   loginType: LOGIN_TYPE;
 
-  @Index('login_otp_mobile_number')
+  @Index('LoginOtp_mobileNumber')
   @Column()
   mobileNumber: string;
 
-  @Index('login_otp_otp')
+  @Index('LoginOtp_otp')
   @Column()
   otp: string;
 
