@@ -198,6 +198,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
               <label>Please select a reason that best matches your query</label>
               <div className={classes.selectRoot}>
                 <AphSelect
+                  disabled={!reasonsList}
                   onChange={(e) => {
                     const reason = e.target.value as string;
                     setSelectedReason(reason);
@@ -210,8 +211,9 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
                     classes={{ selected: classes.menuSelected }}
                     key="placeholder"
                   >
-                    <span>please select a reason that best matches your query.</span>
+                    <span>Select a query</span>
                   </MenuItem>
+
                   {reasonsList &&
                     reasonsList.options &&
                     reasonsList.options.map((reasonName: string) => {
