@@ -204,7 +204,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
           <li>Item Details : 
               <ul>
                 <% _.each(order.lineItems, function(item) { %>
-                    <li>Name: <%- item.name %> , SKU: <%-item.sku%>, OrderAutoId: <%- item.orderautoid %></li>
+                    <li>Name: <%- item.name %> , SKU: <%-item.sku%> , OrderAutoId: <%- item.orderautoid %></li>
                 <% }); %>
                 </ul>
           </li>
