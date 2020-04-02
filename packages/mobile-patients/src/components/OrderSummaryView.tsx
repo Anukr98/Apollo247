@@ -83,7 +83,7 @@ export interface OrderSummaryViewProps {
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, isTest }) => {
   const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
   const subtotal = medicineOrderLineItems.reduce(
-    (acc, currentVal) => acc + currentVal!.price! * currentVal!.quantity!,
+    (acc, currentVal) => acc + currentVal!.mrp! * currentVal!.quantity!,
     0
   );
   const discount = orderDetails!.devliveryCharges! + subtotal - orderDetails.estimatedAmount!;
@@ -103,7 +103,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
         <View style={styles.medicineSubView}>
           <Text style={styles.medicineText}>{item.quantity}</Text>
           <Text style={[styles.medicineText, { marginRight: 5 }]}>
-            Rs.{(item.price! * item.quantity! || 0).toFixed(2)}
+            Rs.{(item.mrp! * item.quantity! || 0).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -163,13 +163,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
           <Text style={styles.paid}>Rs.{subtotal.toFixed(2)}</Text>
         </View>
       </View>
-      <View style={styles.commonTax}>
-        <View style={{ flexDirection: 'row' }}>
-          <Text style={styles.commonText}>Delivery Charges</Text>
-          <Text style={styles.paid}>+ Rs.{(orderDetails.devliveryCharges || 0).toFixed(2)}</Text>
-        </View>
-      </View>
-
       {discount > 0 && (
         <View style={styles.commonTax}>
           <View style={{ flexDirection: 'row' }}>
@@ -178,6 +171,13 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
           </View>
         </View>
       )}
+      <View style={styles.commonTax}>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={styles.commonText}>Delivery Charges</Text>
+          <Text style={styles.paid}>+ Rs.{(orderDetails.devliveryCharges || 0).toFixed(2)}</Text>
+        </View>
+      </View>
+
       {/* <View style={styles.commonTax}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.commonText}>Taxes</Text>
@@ -188,7 +188,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.commonText}>Total</Text>
           <Text style={[styles.paid, { ...theme.fonts.IBMPlexSansBold(12) }]}>
-            Rs. {orderDetails.estimatedAmount || (0).toFixed(2)}
+            Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
           </Text>
         </View>
       </View>
