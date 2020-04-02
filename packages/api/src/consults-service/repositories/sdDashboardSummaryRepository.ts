@@ -160,9 +160,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           toDate: endDate,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
+        .andWhere('appointment.status not in(:status1)', {
+          status1: STATUS.PAYMENT_PENDING,
         })
         .getCount();
     } else if (appointmentType == 'PHYSICAL') {
@@ -175,9 +174,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           appointmentType: APPOINTMENT_TYPE.PHYSICAL,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
+        .andWhere('appointment.status not in(:status1)', {
+          status1: STATUS.PAYMENT_PENDING,
         })
         .getCount();
     } else {
@@ -190,9 +188,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           appointmentType: APPOINTMENT_TYPE.ONLINE,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
+        .andWhere('appointment.status not in(:status1)', {
+          status1: STATUS.PAYMENT_PENDING,
         })
         .getCount();
     }
