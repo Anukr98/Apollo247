@@ -358,7 +358,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.shadowHide}>
         <div className={classes.dialogContent}>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'48vh'}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
             <div className={classes.customScrollBar}>
               <div className={classes.profileForm}>
                 <div className={classes.uploadImage} title={'Upload Profile'}>
@@ -493,7 +493,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                             color="secondary"
                             className={`${classes.genderBtns} ${
                               gender === genderSelected ? classes.btnActive : ''
-                            }`}
+                              }`}
                             value={genderSelected}
                             onClick={() => {
                               setGenderSelected(gender as Gender);
