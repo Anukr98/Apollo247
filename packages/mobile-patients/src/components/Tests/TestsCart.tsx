@@ -765,8 +765,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       .then((data) => {
         setStorePickUpLoading(false);
         aphConsole.log('clinic response', data.data.data, data);
-        setClinics && setClinics(data.data.data);
-        setTestCentresLoaded(true);
+        setClinics && setClinics(data.data.data || []);
+        setTimeout(() => {
+          setTestCentresLoaded(true);
+        }, 100);
         updateClinicSelection();
       })
       .catch((e) => {
