@@ -1829,13 +1829,14 @@ const testPushNotification: Resolver<
   return notificationResponse;
 };
 
-const sendDailyAppointmentSummary: Resolver<null, {}, NotificationsServiceContext, string> = async (
-  parent,
-  args,
-  { doctorsDb, consultsDb }
-) => {
+const sendDailyAppointmentSummary: Resolver<
+  null,
+  { docLimit: number; docOffset: number },
+  NotificationsServiceContext,
+  string
+> = async (parent, args, { doctorsDb, consultsDb }) => {
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctors = await doctorRepo.getAllDoctors('0');
+  const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;

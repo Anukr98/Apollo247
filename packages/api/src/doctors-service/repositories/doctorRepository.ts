@@ -739,13 +739,16 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { nextAvailableSlot });
   }
 
-  getAllDoctors(doctorId: string) {
+  getAllDoctors(doctorId: string, limit: number, offset: number) {
     if (doctorId == '0') {
       return this.find({
         where: {
           doctorType: Not('JUNIOR'),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     } else {
       return this.find({
@@ -754,16 +757,22 @@ export class DoctorRepository extends Repository<Doctor> {
           doctorType: Not('JUNIOR'),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     }
   }
 
-  getAllJuniorDoctors(doctorId: string) {
+  getAllJuniorDoctors(doctorId: string, limit: number, offset: number) {
     if (doctorId == '0') {
       return this.find({
         where: {
           doctorType: DoctorType.JUNIOR,
         },
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     } else {
       return this.find({
@@ -771,6 +780,9 @@ export class DoctorRepository extends Repository<Doctor> {
           id: doctorId,
           doctorType: DoctorType.JUNIOR,
         },
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     }
   }

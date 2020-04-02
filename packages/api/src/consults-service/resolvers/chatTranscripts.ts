@@ -26,7 +26,7 @@ type GenerateChatTranscriptsResult = {
 
 const generateChatTranscripts: Resolver<
   null,
-  { startDate: Date; endDate: Date },
+  { startDate: Date; endDate: Date; docLimit: number; docOffset: number },
   ConsultServiceContext,
   GenerateChatTranscriptsResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -40,9 +40,9 @@ const generateChatTranscripts: Resolver<
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const allAppts = await apptRepo.getAllAppointmentsByDates(args.startDate, args.endDate);
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const juniorDocs = await docRepo.getAllJuniorDoctors('0');
+  const juniorDocs = await docRepo.getAllJuniorDoctors('0', args.docLimit, args.docOffset);
   const juniorDocIds = juniorDocs.map((juniorDoc) => juniorDoc.id);
-  const seniorDocs = await docRepo.getAllDoctors('0');
+  const seniorDocs = await docRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const seniorDocIds = seniorDocs.map((seniorDoc) => seniorDoc.id);
   let assetsDir = path.resolve(ApiConstants.ASSETS_DIR);
   if (process.env.NODE_ENV != ApiConstants.LOCAL) {
