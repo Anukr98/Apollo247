@@ -215,7 +215,10 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   ) {
     const orderStatus =
       orderDetailsData.medicineOrdersStatus[orderDetailsData.medicineOrdersStatus.length - 1];
-    if (orderStatus && orderStatus.orderStatus == 'CANCELLED') {
+    if (
+      orderStatus &&
+      (orderStatus.orderStatus == 'CANCELLED' || orderStatus.orderStatus == 'DELIVERED')
+    ) {
       isDisable = true;
     }
   }
