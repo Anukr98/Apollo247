@@ -129,7 +129,7 @@ export const connect = async () => {
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: true,
       extra: {
-        connectionLimit: 11,
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
     },
     {
@@ -165,7 +165,7 @@ export const connect = async () => {
       database: `doctors_${process.env.NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
-        connectionLimit: 11,
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
     },
     {
@@ -198,7 +198,7 @@ export const connect = async () => {
       database: `consults_${process.env.NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
-        connectionLimit: 11,
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
     },
   ]).catch((error) => {
