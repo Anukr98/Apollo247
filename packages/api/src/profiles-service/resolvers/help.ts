@@ -151,6 +151,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
           {
             name: order.medicineOrderLineItems_medicineName,
             sku: order.medicineOrderLineItems_medicineSKU,
+            orderautoid: order.medicineOrderLineItems_medicineOrdersOrderAutoId,
           },
         ],
         orderDateTime: order.medicineOrders_orderDateTime,
@@ -160,6 +161,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
       formattedOrdersObject[order.medicineOrders_id].lineItems.push({
         name: order.medicineOrderLineItems_medicineName,
         sku: order.medicineOrderLineItems_medicineSKU,
+        orderautoid: order.medicineOrderLineItems_medicineOrdersOrderAutoId,
       });
     }
   });
@@ -202,7 +204,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
           <li>Item Details : 
               <ul>
                 <% _.each(order.lineItems, function(item) { %>
-                    <li>Name: <%- item.name %> , SKU: <%-item.sku%></li>
+                    <li>Name: <%- item.name %> , SKU: <%-item.sku%> , OrderId: <%- item.orderautoid %></li>
                 <% }); %>
                 </ul>
           </li>

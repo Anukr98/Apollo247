@@ -369,6 +369,16 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
+    tabsWrapperInside: {
+      paddingTop: 8,
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: '#fff',
+        marginLeft: -20,
+        marginRight: -20,
+        padding: 20,
+        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
+      },
+    },
     testsList: {
       color: '#0087ba',
       fontSize: 14,
@@ -581,16 +591,20 @@ export const TestDetails: React.FC = (props) => {
                       </Tabs>
                       {tabValue === 0 && (
                         <TabContainer>
-                          {testDetailsPackage &&
-                            testDetailsPackage.length > 0 &&
-                            testDetailsPackage.map((packageData: TestDetails, idx: number) => (
-                              <div className={classes.tabsWrapper}>
-                                <div className={classes.testsList}>
-                                  <span>{idx + 1}.</span>
-                                  <span>{packageData.TestName}</span>
-                                </div>
-                              </div>
-                            ))}
+                          <div className={classes.tabsWrapper}>
+                            <div className={classes.testsList}>
+                              {testDetailsPackage && testDetailsPackage.length > 0
+                                ? testDetailsPackage.map(
+                                    (packageData: TestDetails, idx: number) => (
+                                      <div className={classes.tabsWrapperInside}>
+                                        <span>{idx + 1}.</span>
+                                        <span>{packageData.TestName}</span>
+                                      </div>
+                                    )
+                                  )
+                                : 'Not available'}
+                            </div>
+                          </div>
                         </TabContainer>
                       )}
                       {tabValue === 1 && (
