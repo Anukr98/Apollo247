@@ -660,6 +660,7 @@ export class RegistrationCodes extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('RegistrationCodes_registrationCode')
   @Column()
   registrationCode: string;
 
