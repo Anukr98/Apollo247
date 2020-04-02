@@ -971,6 +971,11 @@ export const JDConsultRoom: React.FC = () => {
       bp: bp,
     };
     setSaving(true);
+    const logObject = {
+      api: 'ModifyCaseSheetstart',
+      appointmentId: appointmentId,
+    };
+    sessionClient.notify(JSON.stringify(logObject));
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
@@ -980,6 +985,12 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        const logObject = {
+          api: 'ModifyCaseSheetend',
+          inputParam: JSON.stringify(inputVariables),
+          appointmentId: appointmentId,
+        };
+        sessionClient.notify(JSON.stringify(logObject));
         setSaving(false);
         if (!flag) {
           endCallNotificationAction(false);
@@ -1013,7 +1024,17 @@ export const JDConsultRoom: React.FC = () => {
   const endConsultAction = () => {
     // open confirmation popup after removing from queue
     mutationRemoveConsult()
-      .then(() => {})
+      .then(() => {
+        const logObject = {
+          api: 'RemoveFromConsultQueue',
+          appointmentId: appointmentId,
+          inputParam: JSON.stringify({
+            id: parseInt(queueId, 10),
+          }),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
+        saveCasesheetAction(false, true);
+      })
       .catch((e: ApolloError) => {
         const logObject = {
           api: 'RemoveFromConsultQueue',
@@ -1034,7 +1055,6 @@ export const JDConsultRoom: React.FC = () => {
 
         sessionClient.notify(JSON.stringify(logObject));
       });
-    saveCasesheetAction(false, true);
   };
 
   // this will trigger end consult automatically after one minute
