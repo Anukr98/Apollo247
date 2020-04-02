@@ -971,11 +971,6 @@ export const JDConsultRoom: React.FC = () => {
       bp: bp,
     };
     setSaving(true);
-    const logObject = {
-      api: 'ModifyCaseSheetstart',
-      appointmentId: appointmentId,
-    };
-    sessionClient.notify(JSON.stringify(logObject));
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
@@ -1022,6 +1017,7 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const endConsultAction = () => {
+    setSaving(true);
     // open confirmation popup after removing from queue
     mutationRemoveConsult()
       .then(() => {
@@ -1036,6 +1032,7 @@ export const JDConsultRoom: React.FC = () => {
         saveCasesheetAction(false, true);
       })
       .catch((e: ApolloError) => {
+        setSaving(false);
         const logObject = {
           api: 'RemoveFromConsultQueue',
           inputParam: JSON.stringify({
