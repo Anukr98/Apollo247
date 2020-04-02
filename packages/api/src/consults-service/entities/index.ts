@@ -9,6 +9,7 @@ import {
   JoinColumn,
   OneToMany,
   ManyToOne,
+  Index,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
@@ -105,6 +106,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true, default: 0 })
   apolloAppointmentId: number;
 
+  @Index('appointment_appointment_date_time')
   @Column({ type: 'timestamp' })
   @IsDate()
   appointmentDateTime: Date;
@@ -145,6 +147,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   doctorCancelReason: string;
 
+  @Index('appointment_doctor_id')
   @Column()
   doctorId: string;
 
@@ -181,6 +184,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   patientCancelReason: string;
 
+  @Index('appointment_patient_id')
   @Column()
   patientId: string;
 
@@ -199,6 +203,7 @@ export class Appointment extends BaseEntity {
   @Column({ default: 0 })
   rescheduleCountByDoctor: number;
 
+  @Index('appointment_status')
   @Column()
   status: STATUS;
 
@@ -332,6 +337,7 @@ export class AppointmentSessions extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('appointment_sessions_appointment_id')
   @OneToOne((type) => Appointment)
   @JoinColumn()
   appointment: Appointment;
@@ -342,6 +348,7 @@ export class AppointmentSessions extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   consultEndDateTime: Date;
 
+  @Index('appointment_sessions_session_id')
   @Column()
   sessionId: string;
 
@@ -568,6 +575,7 @@ export class CaseSheet extends BaseEntity {
   @Column()
   createdDate: Date;
 
+  @Index('case_sheet_created_doctor_id')
   @Column({ nullable: true })
   createdDoctorId: string;
 
@@ -580,6 +588,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, type: 'json' })
   diagnosticPrescription: string;
 
+  @Index('case_sheet_doctor_id')
   @Column({ nullable: true })
   doctorId: string;
 
@@ -595,6 +604,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   followUpConsultType: APPOINTMENT_TYPE;
 
+  @Index(' case_sheet_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -616,6 +626,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, default: false })
   sentToPatient: boolean;
 
+  @Index('case_sheet_status')
   @Column({ nullable: true, default: CASESHEET_STATUS.PENDING })
   status: CASESHEET_STATUS;
 
@@ -645,12 +656,14 @@ export class CaseSheet extends BaseEntity {
 ///////////////////////////////////////////////////////////
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
+  @Index('consult_queue_item_appointment_id')
   @Column()
   appointmentId: string;
 
   @Column()
   createdDate: Date;
 
+  @Index('consult_queue_item_doctor_id')
   @Column()
   doctorId: string;
 

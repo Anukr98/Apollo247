@@ -8,6 +8,7 @@ import {
   OneToMany,
   OneToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
@@ -124,6 +125,7 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('blocked_calendar_item_doctor_id')
   @Column()
   doctorId: string;
 
@@ -159,6 +161,7 @@ export class ConsultHours extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('consult_hours_doctor_id')
   @ManyToOne((type) => Doctor, (doctor) => doctor.consultHours)
   doctor: Doctor;
 
@@ -186,6 +189,7 @@ export class ConsultHours extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
+  @Index('consult_hours_week_day')
   @Column()
   weekDay: WeekDay;
 
@@ -254,6 +258,7 @@ export class Doctor extends BaseEntity {
   @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
   doctorSecretary: DoctorSecretary;
 
+  @Index('doctor_doctor_type')
   @Column()
   doctorType: DoctorType;
 
@@ -276,6 +281,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   experience: Number;
 
+  @Index('doctor_first_name')
   @Column()
   @Validate(NameValidator)
   firstName: string;
@@ -286,15 +292,18 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   gender: Gender;
 
+  @Index('doctor_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('doctor_is_active')
   @Column({ default: true })
   isActive: Boolean;
 
   @Column({ nullable: true, type: 'text' })
   languages: string;
 
+  @Index('doctor_last_name')
   @Column()
   @Validate(NameValidator)
   lastName: string;
@@ -305,6 +314,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   middleName: string;
 
+  @Index('doctor_mobile_number')
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;

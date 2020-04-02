@@ -9,6 +9,7 @@ import {
   JoinColumn,
   BeforeInsert,
   BeforeUpdate,
+  Index,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -209,6 +210,7 @@ export class MedicineOrders extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2 })
   estimatedAmount: number;
 
+  @Index('medicine_orders_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -261,6 +263,7 @@ export class MedicineOrders extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @Index('medicine_orders_patient_id')
   @ManyToOne((type) => Patient, (patient) => patient.medicineOrders)
   patient: Patient;
 
@@ -560,6 +563,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientHealthVault, (healthVault) => healthVault.patient)
   healthVault: PatientHealthVault[];
 
+  @Index('patient_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -584,6 +588,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientFeedback, (patientfeedback) => patientfeedback.patient)
   patientfeedback: PatientFeedback[];
 
+  @Index('patient_mobile_number')
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
@@ -621,6 +626,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   relation: Relation;
 
+  @Index('patient_is_active')
   @Column({ nullable: true, default: true })
   isActive: Boolean;
 
@@ -1290,6 +1296,7 @@ export class Diagnostics extends BaseEntity {
 // Diagnostic orders
 @Entity()
 export class DiagnosticOrders extends BaseEntity {
+  @Index('diagnostic_orders_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1375,6 +1382,7 @@ export class DiagnosticOrders extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @Index('diagnostic_orders_patient_id')
   @ManyToOne((type) => Patient, (patient) => patient.diagnosticOrders)
   patient: Patient;
 
@@ -1718,15 +1726,19 @@ export class LoginOtp extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('login_otp_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('login_otp_login_type')
   @Column()
   loginType: LOGIN_TYPE;
 
+  @Index('login_otp_mobile_number')
   @Column()
   mobileNumber: string;
 
+  @Index('login_otp_otp')
   @Column()
   otp: string;
 
