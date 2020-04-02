@@ -205,7 +205,15 @@ export const AuthProvider: React.FC = (props) => {
   }, [analytics]);
 
   useEffect(() => {
-    getFirebaseToken();
+    async function fetchData() {
+      let jwtToken: any = await AsyncStorage.getItem('jwt');
+      jwtToken = JSON.parse(jwtToken);
+      console.log('jwtToken', jwtToken);
+
+      setAuthToken(jwtToken);
+      getFirebaseToken();
+    }
+    fetchData();
   }, [auth]);
 
   const getFirebaseToken = () => {
@@ -233,6 +241,7 @@ export const AuthProvider: React.FC = (props) => {
 
             console.log('authprovider jwt', jwt);
             setAuthToken(jwt);
+            AsyncStorage.setItem('jwt', JSON.stringify(jwt));
 
             apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
             authStateRegistered = false;

@@ -12,27 +12,24 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import {
-  GET_PATIENT_APPOINTMENTS,
-  GET_PATIENT_ALL_APPOINTMENTS,
-} from '@aph/mobile-patients/src/graphql/profiles';
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { GET_PATIENT_ALL_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import {
-  getPatinetAppointments,
-  getPatinetAppointments_getPatinetAppointments_patinetAppointments,
-} from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
-import { getNetStatus, callPermissions } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
+import { callPermissions, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment, { Moment } from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Dimensions,
   Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -41,19 +38,15 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
+import { getPatientAllAppointments } from '../../graphql/types/getPatientAllAppointments';
 import { APPOINTMENT_STATE, STATUS } from '../../graphql/types/globalTypes';
 import { colors } from '../../theme/colors';
 import { ProfileList } from '../ui/ProfileList';
+import { Spinner } from '../ui/Spinner';
 import { TabHeader } from '../ui/TabHeader';
 import { TabsComponent } from '../ui/TabsComponent';
 import { useUIElements } from '../UIElementsProvider';
-import { getPatientAllAppointments } from '../../graphql/types/getPatientAllAppointments';
-import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = StyleSheet.create({
   nameTextContainerStyle: {
@@ -161,9 +154,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const articles = string.consult_room.articles.data;
   const tabs = [{ title: 'Active' }, { title: 'Past' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [selectedTabval, setselectedTabval] = useState<any>();
-  const [userName, setuserName] = useState<string | number>('');
-  const { analytics, getPatientApiCall } = useAuth();
+  const { analytics } = useAuth();
 
   const [consultations, setconsultations] = useState<
     getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
@@ -181,53 +172,45 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
-  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
-
-  //Duplicate
-  // useEffect(() => {
-  //   if (!currentPatient) {
-  //     console.log('No current patients available');
-  //     getPatientApiCall();
-  //     currentPatient && setProfile(currentPatient!);
-  //   }
-  // }, [currentPatient]);
+  const { currentPatient } = useAllCurrentPatients();
 
   const client = useApolloClient();
 
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      // setLoading && setLoading(true);
-      //setconsultations([]);
-      getNetStatus()
-        .then((status) => {
-          if (status) {
-            fetchAppointments();
-          } else {
-            setLoading && setLoading(false);
-            setshowOfflinePopup(true);
-          }
-        })
-        .catch((e) => {
-          CommonBugFender('Consult_getNetStatus', e);
-        });
-    });
-    return () => {
-      didFocusSubscription && didFocusSubscription.remove();
-    };
-  }, [currentPatient]);
+    console.log('current', currentPatient && currentPatient!.id);
+    console.log('profile', profile && profile!.id);
+    if (currentPatient && profile) {
+      if (currentPatient.id != profile.id) {
+        console.log('userchanged', currentPatient, profile);
+        setLoading && setLoading(true);
+        fetchAppointments();
+      }
+    }
+    // if (consultations.length <= 0) {
+    //   if (currentPatient) {
+    //     fetchAppointments();
+    //   }
+    // }
+    currentPatient && setProfile(currentPatient!);
+  }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
-    // const getDataFromTree = async () => {
-    //   const storeVallue = await AsyncStorage.getItem('selectUserId');
-    //   console.log('storeVallue', storeVallue);
-    //   if (storeVallue == null) {
-    //     setCurrentPatientId(currentPatient! && currentPatient!.id);
-    //   } else {
-    //     setCurrentPatientId(storeVallue);
-    //   }
-    // };
-
-    // getDataFromTree();
+    async function fetchData() {
+      const showSchduledPopup = await AsyncStorage.getItem('showSchduledPopup');
+      if (showSchduledPopup == 'true') {
+        setShowSchdulesView(true);
+      }
+      const showTransferPopup = await AsyncStorage.getItem('showTransferPopup');
+      const showFollowUpPopup = await AsyncStorage.getItem('showFollowUpPopup');
+      if (showTransferPopup == 'true') {
+        setTransferfollowup(true);
+      }
+      if (showFollowUpPopup == 'true') {
+        setFollowupDone(true);
+      }
+    }
+    fetchData();
+    callPermissions();
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -247,56 +230,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     }
   }, [currentPatient]);
 
-  useEffect(() => {
-    console.log('current', currentPatient && currentPatient!.id);
-    let userName =
-      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    userName = userName.toLowerCase();
-    setuserName(userName);
-    currentPatient && setProfile(currentPatient!);
-  }, [currentPatient, analytics, props.navigation.state.params]);
-
-  useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      getPatientApiCall();
-    }
-    setLoading && setLoading(true);
-    fetchAppointments();
-    callPermissions();
-  }, [currentPatient]);
-
-  useEffect(() => {
-    async function fetchData() {
-      const showSchduledPopup = await AsyncStorage.getItem('showSchduledPopup');
-      if (showSchduledPopup == 'true') {
-        setShowSchdulesView(true);
-      }
-      const showTransferPopup = await AsyncStorage.getItem('showTransferPopup');
-      const showFollowUpPopup = await AsyncStorage.getItem('showFollowUpPopup');
-      if (showTransferPopup == 'true') {
-        setTransferfollowup(true);
-      }
-      if (showFollowUpPopup == 'true') {
-        setFollowupDone(true);
-      }
-    }
-    fetchData();
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          // setLoading && setLoading(true);
-          fetchAppointments();
-        } else {
-          setLoading && setLoading(false);
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Consult_getNetStatus_useEffect', e);
-      });
-  }, [currentPatient]);
-
   // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
   const inputData = {
     patientId: currentPatient ? currentPatient!.id : '',
@@ -304,40 +237,62 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
   // console.log('inputdata', inputData);
 
-  const fetchAppointments = () => {
-    // setLoading && setLoading(true);
-    console.log('inputdata', inputData);
-    client
-      .query<getPatientAllAppointments>({
-        query: GET_PATIENT_ALL_APPOINTMENTS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          patientId: currentPatient ? currentPatient!.id : '',
-        },
-      })
-      .then(({ data }) => {
-        console.log(data, 'GET_PATIENT_APPOINTMENTS');
-        if (
-          data &&
-          data.getPatientAllAppointments &&
-          data.getPatientAllAppointments.appointments &&
-          consultations !== data.getPatientAllAppointments.appointments
-        ) {
-          setconsultations(
-            data.getPatientAllAppointments.appointments
-            // data.getPatientAllAppointments.appointments.filter((item) => item.doctorInfo !== null)
-          );
+  const fetchAppointments = async () => {
+    let userId: any = await AsyncStorage.getItem('selectedProfileId');
+    userId = JSON.parse(userId);
+    console.log('userId', userId);
+
+    // if (currentPatient && currentPatient.id) {
+    setLoading && setLoading(true);
+    getNetStatus()
+      .then((status) => {
+        console.log(status, 'status');
+
+        if (status) {
+          console.log('inputdata', inputData);
+          client
+            .query<getPatientAllAppointments>({
+              query: GET_PATIENT_ALL_APPOINTMENTS,
+              fetchPolicy: 'no-cache',
+              variables: {
+                patientId: userId,
+                // patientId: currentPatient ? currentPatient!.id : userId,
+              },
+            })
+            .then(({ data }) => {
+              console.log(data, 'GET_PATIENT_APPOINTMENTS');
+              if (
+                data &&
+                data.getPatientAllAppointments &&
+                data.getPatientAllAppointments.appointments &&
+                consultations !== data.getPatientAllAppointments.appointments
+              ) {
+                setconsultations(
+                  data.getPatientAllAppointments.appointments
+                  // data.getPatientAllAppointments.appointments.filter((item) => item.doctorInfo !== null)
+                );
+              } else {
+                setconsultations([]);
+              }
+              // setLoading && setLoading(false);
+            })
+            .catch((e) => {
+              CommonBugFender('Consult_fetchAppointments', e);
+              console.log('Error occured in GET_PATIENT_APPOINTMENTS', e);
+            })
+            .finally(() => {
+              console.log('finally');
+
+              setLoading && setLoading(false);
+            });
         } else {
-          setconsultations([]);
+          setshowOfflinePopup(true);
         }
       })
       .catch((e) => {
-        CommonBugFender('Consult_fetchAppointments', e);
-        console.log('Error occured', e);
-      })
-      .finally(() => {
-        setLoading && setLoading(false);
+        CommonBugFender('Consult_getNetStatus', e);
       });
+    // }
   };
   /*
   const renderThingsToDo = () => {
@@ -980,6 +935,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
   return (
     <View style={{ flex: 1 }}>
+      <NavigationEvents
+        onDidFocus={(payload) => {
+          console.log('did focus', payload);
+          setLoading && setLoading(true);
+          fetchAppointments();
+        }}
+        onDidBlur={(payload) => console.log('did blur', payload)}
+      />
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {renderTopView()}
         <ScrollView

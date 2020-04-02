@@ -225,7 +225,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (locationDetails && locationDetails.city) {
+    if (locationDetails && locationDetails.city && currentPatient) {
       client
         .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
           query: GET_DIAGNOSTICS_CITES,
@@ -611,6 +611,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 7 }}>
                 <TextInputComponent
+                  textInputprops={{ autoFocus: true }}
                   value={currentLocation}
                   onChangeText={(value) => {
                     setcurrentLocation(value);
@@ -711,7 +712,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     textTransform: 'uppercase',
                   }}
                 >
-                  {locationDetails.displayName && locationDetails.displayName.substring(0, 15)}
+                  {locationDetails.displayName && locationDetails.displayName.length > 15
+                    ? `${locationDetails.displayName.substring(0, 15)}...`
+                    : locationDetails.displayName}
                 </Text>
               ) : null}
               <LocationOn />

@@ -9,6 +9,7 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -137,6 +138,9 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
     VALIDATE_CONSULT_COUPON
   );
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   useEffect(() => {
     if (props.disableSubmit) {
       setCouponCodeApplied(false);
@@ -228,7 +232,10 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
                       props.setRevisedAmount(res.data.validateConsultCoupon.revisedAmount);
                     }
                   })
-                  .catch((error) => alert(error));
+                  .catch((error) => {
+                    setIsAlertOpen(true);
+                    setAlertMessage(error);
+                  });
               }}
             >
               Apply
@@ -269,6 +276,12 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
           </div>
         </div>
       )}
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -167,6 +167,7 @@ export const BrowsePackages: React.FC<BrowsePackagesProps> = (props) => {
                   <Link
                     className={classes.cardLink}
                     to={clientRoutes.searchByTest(
+                      'browser-packages',
                       diagnosticOrgans.diagnostics
                         ? diagnosticOrgans.diagnostics.itemId.toString()
                         : ''

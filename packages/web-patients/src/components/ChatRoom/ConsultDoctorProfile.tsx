@@ -25,6 +25,7 @@ import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { useMutation } from 'react-apollo-hooks';
 import { cancelAppointment, cancelAppointmentVariables } from 'graphql/types/cancelAppointment';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -397,6 +398,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
@@ -544,7 +548,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       })
       .catch((e: string) => {
         setShowCancelPopup(false);
-        alert(`Error occured while cancelling the appointment, ${e}`);
+        setIsAlertOpen(true);
+        setAlertMessage(`Error occured while cancelling the appointment, ${e}`);
       });
   };
 
@@ -765,6 +770,12 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           Cancel Appointment
         </AphButton>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

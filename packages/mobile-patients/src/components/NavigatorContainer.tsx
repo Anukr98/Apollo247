@@ -71,6 +71,8 @@ import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
 import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
+// import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
+import { Tests } from './Tests/Tests';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -134,6 +136,8 @@ export enum AppRoutes {
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
   RenderPdf = 'RenderPdf',
+  Tests = 'Tests',
+  // ConsultDetailsById = 'ConsultDetailsById',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -157,6 +161,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.DoctorSearch]: {
     screen: DoctorSearch,
+    path: 'DoctorSearchPage',
     navigationOptions: {
       header: null,
     },
@@ -178,6 +183,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
+    path: 'ConsultRoomPage',
   },
   [AppRoutes.ApplyConsultCoupon]: {
     screen: ApplyConsultCoupon,
@@ -187,12 +193,18 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.DoctorSearchListing]: {
     screen: DoctorSearchListing,
+    path: 'DoctorSearchListingPage',
   },
   [AppRoutes.HealthRecords]: {
     screen: HealthRecords,
   },
   [AppRoutes.Medicine]: {
     screen: Medicine,
+    path: 'MedicinePage',
+  },
+  [AppRoutes.Tests]: {
+    screen: Tests,
+    path: 'TestsPage',
   },
   [AppRoutes.MyAccount]: {
     screen: MyAccount,
@@ -205,12 +217,14 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.Consult]: {
     screen: Consult,
+    path: 'ConsultPage',
   },
   [AppRoutes.FilterScene]: {
     screen: FilterScene,
   },
   [AppRoutes.DoctorDetails]: {
     screen: DoctorDetails,
+    path: 'DoctorDetailsPage',
   },
   [AppRoutes.AssociateDoctorDetails]: {
     screen: DoctorDetails,
@@ -307,6 +321,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SearchByBrand]: {
     screen: SearchByBrand,
+    path: 'SearchByBrandPath',
   },
   [AppRoutes.TestsByCategory]: {
     screen: TestsByCategory,
@@ -341,6 +356,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.RenderPdf]: {
     screen: RenderPdf,
   },
+  // [AppRoutes.ConsultDetailsById]: {
+  //   screen: ConsultDetailsById,
+  // },
 };
 
 const logTabEvents = (routing: any) => {
@@ -374,7 +392,8 @@ const stackConfig: StackNavigatorConfig = {
       CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
       logTabEvents(sceneProps.scene.route);
       if (sceneProps.scene.route.routeName === AppRoutes.ChatRoom) {
-        AsyncStorage.setItem('NAVIGATION_PROPS', JSON.stringify(sceneProps));
+        // AsyncStorage.setItem('NAVIGATION_PROPS', JSON.stringify(sceneProps));
+        AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
       } else if (sceneProps.scene.route.routeName !== AppRoutes.SplashScreen) {
         AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
       }

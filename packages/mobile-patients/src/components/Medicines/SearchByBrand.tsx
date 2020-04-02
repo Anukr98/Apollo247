@@ -57,6 +57,7 @@ import {
   isValidSearch,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postAppsFlyerAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -189,6 +190,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       isInStock: true,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy List');
+    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

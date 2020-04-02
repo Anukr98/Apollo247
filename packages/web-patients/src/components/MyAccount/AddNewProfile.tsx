@@ -16,6 +16,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -198,6 +199,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
   const [isEmailAddressValid, setIsEmailAddressValid] = useState<boolean>(true);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
 
   // console.log(currentPatient, 'current patient......');
@@ -371,7 +375,8 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                         const fileExtension = file.name.split('.').pop();
                         const fileSize = file.size;
                         if (fileSize > 2000000) {
-                          alert('Invalid File Size. File size must be less than 2MB');
+                          setIsAlertOpen(true);
+                          setAlertMessage('Invalid File Size. File size must be less than 2MB');
                         } else if (
                           fileExtension &&
                           (fileExtension.toLowerCase() === 'png' ||
@@ -391,7 +396,8 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                             }
                           }
                         } else {
-                          alert(
+                          setIsAlertOpen(true);
+                          setAlertMessage(
                             'Invalid File Extension. Only files with .jpg and.png extensions are allowed.'
                           );
                         }
@@ -593,7 +599,8 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   })
                   .catch((e) => {
                     setMutationLoading(false);
-                    alert('An error occurred while updating profile.');
+                    setIsAlertOpen(true);
+                    setAlertMessage('An error occurred while updating profile.');
                   });
               } else {
                 delete userObject.id;
@@ -609,7 +616,8 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   })
                   .catch((e) => {
                     setMutationLoading(false);
-                    alert('An error occurred while creating profile.');
+                    setIsAlertOpen(true);
+                    setAlertMessage('An error occurred while creating profile.');
                   });
               }
             }}
@@ -624,6 +632,12 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
           </AphButton>
         </div>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -38,6 +38,7 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -233,6 +234,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const calendarRef = useRef<HTMLDivElement>(null);
   const [couponCode, setCouponCode] = useState('');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
     VALIDATE_CONSULT_COUPON
   );
@@ -304,7 +309,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       .then((res) => {
         if (res && res.data && res.data.validateConsultCoupon) {
           if (res.data.validateConsultCoupon.reasonForInvalidStatus) {
-            alert(res.data.validateConsultCoupon.reasonForInvalidStatus);
+            setIsAlertOpen(true);
+            setAlertMessage(res.data.validateConsultCoupon.reasonForInvalidStatus);
             setMutationLoading(false);
           } else {
             bookAppointment();
@@ -312,7 +318,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         }
       })
       .catch((error) => {
-        alert(error);
+        setIsAlertOpen(true);
+        setAlertMessage(error);
         setMutationLoading(false);
       });
   };
@@ -519,7 +526,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               .then((res) => {
                 window.location.href = clientRoutes.appointments();
               })
-              .catch((error) => alert(error));
+              .catch((error) => {
+                setIsAlertOpen(true);
+                setAlertMessage(error);
+              });
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
@@ -533,7 +543,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         }
       })
       .catch((errorResponse) => {
-        alert(errorResponse);
+        setIsAlertOpen(true);
+        setAlertMessage(errorResponse);
         disableSubmit = false;
         setMutationLoading(false);
       });
@@ -794,6 +805,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           </AphButton>
         </div>
       </AphDialog>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -16,14 +16,20 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
-import { AppConfig } from '../strings/AppConfig';
+import { AppConfig, updateAppConfig } from '../strings/AppConfig';
 import { PrefetchAPIReuqest } from '@praktice/navigator-react-native-sdk';
 import { Button } from './ui/Button';
 import { useUIElements } from './UIElementsProvider';
 import { apiRoutes } from '../helpers/apiRoutes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { doRequestAndAccessLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  doRequestAndAccessLocation,
+  InitiateAppsFlyer,
+  APPStateInActive,
+  APPStateActive,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -77,10 +83,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall, setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const [appState, setAppState] = useState(AppState.currentState);
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
-    getData('ConsultRoom');
+    getData('ConsultRoom', undefined, true);
+    InitiateAppsFlyer();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
 
@@ -99,19 +108,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     try {
-      if (Platform.OS === 'android') {
-        Linking.getInitialURL()
-          .then((url) => {
+      Linking.getInitialURL()
+        .then((url) => {
+          if (url) {
             handleOpenURL(url);
             console.log('linking', url);
-          })
-          .catch((e) => {
-            CommonBugFender('SplashScreen_Linking_URL', e);
-          });
-      } else {
-        console.log('linking');
-        Linking.addEventListener('url', handleOpenURL);
-      }
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('SplashScreen_Linking_URL', e);
+        });
+
+      Linking.addEventListener('url', (event) => {
+        console.log('event', event);
+        handleOpenURL(event.url);
+      });
       AsyncStorage.removeItem('location');
     } catch (error) {
       CommonBugFender('SplashScreen_Linking_URL_try', error);
@@ -119,32 +130,59 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }, []);
 
   const handleOpenURL = (event: any) => {
-    console.log('event', event);
-    let route;
+    try {
+      console.log('event', event);
+      let route;
 
-    if (Platform.OS === 'ios') {
-      route = event.url.replace('apollopatients://', '');
-    } else {
       route = event.replace('apollopatients://', '');
-    }
 
-    switch (route) {
-      case 'Consult':
-        console.log('Consult');
-        getData('Consult');
-        break;
-      case 'Medicine':
-        console.log('Medicine');
-        getData('Medicine');
-        break;
-      case 'Test':
-        console.log('Test');
-        getData('Test');
-        break;
-      default:
-        break;
-    }
-    console.log('route', route);
+      const data = route.split('?');
+      route = data[0];
+
+      console.log(data, 'data');
+
+      // const id = data[1];
+
+      switch (route) {
+        case 'Consult':
+          console.log('Consult');
+          getData('Consult', data.length === 2 ? data[1] : undefined);
+          break;
+        case 'Medicine':
+          console.log('Medicine');
+          getData('Medicine', data.length === 2 ? data[1] : undefined);
+          break;
+        case 'Test':
+          console.log('Test');
+          getData('Test');
+          break;
+        case 'Speciality':
+          console.log('Speciality handleopen');
+          if (data.length === 2) getData('Speciality', data[1]);
+          break;
+        case 'Doctor':
+          console.log('Doctor handleopen');
+          if (data.length === 2) getData('Doctor', data[1]);
+          break;
+        case 'DoctorSearch':
+          console.log('DoctorSearch handleopen');
+          getData('DoctorSearch');
+          break;
+
+        case 'MedicineSearch':
+          console.log('MedicineSearch handleopen');
+          getData('MedicineSearch', data.length === 2 ? data[1] : undefined);
+          break;
+        case 'MedicineDetail':
+          console.log('MedicineDetail handleopen');
+          getData('MedicineDetail', data.length === 2 ? data[1] : undefined);
+          break;
+
+        default:
+          break;
+      }
+      console.log('route', route);
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -153,7 +191,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const getData = (routeName: String) => {
+  const getData = (routeName: String, id?: String, timeout?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       const onboarding = await AsyncStorage.getItem('onboarding');
@@ -195,84 +233,90 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
 
-      setTimeout(() => {
-        if (JSON.parse(navigationPropsString || 'false')) {
-          const navigationProps = JSON.parse(navigationPropsString || '');
-          if (navigationProps) {
-            let navi: any[] = [];
-            navigationProps.scenes.map((i: any) => {
-              navi.push(
-                NavigationActions.navigate({
-                  routeName: i.descriptor.navigation.state.routeName,
-                  params: i.descriptor.navigation.state.params,
-                })
-              );
-              // props.navigation.push(
-              //   i.descriptor.navigation.state.routeName,
-              //   i.descriptor.navigation.state.params
-              // );
-            });
-            if (navi.length > 0) {
-              props.navigation.dispatch(
-                StackActions.reset({
-                  index: navi.length - 1,
-                  key: null,
-                  actions: navi,
-                })
-              );
+      setTimeout(
+        () => {
+          if (JSON.parse(navigationPropsString || 'false')) {
+            const navigationProps = JSON.parse(navigationPropsString || '');
+            if (navigationProps) {
+              let navi: any[] = [];
+              navigationProps.scenes.map((i: any) => {
+                navi.push(
+                  NavigationActions.navigate({
+                    routeName: i.descriptor.navigation.state.routeName,
+                    params: i.descriptor.navigation.state.params,
+                  })
+                );
+                // props.navigation.push(
+                //   i.descriptor.navigation.state.routeName,
+                //   i.descriptor.navigation.state.params
+                // );
+              });
+              if (navi.length > 0) {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: navi.length - 1,
+                    key: null,
+                    actions: navi,
+                  })
+                );
+              }
             }
-          }
-        } else if (userLoggedIn == 'true') {
-          setshowSpinner(false);
+          } else if (userLoggedIn == 'true') {
+            setshowSpinner(false);
 
-          if (mePatient) {
-            if (mePatient.firstName !== '') {
-              pushTheView(routeName);
+            if (mePatient) {
+              if (mePatient.firstName !== '') {
+                pushTheView(routeName, id ? id : undefined);
+              } else {
+                props.navigation.replace(AppRoutes.Login);
+              }
+            }
+          } else if (onboarding == 'true') {
+            setshowSpinner(false);
+
+            if (signUp == 'true') {
+              props.navigation.replace(AppRoutes.SignUp);
+            } else if (multiSignUp == 'true') {
+              if (mePatient) {
+                props.navigation.replace(AppRoutes.MultiSignup);
+              }
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
-          }
-        } else if (onboarding == 'true') {
-          setshowSpinner(false);
-
-          if (signUp == 'true') {
-            props.navigation.replace(AppRoutes.SignUp);
-          } else if (multiSignUp == 'true') {
-            if (mePatient) {
-              props.navigation.replace(AppRoutes.MultiSignup);
-            }
           } else {
-            props.navigation.replace(AppRoutes.Login);
+            setshowSpinner(false);
+            props.navigation.replace(AppRoutes.Onboarding);
           }
-        } else {
-          setshowSpinner(false);
-          props.navigation.replace(AppRoutes.Onboarding);
-        }
-        SplashScreenView.hide();
-      }, 2000);
+          SplashScreenView.hide();
+        },
+        timeout ? 1500 : 0
+      );
     }
     fetchData();
   };
 
-  const pushTheView = (routeName: String) => {
+  const pushTheView = (routeName: String, id?: String) => {
     console.log('pushTheView', routeName);
 
     switch (routeName) {
       case 'Consult':
         console.log('Consult');
+        // if (id) {
+        //   props.navigation.navigate(AppRoutes.ConsultDetailsById, { id: id });
+        // } else
         props.navigation.navigate('APPOINTMENTS');
-        // props.navigation.dispatch(
-        //   StackActions.reset({
-        //     index: 0,
-        //     key: null,
-        //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-        //   })
-        // );
         break;
 
       case 'Medicine':
         console.log('Medicine');
         props.navigation.navigate('MEDICINES');
+        break;
+
+      case 'MedicineDetail':
+        console.log('MedicineDetail');
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku: id,
+        });
         break;
 
       case 'Test':
@@ -283,6 +327,37 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'ConsultRoom':
         console.log('ConsultRoom');
         props.navigation.replace(AppRoutes.ConsultRoom);
+        break;
+      case 'Speciality':
+        console.log('Speciality id', id);
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: id ? id : '',
+        });
+        // props.navigation.replace(AppRoutes.DoctorSearchListing, {
+        //   specialityId: id ? id : '',
+        // });
+        break;
+
+      case 'Doctor':
+        props.navigation.navigate(AppRoutes.DoctorDetails, {
+          doctorId: id,
+        });
+        break;
+
+      case 'DoctorSearch':
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        break;
+
+      case 'MedicineSearch':
+        if (id) {
+          const [itemId, name] = id.split(',');
+          console.log(itemId, name);
+
+          props.navigation.navigate(AppRoutes.SearchByBrand, {
+            category_id: itemId,
+            title: `${name ? name : 'Products'}`.toUpperCase(),
+          });
+        }
         break;
 
       default:
@@ -322,11 +397,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         return 'PROD';
       case 'https://asapi.apollo247.com//graphql':
         return 'PRF';
+      case 'https://devapi.apollo247.com//graphql':
+        return 'DEVReplica';
       default:
         return '';
     }
   };
-  const { setLocationDetails } = useAppCommonData();
+  const { setLocationDetails, setNeedHelpToContactInMessage } = useAppCommonData();
   const _handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       try {
@@ -348,6 +425,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       } catch {}
     }
+    if (appState.match(/inactive|background/) && nextAppState === 'active') {
+      APPStateInActive();
+    }
+    if (appState.match(/active|foreground/) && nextAppState === 'background') {
+      APPStateActive();
+    }
+    setAppState(nextAppState);
   };
 
   const checkForVersionUpdate = () => {
@@ -379,9 +463,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Enable_Conditional_Management',
               'Virtual_consultation_fee',
               'QA_Virtual_consultation_fee',
+              'Need_Help_To_Contact_In',
+              'Min_Value_For_Pharmacy_Free_Delivery',
+              'Pharmacy_Delivery_Charges',
             ]);
         })
         .then((snapshot) => {
+          const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
+          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+          const minValueForPharmacyFreeDelivery = snapshot[
+            'Min_Value_For_Pharmacy_Free_Delivery'
+          ].val();
+          minValueForPharmacyFreeDelivery &&
+            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
+
+          const pharmacyDeliveryCharges = snapshot['Pharmacy_Delivery_Charges'].val();
+          pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
+
           const myValye = snapshot;
           let index: number = 0;
           const nietos = [];
@@ -393,7 +492,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               index++;
               const element = myValye[val];
               nietos.push({ index: index, value: element.val() });
-              if (nietos.length === 11) {
+              if (nietos.length === 13) {
                 console.log(
                   'nietos',
                   parseFloat(nietos[1].value),

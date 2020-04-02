@@ -160,7 +160,7 @@ export const Navigation: React.FC = (props) => {
       >
         Health Records
       </Link>
-      <Link
+      {/* <Link
         to={clientRoutes.medicines()}
         className={
           currentPath === clientRoutes.medicines() ||
@@ -178,8 +178,8 @@ export const Navigation: React.FC = (props) => {
         title={'Tests'}
       >
         Tests
-      </Link>
-      <div
+      </Link> */}
+      {/* <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
         onKeyPress={() => setIsCartPopoverOpen(true)}
@@ -196,7 +196,7 @@ export const Navigation: React.FC = (props) => {
             {cartItems.length + diagnosticsCartItems.length || 0}
           </span>
         </span>
-      </div>
+      </div> */}
       {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />
       </div> */}

@@ -21,6 +21,7 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics,
 } from 'graphql/types/getDiagnosticsData';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -200,7 +201,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { searchTestText: string };
+type Params = { searchType: string; searchTestText: string };
 
 export const SearchByTest: React.FC = (props) => {
   const classes = useStyles({});
@@ -211,11 +212,16 @@ export const SearchByTest: React.FC = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const [testsList, setTestsList] = useState<
     (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
   >(null);
 
-  const [searchValue, setSearchValue] = useState<string>('');
+  const [searchValue, setSearchValue] = useState<string>(
+    params.searchType === 'search-test' ? params.searchTestText : ''
+  );
 
   const [
     diagnosticList,
@@ -249,7 +255,8 @@ export const SearchByTest: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        alert(e);
+        setIsAlertOpen(true);
+        setAlertMessage(e);
       })
       .finally(() => {
         setLoading(false);
@@ -275,7 +282,8 @@ export const SearchByTest: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        alert(e);
+        setIsAlertOpen(true);
+        setAlertMessage(e);
       })
       .finally(() => {
         setLoading(false);
@@ -345,8 +353,8 @@ export const SearchByTest: React.FC = (props) => {
                   Sorry, we couldn't find what you are looking for :(
                 </FormHelperText>
               ) : (
-                  ''
-                )}
+                ''
+              )}
             </div>
             <div className={`${classes.searchSection}`}>
               <Scrollbars
@@ -361,14 +369,20 @@ export const SearchByTest: React.FC = (props) => {
                   ) : diagnosticList ? (
                     <TestCard testData={diagnosticList} mou={1} />
                   ) : (
-                          'No data found'
-                        )}
+                    'No data found'
+                  )}
                 </div>
               </Scrollbars>
             </div>
           </div>
         </div>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

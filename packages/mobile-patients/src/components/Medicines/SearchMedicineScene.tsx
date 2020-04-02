@@ -28,6 +28,7 @@ import {
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
   postWEGNeedHelpEvent,
+  postAppsFlyerAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -301,6 +302,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       isInStock: true,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy List');
+    postAppsFlyerAddToCartEvent(item, 'Pharmacy List');
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

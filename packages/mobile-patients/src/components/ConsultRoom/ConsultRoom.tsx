@@ -39,7 +39,8 @@ import {
 import {
   g,
   postWebEngageEvent,
-  doRequestAndAccessLocation,
+  UnInstallAppsFlyer,
+  doRequestAndAccessLocationModified,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -196,7 +197,12 @@ const tabBarOptions: TabBarOptions[] = [
 export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
-  const { setLocationDetails, locationDetails } = useAppCommonData();
+  const {
+    setLocationDetails,
+    locationDetails,
+    isCurrentLocationFetched,
+    setCurrentLocationFetched,
+  } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -222,7 +228,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
 
   const updateLocation = () => {
-    doRequestAndAccessLocation()
+    doRequestAndAccessLocationModified()
       .then((response) => {
         response && setLocationDetails!(response);
       })
@@ -251,7 +257,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           onPress: () => {
             hideAphAlert!();
             setLoading!(true);
-            doRequestAndAccessLocation()
+            doRequestAndAccessLocationModified()
               .then((response) => {
                 setLoading!(false);
                 response && setLocationDetails!(response);
@@ -259,10 +265,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               .catch((e) => {
                 CommonBugFender('ConsultRoom__ALLOW_AUTO_DETECT', e);
                 setLoading!(false);
-                showAphAlert!({
-                  title: 'Uh oh! :(',
-                  description: 'Unable to access location.',
-                });
+                e &&
+                  typeof e == 'string' &&
+                  !e.includes('denied') &&
+                  showAphAlert!({
+                    title: 'Uh oh! :(',
+                    description: e,
+                  });
                 setLocationSearchVisible(true);
               });
           },
@@ -273,7 +282,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     if (locationDetails && locationDetails.pincode) {
-      updateLocation();
+      if (!isCurrentLocationFetched) {
+        setCurrentLocationFetched!(true);
+        updateLocation();
+      }
     } else {
       askLocationPermission();
     }
@@ -471,6 +483,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         return 'PROD';
       case 'https://asapi.apollo247.com//graphql':
         return 'PRF';
+      case 'https://devapi.apollo247.com//graphql':
+        return 'DEVReplica';
       default:
         return '';
     }
@@ -483,6 +497,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (!currentPatient) {
       // getPatientApiCall();
     } else {
+      AsyncStorage.setItem('selectedProfileId', JSON.stringify(currentPatient.id));
       if (selectedProfile !== currentPatient.id) {
         setAppointmentLoading(true);
         setSelectedProfile(currentPatient.id);
@@ -575,7 +590,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const tokenValue = token.data.vitaToken; //await AsyncStorage.getItem('token');
             const buildSpecify = buildName();
             let keyHash;
-            if (buildSpecify === 'QA' || buildSpecify === 'DEV') {
+            if (buildSpecify === 'QA' || buildSpecify === 'DEV' || buildSpecify === 'DEVReplica') {
               keyHash = '7729FD68-C552-4C90-B31E-98AA6C84FEBF~247Android';
             } else {
               keyHash = '4d4efe1a-cec8-4647-939f-09c25492721e~Apollo247';
@@ -634,6 +649,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((token) => {
         console.log('token', token);
         // console.log('DeviceInfo', DeviceInfo);
+        UnInstallAppsFlyer(token);
         if (token !== deviceToken2.deviceToken) {
           const input = {
             deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
@@ -1023,6 +1039,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {
+            setCurrentLocationFetched!(true);
             setLocationSearchVisible(false);
           }}
           location={g(locationDetails, 'displayName')}

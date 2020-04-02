@@ -22,6 +22,11 @@
 -keep class com.facebook.react.devsupport.** { *; }
 -dontwarn com.facebook.react.devsupport.**
 
+-keep class com.appsflyer.** { *; }
+-keep public class com.google.firebase.messaging.FirebaseMessagingService {
+  public *;
+}
+
 #==============================================
 # Proguard rules for use with IP Messaging SDK
 #==============================================

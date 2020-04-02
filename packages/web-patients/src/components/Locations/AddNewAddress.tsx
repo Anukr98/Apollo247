@@ -12,6 +12,7 @@ import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql
 import axios, { AxiosError, Cancel } from 'axios';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -126,6 +127,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const currentPatientId = currentPatient ? currentPatient.id : '';
   const [state, setState] = useState<string>('');
   const { setDeliveryAddressId } = useShoppingCart();
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   const disableSubmit =
     address1.length === 0 ||
@@ -352,7 +355,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     props.forceRefresh && props.forceRefresh(true);
                     setDeliveryAddressId && setDeliveryAddressId(addressId);
                   })
-                  .catch((error) => alert(error))
+                  .catch((error) => {
+                    setIsAlertOpen(true);
+                    setAlertMessage(error);
+                  })
               : saveAddressMutation({
                   variables: {
                     patientAddress: {
@@ -375,7 +381,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     }
                   })
                   .catch((error) => {
-                    alert(error);
+                    setIsAlertOpen(true);
+                    setAlertMessage(error);
                   });
           }}
           title={'Save and use'}
@@ -383,6 +390,12 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           {mutationLoading ? <CircularProgress size={20} color="secondary" /> : 'SAVE AND USE'}
         </AphButton>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

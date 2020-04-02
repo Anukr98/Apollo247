@@ -660,6 +660,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -934,6 +935,11 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartAppointmentButton(false);
     } else {
       setStartAppointmentButton(true);
+    }
+    if (appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE') {
+      setStartConsultDisableReason(
+        'This appointment is under reschedule and waiting for the patient to accept the new slot.'
+      );
     }
   };
   setInterval(startConstultCheck, 1000);
@@ -1229,11 +1235,22 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>
             Consult Room
-            {!props.hasCameraMicPermission && (
+            {startConsultDisableReason !== '' ? (
+              <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
+                {startConsultDisableReason}
+              </div>
+            ) : (
+              !props.hasCameraMicPermission && (
+                <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
+                  Note: Please allow access to Camera & Mic.
+                </div>
+              )
+            )}
+            {/* {!props.hasCameraMicPermission && (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
                 Note: Please allow access to Camera & Mic.
               </div>
-            )}
+            )} */}
           </div>
 
           {/* code commented as requested by the testing team

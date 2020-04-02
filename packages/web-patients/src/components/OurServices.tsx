@@ -112,12 +112,12 @@ export const OurServices: React.FC = (props) => {
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
     },
-    {
-      title: `Buy Medicines`,
-      content: 'You can search by name or prescription.',
-      imgUrl: `${require('images/ic_medicines.png')}`,
-      action: { link: clientRoutes.medicines(), content: 'Search Medicine' },
-    },
+    // {
+    //   title: `Buy Medicines`,
+    //   content: 'You can search by name or prescription.',
+    //   imgUrl: `${require('images/ic_medicines.png')}`,
+    //   action: { link: clientRoutes.medicines(), content: 'Search Medicine' },
+    // },
     // {
     //   title: 'Order Tests',
     //   content: 'Get your tests/diagnostics booked here.',

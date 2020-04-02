@@ -316,7 +316,7 @@ export const Header: React.FC = (props) => {
   return (
     <header className={classes.header}>
       <Offline>
-        <Dialog open={true}>
+        <Dialog open={true} style={{ zIndex: 9999 }}>
           <DialogTitle>{''}</DialogTitle>
           <DialogContent>
             <DialogContentText>
