@@ -696,7 +696,7 @@ export const MedicineCart: React.FC = (props) => {
           console.log(e);
           setUploadingFiles(false);
           setIsAlertOpen(true);
-          setAlertMessage(e);
+          setAlertMessage('something went wrong');
         });
     }
   };
@@ -996,7 +996,8 @@ export const MedicineCart: React.FC = (props) => {
                   })
                   .catch((e) => {
                     setIsAlertOpen(true);
-                    setAlertMessage(e);
+                    setAlertMessage('something went wrong');
+                    console.log(e);
                     setMutationLoading(false);
                   });
               }}

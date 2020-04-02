@@ -340,19 +340,19 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
         value={searchKeyword}
         error={showError}
         title="Search doctors or specialities"
-      // disabled={localStorage && localStorage.getItem('symptomTracker') !== null ? true : false}
+        // disabled={localStorage && localStorage.getItem('symptomTracker') !== null ? true : false}
       />
       {showError ? (
         <FormHelperText className={classes.helpText} component="div" error={showError}>
           Sorry, we couldn't find what you are looking for :(
         </FormHelperText>
       ) : (
-          ''
-        )}
+        ''
+      )}
       <div
         className={` ${showResponsiveFilter ? classes.filterSectionOpen : ''} ${
           classes.filterSection
-          } ${disableFilters ? classes.filterSectionDisabled : ''}`}
+        } ${disableFilters ? classes.filterSectionDisabled : ''}`}
       >
         <div className={classes.filterHeader}>
           <AphButton
@@ -380,8 +380,8 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 320px)'
               : isSmallScreen
-                ? 'calc(100vh - 60px)'
-                : 'calc(100vh - 275px)'
+              ? 'calc(100vh - 60px)'
+              : 'calc(100vh - 275px)'
           }
         >
           <div className={classes.customScroll}>

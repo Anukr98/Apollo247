@@ -356,7 +356,8 @@ export const TestsLanding: React.FC = (props) => {
         })
         .catch((e) => {
           setIsAlertOpen(true);
-          setAlertMessage(e);
+          setAlertMessage('something went wrong');
+          console.log(e);
           setDiagnosisDataError(true);
         })
         .finally(() => {
