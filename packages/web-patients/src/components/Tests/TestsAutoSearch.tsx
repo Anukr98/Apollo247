@@ -220,7 +220,7 @@ export const TestsAutoSearch: React.FC = (props) => {
           }}
         />
         <AphButton
-          disabled={searchText.length < 3}
+          disabled={(searchTests && searchTests.length < 1) || searchText.length < 3}
           className={classes.searchBtn}
           onClick={() => {
             const text = searchText;
@@ -248,7 +248,7 @@ export const TestsAutoSearch: React.FC = (props) => {
               <CircularProgress size={30} />
             </div>
           )}
-          {searchTests && searchTests.length > 0 && (
+          {searchTests && searchTests.length > 0 && searchText.length > 2 && (
             <div className={classes.searchList}>
               <ul>
                 {searchTests.map(
