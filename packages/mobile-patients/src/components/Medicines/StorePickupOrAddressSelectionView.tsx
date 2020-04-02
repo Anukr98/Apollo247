@@ -153,7 +153,8 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
             color: '#0087ba',
           }}
         >
-          Sorry! currently store pick up is unavailable
+          Sorry! We are not taking Store Pickup Orders currently as we cannot guarantee inventory
+          availability. You can directly visit your nearby store to check availability.
         </Text>
       </View>
     );
