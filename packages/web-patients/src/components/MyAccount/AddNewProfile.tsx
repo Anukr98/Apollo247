@@ -493,7 +493,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                             color="secondary"
                             className={`${classes.genderBtns} ${
                               gender === genderSelected ? classes.btnActive : ''
-                              }`}
+                            }`}
                             value={genderSelected}
                             onClick={() => {
                               setGenderSelected(gender as Gender);
