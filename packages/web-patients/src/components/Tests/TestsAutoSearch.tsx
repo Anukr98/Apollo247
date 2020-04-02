@@ -220,7 +220,7 @@ export const TestsAutoSearch: React.FC = (props) => {
           }}
         />
         <AphButton
-          disabled={(searchTests && searchTests.length < 1) || searchText.length < 3}
+          disabled={searchText.length < 3}
           className={classes.searchBtn}
           onClick={() => {
             const text = searchText;
