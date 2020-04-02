@@ -256,7 +256,8 @@ export const SearchByTest: React.FC = (props) => {
       })
       .catch((e) => {
         setIsAlertOpen(true);
-        setAlertMessage(e);
+        setAlertMessage('something went wrong');
+        console.log(e);
       })
       .finally(() => {
         setLoading(false);
@@ -283,7 +284,8 @@ export const SearchByTest: React.FC = (props) => {
       })
       .catch((e) => {
         setIsAlertOpen(true);
-        setAlertMessage(e);
+        setAlertMessage('something went wrong');
+        console.log(e);
       })
       .finally(() => {
         setLoading(false);

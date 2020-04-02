@@ -887,7 +887,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       })
       .catch((e: string) => {
         setIsAlertOpen(true);
-        setAlertMessage(e);
+        setAlertMessage('something went wrong');
+        console.log(e);
       });
   };
 
