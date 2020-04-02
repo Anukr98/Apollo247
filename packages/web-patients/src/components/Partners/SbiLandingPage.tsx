@@ -1,10 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Popover } from '@material-ui/core';
+import { Theme } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { AphButton } from '@aph/web-ui-components';
-import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
