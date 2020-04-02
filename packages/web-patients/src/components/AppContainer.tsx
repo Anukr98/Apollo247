@@ -50,6 +50,7 @@ import { Helmet } from 'react-helmet';
 import { TermsAndConditions } from 'components/TermsAndConditions';
 import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
+import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -102,7 +103,8 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
           <Route exact path={clientRoutes.termsConditions()} component={TermsAndConditions} />
           <Route exact path={clientRoutes.privacy()} component={Privacy} />
-          <Route exact path={clientRoutes.FAQ()} component={Faq} />
+          <Route exact path={clientRoutes.FAQ()} component={Faq} />{' '}
+          <Route exact path={clientRoutes.partnerSBI()} component={SbiLandingPage} />
           <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
           <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
@@ -164,7 +166,6 @@ const App: React.FC = () => {
             path={clientRoutes.testDetails(':searchTestType', ':itemName', ':itemId')}
             component={TestDetails}
           />
-
           <AuthRouted
             exact
             path={clientRoutes.searchByTest(':searchType', ':searchTestText')}
