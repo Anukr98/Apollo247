@@ -9,6 +9,7 @@ import {
   JoinColumn,
   BeforeInsert,
   BeforeUpdate,
+  Index,
 } from 'typeorm';
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
@@ -209,6 +210,7 @@ export class MedicineOrders extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2 })
   estimatedAmount: number;
 
+  @Index('MedicineOrders_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -261,6 +263,7 @@ export class MedicineOrders extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @Index('MedicineOrders_patientId')
   @ManyToOne((type) => Patient, (patient) => patient.medicineOrders)
   patient: Patient;
 
@@ -560,6 +563,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientHealthVault, (healthVault) => healthVault.patient)
   healthVault: PatientHealthVault[];
 
+  @Index('Patient_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -584,6 +588,7 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => PatientFeedback, (patientfeedback) => patientfeedback.patient)
   patientfeedback: PatientFeedback[];
 
+  @Index('Patient_mobileNumber')
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
@@ -621,6 +626,7 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   relation: Relation;
 
+  @Index('Patient_isActive')
   @Column({ nullable: true, default: true })
   isActive: Boolean;
 
@@ -654,6 +660,7 @@ export class RegistrationCodes extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('RegistrationCodes_registrationCode')
   @Column()
   registrationCode: string;
 
@@ -1290,6 +1297,7 @@ export class Diagnostics extends BaseEntity {
 // Diagnostic orders
 @Entity()
 export class DiagnosticOrders extends BaseEntity {
+  @Index('DiagnosticOrders_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -1375,6 +1383,7 @@ export class DiagnosticOrders extends BaseEntity {
     this.updatedDate = new Date();
   }
 
+  @Index('DiagnosticOrders_patientId')
   @ManyToOne((type) => Patient, (patient) => patient.diagnosticOrders)
   patient: Patient;
 
@@ -1718,15 +1727,19 @@ export class LoginOtp extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('LoginOtp_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('LoginOtp_loginType')
   @Column()
   loginType: LOGIN_TYPE;
 
+  @Index('LoginOtp_mobileNumber')
   @Column()
   mobileNumber: string;
 
+  @Index('LoginOtp_otp')
   @Column()
   otp: string;
 

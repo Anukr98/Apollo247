@@ -8,6 +8,7 @@ import {
   OneToMany,
   OneToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
@@ -124,6 +125,7 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('BlockedCalendarItem_doctorId')
   @Column()
   doctorId: string;
 
@@ -159,6 +161,7 @@ export class ConsultHours extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Index('ConsultHours_doctorId')
   @ManyToOne((type) => Doctor, (doctor) => doctor.consultHours)
   doctor: Doctor;
 
@@ -186,6 +189,7 @@ export class ConsultHours extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
+  @Index('ConsultHours_weekDay')
   @Column()
   weekDay: WeekDay;
 
@@ -254,6 +258,7 @@ export class Doctor extends BaseEntity {
   @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
   doctorSecretary: DoctorSecretary;
 
+  @Index('Doctor_doctorType')
   @Column()
   doctorType: DoctorType;
 
@@ -276,6 +281,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   experience: Number;
 
+  @Index('Doctor_firstName')
   @Column()
   @Validate(NameValidator)
   firstName: string;
@@ -286,15 +292,18 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   gender: Gender;
 
+  @Index('Doctor_id')
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('Doctor_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
   @Column({ nullable: true, type: 'text' })
   languages: string;
 
+  @Index('Doctor_lastName')
   @Column()
   @Validate(NameValidator)
   lastName: string;
@@ -305,6 +314,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   middleName: string;
 
+  @Index('Doctor_mobileNumber')
   @Column()
   @Validate(MobileNumberValidator)
   mobileNumber: string;
