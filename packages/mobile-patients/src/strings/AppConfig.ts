@@ -4,6 +4,16 @@ const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const apolloProdBaseUrl = 'https://www.apollopharmacy.in';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const testApiCredentialsDev = {
+  UserName: 'ASKAPOLLO',
+  Password: '3HAQbAb9wrsykr8TMLnV',
+  InterfaceClient: 'ASKAPOLLO',
+};
+const testApiCredentialsProd = {
+  Username: 'MCKINSEY',
+  Password: 'ERVEYCWTALAOHELEEBRY',
+  InterfaceClient: 'MCKINSEY',
+};
 
 enum AppEnv {
   DEV = 'DEV',
@@ -44,12 +54,18 @@ const PharmaApiConfig = {
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
-    GET_TEST_PACKAGES: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`],
+    GET_TEST_PACKAGES: [
+      `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
+      testApiCredentialsDev,
+    ],
     GET_PACKAGE_DATA: [
       // `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
+    GET_CLINICS: [
+      'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
+      testApiCredentialsDev,
+    ],
   },
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
@@ -70,11 +86,15 @@ const PharmaApiConfig = {
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,
+      testApiCredentialsProd,
     ],
     GET_PACKAGE_DATA: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: ['https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx'],
+    GET_CLINICS: [
+      'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
+      testApiCredentialsProd,
+    ],
   },
 };
 
