@@ -302,7 +302,11 @@ export const SearchByMedicine: React.FC = (props) => {
         );
       }
     }
-    if (discountFilter && !(discountFilter.fromDiscount == 0 && discountFilter.toDiscount == 100)) {
+    if (
+      discountFilter &&
+      !(discountFilter.fromDiscount == 0 && discountFilter.toDiscount == 100) &&
+      discountFilter.toDiscount > 0
+    ) {
       const filteredArray = !priceFilterArray ? medicineList || [] : priceFilterArray;
       priceFilterArray = filteredArray.filter((item) => {
         if (item.special_price) {

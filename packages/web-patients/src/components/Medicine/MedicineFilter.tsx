@@ -627,7 +627,10 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       >
         <AphButton
           color="primary"
-          disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
+          disabled={
+            (toPrice && fromPrice && Number(fromPrice) > Number(toPrice)) ||
+            (fromDiscount && toDiscount && Number(fromDiscount) > Number(toDiscount))
+          }
           fullWidth
           onClick={(e) => {
             filterByPriceAndCategory();
