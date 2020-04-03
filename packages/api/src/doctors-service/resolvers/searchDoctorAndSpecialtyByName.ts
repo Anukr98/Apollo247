@@ -130,29 +130,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     );
     matchedDoctors = sortedDoctors;
     matchedDoctorsNextAvailability = sortedDoctorsNextAvailability;
-    if (pincodeCity != '') {
-      //matching docs sorting city based start
-      const cityMatchedDocs: Doctor[] = [];
-      const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-      const otherCityMatchedDocs: Doctor[] = [];
-      const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-      let startSort = 0;
-      matchedDoctors.map((preFinalDoc) => {
-        if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
-          cityMatchedDocs.push(preFinalDoc);
-          cityMatchedDoctorsNextAvailability.push(matchedDoctorsNextAvailability[startSort]);
-        } else {
-          otherCityMatchedDocs.push(preFinalDoc);
-          otherCityMatchedDoctorsNextAvailability.push(matchedDoctorsNextAvailability[startSort]);
-        }
-        startSort++;
-      });
-      matchedDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
-      matchedDoctorsNextAvailability = cityMatchedDoctorsNextAvailability.concat(
-        otherCityMatchedDoctorsNextAvailability
-      );
-      //matching docs sorting city based end
-    }
+    const otherDoctorIds = otherDoctors.map((doctor) => {
+      return doctor.id;
+    });
+    const matchedDoctorsOrder: Doctor[] = [];
+    matchedDoctorsNextAvailability.map((docSlot) => {
+      const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
+      console.log(docIndex, 'docIndex in slot avail array');
+      //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+      matchedDoctorsOrder.push(matchedDoctors[docIndex]);
+    });
+    matchedDoctors = matchedDoctorsOrder;
 
     //fetch other doctors only if there is one matched doctor
     if (matchedDoctors.length === 1) {
@@ -172,29 +160,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
       otherDoctors = sortedDoctors;
       otherDoctorsNextAvailability = sortedDoctorsNextAvailability;
-      if (pincodeCity != '') {
-        //matching docs sorting city based start
-        const cityMatchedDocs: Doctor[] = [];
-        const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-        const otherCityMatchedDocs: Doctor[] = [];
-        const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-        let startSort = 0;
-        otherDoctors.map((preFinalDoc) => {
-          if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
-            cityMatchedDocs.push(preFinalDoc);
-            cityMatchedDoctorsNextAvailability.push(otherDoctorsNextAvailability[startSort]);
-          } else {
-            otherCityMatchedDocs.push(preFinalDoc);
-            otherCityMatchedDoctorsNextAvailability.push(otherDoctorsNextAvailability[startSort]);
-          }
-          startSort++;
-        });
-        otherDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
-        otherDoctorsNextAvailability = cityMatchedDoctorsNextAvailability.concat(
-          otherCityMatchedDoctorsNextAvailability
-        );
-        //matching docs sorting city based end
-      }
+      const otherDoctorIds = otherDoctors.map((doctor) => {
+        return doctor.id;
+      });
+      const otherDoctorsOrder: Doctor[] = [];
+      otherDoctorsNextAvailability.map((docSlot) => {
+        const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
+        console.log(docIndex, 'docIndex in slot avail array');
+        //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+        otherDoctorsOrder.push(otherDoctors[docIndex]);
+      });
+      otherDoctors = otherDoctorsOrder;
     }
 
     //fetch possible doctors only if there are not matched doctors and specialties
@@ -212,31 +188,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       possibleDoctors = sortedPossibleDoctors;
       possibleSpecialties = allPossibleSpecialties;
       possibleDoctorsNextAvailability = sortedPossibleDoctorsNextAvailability;
-      if (pincodeCity != '') {
-        //matching docs sorting city based start
-        const cityMatchedDocs: Doctor[] = [];
-        const cityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-        const otherCityMatchedDocs: Doctor[] = [];
-        const otherCityMatchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-        let startSort = 0;
-        possibleDoctors.map((preFinalDoc) => {
-          if (preFinalDoc.doctorHospital[0].facility.city == pincodeCity) {
-            cityMatchedDocs.push(preFinalDoc);
-            cityMatchedDoctorsNextAvailability.push(possibleDoctorsNextAvailability[startSort]);
-          } else {
-            otherCityMatchedDocs.push(preFinalDoc);
-            otherCityMatchedDoctorsNextAvailability.push(
-              possibleDoctorsNextAvailability[startSort]
-            );
-          }
-          startSort++;
-        });
-        possibleDoctors = cityMatchedDocs.concat(otherCityMatchedDocs);
-        possibleDoctorsNextAvailability = cityMatchedDoctorsNextAvailability.concat(
-          otherCityMatchedDoctorsNextAvailability
-        );
-        //matching docs sorting city based end
-      }
+      const possibleDoctorIds = possibleDoctors.map((doctor) => {
+        return doctor.id;
+      });
+      const possibleDoctorsOrder: Doctor[] = [];
+      possibleDoctorsNextAvailability.map((docSlot) => {
+        const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
+        console.log(docIndex, 'docIndex in slot avail array');
+        //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+        possibleDoctorsOrder.push(possibleDoctors[docIndex]);
+      });
+      possibleDoctors = possibleDoctorsOrder;
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });

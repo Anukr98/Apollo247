@@ -1283,20 +1283,13 @@ app.get('/processOrders', (req, res) => {
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
                 console.log('orderDetails===>', JSON.stringify(orderDetails));
                 console.log('AmtPaid===', orderDetails.medicineOrderPayments[0].amountPaid);
-                console.log(
-                  'isDeliveryChargeable===',
-                  isDeliveryChargeApplicable(orderDetails.medicineOrderPayments[0].amountPaid)
-                );
                 if (orderDetails.orderType == 'CART_ORDER') {
-                  const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
-                  if (isDeliveryChargeApplicable(amountPaid)) {
-                    console.log('inside if...');
+                  const amountPaid = orderDetails.deliveryCharges;
+                  if (amountPaid > 0) {
                     orderLineItems.push(getDeliveryChargesLineItem());
-                    orderLineItems.push(getDeliveryChargesLineItem());
-                    console.log('serviceChargeObject', getDeliveryChargesLineItem());
                   }
                 }
-                console.log('orderLineItems-------', orderLineItems);
+                //console.log('orderLineItems-------', orderLineItems);
                 //logic to add delivery charges line item ends here
 
                 let prescriptionImages = [];
@@ -1635,19 +1628,17 @@ app.get('/processOrderById', (req, res) => {
             });
 
             //logic to add delivery charges lineItem starts here
-            const amountPaid = orderDetails.medicineOrderPayments[0].amountPaid;
+            const amountPaid = orderDetails.deliveryCharges;
             console.log('AmtPaid===', amountPaid);
-            console.log('isDeliveryChargeable===', isDeliveryChargeApplicable(amountPaid));
-            if (isDeliveryChargeApplicable(amountPaid)) {
-              console.log('inside if===');
+            //console.log('isDeliveryChargeable===', isDeliveryChargeApplicable(amountPaid));
+            if (amountPaid > 0) {
+              //console.log('inside if===');
               orderLineItems.push(getDeliveryChargesLineItem());
-              orderLineItems.push(getDeliveryChargesLineItem());
-              console.log('chargesItem', getDeliveryChargesLineItem());
             }
-            console.log('orderLineItems------', orderLineItems);
+            //console.log('orderLineItems------', orderLineItems);
             //logic to add delivery charges lineItem ends here
           }
-          console.log('orderLineItems======', orderLineItems);
+          //console.log('orderLineItems======', orderLineItems);
           //logic to add delivery charges lineItem ends here
         }
         let prescriptionImages = [];
@@ -1878,7 +1869,7 @@ const getDeliveryChargesLineItem = () => {
   return {
     ItemID: 'ESH0002',
     ItemName: 'E SHOP SHIPPING CHARGE',
-    Qty: 1, //Pack* MOU
+    Qty: 2, //Pack* MOU
     Pack: 1,
     MOU: 1,
     Price: 25.0,
