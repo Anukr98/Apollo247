@@ -517,6 +517,7 @@ export const TestsCart: React.FC = (props) => {
   const [mutationLoading, setMutationLoading] = useState(false);
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
+  const [isSlotSet, setIsSlotSet] = React.useState<boolean>(false);
 
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
@@ -609,7 +610,7 @@ export const TestsCart: React.FC = (props) => {
       items: diagnosticsCartItems.map(
         (item) =>
           ({
-            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+            itemId: typeof item.itemId == 'string' ? parseInt(item.itemId) : item.itemId,
             price: (item.specialPrice as number) || item.price,
             quantity: 1,
           } as DiagnosticLineItem)
@@ -627,11 +628,9 @@ export const TestsCart: React.FC = (props) => {
           data.data.SaveDiagnosticOrder.displayId.length > 0
         ) {
           clearCartInfo && clearCartInfo();
+          const { displayId } = data.data.SaveDiagnosticOrder;
           setTimeout(() => {
-            window.location.href = `${clientRoutes.tests()}?orderid=${
-              data.data.SaveDiagnosticOrder.displayId
-            }
-            &orderstatus=success`;
+            window.location.href = `${clientRoutes.tests()}?orderid=${displayId}&orderstatus=success`;
           }, 3000);
         } else {
           window.location.href = `${clientRoutes.tests()}?orderid=0&orderstatus=failure`;
@@ -739,7 +738,13 @@ export const TestsCart: React.FC = (props) => {
                 )}
               </div>
             </div>
-            {tabValue === 0 ? deliveryAddressId ? <AppointmentsSlot /> : null : <ClinicHours />}
+            {tabValue === 0 ? (
+              deliveryAddressId ? (
+                <AppointmentsSlot setIsSlotSet={setIsSlotSet} />
+              ) : null
+            ) : (
+              <ClinicHours />
+            )}
             {diagnosticsCartItems && diagnosticsCartItems.length > 0 && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
@@ -784,16 +789,14 @@ export const TestsCart: React.FC = (props) => {
             fullWidth
             disabled={
               !isPaymentButtonEnable ||
-              !diagnosticSlot ||
               (deliveryMode === 'Clinic' && !clinicId) ||
-              (!deliveryAddressId && deliveryMode === 'HOME')
+              (deliveryMode === 'HOME' && (!deliveryAddressId || !isSlotSet))
             }
             className={
               !isPaymentButtonEnable ||
               mutationLoading ||
-              !diagnosticSlot ||
               (deliveryMode === 'Clinic' && !clinicId) ||
-              (!deliveryAddressId && deliveryMode === 'HOME')
+              (deliveryMode === 'HOME' && (!deliveryAddressId || !isSlotSet))
                 ? classes.buttonDisable
                 : ''
             }

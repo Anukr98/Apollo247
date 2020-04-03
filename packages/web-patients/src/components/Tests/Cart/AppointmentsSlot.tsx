@@ -174,7 +174,11 @@ export interface TestSlot {
   slotInfo: any;
 }
 
-export const AppointmentsSlot: React.FC = (props) => {
+type AppointmentsSlotProps = {
+  setIsSlotSet: (isSlotSet: boolean) => void;
+};
+
+export const AppointmentsSlot: React.FC<AppointmentsSlotProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -334,10 +338,12 @@ export const AppointmentsSlot: React.FC = (props) => {
               diagnosticEmployeeCode: uniqueSlots[0].diagnosticEmployeeCode,
               city: selectedAddress ? selectedAddress.city! : '', // not using city from this in order place API
             });
+            props.setIsSlotSet(true);
           } else {
             setSelectedTimeSlot(null);
             setSelectedOption('No Slot Selected');
             setOptions([]);
+            props.setIsSlotSet(false);
           }
         }
         setLoading(false);
@@ -438,6 +444,7 @@ export const AppointmentsSlot: React.FC = (props) => {
                               diagnosticEmployeeCode: filteredData.data.diagnosticEmployeeCode,
                               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
                             });
+                            props.setIsSlotSet(true);
                           }
                           setSelectedOption(value);
                         }}
