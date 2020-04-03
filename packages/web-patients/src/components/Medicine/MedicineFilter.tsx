@@ -426,13 +426,6 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
             <img src={require('images/ic_cross.svg')} alt="" />
           </AphButton>
           <span>FILTERS</span>
-          <AphButton
-            onClick={() => {
-              props.setShowResponsiveFilter(true);
-            }}
-          >
-            <img src={require('images/ic_refresh.svg')} alt="" />
-          </AphButton>
         </div>
         <Scrollbars className={classes.filterScroll} autoHide={true}>
           <div className={classes.customScroll}>
