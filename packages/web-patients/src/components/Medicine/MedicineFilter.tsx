@@ -6,6 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -255,6 +256,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       fontSize: 12,
     },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
     searchInputDisabled: {
       [theme.breakpoints.down('xs')]: {
         display: 'none',
@@ -271,6 +276,7 @@ type priceFilter = { fromPrice: string; toPrice: string };
 type discountFilter = { fromDiscount: string; toDiscount: string };
 
 interface MedicineFilterProps {
+  medicineList?: any;
   setMedicineList?: (medicineList: MedicineProduct[] | null) => void;
   setPriceFilter?: (priceFilter: priceFilter) => void;
   setFilterData?: (filterData: []) => void;
@@ -306,6 +312,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       ? params.searchText
       : ''
   );
+  const [dataValue, setDataValue] = useState<any>([]);
   const [fromPrice, setFromPrice] = useState();
   const [toPrice, setToPrice] = useState();
   const [fromDiscount, setFromDiscount] = useState<string>('0');
@@ -333,6 +340,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       )
       .then(({ data }) => {
         props.setMedicineList && props.setMedicineList(data.products);
+        setDataValue(data.products);
       })
       .catch((e) => {
         console.log(e);
@@ -377,6 +385,9 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
     }
   }, [selected]);
 
+  let showError = false;
+  if (subtxt.length > 2 && !dataValue) showError = true;
+
   return (
     <div className={classes.root}>
       <div
@@ -391,8 +402,16 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
             setSubtxt(e.target.value);
           }}
           value={subtxt.replace(/\s+/gi, ' ').trimLeft()}
+          error={showError}
         />
       </div>
+      {showError ? (
+        <FormHelperText className={classes.helpText} component="div" error={showError}>
+          Sorry, we couldn't find what you are looking for :(
+        </FormHelperText>
+      ) : (
+        ''
+      )}
       <div
         className={`${classes.filterSection} ${
           props.showResponsiveFilter ? classes.filterSectionOpen : ''
