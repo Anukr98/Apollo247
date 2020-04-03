@@ -281,24 +281,26 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const possibleDoctorIds = finalSortedDoctors.map((doctor) => {
     return doctor.id;
   });
+
   const possibleDoctorsOrder: Doctor[] = [];
   finalDoctorNextAvailSlots.map((docSlot) => {
     if (docSlot.referenceSlot != '') {
       const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
-      console.log(docIndex, 'docIndex in slot avail array');
-      //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+      console.log(docSlot.referenceSlot, docIndex);
       possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
     }
   });
+
+  const possibleEmptyDoctorsOrder: Doctor[] = [];
   finalDoctorNextAvailSlots.map((docSlot) => {
     if (docSlot.referenceSlot == '') {
       const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
-      console.log(docIndex, 'docIndex in slot avail array');
-      //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
-      possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
+      console.log(docSlot.referenceSlot, docIndex);
+      possibleEmptyDoctorsOrder.push(finalSortedDoctors[docIndex]);
     }
   });
-  finalSortedDoctors = possibleDoctorsOrder;
+  console.log(possibleEmptyDoctorsOrder.length, possibleDoctorsOrder.length);
+  finalSortedDoctors = possibleDoctorsOrder.concat(possibleEmptyDoctorsOrder);
 
   searchLogger(`API_CALL___END`);
   return {
