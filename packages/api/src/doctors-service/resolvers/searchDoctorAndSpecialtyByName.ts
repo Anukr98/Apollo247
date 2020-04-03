@@ -130,7 +130,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     );
     matchedDoctors = sortedDoctors;
     matchedDoctorsNextAvailability = sortedDoctorsNextAvailability;
-    const otherDoctorIds = otherDoctors.map((doctor) => {
+    const otherDoctorIds = matchedDoctors.map((doctor) => {
       return doctor.id;
     });
     const matchedDoctorsOrder: Doctor[] = [];
