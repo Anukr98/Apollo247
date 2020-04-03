@@ -520,7 +520,7 @@ export const TestDetails: React.FC = (props) => {
                     <div className={classes.productBasicInfo}>
                       <h2 className={classes.hotsellerName}>
                         {params.searchTestType === 'hot-seller'
-                          ? params.itemName.replace('_', ' ')
+                          ? params.itemName.split('_').join(' ')
                           : testDetails && testDetails.itemName}
                       </h2>
 
