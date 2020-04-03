@@ -44,9 +44,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
 
     if (data) {
-      switch (data[0]) {
+      switch (data[0].toLowerCase()) {
         case 'appointments':
-          props.navigation.pop();
           if (isLoggedIn) {
             if (data.length == 1) {
               props.navigation.navigate(AppRoutes.TabBar);

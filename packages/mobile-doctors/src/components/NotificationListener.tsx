@@ -111,8 +111,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
   const processNotification = async (notification: Notification) => {
     const { title, body, data } = notification;
-    const notificationType = 'Reminder_Appointment_Casesheet_15'; //data.type as CustomNotificationType;
-    console.log({ notificationType, title, body, data });
+    const notificationType = data.type as CustomNotificationType;
+    // console.log({ notificationType, title, body, data });
     // console.log('processNotification', notification);
 
     // if (notificationType === 'PRESCRIPTION_READY') {

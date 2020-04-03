@@ -70,11 +70,20 @@ export default StyleSheet.create({
     paddingBottom: 12,
   },
   currentmonth: { color: '#02475b', ...theme.fonts.IBMPlexSansBold(14), marginRight: 4 },
+  doctornameContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+  },
   doctorname: {
     ...theme.fonts.IBMPlexSansSemiBold(28),
     color: '#02475b',
-    marginLeft: 20,
     marginBottom: 2,
+  },
+  doctorname1: {
+    ...theme.fonts.IBMPlexSansSemiBold(28),
+    color: '#02475b',
+    marginBottom: 2,
+    maxWidth: '75%',
   },
   schedule: {
     ...theme.fonts.IBMPlexSansMedium(16),

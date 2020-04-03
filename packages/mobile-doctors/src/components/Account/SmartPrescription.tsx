@@ -219,7 +219,10 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     //   .map((ele) => ele.itemname)
     //   .filter((i) => i !== '')
     //   .join(',');
-    const AddingTest = tempTestArray!.map((ele: object) => ele).join(',');
+    const AddingTest = tempTestArray!
+      .map((ele) => ele.itemname)
+      .filter((i) => i != '')
+      .join(',');
     console.log('AddingTest---', AddingTest);
 
     setLoading(true);
@@ -517,7 +520,10 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
     //   .map((ele) => ele.itemname)
     //   .filter((i) => i !== '')
     //   .join(',');
-    const AddingTest = tempTestArray!.map((ele: object) => ele).join(',');
+    const AddingTest = tempTestArray!
+      .map((ele) => ele.itemname)
+      .filter((i) => i != '')
+      .join(',');
     console.log('AddingTest---', AddingTest);
 
     setLoading(true);

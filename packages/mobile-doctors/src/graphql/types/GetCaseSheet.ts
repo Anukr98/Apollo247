@@ -242,6 +242,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
   __typename: "Appointment";
   id: string;
+  displayId: string;
   appointmentDateTime: any;
   appointmentState: string | null;
   doctorId: string;

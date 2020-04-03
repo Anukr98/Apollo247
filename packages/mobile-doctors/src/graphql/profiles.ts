@@ -12,6 +12,8 @@ export const GET_DOCTOR_DETAILS = gql`
       emailAddress
       experience
       firebaseToken
+      fullName
+      displayName
       firstName
       isActive
       id
@@ -557,6 +559,7 @@ export const GET_CASESHEET = gql`
       }
       pastAppointments {
         id
+        displayId
         appointmentDateTime
         appointmentState
         doctorId

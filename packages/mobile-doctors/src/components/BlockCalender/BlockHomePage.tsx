@@ -710,6 +710,14 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
     );
   };
 
+  useEffect(() => {
+    if (endDate && startDate) {
+      console.log(startDate, endDate, 'sends');
+
+      getDates(startDate, endDate);
+    }
+  }, [startDate, endDate]);
+
   const getDates = (startDate: Date, endDate: Date) => {
     const all = getDateArray(startDate, endDate);
     console.log(all, 'alllllllllll');
@@ -751,7 +759,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
               containerStyle={{ marginTop: 32 }}
               onChangeDate={(date) => {
                 setstartDate(date);
-                date && endDate && getDates(date, endDate);
               }}
               minimumDate={new Date()}
             />
@@ -764,7 +771,6 @@ export const BlockHomePage: React.FC<BlockHomePageProps> = (props) => {
               onChangeDate={(date) => {
                 {
                   setendDate(date);
-                  date && startDate && getDates(startDate, date);
                 }
               }}
             />

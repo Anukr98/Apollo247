@@ -108,6 +108,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.Appointments]: {
     screen: Appointments,
+    path: 'AppointmentsPage',
   },
   [AppRoutes.Patients]: {
     screen: Patients,

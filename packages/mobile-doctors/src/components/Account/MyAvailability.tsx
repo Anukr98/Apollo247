@@ -38,10 +38,12 @@ export interface ProfileProps
 }
 
 const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
-  `${moment(startTime, 'HH:mm')
-    .add(330, 'm')
-    .format('hh:mm A')} - ${moment(endTime, 'HH:mm')
-    .add(330, 'm')
+  `${moment
+    .utc(startTime, 'HH:mm')
+    .local()
+    .format('hh:mm A')} - ${moment
+    .utc(endTime, 'HH:mm')
+    .local()
     .format('hh:mm A')}`;
 
 export const MyAvailability: React.FC<ProfileProps> = (props) => {

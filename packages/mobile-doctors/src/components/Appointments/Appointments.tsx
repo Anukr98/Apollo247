@@ -55,7 +55,7 @@ export interface AppointmentsProps extends NavigationScreenProps {
 const intervalTime = 30 * 1000;
 export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const [doctorName, setDoctorName] = useState<string>(
-    (props.navigation.state.params && props.navigation.state.params.Firstname) || ''
+    (props.navigation.state.params && props.navigation.state.params.displayName) || ''
   );
 
   const [date, setDate] = useState<Date>(new Date());
@@ -72,7 +72,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   useEffect(() => {
     console.log(doctorDetails, 'doctorDetailshi');
-    setDoctorName((doctorDetails && doctorDetails.firstName) || '');
+    setDoctorName((doctorDetails && doctorDetails.displayName) || '');
   }, [doctorDetails]);
 
   const isPastDate = (date: Date) => {
@@ -236,9 +236,13 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const renderDoctorGreeting = () => {
     return (
       <View style={{ backgroundColor: '#ffffff' }}>
-        <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} ${(
-          doctorName || ''
-        ).toLowerCase()} :)`}</Text>
+        <View style={styles.doctornameContainer}>
+          <Text style={styles.doctorname}>{`${strings.case_sheet.hello_dr} `}</Text>
+          <Text style={styles.doctorname1} numberOfLines={1}>
+            {doctorName || ''}
+          </Text>
+          <Text style={styles.doctorname}>{` :)`}</Text>
+        </View>
         <Text style={styles.schedule}>{`${strings.appointments.here_your_schedule} ${
           moment(date).format('DD/MM/YYYY') == moment(new Date()).format('DD/MM/YYYY')
             ? 'today'

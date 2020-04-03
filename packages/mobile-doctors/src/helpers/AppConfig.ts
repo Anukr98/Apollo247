@@ -16,8 +16,8 @@ const ConfigurationDev = {
   BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   PRO_TOKBOX_KEY: '46429002',
-  iOS_Version: '1.008',
-  Android_Version: '1.008',
+  iOS_Version: '1.011',
+  Android_Version: '1.011',
 };
 //QA
 const ConfigurationQA = {
@@ -27,8 +27,8 @@ const ConfigurationQA = {
   BUGSNAG_KEY: 'd41528059b46a59724b9ec07a7225360', //'7839e425f4acbd8e6ff3f907281addca',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   PRO_TOKBOX_KEY: '46429002',
-  iOS_Version: '1.005',
-  Android_Version: '1.005',
+  iOS_Version: '1.008',
+  Android_Version: '1.008',
 };
 //Prod
 const ConfigurationProd = {

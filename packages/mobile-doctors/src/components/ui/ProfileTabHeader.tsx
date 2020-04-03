@@ -29,7 +29,11 @@ export const ProfileTabHeader: React.FC<ProfileTabHeaderProps> = (props) => {
   return (
     <View style={[styles.container, containerStyle]}>
       <View style={[tabs ? styles.textShadow : {}]}>
-        {title && <Text style={[styles.titleStyle, titleStyle]}>{title}</Text>}
+        {title && (
+          <Text style={[styles.titleStyle, titleStyle]} numberOfLines={1}>
+            {title}
+          </Text>
+        )}
         {description && (
           <Text style={[styles.descriptionStyle, descriptionStyle]}>{description}</Text>
         )}

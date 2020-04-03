@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { SquareCardWithTitle } from '../ui/SquareCardWithTitle';
+import moment from 'moment';
 
 const styles = AvailabilityStyles;
 
@@ -15,13 +16,14 @@ export interface AvailabilityProps {
 }
 
 export const Availability: React.FC<AvailabilityProps> = ({ profileData }) => {
-  const get12HrsFormat = (timeString: string /* 12:30 */) => {
-    const hoursAndMinutes = timeString.split(':').map((i) => parseInt(i, 10));
-    return format(new Date(0, 0, 0, hoursAndMinutes[0], hoursAndMinutes[1]), 'h:mm a');
-  };
-
   const fromatConsultationHours = (startTime: string, endTime: string /* input eg.: 15:15:30Z */) =>
-    `${get12HrsFormat(startTime.replace('Z', ''))} - ${get12HrsFormat(endTime.replace('Z', ''))}`;
+    `${moment
+      .utc(startTime, 'HH:mm')
+      .local()
+      .format('hh:mm A')} - ${moment
+      .utc(endTime, 'HH:mm')
+      .local()
+      .format('hh:mm A')}`;
 
   return (
     <View style={styles.container}>

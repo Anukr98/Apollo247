@@ -206,7 +206,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                           title: 'PRESCRIPTION',
                           CTAs: [
                             {
-                              title: 'RESEND PRESCRIPTION ', //'PRESCRIPTION SENT',
+                              title: 'RESEND PRESCRIPTION', //'PRESCRIPTION SENT',
                               variant: 'white',
                               onPress: () => {
                                 if (caseSheetId) {
@@ -235,7 +235,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                                         showAphAlert &&
                                           showAphAlert({
                                             title: 'Hi',
-                                            description: 'Resend Prescription Sent Successfuly',
+                                            description:
+                                              'Prescription has been sent to patient successfully',
                                             onPressOk: () => {
                                               props.navigation.popToTop();
                                               hideAphAlert && hideAphAlert();
@@ -284,7 +285,14 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   appointmentStatus={i.appointmentState || ''}
                   doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime, consultDuration || undefined)}
-                  symptoms={caseSheet ? caseSheet.symptoms : null}
+                  symptoms={
+                    (i.caseSheet &&
+                      g(
+                        i.caseSheet.find((i) => i && i.doctorType === DoctorType.JUNIOR),
+                        'symptoms'
+                      )) ||
+                    []
+                  }
                   doctorId={i.doctorId}
                   patientId={i.patientId}
                   status={getStatus(i)}
