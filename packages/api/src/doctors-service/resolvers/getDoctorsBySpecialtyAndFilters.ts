@@ -283,10 +283,20 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   });
   const possibleDoctorsOrder: Doctor[] = [];
   finalDoctorNextAvailSlots.map((docSlot) => {
-    const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
-    console.log(docIndex, 'docIndex in slot avail array');
-    //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
-    possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
+    if (docSlot.referenceSlot != '') {
+      const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
+      console.log(docIndex, 'docIndex in slot avail array');
+      //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+      possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
+    }
+  });
+  finalDoctorNextAvailSlots.map((docSlot) => {
+    if (docSlot.referenceSlot == '') {
+      const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
+      console.log(docIndex, 'docIndex in slot avail array');
+      //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+      possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
+    }
   });
   finalSortedDoctors = possibleDoctorsOrder;
 
