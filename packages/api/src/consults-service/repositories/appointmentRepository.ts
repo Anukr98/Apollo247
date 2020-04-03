@@ -1156,9 +1156,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               }
               slot = addMinutes(slot, timeSlot[0].consultDuration);
             });
-          if (new Date(doctorBblockedSlots[blockedSlotsCount - 1]) >= blockedSlot.end) {
-            doctorBblockedSlots[blockedSlotsCount - 1] = '';
-          }
+          // if (new Date(doctorBblockedSlots[blockedSlotsCount - 1]) >= blockedSlot.end) {
+          //   doctorBblockedSlots[blockedSlotsCount - 1] = '';
+          // }
         });
         //console.log(doctorBblockedSlots, 'doctor slots');
       }
