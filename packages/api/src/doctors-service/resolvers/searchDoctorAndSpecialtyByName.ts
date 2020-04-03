@@ -135,10 +135,20 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     });
     const matchedDoctorsOrder: Doctor[] = [];
     matchedDoctorsNextAvailability.map((docSlot) => {
-      const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
-      console.log(docIndex, 'docIndex in slot avail array');
-      //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
-      matchedDoctorsOrder.push(matchedDoctors[docIndex]);
+      if (docSlot.referenceSlot != '') {
+        const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
+        console.log(docIndex, 'docIndex in slot avail array');
+        //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+        matchedDoctorsOrder.push(matchedDoctors[docIndex]);
+      }
+    });
+    matchedDoctorsNextAvailability.map((docSlot) => {
+      if (docSlot.referenceSlot == '') {
+        const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
+        console.log(docIndex, 'docIndex in slot avail array');
+        //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+        matchedDoctorsOrder.push(matchedDoctors[docIndex]);
+      }
     });
     matchedDoctors = matchedDoctorsOrder;
 
@@ -165,10 +175,20 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       });
       const otherDoctorsOrder: Doctor[] = [];
       otherDoctorsNextAvailability.map((docSlot) => {
-        const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
-        console.log(docIndex, 'docIndex in slot avail array');
-        //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
-        otherDoctorsOrder.push(otherDoctors[docIndex]);
+        if (docSlot.referenceSlot != '') {
+          const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
+          console.log(docIndex, 'docIndex in slot avail array');
+          //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+          otherDoctorsOrder.push(otherDoctors[docIndex]);
+        }
+      });
+      otherDoctorsNextAvailability.map((docSlot) => {
+        if (docSlot.referenceSlot == '') {
+          const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
+          console.log(docIndex, 'docIndex in slot avail array');
+          //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+          otherDoctorsOrder.push(otherDoctors[docIndex]);
+        }
       });
       otherDoctors = otherDoctorsOrder;
     }
@@ -193,10 +213,20 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       });
       const possibleDoctorsOrder: Doctor[] = [];
       possibleDoctorsNextAvailability.map((docSlot) => {
-        const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
-        console.log(docIndex, 'docIndex in slot avail array');
-        //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
-        possibleDoctorsOrder.push(possibleDoctors[docIndex]);
+        if (docSlot.referenceSlot != '') {
+          const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
+          console.log(docIndex, 'docIndex in slot avail array');
+          //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+          possibleDoctorsOrder.push(possibleDoctors[docIndex]);
+        }
+      });
+      possibleDoctorsNextAvailability.map((docSlot) => {
+        if (docSlot.referenceSlot == '') {
+          const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
+          console.log(docIndex, 'docIndex in slot avail array');
+          //cityMatchedDocs.push(finalSortedDoctors[docIndex]);
+          possibleDoctorsOrder.push(possibleDoctors[docIndex]);
+        }
       });
       possibleDoctors = possibleDoctorsOrder;
     }
