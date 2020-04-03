@@ -4,6 +4,16 @@ const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const apolloProdBaseUrl = 'https://www.apollopharmacy.in';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const testApiCredentialsDev = {
+  UserName: 'ASKAPOLLO',
+  Password: '3HAQbAb9wrsykr8TMLnV',
+  InterfaceClient: 'ASKAPOLLO',
+};
+const testApiCredentialsProd = {
+  Username: 'MCKINSEY',
+  Password: 'ERVEYCWTALAOHELEEBRY',
+  InterfaceClient: 'MCKINSEY',
+};
 
 enum AppEnv {
   DEV = 'DEV',
@@ -14,7 +24,7 @@ enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.QA as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 
 const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
@@ -44,12 +54,18 @@ const PharmaApiConfig = {
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
-    GET_TEST_PACKAGES: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`],
+    GET_TEST_PACKAGES: [
+      `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
+      testApiCredentialsDev,
+    ],
     GET_PACKAGE_DATA: [
       // `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
+    GET_CLINICS: [
+      'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
+      testApiCredentialsDev,
+    ],
   },
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
@@ -70,11 +86,15 @@ const PharmaApiConfig = {
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,
+      testApiCredentialsProd,
     ],
     GET_PACKAGE_DATA: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: ['https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx'],
+    GET_CLINICS: [
+      'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
+      testApiCredentialsProd,
+    ],
   },
 };
 
@@ -136,8 +156,8 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.911',
-  Android_Version: '1.911',
+  iOS_Version: '1.912',
+  Android_Version: '1.912',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -168,8 +188,8 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.81',
-  Android_Version: '1.81',
+  iOS_Version: '1.91',
+  Android_Version: '1.91',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };

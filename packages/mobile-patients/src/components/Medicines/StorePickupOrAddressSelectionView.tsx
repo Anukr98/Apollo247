@@ -145,57 +145,75 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
   const renderStorePickup = () => {
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
-        <TextInputComponent
-          value={`${pinCode}`}
-          maxLength={6}
-          onChangeText={(pincode) => fetchStorePickup(pincode)}
-          placeholder={'Enter Pincode'}
-        />
-        {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-        {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
-          <Text
-            style={{
-              paddingTop: 10,
-              ...theme.fonts.IBMPlexSansMedium(16),
-              lineHeight: 24,
-              color: '#0087ba',
-            }}
-          >
-            Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
-            from a nearby store, or change the pincode.
-          </Text>
-        )}
-
-        {slicedStoreList.map((store, index, array) => (
-          <RadioSelectionItem
-            key={store.storeid}
-            title={`${store.storename}\n${store.address}`}
-            isSelected={storeId === store.storeid}
-            onPress={() => {
-              setStoreId && setStoreId(store.storeid);
-            }}
-            containerStyle={{ marginTop: 16 }}
-            hideSeparator={index == array.length - 1}
-          />
-        ))}
-        <View>
-          {stores.length > 2 && (
-            <Text
-              style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
-              onPress={() =>
-                props.navigation.navigate(AppRoutes.StorPickupScene, {
-                  pincode: pinCode,
-                  stores: stores,
-                })
-              }
-            >
-              VIEW ALL
-            </Text>
-          )}
-        </View>
+        <Text
+          style={{
+            paddingTop: 10,
+            ...theme.fonts.IBMPlexSansMedium(16),
+            lineHeight: 24,
+            color: '#0087ba',
+          }}
+        >
+          Sorry! We are not taking Store Pickup Orders currently as we cannot guarantee inventory
+          availability. You can directly visit your nearby store to check availability.
+        </Text>
       </View>
     );
   };
+
+  // const renderStorePickup = () => {
+  //   return (
+  //     <View style={{ margin: 16, marginTop: 20 }}>
+  //       <TextInputComponent
+  //         value={`${pinCode}`}
+  //         maxLength={6}
+  //         onChangeText={(pincode) => fetchStorePickup(pincode)}
+  //         placeholder={'Enter Pincode'}
+  //       />
+  //       {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
+  //       {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
+  //         <Text
+  //           style={{
+  //             paddingTop: 10,
+  //             ...theme.fonts.IBMPlexSansMedium(16),
+  //             lineHeight: 24,
+  //             color: '#0087ba',
+  //           }}
+  //         >
+  //           Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
+  //           from a nearby store, or change the pincode.
+  //         </Text>
+  //       )}
+
+  //       {slicedStoreList.map((store, index, array) => (
+  //         <RadioSelectionItem
+  //           key={store.storeid}
+  //           title={`${store.storename}\n${store.address}`}
+  //           isSelected={storeId === store.storeid}
+  //           onPress={() => {
+  //             setStoreId && setStoreId(store.storeid);
+  //           }}
+  //           containerStyle={{ marginTop: 16 }}
+  //           hideSeparator={index == array.length - 1}
+  //         />
+  //       ))}
+  //       <View>
+  //         {stores.length > 2 && (
+  //           <Text
+  //             style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
+  //             onPress={() =>
+  //               props.navigation.navigate(AppRoutes.StorPickupScene, {
+  //                 pincode: pinCode,
+  //                 stores: stores,
+  //               })
+  //             }
+  //           >
+  //             VIEW ALL
+  //           </Text>
+  //         )}
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   const renderHomeDelivery = () => {
     return (

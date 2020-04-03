@@ -355,7 +355,7 @@ export const getNetStatus = async () => {
   const status = await NetInfo.fetch()
     .then((connectionInfo) => {
       // console.log(connectionInfo, 'connectionInfo');
-      return connectionInfo.isConnected && connectionInfo.isInternetReachable;
+      return connectionInfo.isConnected;
     })
     .catch((e) => {
       CommonBugFender('helperFunctions_getNetStatus', e);

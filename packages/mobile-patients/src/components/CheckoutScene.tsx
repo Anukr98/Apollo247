@@ -344,7 +344,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           (item) =>
             ({
               medicineSKU: item.id,
-              price: item.price,
+              price: item.specialPrice || item.price,
               medicineName: item.name,
               quantity: item.quantity,
               mrp: item.price,

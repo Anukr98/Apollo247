@@ -1305,6 +1305,7 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
           medicineSKU
           medicineName
           price
+          mrp
           quantity
           isMedicine
           mou
