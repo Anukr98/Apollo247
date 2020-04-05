@@ -283,25 +283,25 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   });
 
   const possibleDoctorsOrder: Doctor[] = [];
+  const possibleEmptyDoctorsOrder: Doctor[] = [];
+  const finalDoctorNextAvailSlotsOrder: DoctorSlotAvailability[] = [];
+  const finalEmptyDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
   finalDoctorNextAvailSlots.map((docSlot) => {
+    const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
     if (docSlot.referenceSlot != '') {
-      const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
       console.log(docSlot.referenceSlot, docIndex);
       possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
-    }
-  });
-
-  const possibleEmptyDoctorsOrder: Doctor[] = [];
-  finalDoctorNextAvailSlots.map((docSlot) => {
-    if (docSlot.referenceSlot == '') {
-      const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
-      console.log(docSlot.referenceSlot, docIndex);
+      finalDoctorNextAvailSlotsOrder.push(docSlot);
+    } else {
       possibleEmptyDoctorsOrder.push(finalSortedDoctors[docIndex]);
+      finalEmptyDoctorsNextAvailabilityOrder.push(docSlot);
     }
   });
   console.log(possibleEmptyDoctorsOrder.length, possibleDoctorsOrder.length);
   finalSortedDoctors = possibleDoctorsOrder.concat(possibleEmptyDoctorsOrder);
-
+  finalDoctorNextAvailSlots = finalDoctorNextAvailSlotsOrder.concat(
+    finalEmptyDoctorsNextAvailabilityOrder
+  );
   searchLogger(`API_CALL___END`);
   return {
     doctors: finalSortedDoctors,
