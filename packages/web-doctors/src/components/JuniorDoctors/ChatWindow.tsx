@@ -22,6 +22,7 @@ import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { useAuth } from 'hooks/authHooks';
 import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
 import { downloadDocuments } from 'graphql/types/downloadDocuments';
+import ReactPanZoom from 'react-image-pan-zoom-rotate';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -319,10 +320,14 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       maxHeight: 'calc(100vh - 212px)',
       overflow: 'hidden',
+      position: 'relative',
       '& img': {
         maxWidth: '100%',
         maxHeight: 'calc(100vh - 212px)',
       },
+    },
+    panZoom: {
+      right: -30,
     },
     timeStamp: {
       fontSize: 10,
@@ -1117,7 +1122,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               </div>
               <div className={classes.modalContent}>
-                <img src={imgPrevUrl} alt="" />
+                <ReactPanZoom image={imgPrevUrl} alt="" />
               </div>
               <div className={classes.modalFooter}></div>
             </div>

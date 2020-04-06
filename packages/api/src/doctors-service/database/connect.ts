@@ -116,6 +116,9 @@ export const connect = async () => {
       database: `doctors_${process.env.NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: true,
+      extra: {
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
+      },
     },
     {
       name: 'consults-db',
@@ -147,6 +150,9 @@ export const connect = async () => {
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
+      extra: {
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
+      },
     },
     {
       name: 'patients-db',
@@ -193,6 +199,9 @@ export const connect = async () => {
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
+      extra: {
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
+      },
     },
   ]).catch((error) => {
     throw new Error(error);
