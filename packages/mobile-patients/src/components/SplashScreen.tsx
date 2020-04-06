@@ -466,9 +466,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               'Need_Help_To_Contact_In',
               'Min_Value_For_Pharmacy_Free_Delivery',
               'Pharmacy_Delivery_Charges',
+              'home_screen_emergency_banner',
+              'home_screen_emergency_number',
             ]);
         })
         .then((snapshot) => {
+          const remoteConfigValuesCount = Object.keys(snapshot).length - 1;
+
           const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
           needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
@@ -481,6 +485,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const pharmacyDeliveryCharges = snapshot['Pharmacy_Delivery_Charges'].val();
           pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
 
+          const homeScreenEmergencyBannerText = snapshot['home_screen_emergency_banner'].val();
+          homeScreenEmergencyBannerText &&
+            updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_TEXT', homeScreenEmergencyBannerText);
+
+          const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
+          homeScreenEmergencyBannerNumber &&
+            updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
+
           const myValye = snapshot;
           let index: number = 0;
           const nietos = [];
@@ -492,7 +504,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               index++;
               const element = myValye[val];
               nietos.push({ index: index, value: element.val() });
-              if (nietos.length === 13) {
+              if (nietos.length === remoteConfigValuesCount) {
                 console.log(
                   'nietos',
                   parseFloat(nietos[1].value),
