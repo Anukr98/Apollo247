@@ -20,7 +20,8 @@ import { NotificationType, sendNotification } from 'notifications-service/resolv
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { sendMail, cancellationEmailTemplate } from 'notifications-service/resolvers/email';
+import { sendMail } from 'notifications-service/resolvers/email';
+import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEmailTemplate';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';

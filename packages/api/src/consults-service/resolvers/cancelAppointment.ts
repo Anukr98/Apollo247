@@ -6,7 +6,8 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
-import { sendMail, cancellationEmailTemplate } from 'notifications-service/resolvers/email';
+import { sendMail } from 'notifications-service/resolvers/email';
+import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEmailTemplate';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
