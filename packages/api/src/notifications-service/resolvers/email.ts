@@ -32,7 +32,7 @@ export async function sendMail(emailContent: EmailMessage) {
   return mailStatus;
 }
 
-export const mailTemplate = _.template(`
+export const cancellationEmailTemplate = _.template(`
 <html>
 <body>
 <p><%- Title%></p>

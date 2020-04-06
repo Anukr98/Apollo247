@@ -20,7 +20,7 @@ import { NotificationType, sendNotification } from 'notifications-service/resolv
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { sendMail, mailTemplate } from 'notifications-service/resolvers/email';
+import { sendMail, cancellationEmailTemplate } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -430,7 +430,7 @@ const endAppointmentSession: Resolver<
     const apptTime = format(istDateTime, 'hh:mm aa');
     const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
 
-    const mailContent = mailTemplate({
+    const mailContent = cancellationEmailTemplate({
       Title: ApiConstants.CANCEL_APPOINTMENT_BODY,
       PatientName: apptDetails.patientName,
       AppointmentDateTime: apptDate + ',  ' + apptTime,

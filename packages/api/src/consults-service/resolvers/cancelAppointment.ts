@@ -6,7 +6,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
-import { sendMail, mailTemplate } from 'notifications-service/resolvers/email';
+import { sendMail, cancellationEmailTemplate } from 'notifications-service/resolvers/email';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
@@ -163,7 +163,7 @@ const cancelAppointment: Resolver<
         facilityDets.state;
     }
   }
-  const mailContent = mailTemplate({
+  const mailContent = cancellationEmailTemplate({
     Title: ApiConstants.CANCEL_APPOINTMENT_BODY,
     PatientName: appointment.patientName,
     AppointmentDateTime: apptDate + ',  ' + apptTime,
