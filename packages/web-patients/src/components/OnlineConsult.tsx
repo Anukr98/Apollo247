@@ -246,7 +246,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
 
   const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
 
@@ -288,7 +291,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
 
   const apiDateFormat =
     dateSelected === ''
-      ? new Date(doctorAvailableTime).toISOString().substring(0, 10)
+      ? moment(doctorAvailableTime).format('YYYY-MM-DD')
       : getYyMmDd(dateSelected);
 
   const morningStartTime = getIstTimestamp(new Date(apiDateFormat), '06:01');
