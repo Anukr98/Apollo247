@@ -662,8 +662,13 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const onPressSubmit = async () => {
+    setUploadingFiles(true);
+    const ePresUrls =
+      ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
+    const ePresPrismIds =
+      ePrescriptionData &&
+      ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
     if (prescriptions && prescriptions.length > 0) {
-      setUploadingFiles(true);
       uploadMultipleFiles(prescriptions)
         .then((data) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
@@ -674,11 +679,6 @@ export const MedicineCart: React.FC = (props) => {
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
-          const ePresUrls =
-            ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
-          const ePresPrismIds =
-            ePrescriptionData &&
-            ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
           const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
             prescriptionMedicineInput: {
               patientId: (currentPatient && currentPatient.id) || '',
@@ -701,17 +701,38 @@ export const MedicineCart: React.FC = (props) => {
           setIsAlertOpen(true);
           setAlertMessage('something went wrong');
         });
+    } else {
+      const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
+        prescriptionMedicineInput: {
+          patientId: (currentPatient && currentPatient.id) || '',
+          medicineDeliveryType: deliveryAddressId
+            ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+            : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          shopId: storeAddressId || '0',
+          appointmentId: '',
+          patinetAddressId: deliveryAddressId || '',
+          prescriptionImageUrl: [...ePresUrls].join(','),
+          prismPrescriptionFileId: [...ePresPrismIds].join(','),
+          isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+        },
+      };
+      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     }
   };
 
   const isPaymentButtonEnable =
-    (cartItems &&
-      cartItems.length > 0 &&
-      (uploadPrescriptionRequired >= 0
-        ? (prescriptions && prescriptions.length > 0) ||
-          (ePrescriptionData && ePrescriptionData.length > 0)
-        : true)) ||
-    false;
+    (cartItems && cartItems.length > 0) ||
+    (uploadPrescriptionRequired >= 0
+      ? (prescriptions && prescriptions.length > 0) ||
+        (ePrescriptionData && ePrescriptionData.length > 0)
+      : true);
+
+  const disableSubmitPrescriptionButton =
+    nonCartFlow &&
+    prescriptions &&
+    prescriptions.length === 0 &&
+    ePrescriptionData &&
+    ePrescriptionData.length === 0;
 
   return (
     <div className={classes.root}>
@@ -944,15 +965,27 @@ export const MedicineCart: React.FC = (props) => {
             onClick={() => {
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
                 setCheckoutDialogOpen(true);
-              } else if (nonCartFlow && prescriptions && prescriptions.length > 0) {
+              } else if (
+                nonCartFlow &&
+                ((prescriptions && prescriptions.length > 0) ||
+                  (ePrescriptionData && ePrescriptionData.length > 0))
+              ) {
                 onPressSubmit();
               }
             }}
             color="primary"
             fullWidth
-            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
+            disabled={
+              disableSubmit ||
+              !isPaymentButtonEnable ||
+              disableSubmitPrescriptionButton ||
+              uploadingFiles
+            }
             className={
-              disableSubmit || !isPaymentButtonEnable || mutationLoading
+              disableSubmit ||
+              !isPaymentButtonEnable ||
+              disableSubmitPrescriptionButton ||
+              mutationLoading
                 ? classes.buttonDisable
                 : ''
             }
