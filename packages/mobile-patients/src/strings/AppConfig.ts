@@ -1,3 +1,5 @@
+import string from '@aph/mobile-patients/src/strings/strings.json';
+
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
@@ -30,6 +32,8 @@ const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
+  HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
+  HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
 };
 
 export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
