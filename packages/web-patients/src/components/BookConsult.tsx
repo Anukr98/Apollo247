@@ -170,7 +170,10 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
         {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
           <TabContainer>
             <LocationProvider>
-              <VisitClinic doctorDetails={doctorDetails} />
+              <VisitClinic
+                doctorDetails={doctorDetails}
+                doctorAvailableIn={props.doctorAvailableIn}
+              />
             </LocationProvider>
           </TabContainer>
         )}
