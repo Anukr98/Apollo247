@@ -250,70 +250,70 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
           'dd  MMMMMMMMMMMM yyyy, h:mm a'
         )}`}</div>
         {data &&
-          data.caseSheet &&
-          (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
+        data.caseSheet &&
+        (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
           ? data &&
-          data.caseSheet &&
-          data.caseSheet.length > 0 &&
-          !!data.caseSheet[1]!.symptoms &&
-          !!data.caseSheet[1]!.symptoms.length && (
-            <div className={`${classes.symptomsList}`}>
-              {(data.caseSheet[1]!.symptoms.length > 3
-                ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
-              ).join(', ')}
-              {data.caseSheet[1]!.symptoms!.length > 3 && (
-                <span>{`, +${data.caseSheet[1]!.symptoms.length - 2}`}</span>
-              )}
-            </div>
-          )
+            data.caseSheet &&
+            data.caseSheet.length > 0 &&
+            !!data.caseSheet[1]!.symptoms &&
+            !!data.caseSheet[1]!.symptoms.length && (
+              <div className={`${classes.symptomsList}`}>
+                {(data.caseSheet[1]!.symptoms.length > 3
+                  ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                  : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
+                ).join(', ')}
+                {data.caseSheet[1]!.symptoms!.length > 3 && (
+                  <span>{`, +${data.caseSheet[1]!.symptoms.length - 2}`}</span>
+                )}
+              </div>
+            )
           : data &&
-          data.caseSheet &&
-          data.caseSheet.length > 0 &&
-          !!data.caseSheet[0]!.symptoms &&
-          !!data.caseSheet[0]!.symptoms.length && (
-            <div className={`${classes.symptomsList}`}>
-              {(data.caseSheet[0]!.symptoms.length > 3
-                ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
-              ).join(', ')}
-              {data.caseSheet[0]!.symptoms!.length > 3 && (
-                <span>{`, +${data.caseSheet[0]!.symptoms.length - 2}`}</span>
-              )}
-            </div>
-          )}
+            data.caseSheet &&
+            data.caseSheet.length > 0 &&
+            !!data.caseSheet[0]!.symptoms &&
+            !!data.caseSheet[0]!.symptoms.length && (
+              <div className={`${classes.symptomsList}`}>
+                {(data.caseSheet[0]!.symptoms.length > 3
+                  ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                  : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
+                ).join(', ')}
+                {data.caseSheet[0]!.symptoms!.length > 3 && (
+                  <span>{`, +${data.caseSheet[0]!.symptoms.length - 2}`}</span>
+                )}
+              </div>
+            )}
         {data &&
-          data.caseSheet &&
-          (data.caseSheet.length > 1 &&
-            data.caseSheet[1] &&
-            data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
-            <div className={`${classes.iconButton}`}>
-              <IconButton aria-label="Video call">
-                {data &&
-                  data.caseSheet &&
-                  data.caseSheet.length > 1 &&
-                  data.caseSheet[1]!.consultType === 'ONLINE' ? (
-                    <img src={require('images/ic_video.svg')} alt="" />
-                  ) : (
-                    <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                  )}
-              </IconButton>
-            </div>
-          ) : (
-            <div className={`${classes.iconButton}`}>
-              <IconButton aria-label="Video call">
-                {data &&
-                  data.caseSheet &&
-                  data.caseSheet.length > 0 &&
-                  data.caseSheet[0] &&
-                  data.caseSheet[0]!.consultType === 'ONLINE' ? (
-                    <img src={require('images/ic_video.svg')} alt="" />
-                  ) : (
-                    <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                  )}
-              </IconButton>
-            </div>
-          )}
+        data.caseSheet &&
+        (data.caseSheet.length > 1 &&
+          data.caseSheet[1] &&
+          data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
+          <div className={`${classes.iconButton}`}>
+            <IconButton aria-label="Video call">
+              {data &&
+              data.caseSheet &&
+              data.caseSheet.length > 1 &&
+              data.caseSheet[1]!.consultType === 'ONLINE' ? (
+                <img src={require('images/ic_video.svg')} alt="" />
+              ) : (
+                <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+              )}
+            </IconButton>
+          </div>
+        ) : (
+          <div className={`${classes.iconButton}`}>
+            <IconButton aria-label="Video call">
+              {data &&
+              data.caseSheet &&
+              data.caseSheet.length > 0 &&
+              data.caseSheet[0] &&
+              data.caseSheet[0]!.consultType === 'ONLINE' ? (
+                <img src={require('images/ic_video.svg')} alt="" />
+              ) : (
+                <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+              )}
+            </IconButton>
+          </div>
+        )}
       </Link>
     </div>
   );
@@ -357,22 +357,22 @@ export const HealthVault: React.FC = () => {
                 }}
               >
                 {item &&
-                  item.documentPath &&
-                  item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
+                item.documentPath &&
+                item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
+                  <Avatar
+                    alt={item.documentPath as string}
+                    src={item.documentPath as string}
+                    className={classes.bigAvatar}
+                  />
+                ) : (
+                  <a href={item.documentPath as string} target="_blank">
                     <Avatar
                       alt={item.documentPath as string}
-                      src={item.documentPath as string}
+                      src={require('images/pdf_thumbnail.png')}
                       className={classes.bigAvatar}
                     />
-                  ) : (
-                    <a href={item.documentPath as string} target="_blank">
-                      <Avatar
-                        alt={item.documentPath as string}
-                        src={require('images/pdf_thumbnail.png')}
-                        className={classes.bigAvatar}
-                      />
-                    </a>
-                  )}
+                  </a>
+                )}
                 <div className={classes.listData}>
                   <h4 className={classes.fileName}>
                     {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
@@ -382,8 +382,8 @@ export const HealthVault: React.FC = () => {
               </div>
             ))
           ) : (
-              <div className={classes.noDataFound}>No data Found</div>
-            )}
+            <div className={classes.noDataFound}>No data Found</div>
+          )}
         </div>
       </div>
       <div className={classes.sectionGroup}></div>
