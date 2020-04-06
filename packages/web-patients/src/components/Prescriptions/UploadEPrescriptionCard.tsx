@@ -141,6 +141,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   const [pastPrescriptions, setPastPrescriptions] = useState<any[] | null>(null);
   const [pastMedicalOrders, setPastMedicalOrders] = useState<any[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isRecordChecked, setIsRecordChecked] = useState<boolean>(false);
 
   const patientPastConsultAndPrescriptionMutation = useMutation<
     getPatientPastConsultsAndPrescriptions,
@@ -218,8 +219,9 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             id: item!.id,
             date: moment(item!.quoteDateTime).format(DATE_FORMAT),
             uploadedUrl: item!.prescriptionImageUrl,
-            doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) ||
-              ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+            doctorName: `Meds Rx ${
+              (item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''
+            }`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: getMedicines(item!.medicineOrderLineItems! || []),
             prismPrescriptionFileId: item!.prismPrescriptionFileId,
@@ -248,12 +250,8 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .filter((item: any) => !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
-          moment(b.date, DATE_FORMAT)
-            .toDate()
-            .getTime() -
-          moment(a.date, DATE_FORMAT)
-            .toDate()
-            .getTime()
+          moment(b.date, DATE_FORMAT).toDate().getTime() -
+          moment(a.date, DATE_FORMAT).toDate().getTime()
       );
 
   const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
@@ -307,8 +305,15 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
-                  onChange={() => {
-                    selectedEPrescriptionRecords.push(pastPrescription);
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      selectedEPrescriptionRecords.push(pastPrescription);
+                    } else {
+                      selectedEPrescriptionRecords = selectedEPrescriptionRecords.filter(
+                        (record) => record.id != pastPrescription.id
+                      );
+                    }
+                    setIsRecordChecked(selectedEPrescriptionRecords.length > 0);
                   }}
                   className={classes.checkbox}
                   color="primary"
@@ -334,8 +339,15 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
-                  onChange={() => {
-                    selectedEPrescriptionRecords.push(pastPrescription);
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      selectedEPrescriptionRecords.push(pastPrescription);
+                    } else {
+                      selectedEPrescriptionRecords = selectedEPrescriptionRecords.filter(
+                        (record) => record.id != pastPrescription.id
+                      );
+                    }
+                    setIsRecordChecked(selectedEPrescriptionRecords.length > 0);
                   }}
                   className={classes.checkbox}
                   color="primary"
@@ -346,8 +358,9 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
         <div className={classes.uploadButtonWrapper}>
           <AphButton
             disabled={
-              (!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
-              (!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0))
+              ((!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
+                (!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0))) ||
+              selectedEPrescriptionRecords.length === 0
             }
             onClick={() => {
               const finalEprescriptions = selectedEPrescriptionRecords;
