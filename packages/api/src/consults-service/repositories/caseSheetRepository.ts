@@ -45,6 +45,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+      .orderBy('case_sheet.createdDate', 'DESC')
       .getOne();
   }
 
@@ -69,6 +70,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .set({ status: CASESHEET_STATUS.COMPLETED })
       .where('"appointmentId" = :id', { id: appointmentId })
       .andWhere('doctorType = :type', { type: DoctorType.JUNIOR })
+      .andWhere('status = :status', { status: CASESHEET_STATUS.PENDING })
       .execute();
   }
 }
