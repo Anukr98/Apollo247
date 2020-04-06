@@ -745,7 +745,7 @@ export const MedicineCart: React.FC = (props) => {
             (prescriptions && prescriptions.length > 0) ||
             (ePrescriptionData && ePrescriptionData.length > 0) ? (
               <>
-                <MedicineListingCard />
+                {!nonCartFlow && <MedicineListingCard />}
                 {uploadPrescriptionRequired >= 0 ||
                 (prescriptions && prescriptions.length > 0) ||
                 (ePrescriptionData && ePrescriptionData.length > 0) ? (
@@ -944,11 +944,7 @@ export const MedicineCart: React.FC = (props) => {
             onClick={() => {
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
                 setCheckoutDialogOpen(true);
-              } else if (
-                nonCartFlow &&
-                ((prescriptions && prescriptions.length > 0) ||
-                  (ePrescriptionData && ePrescriptionData.length > 0))
-              ) {
+              } else if (nonCartFlow && prescriptions && prescriptions.length > 0) {
                 onPressSubmit();
               }
             }}
@@ -962,7 +958,7 @@ export const MedicineCart: React.FC = (props) => {
             }
             title={'Proceed to pay bill'}
           >
-            {cartItems && cartItems.length > 0 ? (
+            {cartItems && cartItems.length > 0 && !nonCartFlow ? (
               `Proceed to pay — RS. ${totalAmount}`
             ) : uploadingFiles ? (
               <CircularProgress size={22} color="secondary" />
