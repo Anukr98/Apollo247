@@ -231,10 +231,11 @@ const removeFromConsultQueue: Resolver<
   ConsultServiceContext,
   RemoveFromConsultQueueResult
 > = async (parent, { id }, context) => {
-  const { docRepo, cqRepo, mobileNumber } = getRepos(context);
+  const { docRepo, cqRepo, mobileNumber, caseSheetRepo } = getRepos(context);
   const consultQueueItemToDeactivate = await cqRepo.findOneOrFail(id);
-  const { doctorId } = consultQueueItemToDeactivate;
+  const { doctorId, appointmentId } = consultQueueItemToDeactivate;
   await checkAuth(docRepo, mobileNumber, doctorId);
+  await caseSheetRepo.updateJDCaseSheet(appointmentId);
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };

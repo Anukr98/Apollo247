@@ -62,4 +62,13 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
     });
   }
+
+  updateJDCaseSheet(appointmentId: string) {
+    return this.createQueryBuilder()
+      .update('case_sheet')
+      .set({ status: CASESHEET_STATUS.COMPLETED })
+      .where('"appointmentId" = :id', { id: appointmentId })
+      .andWhere('doctorType = :type', { type: DoctorType.JUNIOR })
+      .execute();
+  }
 }
