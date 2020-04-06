@@ -990,72 +990,72 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         )}
         {(!showVideo || showVideoChat) && (
           <div className={classes.chatFooter}>
-            {/* {!props.disableChat && ( */}
-            <Button
-              className={classes.chatsendcircle}
-              variant="contained"
-              component="label"
-              disabled={fileUploading}
-            >
-              <img src={require('images/ic_add_circle.svg')} alt="" />
-              <input
-                type="file"
-                style={{ display: 'none' }}
+            {!props.disableChat && (
+              <Button
+                className={classes.chatsendcircle}
+                variant="contained"
+                component="label"
                 disabled={fileUploading}
-                onChange={async (e) => {
-                  const fileNames = e.target.files;
-                  if (fileNames && fileNames.length > 0) {
-                    setFileUploading(true);
-                    const file = fileNames[0] || null;
-                    const fileExtension = file.name.split('.').pop();
-                    const fileSize = file.size;
-                    if (fileSize > 2000000) {
-                      setFileUploadErrorMessage(
-                        'Invalid File Size. File size must be less than 2MB'
-                      );
-                      setIsDialogOpen(true);
-                    } else if (
-                      fileExtension &&
-                      (fileExtension.toLowerCase() === 'png' ||
-                        fileExtension.toLowerCase() === 'jpg' ||
-                        fileExtension.toLowerCase() === 'jpeg' ||
-                        fileExtension.toLowerCase() === 'pdf')
-                    ) {
-                      if (file) {
-                        let aphBlob;
-                        aphBlob =
-                          fileExtension.toLowerCase() === 'pdf'
-                            ? await client.uploadPdfBrowserFile({ file }).catch((error: any) => {
-                                throw error;
-                              })
-                            : await client.uploadBrowserFile({ file }).catch((error: any) => {
-                                throw error;
-                              });
-                        const url = client.getBlobUrl(aphBlob && aphBlob.name);
-                        const uploadObject = {
-                          id: doctorId,
-                          fileType: `${fileExtension.toLowerCase() === 'pdf' ? 'pdf' : 'image'}`,
-                          message: `^^#DocumentUpload`,
-                          url: url,
-                          isTyping: true,
-                          messageDate: new Date(),
-                          sentBy: REQUEST_ROLES.JUNIOR,
-                        };
-                        uploadfile(url);
-                        sendMsg(uploadObject, true);
-                        setFileUploading(false);
+              >
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  disabled={fileUploading}
+                  onChange={async (e) => {
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      setFileUploading(true);
+                      const file = fileNames[0] || null;
+                      const fileExtension = file.name.split('.').pop();
+                      const fileSize = file.size;
+                      if (fileSize > 2000000) {
+                        setFileUploadErrorMessage(
+                          'Invalid File Size. File size must be less than 2MB'
+                        );
+                        setIsDialogOpen(true);
+                      } else if (
+                        fileExtension &&
+                        (fileExtension.toLowerCase() === 'png' ||
+                          fileExtension.toLowerCase() === 'jpg' ||
+                          fileExtension.toLowerCase() === 'jpeg' ||
+                          fileExtension.toLowerCase() === 'pdf')
+                      ) {
+                        if (file) {
+                          let aphBlob;
+                          aphBlob =
+                            fileExtension.toLowerCase() === 'pdf'
+                              ? await client.uploadPdfBrowserFile({ file }).catch((error: any) => {
+                                  throw error;
+                                })
+                              : await client.uploadBrowserFile({ file }).catch((error: any) => {
+                                  throw error;
+                                });
+                          const url = client.getBlobUrl(aphBlob && aphBlob.name);
+                          const uploadObject = {
+                            id: doctorId,
+                            fileType: `${fileExtension.toLowerCase() === 'pdf' ? 'pdf' : 'image'}`,
+                            message: `^^#DocumentUpload`,
+                            url: url,
+                            isTyping: true,
+                            messageDate: new Date(),
+                            sentBy: REQUEST_ROLES.JUNIOR,
+                          };
+                          uploadfile(url);
+                          sendMsg(uploadObject, true);
+                          setFileUploading(false);
+                        }
+                      } else {
+                        setFileUploadErrorMessage(
+                          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                        );
+                        setIsDialogOpen(true);
                       }
-                    } else {
-                      setFileUploadErrorMessage(
-                        'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
-                      );
-                      setIsDialogOpen(true);
                     }
-                  }
-                }}
-              />
-            </Button>
-            {/* )} */}
+                  }}
+                />
+              </Button>
+            )}
             <AphTextField
               className={classes.inputWidth}
               inputProps={{ type: 'text' }}
