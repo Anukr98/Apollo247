@@ -6,7 +6,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
-import { sendMail } from 'notifications-service/resolvers/email';
+import { sendMail, mailTemplate } from 'notifications-service/resolvers/email';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
@@ -15,7 +15,6 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import _ from 'lodash';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -164,20 +163,8 @@ const cancelAppointment: Resolver<
         facilityDets.state;
     }
   }
-  const mailTemplate = _.template(`
-  <html>
-  <body>
-  <p>Appointment booked on Apollo 247 has been cancelled.</p>
-  <ol>
-  <li>Patient Name: <%- PatientName %> </li>
-  <li>Appointment Date Time: <%- AppointmentDateTime %> </li>
-  <li>Doctor Name: <%- DoctorName %> </li>
-  <li>Hospital Name: <%- HospitalName %> </li>
-  </ol>
-  </body>
-  </html>
-  `);
   const mailContent = mailTemplate({
+    Title: ApiConstants.CANCEL_APPOINTMENT_BODY,
     PatientName: appointment.patientName,
     AppointmentDateTime: apptDate + ',  ' + apptTime,
     DoctorName: docName,

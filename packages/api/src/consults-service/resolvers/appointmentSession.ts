@@ -20,14 +20,13 @@ import { NotificationType, sendNotification } from 'notifications-service/resolv
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { sendMail } from 'notifications-service/resolvers/email';
+import { sendMail, mailTemplate } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { addMilliseconds, format, isAfter } from 'date-fns';
 import { getSessionToken, getExpirationTime } from 'helpers/openTok';
-import _ from 'lodash';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -431,20 +430,8 @@ const endAppointmentSession: Resolver<
     const apptTime = format(istDateTime, 'hh:mm aa');
     const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
 
-    const mailTemplate = _.template(`
-    <html>
-    <body>
-    <p>Appointment booked on Apollo 247 has been cancelled.</p>
-    <ol>
-    <li>Patient Name: <%- PatientName %> </li>
-    <li>Appointment Date Time: <%- AppointmentDateTime %> </li>
-    <li>Doctor Name: <%- DoctorName %> </li>
-    <li>Hospital Name: <%- HospitalName %> </li>
-    </ol>
-    </body>
-    </html>
-    `);
     const mailContent = mailTemplate({
+      Title: ApiConstants.CANCEL_APPOINTMENT_BODY,
       PatientName: apptDetails.patientName,
       AppointmentDateTime: apptDate + ',  ' + apptTime,
       DoctorName: docName,

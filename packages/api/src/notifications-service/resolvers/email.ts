@@ -3,6 +3,7 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
+import _ from 'lodash';
 
 export const emailTypeDefs = gql`
   extend type Query {
@@ -31,6 +32,19 @@ export async function sendMail(emailContent: EmailMessage) {
   return mailStatus;
 }
 
+export const mailTemplate = _.template(`
+<html>
+<body>
+<p><%- Title%></p>
+<ul>
+<li>Patient Name: <%- PatientName %> </li>
+<li>Appointment Date Time: <%- AppointmentDateTime %> </li>
+<li>Doctor Name: <%- DoctorName %> </li>
+<li>Hospital Name: <%- HospitalName %> </li>
+</ul>
+</body>
+</html>
+`);
 const sendEmailMessage: Resolver<null, {}, NotificationsServiceContext, string> = async (
   parent,
   {},
