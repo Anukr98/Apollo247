@@ -666,7 +666,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -702,9 +702,12 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (cartItems && cartItems.length > 0) ||
-    (prescriptions && prescriptions.length > 0) ||
-    (ePrescriptionData && ePrescriptionData.length > 0) ||
+    (cartItems &&
+      cartItems.length > 0 &&
+      (uploadPrescriptionRequired >= 0
+        ? (prescriptions && prescriptions.length > 0) ||
+          (ePrescriptionData && ePrescriptionData.length > 0)
+        : true)) ||
     false;
 
   return (
