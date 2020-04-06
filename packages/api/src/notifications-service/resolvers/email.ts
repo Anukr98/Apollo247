@@ -3,7 +3,6 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
-import _ from 'lodash';
 
 export const emailTypeDefs = gql`
   extend type Query {
