@@ -21,6 +21,7 @@ import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import ReactPanZoom from 'react-image-pan-zoom-rotate';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
@@ -501,7 +502,7 @@ export const HealthVault: React.FC = () => {
                         </div>
                       </div>
                       <div className={classes.modalContent}>
-                        <img src={imgPrevUrl} alt="" />
+                        <ReactPanZoom image={imgPrevUrl} alt="" />
                       </div>
                       <div className={classes.modalFooter}></div>
                     </div>

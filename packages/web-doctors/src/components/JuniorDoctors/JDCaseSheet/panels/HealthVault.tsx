@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import ReactPanZoom from 'react-image-pan-zoom-rotate';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
@@ -397,7 +398,7 @@ export const HealthVault: React.FC = () => {
                   </div>
                 </div>
                 <div className={classes.modalContent}>
-                  <img src={imgPrevUrl} alt="" />
+                  <ReactPanZoom image={imgPrevUrl} alt="" />
                 </div>
                 <div className={classes.modalFooter}></div>
               </div>

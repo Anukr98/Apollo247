@@ -18,6 +18,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 import { useAuth } from 'hooks/authHooks';
+import ReactPanZoom from 'react-image-pan-zoom-rotate';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -1037,7 +1038,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   </div>
                 </div>
                 <div className={classes.modalContent}>
-                  <img src={imgPrevUrl} alt="" />
+                  {/* <img src={imgPrevUrl} alt="" /> */}
+                  <ReactPanZoom image={imgPrevUrl} alt="" />
                 </div>
                 <div className={classes.modalFooter}></div>
               </div>
