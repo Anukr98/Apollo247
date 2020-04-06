@@ -15,6 +15,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import _ from 'lodash';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -163,7 +164,25 @@ const cancelAppointment: Resolver<
         facilityDets.state;
     }
   }
-  const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${patientName}<br>Appointment Date Time: ${apptDate}, ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
+  const mailTemplate = _.template(`
+  <html>
+  <body>
+  <p>Appointment booked on Apollo 247 has been cancelled.</p>
+  <ol>
+  <li>Patient Name: <%- PatientName %> </li>
+  <li>Appointment Date Time: <%- AppointmentDateTime %> </li>
+  <li>Doctor Name: <%- DoctorName %> </li>
+  <li>Hospital Name: <%- HospitalName %> </li>
+  </ol>
+  </body>
+  </html>
+  `);
+  const mailContent = mailTemplate({
+    PatientName: appointment.patientName,
+    AppointmentDateTime: apptDate + ',  ' + apptTime,
+    DoctorName: docName,
+    HospitalName: hospitalName,
+  });
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||

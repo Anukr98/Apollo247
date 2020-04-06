@@ -27,6 +27,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { addMilliseconds, format, isAfter } from 'date-fns';
 import { getSessionToken, getExpirationTime } from 'helpers/openTok';
+import _ from 'lodash';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -430,7 +431,25 @@ const endAppointmentSession: Resolver<
     const apptTime = format(istDateTime, 'hh:mm aa');
     const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
 
-    const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${apptDetails.patientName}<br>Appointment Date Time: ${apptDate}, ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
+    const mailTemplate = _.template(`
+    <html>
+    <body>
+    <p>Appointment booked on Apollo 247 has been cancelled.</p>
+    <ol>
+    <li>Patient Name: <%- PatientName %> </li>
+    <li>Appointment Date Time: <%- AppointmentDateTime %> </li>
+    <li>Doctor Name: <%- DoctorName %> </li>
+    <li>Hospital Name: <%- HospitalName %> </li>
+    </ol>
+    </body>
+    </html>
+    `);
+    const mailContent = mailTemplate({
+      PatientName: apptDetails.patientName,
+      AppointmentDateTime: apptDate + ',  ' + apptTime,
+      DoctorName: docName,
+      HospitalName: hospitalName,
+    });
     const ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
       process.env.NODE_ENV == 'development' ||
