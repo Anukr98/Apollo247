@@ -10,6 +10,7 @@ export enum WebEngageEventName {
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
+  NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
@@ -136,6 +137,15 @@ export interface WebEngageEvents {
     Source: 'Home' | 'List' | 'Search';
     'Section Name': string;
   };
+  [WebEngageEventName.NOTIFY_ME]: {
+    'product name': string;
+    'product id': string; // (SKUID)
+    Brand: string;
+    'Brand ID': string;
+    'category name': string;
+    'category ID': string;
+  };
+
   [WebEngageEventName.CATEGORY_CLICKED]: {
     'category name': string;
     'category ID': string;
