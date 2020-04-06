@@ -466,6 +466,9 @@ export const MedicineCart: React.FC = (props) => {
     setEPrescriptionData,
   } = useShoppingCart();
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
+
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
 
@@ -721,26 +724,28 @@ export const MedicineCart: React.FC = (props) => {
           }
         >
           <div className={classes.medicineListGroup}>
-            <div className={classes.sectionHeader}>
-              <span>Medicines In Your Cart</span>
-              <span className={classes.count}>
-                ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
-              </span>
-              <AphButton
-                className={classes.addItemBtn}
-                onClick={() => {
-                  window.location.href = clientRoutes.medicines();
-                }}
-                title={'Add items to cart'}
-              >
-                Add Items
-              </AphButton>
-            </div>
+            {!nonCartFlow && (
+              <div className={classes.sectionHeader}>
+                <span>Medicines In Your Cart</span>
+                <span className={classes.count}>
+                  ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
+                </span>
+                <AphButton
+                  className={classes.addItemBtn}
+                  onClick={() => {
+                    window.location.href = clientRoutes.medicines();
+                  }}
+                  title={'Add items to cart'}
+                >
+                  Add Items
+                </AphButton>
+              </div>
+            )}
             {cartItems.length > 0 ||
             (prescriptions && prescriptions.length > 0) ||
             (ePrescriptionData && ePrescriptionData.length > 0) ? (
               <>
-                <MedicineListingCard />
+                {!nonCartFlow && <MedicineListingCard />}
                 {uploadPrescriptionRequired >= 0 ||
                 (prescriptions && prescriptions.length > 0) ||
                 (ePrescriptionData && ePrescriptionData.length > 0) ? (
@@ -937,9 +942,9 @@ export const MedicineCart: React.FC = (props) => {
         <div className={classes.checkoutBtn}>
           <AphButton
             onClick={() => {
-              if (cartItems && cartItems.length > 0) {
+              if (cartItems && cartItems.length > 0 && !nonCartFlow) {
                 setCheckoutDialogOpen(true);
-              } else if (prescriptions && prescriptions.length > 0) {
+              } else if (nonCartFlow && prescriptions && prescriptions.length > 0) {
                 onPressSubmit();
               }
             }}
@@ -953,7 +958,7 @@ export const MedicineCart: React.FC = (props) => {
             }
             title={'Proceed to pay bill'}
           >
-            {cartItems && cartItems.length > 0 ? (
+            {cartItems && cartItems.length > 0 && !nonCartFlow ? (
               `Proceed to pay — RS. ${totalAmount}`
             ) : uploadingFiles ? (
               <CircularProgress size={22} color="secondary" />

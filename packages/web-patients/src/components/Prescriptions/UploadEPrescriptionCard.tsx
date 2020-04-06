@@ -369,7 +369,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
               const currentUrl = window.location.href;
               if (currentUrl.endsWith('/medicines')) {
-                window.location.href = clientRoutes.medicinesCart();
+                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
               }
             }}
             className={classes.uploadPrescription}
