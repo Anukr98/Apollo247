@@ -1399,21 +1399,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     try {
       setTransferData(appointmentData);
       callAbandonmentTimer = setInterval(() => {
-        timer = timer - 1;
-        callAbandonmentStoppedTimer = timer;
-        setCallAbundantCallTime(timer);
+        try {
+          timer = timer - 1;
+          callAbandonmentStoppedTimer = timer;
+          setCallAbundantCallTime(timer);
 
-        // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+          // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
 
-        if (timer < 1) {
-          // console.log('call Abundant', appointmentData);
-          endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
+          if (timer < 1) {
+            // console.log('call Abundant', appointmentData);
+            endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
 
-          if (isCallAbandment) {
-            setIsDoctorNoShow(true);
-          } else {
-            NextAvailableSlot(appointmentData, 'Transfer', true);
+            if (isCallAbandment) {
+              setIsDoctorNoShow(true);
+            } else {
+              NextAvailableSlot(appointmentData, 'Transfer', true);
+            }
+            setCallAbundantCallTime(620);
+            callAbandonmentStoppedTimer = 620;
+            callAbandonmentTimer && clearInterval(callAbandonmentTimer);
           }
+        } catch (error) {
+          // console.log('app crashed', error);
+          CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
           setCallAbundantCallTime(620);
           callAbandonmentStoppedTimer = 620;
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);

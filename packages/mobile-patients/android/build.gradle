@@ -44,6 +44,7 @@ allprojects {
         }
         google()
         jcenter()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
         maven {
             url "http://tokbox.bintray.com/maven"
@@ -53,7 +54,6 @@ allprojects {
             name 'Google'
         }
 
-        mavenCentral()
         maven { url 'https://kotlin.bintray.com/kotlinx/' }
     }
 }
