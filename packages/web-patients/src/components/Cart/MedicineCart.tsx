@@ -721,11 +721,10 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (cartItems && cartItems.length > 0) ||
-    (uploadPrescriptionRequired >= 0
+    uploadPrescriptionRequired >= 0
       ? (prescriptions && prescriptions.length > 0) ||
         (ePrescriptionData && ePrescriptionData.length > 0)
-      : true);
+      : cartItems && cartItems.length > 0;
 
   const disableSubmitPrescriptionButton =
     nonCartFlow &&
