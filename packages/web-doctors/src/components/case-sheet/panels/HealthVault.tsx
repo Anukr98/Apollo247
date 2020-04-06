@@ -82,6 +82,7 @@ const useStyles = makeStyles(() => ({
     textAlign: 'center',
     maxHeight: 'calc(100vh - 212px)',
     overflow: 'hidden',
+    position: 'relative',
     '& img': {
       maxWidth: '100%',
       maxHeight: 'calc(100vh - 212px)',
@@ -261,83 +262,83 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                 </Grid>
               </Grid>
               {data &&
-              data.caseSheet &&
-              data.caseSheet.length > 1 &&
-              data.caseSheet[1]!.doctorType !== 'JUNIOR'
+                data.caseSheet &&
+                data.caseSheet.length > 1 &&
+                data.caseSheet[1]!.doctorType !== 'JUNIOR'
                 ? data &&
-                  data.caseSheet &&
-                  data.caseSheet.length > 0 &&
-                  !!data.caseSheet[1]!.symptoms &&
-                  !!data.caseSheet[1]!.symptoms.length && (
-                    <Grid lg={6} sm={6} xs={5} key={2} item>
-                      <div className={classes.stepperHeading}>
-                        {(data.caseSheet[1]!.symptoms.length > 3
-                          ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                          : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
-                        ).join(', ')}
-                        {data.caseSheet[1]!.symptoms!.length > 3 && (
-                          <Typography gutterBottom variant="body1" component="span">
-                            {`, +${data.caseSheet[1]!.symptoms.length - 2}`}
-                          </Typography>
-                        )}
-                      </div>
-                    </Grid>
-                  )
+                data.caseSheet &&
+                data.caseSheet.length > 0 &&
+                !!data.caseSheet[1]!.symptoms &&
+                !!data.caseSheet[1]!.symptoms.length && (
+                  <Grid lg={6} sm={6} xs={5} key={2} item>
+                    <div className={classes.stepperHeading}>
+                      {(data.caseSheet[1]!.symptoms.length > 3
+                        ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                        : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
+                      ).join(', ')}
+                      {data.caseSheet[1]!.symptoms!.length > 3 && (
+                        <Typography gutterBottom variant="body1" component="span">
+                          {`, +${data.caseSheet[1]!.symptoms.length - 2}`}
+                        </Typography>
+                      )}
+                    </div>
+                  </Grid>
+                )
                 : data &&
-                  data.caseSheet &&
-                  data.caseSheet.length > 0 &&
-                  !!data.caseSheet[0]!.symptoms &&
-                  !!data.caseSheet[0]!.symptoms.length && (
-                    <Grid lg={6} sm={6} xs={5} key={2} item>
-                      <div className={classes.stepperHeading}>
-                        {(data.caseSheet[0]!.symptoms.length > 3
-                          ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                          : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
-                        ).join(', ')}
-                        {data.caseSheet[0]!.symptoms!.length > 3 && (
-                          <Typography gutterBottom variant="body1" component="span">
-                            {`, +${data.caseSheet[0]!.symptoms.length - 2}`}
-                          </Typography>
-                        )}
-                      </div>
-                    </Grid>
-                  )}
+                data.caseSheet &&
+                data.caseSheet.length > 0 &&
+                !!data.caseSheet[0]!.symptoms &&
+                !!data.caseSheet[0]!.symptoms.length && (
+                  <Grid lg={6} sm={6} xs={5} key={2} item>
+                    <div className={classes.stepperHeading}>
+                      {(data.caseSheet[0]!.symptoms.length > 3
+                        ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                        : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
+                      ).join(', ')}
+                      {data.caseSheet[0]!.symptoms!.length > 3 && (
+                        <Typography gutterBottom variant="body1" component="span">
+                          {`, +${data.caseSheet[0]!.symptoms.length - 2}`}
+                        </Typography>
+                      )}
+                    </div>
+                  </Grid>
+                )}
               {data &&
-              data.caseSheet &&
-              data.caseSheet.length > 1 &&
-              data.caseSheet[1] &&
-              data.caseSheet[1]!.doctorType !== 'JUNIOR' ? (
-                <Grid lg={1} sm={1} xs={3} key={3} item>
-                  <div>
-                    <IconButton aria-label="Video call" className={classes.videoIcon}>
-                      {data &&
-                      data.caseSheet &&
-                      data.caseSheet.length > 1 &&
-                      data.caseSheet[1]!.consultType === 'ONLINE' ? (
-                        <img src={require('images/ic_video.svg')} alt="" />
-                      ) : (
-                        <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                      )}
-                    </IconButton>
-                  </div>
-                </Grid>
-              ) : (
-                <Grid lg={1} sm={1} xs={3} key={3} item>
-                  <div>
-                    <IconButton aria-label="Video call" className={classes.videoIcon}>
-                      {data &&
-                      data.caseSheet &&
-                      data.caseSheet.length > 0 &&
-                      data.caseSheet[0] &&
-                      data.caseSheet[0]!.consultType === 'ONLINE' ? (
-                        <img src={require('images/ic_video.svg')} alt="" />
-                      ) : (
-                        <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                      )}
-                    </IconButton>
-                  </div>
-                </Grid>
-              )}
+                data.caseSheet &&
+                data.caseSheet.length > 1 &&
+                data.caseSheet[1] &&
+                data.caseSheet[1]!.doctorType !== 'JUNIOR' ? (
+                  <Grid lg={1} sm={1} xs={3} key={3} item>
+                    <div>
+                      <IconButton aria-label="Video call" className={classes.videoIcon}>
+                        {data &&
+                          data.caseSheet &&
+                          data.caseSheet.length > 1 &&
+                          data.caseSheet[1]!.consultType === 'ONLINE' ? (
+                            <img src={require('images/ic_video.svg')} alt="" />
+                          ) : (
+                            <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                          )}
+                      </IconButton>
+                    </div>
+                  </Grid>
+                ) : (
+                  <Grid lg={1} sm={1} xs={3} key={3} item>
+                    <div>
+                      <IconButton aria-label="Video call" className={classes.videoIcon}>
+                        {data &&
+                          data.caseSheet &&
+                          data.caseSheet.length > 0 &&
+                          data.caseSheet[0] &&
+                          data.caseSheet[0]!.consultType === 'ONLINE' ? (
+                            <img src={require('images/ic_video.svg')} alt="" />
+                          ) : (
+                            <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                          )}
+                      </IconButton>
+                    </div>
+                  </Grid>
+                )}
             </Grid>
           </Grid>
         </Link>
@@ -415,22 +416,22 @@ export const HealthVault: React.FC = () => {
                 >
                   <ListItemAvatar>
                     {item &&
-                    item.documentPath &&
-                    item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
-                      <Avatar
-                        alt={item.documentPath as string}
-                        src={item.documentPath as string}
-                        className={classes.bigAvatar}
-                      />
-                    ) : (
-                      <a href={item.documentPath as string} target="_blank">
+                      item.documentPath &&
+                      item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
                         <Avatar
                           alt={item.documentPath as string}
-                          src={require('images/pdf_thumbnail.png')}
+                          src={item.documentPath as string}
                           className={classes.bigAvatar}
                         />
-                      </a>
-                    )}
+                      ) : (
+                        <a href={item.documentPath as string} target="_blank">
+                          <Avatar
+                            alt={item.documentPath as string}
+                            src={require('images/pdf_thumbnail.png')}
+                            className={classes.bigAvatar}
+                          />
+                        </a>
+                      )}
                   </ListItemAvatar>
                   <div hidden>
                     {prismIdList && prismIdList.push(item && item.prismFileId && item.prismFileId)}{' '}
@@ -452,10 +453,10 @@ export const HealthVault: React.FC = () => {
                 </ListItem>
               ))
             ) : (
-              <span className={classes.nodataFound}>
-                {`${!loading && prismImageList && prismImageList.length === 0 && 'No data Found'}`}{' '}
-              </span>
-            )}
+                <span className={classes.nodataFound}>
+                  {`${!loading && prismImageList && prismImageList.length === 0 && 'No data Found'}`}{' '}
+                </span>
+              )}
             {!loading &&
               prismImageList &&
               prismImageList.length > 0 &&
