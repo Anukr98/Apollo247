@@ -670,6 +670,7 @@ export class ConsultQueueItem extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index('ConsultQueueItem_isActive')
   @Column()
   isActive: boolean;
 
