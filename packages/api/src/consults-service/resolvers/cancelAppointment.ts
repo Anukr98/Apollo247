@@ -7,6 +7,7 @@ import { AphError } from 'AphError';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { sendMail } from 'notifications-service/resolvers/email';
+import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEmailTemplate';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
@@ -163,7 +164,13 @@ const cancelAppointment: Resolver<
         facilityDets.state;
     }
   }
-  const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${patientName}<br>Appointment Date Time: ${apptDate}, ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
+  const mailContent = cancellationEmailTemplate({
+    Title: ApiConstants.CANCEL_APPOINTMENT_BODY,
+    PatientName: appointment.patientName,
+    AppointmentDateTime: apptDate + ',  ' + apptTime,
+    DoctorName: docName,
+    HospitalName: hospitalName,
+  });
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||

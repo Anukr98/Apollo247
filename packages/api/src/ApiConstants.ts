@@ -142,6 +142,7 @@ export enum ApiConstants {
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
   CANCEL_APPOINTMENT_SUBJECT = 'Appointment has been cancelled',
+  CANCEL_APPOINTMENT_BODY = 'Appointment booked on Apollo 247 has been cancelled.',
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 
   PRISM_TIMEOUT = 10000,
