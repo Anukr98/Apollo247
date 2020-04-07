@@ -93,7 +93,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+    // justifyContent: 'space-between',
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -467,7 +468,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
-        <TouchableOpacity
+        {/* <TouchableOpacity   Commented this for issue related Upload prescription directly placing order from Front end
           activeOpacity={1}
           onPress={() => {
             CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');
@@ -489,7 +490,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <Text style={theme.viewStyles.text('B', 12, '#fc9916', 1, 20)}>
             {'UPLOAD PRESCRIPTION'}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
