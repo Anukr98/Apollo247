@@ -957,7 +957,7 @@ export const JDConsultRoom: React.FC = () => {
       otherInstructions: otherInstructionsFinal,
       medicinePrescription: medicinePrescriptionFinal,
       id: caseSheetId,
-      status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
+      //status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
       lifeStyle: lifeStyle,
       familyHistory: familyHistory,
       dietAllergies: dietAllergies,
@@ -1017,8 +1017,8 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const endConsultAction = () => {
-    setSaving(true);
     // open confirmation popup after removing from queue
+    saveCasesheetAction(false, true);
     mutationRemoveConsult()
       .then(() => {
         const logObject = {
@@ -1029,10 +1029,10 @@ export const JDConsultRoom: React.FC = () => {
           }),
         };
         sessionClient.notify(JSON.stringify(logObject));
-        saveCasesheetAction(false, true);
       })
       .catch((e: ApolloError) => {
-        setSaving(false);
+        //setSaving(false);
+        alert('Something went wrong, plz try again later.');
         const logObject = {
           api: 'RemoveFromConsultQueue',
           inputParam: JSON.stringify({
@@ -1049,7 +1049,6 @@ export const JDConsultRoom: React.FC = () => {
             : '',
           error: JSON.stringify(e),
         };
-
         sessionClient.notify(JSON.stringify(logObject));
       });
   };
