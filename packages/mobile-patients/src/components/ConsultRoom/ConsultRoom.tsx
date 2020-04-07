@@ -928,7 +928,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             borderRadius: 10,
           }}
         >
-          <Text style={theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20)}>{heading}</Text>
+          <Text
+            style={{
+              flex: 1,
+              paddingVertical: 10,
+              paddingRight: 10,
+              ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
+            }}
+          >
+            {heading}
+          </Text>
           <Ambulance style={{ height: 41, width: 41 }} />
         </View>
       </TouchableOpacity>
