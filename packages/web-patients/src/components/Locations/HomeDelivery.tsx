@@ -322,9 +322,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
-          <div className={classes.backArrow}>
+          {/* <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
-          </div>
+          </div> */}
           Add New Address
         </AphDialogTitle>
         <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
@@ -333,9 +333,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
-          <div className={classes.backArrow}>
+          {/* <div className={classes.backArrow}>
             <img src={require('images/ic_back.svg')} alt="" />
-          </div>
+          </div> */}
           Select Delivery Address
         </AphDialogTitle>
         <ViewAllAddress

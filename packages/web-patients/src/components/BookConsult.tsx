@@ -74,6 +74,7 @@ const TabContainer: React.FC = (props) => {
 interface DoctorCardProps {
   doctorId: string;
   setIsPopoverOpen: (popover: boolean) => void;
+  doctorAvailableIn: number;
 }
 
 export const BookConsult: React.FC<DoctorCardProps> = (props) => {
@@ -161,6 +162,7 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
               doctorDetails={doctorDetails}
               onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
               isRescheduleConsult={false}
+              doctorAvailableIn={props.doctorAvailableIn}
             />
           </TabContainer>
         )}
@@ -168,7 +170,10 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
         {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
           <TabContainer>
             <LocationProvider>
-              <VisitClinic doctorDetails={doctorDetails} />
+              <VisitClinic
+                doctorDetails={doctorDetails}
+                doctorAvailableIn={props.doctorAvailableIn}
+              />
             </LocationProvider>
           </TabContainer>
         )}

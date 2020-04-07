@@ -179,9 +179,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       return 0;
     }
   };
+  const differenceInMinutes = getDiffInMinutes();
   const availabilityMarkup = () => {
     if (nextAvailability && nextAvailability.length > 0) {
-      const differenceInMinutes = getDiffInMinutes();
       if (differenceInMinutes === 0) {
         return (
           <div className={`${classes.availability} ${classes.availableNow}`}>AVAILABLE NOW</div>
@@ -356,7 +356,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         disableBackdropClick
         disableEscapeKeyDown
       >
-        <BookConsult doctorId={doctorDetails.id} setIsPopoverOpen={setIsPopoverOpen} />
+        <BookConsult
+          doctorId={doctorDetails.id}
+          doctorAvailableIn={differenceInMinutes}
+          setIsPopoverOpen={setIsPopoverOpen}
+        />
       </Modal>
     </div>
   );

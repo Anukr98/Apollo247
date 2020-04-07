@@ -4,10 +4,6 @@ import React, { useRef, useEffect } from 'react';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
-import {
-  saveOrderCancelStatus,
-  saveOrderCancelStatusVariables,
-} from 'graphql/types/saveOrderCancelStatus';
 import { SAVE_ORDER_CANCEL_STATUS } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
 
@@ -59,6 +55,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     dialogContent: {
       paddingTop: 10,
+    },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
     },
     dialogActions: {
       padding: 20,
@@ -119,7 +119,6 @@ type CancelOrderProps = {
 
 export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
   const classes = useStyles({});
-  const [name] = React.useState(1);
   const mascotRef = useRef(null);
 
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
@@ -179,6 +178,8 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
       </div>
       <div className={classes.dialogActions}>
         <AphButton
+          disabled={selectedReason.length === 0}
+          className={selectedReason.length === 0 ? classes.buttonDisable : ''}
           onClick={() => {
             setShowLoader(true);
             cancelOrder({

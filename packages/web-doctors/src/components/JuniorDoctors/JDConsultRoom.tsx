@@ -862,7 +862,8 @@ export const JDConsultRoom: React.FC = () => {
     // trigger auto close sheet action and pass it to conext for sending out chat message.
     setAutoCloseCaseSheet(true);
     // end consult automatically.
-    endConsultAutoAction();
+    //endConsultAutoAction();
+    saveCasesheetAction(true, true);
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
@@ -986,10 +987,16 @@ export const JDConsultRoom: React.FC = () => {
           appointmentId: appointmentId,
         };
         sessionClient.notify(JSON.stringify(logObject));
-        setSaving(false);
-        if (!flag) {
-          endCallNotificationAction(false);
-          setIsDialogOpen(true);
+        if (!flag && endConsult) {
+          removeConsultActionMethod(false);
+        } else if (flag && endConsult) {
+          removeConsultActionMethod(true);
+        } else {
+          setSaving(false);
+          if (!flag) {
+            //endCallNotificationAction(false);
+            setIsDialogOpen(true);
+          }
         }
       })
       .catch((e) => {
@@ -1015,12 +1022,18 @@ export const JDConsultRoom: React.FC = () => {
         setSaving(false);
       });
   };
-
-  const endConsultAction = () => {
-    setSaving(true);
-    // open confirmation popup after removing from queue
+  const removeConsultActionMethod = (isAutoEndConsult: boolean) => {
     mutationRemoveConsult()
       .then(() => {
+        setSaving(false);
+        endCallNotificationAction(false);
+        if (isAutoEndConsult) {
+          if (document.getElementById('homeId')) {
+            document.getElementById('homeId')!.click();
+          }
+        } else {
+          setIsDialogOpen(true);
+        }
         const logObject = {
           api: 'RemoveFromConsultQueue',
           appointmentId: appointmentId,
@@ -1029,7 +1042,6 @@ export const JDConsultRoom: React.FC = () => {
           }),
         };
         sessionClient.notify(JSON.stringify(logObject));
-        saveCasesheetAction(false, true);
       })
       .catch((e: ApolloError) => {
         setSaving(false);
@@ -1053,38 +1065,10 @@ export const JDConsultRoom: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
       });
   };
-
-  // this will trigger end consult automatically after one minute
-  const endConsultAutoAction = () => {
-    endCallNotificationAction(false);
-    saveCasesheetAction(true, true);
-    mutationRemoveConsult()
-      .then(() => {
-        if (document.getElementById('homeId')) {
-          document.getElementById('homeId')!.click();
-        }
-      })
-      .catch((e: ApolloError) => {
-        const logObject = {
-          api: 'RemoveFromConsultQueue',
-          inputParam: JSON.stringify({
-            id: parseInt(queueId, 10),
-          }),
-          appointmentId: appointmentId,
-          doctorId: currentDoctor!.id,
-          doctorDisplayName: currentDoctor!.displayName,
-          patientId: patientId,
-          patientName: getPatientName(),
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: appointmentDateTime
-            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
-            : '',
-          error: JSON.stringify(e),
-        };
-
-        sessionClient.notify(JSON.stringify(logObject));
-      });
+  const endConsultAction = () => {
+    saveCasesheetAction(false, true);
   };
+
   const getPatientName = () => {
     const patientName =
       casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +

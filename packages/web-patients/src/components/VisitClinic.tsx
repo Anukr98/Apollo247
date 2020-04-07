@@ -38,6 +38,8 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
+import { ModeComment } from '@material-ui/icons';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -199,6 +201,7 @@ const getYyMmDd = (ddmmyyyy: string) => {
 
 interface VisitClinicProps {
   doctorDetails: DoctorDetails;
+  doctorAvailableIn?: number;
 }
 
 export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
@@ -243,9 +246,14 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
-    dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
+    dateSelected === ''
+      ? moment(doctorAvailableTime).format('YYYY-MM-DD')
+      : getYyMmDd(dateSelected);
 
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
