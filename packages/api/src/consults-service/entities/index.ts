@@ -1149,6 +1149,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   physicalConsultationFees: number;
 
+  @Column({default:0})
+  totalResheduleCount:number;
+
   @Column()
   createdDate: Date;
 
