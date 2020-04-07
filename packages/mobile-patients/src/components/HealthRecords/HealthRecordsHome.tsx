@@ -468,7 +468,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
-        {/* <TouchableOpacity   Commented this for issue related Upload prescription directly placing order from Front end
+        {/* <TouchableOpacity JIRA Ticket APP-982
           activeOpacity={1}
           onPress={() => {
             CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record');

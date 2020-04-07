@@ -1217,9 +1217,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
+    const isAppointmentCompleted: STATUS = appointmentData.status;
+    // console.log('isAppointmentCompleted', isAppointmentCompleted === STATUS.COMPLETED);
+
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      withPresence: isAppointmentCompleted === STATUS.COMPLETED ? false : true,
     });
 
     getHistory(0);
@@ -1471,11 +1474,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
-    if (Platform.OS === 'ios') {
-      ExportDeviceToken.getPushNotificationToken(handlePushNotification);
-    } else {
-      handlePushNotification('');
-    }
+    // if (Platform.OS === 'ios') {
+    //   ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    // } else {
+    //   handlePushNotification('');
+    // }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
