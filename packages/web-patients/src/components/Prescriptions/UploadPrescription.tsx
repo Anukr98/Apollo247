@@ -217,7 +217,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                             const currentUrl = window.location.href;
                             if (currentUrl.endsWith('/medicines')) {
                               setTimeout(() => {
-                                window.location.href = clientRoutes.medicinesCart();
+                                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
                               }, 3000);
                             }
                             props.closeDialog();
