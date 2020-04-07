@@ -197,7 +197,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '11px 10px',
       color: '#01475b',
       opacity: 0.6,
-      minWidth: '50%',
+      minWidth: '100%',
       textTransform: 'none',
     },
     tabSelected: {
@@ -872,6 +872,7 @@ export const MedicineCart: React.FC = (props) => {
                     title={'Choose home delivery'}
                   />
                   <Tab
+                    disabled
                     classes={{
                       root: classes.tabRoot,
                       selected: classes.tabSelected,
