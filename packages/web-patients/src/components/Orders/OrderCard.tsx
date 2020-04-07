@@ -343,6 +343,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             min={0}
             max={360}
             valueLabelDisplay="off"
+            steps={null}
           />
         );
       case 'Order Delivered':
@@ -354,6 +355,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             min={0}
             max={360}
             valueLabelDisplay="off"
+            steps={null}
           />
         );
       case 'Return Accepted' || 'Order Cancelled':
@@ -365,6 +367,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             min={0}
             max={360}
             valueLabelDisplay="off"
+            steps={null}
           />
         );
 
@@ -377,6 +380,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             min={0}
             max={360}
             valueLabelDisplay="off"
+            steps={null}
           />
         );
       case 'Order Initiated':
@@ -388,6 +392,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             min={0}
             max={360}
             valueLabelDisplay="off"
+            steps={null}
           />
         );
       default:
