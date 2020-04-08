@@ -147,7 +147,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     orderDateTime: Date,
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
-    return this.update(id, { orderAutoId, orderDateTime, currentStatus });
+    return this.update(id, { orderDateTime, currentStatus });
   }
 
   getMedicineOrdersListByCreateddate(patient: String, startDate: Date, endDate: Date) {
