@@ -142,6 +142,12 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   };
   type FormattedMedicineOrders = { [index: string]: MedicineOrderData };
 
+  type LineItem = {
+    name: string;
+    sku: string;
+    orderautoid: number;
+  };
+
   const formattedOrdersObject: FormattedMedicineOrders = {};
 
   medicineOrdersList.forEach((order) => {
@@ -159,11 +165,19 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
         prescriptionUrl: order.medicineOrders_prescriptionImageUrl,
       };
     } else {
-      formattedOrdersObject[order.medicineOrders_id].lineItems.push({
-        name: order.medicineOrderLineItems_medicineName,
-        sku: order.medicineOrderLineItems_medicineSKU,
-        orderautoid: order.medicineOrderLineItems_medicineOrdersOrderAutoId,
+      let push = true;
+      formattedOrdersObject[order.medicineOrders_id].lineItems.map((lineItem: LineItem) => {
+        if (lineItem.orderautoid == order.medicineOrderLineItems_medicineOrdersOrderAutoId) {
+          push = false;
+        }
       });
+      if (push) {
+        formattedOrdersObject[order.medicineOrders_id].lineItems.push({
+          name: order.medicineOrderLineItems_medicineName,
+          sku: order.medicineOrderLineItems_medicineSKU,
+          orderautoid: order.medicineOrderLineItems_medicineOrdersOrderAutoId,
+        });
+      }
     }
   });
 
