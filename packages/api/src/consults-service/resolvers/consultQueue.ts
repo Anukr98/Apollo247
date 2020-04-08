@@ -100,7 +100,10 @@ const checkAuth = async (docRepo: DoctorRepository, mobileNumber: string, doctor
 };
 
 const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceContext) => {
-  const limit = parseInt(process.env.INACTIVE_CONSULT_QUEUE_LIMT, 10);
+  const limit = parseInt(
+    process.env.INACTIVE_CONSULT_QUEUE_LIMT ? process.env.INACTIVE_CONSULT_QUEUE_LIMT : '1',
+    10
+  );
   const { cqRepo, apptRepo, patRepo } = getRepos(context);
   const activeQueueItems = await cqRepo.find({
     where: { doctorId, isActive: true },
