@@ -1280,7 +1280,7 @@ export const sendBrowserNotitication = (id: string, message: string) => {
   });
   pubnub.subscribe({
     channels: [id],
-    withPresence: true,
+    withPresence: false,
   });
   pubnub.publish(
     {
@@ -1288,15 +1288,17 @@ export const sendBrowserNotitication = (id: string, message: string) => {
       message: {
         id: id,
         message: message,
-        isTyping: true,
         messageDate: new Date(),
         sentBy: ApiConstants.SENT_BY_API,
       },
-      storeInHistory: true,
+      storeInHistory: false,
       sendByPost: true,
     },
     (status, response) => {
       console.log('status,response==', status, response);
+      pubnub.unsubscribe({
+        channels: [id],
+      });
     }
   );
 };
