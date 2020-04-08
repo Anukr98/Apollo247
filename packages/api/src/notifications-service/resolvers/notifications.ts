@@ -1280,7 +1280,6 @@ export const sendBrowserNotitication = (id: string, message: string) => {
   });
   pubnub.subscribe({
     channels: [id],
-    withPresence: false,
   });
   pubnub.publish(
     {
