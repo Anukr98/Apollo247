@@ -465,7 +465,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      //withPresence: true,
     });
 
     getHistory(0);
