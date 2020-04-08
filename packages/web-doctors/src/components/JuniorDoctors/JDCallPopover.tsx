@@ -1044,7 +1044,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      //withPresence: true,
     });
     pubnub.addListener({
       status: (statusEvent) => {},
