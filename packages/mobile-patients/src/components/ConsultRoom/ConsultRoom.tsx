@@ -84,6 +84,7 @@ import WebEngage from 'react-native-webengage';
 import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const { Vitals } = NativeModules;
 
@@ -903,13 +904,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderEmergencyCallBanner = () => {
+    const heading = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT;
+    const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
     return (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
           {
             postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
-            Linking.openURL('tel:08047192606');
+            Linking.openURL(`tel:${phoneNumber}`);
           }
         }}
       >
@@ -925,8 +928,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             borderRadius: 10,
           }}
         >
-          <Text style={theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20)}>
-            {string.common.emergencyBannerText}
+          <Text
+            style={{
+              flex: 1,
+              paddingVertical: 10,
+              paddingRight: 10,
+              ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
+            }}
+          >
+            {heading}
           </Text>
           <Ambulance style={{ height: 41, width: 41 }} />
         </View>

@@ -1217,9 +1217,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
 
+    const isAppointmentCompleted: STATUS = appointmentData.status;
+    // console.log('isAppointmentCompleted', isAppointmentCompleted === STATUS.COMPLETED);
+
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      withPresence: isAppointmentCompleted === STATUS.COMPLETED ? false : true,
     });
 
     getHistory(0);
@@ -1252,11 +1255,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       presence: (presenceEvent) => {
         if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
-        // console.log(
-        //   'presenceEvent',
-        //   presenceEvent,
-        //   +' ' + APPOINTMENT_TYPE.PHYSICAL + ' ' + appointmentData.appointmentType
-        // );
+        // console.log('presenceEvent', presenceEvent);
 
         dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -1289,22 +1288,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 APIForUpdateAppointmentData(true);
               }
             } else {
-              if (diffInMins < 15) {
-                if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-                  // console.log('abondmentStarted -------> ', abondmentStarted);
+              if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
+                // console.log('abondmentStarted -------> ', abondmentStarted);
 
-                  if (abondmentStarted == false) {
+                if (abondmentStarted == false) {
+                  if (startConsultResult.length > 0) {
                     // console.log('callAbondmentMethod', abondmentStarted);
-                    if (startConsultResult.length > 0) {
-                      APIForUpdateAppointmentData(false);
-                      abondmentStarted = true;
-                    } else {
+                    abondmentStarted = true;
+                    APIForUpdateAppointmentData(false);
+                  } else {
+                    if (diffInMins < 15) {
+                      // console.log('doctorNoshow', abondmentStarted);
                       if (appointmentData.appointmentType !== APPOINTMENT_TYPE.PHYSICAL) {
                         callAbondmentMethod(false);
                       }
                     }
-                    eventsAfterConnectionDestroyed();
                   }
+                  eventsAfterConnectionDestroyed();
                 }
               }
             }
@@ -1342,7 +1342,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
-  const [callAbundantCallTime, setCallAbundantCallTime] = useState<number>(620);
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
@@ -1399,22 +1398,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     try {
       setTransferData(appointmentData);
       callAbandonmentTimer = setInterval(() => {
-        timer = timer - 1;
-        callAbandonmentStoppedTimer = timer;
-        setCallAbundantCallTime(timer);
+        try {
+          timer = timer - 1;
+          callAbandonmentStoppedTimer = timer;
 
-        // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
+          // console.log('callAbandonmentStoppedTimer', callAbandonmentStoppedTimer);
 
-        if (timer < 1) {
-          // console.log('call Abundant', appointmentData);
-          endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
+          if (timer < 1) {
+            // console.log('call Abundant', appointmentData);
+            endCallAppointmentSessionAPI(isCallAbandment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
 
-          if (isCallAbandment) {
-            setIsDoctorNoShow(true);
-          } else {
-            NextAvailableSlot(appointmentData, 'Transfer', true);
+            if (isCallAbandment) {
+              setIsDoctorNoShow(true);
+            } else {
+              NextAvailableSlot(appointmentData, 'Transfer', true);
+            }
+            callAbandonmentStoppedTimer = 620;
+            callAbandonmentTimer && clearInterval(callAbandonmentTimer);
           }
-          setCallAbundantCallTime(620);
+        } catch (error) {
+          // console.log('app crashed', error);
+          CommonBugFender('ChatRoom_startCallAbondmentTimer_crash', error);
           callAbandonmentStoppedTimer = 620;
           callAbandonmentTimer && clearInterval(callAbandonmentTimer);
         }
@@ -1428,7 +1432,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const stopCallAbondmentTimer = () => {
     console.log('stopCallAbondmentTimer', callAbandonmentTimer);
     callAbandonmentTimer && clearInterval(callAbandonmentTimer);
-    setCallAbundantCallTime(620);
     callAbandonmentStoppedTimer = 620;
     abondmentStarted = false;
   };
@@ -1471,11 +1474,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
-    if (Platform.OS === 'ios') {
-      ExportDeviceToken.getPushNotificationToken(handlePushNotification);
-    } else {
-      handlePushNotification('');
-    }
+    // if (Platform.OS === 'ios') {
+    //   ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    // } else {
+    //   handlePushNotification('');
+    // }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
