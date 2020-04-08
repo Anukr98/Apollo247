@@ -395,7 +395,7 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         TRANSFER_INITIATED_TYPE.PATIENT
       );
-      const totalResheduleCount= await dashboardRepo.getTotalRescheduleCount(
+      const totalRescheduleCount= await dashboardRepo.getTotalRescheduleCount(
         doctor.id,
         args.summaryDate
       )
@@ -462,7 +462,7 @@ const updateSdSummary: Resolver<
         awayHours,
         onlineConsultationFees: Number(doctor.onlineConsultationFees),
         physicalConsultationFees: Number(doctor.physicalConsultationFees),
-        totalResheduleCount,
+        totalRescheduleCount,
         isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
