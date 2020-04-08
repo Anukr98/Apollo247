@@ -216,33 +216,91 @@ app.get('/invokePhysicalApptReminder', (req, res) => {
       console.log('error', error);
     });
 });
+app.get('/updateSdSummary', (req,res) => {
+  const currentDate = format(new Date(), 'yyyy-MM-dd');
+  const updateSdSummaryRequestJSON = {
+    query: `mutation{
+      updateSdSummary(summaryDate:"${currentDate}",doctorId:"0",docLimit:${req.query.docLimit},docOffset:${req.query.docOffset}){
+      doctorId
+      doctorName
+      appointmentDateTime
+      totalConsultation
+      }
+    }`,
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
+    .post(process.env.API_URL, updateSdSummaryRequestJSON)
+    .then((response) => {
+      console.log(response);
+      console.log(response.data.data.updateSdSummary, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateSdSummary Response\n' +
+        response.data.data.updateSdSummary +
+        '\n-------------------\n';
+      //fs.appendFile(fileName, content, function(err) {
+        // if (err) throw err;
+        // console.log('Updated!');
+      //});
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  });
+  app.get('/updateJdSummary', (req,res) => {
+    const currentDate = format(new Date(), 'yyyy-MM-dd');
+    const updateJdSummaryRequestJSON = {
+      query: `mutation{
+        updateJdSummary(summaryDate:"${currentDate}",doctorId:"0",docLimit:${req.query.docLimit},docOffset:${req.query.docOffset}){
+        doctorId
+        doctorName
+        appointmentDateTime
+        totalConsultation
+        }
+      }`,
+    };
+    axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+    axios
+    .post(process.env.API_URL, updateJdSummaryRequestJSON)
+    .then((response) => {
+      console.log(response);
+      console.log(response.data.data.updateJdSummary, 'Summary response is....');
+      const fileName =
+        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        '\nupdateJdSummary Response\n' +
+        response.data.data.updateJdSummary +
+        '\n-------------------\n';
+      // fs.appendFile(fileName, content, function(err) {
+      //   if (err) throw err;
+      //   console.log('Updated!');
+      // });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+  });
 
-app.get('/invokeDashboardSummaries', (req, res) => {
+app.get('/invokeDashboardSummaries', (req,res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
   const updateDoctorFeeSummaryRequestJSON = {
     query: `mutation{
       updateDoctorFeeSummary(summaryDate:"${currentDate}",doctorId:"0"){
         status
-      }
-    }`,
-  };
-  const updateSdSummaryRequestJSON = {
-    query: `mutation{
-      updateSdSummary(summaryDate:"${currentDate}",doctorId:"0"){
-        doctorId
-        doctorName
-        appointmentDateTime
-        totalConsultation
-      }
-    }`,
-  };
-  const updateJdSummaryRequestJSON = {
-    query: `mutation{
-      updateJdSummary(summaryDate:"${currentDate}",doctorId:"0"){
-        doctorId
-        doctorName
-        appointmentDateTime
-        totalConsultation
       }
     }`,
   };
@@ -299,52 +357,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
     .catch((error) => {
       console.log('error', error);
     });
-
-  //updateSdSummary api call
-  axios
-    .post(process.env.API_URL, updateSdSummaryRequestJSON)
-    .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateSdSummary, 'Summary response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        '\nupdateSdSummary Response\n' +
-        response.data.data.updateSdSummary +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-
   //updateJdSummary api call
-  axios
-    .post(process.env.API_URL, updateJdSummaryRequestJSON)
-    .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateJdSummary, 'Summary response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        '\nupdateJdSummary Response\n' +
-        response.data.data.updateJdSummary +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
 
   //updatePhrDocSummary api call
   axios

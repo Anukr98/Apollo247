@@ -112,7 +112,7 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
   const inActiveQueueItems = await cqRepo.find({
     where: { doctorId, isActive: false },
     take: limit,
-    order: { id: 'ASC' },
+    order: { id: 'DESC' },
   });
   const dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
   const consultQueue = await Promise.all(

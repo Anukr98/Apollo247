@@ -306,6 +306,22 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     }
   }
 
+  async getTotalRescheduleCount(doctorId:string,appointmentDate:Date){
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const startDate = new Date(inputStartDate + 'T18:30');
+    return Appointment.createQueryBuilder('appointment')
+    .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)',{
+      fromDate:startDate,
+      toDate:endDate,
+     }).andWhere('(appointment."rescheduleCount">0 OR appointment."rescheduleCountByDoctor">0)')
+       .andWhere('appointment."doctorId" = :doctorId', { doctorId:doctorId })
+       .getCount();
+        
+  }
+
   async getDoctorSlots(doctorId: string, appointmentDate: Date, doctorsDb: Connection) {
     const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     const weekDay = format(appointmentDate, 'EEEE').toUpperCase();
@@ -427,7 +443,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     }
   }
-  async getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
+  async   getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
     const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
     const appointmentList = await Appointment.find({
