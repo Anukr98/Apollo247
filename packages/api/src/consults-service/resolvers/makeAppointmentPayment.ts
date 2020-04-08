@@ -21,6 +21,7 @@ import { addMilliseconds, format } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import _ from 'lodash';
 import { DoctorType } from 'doctors-service/entities';
+import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -216,26 +217,8 @@ const sendPatientAcknowledgements = async (
     displayHospitalCity = hospitalCity;
   }
 
-  const mailTemplate = _.template(`
-  <html>
-  <body>  
-  <ol>
-  <p>New Appointment has been booked on Apollo 247 app with the following details </p>
-  <ul>
-  <li>Appointment No : <%- displayId %></li>
-  <li>Patient Name : <%- firstName %></li>
-  <li>Mobile Number : <%- mobileNumber %></li>
-  <li>Doctor Name : <%- docfirstName +' '+ doclastName %></li>
-  <li>Doctor Location : <%- hospitalcity %></li>
-  <li>Appointment Date : <%- apptDate %></li>
-  <li>Appointment Slot : <%- getHours +':'+ getMinutes %></li>
-  <li>Mode of Consult : <%- appointmentType %> </li>
-  </ul>
-  </ol>
-  </body>
-  </html>
-  `);
-  const mailContent = mailTemplate({
+  const apptTimeFormat = format(istDateTime, 'hh:mm aa');
+  const mailContent = appointmentPaymentEmailTemplate({
     displayId: appointmentData.displayId.toString(),
     firstName: patientDetails.firstName,
     mobileNumber: patientDetails.mobileNumber,
@@ -244,8 +227,7 @@ const sendPatientAcknowledgements = async (
     hospitalcity: displayHospitalCity,
     appointmentType: appointmentData.appointmentType,
     apptDate,
-    getHours,
-    getMinutes,
+    apptTimeFormat,
   });
 
   subjectLine = subjectLine.replace('{1}', apptDate);
