@@ -1150,7 +1150,7 @@ export class SdDashboardSummary extends BaseEntity {
   physicalConsultationFees: number;
 
   @Column({default:0})
-  totalResheduleCount:number;
+  totalRescheduleCount:number;
 
   @Column()
   createdDate: Date;
