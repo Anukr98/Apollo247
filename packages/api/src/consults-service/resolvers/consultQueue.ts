@@ -111,6 +111,7 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
     take: limit,
     order: { id: 'DESC' },
   });
+  inActiveQueueItems.reverse();
   const dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
   const consultQueue = await Promise.all(
     dbConsultQueue.map(async (cq) => {
