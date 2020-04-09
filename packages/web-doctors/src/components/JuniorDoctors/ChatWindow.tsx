@@ -471,7 +471,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => { },
+      status: (statusEvent) => {},
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
@@ -547,7 +547,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               .then((data: any) => {
                 item.url = (data && data.urls[0]) || item.url;
               })
-              .catch((e: any) => { });
+              .catch((e: any) => {});
             newmessage[index] = item;
           } else {
             newmessage.push(element.entry);
@@ -608,8 +608,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
           appointmentDateTime: appointmentInfo!.appointmentDateTime
             ? moment(new Date(appointmentInfo!.appointmentDateTime)).format(
-              'MMMM DD YYYY h:mm:ss a'
-            )
+                'MMMM DD YYYY h:mm:ss a'
+              )
             : '',
           error: JSON.stringify(error),
         };
@@ -701,63 +701,63 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-                <div
-                  className={`${classes.chatBubble} ${
-                    rowData.message === documentUpload ? classes.chatImgBubble : ''
-                    }`}
-                >
-                  {leftComponent == 1 && !rowData.duration && (
-                    <div className={classes.patientAvatar}>
-                      <Avatar
-                        className={classes.avatar}
-                        src={
-                          patientDetails && patientDetails.photoUrl
-                            ? patientDetails!.photoUrl
-                            : require('images/no_photo_icon_round.svg')
-                        }
-                        alt=""
-                      />
-                    </div>
-                  )}
-                  {rowData.message === documentUpload ? (
-                    <div
-                      className={classes.imageUpload}
-                      onClick={() => {
-                        if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
-                          setModalOpen(rowData.fileType === 'pdf' ? false : true);
-                          setImgPrevUrl(rowData.url);
-                        }
-                      }}
-                    >
-                      {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
-                        <>
-                          {rowData.fileType === 'pdf' ? (
-                            <a href={rowData.url} target="_blank">
-                              <img src={require('images/pdf_thumbnail.png')} />
-                            </a>
-                          ) : (
-                              <img src={rowData.url} alt={rowData.url} />
-                            )}
-                        </>
-                      ) : (
-                          <a href={rowData.url}>
-                            <img src={require('images/pdf_thumbnail.png')} />
-                          </a>
-                        )}
-                      {rowData.messageDate && (
-                        <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
-                      )}
-                    </div>
-                  ) : (
-                      <>
-                        <span>{getAutomatedMessage(rowData)}</span>
-                        {rowData.messageDate && (
-                          <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
-                        )}
-                      </>
-                    )}
+            <div
+              className={`${classes.chatBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
+              {leftComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
+                    alt=""
+                  />
                 </div>
               )}
+              {rowData.message === documentUpload ? (
+                <div
+                  className={classes.imageUpload}
+                  onClick={() => {
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(rowData.fileType === 'pdf' ? false : true);
+                      setImgPrevUrl(rowData.url);
+                    }
+                  }}
+                >
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <>
+                      {rowData.fileType === 'pdf' ? (
+                        <a href={rowData.url} target="_blank">
+                          <img src={require('images/pdf_thumbnail.png')} />
+                        </a>
+                      ) : (
+                        <img src={rowData.url} alt={rowData.url} />
+                      )}
+                    </>
+                  ) : (
+                    <a href={rowData.url}>
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <span>{getAutomatedMessage(rowData)}</span>
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       );
     }
@@ -813,59 +813,59 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               )}
             </div>
           ) : (
-                <div
-                  className={`${classes.chatBubble} ${classes.patientBubble} ${
-                    rowData.message === documentUpload ? classes.chatImgBubble : ''
-                    }`}
-                >
-                  {rightComponent == 1 && !rowData.duration && (
-                    <div className={classes.patientAvatar}>
-                      <Avatar
-                        className={classes.avatar}
-                        src={
-                          patientDetails && patientDetails.photoUrl
-                            ? patientDetails!.photoUrl
-                            : require('images/no_photo_icon_round.svg')
-                        }
-                        alt=""
-                      />
-                    </div>
-                  )}
-                  {rowData.message === documentUpload ? (
-                    <div
-                      onClick={() => {
-                        if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
-                          setModalOpen(true);
-                          setImgPrevUrl(rowData.url);
-                        }
-                      }}
-                      className={classes.imageUpload}
-                    >
-                      {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
-                        <img src={rowData.url} alt={rowData.url} />
-                      ) : (
-                          <a href={rowData.url} target="_blank">
-                            <img src={require('images/pdf_thumbnail.png')} />
-                          </a>
-                        )}
-                      {rowData.messageDate && (
-                        <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
-                      )}
-                    </div>
-                  ) : (
-                      <>
-                        {rowData.type === 'PHR' ? (
-                          <pre className={classes.phrMsg}>{getAutomatedMessage(rowData)}</pre>
-                        ) : (
-                            <span>{getAutomatedMessage(rowData)}</span>
-                          )}
-                        {rowData.messageDate && (
-                          <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
-                        )}
-                      </>
-                    )}
+            <div
+              className={`${classes.chatBubble} ${classes.patientBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
+              {rightComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
+                    alt=""
+                  />
                 </div>
               )}
+              {rowData.message === documentUpload ? (
+                <div
+                  onClick={() => {
+                    if (rowData.url.substr(-4).toLowerCase() !== '.pdf') {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }
+                  }}
+                  className={classes.imageUpload}
+                >
+                  {rowData.url.substr(-4).toLowerCase() !== '.pdf' ? (
+                    <img src={rowData.url} alt={rowData.url} />
+                  ) : (
+                    <a href={rowData.url} target="_blank">
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  )}
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {rowData.type === 'PHR' ? (
+                    <pre className={classes.phrMsg}>{getAutomatedMessage(rowData)}</pre>
+                  ) : (
+                    <span>{getAutomatedMessage(rowData)}</span>
+                  )}
+                  {rowData.messageDate && (
+                    <div className={classes.timeStamp}>{convertChatTime(rowData.messageDate)}</div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       );
     }
@@ -877,8 +877,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-      })
+          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+        })
       : '';
 
   const toggelChatVideo = () => {
@@ -921,7 +921,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.JUNIOR,
@@ -1030,11 +1030,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                           aphBlob =
                             fileExtension.toLowerCase() === 'pdf'
                               ? await client.uploadPdfBrowserFile({ file }).catch((error: any) => {
-                                throw error;
-                              })
+                                  throw error;
+                                })
                               : await client.uploadBrowserFile({ file }).catch((error: any) => {
-                                throw error;
-                              });
+                                  throw error;
+                                });
                           const url = client.getBlobUrl(aphBlob && aphBlob.name);
                           const uploadObject = {
                             id: doctorId,
