@@ -361,6 +361,7 @@ app.get('/updateSdSummary', (req,res) => {
       }
     }`,
   };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
   //updatePhrDocSummary api call
   axios
     .post(process.env.API_URL, updatePhrDocSummaryRequestJSON)
