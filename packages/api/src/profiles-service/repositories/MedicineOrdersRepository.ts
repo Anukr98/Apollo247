@@ -147,6 +147,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     orderDateTime: Date,
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
+    console.log('ccccccccccccccccccc', id, orderAutoId, orderDateTime, currentStatus);
     return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
   }
 
