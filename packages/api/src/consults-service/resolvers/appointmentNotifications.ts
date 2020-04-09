@@ -26,6 +26,7 @@ import {
   TRANSFER_INITIATED_TYPE,
   ConsultQueueItem,
   CaseSheet,
+  Appointment,
 } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
@@ -68,35 +69,71 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
   { consultsDb, doctorsDb, patientsDb }
 ) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const ConsultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+
   const currentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
   const futureTime = addMinutes(new Date(currentDate), 10);
   const appointments = await apptRepo.getAppointmentsByDate(futureTime);
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-  appointments.forEach(async (appointment) => {
-    const caseSheetExist = await caseSheetRepo.getJDCaseSheetByAppointmentId(appointment.id);
-    if (!caseSheetExist) {
-      await apptRepo.updateJdQuestionStatus(appointment.id, true);
-      const consultQueueAttrs: Partial<ConsultQueueItem> = {
-        appointmentId: appointment.id,
-        createdDate: new Date(),
-        doctorId: process.env.VIRTUAL_JD_ID,
-        isActive: false,
-      };
-      await cqRepo.saveOrUpdateConsultQueueItem(consultQueueAttrs);
-      const casesheetAttrs: Partial<CaseSheet> = {
-        createdDate: new Date(),
-        consultType: APPOINTMENT_TYPE.ONLINE,
-        createdDoctorId: process.env.VIRTUAL_JD_ID,
-        doctorType: DoctorType.JUNIOR,
-        doctorId: appointment.doctorId,
-        patientId: appointment.patientId,
-        appointment: appointment,
-        status: CASESHEET_STATUS.COMPLETED,
-      };
-      await caseSheetRepo.savecaseSheet(casesheetAttrs);
+  const appointmentIds = appointments.map((appointment) => appointment.id);
+
+  if (appointmentIds.length) {
+    const caseSheets = await caseSheetRepo.getJDCaseSheetsByAppointmentId(appointmentIds);
+    const attendedAppointmentIds = caseSheets.map((casesheet) => casesheet.appointment.id);
+    const unAttendedAppointmentIds = appointmentIds.filter(
+      (id) => !attendedAppointmentIds.includes(id)
+    );
+
+    if (unAttendedAppointmentIds.length) {
+      const unAttendedAppointments = appointments.filter((appointment) =>
+        unAttendedAppointmentIds.includes(appointment.id)
+      );
+      const virtualJDId = process.env.VIRTUAL_JD_ID;
+      const createdDate = new Date();
+
+      //adding or updating consult queue items
+      const consultQueueAttrs = unAttendedAppointments.map((appointment) => {
+        return {
+          appointmentId: appointment.id,
+          createdDate: createdDate,
+          doctorId: virtualJDId,
+          isActive: false,
+        };
+      });
+      const queueItems = await ConsultQueueRepo.getQueueItemsByAppointmentId(
+        unAttendedAppointmentIds
+      );
+      const activequeueItemIds = queueItems.map((queueItem) => queueItem.consultQueueItem_id);
+      if (activequeueItemIds.length) ConsultQueueRepo.updateConsultQueueItems(activequeueItemIds);
+      const activequeueItemAppointmentIds = queueItems.map(
+        (queueItem) => queueItem.consultQueueItem_appointmentId
+      );
+      const queueItemsToBeAdded = consultQueueAttrs.filter(
+        (consultQueueAttr) =>
+          !activequeueItemAppointmentIds.includes(consultQueueAttr.appointmentId)
+      );
+      if (queueItemsToBeAdded.length) ConsultQueueRepo.saveConsultQueueItems(queueItemsToBeAdded);
+
+      //adding case sheets
+      const casesheetAttrs = unAttendedAppointments.map((appointment) => {
+        return {
+          createdDate: createdDate,
+          consultType: APPOINTMENT_TYPE.ONLINE,
+          createdDoctorId: process.env.VIRTUAL_JD_ID,
+          doctorType: DoctorType.JUNIOR,
+          doctorId: appointment.doctorId,
+          patientId: appointment.patientId,
+          appointment: appointment,
+          status: CASESHEET_STATUS.COMPLETED,
+          notes: ApiConstants.VIRTUAL_JD_NOTES.toString(),
+        };
+      });
+      caseSheetRepo.saveMultipleCaseSheets(casesheetAttrs);
+
+      //updating appointments
+      apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds, true);
     }
-  });
+  }
 
   return ApiConstants.AUTO_SUBMIT_JD_CASESHEET_RESPONSE.toString();
 };
