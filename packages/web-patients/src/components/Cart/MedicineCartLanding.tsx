@@ -4,7 +4,7 @@ import React from 'react';
 import { Header } from 'components/Header';
 import { MedicineCart } from 'components/Cart/MedicineCart';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
-import { LocationContext, LocationProvider } from 'components/LocationProvider';
+import { LocationProvider } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

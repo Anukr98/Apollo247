@@ -22,7 +22,8 @@ import {
   CUSTOM_LOGIN_RESEND_OTP,
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
-import moment from 'moment';
+// import { clientRoutes } from 'helpers/clientRoutes';
+// import moment from 'moment';
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -100,7 +101,8 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const authLink = setContext((_, { headers }) => ({
     headers: { ...headers, Authorization: authToken ? authToken : process.env.AUTH_TOKEN },
   }));
-  const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
+  // const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
+  const httpLink = createHttpLink({ uri: process.env.API_HOST_NAME });
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });

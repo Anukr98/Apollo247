@@ -320,7 +320,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
   const [sortValue, setSortValue] = useState<string>('');
 
   useEffect(() => {
-    if (subtxt.length > 0) {
+    if (subtxt.length > 2) {
       onSearchMedicine(subtxt);
     }
   }, [subtxt]);
@@ -387,7 +387,12 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
 
   let showError = false;
   if (subtxt.length > 2 && !dataValue) showError = true;
-
+  let disableApplyFilter = false;
+  const numberToDiscount = Number(toDiscount);
+  const numberFromDiscount = Number(fromDiscount);
+  disableApplyFilter =
+    (toPrice && fromPrice && Number(fromPrice) > Number(toPrice)) ||
+    numberFromDiscount > numberToDiscount;
   return (
     <div className={classes.root}>
       <div
@@ -627,7 +632,7 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props: any) => {
       >
         <AphButton
           color="primary"
-          disabled={toPrice && fromPrice && Number(fromPrice) > Number(toPrice)}
+          disabled={disableApplyFilter}
           fullWidth
           onClick={(e) => {
             filterByPriceAndCategory();

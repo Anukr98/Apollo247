@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,6 +62,7 @@ export const CancelOrderNotification: React.FC<CancelOrderNotificationProps> = (
           onClick={() => {
             props.setIsCancelOrderDialogOpen(false);
             props.setIsPopoverOpen(false);
+            window.location.href = clientRoutes.yourOrders();
           }}
         >
           Ok, Got It

@@ -237,7 +237,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
   };
 
   useEffect(() => {
-    if (clinics.length === 0) {
+    if (clinics && clinics.length === 0) {
       fetchAllClinics();
     }
   }, [clinics]);

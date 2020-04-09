@@ -218,7 +218,14 @@ export const Faq: React.FC = (props) => {
           <p>&copy; Apollo247 2020. All Rights Reserved.</p>
           <ul>
             <li>
-              <Link to={clientRoutes.welcome()}>Home</Link>
+              <Link
+                to={clientRoutes.welcome()}
+                onClick={(e) => {
+                  window.location.href = clientRoutes.welcome();
+                }}
+              >
+                Home
+              </Link>
             </li>
             <li>
               <Link to={clientRoutes.privacy()}>Privacy</Link>
@@ -228,6 +235,9 @@ export const Faq: React.FC = (props) => {
             </li>
             <li>
               <Link to={clientRoutes.FAQ()}>FAQ</Link>
+            </li>
+            <li>
+              <Link to={clientRoutes.contactUs()}>Contact Us</Link>
             </li>
           </ul>
         </div>

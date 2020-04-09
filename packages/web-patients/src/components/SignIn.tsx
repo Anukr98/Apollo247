@@ -16,7 +16,7 @@ import React, { createRef, RefObject, useEffect, useState, useRef } from 'react'
 import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
-import { useLoginPopupState, useAuth } from 'hooks/authHooks';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -102,13 +102,10 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
   const resentOTPMessage = 'Type in the OTP that has been resent to your mobile number';
   const blockedMessage = 'You entered an incorrect OTP 3 times. Please try again after some time';
   const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
-
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
   const [otp, setOtp] = useState<number[]>([]);
-  // const placeRecaptchaAfterMe = useRef(null);
   const countDown = useRef(900);
   const [otpSubmitCount, setOtpSubmitCount] = useState(0);
-  // const [isIncorrectOtp, setIsIncorrectOtp] = useState<boolean>(false);
   const [showTimer, setShowTimer] = useState<boolean>(false);
   const [timer, setTimer] = useState<number>(900);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);

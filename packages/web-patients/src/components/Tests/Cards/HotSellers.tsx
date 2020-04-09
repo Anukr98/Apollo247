@@ -202,7 +202,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     <div className={classes.productTitle}>{hotSeller.packageName}</div>
                     <div className={classes.bottomSection}>
                       <div className={classes.priceGroup}>
-                        <div>Rs. {hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0} </div>
+                        <div>Rs. {hotSeller.price} </div>
                         {/* <div className={classes.regularPrice}>(Rs. {hotSeller.price})</div> */}
                       </div>
                       <div className={classes.addToCart}>

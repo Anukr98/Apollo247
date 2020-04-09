@@ -507,6 +507,7 @@ export const ChatRoom: React.FC = (props) => {
       .catch((e: string) => {
         setIsAlertOpen(true);
         setAlertMessage('something went wrong');
+        console.log(e);
       });
   };
 

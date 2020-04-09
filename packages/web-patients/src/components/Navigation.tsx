@@ -160,7 +160,7 @@ export const Navigation: React.FC = (props) => {
       >
         Health Records
       </Link>
-      {/* <Link
+      <Link
         to={clientRoutes.medicines()}
         className={
           currentPath === clientRoutes.medicines() ||
@@ -172,14 +172,14 @@ export const Navigation: React.FC = (props) => {
       >
         Medicines
       </Link>
-      <Link
+      {/* <Link
         to={clientRoutes.tests()}
         className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
         title={'Tests'}
       >
         Tests
       </Link> */}
-      {/* <div
+      <div
         id="cartId"
         onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
         onKeyPress={() => setIsCartPopoverOpen(true)}
@@ -196,7 +196,7 @@ export const Navigation: React.FC = (props) => {
             {cartItems.length + diagnosticsCartItems.length || 0}
           </span>
         </span>
-      </div> */}
+      </div>
       {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />
       </div> */}
@@ -232,7 +232,7 @@ export const Navigation: React.FC = (props) => {
               <div className={classes.itemsAdded}>{`${cartItems.length} Items`}</div>
             </div>
           </Link>
-          <Link
+          {/* <Link
             className={classes.cartTypeGroup}
             to={clientRoutes.testsCart()}
             onClick={() => setIsCartPopoverOpen(false)}
@@ -249,7 +249,7 @@ export const Navigation: React.FC = (props) => {
               </div>
               <div className={classes.itemsAdded}>{`${diagnosticsCartItems.length} Items`}</div>
             </div>
-          </Link>
+          </Link> */}
         </div>
       </Popover>
     </div>
