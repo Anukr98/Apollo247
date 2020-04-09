@@ -94,7 +94,7 @@ export const sdDashboardSummaryTypeDefs = gql`
       docLimit: Int
       docOffset: Int
     ): DashboardSummaryResult!
-    updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
+    updateDoctorFeeSummary(summaryDate: Date, doctorId: String,docLimit:Int,docOffset:Int): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePatientType(doctorId: ID!): UpdatePatientTypeResult
     updateUserType: UpdateUserTypeResult

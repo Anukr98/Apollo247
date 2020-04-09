@@ -94,7 +94,20 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
   }
 
-  saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+  async saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+    const checkRecord = await DoctorFeeSummary.findOne({
+      where:{
+        doctorId:doctorFeeAttrs.doctorId,
+        appointmentDateTime:doctorFeeAttrs.appointmentDateTime
+      }
+    })
+    if(checkRecord){
+      return DoctorFeeSummary.update(checkRecord.id,doctorFeeAttrs).catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_DOCTORFEESUMMARY_ERROR, undefined, {
+          createErrors,
+        });
+      });
+    }else{
     return DoctorFeeSummary.create(doctorFeeAttrs)
       .save()
       .catch((createErrors) => {
@@ -102,6 +115,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           createErrors,
         });
       });
+    }
   }
 
   getAppointmentPaymentDetailsByApptId(appointment: string) {
