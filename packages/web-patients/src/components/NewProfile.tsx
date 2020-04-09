@@ -463,6 +463,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               setIsValidReferralCode(isValidReferralCode);
                             }}
                             inputProps={{ type: 'text', maxLength: 25 }}
+                            disabled={
+                              tpRefCode.length > 0 && tpRefCode === 'SBIYONO' ? true : false
+                            }
                           />
                           {!isValidReferralCode ? (
                             <FormHelperText
