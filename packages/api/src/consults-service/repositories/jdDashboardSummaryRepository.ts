@@ -148,6 +148,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       .where('case_sheet.createdDate Between :fromDate and :toDate', {
         fromDate: newStartDate,
         toDate: newEndDate,
+        status:CASESHEET_STATUS.COMPLETED
       })
       .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .getRawMany();
@@ -155,11 +156,12 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     if (casesheetRows.length > 0) {
       const duration = parseFloat((casesheetRows[0].totalduration / 60).toFixed(2));
       //console.log(duration, 'duration in imin', casesheetRows[0].appointmentidcount);
-      if (duration && duration > 0) {
-        return parseFloat((duration / casesheetRows[0].appointmentidcount).toFixed(2));
-      } else {
-        return 0;
-      }
+      // if (duration && duration > 0) {
+      //   return parseFloat((duration / casesheetRows[0].appointmentidcount).toFixed(2));
+      // } else {
+      //   return 0;
+      // }
+      return duration;
     } else {
       return 0;
     }
