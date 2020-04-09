@@ -26,6 +26,8 @@ const PORT = process.env.PORT || 7000;
 
 const { initPayment } = require('./paytm/services/index');
 
+const cronTabs = require('./cronTabs');
+
 app.use(cors());
 
 app.use(bodyParser.json());
@@ -41,6 +43,8 @@ app.get(
     android_package_name: 'com.apollo.patientapp',
   })
 );
+
+app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
 
 app.get('/invokeNoShowReminder', (req, res) => {
   const requestJSON = {
@@ -216,7 +220,7 @@ app.get('/invokePhysicalApptReminder', (req, res) => {
       console.log('error', error);
     });
 });
-app.get('/updateSdSummary', (req,res) => {
+app.get('/updateSdSummary', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
   const updateSdSummaryRequestJSON = {
     query: `mutation{
@@ -243,8 +247,8 @@ app.get('/updateSdSummary', (req,res) => {
         response.data.data.updateSdSummary +
         '\n-------------------\n';
       //fs.appendFile(fileName, content, function(err) {
-        // if (err) throw err;
-        // console.log('Updated!');
+      // if (err) throw err;
+      // console.log('Updated!');
       //});
       res.send({
         status: 'success',
@@ -254,11 +258,11 @@ app.get('/updateSdSummary', (req,res) => {
     .catch((error) => {
       console.log('error', error);
     });
-  });
-  app.get('/updateJdSummary', (req,res) => {
-    const currentDate = format(new Date(), 'yyyy-MM-dd');
-    const updateJdSummaryRequestJSON = {
-      query: `mutation{
+});
+app.get('/updateJdSummary', (req, res) => {
+  const currentDate = format(new Date(), 'yyyy-MM-dd');
+  const updateJdSummaryRequestJSON = {
+    query: `mutation{
         updateJdSummary(summaryDate:"${currentDate}",doctorId:"0",docLimit:${req.query.docLimit},docOffset:${req.query.docOffset}){
         doctorId
         doctorName
@@ -266,9 +270,9 @@ app.get('/updateSdSummary', (req,res) => {
         totalConsultation
         }
       }`,
-    };
-    axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-    axios
+  };
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios
     .post(process.env.API_URL, updateJdSummaryRequestJSON)
     .then((response) => {
       console.log(response);
@@ -293,9 +297,9 @@ app.get('/updateSdSummary', (req,res) => {
     .catch((error) => {
       console.log('error', error);
     });
-  });
+});
 
-app.get('/invokeDashboardSummaries', (req,res) => {
+app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
   const updateDoctorFeeSummaryRequestJSON = {
     query: `mutation{
