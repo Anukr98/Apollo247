@@ -32,10 +32,19 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
     return this.findOne({ where: { appointmentId } });
   }
 
-  saveConsultQueueItem(consultQueueAttrs: Partial<ConsultQueueItem>) {
-    return this.save(consultQueueAttrs).catch((error) => {
-      throw new AphError(AphErrorMessages.CREATE_CONSULT_QUEUE_ERROR, undefined, { error });
-    });
+  async saveOrUpdateConsultQueueItem(consultQueueAttrs: Partial<ConsultQueueItem>) {
+    const appointmentExistsInQueue = await this.findByAppointmentId(
+      consultQueueAttrs.appointmentId ? consultQueueAttrs.appointmentId : ''
+    );
+    if (appointmentExistsInQueue) {
+      return this.update(appointmentExistsInQueue.id, { isActive: false }).catch((error) => {
+        throw new AphError(AphErrorMessages.UPDATE_CONSULT_QUEUE_ERROR, undefined, { error });
+      });
+    } else {
+      return this.save(consultQueueAttrs).catch((error) => {
+        throw new AphError(AphErrorMessages.CREATE_CONSULT_QUEUE_ERROR, undefined, { error });
+      });
+    }
   }
 
   async getNextJuniorDoctor(doctorsDb: Connection) {

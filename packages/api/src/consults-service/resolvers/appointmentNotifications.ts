@@ -83,7 +83,7 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
         doctorId: process.env.VIRTUAL_JD_ID,
         isActive: false,
       };
-      await cqRepo.saveConsultQueueItem(consultQueueAttrs);
+      await cqRepo.saveOrUpdateConsultQueueItem(consultQueueAttrs);
       const casesheetAttrs: Partial<CaseSheet> = {
         createdDate: new Date(),
         consultType: APPOINTMENT_TYPE.ONLINE,
