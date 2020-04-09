@@ -13,6 +13,8 @@ import { RescheduleAppointmentRepository } from 'consults-service/repositories/r
 import { format, subMinutes, addMinutes } from 'date-fns';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { APPOINTMENT_STATE } from 'consults-service/entities';
+import { DoctorType } from 'doctors-service/entities';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
 import {
   CASESHEET_STATUS,
@@ -22,6 +24,8 @@ import {
   STATUS,
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
+  ConsultQueueItem,
+  CaseSheet,
 } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
@@ -65,19 +69,36 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
 ) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const currentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
-  const ft = addMinutes(new Date(currentDate), 10);
-  console.log(ft);
-  const appointments = await apptRepo.getAppointmentsByDate(ft);
-  console.log('appointments==', appointments);
+  const futureTime = addMinutes(new Date(currentDate), 10);
+  const appointments = await apptRepo.getAppointmentsByDate(futureTime);
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
   appointments.forEach(async (appointment) => {
     const caseSheetExist = await caseSheetRepo.getJDCaseSheetByAppointmentId(appointment.id);
-    console.log('caseSheetExist==', caseSheetExist);
     if (!caseSheetExist) {
+      await apptRepo.updateJdQuestionStatus(appointment.id, true);
+      const consultQueueAttrs: Partial<ConsultQueueItem> = {
+        appointmentId: appointment.id,
+        createdDate: new Date(),
+        doctorId: process.env.VIRTUAL_JD_ID,
+        isActive: false,
+      };
+      await cqRepo.saveConsultQueueItem(consultQueueAttrs);
+      const casesheetAttrs: Partial<CaseSheet> = {
+        createdDate: new Date(),
+        consultType: APPOINTMENT_TYPE.ONLINE,
+        createdDoctorId: process.env.VIRTUAL_JD_ID,
+        doctorType: DoctorType.JUNIOR,
+        doctorId: appointment.doctorId,
+        patientId: appointment.patientId,
+        appointment: appointment,
+        status: CASESHEET_STATUS.COMPLETED,
+      };
+      await caseSheetRepo.savecaseSheet(casesheetAttrs);
     }
   });
 
-  return 'done';
+  return ApiConstants.AUTO_SUBMIT_JD_CASESHEET_RESPONSE.toString();
 };
 
 const sendApptReminderNotification: Resolver<
