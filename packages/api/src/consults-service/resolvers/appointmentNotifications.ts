@@ -10,7 +10,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
-import { format, subMinutes } from 'date-fns';
+import { format, subMinutes, addMinutes } from 'date-fns';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { APPOINTMENT_STATE } from 'consults-service/entities';
 
@@ -42,6 +42,7 @@ export const appointmentNotificationTypeDefs = gql`
     sendApptReminderNotification(inNextMin: Int): ApptReminderResult!
     sendPhysicalApptReminderNotification(inNextMin: Int): ApptReminderResult!
     noShowReminderNotification: noShowReminder!
+    autoSubmitJDCasesheet: String
   }
 `;
 
@@ -55,6 +56,28 @@ type noShowReminder = {
   status: boolean;
   apptsListCount: number;
   noCaseSheetCount: number;
+};
+
+const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> = async (
+  parent,
+  args,
+  { consultsDb, doctorsDb, patientsDb }
+) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const currentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
+  const ft = addMinutes(new Date(currentDate), 10);
+  console.log(ft);
+  const appointments = await apptRepo.getAppointmentsByDate(ft);
+  console.log('appointments==', appointments);
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  appointments.forEach(async (appointment) => {
+    const caseSheetExist = await caseSheetRepo.getJDCaseSheetByAppointmentId(appointment.id);
+    console.log('caseSheetExist==', caseSheetExist);
+    if (!caseSheetExist) {
+    }
+  });
+
+  return 'done';
 };
 
 const sendApptReminderNotification: Resolver<
@@ -253,5 +276,6 @@ export const appointmentNotificationResolvers = {
     sendApptReminderNotification,
     noShowReminderNotification,
     sendPhysicalApptReminderNotification,
+    autoSubmitJDCasesheet,
   },
 };

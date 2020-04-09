@@ -64,6 +64,14 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     });
   }
 
+  getJDCaseSheetByAppointmentId(appointment: string) {
+    return this.findOne({
+      where: { appointment },
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
+    });
+  }
+
   updateJDCaseSheet(appointmentId: string) {
     return this.createQueryBuilder()
       .update('case_sheet')
