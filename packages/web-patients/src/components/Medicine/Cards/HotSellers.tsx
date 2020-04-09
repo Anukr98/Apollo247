@@ -180,7 +180,15 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
             <div key={hotSeller.sku} className={classes.card}>
               <div className={classes.cardWrap}>
                 <div className={classes.offerPrice}>
-                  <span>-30%</span>
+                  <span>
+                    -
+                    {Math.floor(
+                      ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
+                        hotSeller.price) *
+                        100
+                    )}
+                    %
+                  </span>
                 </div>
                 <Link to={clientRoutes.medicineDetails(hotSeller.sku)}>
                   <div className={classes.productIcon}>

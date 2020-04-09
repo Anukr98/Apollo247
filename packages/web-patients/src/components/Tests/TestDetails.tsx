@@ -369,16 +369,6 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
-    tabsWrapperInside: {
-      paddingTop: 8,
-      [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
-        marginLeft: -20,
-        marginRight: -20,
-        padding: 20,
-        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
-      },
-    },
     testsList: {
       color: '#0087ba',
       fontSize: 14,
@@ -538,9 +528,9 @@ export const TestDetails: React.FC = (props) => {
                             testDetails.gender == 'B'
                               ? 'BOYS AND GIRLS'
                               : testDetails.gender == 'M'
-                              ? 'BOYS'
-                              : 'GIRLS'
-                          }`}
+                                ? 'BOYS'
+                                : 'GIRLS'
+                            }`}
                         </div>
                       )}
                       <div className={classes.textInfo}>
@@ -591,20 +581,16 @@ export const TestDetails: React.FC = (props) => {
                       </Tabs>
                       {tabValue === 0 && (
                         <TabContainer>
-                          <div className={classes.tabsWrapper}>
-                            <div className={classes.testsList}>
-                              {testDetailsPackage && testDetailsPackage.length > 0
-                                ? testDetailsPackage.map(
-                                    (packageData: TestDetails, idx: number) => (
-                                      <div className={classes.tabsWrapperInside}>
-                                        <span>{idx + 1}.</span>
-                                        <span>{packageData.TestName}</span>
-                                      </div>
-                                    )
-                                  )
-                                : 'Not available'}
-                            </div>
-                          </div>
+                          {testDetailsPackage &&
+                            testDetailsPackage.length > 0 &&
+                            testDetailsPackage.map((packageData: TestDetails, idx: number) => (
+                              <div className={classes.tabsWrapper}>
+                                <div className={classes.testsList}>
+                                  <span>{idx + 1}.</span>
+                                  <span>{packageData.TestName}</span>
+                                </div>
+                              </div>
+                            ))}
                         </TabContainer>
                       )}
                       {tabValue === 1 && (
@@ -628,8 +614,8 @@ export const TestDetails: React.FC = (props) => {
                     isSmallScreen ? (
                       <div {...props} style={{ position: 'static' }} />
                     ) : (
-                      <div {...props} />
-                    )
+                        <div {...props} />
+                      )
                   }
                 >
                   <div className={classes.customScroll}>
@@ -667,8 +653,8 @@ export const TestDetails: React.FC = (props) => {
                         ) : itemIndexInCart(testDetails) === -1 ? (
                           'Add To Cart'
                         ) : (
-                          'Added To Cart'
-                        )}
+                              'Added To Cart'
+                            )}
                       </AphButton>
                     </div>
                   </div>
@@ -676,12 +662,12 @@ export const TestDetails: React.FC = (props) => {
               </div>
             </div>
           ) : (
-            loading && (
-              <div className={classes.progressLoader}>
-                <CircularProgress size={30} />
-              </div>
-            )
-          )}
+              loading && (
+                <div className={classes.progressLoader}>
+                  <CircularProgress size={30} />
+                </div>
+              )
+            )}
         </div>
       </div>
     </div>

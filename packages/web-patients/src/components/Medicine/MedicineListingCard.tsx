@@ -117,11 +117,15 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
       paddingTop: 4,
       paddingBottom: 4,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
         borderTop: '1px solid rgba(2,71,91,0.2)',
+        justifyContent: 'left',
       },
       [theme.breakpoints.up('xs')]: {
         minWidth: 130,
@@ -134,7 +138,6 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.33,
       textTransform: 'uppercase',
       paddingTop: 7,
-      paddingBottom: 6,
       paddingLeft: 4,
       '&:focus': {
         backgroundColor: 'transparent',
@@ -192,7 +195,7 @@ export const MedicineListingCard: React.FC = (props) => {
               {item.is_in_stock ? (
                 <div className={classes.cartRight}>
                   <div className={classes.medicinePack}>
-                    QTY :
+                    <div>QTY :</div>
                     <AphCustomDropdown
                       classes={{
                         selectMenu: classes.selectMenuItem,

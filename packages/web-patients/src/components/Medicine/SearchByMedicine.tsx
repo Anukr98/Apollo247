@@ -148,6 +148,7 @@ export const SearchByMedicine: React.FC = (props) => {
   const [sortBy, setSortBy] = useState<string>('');
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const [isReloaded, setIsReloaded] = useState(false);
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -301,6 +302,7 @@ export const SearchByMedicine: React.FC = (props) => {
           med1.name > med2.name ? -1 : med1.name < med2.name ? 1 : 0
         );
       }
+      setIsReloaded(!isReloaded);
     }
     if (
       discountFilter &&
@@ -312,11 +314,12 @@ export const SearchByMedicine: React.FC = (props) => {
         if (item.special_price) {
           const specialPrice = getSpecialPrice(item.special_price);
           const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
-
           return discountPercentage >= (discountFilter.fromDiscount || 0) &&
             discountPercentage <= discountFilter.toDiscount
             ? true
             : false;
+        } else if (discountFilter.fromDiscount == 0) {
+          return filteredArray;
         }
       });
     }
@@ -335,7 +338,6 @@ export const SearchByMedicine: React.FC = (props) => {
         });
       priceFilterArray = categoryFilterArray;
     }
-
     setMedicineListFiltered(priceFilterArray);
   }, [priceFilter, filterData, discountFilter, sortBy]);
 

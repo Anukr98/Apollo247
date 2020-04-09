@@ -358,7 +358,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.shadowHide}>
         <div className={classes.dialogContent}>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
+          <Scrollbars autoHide={true} autoHeight autoHeightMax={'48vh'}>
             <div className={classes.customScrollBar}>
               <div className={classes.profileForm}>
                 <div className={classes.uploadImage} title={'Upload Profile'}>

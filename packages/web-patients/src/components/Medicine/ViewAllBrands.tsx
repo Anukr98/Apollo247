@@ -333,7 +333,7 @@ export const ViewAllBrands: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.viewAllBrands}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => window.history.back()}>
+            <a onClick={() => (window.location.href = clientRoutes.medicines())}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />

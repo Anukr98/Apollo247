@@ -122,7 +122,7 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
   const mascotRef = useRef(null);
 
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [selectedReason, setSelectedReason] = React.useState<string>('');
+  const [selectedReason, setSelectedReason] = React.useState<string>('placeholder');
   const [showLoader, setShowLoader] = React.useState<boolean>(false);
 
   const cancelOrder = useMutation(SAVE_ORDER_CANCEL_STATUS);
@@ -160,6 +160,13 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
                       },
                     }}
                   >
+                    <MenuItem
+                      value="placeholder"
+                      classes={{ selected: classes.menuSelected }}
+                      disabled
+                    >
+                      Select reason for cancelling
+                    </MenuItem>
                     {cancelReasonList.map((reason) => (
                       <MenuItem value={reason} classes={{ selected: classes.menuSelected }}>
                         {reason}
@@ -178,7 +185,7 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
       </div>
       <div className={classes.dialogActions}>
         <AphButton
-          disabled={selectedReason.length === 0}
+          disabled={selectedReason.length === 0 || selectedReason === 'placeholder'}
           className={selectedReason.length === 0 ? classes.buttonDisable : ''}
           onClick={() => {
             setShowLoader(true);

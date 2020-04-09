@@ -213,7 +213,6 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
                   >
                     <span>Select a query</span>
                   </MenuItem>
-
                   {reasonsList &&
                     reasonsList.options &&
                     reasonsList.options.map((reasonName: string) => {
