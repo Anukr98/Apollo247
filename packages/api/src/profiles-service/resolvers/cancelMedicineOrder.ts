@@ -87,7 +87,6 @@ const cancelMedicineOrder: Resolver<
     );
     throw new AphError(AphErrorMessages.CANCEL_MEDICINE_ORDER_ERROR);
   });
-
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {
     log(
       'profileServiceLogger',
@@ -100,7 +99,6 @@ const cancelMedicineOrder: Resolver<
   }
 
   const textRes = await pharmaResp.text();
-
   log(
     'profileServiceLogger',
     'API_CALL_RESPONSE',
@@ -110,7 +108,7 @@ const cancelMedicineOrder: Resolver<
   );
 
   const orderResp: PharmaCancelResponse = JSON.parse(textRes);
-  console.log(orderResp, 'respp', orderResp.ordersCancelResult.Message);
+  console.log(orderResp, orderResp.ordersCancelResult.Status, orderResp.ordersCancelResult.Message);
 
   if (orderResp.ordersCancelResult.Status) {
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {

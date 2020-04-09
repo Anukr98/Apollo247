@@ -359,6 +359,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then((res: AxiosResponse) => {
         try {
           if (res && res.data) {
+            if (res.data.errorMsg) {
+              setErrorMessage(res.data.errorMsg);
+            }
             setTatLoading(false);
             if (
               typeof res.data === 'object' &&
@@ -374,7 +377,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             }
           }
         } catch (error) {
-          // console.log(error);
           setTatLoading(false);
         }
       })

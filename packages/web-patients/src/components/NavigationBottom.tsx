@@ -101,7 +101,7 @@ export const NavigationBottom: React.FC = (props) => {
           selected: classes.iconSelected,
         }}
       />
-      {/* <BottomNavigationAction
+      <BottomNavigationAction
         label="Medicines"
         component={Link}
         to={clientRoutes.medicines()}
@@ -113,7 +113,7 @@ export const NavigationBottom: React.FC = (props) => {
           selected: classes.iconSelected,
         }}
       />
-      <BottomNavigationAction
+      {/* <BottomNavigationAction
         label="Tests"
         component={Link}
         to={clientRoutes.tests()}

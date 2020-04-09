@@ -301,20 +301,18 @@ export const SearchByTest: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!testsList && !diagnosticList && city && city.length > 0) {
+    if (!testsList && !diagnosticList) {
       fetchResults();
     }
-  }, [testsList, diagnosticList, city]);
+  }, [testsList, diagnosticList]);
 
   useEffect(() => {
-    if (city && city.length > 0) {
-      if (searchValue.trim().length > 2) {
-        onSearchTests(searchValue);
-      } else if ((testsList || diagnosticList) && searchValue.length === 0) {
-        fetchResults();
-      }
+    if (searchValue.trim().length > 2) {
+      onSearchTests(searchValue);
+    } else if ((testsList || diagnosticList) && searchValue.length === 0) {
+      fetchResults();
     }
-  }, [searchValue, city]);
+  }, [searchValue]);
 
   let showError = false;
 

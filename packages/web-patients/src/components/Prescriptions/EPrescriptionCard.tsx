@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 500,
       color: '#0087ba',
-      lineHeight: '1.67px',
+      lineHeight: 1.67,
       letterSpacing: 0.04,
       display: 'inline-block',
       width: '100%',

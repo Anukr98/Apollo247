@@ -94,7 +94,7 @@ export const sdDashboardSummaryTypeDefs = gql`
       docLimit: Int
       docOffset: Int
     ): DashboardSummaryResult!
-    updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
+    updateDoctorFeeSummary(summaryDate: Date, doctorId: String,docLimit:Int,docOffset:Int): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePatientType(doctorId: ID!): UpdatePatientTypeResult
     updateUserType: UpdateUserTypeResult
@@ -395,6 +395,11 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         TRANSFER_INITIATED_TYPE.PATIENT
       );
+
+      const totalCompletedChats = await dashboardRepo.getTotalCompletedChats(
+        doctor.id,
+        args.summaryDate
+      );
       const totalRescheduleCount= await dashboardRepo.getTotalRescheduleCount(
         doctor.id,
         args.summaryDate
@@ -463,6 +468,7 @@ const updateSdSummary: Resolver<
         onlineConsultationFees: Number(doctor.onlineConsultationFees),
         physicalConsultationFees: Number(doctor.physicalConsultationFees),
         totalRescheduleCount,
+        totalCompletedChats,
         isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);

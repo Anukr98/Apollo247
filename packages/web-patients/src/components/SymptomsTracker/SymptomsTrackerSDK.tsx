@@ -130,9 +130,13 @@ const useStyles = makeStyles((theme: Theme) => {
       left: 0,
       right: 20,
       padding: '8px 0 8px 1rem',
+      display: 'flex',
       [theme.breakpoints.down(767)]: {
         display: 'none',
       },
+    },
+    labelFor: {
+      marginTop: 6,
     },
     profileDropdownMobile: {
       fontSize: 14,
@@ -142,6 +146,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 10,
       padding: '8px 0 8px 1rem',
       textTransform: 'none',
+      display: 'flex',
       [theme.breakpoints.up(768)]: {
         display: 'none',
       },
@@ -397,7 +402,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
               </Link>
               Consult a doctor
               <div className={classes.profileDropdownMobile}>
-                For
+                <div className={classes.labelFor}>For</div>
+
                 <AphCustomDropdown
                   classes={{ selectMenu: classes.selectMenuItem }}
                   value={currentPatient && currentPatient.id}
@@ -422,7 +428,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         </MenuItem>
                       );
                     })}
-                  <MenuItem classes={{ selected: classes.menuSelected }}>
+                  {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                     <AphButton
                       color="primary"
                       classes={{ root: classes.addMemberBtn }}
@@ -432,7 +438,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                     >
                       Add Member
                     </AphButton>
-                  </MenuItem>
+                  </MenuItem> */}
                 </AphCustomDropdown>
               </div>
             </div>
@@ -451,7 +457,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 <div className={classes.leftCol}></div>
                 <div className={classes.rightCol}>
                   <div className={classes.profileDropdown}>
-                    For
+                    <div className={classes.labelFor}>For</div>
                     <AphCustomDropdown
                       classes={{ selectMenu: classes.selectMenuItem }}
                       value={currentPatient && currentPatient.id}
@@ -476,7 +482,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                             </MenuItem>
                           );
                         })}
-                      <MenuItem classes={{ selected: classes.menuSelected }}>
+                      {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
@@ -486,7 +492,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         >
                           Add Member
                         </AphButton>
-                      </MenuItem>
+                      </MenuItem> */}
                     </AphCustomDropdown>
                   </div>
                 </div>

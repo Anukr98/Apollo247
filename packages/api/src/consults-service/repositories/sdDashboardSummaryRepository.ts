@@ -94,7 +94,20 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
   }
 
-  saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+  async saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+    const checkRecord = await DoctorFeeSummary.findOne({
+      where:{
+        doctorId:doctorFeeAttrs.doctorId,
+        appointmentDateTime:doctorFeeAttrs.appointmentDateTime
+      }
+    })
+    if(checkRecord){
+      return DoctorFeeSummary.update(checkRecord.id,doctorFeeAttrs).catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_DOCTORFEESUMMARY_ERROR, undefined, {
+          createErrors,
+        });
+      });
+    }else{
     return DoctorFeeSummary.create(doctorFeeAttrs)
       .save()
       .catch((createErrors) => {
@@ -102,6 +115,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           createErrors,
         });
       });
+    }
   }
 
   getAppointmentPaymentDetailsByApptId(appointment: string) {
@@ -304,6 +318,18 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         .andWhere('appointment."doctorId" = :doctorId', { doctorId: doctorId })
         .getCount();
     }
+  }
+  async getTotalCompletedChats(doctorId:string,selDate:Date){
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return await CaseSheet.count({
+      where: {
+        doctorId: doctorId,
+        status: CASESHEET_STATUS.COMPLETED,
+        createdDate: Between(newStartDate, newEndDate),
+        doctorType:Not('JUNIOR')
+      },
+    });
   }
 
   async getTotalRescheduleCount(doctorId:string,appointmentDate:Date){

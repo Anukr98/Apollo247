@@ -53,6 +53,12 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       marginTop: 10,
     },
+    noData: {
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 25,
+        paddingLeft: 10,
+      },
+    },
   };
 });
 export interface products {
@@ -158,7 +164,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
       ) : props.isLoading ? (
         <CircularProgress />
       ) : (
-        'No Data Found'
+        <div className={classes.noData}>No Data Found</div>
       )}
     </Grid>
   );

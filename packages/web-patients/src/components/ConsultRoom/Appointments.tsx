@@ -529,7 +529,7 @@ export const Appointments: React.FC = (props) => {
             ) : (
               <Typography variant="h1">hello there!</Typography>
             )}
-            <p>{appointmentText()}</p>
+            <p>{data && !loading && appointmentText()}</p>
           </div>
           <div>
             <Tabs

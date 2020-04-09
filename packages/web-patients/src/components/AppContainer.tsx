@@ -50,7 +50,9 @@ import { Helmet } from 'react-helmet';
 import { TermsAndConditions } from 'components/TermsAndConditions';
 import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
-import { SbiLandingPage } from 'components/Partners/SbiLandingPage';
+import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
+import { BottomLinks } from 'components/BottomLinks';
+import { ContactUs } from 'components/ContactUs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,6 +106,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.termsConditions()} component={TermsAndConditions} />
           <Route exact path={clientRoutes.privacy()} component={Privacy} />
           <Route exact path={clientRoutes.FAQ()} component={Faq} />
+          <Route exact path={clientRoutes.contactUs()} component={ContactUs} />
           <Route exact path={clientRoutes.partnerSBI()} component={SbiLandingPage} />
           <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
@@ -172,13 +175,26 @@ const App: React.FC = () => {
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
-          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
+          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
         </Switch>
-        {isSignedIn && pageName !== '/terms' && pageName !== '/privacy' && pageName !== '/faq' && (
-          <div className={classes.helpIcon}>
-            <Help />
-          </div>
+        {
+          pageName !== '/terms' &&
+          pageName !== '/privacy' &&
+          pageName !== '/faq' &&
+          pageName !== '/contact' &&
+          pageName !== '/partners/sbi' && (        
+          <BottomLinks />
         )}
+        {isSignedIn &&
+          pageName !== '/terms' &&
+          pageName !== '/privacy' &&
+          pageName !== '/faq' &&
+          pageName !== '/contact' &&
+          pageName !== '/partners/sbi' && (
+            <div className={classes.helpIcon}>
+              <Help />
+            </div>
+          )}
       </div>
     </Scrollbars>
   );

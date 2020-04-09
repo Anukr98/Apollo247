@@ -12,6 +12,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
 import { GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails } from 'graphql/types/GetMedicineOrderDetails';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

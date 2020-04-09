@@ -503,7 +503,8 @@ export const MedicineCart: React.FC = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { authToken } = useAuth();
-
+  const pharmacyMinDeliveryValue = process.env.PHARMACY_MIN_DELIVERY_VALUE;
+  const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
   const disablePayButton = paymentMethod === '';
 
@@ -511,9 +512,12 @@ export const MedicineCart: React.FC = (props) => {
   // if the total is less than 200 +20 is added.
   const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   const grossValue = cartTotal - discountAmount;
-  const deliveryCharges = grossValue > 200 || grossValue <= 0 || tabValue === 1 ? 0 : 20;
-  const totalAmount = (grossValue + deliveryCharges).toFixed(2);
-  const showGross = deliveryCharges < 0 || discountAmount > 0;
+  const deliveryCharges =
+    grossValue >= Number(pharmacyMinDeliveryValue) || grossValue <= 0 || tabValue === 1
+      ? 0
+      : Number(pharmacyDeliveryCharges);
+  const totalAmount = (grossValue + Number(deliveryCharges)).toFixed(2);
+  const showGross = (deliveryCharges && deliveryCharges < 0) || discountAmount > 0;
 
   const disableSubmit =
     deliveryMode === 'HOME'
@@ -674,7 +678,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -721,18 +725,10 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    uploadPrescriptionRequired >= 0
-      ? (prescriptions && prescriptions.length > 0) ||
-        (ePrescriptionData && ePrescriptionData.length > 0)
-      : cartItems && cartItems.length > 0;
-
-  const disableSubmitPrescriptionButton =
-    nonCartFlow &&
-    prescriptions &&
-    prescriptions.length === 0 &&
-    ePrescriptionData &&
-    ePrescriptionData.length === 0;
-
+    (cartItems && cartItems.length > 0) ||
+    (prescriptions && prescriptions.length > 0) ||
+    (ePrescriptionData && ePrescriptionData.length > 0) ||
+    false;
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -975,17 +971,9 @@ export const MedicineCart: React.FC = (props) => {
             }}
             color="primary"
             fullWidth
-            disabled={
-              disableSubmit ||
-              !isPaymentButtonEnable ||
-              disableSubmitPrescriptionButton ||
-              uploadingFiles
-            }
+            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
             className={
-              disableSubmit ||
-              !isPaymentButtonEnable ||
-              disableSubmitPrescriptionButton ||
-              mutationLoading
+              disableSubmit || !isPaymentButtonEnable || mutationLoading
                 ? classes.buttonDisable
                 : ''
             }
