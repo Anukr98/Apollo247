@@ -428,7 +428,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         </MenuItem>
                       );
                     })}
-                  <MenuItem classes={{ selected: classes.menuSelected }}>
+                  {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                     <AphButton
                       color="primary"
                       classes={{ root: classes.addMemberBtn }}
@@ -438,7 +438,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                     >
                       Add Member
                     </AphButton>
-                  </MenuItem>
+                  </MenuItem> */}
                 </AphCustomDropdown>
               </div>
             </div>
@@ -482,7 +482,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                             </MenuItem>
                           );
                         })}
-                      <MenuItem classes={{ selected: classes.menuSelected }}>
+                      {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
@@ -492,7 +492,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         >
                           Add Member
                         </AphButton>
-                      </MenuItem>
+                      </MenuItem> */}
                     </AphCustomDropdown>
                   </div>
                 </div>
