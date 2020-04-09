@@ -513,7 +513,7 @@ export const MedicineCart: React.FC = (props) => {
   const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   const grossValue = cartTotal - discountAmount;
   const deliveryCharges =
-    grossValue > Number(pharmacyMinDeliveryValue) || grossValue <= 0 || tabValue === 1
+    grossValue >= Number(pharmacyMinDeliveryValue) || grossValue <= 0 || tabValue === 1
       ? 0
       : Number(pharmacyDeliveryCharges);
   const totalAmount = (grossValue + Number(deliveryCharges)).toFixed(2);
