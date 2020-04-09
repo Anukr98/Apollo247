@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   modalWindow: {
     backgroundColor: theme.palette.common.black,
-    maxWidth: 600,
+    maxWidth: 900,
     margin: 'auto',
     borderRadius: 10,
     boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
