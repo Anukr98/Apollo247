@@ -1,8 +1,9 @@
 const axios = require('axios');
+const Constants = require('./Constants');
 
 exports.autoSubmitJDCasesheet = (req, res) => {
   const requestJSON = {
-    query: 'query { autoSubmitJDCasesheet }',
+    query: Constants.AUTO_SUBMIT_JD_CASESHEET,
   };
   axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
   axios
