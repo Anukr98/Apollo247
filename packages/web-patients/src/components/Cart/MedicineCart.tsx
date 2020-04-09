@@ -725,18 +725,10 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    uploadPrescriptionRequired >= 0
-      ? (prescriptions && prescriptions.length > 0) ||
-        (ePrescriptionData && ePrescriptionData.length > 0)
-      : cartItems && cartItems.length > 0;
-
-  const disableSubmitPrescriptionButton =
-    nonCartFlow &&
-    prescriptions &&
-    prescriptions.length === 0 &&
-    ePrescriptionData &&
-    ePrescriptionData.length === 0;
-
+    (cartItems && cartItems.length > 0) ||
+    (prescriptions && prescriptions.length > 0) ||
+    (ePrescriptionData && ePrescriptionData.length > 0) ||
+    false;
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -979,17 +971,9 @@ export const MedicineCart: React.FC = (props) => {
             }}
             color="primary"
             fullWidth
-            disabled={
-              disableSubmit ||
-              !isPaymentButtonEnable ||
-              disableSubmitPrescriptionButton ||
-              uploadingFiles
-            }
+            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
             className={
-              disableSubmit ||
-              !isPaymentButtonEnable ||
-              disableSubmitPrescriptionButton ||
-              mutationLoading
+              disableSubmit || !isPaymentButtonEnable || mutationLoading
                 ? classes.buttonDisable
                 : ''
             }
