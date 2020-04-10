@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,24 +176,26 @@ export const MedicineListingCard: React.FC = (props) => {
             }`}
           >
             <div className={classes.medicineStripWrap}>
-              <div className={classes.medicineInformation}>
-                <div className={classes.medicineIcon}>
-                  <img
-                    src={
-                      item.is_prescription_required === '1'
-                        ? require('images/ic_tablets_rx.svg')
-                        : `${process.env.PHARMACY_MED_IMAGES_BASE_URL}${item.image}`
-                    }
-                    alt=""
-                  />
-                </div>
-                <div className={classes.medicineName}>
-                  {item.name}
-                  <div className={classes.tabInfo}>
-                    {item.is_in_stock ? 'Pack Of 15' : 'Out Of Stock'}
+              <Link to={clientRoutes.medicineDetails(item.sku)}>
+                <div className={classes.medicineInformation}>
+                  <div className={classes.medicineIcon}>
+                    <img
+                      src={
+                        item.is_prescription_required === '1'
+                          ? require('images/ic_tablets_rx.svg')
+                          : `${process.env.PHARMACY_MED_IMAGES_BASE_URL}${item.image}`
+                      }
+                      alt=""
+                    />
+                  </div>
+                  <div className={classes.medicineName}>
+                    {item.name}
+                    <div className={classes.tabInfo}>
+                      {item.is_in_stock ? 'Pack Of 15' : 'Out Of Stock'}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
               {item.is_in_stock ? (
                 <div className={classes.cartRight}>
                   <div className={classes.medicinePack}>
