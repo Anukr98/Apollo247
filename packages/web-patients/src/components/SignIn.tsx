@@ -204,7 +204,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
         });
       }
     }
-  }, [mobileNumber, otpSubmitCount]);
+  }, [otpSubmitCount]);
 
   return (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
