@@ -245,8 +245,6 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                           otpInputRefs[index].current!.value = currentDigit;
                           otpInputRefs[index].current!.innerHTML = currentDigit;
                         }
-
-                        otpInputRefs[index];
                         const nextInput = otpInputRefs[index + 1];
                         if (nextInput && nextInput.current) {
                           nextInput.current.focus();
