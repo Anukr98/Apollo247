@@ -283,9 +283,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     }
   }, [currentPatient, deliveryAddressId]);
 
-  const checkServiceAvailability = (deliveryId: string, zipCode: string | null) => {
+  const checkServiceAvailability = (zipCode: string | null) => {
     return axios.post(
-      'https://www.apollopharmacy.in/servicability_api.php',
+      apiDetails.service_url || '',
       {
         postalcode: zipCode || '',
         skucategory: [
@@ -303,9 +303,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   };
 
   const fetchDeliveryTime = async () => {
+    const CancelToken = axios.CancelToken;
+    let cancelGetDeliveryTimeApi: Canceler | undefined;
     const selectedAddress = deliveryAddresses.find((address) => address.id == deliveryAddressId);
     const lookUp = cartItems.map((item: MedicineCartItem) => {
-      return { sku: item.id, qty: item.quantity };
+      return { sku: item.sku, qty: item.quantity };
     });
     setDeliveryLoading(true);
     await axios
@@ -320,6 +322,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           headers: {
             Authentication: apiDetails.deliveryAuthToken,
           },
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
         }
       )
       .then((res: AxiosResponse) => {
@@ -390,7 +396,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                     control={<AphRadio color="primary" />}
                     label={formatAddress(address)}
                     onChange={() => {
-                      checkServiceAvailability(address.id, address.zipcode)
+                      checkServiceAvailability(address.zipcode)
                         .then((res: AxiosResponse) => {
                           if (res && res.data && res.data.Availability) {
                             setDeliveryAddressId && setDeliveryAddressId(address.id);

@@ -168,7 +168,7 @@ type AddNewAddressProps = {
   currentAddress?: GetPatientAddressList_getPatientAddressList_addressList;
   disableActions?: boolean;
   forceRefresh?: (forceRefresh: boolean) => void;
-  checkServiceAvailability?: (id: string, zipCode: string | null) => AxiosPromise;
+  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
 };
 
 type Address = {
@@ -465,7 +465,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       const deliveryAddrsId = data.savePatientAddress.patientAddress.id;
                       if (props.checkServiceAvailability) {
                         props
-                          .checkServiceAvailability(deliveryAddrsId, pincode)
+                          .checkServiceAvailability(pincode)
                           .then((res: AxiosResponse) => {
                             if (res && res.data && res.data.Availability) {
                               props.setIsAddAddressDialogOpen(false);
