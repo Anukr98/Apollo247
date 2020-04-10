@@ -486,7 +486,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                         setDeliveryAddressId &&
                           setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
                       }
-                    })
+                    }
+                  })
                   .catch((error) => {
                     setIsAlertOpen(true);
                     setAlertMessage(error);
