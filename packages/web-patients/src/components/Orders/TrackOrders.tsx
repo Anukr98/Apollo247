@@ -236,11 +236,6 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     orderDetailsData.medicineOrderPayments &&
     orderDetailsData.medicineOrderPayments.length > 0
   ) {
-    const orderPayment =
-      orderDetailsData &&
-      orderDetailsData.medicineOrderPayments &&
-      orderDetailsData.medicineOrderPayments.length > 0 &&
-      orderDetailsData.medicineOrderPayments[0];
     if (
       (orderPayment && orderPayment.paymentType === 'COD') ||
       (orderPayment && orderPayment.paymentType === 'CASHLESS')
