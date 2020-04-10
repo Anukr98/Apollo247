@@ -195,7 +195,8 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           className={disableSubmit ? classes.buttonDisable : ''}
           onClick={() => {
             setMutationLoading(true);
-            props.checkServiceAvailability &&
+            if (props.checkServiceAvailability) {
+              setMutationLoading(true);
               props
                 .checkServiceAvailability(localDeliveryAddressId, localZipCode)
                 .then((res: AxiosResponse) => {
@@ -212,6 +213,9 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                   setMutationLoading(false);
                   console.log(e);
                 });
+            } else {
+              props.setIsViewAllAddressDialogOpen(false);
+            }
           }}
         >
           {mutationLoading ? <CircularProgress size={20} color="secondary" /> : 'SAVE AND USE'}

@@ -463,7 +463,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                   .then(({ data }: any) => {
                     if (data && data.savePatientAddress && data.savePatientAddress.patientAddress) {
                       const deliveryAddrsId = data.savePatientAddress.patientAddress.id;
-                      props.checkServiceAvailability &&
+                      if (props.checkServiceAvailability) {
                         props
                           .checkServiceAvailability(deliveryAddrsId, pincode)
                           .then((res: AxiosResponse) => {
@@ -480,8 +480,13 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                             setMutationLoading(false);
                             console.log(e);
                           });
-                    }
-                  })
+                      } else {
+                        props.setIsAddAddressDialogOpen(false);
+                        props.forceRefresh && props.forceRefresh(true);
+                        setDeliveryAddressId &&
+                          setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
+                      }
+                    })
                   .catch((error) => {
                     setIsAlertOpen(true);
                     setAlertMessage(error);
