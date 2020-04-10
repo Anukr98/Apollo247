@@ -338,6 +338,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     label="Pin Code"
                     placeholder="Enter pin code"
                     onChange={(e) => {
+                      if (e.target.value.length !== 6) {
+                        setAddress2('');
+                      }
                       setPincode(e.target.value);
                     }}
                     onKeyPress={(e) => {

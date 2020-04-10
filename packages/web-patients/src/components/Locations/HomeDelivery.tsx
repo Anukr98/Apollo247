@@ -252,14 +252,14 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           const addresses = _data.data.getPatientAddressList.addressList.reverse();
           if (addresses && addresses.length > 0) {
             if (deliveryAddressId) {
+              if (cartItems.length > 0) {
+                fetchDeliveryTime();
+              }
               setSelectedAddressDataIndex(
                 addresses.findIndex((address) => address.id === deliveryAddressId) || 0
               );
             } else {
               setSelectedAddressDataIndex(0);
-            }
-            if (cartItems.length > 0) {
-              fetchDeliveryTime();
             }
 
             setDeliveryAddresses && setDeliveryAddresses(addresses);
