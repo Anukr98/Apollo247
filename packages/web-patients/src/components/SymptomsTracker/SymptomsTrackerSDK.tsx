@@ -378,15 +378,37 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [isRedirect, setIsRedirect] = useState(false);
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
       ? moment()
           .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
           .toString()
-      : '';
+      : '15';
   const patientGender =
-    currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : '';
-
+    currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : 'male';
+  const customListner = (resultData: any) => {
+    let specialities = [];
+    specialities = resultData.specialists.map((item: { speciality: string }) =>
+      item.speciality.trim()
+    );
+    if (specialities.length > 0) {
+      const specialitiesEncoded = encodeURI(specialities.join(','));
+      localStorage.setItem('symptomTracker', specialitiesEncoded);
+      setDoctorPopOver(true);
+      setIsRedirect(true);
+      // window.location.href = clientRoutes.doctorsLanding();
+    }
+  };
+  useEffect(() => {
+    if (stopRedirect === 'continue' && isRedirect) {
+      setTimeout(() => {
+        window.location.href = clientRoutes.doctorsLanding();
+      }, 5000);
+    } else if (stopRedirect === 'stop') {
+      window.location.reload();
+    }
+  }, [stopRedirect, isRedirect]);
   return (
     <div className={classes.root}>
       <Header />
@@ -505,6 +527,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   patientAge={patientAge}
                   patientGender={patientGender}
                   sdkContainerStyle={customContainerStyle}
+                  searchDoctorlistner={customListner}
                   showDocBtn={() => (
                     <CustomComponent
                       setDoctorPopOver={setDoctorPopOver}
