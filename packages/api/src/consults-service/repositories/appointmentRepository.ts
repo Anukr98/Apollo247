@@ -953,9 +953,10 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateJdQuestionStatusbyIds(ids: string[], isJdQuestionsComplete: boolean) {
+  updateJdQuestionStatusbyIds(ids: string[]) {
     return this.update([...ids], {
-      isJdQuestionsComplete,
+      isJdQuestionsComplete: true,
+      isConsultStarted: true,
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
         getApptError,
