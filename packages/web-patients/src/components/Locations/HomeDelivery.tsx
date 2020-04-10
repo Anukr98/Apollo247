@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
-import React, { useEffect } from 'react';
+import { Theme, FormControlLabel, CircularProgress, Popover, Typography } from '@material-ui/core';
+import React, { useEffect, useRef } from 'react';
 import {
   AphRadio,
   AphButton,
@@ -133,6 +133,63 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
       paddingBottom: 10,
     },
+    noServiceRoot: {
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    viewCartBtn: {
+      fontSize: 13,
+      color: '#fc9916',
+      fontWeight: 'bold',
+      textAlign: 'right',
+      marginLeft: 'auto',
+      textTransform: 'uppercase',
+    },
+    actions: {
+      padding: '10px 20px 20px 20px',
+      display: 'flex',
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 
@@ -141,6 +198,7 @@ const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
   deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
+  service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
 };
 
 type HomeDeliveryProps = {
@@ -170,8 +228,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isError, setIsError] = React.useState<boolean>(false);
   const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
-  const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
+  const [selectedAddressDataIndex, setSelectedAddressDataIndex] = React.useState<number>(0);
   const [errorDeliveryTimeMsg, setErrorDeliveryTimeMsg] = React.useState('');
+  const [showPlaceNotFoundPopup, setShowPlaceNotFoundPopup] = React.useState(false);
+  const addToCartRef = useRef(null);
 
   const getAddressDetails = () => {
     setIsLoading(true);
@@ -192,19 +252,17 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           const addresses = _data.data.getPatientAddressList.addressList.reverse();
           if (addresses && addresses.length > 0) {
             if (deliveryAddressId) {
-              setSelectedAddressData(
-                addresses.find((address) => address.id === deliveryAddressId) || addresses[0]
+              setSelectedAddressDataIndex(
+                addresses.findIndex((address) => address.id === deliveryAddressId) || 0
               );
             } else {
-              setSelectedAddressData(addresses[0]);
-              setDeliveryAddressId && setDeliveryAddressId(addresses[0].id);
-              setStoreAddressId && setStoreAddressId('');
+              setSelectedAddressDataIndex(0);
             }
-
-            setDeliveryAddresses && setDeliveryAddresses(addresses);
             if (cartItems.length > 0) {
               fetchDeliveryTime();
             }
+
+            setDeliveryAddresses && setDeliveryAddresses(addresses);
           } else {
             setDeliveryAddresses && setDeliveryAddresses([]);
           }
@@ -224,6 +282,25 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       getAddressDetails();
     }
   }, [currentPatient, deliveryAddressId]);
+
+  const checkServiceAvailability = (deliveryId: string, zipCode: string | null) => {
+    return axios.post(
+      'https://www.apollopharmacy.in/servicability_api.php',
+      {
+        postalcode: zipCode || '',
+        skucategory: [
+          {
+            SKU: 'PHARMA',
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: apiDetails.authToken,
+        },
+      }
+    );
+  };
 
   const fetchDeliveryTime = async () => {
     const selectedAddress = deliveryAddresses.find((address) => address.id == deliveryAddressId);
@@ -248,6 +325,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       .then((res: AxiosResponse) => {
         try {
           if (res && res.data) {
+            setDeliveryLoading(false);
             if (
               typeof res.data === 'object' &&
               Array.isArray(res.data.tat) &&
@@ -260,7 +338,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               setDeliveryTime('');
             }
           }
-          setDeliveryLoading(false);
         } catch (error) {
           setDeliveryLoading(false);
           console.log(error);
@@ -275,7 +352,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      {deliveryAddresses.length > 0 && selectedAddressData ? (
+      {/* {deliveryAddresses.length > 0 && selectedAddressData ? (
         <ul>
           <li>
             <FormControlLabel
@@ -294,6 +371,45 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         </ul>
       ) : (
         <>{isLoading ? <CircularProgress /> : null}</>
+      )} */}
+
+      {deliveryAddresses.length > 0 ? (
+        <ul>
+          {deliveryAddresses.map(
+            (address, idx) =>
+              // (idx ===
+              //   (selectedAddressDataIndex === deliveryAddresses.length - 1
+              //     ? selectedAddressDataIndex - 1
+              //     : selectedAddressDataIndex + 1) ||
+              idx === selectedAddressDataIndex && (
+                <li>
+                  <FormControlLabel
+                    checked={address.id === deliveryAddressId}
+                    className={classes.radioLabel}
+                    value={address.id}
+                    control={<AphRadio color="primary" />}
+                    label={formatAddress(address)}
+                    onChange={() => {
+                      checkServiceAvailability(address.id, address.zipcode)
+                        .then((res: AxiosResponse) => {
+                          if (res && res.data && res.data.Availability) {
+                            setDeliveryAddressId && setDeliveryAddressId(address.id);
+                            setStoreAddressId && setStoreAddressId('');
+                          } else {
+                            setShowPlaceNotFoundPopup(true);
+                          }
+                        })
+                        .catch((e: any) => {
+                          console.log(e);
+                        });
+                    }}
+                  />
+                </li>
+              )
+          )}
+        </ul>
+      ) : (
+        <>{isLoading ? <CircularProgress /> : null}</>
       )}
 
       <div className={classes.bottomActions}>
@@ -309,7 +425,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           </AphButton>
         ) : null}
       </div>
-      {errorDeliveryTimeMsg.length > 0 && <span>{errorDeliveryTimeMsg}</span>}
+      {errorDeliveryTimeMsg.length > 0 && (
+        <span>{deliveryLoading ? <CircularProgress size={22} /> : errorDeliveryTimeMsg}</span>
+      )}
       {deliveryTime.length > 0 && (
         <div className={classes.deliveryTimeGroup}>
           <div className={classes.deliveryTimeGroupWrap}>
@@ -329,22 +447,61 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           </div> */}
           Add New Address
         </AphDialogTitle>
-        <AddNewAddress setIsAddAddressDialogOpen={setIsAddAddressDialogOpen} />
+        <AddNewAddress
+          setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
+          checkServiceAvailability={checkServiceAvailability}
+        />
       </AphDialog>
 
       <AphDialog open={isViewAllAddressDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsViewAllAddressDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>
-          {/* <div className={classes.backArrow}>
-            <img src={require('images/ic_back.svg')} alt="" />
-          </div> */}
-          Select Delivery Address
-        </AphDialogTitle>
+        <AphDialogTitle>Select Delivery Address</AphDialogTitle>
         <ViewAllAddress
           setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
           formatAddress={formatAddress}
+          checkServiceAvailability={checkServiceAvailability}
         />
       </AphDialog>
+      <Popover
+        open={showPlaceNotFoundPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.noServiceRoot}>
+              <div className={classes.windowBody}>
+                <Typography variant="h2">Uh oh! :(</Typography>
+                <p>
+                  Sorry! We’re working hard to get to this area! In the meantime, you can either
+                  pick up from a nearby store, or change the pincode.
+                </p>
+              </div>
+              <div className={classes.actions}>
+                <AphButton
+                  className={classes.viewCartBtn}
+                  onClick={() => {
+                    setShowPlaceNotFoundPopup(false);
+                  }}
+                >
+                  OK, GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };
