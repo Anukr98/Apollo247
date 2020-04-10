@@ -131,7 +131,7 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
       caseSheetRepo.saveMultipleCaseSheets(casesheetAttrs);
 
       //updating appointments
-      apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds, true);
+      apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds);
     }
   }
 
