@@ -1215,17 +1215,20 @@ export const JDConsultRoom: React.FC = () => {
     <LinearProgress />
   ) : (
     <div className={classes.root}>
-      {!disableChat() && !isAudioVideoCall && (
-        <IdleTimer
-          ref={idleTimerRef}
-          element={document}
-          onIdle={(e) => {
-            setJrdNoFillDialog(true);
-          }}
-          debounce={250}
-          timeout={1000 * 60 * idleTimeValueInMinutes}
-        />
-      )}
+      {casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.appointmentState !==
+        'AWAITING_RESCHEDULE' &&
+        !disableChat() &&
+        !isAudioVideoCall && (
+          <IdleTimer
+            ref={idleTimerRef}
+            element={document}
+            onIdle={(e) => {
+              setJrdNoFillDialog(true);
+            }}
+            debounce={250}
+            timeout={1000 * 60 * idleTimeValueInMinutes}
+          />
+        )}
       <div className={classes.headerSticky}>
         <Header />
       </div>
