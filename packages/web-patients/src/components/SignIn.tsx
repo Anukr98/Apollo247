@@ -235,7 +235,28 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                   autoFocus={index === 0}
                   error={verifyOtpError && !isSigningIn}
                   inputRef={otpInputRefs[index]}
-                  value={_isNumber(otp[index]) ? otp[index] : ''}
+
+
+                  onPaste={(e) => {
+                    const pastedString = e.clipboardData.getData('text');
+                    if (isNumeric(pastedString)) {
+                      const requiredOtpStringArr = pastedString.slice(0, numOtpDigits).split('');
+                      setOtp(requiredOtpStringArr.map(Number));
+                      requiredOtpStringArr.map(e => {
+                        // @ts-ignore
+                        otpInputRefs[index].current.value = e;
+                          // @ts-ignore
+                        otpInputRefs[index].current.innerHTML = e;
+                        const nextInput = otpInputRefs[index + 1];
+                        if (nextInput && nextInput.current) {
+                          nextInput.current.focus();
+                        }
+                        index++;
+                      })
+                    }
+                  }
+                  }
+                  // value={_isNumber(otp[index]) ? otp[index] : ''}
                   inputProps={{ type: 'tel', maxLength: 1 }}
                   onChange={(e) => {
                     const newOtp = [...otp];
@@ -255,6 +276,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                   onKeyDown={(e) => {
                     const backspaceWasPressed = e.key === 'Backspace';
                     const currentInputIsEmpty = otp[index] == null;
+                    console.log('otpotpotp', otp)
                     const focusPreviousInput = () => {
                       const prevInput = otpInputRefs[index - 1];
                       if (prevInput && prevInput.current) {
@@ -270,6 +292,8 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               </Grid>
             ))}
           </Grid>
+
+
           {verifyOtpError && !isSigningIn && (
             <FormHelperText component="div" className={classes.helpText} error={verifyOtpError}>
               <div>
