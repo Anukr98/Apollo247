@@ -5,7 +5,7 @@ exports.autoSubmitJDCasesheet = (req, res) => {
   const requestJSON = {
     query: Constants.AUTO_SUBMIT_JD_CASESHEET,
   };
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
