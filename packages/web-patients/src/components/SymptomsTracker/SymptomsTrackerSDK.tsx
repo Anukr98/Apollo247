@@ -383,9 +383,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
       ? moment()
           .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
           .toString()
-      : '1';
+      : '';
   const patientGender =
-    currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : 'male';
+    currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : '';
 
   return (
     <div className={classes.root}>

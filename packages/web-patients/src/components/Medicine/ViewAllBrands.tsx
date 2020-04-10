@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 20,
         paddingRight: 20,
         boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+        position: 'fixed',
       },
     },
     headerTitle: {
@@ -97,6 +98,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: 'none',
         boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
         margin: 0,
+        marginTop: 55,
         position: 'relative',
         paddingLeft: 14,
         zIndex: 999,
