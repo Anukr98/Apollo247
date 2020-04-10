@@ -219,9 +219,8 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             id: item!.id,
             date: moment(item!.quoteDateTime).format(DATE_FORMAT),
             uploadedUrl: item!.prescriptionImageUrl,
-            doctorName: `Meds Rx ${
-              (item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''
-            }`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+            doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) ||
+              ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: getMedicines(item!.medicineOrderLineItems! || []),
             prismPrescriptionFileId: item!.prismPrescriptionFileId,
@@ -250,8 +249,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .filter((item: any) => !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
-          moment(b.date, DATE_FORMAT).toDate().getTime() -
-          moment(a.date, DATE_FORMAT).toDate().getTime()
+          moment(b.date, DATE_FORMAT)
+            .toDate()
+            .getTime() -
+          moment(a.date, DATE_FORMAT)
+            .toDate()
+            .getTime()
       );
 
   const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
@@ -360,7 +363,8 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             disabled={
               ((!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
                 (!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0))) ||
-              selectedEPrescriptionRecords.length === 0
+              selectedEPrescriptionRecords.length === 0 ||
+              !isRecordChecked
             }
             onClick={() => {
               const finalEprescriptions = selectedEPrescriptionRecords;
