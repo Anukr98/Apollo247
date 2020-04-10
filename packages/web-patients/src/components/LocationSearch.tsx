@@ -298,6 +298,7 @@ export const LocationSearch: React.FC = (props) => {
         ref={locationRef}
         onClick={() => setIsLocationPopoverOpen(true)}
         title={selectedAddress}
+        id="locationId"
       >
         <img
           className={`${classes.locationIcon} ${classes.iconDesktop}`}
