@@ -235,8 +235,6 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                   autoFocus={index === 0}
                   error={verifyOtpError && !isSigningIn}
                   inputRef={otpInputRefs[index]}
-
-
                   onPaste={(e) => {
                     const pastedString = e.clipboardData.getData('text');
                     if (isNumeric(pastedString)) {
