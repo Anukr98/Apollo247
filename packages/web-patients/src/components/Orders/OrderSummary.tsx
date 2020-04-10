@@ -131,7 +131,11 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
     <div className={classes.loader}>
       <CircularProgress />
     </div>
-  ) : props.orderDetailsData && props.orderDetailsData.orderAutoId ? (
+  ) : (props.orderDetailsData &&
+      props.orderDetailsData.orderAutoId &&
+      orderPayment &&
+      orderPayment.paymentType === 'COD') ||
+    (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
     <div className={classes.root}>
       <div className={classes.summaryHeader}>
         <div className={classes.headRow}>
