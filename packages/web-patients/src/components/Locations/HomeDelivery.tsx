@@ -171,6 +171,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const [isError, setIsError] = React.useState<boolean>(false);
   const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
   const [selectedAddressData, setSelectedAddressData] = React.useState<any | null>(null);
+  const [errorDeliveryTimeMsg, setErrorDeliveryTimeMsg] = React.useState('');
 
   const getAddressDetails = () => {
     setIsLoading(true);
@@ -252,11 +253,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               Array.isArray(res.data.tat) &&
               res.data.tat.length
             ) {
+              setErrorDeliveryTimeMsg('');
               setDeliveryTime(res.data.tat[0].deliverydate);
-            } else if (typeof res.data === 'string') {
-              console.log(res.data);
             } else if (typeof res.data.errorMSG === 'string') {
-              console.log(res.data.errorMSG);
+              setErrorDeliveryTimeMsg(res.data.errorMSG);
+              setDeliveryTime('');
             }
           }
           setDeliveryLoading(false);
@@ -308,7 +309,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           </AphButton>
         ) : null}
       </div>
-      {deliveryTime !== '' && (
+      {errorDeliveryTimeMsg.length > 0 && <span>{errorDeliveryTimeMsg}</span>}
+      {deliveryTime.length > 0 && (
         <div className={classes.deliveryTimeGroup}>
           <div className={classes.deliveryTimeGroupWrap}>
             <span className={classes.deliveryTime}>Delivery Time</span>
