@@ -265,4 +265,7 @@ export enum ApiConstants {
 
   DOCTOR_SEARCH_DEFAULT_CITY1 = 'Hyderabad',
   DOCTOR_SEARCH_DEFAULT_CITY2 = 'Chennai',
+
+  AUTO_SUBMIT_JD_CASESHEET_RESPONSE = 'Checked all the appointments scheduled after 10 minutes',
+  VIRTUAL_JD_NOTES = 'No JD was assigned to this case. Hence case has been submitted without any data.',
 }

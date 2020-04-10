@@ -953,6 +953,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateJdQuestionStatusbyIds(ids: string[], isJdQuestionsComplete: boolean) {
+    return this.update([...ids], {
+      isJdQuestionsComplete,
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
   rescheduleAppointmentByDoctor(
     id: string,
     appointmentDateTime: Date,

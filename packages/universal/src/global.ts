@@ -72,5 +72,6 @@ declare namespace NodeJS {
     SMS_LINK_BOOK_APOINTMENT: string;
 
     INACTIVE_CONSULT_QUEUE_LIMT: string;
+    VIRTUAL_JD_ID: string;
   }
 }
