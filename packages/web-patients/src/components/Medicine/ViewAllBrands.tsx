@@ -350,7 +350,7 @@ export const ViewAllBrands: React.FC = (props) => {
             className={classes.scrollbar}
             autoHide={true}
             autoHeight
-            autoHeightMax={'calc(100vh - 212px)'}
+            autoHeightMax={'calc(100vh - 250px)'}
           >
             <div className={classes.filterSection}>
               {isLoading ? (

@@ -319,6 +319,18 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         .getCount();
     }
   }
+  async getTotalCompletedChats(doctorId:string,selDate:Date){
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return await CaseSheet.count({
+      where: {
+        doctorId: doctorId,
+        status: CASESHEET_STATUS.COMPLETED,
+        createdDate: Between(newStartDate, newEndDate),
+        doctorType:Not('JUNIOR')
+      },
+    });
+  }
 
   async getTotalRescheduleCount(doctorId:string,appointmentDate:Date){
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
