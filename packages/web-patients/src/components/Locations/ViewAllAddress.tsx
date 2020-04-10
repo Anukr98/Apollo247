@@ -132,7 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ViewAllAddressProps {
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
   formatAddress: (address: Address) => string;
-  checkServiceAvailability?: (id: string, zipCode: string | null) => AxiosPromise;
+  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
@@ -198,7 +198,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
             if (props.checkServiceAvailability) {
               setMutationLoading(true);
               props
-                .checkServiceAvailability(localDeliveryAddressId, localZipCode)
+                .checkServiceAvailability(localZipCode)
                 .then((res: AxiosResponse) => {
                   if (res && res.data && res.data.Availability) {
                     props.setIsViewAllAddressDialogOpen(false);
