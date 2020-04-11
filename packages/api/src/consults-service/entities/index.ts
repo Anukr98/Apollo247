@@ -1032,6 +1032,9 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   caseSheetNotSatisfactory: number;
 
+  @Column({default:0})
+  totalConsultsInQueue:number
+
   @Column()
   createdDate: Date;
 

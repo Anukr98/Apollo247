@@ -132,9 +132,22 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     if (totalMins == 0 && apptIds.length == 0) {
       return 0;
     } else {
-      console.log('finalreult=>',totalMins/apptIds.length)
+      console.log('finalresult=>',totalMins/apptIds.length)
       return totalMins / apptIds.length;
     }
+  }
+
+  async getTotalConsultsInQueue(selDate: Date, doctorId: string){
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return ConsultQueueItem.createQueryBuilder('consult_queue_item')
+      .where('consult_queue_item.doctorId = :docId', { docId: doctorId })
+      .andWhere('consult_queue_item.createdDate Between :fromDate AND :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .getCount();
+
   }
 
   async timePerChat(selDate: Date, doctorId: string) {
