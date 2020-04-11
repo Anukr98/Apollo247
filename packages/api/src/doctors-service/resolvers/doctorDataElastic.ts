@@ -14,7 +14,7 @@ const insertDataElastic: Resolver<null, {}, DoctorsServiceContext, string> = asy
   args,
   { doctorsDb }
 ) => {
-  const client = new Client({ node: '104.211.242.175:9200' });
+  const client = new Client({ node: 'http://104.211.242.175:9200' });
   const params: RequestParams.Search = {
     index: 'doctors',
     body: {
