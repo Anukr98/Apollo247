@@ -1227,7 +1227,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     getHistory(0);
 
-    registerForPushNotification();
+    // registerForPushNotification();
 
     pubnub.addListener({
       status: (statusEvent) => {
@@ -1474,11 +1474,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const registerForPushNotification = () => {
     console.log('registerForPushNotification:');
-    // if (Platform.OS === 'ios') {
-    //   ExportDeviceToken.getPushNotificationToken(handlePushNotification);
-    // } else {
-    //   handlePushNotification('');
-    // }
+    if (Platform.OS === 'ios') {
+      ExportDeviceToken.getPushNotificationToken(handlePushNotification);
+    } else {
+      handlePushNotification('');
+    }
   };
 
   const handlePushNotification = async (deviceToken: string) => {
@@ -1690,7 +1690,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         startConsultjrResult.length === 0 &&
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
-        languageQueueResult.length === 0
+        languageQueueResult.length === 0 &&
+        !appointmentData.isJdQuestionsComplete
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
@@ -1759,7 +1760,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         startConsultjrResult.length === 0 &&
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
-        languageQueueResult.length === 0
+        languageQueueResult.length === 0 &&
+        !appointmentData.isJdQuestionsComplete
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
