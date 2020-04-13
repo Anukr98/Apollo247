@@ -903,13 +903,16 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const checkTimeRemainToConsult = () => {
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
-    const diff = moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
-    if (disablecurrent >= disableconsult) {
-      setRemainingConsultStartTime(0);
-    } else if (diff <= 0) {
-      setRemainingConsultStartTime(0);
-    } else {
-      setRemainingConsultStartTime(diff);
+    if (disablecurrent.toISOString().slice(0, 10) === disableconsult.toISOString().slice(0, 10)) {
+      const diff =
+        moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
+      if (disablecurrent >= disableconsult) {
+        setRemainingConsultStartTime(0);
+      } else if (diff <= 0) {
+        setRemainingConsultStartTime(0);
+      } else {
+        setRemainingConsultStartTime(diff);
+      }
     }
   };
 
@@ -1258,7 +1261,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>
             Consult Room
-            {appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE' ? (
+            {appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE1' ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
                 This appointment is under reschedule and waiting for the patient to accept the new
                 slot.
