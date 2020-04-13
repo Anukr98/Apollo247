@@ -722,6 +722,7 @@ export interface UpdatePatientInput {
   referralCode?: string | null;
   relation?: Relation | null;
   photoUrl?: string | null;
+  deviceCode?: string | null;
 }
 
 export interface UploadDocumentInput {
