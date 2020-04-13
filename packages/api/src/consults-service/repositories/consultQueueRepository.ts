@@ -84,7 +84,6 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
   }
 
   getQueueItemsByDoctorIds(ids: string[]) {
-    const date = format(new Date(), 'yyyy-MM-dd');
     return this.createQueryBuilder('consultQueueItem')
       .innerJoinAndMapOne(
         'consultQueueItem.appointment',
@@ -95,7 +94,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .where('appointment.appointmentState NOT IN (:...appointmentStates)', {
         appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE, APPOINTMENT_STATE.RESCHEDULE],
       })
-      .andWhere('appointment.appointmentDateTime >= :date', { date })
+      .andWhere('appointment.appointmentDateTime >= :date', { date: new Date() })
       .andWhere('consultQueueItem.doctorId IN (:...ids)', { ids })
       .andWhere('consultQueueItem.isActive = :isactive', { isactive: true })
       .getMany();

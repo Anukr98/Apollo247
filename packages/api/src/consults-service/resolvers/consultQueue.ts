@@ -114,16 +114,41 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
     take: limit,
     order: { id: 'DESC' },
   });
+
   inActiveQueueItems.reverse();
   const dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
-  const consultQueue = await Promise.all(
-    dbConsultQueue.map(async (cq) => {
-      const { id, isActive } = cq;
-      const appointment = await apptRepo.findOneOrFail(cq.appointmentId);
-      const patient = await patRepo.findOneOrFail(appointment.patientId);
-      return { id, isActive, appointment, patient };
-    })
-  );
+
+  //Get all the appointments of the queue items
+  const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
+  const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
+
+  //Map the appointments with appointment ids
+  const appointmentIdMapper: { [key: string]: Appointment } = {};
+  const patientIds: string[] = [];
+  appointments.forEach((appointment) => {
+    appointmentIdMapper[appointment.id] = appointment;
+    patientIds.push(appointment.patientId);
+  });
+
+  //Get all the patients of the queue items
+  const patients = await patRepo.getPatientDetailsByIds(patientIds);
+
+  //Map the patients with patient ids
+  const patientIdMapper: { [key: string]: Patient } = {};
+  patients.forEach((patient) => {
+    patientIdMapper[patient.id] = patient;
+  });
+
+  //Create the response object with queue items
+  const consultQueue = dbConsultQueue.map((queueItem) => {
+    const { id, isActive, appointmentId } = queueItem;
+    return {
+      id,
+      isActive,
+      appointment: appointmentIdMapper[appointmentId],
+      patient: patientIdMapper[appointmentIdMapper[appointmentId].patientId],
+    };
+  });
   return consultQueue;
 };
 
