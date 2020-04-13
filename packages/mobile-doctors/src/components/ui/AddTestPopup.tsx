@@ -95,7 +95,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                     Keyboard.dismiss();
                     // getTempTestArray(item);
                     getTempTestArray(item);
-                    setsearchTestVal(g(item, 'itemname') || '');
+                    setsearchTestVal('');
                     // isSearchTestListVisible;
                     setisSearchTestListVisible(!isSearchTestListVisible);
                   },
