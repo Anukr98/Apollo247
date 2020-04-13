@@ -843,6 +843,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
+  const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [showRescheduleLoader, setShowRescheduleLoader] = React.useState<boolean>(false);
 
@@ -897,6 +898,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           if (showVideo) {
             stopAudioVideoCall();
           }
+          setIscallAbandonment(true);
           setShowAbandonment(true);
         }
       } else {
@@ -919,6 +921,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         clearInterval(intervalMissCall);
         stopAudioVideoCall();
         if (missedCallCounter >= 3) {
+          setIscallAbandonment(true);
           setShowAbandonment(true);
         }
       }
@@ -938,7 +941,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           setRemainingCallTime(0);
           clearInterval(intervalcallId);
           if (patientMsgs.length === 0) {
-            noShowAction(STATUS.NO_SHOW);
+            setIscallAbandonment(false);
+            setShowAbandonment(true);
+            //noShowAction(STATUS.NO_SHOW);
           }
         }
       } else {
@@ -2719,15 +2724,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
-              Continue
+              {iscallAbandonment ? 'Continue' : 'Continue Conult'}
             </Button>
             <Button
               className={classes.consultButton}
               onClick={() => {
-                noShowAction(STATUS.CALL_ABANDON);
+                noShowAction(iscallAbandonment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
               }}
             >
-              Reschedule
+              {iscallAbandonment ? 'Reschedule' : 'OK Reschedule'}
             </Button>
           </div>
         </Paper>
