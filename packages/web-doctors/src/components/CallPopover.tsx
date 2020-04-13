@@ -985,11 +985,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             (status: any, response: any) => {}
           );
           unSubscribeBrowserButtonsListener();
-          if (status === STATUS.NO_SHOW) {
-            alert(
-              'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.'
-            );
-          }
+          // if (status === STATUS.NO_SHOW) {
+          //   alert(
+          //     'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.'
+          //   );
+          // }
           navigateToCalendar();
         })
         .catch((e) => {
