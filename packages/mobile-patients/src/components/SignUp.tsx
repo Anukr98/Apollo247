@@ -61,6 +61,7 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import moment from 'moment';
+import DeviceInfo from 'react-native-device-info';
 
 const { height } = Dimensions.get('window');
 
@@ -491,6 +492,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
                         referralCode: trimReferral ? trimReferral : null,
+                        deviceCode: DeviceInfo.getUniqueId(),
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({

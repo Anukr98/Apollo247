@@ -53,6 +53,7 @@ import {
 import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
+import DeviceInfo from 'react-native-device-info';
 
 const { width, height } = Dimensions.get('window');
 
@@ -449,6 +450,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         id: profile.id,
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
                         referralCode: (profile.relation == Relation.ME && trimReferral) || null,
+                        deviceCode: DeviceInfo.getUniqueId(),
                       };
                       console.log('patientsDetails', { patientsDetails });
                       CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
