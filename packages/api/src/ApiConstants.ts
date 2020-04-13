@@ -267,5 +267,6 @@ export enum ApiConstants {
   DOCTOR_SEARCH_DEFAULT_CITY2 = 'Chennai',
 
   AUTO_SUBMIT_JD_CASESHEET_RESPONSE = 'Checked all the appointments scheduled after 10 minutes',
-  VIRTUAL_JD_NOTES = 'No JD was assigned to this case. Hence case has been submitted without any data.',
+  VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
+  VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
 }

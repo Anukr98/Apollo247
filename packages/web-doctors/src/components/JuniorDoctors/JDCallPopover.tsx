@@ -632,7 +632,7 @@ let transferObject: any = {
 };
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
-
+let countdowntimer: any;
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const params = useParams<JDConsultRoomParams>();
@@ -659,6 +659,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(0);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   // const startConsultDisableReason =
   //   appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE'
@@ -903,21 +904,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
     if (disablecurrent === disableconsult) {
-      console.log(0);
-      return 0;
+      setRemainingConsultStartTime(0);
     } else {
       const diff = (disableconsult.getTime() - disablecurrent.getTime()) / 1000;
       const diffMins = diff / 60;
-      console.log(Math.round(diffMins));
-      return Math.round(diffMins);
+      setRemainingConsultStartTime(Math.round(diffMins));
     }
-    // if (Math.round(diffMins) < 10 && Math.round(diffMins) > 0) {
-    //   console.log('plz submit the casesheet.');
-    // }
-    // if(Math.round(diffMins) < 10 && Math.round(diffMins) > 0){
-    //   console.log('plz submit the casesheet.').
-    // }
-    //console.log(Math.abs(Math.round(diff)));
   };
 
   // const startConstultCheck = () => {
@@ -971,8 +963,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   //     );
   //   }
   // };
-
-  //setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
     setRemainingTime(900);
     intervalId && clearInterval(intervalId);
@@ -1072,6 +1062,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = new Pubnub(config);
 
   useEffect(() => {
+    countdowntimer = setInterval(checkTimeRemainToConsult, 1000);
     pubnub.subscribe({
       channels: [channel],
       //withPresence: true,
@@ -1108,6 +1099,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
+      clearInterval(countdowntimer);
     };
   }, []);
 
@@ -1270,9 +1262,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 This appointment is under reschedule and waiting for the patient to accept the new
                 slot.
               </div>
-            ) : checkTimeRemainToConsult() <= 10 && checkTimeRemainToConsult() > 0 ? (
+            ) : remainingConsultStartTime <= 10 && remainingConsultStartTime > 0 ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                SD consult will start in 10 min. please submit asap.
+                {remainingConsultStartTime} minutes left for Senior Doctor to start the consult.
               </div>
             ) : (
               !props.hasCameraMicPermission && (
@@ -1281,11 +1273,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 </div>
               )
             )}
-            {/* {!props.hasCameraMicPermission && (
-              <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                Note: Please allow access to Camera & Mic.
-              </div>
-            )} */}
           </div>
 
           {/* code commented as requested by the testing team

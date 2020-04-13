@@ -26,6 +26,12 @@ export class PatientRepository extends Repository<Patient> {
     return this.findOne({ where: { id } });
   }
 
+  getPatientDetailsByIds(ids: string[]) {
+    return this.createQueryBuilder('patient')
+      .where('patient.id IN (:...ids)', { ids })
+      .getMany();
+  }
+
   getPatientDetails(id: string) {
     return this.findOne({
       where: { id, isActive: true },

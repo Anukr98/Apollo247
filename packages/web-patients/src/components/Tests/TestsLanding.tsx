@@ -639,7 +639,7 @@ export const TestsLanding: React.FC = (props) => {
                     }
                   }}
                 >
-                  Ok, Gotit
+                  Ok, Got it
                 </AphButton>
               </div>
             </div>

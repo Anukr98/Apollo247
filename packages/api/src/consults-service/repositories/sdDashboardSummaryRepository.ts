@@ -398,7 +398,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         fromDate: startDate,
         toDate: endDate,
       })
-      .andWhere('appointment_call_details.endTime is not null')
+      .andWhere('appointment_call_details.endTime is not null',{doctorType:Not('JUNIOR')})
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .getMany();
     console.log(totalTime, 'total time');
