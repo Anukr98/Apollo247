@@ -237,7 +237,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
-  console.log(Appintmentdatetimeconsultpage, 'Appintmentdatetimeconsultpage');
+
   const AppId = props.navigation.getParam('AppId');
   const [stastus, setStatus] = useState<STATUS | undefined>(
     props.navigation.getParam('AppointmentStatus')
@@ -313,7 +313,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setPatientImageshow,
     setUrl,
   } = props;
-  console.log(props.caseSheetEdit, 'caseSheetEdit');
 
   const sendToPatientAction = () => {
     setLoading && setLoading(true);
@@ -436,7 +435,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           })
           .filter((i) => i !== ''),
       diagnosticPrescription:
-        tests && tests.length > 0
+        tests && tests.length > 0 && tests.filter((i) => i.isSelected).length > 0
           ? tests
               .filter((i) => i.isSelected)
               .map((i) => {
@@ -459,33 +458,35 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             })
           : null,
       medicinePrescription:
-        medicinePrescriptionData &&
-        medicinePrescriptionData
-          .filter(
-            (med) =>
-              selectedMedicinesId.findIndex((i) => i === (med && (med.externalId || med.id))) >= 0
-          )
-          .map((i) => {
-            if (i) {
-              return {
-                id: i.externalId || i.id || '',
-                medicineConsumptionDuration: i.medicineConsumptionDuration || '',
-                medicineConsumptionDurationInDays: i.medicineConsumptionDurationInDays || '',
-                medicineConsumptionDurationUnit: i.medicineConsumptionDurationUnit,
-                medicineDosage: i.medicineDosage || '',
-                medicineFormTypes: i.medicineFormTypes || MEDICINE_FORM_TYPES.OTHERS,
-                medicineFrequency: i.medicineFrequency,
-                medicineInstructions: i.medicineInstructions || '',
-                medicineName: i.medicineName || '',
-                medicineTimings: i.medicineTimings || [],
-                medicineToBeTaken: i.medicineToBeTaken || [],
-                medicineUnit: i.medicineUnit,
-              };
-            } else {
-              return '';
-            }
-          })
-          .filter((i) => i !== ''),
+        medicinePrescriptionData && selectedMedicinesId.length > 0
+          ? medicinePrescriptionData
+              .filter(
+                (med) =>
+                  selectedMedicinesId.findIndex((i) => i === (med && (med.externalId || med.id))) >=
+                  0
+              )
+              .map((i) => {
+                if (i) {
+                  return {
+                    id: i.externalId || i.id || '',
+                    medicineConsumptionDuration: i.medicineConsumptionDuration || '',
+                    medicineConsumptionDurationInDays: i.medicineConsumptionDurationInDays || '',
+                    medicineConsumptionDurationUnit: i.medicineConsumptionDurationUnit,
+                    medicineDosage: i.medicineDosage || '',
+                    medicineFormTypes: i.medicineFormTypes || MEDICINE_FORM_TYPES.OTHERS,
+                    medicineFrequency: i.medicineFrequency,
+                    medicineInstructions: i.medicineInstructions || '',
+                    medicineName: i.medicineName || '',
+                    medicineTimings: i.medicineTimings || [],
+                    medicineToBeTaken: i.medicineToBeTaken || [],
+                    medicineUnit: i.medicineUnit,
+                  };
+                } else {
+                  return '';
+                }
+              })
+              .filter((i) => i !== '')
+          : null,
       id: g(props.caseSheet, 'caseSheetDetails', 'id') || '',
       lifeStyle:
         lifeStyleData &&
@@ -1246,7 +1247,17 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         caseSheetEdit && (
                           <TouchableOpacity
                             onPress={() => {
-                              setTests([...tests, { ...showdata, isSelected: true }]);
+                              if (tests.findIndex((i) => i.itemname === showdata.itemname) > -1) {
+                                setTests([
+                                  ...tests.map((i) =>
+                                    i.itemname === showdata.itemname
+                                      ? { itemname: i.itemname, isSelected: true }
+                                      : i
+                                  ),
+                                ]);
+                              } else {
+                                setTests([...tests, { ...showdata, isSelected: true }]);
+                              }
                             }}
                           >
                             <Green />
@@ -2606,13 +2617,20 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           setShowAddTestPopup(false);
         }}
         onPressDone={(searchTestVal, tempTestArray) => {
+          const tempTest = tests;
           const newData = tempTestArray.length
             ? tempTestArray.map((ele) => {
-                return { itemname: ele.itemname || '', isSelected: true };
+                const existingElement = tests.findIndex((i) => i.itemname === ele.itemname);
+                if (existingElement > -1) {
+                  tempTest[existingElement].isSelected = true;
+                  return { itemname: '', isSelected: false };
+                } else {
+                  return { itemname: ele.itemname || '', isSelected: true };
+                }
               })
             : [{ itemname: searchTestVal, isSelected: true }];
 
-          setTests([...tests, ...newData.filter((i) => i.itemname !== '')]);
+          setTests([...tempTest, ...newData.filter((i) => i.itemname !== '')]);
           setShowAddTestPopup(!ShowAddTestPopup);
         }}
       />
