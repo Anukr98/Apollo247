@@ -67,6 +67,30 @@ export enum WebEngageEventName {
   REORDER_MEDICINES = 'Reorder Medicines',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
+
+  // ConsultRoom Events
+  CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
+  CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
+  // ORDER_MEDICINES_CLICKED = 'Order Medicines clicked', // Possible duplicate of ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+  COMPLETED_AUTOMATED_QUESTIONS = 'Completed Automated Questions',
+  JD_COMPLETED = 'JD Completed',
+  PRESCRIPTION_RECEIVED = 'Prescription Received',
+  SR_DOCTOR_JOINED = 'Sr doctor joined',
+  SD_CONSULTATION_STARTED = 'SD Consultation Started',
+  SD_VIDEO_CALL_STARTED = 'SD Video call started',
+  // CONSULT_FEEDBACK_GIVEN = 'Consult feedback Given', // Possible duplicate of RATING_GIVEN
+  DOWNLOAD_PRESCRIPTION = 'Download Prescription',
+  VIEW_PRESCRIPTION_IN_CONSULT_DETAILS = 'View Prescription in Consult Details',
+  ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'Order Medicines from Prescription details',
+  ORDER_TESTS_FROM_PRESCRIPTION_DETAILS = 'Order Tests from Prescription details',
+  CONSULT_CARD_CLICKED = 'Consult Card Clicked',
+  CONTINUE_CONSULT_CLICKED = 'Continue Consult Clicked',
+  CHAT_WITH_DOCTOR = 'Chat with Doctor',
+  FILL_MEDICAL_DETAILS = 'Fill Medical Details',
+  RESCHEDULE_CLICKED = 'Reschedule Clicked', // In appointment details screen
+  CANCEL_CONSULTATION_CLICKED = 'Cancel Consultation Clicked', // In appointment details screen
+  CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
+  NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
 }
 
 export interface PatientInfo {
@@ -505,4 +529,342 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfo;
 
   [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfo;
+
+  // ********** ConsultRoom Events ********** \\
+
+  [WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Mobile Number': string;
+    'Customer ID': string;
+  };
+
+  [WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.FILL_MEDICAL_DETAILS]: {
+    'Doctor Name': string;
+    'Doctor Speciality': string;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  // [WebEngageEventName.ORDER_MEDICINES_CLICKED]: PatientInfo; // Possible duplicate
+  [WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS]: {
+    'Doctor Name': string;
+    'Doctor Speciality': string;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.JD_COMPLETED]: {
+    'Doctor Name': string;
+    'Doctor Speciality': string;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CONTINUE_CONSULT_CLICKED]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CONSULT_CARD_CLICKED]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.RESCHEDULE_CLICKED]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Source Screen': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CANCEL_CONSULTATION_CLICKED]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Source Screen': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.PRESCRIPTION_RECEIVED]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Source Screen': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.SR_DOCTOR_JOINED]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.SD_CONSULTATION_STARTED]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.SD_VIDEO_CALL_STARTED]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  // [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
+  //   'Speciality Name': string;
+  //   'Speciality ID': string;
+  //   'Doctor Category': DoctorType;
+  //   'Consult Date Time': Date;
+  //   'Consult Mode': 'Online' | 'Physical';
+  //   'Hospital Name': string;
+  //   'Hospital City': string;
+  //   'Consult ID': string;
+  //   Rating: string;
+  //   'Patient Name': string;
+  //   'Patient UHID': string;
+  //   Relation: string;
+  //   'Patient Age': number;
+  //   'Patient Gender': string;
+  //   'Customer ID': string;
+  // };
+  [WebEngageEventName.DOWNLOAD_PRESCRIPTION]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Download Screen': 'Chat' | 'Prescription Details';
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS]: {
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.NO_SLOTS_FOUND]: {
+    // 'Speciality Name': string;
+    // 'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
 }
