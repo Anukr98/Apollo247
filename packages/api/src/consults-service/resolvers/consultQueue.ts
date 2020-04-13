@@ -114,16 +114,41 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
     take: limit,
     order: { id: 'DESC' },
   });
+
   inActiveQueueItems.reverse();
   const dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
-  const consultQueue = await Promise.all(
-    dbConsultQueue.map(async (cq) => {
-      const { id, isActive } = cq;
-      const appointment = await apptRepo.findOneOrFail(cq.appointmentId);
-      const patient = await patRepo.findOneOrFail(appointment.patientId);
-      return { id, isActive, appointment, patient };
-    })
-  );
+
+  //Get all the appointments of the queue items
+  const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
+  const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
+
+  //Map the appointments with appointment ids
+  const appointmentIdMapper: { [key: string]: Appointment } = {};
+  const patientIds: string[] = [];
+  appointments.forEach((appointment) => {
+    appointmentIdMapper[appointment.id] = appointment;
+    patientIds.push(appointment.patientId);
+  });
+
+  //Get all the patients of the queue items
+  const patients = await patRepo.getPatientDetailsByIds(patientIds);
+
+  //Map the patients with patient ids
+  const patientIdMapper: { [key: string]: Patient } = {};
+  patients.forEach((patient) => {
+    patientIdMapper[patient.id] = patient;
+  });
+
+  //Create the response object with queue items
+  const consultQueue = dbConsultQueue.map((queueItem) => {
+    const { id, isActive, appointmentId } = queueItem;
+    return {
+      id,
+      isActive,
+      appointment: appointmentIdMapper[appointmentId],
+      patient: patientIdMapper[appointmentIdMapper[appointmentId].patientId],
+    };
+  });
   return consultQueue;
 };
 
@@ -168,7 +193,7 @@ const addToConsultQueue: Resolver<
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   await apptRepo.findOneOrFail(appointmentId);
-  const jrDocList: JuniorDoctorsList[] = [];
+  const juniorDoctorsList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
   if (juniorDoctorCaseSheet != null) {
     const queueResult: AddToConsultQueueResult = {
@@ -176,64 +201,72 @@ const addToConsultQueue: Resolver<
       doctorId: '',
       totalJuniorDoctors: 0,
       totalJuniorDoctorsOnline: 0,
-      juniorDoctorsList: jrDocList,
+      juniorDoctorsList,
     };
     return queueResult;
   }
 
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
-  /*const onlineJrDocs = await docRepo.find({
-    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+
+  const juniorDoctors = await docRepo.find({
     doctorType: DoctorType.JUNIOR,
     isActive: true,
   });
-  const chosenJrDoc = _sample(onlineJrDocs);
-  if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  const doctorId = chosenJrDoc.id;*/
-  const onlineJrDocs = await docRepo.find({
-    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-    doctorType: DoctorType.JUNIOR,
-    isActive: true,
+  //Get online JDs
+  const onlineJuniorDoctors = juniorDoctors.filter(
+    (doctor) => doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE
+  );
+  if (!onlineJuniorDoctors.length) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
+
+  const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
+  //Get queue items of online JDs
+  const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
+
+  //Map and get the count of queue items of each online JD
+  const jdQueueCounts: { [key: string]: number } = {};
+  consultQueueItems.map((queueItem) => {
+    if (jdQueueCounts[queueItem.doctorId]) {
+      jdQueueCounts[queueItem.doctorId] = jdQueueCounts[queueItem.doctorId] + 1;
+    } else {
+      jdQueueCounts[queueItem.doctorId] = 1;
+    }
   });
-  const juniorDocs = await docRepo.find({
-    doctorType: DoctorType.JUNIOR,
-    isActive: true,
+  onlineJuniorDoctorIds.map((id) => {
+    if (!jdQueueCounts[id]) {
+      jdQueueCounts[id] = 0;
+    }
   });
-  let doctorId: string = '0';
-  const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
-  if (nextDoctorId && nextDoctorId != '0') {
-    doctorId = nextDoctorId;
-  } else {
-    throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  }
+
+  let jdActiveAppointmentsCount = -1;
+  let doctorId = '';
+  //Map the object and find the JD with least queue item count
+  Object.keys(jdQueueCounts).map((key) => {
+    if (jdActiveAppointmentsCount == -1 || jdQueueCounts[key] < jdActiveAppointmentsCount) {
+      jdActiveAppointmentsCount = jdQueueCounts[key];
+      doctorId = key;
+    }
+  });
+
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
   await apptRepo.updateConsultStarted(appointmentId, true);
-  function getJuniorDocInfo() {
-    return new Promise(async (resolve, reject) => {
-      onlineJrDocs.map(async (doctor) => {
-        const queueCount = await cqRepo.count({ where: { doctorId: doctor.id, isActive: true } });
-        const jrDoctor: JuniorDoctorsList = {
-          doctorName: doctor.firstName + ' ' + doctor.lastName,
-          juniorDoctorId: doctor.id,
-          queueCount,
-        };
-        jrDocList.push(jrDoctor);
-        if (jrDocList.length == onlineJrDocs.length) {
-          resolve(jrDocList);
-        }
-      });
-    });
-  }
-  if (onlineJrDocs.length > 0) {
-    await getJuniorDocInfo();
-  }
+
+  //create the juniorDoctorsList object
+  onlineJuniorDoctors.map((doctor) => {
+    const details = {
+      doctorName: doctor.firstName + ' ' + doctor.lastName,
+      juniorDoctorId: doctor.id,
+      queueCount: jdQueueCounts[doctor.id],
+    };
+    juniorDoctorsList.push(details);
+  });
+
   return {
     id,
     doctorId,
-    totalJuniorDoctors: juniorDocs.length,
-    totalJuniorDoctorsOnline: onlineJrDocs.length,
-    juniorDoctorsList: jrDocList,
+    totalJuniorDoctors: juniorDoctors.length,
+    totalJuniorDoctorsOnline: onlineJuniorDoctors.length,
+    juniorDoctorsList,
   };
 };
 
