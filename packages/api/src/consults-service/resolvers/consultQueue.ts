@@ -183,51 +183,57 @@ const addToConsultQueue: Resolver<
 
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
-  /*const onlineJrDocs = await docRepo.find({
-    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-    doctorType: DoctorType.JUNIOR,
-    isActive: true,
-  });
-  const chosenJrDoc = _sample(onlineJrDocs);
-  if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  const doctorId = chosenJrDoc.id;*/
-  const onlineJrDocs = await docRepo.find({
-    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-    doctorType: DoctorType.JUNIOR,
-    isActive: true,
-  });
+
   const juniorDocs = await docRepo.find({
     doctorType: DoctorType.JUNIOR,
     isActive: true,
   });
-  let doctorId: string = '0';
-  const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
-  if (nextDoctorId && nextDoctorId != '0') {
-    doctorId = nextDoctorId;
-  } else {
-    throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  }
+  //Get online JDs
+  const onlineJrDocs = juniorDocs.filter(
+    (doctor) => doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE
+  );
+  if (!onlineJrDocs.length) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
+
+  const onlineJuniorDoctorIds = onlineJrDocs.map((doctor) => doctor.id);
+  //Get queue items of online JDs
+  const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
+  //Map and get the count of queue items of each online JD
+  const jdQueueCounts: { [key: string]: number } = {};
+  consultQueueItems.map((queueItem) => {
+    if (jdQueueCounts[queueItem.doctorId]) {
+      jdQueueCounts[queueItem.doctorId] = jdQueueCounts[queueItem.doctorId] + 1;
+    } else {
+      jdQueueCounts[queueItem.doctorId] = 1;
+    }
+  });
+  onlineJuniorDoctorIds.map((id) => {
+    if (!jdQueueCounts[id]) {
+      jdQueueCounts[id] = 0;
+    }
+  });
+  let jdActiveAppointmentsCount = -1;
+  let doctorId = '';
+  //Map the object and find the JD with least queue item count
+  Object.keys(jdQueueCounts).map((key) => {
+    if (jdActiveAppointmentsCount == -1 || jdQueueCounts[key] < jdActiveAppointmentsCount) {
+      jdActiveAppointmentsCount = jdQueueCounts[key];
+      doctorId = key;
+    }
+  });
+
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
   await apptRepo.updateConsultStarted(appointmentId, true);
-  function getJuniorDocInfo() {
-    return new Promise(async (resolve, reject) => {
-      onlineJrDocs.map(async (doctor) => {
-        const queueCount = await cqRepo.count({ where: { doctorId: doctor.id, isActive: true } });
-        const jrDoctor: JuniorDoctorsList = {
-          doctorName: doctor.firstName + ' ' + doctor.lastName,
-          juniorDoctorId: doctor.id,
-          queueCount,
-        };
-        jrDocList.push(jrDoctor);
-        if (jrDocList.length == onlineJrDocs.length) {
-          resolve(jrDocList);
-        }
-      });
-    });
-  }
-  if (onlineJrDocs.length > 0) {
-    await getJuniorDocInfo();
-  }
+
+  //create the juniorDoctorsList object
+  onlineJrDocs.map((doctor) => {
+    const details = {
+      doctorName: doctor.firstName + ' ' + doctor.lastName,
+      juniorDoctorId: doctor.id,
+      queueCount: jdQueueCounts[doctor.id],
+    };
+    jrDocList.push(details);
+  });
+
   return {
     id,
     doctorId,
