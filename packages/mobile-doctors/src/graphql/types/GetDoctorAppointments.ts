@@ -8,6 +8,11 @@ import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, Relation, Gend
 // GraphQL query operation: GetDoctorAppointments
 // ====================================================
 
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_appointment {
+  __typename: "Appointment";
+  appointmentDateTime: any;
+}
+
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms {
   __typename: "SymptomList";
   symptom: string | null;
@@ -15,6 +20,10 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet {
   __typename: "CaseSheet";
+  appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_appointment | null;
+  followUp: boolean | null;
+  followUpDate: any | null;
+  followUpAfterInDays: string | null;
   symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
   id: string | null;
   status: string | null;

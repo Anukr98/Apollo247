@@ -122,6 +122,12 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         isFollowUp
         followUpParentId
         caseSheet {
+          appointment {
+            appointmentDateTime
+          }
+          followUp
+          followUpDate
+          followUpAfterInDays
           symptoms {
             symptom
           }
