@@ -104,7 +104,8 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
         unAttendedAppointmentIds
       );
       const activequeueItemIds = queueItems.map((queueItem) => queueItem.consultQueueItem_id);
-      if (activequeueItemIds.length) ConsultQueueRepo.updateConsultQueueItems(activequeueItemIds);
+      if (activequeueItemIds.length)
+        ConsultQueueRepo.updateConsultQueueItems(activequeueItemIds, virtualJDId);
       const activequeueItemAppointmentIds = queueItems.map(
         (queueItem) => queueItem.consultQueueItem_appointmentId
       );
@@ -125,13 +126,15 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
           patientId: appointment.patientId,
           appointment: appointment,
           status: CASESHEET_STATUS.COMPLETED,
-          notes: ApiConstants.VIRTUAL_JD_NOTES.toString(),
+          notes: activequeueItemAppointmentIds.includes(appointment.id)
+            ? ApiConstants.VIRTUAL_JD_NOTES_ASSIGNED.toString()
+            : ApiConstants.VIRTUAL_JD_NOTES_UNASSIGNED.toString(),
         };
       });
       caseSheetRepo.saveMultipleCaseSheets(casesheetAttrs);
 
       //updating appointments
-      apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds, true);
+      apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds);
     }
   }
 

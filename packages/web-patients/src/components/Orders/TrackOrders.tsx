@@ -224,6 +224,26 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   }
 
+  const orderPayment =
+    orderDetailsData &&
+    orderDetailsData.medicineOrderPayments &&
+    orderDetailsData.medicineOrderPayments.length > 0 &&
+    orderDetailsData.medicineOrderPayments[0];
+
+  let isDisableCancel = false;
+  if (
+    orderDetailsData &&
+    orderDetailsData.medicineOrderPayments &&
+    orderDetailsData.medicineOrderPayments.length > 0
+  ) {
+    if (
+      (orderPayment && orderPayment.paymentType === 'COD') ||
+      (orderPayment && orderPayment.paymentType === 'CASHLESS')
+    ) {
+      isDisableCancel = true;
+    }
+  }
+
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
@@ -240,12 +260,17 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         </div>
         {props.orderAutoId !== 0 && props.orderAutoId > 0 && (
           <>
-            <div className={classes.orderId}>
-              <span>ORDER #{props.orderAutoId}</span>
-            </div>
+            {(orderPayment && orderPayment.paymentType === 'COD') ||
+            (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
+              <div className={classes.orderId}>
+                <span>ORDER #{props.orderAutoId}</span>
+              </div>
+            ) : (
+              ''
+            )}
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId || isDisable}
+                disabled={!props.orderAutoId || isDisable || !isDisableCancel}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >

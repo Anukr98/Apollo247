@@ -602,7 +602,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            You can start this consultation only after Junior Doctor has filled the case sheet.
+            As the patient has not done the pre-assessment, you will not be able to start the
+            consult.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
