@@ -714,7 +714,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const inputStartDate = format(addDays(selectedDate, -1), 'yyyy-MM-dd');
     const currentStartDate = new Date(inputStartDate + 'T18:30');
     const currentEndDate = new Date(format(selectedDate, 'yyyy-MM-dd').toString() + 'T18:29');
-    let consultBuffer = 0;
+    //let consultBuffer = 0;
 
     const doctorAppointments = await this.createQueryBuilder('appointment')
       .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
@@ -743,7 +743,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
         //console.log(consultStartTime, consultEndTime);
         const duration = parseFloat((60 / docConsultHr.consultDuration).toFixed(1));
-        consultBuffer = docConsultHr.consultBuffer;
+        //const consultBuffer = docConsultHr.consultBuffer;
         if (docConsultHr.weekDay != docConsultHr.actualDay) {
           consultEndTime = addMinutes(consultEndTime, 1);
         }
@@ -842,29 +842,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
       }
       let finalSlot = '';
-      //let foundFlag = 0;
-
-      //getting the available slot
-      let timeWithBuffer: Date;
-      //const currentTime = new Date(inputDate);
-      if (inputDate) timeWithBuffer = addMinutes(inputDate, consultBuffer);
-      else timeWithBuffer = addMinutes(new Date(), consultBuffer);
-      //const timeWithBuffer = addMinutes(currentTime, consultBuffer);
-      console.log(timeWithBuffer, 'timeWithBuffer');
       console.log(availableSlots, 'slots final list');
-      // availableSlots.map((slot) => {
-      //   const slotDate = new Date(slot);
-      //   if (slotDate >= timeWithBuffer && foundFlag == 0) {
-      //     finalSlot = slot;
-      //     foundFlag = 1;
-      //   }
-      // });
       if (availableSlots.length > 0) {
         finalSlot = availableSlots[0];
       }
-      //const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
-      //doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
-
       return finalSlot; //returning doctors next available time
     } else {
       return '';
@@ -969,6 +950,17 @@ export class AppointmentRepository extends Repository<Appointment> {
   updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
     return this.update(id, {
       isJdQuestionsComplete,
+    });
+  }
+
+  updateJdQuestionStatusbyIds(ids: string[]) {
+    return this.update([...ids], {
+      isJdQuestionsComplete: true,
+      isConsultStarted: true,
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
     });
   }
 
@@ -1175,9 +1167,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               }
               slot = addMinutes(slot, timeSlot[0].consultDuration);
             });
-          if (new Date(doctorBblockedSlots[blockedSlotsCount - 1]) >= blockedSlot.end) {
-            doctorBblockedSlots[blockedSlotsCount - 1] = '';
-          }
+          // if (new Date(doctorBblockedSlots[blockedSlotsCount - 1]) >= blockedSlot.end) {
+          //   doctorBblockedSlots[blockedSlotsCount - 1] = '';
+          // }
         });
         //console.log(doctorBblockedSlots, 'doctor slots');
       }

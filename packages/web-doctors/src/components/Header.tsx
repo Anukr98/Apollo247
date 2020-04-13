@@ -245,7 +245,7 @@ export const Header: React.FC = (props) => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
-    uuid: REQUEST_ROLES.DOCTOR,
+    uuid: 'SD',
   };
   const pubnub = new Pubnub(config);
   const sendNotification = (notificationText: string) => {
@@ -264,10 +264,8 @@ export const Header: React.FC = (props) => {
       currentPatient &&
       currentPatient.id
     ) {
-      console.log(currentPatient.id);
       pubnub.subscribe({
         channels: [currentPatient.id],
-        withPresence: true,
       });
       pubnub.addListener({
         message(message: any) {
@@ -316,7 +314,7 @@ export const Header: React.FC = (props) => {
   return (
     <header className={classes.header}>
       <Offline>
-        <Dialog open={true}>
+        <Dialog open={true} style={{ zIndex: 9999 }}>
           <DialogTitle>{''}</DialogTitle>
           <DialogContent>
             <DialogContentText>

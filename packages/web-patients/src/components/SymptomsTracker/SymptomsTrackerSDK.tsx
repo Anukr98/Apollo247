@@ -130,9 +130,13 @@ const useStyles = makeStyles((theme: Theme) => {
       left: 0,
       right: 20,
       padding: '8px 0 8px 1rem',
+      display: 'flex',
       [theme.breakpoints.down(767)]: {
         display: 'none',
       },
+    },
+    labelFor: {
+      marginTop: 6,
     },
     profileDropdownMobile: {
       fontSize: 14,
@@ -142,6 +146,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 10,
       padding: '8px 0 8px 1rem',
       textTransform: 'none',
+      display: 'flex',
       [theme.breakpoints.up(768)]: {
         display: 'none',
       },
@@ -373,15 +378,37 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
+  const [isRedirect, setIsRedirect] = useState(false);
   const patientAge =
     currentPatient && currentPatient.dateOfBirth
       ? moment()
           .diff(moment(currentPatient && currentPatient.dateOfBirth, 'YYYY-MM-DD'), 'years')
           .toString()
-      : '1';
+      : '15';
   const patientGender =
     currentPatient && currentPatient.gender ? String(currentPatient.gender).toLowerCase() : 'male';
-
+  const customListner = (resultData: any) => {
+    let specialities = [];
+    specialities = resultData.specialists.map((item: { speciality: string }) =>
+      item.speciality.trim()
+    );
+    if (specialities.length > 0) {
+      const specialitiesEncoded = encodeURI(specialities.join(','));
+      localStorage.setItem('symptomTracker', specialitiesEncoded);
+      setDoctorPopOver(true);
+      setIsRedirect(true);
+      // window.location.href = clientRoutes.doctorsLanding();
+    }
+  };
+  useEffect(() => {
+    if (stopRedirect === 'continue' && isRedirect) {
+      setTimeout(() => {
+        window.location.href = clientRoutes.doctorsLanding();
+      }, 5000);
+    } else if (stopRedirect === 'stop') {
+      window.location.reload();
+    }
+  }, [stopRedirect, isRedirect]);
   return (
     <div className={classes.root}>
       <Header />
@@ -397,7 +424,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
               </Link>
               Consult a doctor
               <div className={classes.profileDropdownMobile}>
-                For
+                <div className={classes.labelFor}>For</div>
+
                 <AphCustomDropdown
                   classes={{ selectMenu: classes.selectMenuItem }}
                   value={currentPatient && currentPatient.id}
@@ -422,7 +450,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         </MenuItem>
                       );
                     })}
-                  <MenuItem classes={{ selected: classes.menuSelected }}>
+                  {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                     <AphButton
                       color="primary"
                       classes={{ root: classes.addMemberBtn }}
@@ -432,7 +460,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                     >
                       Add Member
                     </AphButton>
-                  </MenuItem>
+                  </MenuItem> */}
                 </AphCustomDropdown>
               </div>
             </div>
@@ -451,7 +479,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                 <div className={classes.leftCol}></div>
                 <div className={classes.rightCol}>
                   <div className={classes.profileDropdown}>
-                    For
+                    <div className={classes.labelFor}>For</div>
                     <AphCustomDropdown
                       classes={{ selectMenu: classes.selectMenuItem }}
                       value={currentPatient && currentPatient.id}
@@ -476,7 +504,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                             </MenuItem>
                           );
                         })}
-                      <MenuItem classes={{ selected: classes.menuSelected }}>
+                      {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
@@ -486,7 +514,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                         >
                           Add Member
                         </AphButton>
-                      </MenuItem>
+                      </MenuItem> */}
                     </AphCustomDropdown>
                   </div>
                 </div>
@@ -499,6 +527,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   patientAge={patientAge}
                   patientGender={patientGender}
                   sdkContainerStyle={customContainerStyle}
+                  searchDoctorlistner={customListner}
                   showDocBtn={() => (
                     <CustomComponent
                       setDoctorPopOver={setDoctorPopOver}

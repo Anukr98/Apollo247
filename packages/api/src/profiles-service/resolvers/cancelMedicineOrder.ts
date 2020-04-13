@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { MedicineOrdersStatusRepository } from 'profiles-service/repositories/MedicineOrdersStatusRepository';
 import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -45,6 +46,7 @@ const cancelMedicineOrder: Resolver<
   MedicineOrderCancelResult
 > = async (parent, { medicineOrderCancelInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const medicineOrdersStatusRepo = profilesDb.getCustomRepository(MedicineOrdersStatusRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
     medicineOrderCancelInput.orderNo
   );
@@ -85,7 +87,6 @@ const cancelMedicineOrder: Resolver<
     );
     throw new AphError(AphErrorMessages.CANCEL_MEDICINE_ORDER_ERROR);
   });
-
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {
     log(
       'profileServiceLogger',
@@ -98,7 +99,6 @@ const cancelMedicineOrder: Resolver<
   }
 
   const textRes = await pharmaResp.text();
-
   log(
     'profileServiceLogger',
     'API_CALL_RESPONSE',
@@ -108,7 +108,7 @@ const cancelMedicineOrder: Resolver<
   );
 
   const orderResp: PharmaCancelResponse = JSON.parse(textRes);
-  console.log(orderResp, 'respp', orderResp.ordersCancelResult.Message);
+  console.log(orderResp, orderResp.ordersCancelResult.Status, orderResp.ordersCancelResult.Message);
 
   if (orderResp.ordersCancelResult.Status) {
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
@@ -117,7 +117,10 @@ const cancelMedicineOrder: Resolver<
       statusDate: new Date(),
       statusMessage: orderResp.ordersCancelResult.Message,
     };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+    await medicineOrdersStatusRepo.saveMedicineOrderStatus(
+      orderStatusAttrs,
+      orderDetails.orderAutoId
+    );
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,

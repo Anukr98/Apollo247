@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 29
-        versionName "1.81"
+        versionCode 31
+        versionName "1.92"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -200,6 +200,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-fbsdk')
+    implementation project(':react-native-appsflyer')
     implementation 'com.webengage:android-sdk:3.+'
     implementation 'com.google.android.gms:play-services-ads:15.0.1' // optional for webengage
     implementation 'com.android.installreferrer:installreferrer:1.1.1'

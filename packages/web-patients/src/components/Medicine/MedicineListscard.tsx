@@ -41,7 +41,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: 45,
         paddingTop: 5,
       },
     },
@@ -125,11 +124,15 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 4,
       minWidth: 120,
       textAlign: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
         borderTop: '1px solid rgba(2,71,91,0.2)',
+        justifyContent: 'left',
       },
     },
     selectMenuItem: {
@@ -139,7 +142,6 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.33,
       textTransform: 'uppercase',
       paddingTop: 7,
-      paddingBottom: 6,
       paddingLeft: 4,
       '&:focus': {
         backgroundColor: 'transparent',
@@ -155,6 +157,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'transparent !important',
       color: '#00b38e',
       fontWeight: 600,
+    },
+    noData: {
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 25,
+      },
     },
   };
 });
@@ -213,7 +220,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                     {itemIndexInCart(medicine) !== -1 ? (
                       <>
                         <div className={classes.medicinePack}>
-                          QTY :
+                          <div>QTY :</div>
                           <AphCustomDropdown
                             classes={{ selectMenu: classes.selectMenuItem }}
                             value={cartItems[itemIndexInCart(medicine)].quantity || 1}
@@ -307,7 +314,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
         ) : props.isLoading ? (
           <CircularProgress />
         ) : (
-          'No Data Found'
+          <div className={classes.noData}>No Data Found</div>
         )}
       </div>
     </div>

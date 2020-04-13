@@ -21,12 +21,14 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   getParameterByName,
   postWebEngageEvent,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -86,6 +88,8 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({

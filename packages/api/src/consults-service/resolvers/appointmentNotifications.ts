@@ -10,9 +10,11 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
-import { format, subMinutes } from 'date-fns';
+import { format, subMinutes, addMinutes } from 'date-fns';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { APPOINTMENT_STATE } from 'consults-service/entities';
+import { DoctorType } from 'doctors-service/entities';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
 import {
   CASESHEET_STATUS,
@@ -22,6 +24,9 @@ import {
   STATUS,
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
+  ConsultQueueItem,
+  CaseSheet,
+  Appointment,
 } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
@@ -42,6 +47,7 @@ export const appointmentNotificationTypeDefs = gql`
     sendApptReminderNotification(inNextMin: Int): ApptReminderResult!
     sendPhysicalApptReminderNotification(inNextMin: Int): ApptReminderResult!
     noShowReminderNotification: noShowReminder!
+    autoSubmitJDCasesheet: String
   }
 `;
 
@@ -55,6 +61,84 @@ type noShowReminder = {
   status: boolean;
   apptsListCount: number;
   noCaseSheetCount: number;
+};
+
+const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> = async (
+  parent,
+  args,
+  { consultsDb, doctorsDb, patientsDb }
+) => {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const ConsultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+
+  const currentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
+  const futureTime = addMinutes(new Date(currentDate), 10);
+  const appointments = await apptRepo.getAppointmentsByDate(futureTime);
+  const appointmentIds = appointments.map((appointment) => appointment.id);
+
+  if (appointmentIds.length) {
+    const caseSheets = await caseSheetRepo.getJDCaseSheetsByAppointmentId(appointmentIds);
+    const attendedAppointmentIds = caseSheets.map((casesheet) => casesheet.appointment.id);
+    const unAttendedAppointmentIds = appointmentIds.filter(
+      (id) => !attendedAppointmentIds.includes(id)
+    );
+
+    if (unAttendedAppointmentIds.length) {
+      const unAttendedAppointments = appointments.filter((appointment) =>
+        unAttendedAppointmentIds.includes(appointment.id)
+      );
+      const virtualJDId = process.env.VIRTUAL_JD_ID;
+      const createdDate = new Date();
+
+      //adding or updating consult queue items
+      const consultQueueAttrs = unAttendedAppointments.map((appointment) => {
+        return {
+          appointmentId: appointment.id,
+          createdDate: createdDate,
+          doctorId: virtualJDId,
+          isActive: false,
+        };
+      });
+      const queueItems = await ConsultQueueRepo.getQueueItemsByAppointmentId(
+        unAttendedAppointmentIds
+      );
+      const activequeueItemIds = queueItems.map((queueItem) => queueItem.consultQueueItem_id);
+      if (activequeueItemIds.length)
+        ConsultQueueRepo.updateConsultQueueItems(activequeueItemIds, virtualJDId);
+      const activequeueItemAppointmentIds = queueItems.map(
+        (queueItem) => queueItem.consultQueueItem_appointmentId
+      );
+      const queueItemsToBeAdded = consultQueueAttrs.filter(
+        (consultQueueAttr) =>
+          !activequeueItemAppointmentIds.includes(consultQueueAttr.appointmentId)
+      );
+      if (queueItemsToBeAdded.length) ConsultQueueRepo.saveConsultQueueItems(queueItemsToBeAdded);
+
+      //adding case sheets
+      const casesheetAttrs = unAttendedAppointments.map((appointment) => {
+        return {
+          createdDate: createdDate,
+          consultType: APPOINTMENT_TYPE.ONLINE,
+          createdDoctorId: process.env.VIRTUAL_JD_ID,
+          doctorType: DoctorType.JUNIOR,
+          doctorId: appointment.doctorId,
+          patientId: appointment.patientId,
+          appointment: appointment,
+          status: CASESHEET_STATUS.COMPLETED,
+          notes: activequeueItemAppointmentIds.includes(appointment.id)
+            ? ApiConstants.VIRTUAL_JD_NOTES_ASSIGNED.toString()
+            : ApiConstants.VIRTUAL_JD_NOTES_UNASSIGNED.toString(),
+        };
+      });
+      caseSheetRepo.saveMultipleCaseSheets(casesheetAttrs);
+
+      //updating appointments
+      apptRepo.updateJdQuestionStatusbyIds(unAttendedAppointmentIds);
+    }
+  }
+
+  return ApiConstants.AUTO_SUBMIT_JD_CASESHEET_RESPONSE.toString();
 };
 
 const sendApptReminderNotification: Resolver<
@@ -253,5 +337,6 @@ export const appointmentNotificationResolvers = {
     sendApptReminderNotification,
     noShowReminderNotification,
     sendPhysicalApptReminderNotification,
+    autoSubmitJDCasesheet,
   },
 };

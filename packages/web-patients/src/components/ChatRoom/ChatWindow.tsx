@@ -18,6 +18,7 @@ import { useParams } from 'hooks/routerHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Paper from '@material-ui/core/Paper';
 import { OnlineConsult } from 'components/OnlineConsult';
+import { Alerts } from 'components/Alerts/Alerts';
 
 import { DoctorChatCard } from 'components/ChatRoom/DoctorChatCard';
 import { UPDATE_APPOINTMENT_SESSION } from 'graphql/consult';
@@ -701,6 +702,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const [audio] = useState(
     new Audio('https://mrrhealthcheck-stage.azurewebsites.net/Images/Passes/NotifySound.mp3')
   );
@@ -751,7 +755,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         settoken(appointmentToken);
       })
       .catch(() => {
-        window.alert('An error occurred while loading :(');
+        setIsAlertOpen(true);
+        setAlertMessage('An error occurred while loading :(');
       });
   };
   const setCookiesAcceptcall = () => {
@@ -876,11 +881,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           }
         } catch (error) {
           setNextSlotAvailable('');
-          alert(error);
+          setIsAlertOpen(true);
+          setAlertMessage(error);
         }
       })
       .catch((e: string) => {
-        alert(e);
+        setIsAlertOpen(true);
+        setAlertMessage('something went wrong');
+        console.log(e);
       });
   };
 
@@ -1805,6 +1813,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           </div>
         )}
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
   // useEffect(() => {

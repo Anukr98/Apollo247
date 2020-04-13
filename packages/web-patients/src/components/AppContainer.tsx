@@ -50,6 +50,9 @@ import { Helmet } from 'react-helmet';
 import { TermsAndConditions } from 'components/TermsAndConditions';
 import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
+import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
+import { BottomLinks } from 'components/BottomLinks';
+import { ContactUs } from 'components/ContactUs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -81,6 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
+  const pageName = window.location.pathname;
 
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
@@ -102,6 +106,8 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.termsConditions()} component={TermsAndConditions} />
           <Route exact path={clientRoutes.privacy()} component={Privacy} />
           <Route exact path={clientRoutes.FAQ()} component={Faq} />
+          <Route exact path={clientRoutes.contactUs()} component={ContactUs} />
+          <Route exact path={clientRoutes.partnerSBI()} component={SbiLandingPage} />
           <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
           <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
@@ -163,20 +169,32 @@ const App: React.FC = () => {
             path={clientRoutes.testDetails(':searchTestType', ':itemName', ':itemId')}
             component={TestDetails}
           />
-
           <AuthRouted
             exact
-            path={clientRoutes.searchByTest(':searchTestText')}
+            path={clientRoutes.searchByTest(':searchType', ':searchTestText')}
             component={SearchByTest}
           />
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
-          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
+          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
         </Switch>
-        {isSignedIn && (
-          <div className={classes.helpIcon}>
-            <Help />
-          </div>
+        {
+          pageName !== '/terms' &&
+          pageName !== '/privacy' &&
+          pageName !== '/faq' &&
+          pageName !== '/contact' &&
+          pageName !== '/partners/sbi' && (        
+          <BottomLinks />
         )}
+        {isSignedIn &&
+          pageName !== '/terms' &&
+          pageName !== '/privacy' &&
+          pageName !== '/faq' &&
+          pageName !== '/contact' &&
+          pageName !== '/partners/sbi' && (
+            <div className={classes.helpIcon}>
+              <Help />
+            </div>
+          )}
       </div>
     </Scrollbars>
   );

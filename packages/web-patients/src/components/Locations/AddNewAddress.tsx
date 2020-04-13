@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress, Grid } from '@material-ui/core';
-import React, { useState, useEffect, useContext } from 'react';
+import { Theme, CircularProgress, Grid, Typography, Popover } from '@material-ui/core';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -9,9 +9,11 @@ import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
-import axios, { AxiosError, Cancel } from 'axios';
+import axios, { AxiosError, AxiosPromise, AxiosResponse } from 'axios';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -96,6 +98,68 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'none',
       borderRadius: 10,
     },
+    helpText: {
+      color: '#890000',
+      marginTop: 0,
+      marginBottom: 5,
+    },
+    noServiceRoot: {
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    viewCartBtn: {
+      fontSize: 13,
+      color: '#fc9916',
+      fontWeight: 'bold',
+      textAlign: 'right',
+      marginLeft: 'auto',
+      textTransform: 'uppercase',
+    },
+    actions: {
+      padding: '10px 20px 20px 20px',
+      display: 'flex',
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 
@@ -104,6 +168,7 @@ type AddNewAddressProps = {
   currentAddress?: GetPatientAddressList_getPatientAddressList_addressList;
   disableActions?: boolean;
   forceRefresh?: (forceRefresh: boolean) => void;
+  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
 };
 
 type Address = {
@@ -126,12 +191,18 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const currentPatientId = currentPatient ? currentPatient.id : '';
   const [state, setState] = useState<string>('');
   const { setDeliveryAddressId } = useShoppingCart();
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [isPincodevalid, setIsPincodeValid] = useState<boolean>(true);
+  const [showPlaceNotFoundPopup, setShowPlaceNotFoundPopup] = useState(false);
+  const addToCartRef = useRef(null);
 
   const disableSubmit =
     address1.length === 0 ||
     address2.length === 0 ||
     addressType.length <= 0 ||
     pincode.length < 6 ||
+    !isPincodevalid ||
     addressType === PATIENT_ADDRESS_TYPE.OTHER
       ? !otherTextbox
       : addressType.length === 0;
@@ -183,6 +254,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
     }
   }, [props.currentAddress]);
 
+  let showError = false;
+
   // Auto-fetching the city and state using Pincode
   // ------------------------------------------------
 
@@ -192,6 +265,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
         `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
       )
       .then(({ data }) => {
+        if (data && data.results.length === 0) {
+          setAddress2(' ');
+        }
+        setIsPincodeValid(data && data.results && data.results.length > 0 ? true : false);
         try {
           if (data && data.results[0] && data.results[0].address_components) {
             const addressComponents = data.results[0].address_components || [];
@@ -211,15 +288,17 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 (item: any) => item.types.indexOf('administrative_area_level_1') > -1
               ) || {}
             ).long_name;
+
             setState(state || '');
             setPincode(pincode || '');
-            const location = city.concat(', ').concat(state);
+            const location = city ? city.concat(', ').concat(state) : state;
 
             setPincode(pincode || '');
             setAddress2(location);
           }
         } catch {
           (e: AxiosError) => console.log(e);
+          showError = true;
         }
       })
       .catch((e: AxiosError) => {
@@ -228,6 +307,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   }
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
   const saveAddressMutation = useMutation(SAVE_PATIENT_ADDRESS);
+
+  if (!isPincodevalid) {
+    showError = true;
+  }
 
   return (
     <div className={classes.shadowHide}>
@@ -255,6 +338,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     label="Pin Code"
                     placeholder="Enter pin code"
                     onChange={(e) => {
+                      if (e.target.value.length !== 6) {
+                        setAddress2('');
+                      }
                       setPincode(e.target.value);
                     }}
                     onKeyPress={(e) => {
@@ -277,8 +363,16 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       maxLength: 100,
                     }}
                     value={address2}
+                    error={showError}
                   />
                 </div>
+                {showError ? (
+                  <FormHelperText className={classes.helpText} component="div" error={showError}>
+                    Invalid zip code
+                  </FormHelperText>
+                ) : (
+                  ''
+                )}
                 <div className={classes.formGroup}>
                   <label>Address Type</label>
                   <Grid container spacing={1} className={classes.btnGroup}>
@@ -352,7 +446,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     props.forceRefresh && props.forceRefresh(true);
                     setDeliveryAddressId && setDeliveryAddressId(addressId);
                   })
-                  .catch((error) => alert(error))
+                  .catch((error) => {
+                    setIsAlertOpen(true);
+                    setAlertMessage(error);
+                  })
               : saveAddressMutation({
                   variables: {
                     patientAddress: {
@@ -367,15 +464,36 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                   },
                 })
                   .then(({ data }: any) => {
-                    if (data && data.savePatientAddress && data.savePatientAddress.patientAddress)
-                      props.setIsAddAddressDialogOpen(false);
-                    props.forceRefresh && props.forceRefresh(true);
-                    if (setDeliveryAddressId) {
-                      setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
+                    if (data && data.savePatientAddress && data.savePatientAddress.patientAddress) {
+                      const deliveryAddrsId = data.savePatientAddress.patientAddress.id;
+                      if (props.checkServiceAvailability) {
+                        props
+                          .checkServiceAvailability(pincode)
+                          .then((res: AxiosResponse) => {
+                            if (res && res.data && res.data.Availability) {
+                              props.setIsAddAddressDialogOpen(false);
+                              props.forceRefresh && props.forceRefresh(true);
+                              setDeliveryAddressId && setDeliveryAddressId(deliveryAddrsId);
+                            } else {
+                              setMutationLoading(false);
+                              setShowPlaceNotFoundPopup(true);
+                            }
+                          })
+                          .catch((e: any) => {
+                            setMutationLoading(false);
+                            console.log(e);
+                          });
+                      } else {
+                        props.setIsAddAddressDialogOpen(false);
+                        props.forceRefresh && props.forceRefresh(true);
+                        setDeliveryAddressId &&
+                          setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
+                      }
                     }
                   })
                   .catch((error) => {
-                    alert(error);
+                    setIsAlertOpen(true);
+                    setAlertMessage(error);
                   });
           }}
           title={'Save and use'}
@@ -383,6 +501,52 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           {mutationLoading ? <CircularProgress size={20} color="secondary" /> : 'SAVE AND USE'}
         </AphButton>
       </div>
+      <Popover
+        open={showPlaceNotFoundPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.noServiceRoot}>
+              <div className={classes.windowBody}>
+                <Typography variant="h2">Uh oh! :(</Typography>
+                <p>
+                  Sorry! We’re working hard to get to this area! In the meantime, you can either
+                  pick up from a nearby store, or change the pincode.
+                </p>
+              </div>
+              <div className={classes.actions}>
+                <AphButton
+                  className={classes.viewCartBtn}
+                  onClick={() => {
+                    setShowPlaceNotFoundPopup(false);
+                  }}
+                >
+                  OK, GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

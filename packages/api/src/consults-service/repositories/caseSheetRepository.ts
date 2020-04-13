@@ -14,6 +14,12 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       });
   }
 
+  saveMultipleCaseSheets(caseSheetAttrs: Partial<CaseSheet>[]) {
+    return this.save(caseSheetAttrs).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.CREATE_CASESHEET_ERROR, undefined, { createErrors });
+    });
+  }
+
   getCaseSheetByAppointmentId(appointmentId: string) {
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
@@ -35,6 +41,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType = :juniorDoctorType', { juniorDoctorType })
+      .orderBy('case_sheet.createdDate', 'DESC')
       .getOne();
   }
 
@@ -61,5 +68,25 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     }).catch((error) => {
       throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
     });
+  }
+
+  getJDCaseSheetsByAppointmentId(ids: string[]) {
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .where('case_sheet.appointment IN (:...ids)', { ids })
+      .getMany()
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
+      });
+  }
+
+  updateJDCaseSheet(appointmentId: string) {
+    return this.createQueryBuilder()
+      .update('case_sheet')
+      .set({ status: CASESHEET_STATUS.COMPLETED })
+      .where('"appointmentId" = :id', { id: appointmentId })
+      .andWhere('doctorType = :type', { type: DoctorType.JUNIOR })
+      .andWhere('status = :status', { status: CASESHEET_STATUS.PENDING })
+      .execute();
   }
 }

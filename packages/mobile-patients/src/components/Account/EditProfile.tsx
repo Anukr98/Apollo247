@@ -62,6 +62,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
 import { getRelations } from '../../helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -625,7 +626,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           </View>
         </View>
         <DatePicker
-          date={date}
+          date={
+            date ||
+            moment()
+              .subtract(25, 'years')
+              .toDate()
+          }
           isDateTimePickerVisible={isDateTimePickerVisible}
           handleDatePicked={(date) => {
             setDate(date);

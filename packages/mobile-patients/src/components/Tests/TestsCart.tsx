@@ -286,41 +286,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   useEffect(() => {
     clinics.length == 0 && fetchStorePickup();
-    if (clinicId) {
-      slicedStoreList.length == 0 && filterClinics(clinicId, true, true);
-    }
+    slicedStoreList.length == 0 && filterClinics(clinicId, true, true);
   }, [clinicId]);
-
-  useEffect(() => {
-    setLoading!(true);
-    (currentPatientId &&
-      // addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
-        .catch((e) => {
-          CommonBugFender('TestsCart_GET_PATIENT_ADDRESS_LIST', e);
-          setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
-          });
-        })) ||
-      setLoading!(false);
-  }, [currentPatientId]);
 
   useEffect(() => {
     if (testCentresLoaded) {
@@ -642,7 +609,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             });
           } else {
             setDeliveryAddressId && setDeliveryAddressId('');
-            setPinCode && setPinCode('');
+            // setPinCode && setPinCode('');
             showAphAlert!({
               title: 'Uh oh.. :(',
               description:
@@ -765,8 +732,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       .then((data) => {
         setStorePickUpLoading(false);
         aphConsole.log('clinic response', data.data.data, data);
-        setClinics && setClinics(data.data.data);
-        setTestCentresLoaded(true);
+        setClinics && setClinics(data.data.data || []);
+        setTimeout(() => {
+          setTestCentresLoaded(true);
+        }, 100);
         updateClinicSelection();
       })
       .catch((e) => {

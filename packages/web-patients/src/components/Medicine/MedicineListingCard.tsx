@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -117,11 +119,15 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
       paddingTop: 4,
       paddingBottom: 4,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
         borderTop: '1px solid rgba(2,71,91,0.2)',
+        justifyContent: 'left',
       },
       [theme.breakpoints.up('xs')]: {
         minWidth: 130,
@@ -134,7 +140,6 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.33,
       textTransform: 'uppercase',
       paddingTop: 7,
-      paddingBottom: 6,
       paddingLeft: 4,
       '&:focus': {
         backgroundColor: 'transparent',
@@ -171,28 +176,30 @@ export const MedicineListingCard: React.FC = (props) => {
             }`}
           >
             <div className={classes.medicineStripWrap}>
-              <div className={classes.medicineInformation}>
-                <div className={classes.medicineIcon}>
-                  <img
-                    src={
-                      item.is_prescription_required === '1'
-                        ? require('images/ic_tablets_rx.svg')
-                        : `${process.env.PHARMACY_MED_IMAGES_BASE_URL}${item.image}`
-                    }
-                    alt=""
-                  />
-                </div>
-                <div className={classes.medicineName}>
-                  {item.name}
-                  <div className={classes.tabInfo}>
-                    {item.is_in_stock ? 'Pack Of 15' : 'Out Of Stock'}
+              <Link to={clientRoutes.medicineDetails(item.sku)}>
+                <div className={classes.medicineInformation}>
+                  <div className={classes.medicineIcon}>
+                    <img
+                      src={
+                        item.is_prescription_required === '1'
+                          ? require('images/ic_tablets_rx.svg')
+                          : `${process.env.PHARMACY_MED_IMAGES_BASE_URL}${item.image}`
+                      }
+                      alt=""
+                    />
+                  </div>
+                  <div className={classes.medicineName}>
+                    {item.name}
+                    <div className={classes.tabInfo}>
+                      {item.is_in_stock ? 'Pack Of 15' : 'Out Of Stock'}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
               {item.is_in_stock ? (
                 <div className={classes.cartRight}>
                   <div className={classes.medicinePack}>
-                    QTY :
+                    <div>QTY :</div>
                     <AphCustomDropdown
                       classes={{
                         selectMenu: classes.selectMenuItem,

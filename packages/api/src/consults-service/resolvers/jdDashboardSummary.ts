@@ -25,7 +25,12 @@ export const jdDashboardSummaryTypeDefs = gql`
   }
 
   extend type Mutation {
-    updateJdSummary(summaryDate: Date, doctorId: String): JdDashboardSummaryResult!
+    updateJdSummary(
+      summaryDate: Date
+      doctorId: String
+      docLimit: Int
+      docOffset: Int
+    ): JdDashboardSummaryResult!
     updateCaseSheetTime(limit: Int): UpdateCasesheetResult!
   }
 `;
@@ -82,12 +87,12 @@ const updateCaseSheetTime: Resolver<
 
 const updateJdSummary: Resolver<
   null,
-  { summaryDate: Date; doctorId: string },
+  { summaryDate: Date; doctorId: string; docLimit: number; docOffset: number },
   ConsultServiceContext,
   JdDashboardSummaryResult
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo, adminMapRepo, loginSessionRepo } = getRepos(context);
-  const docsList = await docRepo.getAllJuniorDoctors(args.doctorId);
+  const docsList = await docRepo.getAllJuniorDoctors(args.doctorId, args.docLimit, args.docOffset);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
       const waitTimePerChat = await dashboardRepo.getWaitTimePerChat(args.summaryDate, doctor.id);
@@ -139,6 +144,7 @@ const updateJdSummary: Resolver<
         args.summaryDate,
         doctor.id
       );
+      const totalConsultsInQueue = await dashboardRepo.getTotalConsultsInQueue(args.summaryDate,doctor.id);
       const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
       let adminIds = '';
       if (adminIdRows.length > 0) {
@@ -171,6 +177,7 @@ const updateJdSummary: Resolver<
         totalAllocatedChats,
         casesOngoing,
         caseSheetNotSatisfactory,
+        totalConsultsInQueue,
         isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);

@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.down(390)]: {
+      [theme.breakpoints.down(320)]: {
         display: 'none',
       },
     },
@@ -298,6 +298,7 @@ export const LocationSearch: React.FC = (props) => {
         ref={locationRef}
         onClick={() => setIsLocationPopoverOpen(true)}
         title={selectedAddress}
+        id="locationId"
       >
         <img
           className={`${classes.locationIcon} ${classes.iconDesktop}`}
@@ -322,7 +323,9 @@ export const LocationSearch: React.FC = (props) => {
       <Popover
         open={isLocationPopoverOpen}
         anchorEl={locationRef.current}
-        onClose={() => setIsLocationPopoverOpen(false)}
+        onClose={() => {
+          if (getAddressFromLocalStorage() !== 'No location') setIsLocationPopoverOpen(false);
+        }}
         classes={{
           paper: classes.popPaperRoot,
         }}

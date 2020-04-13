@@ -21,6 +21,7 @@ import { RescheduleAppointmentRepository } from 'consults-service/repositories/r
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { sendMail } from 'notifications-service/resolvers/email';
+import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEmailTemplate';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -430,7 +431,13 @@ const endAppointmentSession: Resolver<
     const apptTime = format(istDateTime, 'hh:mm aa');
     const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
 
-    const mailContent = `Appointment booked on Apollo 247 has been cancelled. <br>Patient Name: ${apptDetails.patientName}<br>Appointment Date Time: ${apptDate}, ${apptTime}<br>Doctor Name: ${docName}<br>Hospital Name: ${hospitalName}`;
+    const mailContent = cancellationEmailTemplate({
+      Title: ApiConstants.CANCEL_APPOINTMENT_BODY,
+      PatientName: apptDetails.patientName,
+      AppointmentDateTime: apptDate + ',  ' + apptTime,
+      DoctorName: docName,
+      HospitalName: hospitalName,
+    });
     const ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
       process.env.NODE_ENV == 'development' ||

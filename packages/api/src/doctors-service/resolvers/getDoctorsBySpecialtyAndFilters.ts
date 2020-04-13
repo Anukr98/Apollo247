@@ -277,8 +277,31 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
   }
 
-  const finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
+  let finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
+  const possibleDoctorIds = finalSortedDoctors.map((doctor) => {
+    return doctor.id;
+  });
 
+  const possibleDoctorsOrder: Doctor[] = [];
+  const possibleEmptyDoctorsOrder: Doctor[] = [];
+  const finalDoctorNextAvailSlotsOrder: DoctorSlotAvailability[] = [];
+  const finalEmptyDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
+  finalDoctorNextAvailSlots.map((docSlot) => {
+    const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
+    if (docSlot.referenceSlot != '') {
+      console.log(docSlot.referenceSlot, docIndex);
+      possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
+      finalDoctorNextAvailSlotsOrder.push(docSlot);
+    } else {
+      possibleEmptyDoctorsOrder.push(finalSortedDoctors[docIndex]);
+      finalEmptyDoctorsNextAvailabilityOrder.push(docSlot);
+    }
+  });
+  console.log(possibleEmptyDoctorsOrder.length, possibleDoctorsOrder.length);
+  finalSortedDoctors = possibleDoctorsOrder.concat(possibleEmptyDoctorsOrder);
+  finalDoctorNextAvailSlots = finalDoctorNextAvailSlotsOrder.concat(
+    finalEmptyDoctorsNextAvailabilityOrder
+  );
   searchLogger(`API_CALL___END`);
   return {
     doctors: finalSortedDoctors,

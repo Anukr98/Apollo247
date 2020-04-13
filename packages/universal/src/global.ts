@@ -70,5 +70,8 @@ declare namespace NodeJS {
     BUGSNAG_API_KEY: string;
     SMS_LINK: string;
     SMS_LINK_BOOK_APOINTMENT: string;
+
+    INACTIVE_CONSULT_QUEUE_LIMT: string;
+    VIRTUAL_JD_ID: string;
   }
 }

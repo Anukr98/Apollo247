@@ -6,6 +6,7 @@ import { LocationContext } from 'components/LocationProvider';
 import PlacesAutocomplete from 'react-places-autocomplete';
 import { Helmet } from 'react-helmet';
 import { AllowLocation } from 'components/AllowLocation';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -198,7 +199,8 @@ export const AppLocations: React.FC = (props) => {
   const searchOptions = {
     componentRestrictions: { country: ['in'] },
   };
-
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
@@ -220,7 +222,8 @@ export const AppLocations: React.FC = (props) => {
       navigator.permissions &&
         navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
           if (PermissionStatus.state === 'denied') {
-            alert('Location Permission was denied. Please allow browser settings.');
+            setIsAlertOpen(true);
+            setAlertMessage('Location Permission was denied. Please allow browser settings.');
           } else if (PermissionStatus.state !== 'granted') {
             setIsPopoverOpen(true);
           }
@@ -270,8 +273,8 @@ export const AppLocations: React.FC = (props) => {
           {!isPopoverOpen && selectedAddress.length > 0
             ? selectedAddress
             : !isPopoverOpen && currentLocation && currentLocation.length > 0
-            ? currentLocation
-            : getAddressFromLocalStorage()}
+              ? currentLocation
+              : getAddressFromLocalStorage()}
         </span>
         <img
           className={`${classes.locationIcon} ${classes.iconMobile}`}
@@ -355,6 +358,12 @@ export const AppLocations: React.FC = (props) => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

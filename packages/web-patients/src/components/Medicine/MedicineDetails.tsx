@@ -12,6 +12,7 @@ import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -364,6 +365,9 @@ export const MedicineDetails: React.FC = (props) => {
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string }>();
   const [medicineDetails, setMedicineDetails] = React.useState<MedicineProductDetails | null>(null);
+  const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -383,7 +387,9 @@ export const MedicineDetails: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
       })
-      .catch((e) => alert(e));
+      .catch((e) => {
+        alert(e);
+      });
   };
 
   useEffect(() => {
@@ -681,6 +687,12 @@ export const MedicineDetails: React.FC = (props) => {
           </>
         )}
       </MedicinesCartContext.Consumer>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
       <NavigationBottom />
     </div>
   );

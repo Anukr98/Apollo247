@@ -8,7 +8,7 @@ import {
   PatientLifeStyle,
   PatientMedicalHistory,
 } from 'profiles-service/entities';
-import { Appointment } from 'consults-service/entities';
+import { Appointment, ConsultQueueItem } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -100,8 +100,22 @@ const checkAuth = async (docRepo: DoctorRepository, mobileNumber: string, doctor
 };
 
 const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceContext) => {
+  const limit = parseInt(
+    process.env.INACTIVE_CONSULT_QUEUE_LIMT ? process.env.INACTIVE_CONSULT_QUEUE_LIMT : '1',
+    10
+  );
   const { cqRepo, apptRepo, patRepo } = getRepos(context);
-  const dbConsultQueue = await cqRepo.find({ where: { doctorId }, order: { id: 'ASC' } });
+  const activeQueueItems = await cqRepo.find({
+    where: { doctorId, isActive: true },
+    order: { id: 'ASC' },
+  });
+  const inActiveQueueItems = await cqRepo.find({
+    where: { doctorId, isActive: false },
+    take: limit,
+    order: { id: 'DESC' },
+  });
+  inActiveQueueItems.reverse();
+  const dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
   const consultQueue = await Promise.all(
     dbConsultQueue.map(async (cq) => {
       const { id, isActive } = cq;
@@ -231,10 +245,11 @@ const removeFromConsultQueue: Resolver<
   ConsultServiceContext,
   RemoveFromConsultQueueResult
 > = async (parent, { id }, context) => {
-  const { docRepo, cqRepo, mobileNumber } = getRepos(context);
+  const { docRepo, cqRepo, mobileNumber, caseSheetRepo } = getRepos(context);
   const consultQueueItemToDeactivate = await cqRepo.findOneOrFail(id);
-  const { doctorId } = consultQueueItemToDeactivate;
+  const { doctorId, appointmentId } = consultQueueItemToDeactivate;
   await checkAuth(docRepo, mobileNumber, doctorId);
+  await caseSheetRepo.updateJDCaseSheet(appointmentId);
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };

@@ -10,6 +10,7 @@ import _find from 'lodash/find';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -151,7 +152,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
   const classes = useStyles();
   const { submitStatus, closeHelpForm } = props;
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>(defaultSelectedCategory);
-  const [selectedReason, setSelectedReason] = useState<string>('');
+  const [selectedReason, setSelectedReason] = useState<string>('placeholder');
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
   const [comments, setComments] = useState<string>('');
   const reasonsList = _find(generalHelpSections, (helpSection: HelpSectionProps) => {
@@ -160,7 +161,8 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
   const disableSubmit = !(selectedCategoryName.length > 0 && selectedReason.length > 0);
   const { currentPatient } = useAllCurrentPatients();
   const helpSectionMutation = useMutation<SendHelpEmail, SendHelpEmailVariables>(SEND_HELP_EMAIL);
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   return (
     <div className={classes.root}>
       <div className={classes.mascotIcon}>
@@ -183,7 +185,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
                       onClick={(e) => {
                         const categoryName = e.currentTarget.value;
                         setSelectedCategoryName(categoryName);
-                        setSelectedReason('');
+                        setSelectedReason('placeholder');
                       }}
                     >
                       {categoryName}
@@ -196,12 +198,21 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
               <label>Please select a reason that best matches your query</label>
               <div className={classes.selectRoot}>
                 <AphSelect
+                  disabled={!reasonsList}
                   onChange={(e) => {
                     const reason = e.target.value as string;
                     setSelectedReason(reason);
                   }}
                   value={selectedReason}
                 >
+                  <MenuItem
+                    value="placeholder"
+                    disabled
+                    classes={{ selected: classes.menuSelected }}
+                    key="placeholder"
+                  >
+                    <span>Select a query</span>
+                  </MenuItem>
                   {reasonsList &&
                     reasonsList.options &&
                     reasonsList.options.map((reasonName: string) => {
@@ -236,7 +247,7 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
       <div className={classes.bottomActions}>
         <AphButton
           onClick={() => {
-            setSelectedReason('');
+            setSelectedReason('placeholder');
             setSelectedCategoryName(defaultSelectedCategory);
             setComments('');
           }}
@@ -276,13 +287,20 @@ export const HelpForm: React.FC<HelpFormProps> = (props) => {
                 }
               })
               .catch(() => {
-                window.alert('An error occurred while processing your request');
+                setIsAlertOpen(true);
+                setAlertMessage('An error occurred while processing your request');
               });
           }}
         >
           {mutationLoading ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
         </AphButton>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -1,9 +1,21 @@
+import string from '@aph/mobile-patients/src/strings/strings.json';
+
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const apolloProdBaseUrl = 'https://www.apollopharmacy.in';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+const testApiCredentialsDev = {
+  UserName: 'ASKAPOLLO',
+  Password: '3HAQbAb9wrsykr8TMLnV',
+  InterfaceClient: 'ASKAPOLLO',
+};
+const testApiCredentialsProd = {
+  Username: 'MCKINSEY',
+  Password: 'ERVEYCWTALAOHELEEBRY',
+  InterfaceClient: 'MCKINSEY',
+};
 
 enum AppEnv {
   DEV = 'DEV',
@@ -11,6 +23,7 @@ enum AppEnv {
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
+  DEVReplica = 'DEVReplica',
 }
 
 const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
@@ -19,6 +32,12 @@ const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
+  HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
+  HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
+};
+
+export const updateAppConfig = (key: keyof typeof Configuration, value: object) => {
+  Configuration[key] = value as never;
 };
 
 const PharmaApiConfig = {
@@ -39,12 +58,18 @@ const PharmaApiConfig = {
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
-    GET_TEST_PACKAGES: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`],
+    GET_TEST_PACKAGES: [
+      `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
+      testApiCredentialsDev,
+    ],
     GET_PACKAGE_DATA: [
       // `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
+    GET_CLINICS: [
+      'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
+      testApiCredentialsDev,
+    ],
   },
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
@@ -65,11 +90,15 @@ const PharmaApiConfig = {
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,
+      testApiCredentialsProd,
     ],
     GET_PACKAGE_DATA: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedetail`,
     ],
-    GET_CLINICS: ['https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx'],
+    GET_CLINICS: [
+      'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
+      testApiCredentialsProd,
+    ],
   },
 };
 
@@ -99,8 +128,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '1.811',
-  Android_Version: '1.811',
+  iOS_Version: '1.915',
+  Android_Version: '1.915',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
@@ -131,8 +160,8 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.812',
-  Android_Version: '1.813',
+  iOS_Version: '1.923',
+  Android_Version: '1.923',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -163,8 +192,8 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '1.81',
-  Android_Version: '1.81',
+  iOS_Version: '2.01',
+  Android_Version: '1.92',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -233,6 +262,38 @@ const ConfigurationVAPT = {
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
 
+//DevelopmentReplica
+const ConfigurationDevReplica = {
+  LOG_ENVIRONMENT: 'debug',
+  ANALYTICAL_ENIVRONMENT: 'debug',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://devpmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  CONSULT_PG_BASE_URL: 'https://devpmt.apollo247.com',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
+  DIAGNOSTICS_PG_BASE_URL: 'https://devpmt.apollo247.com',
+  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
+  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
+  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.dev,
+  ...appStaticVariables,
+  iOS_Version: '1.811',
+  Android_Version: '1.913',
+  CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
+  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
+};
+
 const Configuration =
   APP_ENV == AppEnv.PROD
     ? ConfigurationProd
@@ -242,6 +303,8 @@ const Configuration =
     ? ConfigurationPERFORM
     : APP_ENV == AppEnv.VAPT
     ? ConfigurationVAPT
+    : APP_ENV == AppEnv.DEVReplica
+    ? ConfigurationDevReplica
     : ConfigurationDev;
 
 export const MedicineFeedBackData = {
@@ -423,6 +486,7 @@ export const NeedHelp = [
       'Payment issues in online pharmacy',
       'Software not user-friendly',
       'Updates in order delivery or status of the order',
+      'Refund required',
     ],
   },
   {
@@ -438,6 +502,8 @@ export const NeedHelp = [
       'No updates on delays, reschedules or cancellations of the consult',
       'Require reschedule',
       'Payment issues',
+      'Refund required',
+      'Discount / Promotions / Voucher issues',
     ],
   },
   {
@@ -451,6 +517,7 @@ export const NeedHelp = [
       'No records available for linked UHID',
       'Personal details are not editable',
       'Unable to see my reports',
+      'Unable to add family members',
     ],
   },
   {
@@ -467,6 +534,8 @@ export const NeedHelp = [
       'No updates on delays, reschedules or cancellations of the consult',
       'Payment issues',
       'Require reschedule',
+      'Refund required',
+      'Discount / Promotions / Voucher issues',
     ],
   },
   {

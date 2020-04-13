@@ -1280,7 +1280,6 @@ export const sendBrowserNotitication = (id: string, message: string) => {
   });
   pubnub.subscribe({
     channels: [id],
-    withPresence: true,
   });
   pubnub.publish(
     {
@@ -1288,15 +1287,17 @@ export const sendBrowserNotitication = (id: string, message: string) => {
       message: {
         id: id,
         message: message,
-        isTyping: true,
         messageDate: new Date(),
         sentBy: ApiConstants.SENT_BY_API,
       },
-      storeInHistory: true,
+      storeInHistory: false,
       sendByPost: true,
     },
     (status, response) => {
       console.log('status,response==', status, response);
+      pubnub.unsubscribe({
+        channels: [id],
+      });
     }
   );
 };
@@ -1829,13 +1830,14 @@ const testPushNotification: Resolver<
   return notificationResponse;
 };
 
-const sendDailyAppointmentSummary: Resolver<null, {}, NotificationsServiceContext, string> = async (
-  parent,
-  args,
-  { doctorsDb, consultsDb }
-) => {
+const sendDailyAppointmentSummary: Resolver<
+  null,
+  { docLimit: number; docOffset: number },
+  NotificationsServiceContext,
+  string
+> = async (parent, args, { doctorsDb, consultsDb }) => {
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctors = await doctorRepo.getAllDoctors('0');
+  const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;

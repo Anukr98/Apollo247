@@ -1,13 +1,16 @@
 type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum WebEngageEventName {
+  MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
+  OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
+  NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
@@ -34,6 +37,7 @@ export enum WebEngageEventName {
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
   CONSULTATION_BOOKED = 'Consultation booked',
+  RATING_GIVEN = 'Rating Given',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -86,9 +90,13 @@ export interface SpecialityClickedEvent extends PatientInfo {
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
+  [WebEngageEventName.MOBILE_ENTRY]: {};
   [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
   [WebEngageEventName.OTP_ENTERED]: YesOrNo;
   [WebEngageEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
+  [WebEngageEventName.OTP_VERIFICATION_SUCCESS]: {
+    'Mobile Number': string;
+  };
   [WebEngageEventName.REGISTRATION_DONE]: {
     'Customer ID': string;
     'Customer First Name': string;
@@ -129,6 +137,15 @@ export interface WebEngageEvents {
     Source: 'Home' | 'List' | 'Search';
     'Section Name': string;
   };
+  [WebEngageEventName.NOTIFY_ME]: {
+    'product name': string;
+    'product id': string; // (SKUID)
+    Brand: string;
+    'Brand ID': string;
+    'category name': string;
+    'category ID': string;
+  };
+
   [WebEngageEventName.CATEGORY_CLICKED]: {
     'category name': string;
     'category ID': string;
@@ -414,6 +431,12 @@ export interface WebEngageEvents {
     Gender: string;
     'Mobile Number': number;
     'Customer ID': string;
+  };
+  [WebEngageEventName.RATING_GIVEN]: {
+    'Patient UHID': string;
+    Type: 'Consult' | 'Medicine' | 'Diagnostics';
+    'Rating Value': string;
+    'Rating Reason': string;
   };
 
   [WebEngageEventName.FEATURED_TEST_CLICKED]: {

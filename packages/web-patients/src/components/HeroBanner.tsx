@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
-// import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import _isEmpty from 'lodash/isEmpty';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
@@ -12,7 +11,6 @@ import { OurServices } from 'components/OurServices';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MascotWithMessage } from './MascotWithMessage';
-// import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

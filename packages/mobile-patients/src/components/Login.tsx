@@ -134,6 +134,11 @@ export const Login: React.FC<LoginProps> = (props) => {
   const webengage = new WebEngage();
 
   useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
+    postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
+  }, []);
+
+  useEffect(() => {
     try {
       fireBaseFCM();
       // if (firebase.auth().currentUser) {
@@ -337,7 +342,7 @@ export const Login: React.FC<LoginProps> = (props) => {
         >
           <WebView
             source={{
-              uri: 'https://www.apollo247.com/termsandconditions.html',
+              uri: 'https://www.apollo247.com/terms',
             }}
             style={{
               flex: 1,

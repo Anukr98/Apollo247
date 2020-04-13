@@ -20,6 +20,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { AppointmentType } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 // import { Redirect } from 'react-router';
+import { Alerts } from 'components/Alerts/Alerts';
 import _forEach from 'lodash/forEach';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import { usePrevious } from 'hooks/reactCustomHooks';
@@ -37,6 +38,8 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
+import { ModeComment } from '@material-ui/icons';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -198,6 +201,7 @@ const getYyMmDd = (ddmmyyyy: string) => {
 
 interface VisitClinicProps {
   doctorDetails: DoctorDetails;
+  doctorAvailableIn?: number;
 }
 
 export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
@@ -213,7 +217,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
   const makePaymentMutation = useMutation(MAKE_APPOINTMENT_PAYMENT);
   // const [mutationSuccess, setMutationSuccess] = React.useState(false);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const prevDateSelected = usePrevious(dateSelected);
   const { currentPatient } = useAllCurrentPatients();
   const { currentLocation, currentLat, currentLong } = useContext(LocationContext);
@@ -241,9 +246,14 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
-    dateSelected === '' ? new Date().toISOString().substring(0, 10) : getYyMmDd(dateSelected);
+    dateSelected === ''
+      ? moment(doctorAvailableTime).format('YYYY-MM-DD')
+      : getYyMmDd(dateSelected);
 
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
@@ -400,7 +410,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       .then((res) => {
         if (res && res.data && res.data.validateConsultCoupon) {
           if (res.data.validateConsultCoupon.reasonForInvalidStatus) {
-            alert(res.data.validateConsultCoupon.reasonForInvalidStatus);
+            setIsAlertOpen(true);
+            setAlertMessage(res.data.validateConsultCoupon.reasonForInvalidStatus);
             setMutationLoading(false);
           } else {
             bookAppointment();
@@ -408,7 +419,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         }
       })
       .catch((error) => {
-        alert(error);
+        setIsAlertOpen(true);
+        setAlertMessage(error);
         setMutationLoading(false);
       });
   };
@@ -448,7 +460,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               .then((res) => {
                 window.location.href = clientRoutes.appointments();
               })
-              .catch((error) => alert(error));
+              .catch((error) => {
+                setIsAlertOpen(true);
+                setAlertMessage(error);
+              });
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
@@ -462,7 +477,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         }
       })
       .catch((errorResponse) => {
-        alert(errorResponse);
+        setIsAlertOpen(true);
+        setAlertMessage(errorResponse);
         setMutationLoading(false);
       });
   };
@@ -622,6 +638,12 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           </AphButton>
         </div>
       </AphDialog>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

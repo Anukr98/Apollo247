@@ -28,6 +28,7 @@ import {
 import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
+import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -433,24 +434,6 @@ const bookRescheduleAppointment: Resolver<
       await rescheduleApptRepo.updateReschedule(rescheduleDetails.id, TRANSFER_STATUS.COMPLETED);
     }
   }
-  const mailContentTemplate = _.template(
-    `<html>
-    <body>
-    <p> Appointment has been rescheduled on Apollo 247 app with the following details:</p>
-    <ul>
-    <li>Appointment No  : <%- rescheduledapptNo %></li>
-    <li>Patient Name  : <%- PatientfirstName %></li>
-    <li>Mobile Number   : <%- PatientMobileNumber %></li>
-    <li>Doctor Name  : <%- docfirstName %></li>
-    <li>Doctor Location (ATHS/Hyd Hosp/Chennai Hosp) : <%- hospitalCity %></li>
-    <li>Appointment Date  : <%- apptDate %></li>
-    <li>Appointment Slot  : <%- apptTime %></li>
-    <li>Mode of Consult : <%-  rescheduledapptType %></li>
-    </ul>
-    </body> 
-    </html>
-    `
-  );
 
   const rescheduledapptDetails = await appointmentRepo.findById(
     bookRescheduleAppointmentInput.appointmentId
@@ -462,9 +445,8 @@ const bookRescheduleAppointment: Resolver<
   const hospitalCity = docDetails.doctorHospital[0].facility.city;
   const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
-  const apptTime = format(istDateTime, 'hh:mm');
-
-  const mailContent = mailContentTemplate({
+  const apptTime = format(istDateTime, 'hh:mm aa');
+  const mailContent = rescheduleAppointmentEmailTemplate({
     hospitalCity: hospitalCity || 'N/A',
     apptDate,
     apptTime,

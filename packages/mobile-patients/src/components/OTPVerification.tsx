@@ -344,6 +344,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     () => authListener();
   });
 
+  const postOtpSuccessEvent = () => {
+    const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_VERIFICATION_SUCCESS] = {
+      'Mobile Number': phoneNumberFromParams,
+    };
+    postWebEngageEvent(WebEngageEventName.OTP_VERIFICATION_SUCCESS, eventAttributes);
+  };
+
   const onClickOk = () => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ENTERED] = { value: 'Yes' };
@@ -364,6 +372,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 console.log(data.status === true, data.status, 'status');
 
                 if (data.status === true) {
+                  postOtpSuccessEvent();
                   CommonLogEvent('OTP_ENTERED_SUCCESS', 'SUCCESS');
                   CommonBugFender('OTP_ENTERED_SUCCESS', data as Error);
 
@@ -673,7 +682,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         >
           <WebView
             source={{
-              uri: 'https://www.apollo247.com/termsandconditions.html',
+              uri: 'https://www.apollo247.com/terms',
             }}
             style={{
               flex: 1,

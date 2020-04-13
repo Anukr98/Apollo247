@@ -7,6 +7,7 @@ import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import axios from 'axios';
 import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -134,6 +135,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       padding: 20,
     },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
   };
 });
 
@@ -177,11 +182,16 @@ export const MedicineAutoSearch: React.FC = (props) => {
       setLoading(false);
     }
   }, [searchText]);
+
+  let showError = false;
+  if (!loading && searchText.length > 2) showError = true;
+
   return (
     <div className={classes.root}>
       <div className={classes.medicineSearchForm}>
         <AphTextField
           placeholder="Search meds, brands and more"
+          error={showError}
           className={classes.searchInput}
           value={searchText.replace(/\s+/gi, ' ').trimLeft()}
           onChange={(e) => {
@@ -206,6 +216,13 @@ export const MedicineAutoSearch: React.FC = (props) => {
           <img src={require('images/ic_send.svg')} alt="" />
         </AphButton>
       </div>
+      {showError ? (
+        <FormHelperText className={classes.helpText} component="div" error={showError}>
+          Sorry, we couldn't find what you are looking for :(
+        </FormHelperText>
+      ) : (
+        ''
+      )}
       <Paper className={classes.autoSearchPopover}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'45vh'}>
           {loading && (

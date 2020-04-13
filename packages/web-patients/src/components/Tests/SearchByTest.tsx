@@ -10,6 +10,7 @@ import { useLocationDetails } from 'components/LocationProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTICS, GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
+import FormHelperText from '@material-ui/core/FormHelperText';
 import {
   searchDiagnostics,
   searchDiagnostics_searchDiagnostics_diagnostics,
@@ -20,6 +21,7 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics,
 } from 'graphql/types/getDiagnosticsData';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -187,6 +189,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
       margin: 'auto',
     },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
     testsList: {
       color: '#0087ba',
       fontSize: 14,
@@ -195,7 +201,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { searchTestText: string };
+type Params = { searchType: string; searchTestText: string };
 
 export const SearchByTest: React.FC = (props) => {
   const classes = useStyles({});
@@ -206,11 +212,16 @@ export const SearchByTest: React.FC = (props) => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const [testsList, setTestsList] = useState<
     (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
   >(null);
 
-  const [searchValue, setSearchValue] = useState<string>('');
+  const [searchValue, setSearchValue] = useState<string>(
+    params.searchType === 'search-test' ? params.searchTestText : ''
+  );
 
   const [
     diagnosticList,
@@ -244,7 +255,9 @@ export const SearchByTest: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        alert(e);
+        setIsAlertOpen(true);
+        setAlertMessage('something went wrong');
+        console.log(e);
       })
       .finally(() => {
         setLoading(false);
@@ -270,7 +283,9 @@ export const SearchByTest: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        alert(e);
+        setIsAlertOpen(true);
+        setAlertMessage('something went wrong');
+        console.log(e);
       })
       .finally(() => {
         setLoading(false);
@@ -299,6 +314,10 @@ export const SearchByTest: React.FC = (props) => {
     }
   }, [searchValue]);
 
+  let showError = false;
+
+  if (!loading && testsList && testsList.length === 0 && !diagnosticList) showError = true;
+
   return (
     <div className={classes.root}>
       <Header />
@@ -324,11 +343,20 @@ export const SearchByTest: React.FC = (props) => {
                     setSearchValue(e.target.value.replace(/\s+/gi, ' ').trimLeft());
                   }}
                   value={searchValue}
+                  error={showError}
                 />
+
                 <AphButton className={classes.searchBtn}>
                   <img src={require('images/ic_send.svg')} alt="" />
                 </AphButton>
               </div>
+              {showError ? (
+                <FormHelperText className={classes.helpText} component="div" error={showError}>
+                  Sorry, we couldn't find what you are looking for :(
+                </FormHelperText>
+              ) : (
+                ''
+              )}
             </div>
             <div className={`${classes.searchSection}`}>
               <Scrollbars
@@ -351,6 +379,12 @@ export const SearchByTest: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -17,6 +17,7 @@ import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import { useMutation } from 'react-apollo-hooks';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -203,11 +204,15 @@ export interface NewProfileProps {
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
   const { patient } = props;
+  const urlParams = new URLSearchParams(window.location.search);
+  const tpRefCode = urlParams.get('tp_ref_code') ? String(urlParams.get('tp_ref_code')) : '';
+
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
-  const [referralCode, setReferralCode] = useState<string>('');
+  const [referralCode, setReferralCode] = useState<string>(tpRefCode);
   const [isValidReferralCode, setIsValidReferralCode] = useState<boolean>(true);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const orderedGenders = [Gender.MALE, Gender.FEMALE];
 
   if (showProfileSuccess) {
@@ -244,7 +249,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
             })
             .catch((error) => {
               console.error(error);
-              window.alert('Something went wrong :(');
+              setIsAlertOpen(true);
+              setAlertMessage('Something went wrong :(');
             });
         }}
         render={({
@@ -457,6 +463,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               setIsValidReferralCode(isValidReferralCode);
                             }}
                             inputProps={{ type: 'text', maxLength: 25 }}
+                            disabled={
+                              tpRefCode.length > 0 && tpRefCode === 'SBIYONO' ? true : false
+                            }
                           />
                           {!isValidReferralCode ? (
                             <FormHelperText
@@ -493,6 +502,12 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   {isSubmitting ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
                 </AphButton>
               </div>
+              <Alerts
+                setAlertMessage={setAlertMessage}
+                alertMessage={alertMessage}
+                isAlertOpen={isAlertOpen}
+                setIsAlertOpen={setIsAlertOpen}
+              />
             </Form>
           );
         }}

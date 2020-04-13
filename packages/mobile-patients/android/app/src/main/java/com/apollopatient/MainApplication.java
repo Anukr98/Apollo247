@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.facebook.reactnative.androidsdk.FBSDKPackage;
+import com.appsflyer.reactnative.RNAppsFlyerPackage;
 import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageConfig;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;

@@ -143,29 +143,31 @@ export class DoctorRepository extends Repository<Doctor> {
     if (cityName.trim() != '') {
       cities.push(cityName);
     }
-    return this.createQueryBuilder('doctor')
-      .leftJoinAndSelect('doctor.specialty', 'specialty')
-      .leftJoinAndSelect('doctor.consultHours', 'consultHours')
-      .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
-      .leftJoinAndSelect('doctorHospital.facility', 'facility')
-      .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
-      .andWhere('doctor.isActive = true')
-      .andWhere('facility.city IN (:...cities)', { cities })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.andWhere('LOWER(doctor.firstName) LIKE :searchString', {
-            searchString: `${searchString}%`,
-          });
-          qb.orWhere('LOWER(doctor.lastName) LIKE :searchString', {
-            searchString: `${searchString}%`,
-          });
-          qb.orWhere("LOWER(doctor.firstName || ' ' || doctor.lastName) LIKE :searchString", {
-            searchString: `${searchString}%`,
-          });
-        })
-      )
-      .orderBy('doctor.experience', 'DESC')
-      .getMany();
+    return (
+      this.createQueryBuilder('doctor')
+        .leftJoinAndSelect('doctor.specialty', 'specialty')
+        .leftJoinAndSelect('doctor.consultHours', 'consultHours')
+        .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
+        .leftJoinAndSelect('doctorHospital.facility', 'facility')
+        .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+        .andWhere('doctor.isActive = true')
+        //.andWhere('facility.city IN (:...cities)', { cities })
+        .andWhere(
+          new Brackets((qb) => {
+            qb.andWhere('LOWER(doctor.firstName) LIKE :searchString', {
+              searchString: `${searchString}%`,
+            });
+            qb.orWhere('LOWER(doctor.lastName) LIKE :searchString', {
+              searchString: `${searchString}%`,
+            });
+            qb.orWhere("LOWER(doctor.firstName || ' ' || doctor.lastName) LIKE :searchString", {
+              searchString: `${searchString}%`,
+            });
+          })
+        )
+        .orderBy('doctor.experience', 'DESC')
+        .getMany()
+    );
   }
 
   searchBySpecialty(specialtyId: string) {
@@ -432,7 +434,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.specialty = :specialty', { specialty })
       .andWhere('doctor.isActive = true')
-      .andWhere('facility.city IN (:...cities)', { cities })
+      //.andWhere('facility.city IN (:...cities)', { cities })
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
 
     if (gender && gender.length > 0) {
@@ -739,13 +741,16 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { nextAvailableSlot });
   }
 
-  getAllDoctors(doctorId: string) {
+  getAllDoctors(doctorId: string, limit: number, offset: number) {
     if (doctorId == '0') {
       return this.find({
         where: {
           doctorType: Not('JUNIOR'),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     } else {
       return this.find({
@@ -754,16 +759,22 @@ export class DoctorRepository extends Repository<Doctor> {
           doctorType: Not('JUNIOR'),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     }
   }
 
-  getAllJuniorDoctors(doctorId: string) {
+  getAllJuniorDoctors(doctorId: string, limit: number, offset: number) {
     if (doctorId == '0') {
       return this.find({
         where: {
           doctorType: DoctorType.JUNIOR,
         },
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     } else {
       return this.find({
@@ -771,6 +782,9 @@ export class DoctorRepository extends Repository<Doctor> {
           id: doctorId,
           doctorType: DoctorType.JUNIOR,
         },
+        take: limit,
+        skip: offset,
+        order: { createdDate: 'ASC' },
       });
     }
   }

@@ -125,6 +125,18 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 14,
         fontWeight: 500,
+        margin: 0,
+      },
+    },
+    wrapperCardSlots: {
+      backgroundColor: '#f7f8f5',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      padding: 16,
+      marginTop: 16,
+      marginBottom: 16,
+      '& p': {
+        fontSize: 14,
+        fontWeight: 500,
         color: '#02475b',
         margin: 0,
       },
@@ -162,7 +174,11 @@ export interface TestSlot {
   slotInfo: any;
 }
 
-export const AppointmentsSlot: React.FC = (props) => {
+type AppointmentsSlotProps = {
+  setIsSlotSet: (isSlotSet: boolean) => void;
+};
+
+export const AppointmentsSlot: React.FC<AppointmentsSlotProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -322,10 +338,12 @@ export const AppointmentsSlot: React.FC = (props) => {
               diagnosticEmployeeCode: uniqueSlots[0].diagnosticEmployeeCode,
               city: selectedAddress ? selectedAddress.city! : '', // not using city from this in order place API
             });
+            props.setIsSlotSet(true);
           } else {
             setSelectedTimeSlot(null);
             setSelectedOption('No Slot Selected');
             setOptions([]);
+            props.setIsSlotSet(false);
           }
         }
         setLoading(false);
@@ -400,7 +418,7 @@ export const AppointmentsSlot: React.FC = (props) => {
                   .toDate()}
               />
             </div>
-            <div className={classes.wrapperCards}>
+            <div className={classes.wrapperCardSlots}>
               <p>Slot</p>
               <div className={classes.selectContainer}>
                 {loading ? (
@@ -426,6 +444,7 @@ export const AppointmentsSlot: React.FC = (props) => {
                               diagnosticEmployeeCode: filteredData.data.diagnosticEmployeeCode,
                               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
                             });
+                            props.setIsSlotSet(true);
                           }
                           setSelectedOption(value);
                         }}

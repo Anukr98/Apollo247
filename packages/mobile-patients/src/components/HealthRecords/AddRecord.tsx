@@ -212,9 +212,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   // const [selectedUnitIndex, setselectedUnitIndex] = useState<number>();
   const { showAphAlert } = useUIElements();
 
-  const [Images, setImages] = useState<PickerImage>(
-    props.navigation.state.params ? props.navigation.state.params.images : []
-  );
+  // const [Images, setImages] = useState<PickerImage>(
+  //   props.navigation.state.params ? props.navigation.state.params.images : []
+  // );
+  const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
 
   const navigatedFrom = props.navigation.state.params!.navigatedFrom
     ? props.navigation.state.params!.navigatedFrom

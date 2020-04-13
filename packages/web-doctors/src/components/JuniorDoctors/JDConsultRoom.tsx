@@ -957,7 +957,7 @@ export const JDConsultRoom: React.FC = () => {
       otherInstructions: otherInstructionsFinal,
       medicinePrescription: medicinePrescriptionFinal,
       id: caseSheetId,
-      status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
+      //status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
       lifeStyle: lifeStyle,
       familyHistory: familyHistory,
       dietAllergies: dietAllergies,
@@ -980,6 +980,12 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        const logObject = {
+          api: 'ModifyCaseSheetend',
+          inputParam: JSON.stringify(inputVariables),
+          appointmentId: appointmentId,
+        };
+        sessionClient.notify(JSON.stringify(logObject));
         setSaving(false);
         if (!flag) {
           endCallNotificationAction(false);
@@ -1012,9 +1018,21 @@ export const JDConsultRoom: React.FC = () => {
 
   const endConsultAction = () => {
     // open confirmation popup after removing from queue
+    saveCasesheetAction(false, true);
     mutationRemoveConsult()
-      .then(() => {})
+      .then(() => {
+        const logObject = {
+          api: 'RemoveFromConsultQueue',
+          appointmentId: appointmentId,
+          inputParam: JSON.stringify({
+            id: parseInt(queueId, 10),
+          }),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
+      })
       .catch((e: ApolloError) => {
+        //setSaving(false);
+        alert('Something went wrong, plz try again later.');
         const logObject = {
           api: 'RemoveFromConsultQueue',
           inputParam: JSON.stringify({
@@ -1031,10 +1049,8 @@ export const JDConsultRoom: React.FC = () => {
             : '',
           error: JSON.stringify(e),
         };
-
         sessionClient.notify(JSON.stringify(logObject));
       });
-    saveCasesheetAction(false, true);
   };
 
   // this will trigger end consult automatically after one minute
@@ -1199,17 +1215,20 @@ export const JDConsultRoom: React.FC = () => {
     <LinearProgress />
   ) : (
     <div className={classes.root}>
-      {!disableChat() && !isAudioVideoCall && (
-        <IdleTimer
-          ref={idleTimerRef}
-          element={document}
-          onIdle={(e) => {
-            setJrdNoFillDialog(true);
-          }}
-          debounce={250}
-          timeout={1000 * 60 * idleTimeValueInMinutes}
-        />
-      )}
+      {casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!.appointmentState !==
+        'AWAITING_RESCHEDULE' &&
+        !disableChat() &&
+        !isAudioVideoCall && (
+          <IdleTimer
+            ref={idleTimerRef}
+            element={document}
+            onIdle={(e) => {
+              setJrdNoFillDialog(true);
+            }}
+            debounce={250}
+            timeout={1000 * 60 * idleTimeValueInMinutes}
+          />
+        )}
       <div className={classes.headerSticky}>
         <Header />
       </div>

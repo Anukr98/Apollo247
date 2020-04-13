@@ -295,6 +295,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [addMutationLoading, setAddMutationLoading] = useState<boolean>(false);
   const [showPopup, setShowPopup] = React.useState<boolean>(false);
   const [tatLoading, setTatLoading] = React.useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_INFO_URL,
@@ -358,6 +359,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then((res: AxiosResponse) => {
         try {
           if (res && res.data) {
+            if (res.data.errorMsg) {
+              setErrorMessage(res.data.errorMsg);
+            }
             setTatLoading(false);
             if (
               typeof res.data === 'object' &&
@@ -366,16 +370,20 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             ) {
               setDeliveryTime(res.data.tat[0].deliverydate);
             } else if (typeof res.data === 'string') {
-              console.log(res.data);
+              // console.log(res.data);
             } else if (typeof res.data.errorMSG === 'string') {
-              console.log(res.data.errorMSG);
+              setErrorMessage(res.data.errorMSG);
+              // console.log(res.data.errorMSG);
             }
           }
         } catch (error) {
-          console.log(error);
+          setTatLoading(false);
         }
       })
-      .catch((error: any) => console.log(error));
+      .catch((error: any) => {
+        setTatLoading(false);
+        // console.log(error);
+      });
   };
 
   useEffect(() => {
@@ -443,10 +451,15 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onChange={(e) => {
                         setPinCode(e.target.value);
+                        setErrorMessage('');
                         if (e.target.value.length < 6) {
                           setDeliveryTime('');
                         }
                       }}
+                      onKeyPress={(e) => {
+                        if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                      }}
+                      value={pinCode}
                     />
                     <AphButton
                       disabled={pinCode.length !== 6}
@@ -456,12 +469,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       }}
                       onClick={() => fetchDeliveryTime()}
                     >
-                      Check
+                      {tatLoading ? <CircularProgress size={20} /> : ' Check'}
                     </AphButton>
                   </div>
+                  {errorMessage && <span>{errorMessage}</span>}
                   {deliveryTime.length > 0 && (
                     <div className={classes.deliveryTimeInfo}>
                       <span>Delivery Time</span>
+
                       {tatLoading ? <CircularProgress size={20} /> : <span>{deliveryTime}</span>}
                     </div>
                   )}
@@ -519,89 +534,90 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         </div>
 
         <div className={classes.bottomActions}>
-          {data.is_in_stock ? (
-            <>
-              <AphButton
-                disabled={addMutationLoading || updateMutationLoading}
-                onClick={() => {
-                  setAddMutationLoading(true);
-                  const cartItem: MedicineCartItem = {
-                    description: data.description,
-                    id: data.id,
-                    image: data.image,
-                    is_in_stock: data.is_in_stock,
-                    is_prescription_required: data.is_prescription_required,
-                    name: data.name,
-                    price: data.price,
-                    sku: data.sku,
-                    special_price: data.special_price,
-                    small_image: data.small_image,
-                    status: data.status,
-                    thumbnail: data.thumbnail,
-                    type_id: data.type_id,
-                    mou: data.mou,
-                    quantity: medicineQty,
-                  };
-                  applyCartOperations(cartItem);
-                  setAddMutationLoading(false);
-                  setShowPopup(true);
-                }}
-              >
-                {' '}
-                {addMutationLoading ? (
-                  <CircularProgress size={22} color="secondary" />
-                ) : itemIndexInCart(data) !== -1 ? (
-                  'Added To Cart'
-                ) : (
-                  'Add To Cart'
-                )}
-              </AphButton>
+          {
+            data.is_in_stock ? (
+              <>
+                <AphButton
+                  disabled={addMutationLoading || updateMutationLoading}
+                  onClick={() => {
+                    setAddMutationLoading(true);
+                    const cartItem: MedicineCartItem = {
+                      description: data.description,
+                      id: data.id,
+                      image: data.image,
+                      is_in_stock: data.is_in_stock,
+                      is_prescription_required: data.is_prescription_required,
+                      name: data.name,
+                      price: data.price,
+                      sku: data.sku,
+                      special_price: data.special_price,
+                      small_image: data.small_image,
+                      status: data.status,
+                      thumbnail: data.thumbnail,
+                      type_id: data.type_id,
+                      mou: data.mou,
+                      quantity: medicineQty,
+                    };
+                    applyCartOperations(cartItem);
+                    setAddMutationLoading(false);
+                    setShowPopup(true);
+                  }}
+                >
+                  {' '}
+                  {addMutationLoading ? (
+                    <CircularProgress size={22} color="secondary" />
+                  ) : itemIndexInCart(data) !== -1 ? (
+                    'Added To Cart'
+                  ) : (
+                    'Add To Cart'
+                  )}
+                </AphButton>
 
-              <AphButton
-                color="primary"
-                disabled={addMutationLoading || updateMutationLoading}
-                onClick={() => {
-                  setUpdateMutationLoading(true);
-                  const cartItem: MedicineCartItem = {
-                    description: data.description,
-                    id: data.id,
-                    image: data.image,
-                    is_in_stock: data.is_in_stock,
-                    is_prescription_required: data.is_prescription_required,
-                    name: data.name,
-                    price: data.price,
-                    sku: data.sku,
-                    special_price: data.special_price,
-                    small_image: data.small_image,
-                    status: data.status,
-                    thumbnail: data.thumbnail,
-                    type_id: data.type_id,
-                    mou: data.mou,
-                    quantity: medicineQty,
-                  };
-                  applyCartOperations(cartItem);
-                  setTimeout(() => {
-                    window.location.href = clientRoutes.medicinesCart();
-                  }, 3000);
-                }}
-              >
-                {updateMutationLoading ? (
-                  <CircularProgress size={22} color="secondary" />
-                ) : (
-                  'Buy Now'
-                )}
-              </AphButton>
-            </>
-          ) : null
-          // (
-          //   <AphButton
-          //     fullWidth
-          //     className={classes.notifyBtn}
-          //     onClick={() => setIsPopoverOpen(true)}
-          //   >
-          //     Notify when in stock
-          //   </AphButton>
-          // )
+                <AphButton
+                  color="primary"
+                  disabled={addMutationLoading || updateMutationLoading}
+                  onClick={() => {
+                    setUpdateMutationLoading(true);
+                    const cartItem: MedicineCartItem = {
+                      description: data.description,
+                      id: data.id,
+                      image: data.image,
+                      is_in_stock: data.is_in_stock,
+                      is_prescription_required: data.is_prescription_required,
+                      name: data.name,
+                      price: data.price,
+                      sku: data.sku,
+                      special_price: data.special_price,
+                      small_image: data.small_image,
+                      status: data.status,
+                      thumbnail: data.thumbnail,
+                      type_id: data.type_id,
+                      mou: data.mou,
+                      quantity: medicineQty,
+                    };
+                    applyCartOperations(cartItem);
+                    setTimeout(() => {
+                      window.location.href = clientRoutes.medicinesCart();
+                    }, 3000);
+                  }}
+                >
+                  {updateMutationLoading ? (
+                    <CircularProgress size={22} color="secondary" />
+                  ) : (
+                    'Buy Now'
+                  )}
+                </AphButton>
+              </>
+            ) : null
+            // (
+            //   <AphButton
+            //     fullWidth
+            //     className={classes.notifyBtn}
+            //     onClick={() => setIsPopoverOpen(true)}
+            //   >
+            //     Notify when in stock
+            //   </AphButton>
+            // )
           }
         </div>
       </div>

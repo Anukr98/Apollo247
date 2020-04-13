@@ -94,7 +94,20 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
   }
 
-  saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+  async saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
+    const checkRecord = await DoctorFeeSummary.findOne({
+      where:{
+        doctorId:doctorFeeAttrs.doctorId,
+        appointmentDateTime:doctorFeeAttrs.appointmentDateTime
+      }
+    })
+    if(checkRecord){
+      return DoctorFeeSummary.update(checkRecord.id,doctorFeeAttrs).catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_DOCTORFEESUMMARY_ERROR, undefined, {
+          createErrors,
+        });
+      });
+    }else{
     return DoctorFeeSummary.create(doctorFeeAttrs)
       .save()
       .catch((createErrors) => {
@@ -102,6 +115,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           createErrors,
         });
       });
+    }
   }
 
   getAppointmentPaymentDetailsByApptId(appointment: string) {
@@ -160,9 +174,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           toDate: endDate,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
+        .andWhere('appointment.status not in(:status1)', {
+          status1: STATUS.PAYMENT_PENDING,
         })
         .getCount();
     } else if (appointmentType == 'PHYSICAL') {
@@ -175,9 +188,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           appointmentType: APPOINTMENT_TYPE.PHYSICAL,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
+        .andWhere('appointment.status not in(:status1)', {
+          status1: STATUS.PAYMENT_PENDING,
         })
         .getCount();
     } else {
@@ -190,9 +202,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           appointmentType: APPOINTMENT_TYPE.ONLINE,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
+        .andWhere('appointment.status not in(:status1)', {
+          status1: STATUS.PAYMENT_PENDING,
         })
         .getCount();
     }
@@ -307,6 +318,34 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         .andWhere('appointment."doctorId" = :doctorId', { doctorId: doctorId })
         .getCount();
     }
+  }
+  async getTotalCompletedChats(doctorId:string,selDate:Date){
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return await CaseSheet.count({
+      where: {
+        doctorId: doctorId,
+        status: CASESHEET_STATUS.COMPLETED,
+        createdDate: Between(newStartDate, newEndDate),
+        doctorType:Not('JUNIOR')
+      },
+    });
+  }
+
+  async getTotalRescheduleCount(doctorId:string,appointmentDate:Date){
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const startDate = new Date(inputStartDate + 'T18:30');
+    return Appointment.createQueryBuilder('appointment')
+    .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)',{
+      fromDate:startDate,
+      toDate:endDate,
+     }).andWhere('(appointment."rescheduleCount">0 OR appointment."rescheduleCountByDoctor">0)')
+       .andWhere('appointment."doctorId" = :doctorId', { doctorId:doctorId })
+       .getCount();
+        
   }
 
   async getDoctorSlots(doctorId: string, appointmentDate: Date, doctorsDb: Connection) {
@@ -430,7 +469,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       });
     }
   }
-  async getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
+  async   getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
     const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
     const appointmentList = await Appointment.find({

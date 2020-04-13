@@ -30,6 +30,8 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
 
     @ReactMethod
     fun show(vitaToken: String, UHID: String, userName: String, consultSource: String,buildSpecify:String, fcmToken: String) {
+        try {
+
         System.out.println("In SHOW......" + vitaToken+" "+buildSpecify);
         System.out.println("In UHID......" + UHID + " "+userName+ " "+consultSource);
         val T2DiabetesAndHypertensionProgram = "diabetes_24_7"
@@ -57,23 +59,33 @@ class StreamManager(reactContext: ReactApplicationContext) : ReactContextBaseJav
         val intent = Intent(reactApplicationContext, ConditionalMGMTActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         reactApplicationContext.startActivity(intent)
+        } catch (e: Exception) {
+            System.out.println("CMerror......" + e.message + "\n" + e.toString());
+        }
+
     }
 
     @ReactMethod
     fun cmNotification(data: String) {
-        System.out.println("data......" + data);
 
-        var jsonobject = JSONObject(data)
-        var map = HashMap<String,String>()
-        map.put("author",jsonobject.get("author").toString())
-        map.put("channel_id",jsonobject.get("channel_id").toString())
-        map.put("message_id",jsonobject.get("message_id").toString())
-        map.put("twi_body",jsonobject.get("twi_body").toString())
-        map.put("twi_message_id",jsonobject.get("twi_message_id").toString())
-        map.put("channel_sid",jsonobject.get("channel_sid").toString())
-        map.put("twi_message_type",jsonobject.get("twi_message_type").toString())
-        map.put("twi_sound",jsonobject.get("twi_sound").toString())
-        VitaTasksNotificationsManager.createNotificationTwilio(reactApplicationContext,map)
+        try {
+            //some exception
+            System.out.println("data......" + data);
+
+            var jsonobject = JSONObject(data)
+            var map = HashMap<String,String>()
+            map.put("author",jsonobject.get("author").toString())
+            map.put("channel_id",jsonobject.get("channel_id").toString())
+            map.put("message_id",jsonobject.get("message_id").toString())
+            map.put("twi_body",jsonobject.get("twi_body").toString())
+            map.put("twi_message_id",jsonobject.get("twi_message_id").toString())
+            map.put("channel_sid",jsonobject.get("channel_sid").toString())
+            map.put("twi_message_type",jsonobject.get("twi_message_type").toString())
+            map.put("twi_sound",jsonobject.get("twi_sound").toString())
+            VitaTasksNotificationsManager.createNotificationTwilio(reactApplicationContext,map)
+        } catch (e: Exception) {
+            System.out.println("CMerror - show..." + e.message + "\n" + e.toString());
+        }
 
     }
 }

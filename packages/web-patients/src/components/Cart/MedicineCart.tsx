@@ -35,6 +35,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -196,7 +197,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '11px 10px',
       color: '#01475b',
       opacity: 0.6,
-      minWidth: '50%',
+      minWidth: '100%',
       textTransform: 'none',
     },
     tabSelected: {
@@ -465,6 +466,9 @@ export const MedicineCart: React.FC = (props) => {
     setEPrescriptionData,
   } = useShoppingCart();
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
+
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
 
@@ -477,6 +481,9 @@ export const MedicineCart: React.FC = (props) => {
   const { currentPincode } = useContext(LocationContext);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [uploadingFiles, setUploadingFiles] = React.useState<boolean>(false);
+
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
 
@@ -496,7 +503,8 @@ export const MedicineCart: React.FC = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { authToken } = useAuth();
-
+  const pharmacyMinDeliveryValue = process.env.PHARMACY_MIN_DELIVERY_VALUE;
+  const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
   const deliveryMode = tabValue === 0 ? 'HOME' : 'PICKUP';
   const disablePayButton = paymentMethod === '';
 
@@ -504,9 +512,12 @@ export const MedicineCart: React.FC = (props) => {
   // if the total is less than 200 +20 is added.
   const discountAmount = couponCode !== '' ? parseFloat(((cartTotal * 10) / 100).toFixed(2)) : 0;
   const grossValue = cartTotal - discountAmount;
-  const deliveryCharges = grossValue > 200 || grossValue <= 0 || tabValue === 1 ? 0 : 20;
-  const totalAmount = (grossValue + deliveryCharges).toFixed(2);
-  const showGross = deliveryCharges < 0 || discountAmount > 0;
+  const deliveryCharges =
+    grossValue >= Number(pharmacyMinDeliveryValue) || grossValue <= 0 || tabValue === 1
+      ? 0
+      : Number(pharmacyDeliveryCharges);
+  const totalAmount = (grossValue + Number(deliveryCharges)).toFixed(2);
+  const showGross = (deliveryCharges && deliveryCharges < 0) || discountAmount > 0;
 
   const disableSubmit =
     deliveryMode === 'HOME'
@@ -620,7 +631,8 @@ export const MedicineCart: React.FC = (props) => {
       })
       .catch((e) => {
         console.log({ e });
-        alert(`Something went wrong, please try later.`);
+        setIsAlertOpen(true);
+        setAlertMessage(`Something went wrong, please try later.`);
       })
       .finally(() => {
         // setLoading!(false);
@@ -654,8 +666,13 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const onPressSubmit = async () => {
+    setUploadingFiles(true);
+    const ePresUrls =
+      ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
+    const ePresPrismIds =
+      ePrescriptionData &&
+      ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
     if (prescriptions && prescriptions.length > 0) {
-      setUploadingFiles(true);
       uploadMultipleFiles(prescriptions)
         .then((data) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
@@ -666,11 +683,6 @@ export const MedicineCart: React.FC = (props) => {
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
           const phyPresPrismIds = filtered.map((item) => item.fileId).filter((i) => i);
-          const ePresUrls =
-            ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
-          const ePresPrismIds =
-            ePrescriptionData &&
-            ePrescriptionData.map((item) => item.prismPrescriptionFileId).filter((i) => i);
           const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
             prescriptionMedicineInput: {
               patientId: (currentPatient && currentPatient.id) || '',
@@ -690,8 +702,25 @@ export const MedicineCart: React.FC = (props) => {
         .catch((e) => {
           console.log(e);
           setUploadingFiles(false);
-          alert(e);
+          setIsAlertOpen(true);
+          setAlertMessage('something went wrong');
         });
+    } else {
+      const prescriptionMedicineInput: SavePrescriptionMedicineOrderVariables = {
+        prescriptionMedicineInput: {
+          patientId: (currentPatient && currentPatient.id) || '',
+          medicineDeliveryType: deliveryAddressId
+            ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
+            : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          shopId: storeAddressId || '0',
+          appointmentId: '',
+          patinetAddressId: deliveryAddressId || '',
+          prescriptionImageUrl: [...ePresUrls].join(','),
+          prismPrescriptionFileId: [...ePresPrismIds].join(','),
+          isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+        },
+      };
+      submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     }
   };
 
@@ -700,7 +729,6 @@ export const MedicineCart: React.FC = (props) => {
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
-
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -712,26 +740,28 @@ export const MedicineCart: React.FC = (props) => {
           }
         >
           <div className={classes.medicineListGroup}>
-            <div className={classes.sectionHeader}>
-              <span>Medicines In Your Cart</span>
-              <span className={classes.count}>
-                ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
-              </span>
-              <AphButton
-                className={classes.addItemBtn}
-                onClick={() => {
-                  window.location.href = clientRoutes.medicines();
-                }}
-                title={'Add items to cart'}
-              >
-                Add Items
-              </AphButton>
-            </div>
+            {!nonCartFlow && (
+              <div className={classes.sectionHeader}>
+                <span>Medicines In Your Cart</span>
+                <span className={classes.count}>
+                  ({cartItems.length > 0 ? String(cartItems.length).padStart(2, '0') : 0})
+                </span>
+                <AphButton
+                  className={classes.addItemBtn}
+                  onClick={() => {
+                    window.location.href = clientRoutes.medicines();
+                  }}
+                  title={'Add items to cart'}
+                >
+                  Add Items
+                </AphButton>
+              </div>
+            )}
             {cartItems.length > 0 ||
             (prescriptions && prescriptions.length > 0) ||
             (ePrescriptionData && ePrescriptionData.length > 0) ? (
               <>
-                <MedicineListingCard />
+                {!nonCartFlow && <MedicineListingCard />}
                 {uploadPrescriptionRequired >= 0 ||
                 (prescriptions && prescriptions.length > 0) ||
                 (ePrescriptionData && ePrescriptionData.length > 0) ? (
@@ -838,6 +868,7 @@ export const MedicineCart: React.FC = (props) => {
                     title={'Choose home delivery'}
                   />
                   <Tab
+                    disabled
                     classes={{
                       root: classes.tabRoot,
                       selected: classes.tabSelected,
@@ -928,19 +959,27 @@ export const MedicineCart: React.FC = (props) => {
         <div className={classes.checkoutBtn}>
           <AphButton
             onClick={() => {
-              if (cartItems && cartItems.length > 0) {
+              if (cartItems && cartItems.length > 0 && !nonCartFlow) {
                 setCheckoutDialogOpen(true);
-              } else if (prescriptions && prescriptions.length > 0) {
+              } else if (
+                nonCartFlow &&
+                ((prescriptions && prescriptions.length > 0) ||
+                  (ePrescriptionData && ePrescriptionData.length > 0))
+              ) {
                 onPressSubmit();
               }
             }}
             color="primary"
             fullWidth
             disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
-            className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+            className={
+              disableSubmit || !isPaymentButtonEnable || mutationLoading
+                ? classes.buttonDisable
+                : ''
+            }
             title={'Proceed to pay bill'}
           >
-            {cartItems && cartItems.length > 0 ? (
+            {cartItems && cartItems.length > 0 && !nonCartFlow ? (
               `Proceed to pay — RS. ${totalAmount}`
             ) : uploadingFiles ? (
               <CircularProgress size={22} color="secondary" />
@@ -985,7 +1024,9 @@ export const MedicineCart: React.FC = (props) => {
                     }
                   })
                   .catch((e) => {
-                    alert(e);
+                    setIsAlertOpen(true);
+                    setAlertMessage('something went wrong');
+                    console.log(e);
                     setMutationLoading(false);
                   });
               }}
@@ -1033,6 +1074,12 @@ export const MedicineCart: React.FC = (props) => {
         <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
       <NavigationBottom />
     </div>
   );

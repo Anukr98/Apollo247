@@ -88,8 +88,13 @@ export const sdDashboardSummaryTypeDefs = gql`
     SATURDAY
   }
   extend type Mutation {
-    updateSdSummary(summaryDate: Date, doctorId: String): DashboardSummaryResult!
-    updateDoctorFeeSummary(summaryDate: Date, doctorId: String): DoctorFeeSummaryResult!
+    updateSdSummary(
+      summaryDate: Date
+      doctorId: String
+      docLimit: Int
+      docOffset: Int
+    ): DashboardSummaryResult!
+    updateDoctorFeeSummary(summaryDate: Date, doctorId: String,docLimit:Int,docOffset:Int): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePatientType(doctorId: ID!): UpdatePatientTypeResult
     updateUserType: UpdateUserTypeResult
@@ -287,14 +292,14 @@ const updatePatientType: Resolver<
 
 const updateSdSummary: Resolver<
   null,
-  { summaryDate: Date; doctorId: string },
+  { summaryDate: Date; doctorId: string; docLimit: number; docOffset: number },
   ConsultServiceContext,
   DashboardSummaryResult
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo, adminMapRepo, loginSessionRepo, consultHoursRepo } = getRepos(
     context
   );
-  const docsList = await docRepo.getAllDoctors(args.doctorId);
+  const docsList = await docRepo.getAllDoctors(args.doctorId, args.docLimit, args.docOffset);
   if (docsList.length > 0) {
     docsList.map(async (doctor) => {
       const loginSessionData = await loginSessionRepo.getLoginDetailsByDocId(
@@ -321,7 +326,7 @@ const updateSdSummary: Resolver<
         totalSlotsTime = difference / timeSlots[0].consultDuration;
       }
 
-      const docsList = await docRepo.getAllDoctors('0');
+      const docsList = await docRepo.getAllDoctors('0', args.docLimit, args.docOffset);
       let awayCount = 0;
       let onlineCount = 0;
       if (docsList.length > 0) {
@@ -390,6 +395,15 @@ const updateSdSummary: Resolver<
         args.summaryDate,
         TRANSFER_INITIATED_TYPE.PATIENT
       );
+
+      const totalCompletedChats = await dashboardRepo.getTotalCompletedChats(
+        doctor.id,
+        args.summaryDate
+      );
+      const totalRescheduleCount= await dashboardRepo.getTotalRescheduleCount(
+        doctor.id,
+        args.summaryDate
+      )
       const slotsCount = await dashboardRepo.getDoctorSlots(
         doctor.id,
         args.summaryDate,
@@ -453,6 +467,8 @@ const updateSdSummary: Resolver<
         awayHours,
         onlineConsultationFees: Number(doctor.onlineConsultationFees),
         physicalConsultationFees: Number(doctor.physicalConsultationFees),
+        totalRescheduleCount,
+        totalCompletedChats,
         isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
@@ -464,12 +480,12 @@ const updateSdSummary: Resolver<
 
 const updateDoctorFeeSummary: Resolver<
   null,
-  { summaryDate: Date; doctorId: string },
+  { summaryDate: Date; doctorId: string; docLimit: number; docOffset: number },
   ConsultServiceContext,
   DoctorFeeSummaryResult
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo } = getRepos(context);
-  const docsList = await docRepo.getAllDoctors(args.doctorId);
+  const docsList = await docRepo.getAllDoctors(args.doctorId, args.docLimit, args.docOffset);
   docsList.forEach(async (doctor) => {
     const totalConsultations = await dashboardRepo.getAppointmentsDetailsByDoctorId(
       doctor.id,

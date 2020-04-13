@@ -18,6 +18,14 @@
 #import "RNFirebaseMessaging.h"
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
+@import AppsFlyerLib;
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
+
+#if __has_include(<AppsFlyerLib/AppsFlyerTracker.h>) // from Pod
+#import <AppsFlyerLib/AppsFlyerTracker.h>
+#else
+#import "AppsFlyerTracker.h"
+#endif
 
 @implementation AppDelegate
 
@@ -61,6 +69,8 @@
   }];
   
   [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+  [[FBSDKApplicationDelegate sharedInstance] application:application
+                           didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
 }
@@ -86,64 +96,77 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
 // Required for the register event.
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
-  NSLog(@"deviceToken %@",deviceToken);
-  NSString *pushToken;
-  pushToken = [deviceToken description];
-  if(deviceToken){
-    pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
-    pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
-  } else {
-    pushToken= @"";
-  }
   
-  if (self.chatClient && self.chatClient.user) {
-
+  @try {
+    NSLog(@"deviceToken %@",deviceToken);
+    
+    [[AppsFlyerTracker sharedTracker] registerUninstall:deviceToken];
+    
+    NSString *pushToken;
+    pushToken = [deviceToken description];
+    if(deviceToken){
+      pushToken = [pushToken stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+      pushToken = [pushToken stringByReplacingOccurrencesOfString:@" " withString:@""];
+    } else {
+      pushToken= @"";
+    }
+    
+    if (self.chatClient && self.chatClient.user) {
+      
       [self.chatClient registerWithNotificationToken:deviceToken
-
+       
                                           completion:^(TCHResult *result) {
-          if (![result isSuccessful]) {
-
-              // try registration again or verify token
-          }
-
+        if (![result isSuccessful]) {
+          
+          // try registration again or verify token
+        }
+        
       }];
-
-  } else {
-
+      
+    } else {
+      
       [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:@"deviceToken"];
+    }
+    
+    [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"devicePushToken"];
+    [[NSUserDefaults standardUserDefaults]synchronize];
+  } @catch (NSException *exception) {
+    NSLog(@"%@",exception );
   }
   
-  [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"devicePushToken"];
-  [[NSUserDefaults standardUserDefaults]synchronize];
 }
 
 -(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse* )response
         withCompletionHandler:(void(^)(void))completionHandler
 
 API_AVAILABLE(ios(10.0)){
-
+  @try {
     NSLog(@"didReceiveNotificationResponse ----> %@", response.notification.request.content.userInfo);
-
+    
     NSDictionary *userInfo = response.notification.request.content.userInfo;
-
-
+    
+    
     if (userInfo[@"twi_message_type"]) {
-
-        NSBundle *vitalsBundle = [NSBundle bundleWithIdentifier:@"com.apollo.ApolloVitalsFramework"];
-
-        UIStoryboard *chatStoryBoard = [UIStoryboard storyboardWithName:@"Chat" bundle:vitalsBundle];
-
-        ChatViewController *chatVC = [chatStoryBoard instantiateViewControllerWithIdentifier:@"ChatViewController"];
+      
+      NSBundle *vitalsBundle = [NSBundle bundleWithIdentifier:@"com.apollo.ApolloVitalsFramework"];
+      
+      UIStoryboard *chatStoryBoard = [UIStoryboard storyboardWithName:@"Chat" bundle:vitalsBundle];
+      
+      ChatViewController *chatVC = [chatStoryBoard instantiateViewControllerWithIdentifier:@"ChatViewController"];
       [self.window.rootViewController.navigationController pushViewController:chatVC animated:YES];
       
     }
-  
-//     NSLog(@"center: %@, response: %@", center, response);
-  
-     [WEGManualIntegration userNotificationCenter:center didReceiveNotificationResponse:response];
-
+    
+    //     NSLog(@"center: %@, response: %@", center, response);
+    
+    [WEGManualIntegration userNotificationCenter:center didReceiveNotificationResponse:response];
+    
     completionHandler();
-
+  } @catch (NSException *exception) {
+    NSLog(@"%@",exception );
+    
+  }
+  
 }
 
 #pragma mark - Open URL / deep link
@@ -154,17 +177,25 @@ API_AVAILABLE(ios(10.0)){
   
   @try {
     NSString * strHost = [NSString stringWithFormat:@"%@", url.scheme ? url.scheme : @"" ];
-     if ([strHost isEqualToString:@"vita-app-chron"]) {
-       [[NSNotificationCenter defaultCenter] postNotificationName:@"fitbitLoginNotification" object:nil];
-     }
+    if ([strHost isEqualToString:@"vita-app-chron"]) {
+      [[NSNotificationCenter defaultCenter] postNotificationName:@"fitbitLoginNotification" object:nil];
+    }
+    
+    
+    [[AppsFlyerTracker sharedTracker] handleOpenUrl:url options:options];
+    
+    [RCTLinkingManager application:application
+                           openURL:url
+                 sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
+                        annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+    
+    if ([[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options]) {
+      return YES;
+    }
   } @catch (NSException *exception) {
     NSLog(@"%@",exception );
   }
   
-  [RCTLinkingManager application:application
-                         openURL:url
-               sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
-                      annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
   return YES;
 }
 
@@ -173,6 +204,8 @@ API_AVAILABLE(ios(10.0)){
   [RCTLinkingManager application:application
             continueUserActivity:userActivity
               restorationHandler:restorationHandler];
+  [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
+  
   return true;
 }
 
@@ -190,22 +223,22 @@ API_AVAILABLE(ios(10.0)){
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler{
-    
-    NSLog(@"center: %@, notification: %@", center, notification);
-    
-    [WEGManualIntegration userNotificationCenter:center willPresentNotification:notification];
-    
-    completionHandler(UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionSound | UNNotificationPresentationOptionBadge);
+  
+  NSLog(@"center: %@, notification: %@", center, notification);
+  
+  [WEGManualIntegration userNotificationCenter:center willPresentNotification:notification];
+  
+  completionHandler(UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionSound | UNNotificationPresentationOptionBadge);
 }
 
 // - (void)userNotificationCenter:(UNUserNotificationCenter *)center
 // didReceiveNotificationResponse:(UNNotificationResponse *)response
 //          withCompletionHandler:(void (^)(void))completionHandler {
-    
+
 //     NSLog(@"center: %@, response: %@", center, response);
-    
+
 //     [WEGManualIntegration userNotificationCenter:center didReceiveNotificationResponse:response];
-    
+
 //     completionHandler();
 // }
 

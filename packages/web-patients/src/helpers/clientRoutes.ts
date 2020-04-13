@@ -35,12 +35,15 @@ export const clientRoutes = {
   tests: () => '/tests',
   testDetails: (searchTestType: string, itemName: string, itemId: string) =>
     `/test-details/${searchTestType}/${itemName}/${itemId}`,
-  searchByTest: (searchTestText: string) => `/tests-list/search-test/${searchTestText}`,
+  searchByTest: (searchType: string, searchTestText: string) =>
+    `/tests-list/${searchType}/${searchTestText}`,
   testOrders: () => '/order-details',
   orderSummary: (id: string) => `/orders/order-summary/${id}`,
   termsConditions: () => '/terms',
   privacy: () => '/privacy',
   FAQ: () => '/faq',
+  partnerSBI: () => '/partners/sbi',
+  contactUs: () => '/contact',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

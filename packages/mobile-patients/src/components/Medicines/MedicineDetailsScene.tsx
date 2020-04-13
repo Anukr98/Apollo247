@@ -36,6 +36,7 @@ import {
   doRequestAndAccessLocation,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postAppsFlyerAddToCartEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -400,6 +401,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       isInStock: true,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP');
+    postAppsFlyerAddToCartEvent(item, 'Pharmacy PDP');
   };
 
   const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
@@ -480,6 +482,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       });
   };
 
+  const postwebEngageNotifyMeEvent = ({ name, sku, category_id }: MedicineProduct) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
+      'product name': name,
+      'product id': sku,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': category_id,
+    };
+    postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
+  };
+
   const renderBottomButtons = () => {
     const opitons = Array.from({ length: 20 }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
@@ -494,7 +508,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               paddingBottom: 16,
               alignItems: 'center',
               flex: 1,
-              marginHorizontal: 60,
             }}
           >
             <Text
@@ -505,23 +518,23 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             >
               Out Of Stock
             </Text>
-            {false && (
-              <Button
-                title={'NOTIFY WHEN IN STOCK'}
-                style={{ backgroundColor: theme.colors.WHITE }}
-                titleTextStyle={{ color: '#fc9916' }}
-                onPress={() => {
-                  CommonLogEvent(
-                    AppRoutes.MedicineDetailsScene,
-                    `You will be notified when ${medicineName} is back in stock.`
-                  );
-                  showAphAlert!({
-                    title: 'Okay! :)',
-                    description: `You will be notified when ${medicineName} is back in stock.`,
-                  });
-                }}
-              />
-            )}
+            <Button
+              title={'NOTIFY WHEN IN STOCK'}
+              style={{ backgroundColor: theme.colors.WHITE, width: '75%' }}
+              titleTextStyle={{ color: '#fc9916' }}
+              onPress={() => {
+                CommonLogEvent(
+                  AppRoutes.MedicineDetailsScene,
+                  `You will be notified when ${medicineName} is back in stock.`
+                );
+                postwebEngageNotifyMeEvent(medicineDetails);
+                props.navigation.goBack();
+                showAphAlert!({
+                  title: 'Okay! :)',
+                  description: `You will be notified when ${medicineName} is back in stock.`,
+                });
+              }}
+            />
           </View>
         ) : (
           <View style={styles.bottomView}>

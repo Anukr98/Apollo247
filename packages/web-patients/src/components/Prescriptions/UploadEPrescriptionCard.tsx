@@ -141,6 +141,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   const [pastPrescriptions, setPastPrescriptions] = useState<any[] | null>(null);
   const [pastMedicalOrders, setPastMedicalOrders] = useState<any[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isRecordChecked, setIsRecordChecked] = useState<boolean>(false);
 
   const patientPastConsultAndPrescriptionMutation = useMutation<
     getPatientPastConsultsAndPrescriptions,
@@ -307,8 +308,15 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
-                  onChange={() => {
-                    selectedEPrescriptionRecords.push(pastPrescription);
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      selectedEPrescriptionRecords.push(pastPrescription);
+                    } else {
+                      selectedEPrescriptionRecords = selectedEPrescriptionRecords.filter(
+                        (record) => record.id != pastPrescription.id
+                      );
+                    }
+                    setIsRecordChecked(selectedEPrescriptionRecords.length > 0);
                   }}
                   className={classes.checkbox}
                   color="primary"
@@ -334,8 +342,15 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
-                  onChange={() => {
-                    selectedEPrescriptionRecords.push(pastPrescription);
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      selectedEPrescriptionRecords.push(pastPrescription);
+                    } else {
+                      selectedEPrescriptionRecords = selectedEPrescriptionRecords.filter(
+                        (record) => record.id != pastPrescription.id
+                      );
+                    }
+                    setIsRecordChecked(selectedEPrescriptionRecords.length > 0);
                   }}
                   className={classes.checkbox}
                   color="primary"
@@ -346,8 +361,10 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
         <div className={classes.uploadButtonWrapper}>
           <AphButton
             disabled={
-              (!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
-              (!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0))
+              ((!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
+                (!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0))) ||
+              selectedEPrescriptionRecords.length === 0 ||
+              !isRecordChecked
             }
             onClick={() => {
               const finalEprescriptions = selectedEPrescriptionRecords;
@@ -356,7 +373,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
               const currentUrl = window.location.href;
               if (currentUrl.endsWith('/medicines')) {
-                window.location.href = clientRoutes.medicinesCart();
+                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
               }
             }}
             className={classes.uploadPrescription}

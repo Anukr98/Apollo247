@@ -142,6 +142,7 @@ export enum ApiConstants {
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
   CANCEL_APPOINTMENT_SUBJECT = 'Appointment has been cancelled',
+  CANCEL_APPOINTMENT_BODY = 'Appointment booked on Apollo 247 has been cancelled.',
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 
   PRISM_TIMEOUT = 10000,
@@ -264,4 +265,8 @@ export enum ApiConstants {
 
   DOCTOR_SEARCH_DEFAULT_CITY1 = 'Hyderabad',
   DOCTOR_SEARCH_DEFAULT_CITY2 = 'Chennai',
+
+  AUTO_SUBMIT_JD_CASESHEET_RESPONSE = 'Checked all the appointments scheduled after 10 minutes',
+  VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
+  VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
 }

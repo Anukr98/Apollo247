@@ -14,6 +14,7 @@ import _sortBy from 'lodash/sortBy';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { format, parseISO } from 'date-fns';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -264,7 +265,8 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   const onePrimaryUser = true;
   const multiplePrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length > 1;
   const { setCurrentPatientId } = useAllCurrentPatients();
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   // const noPrimaryUsers = patients.filter((x) => x.relation === Relation.ME).length < 1;
   // const disabled = patients.some(isPatientInvalid);
 
@@ -348,7 +350,10 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
                     }
                     props.onComplete();
                   })
-                  .catch(() => window.alert('Something went wrong :('))
+                  .catch(() => {
+                    setIsAlertOpen(true);
+                    setAlertMessage('Something went wrong :(');
+                  })
                   .finally(() => setLoading(false));
               }}
               disabled={disabled}
@@ -361,6 +366,12 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
           )}
         </Mutation>
       </div>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

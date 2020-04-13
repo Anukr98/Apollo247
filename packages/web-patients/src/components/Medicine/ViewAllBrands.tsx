@@ -48,6 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 20,
         paddingRight: 20,
         boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+        position: 'fixed',
       },
     },
     headerTitle: {
@@ -97,6 +98,7 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: 'none',
         boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
         margin: 0,
+        marginTop: 55,
         position: 'relative',
         paddingLeft: 14,
         zIndex: 999,
@@ -333,7 +335,7 @@ export const ViewAllBrands: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.viewAllBrands}>
           <div className={classes.breadcrumbs}>
-            <a onClick={() => window.history.back()}>
+            <a onClick={() => (window.location.href = clientRoutes.medicines())}>
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -350,7 +352,7 @@ export const ViewAllBrands: React.FC = (props) => {
             className={classes.scrollbar}
             autoHide={true}
             autoHeight
-            autoHeightMax={'calc(100vh - 212px)'}
+            autoHeightMax={'calc(100vh - 250px)'}
           >
             <div className={classes.filterSection}>
               {isLoading ? (

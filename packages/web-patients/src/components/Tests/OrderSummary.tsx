@@ -20,6 +20,7 @@ import { GET_DIAGNOSTIC_ORDER_LIST_DETAILS } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
 import { useApolloClient } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -239,7 +240,8 @@ export const OrderSummary: React.FC = () => {
     null
   );
   const [orderLineItem, setOrderLineItem] = useState<(orderLineItems | null)[] | null>(null);
-
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   useEffect(() => {
     if (!diagnosticOrderDetail) {
       setIsLoading(true);
@@ -262,7 +264,9 @@ export const OrderSummary: React.FC = () => {
           }
         })
         .catch((e) => {
-          alert(e);
+          setIsAlertOpen(true);
+          setAlertMessage('something went wrong');
+          console.log(e);
           setDiagnosisDataError(true);
         })
         .finally(() => {
@@ -394,6 +398,12 @@ export const OrderSummary: React.FC = () => {
           </div>
         )
       )}
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
