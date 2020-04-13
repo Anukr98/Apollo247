@@ -28,10 +28,6 @@ exports.noShowReminder = (req, res) => {
   axios
     .post('http://localhost:4000', requestJSON)
     .then((response) => {
-      console.log(
-        response.data.data.noShowReminderNotification.noCaseSheetCount,
-        'notifications response is....'
-      );
       const fileName =
         process.env.PHARMA_LOGS_PATH +
         new Date().getFullYear() +
@@ -69,7 +65,6 @@ exports.FollowUpNotification = (req, res) => {
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
-      console.log(response.data.data.sendFollowUpNotification, 'notifications response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-followUpNotifications.txt';
       let content =
@@ -99,10 +94,6 @@ exports.ApptReminder = (req, res) => {
   axios
     .post('http://localhost:4000/', requestJSON)
     .then((response) => {
-      console.log(
-        response.data.data.sendApptReminderNotification.apptsListCount,
-        'notifications response is....'
-      );
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
       let content =
@@ -132,7 +123,6 @@ exports.DailyAppointmentSummary = (req, res) => {
   axios
     .post('http://localhost:4000', requestJSON)
     .then((response) => {
-      console.log(response.data.data.sendDailyAppointmentSummary, 'notifications response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dailyAppointmentSummary.txt';
       let content =
@@ -163,10 +153,6 @@ exports.PhysicalApptReminder = (req, res) => {
     .post('http://localhost:4000', requestJSON)
     .then((response) => {
       console.log(response);
-      console.log(
-        response.data.data.sendPhysicalApptReminderNotification.apptsListCount,
-        'notifications response is....'
-      );
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
       let content =
@@ -199,8 +185,6 @@ exports.updateSdSummary = (req, res) => {
   axios
     .post('http://localhost:4000', updateSdSummaryRequestJSON)
     .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateSdSummary, 'Summary response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateSdSummary.txt';
       let content =
@@ -234,8 +218,6 @@ exports.updateJdSummary = (req, res) => {
   axios
     .post('http://localhost:4000', updateJdSummaryRequestJSON)
     .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateJdSummary, 'Summary response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateJdSummary.txt';
       let content =
@@ -271,8 +253,6 @@ exports.updateDoctorFeeSummary = (req, res) => {
   axios
     .post('http://localhost:4000', updateDoctorFeeSummaryRequestJSON)
     .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateDoctorFeeSummary, 'Summary response is....');
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateDoctorFeeSummary.txt';
       let content =
