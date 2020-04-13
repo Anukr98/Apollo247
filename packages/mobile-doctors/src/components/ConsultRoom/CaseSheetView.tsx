@@ -335,16 +335,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}`
           );
           setLoading && setLoading(false);
-          if (!g(props.caseSheet, 'caseSheetDetails', 'sentToPatient')) {
-            followUpMessage(
-              `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
-                _data,
-                'data',
-                'updatePatientPrescriptionSentStatus',
-                'blobName'
-              )}`
-            );
-          }
+          followUpMessage(
+            `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+              _data,
+              'data',
+              'updatePatientPrescriptionSentStatus',
+              'blobName'
+            )}`
+          );
           showAphAlert &&
             showAphAlert({
               title: 'Hi',
