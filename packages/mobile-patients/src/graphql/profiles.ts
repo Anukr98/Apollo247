@@ -516,7 +516,10 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         displayName
         fullName
         experience
+        onlineConsultationFees
+        physicalConsultationFees
         specialty {
+          id
           name
           userFriendlyNomenclature
         }
@@ -559,7 +562,10 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           displayName
           fullName
           experience
+          onlineConsultationFees
+          physicalConsultationFees
           specialty {
+            id
             name
             userFriendlyNomenclature
           }
@@ -667,6 +673,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       awards
       photoUrl
       specialty {
+        id
         name
         userFriendlyNomenclature
       }
@@ -748,11 +755,13 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         thumbnailUrl
         qualification
         specialty {
+          id
           name
           image
           userFriendlyNomenclature
         }
         onlineConsultationFees
+        physicalConsultationFees
         languages
         consultHours {
           consultMode

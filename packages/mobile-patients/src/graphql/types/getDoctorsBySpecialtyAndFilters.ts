@@ -10,6 +10,7 @@ import { FilterDoctorInput, Salutation, ConsultMode, DoctorType } from "./global
 
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
   image: string | null;
   userFriendlyNomenclature: string | null;
@@ -51,6 +52,7 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   qualification: string | null;
   specialty: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty | null;
   onlineConsultationFees: string;
+  physicalConsultationFees: string;
   languages: string | null;
   consultHours: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[] | null;
   doctorType: DoctorType;

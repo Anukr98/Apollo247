@@ -1,3 +1,5 @@
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+
 type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum WebEngageEventName {
@@ -56,13 +58,15 @@ export enum WebEngageEventName {
   BROWSE_PACKAGE = 'Browse Package',
 
   // Health Records
-  CONSULT_RX = 'Consult & RX',
-  MEDICAL_RECORDS = 'Medical Records',
+  CONSULT_RX = 'PHR Consult & RX',
+  MEDICAL_RECORDS = 'PHR Medical Records',
   ADD_RECORD = 'Add Record',
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
   REORDER_MEDICINES = 'Reorder Medicines',
+  PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
+  PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
 }
 
 export interface PatientInfo {
@@ -85,6 +89,7 @@ export interface PatientInfoWithNeedHelp extends PatientInfo {
 
 export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
+  'Speciality ID': string;
 }
 
 export interface WebEngageEvents {
@@ -327,12 +332,15 @@ export interface WebEngageEvents {
     experience: number;
     'language known': string; //Comma separated values
     Hospital: string;
-    'Available in': string;
+    'Doctor Category': DoctorType;
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Available in Minutes'?: number;
   };
   [WebEngageEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;
-    'Type of Doctor': string;
+    'Type of Doctor': DoctorType;
     'Doctor Specialty': string;
     'Patient Name': string;
     'Patient UHID': string;
@@ -345,6 +353,12 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_CLICKED]: {
     'Doctor Name': string;
     Source: 'List' | 'Search';
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Online Price': number;
+    'Physical Price': number;
+    'Doctor Speciality': string;
   };
   [WebEngageEventName.CONSULT_NOW_CLICKED]: {
     name: string;
@@ -399,7 +413,7 @@ export interface WebEngageEvents {
     Amount: number;
     'Doctor Name': string;
     'Doctor City': string;
-    'Type of Doctor': string;
+    'Type of Doctor': DoctorType;
     'Doctor Specialty': string;
     'Appointment Date': string;
     'Appointment Time': string;
@@ -467,39 +481,15 @@ export interface WebEngageEvents {
 
   // ********** Health Records ********** \\
 
-  [WebEngageEventName.CONSULT_RX]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    Age: number;
-    Gender: string;
-    'Mobile Number': string;
-    'Customer ID': string;
-  };
+  [WebEngageEventName.CONSULT_RX]: PatientInfo;
 
-  [WebEngageEventName.MEDICAL_RECORDS]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    Age: number;
-    Gender: string;
-    'Mobile Number': string;
-    'Customer ID': string;
-  };
+  [WebEngageEventName.MEDICAL_RECORDS]: PatientInfo;
 
   [WebEngageEventName.ADD_RECORD]: {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
   };
 
-  [WebEngageEventName.UPLOAD_PRESCRIPTION]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    Age: number;
-    Gender: string;
-    'Mobile Number': string;
-    'Customer ID': string;
-  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION]: PatientInfo;
 
   [WebEngageEventName.UPLOAD_PHOTO]: {
     Source: 'Take Photo' | 'Gallery'; // List/Profile
@@ -510,13 +500,9 @@ export interface WebEngageEvents {
     Type: 'Prescription' | 'Test Result';
   };
 
-  [WebEngageEventName.REORDER_MEDICINES]: {
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    Age: number;
-    Gender: string;
-    'Mobile Number': string;
-    'Customer ID': string;
-  };
+  [WebEngageEventName.REORDER_MEDICINES]: PatientInfo;
+
+  [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfo;
+
+  [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfo;
 }

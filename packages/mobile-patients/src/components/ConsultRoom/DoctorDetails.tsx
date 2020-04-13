@@ -186,7 +186,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   useEffect(() => {
     if (doctorDetails && availableInMin) {
-      _postWebEngageEvent(doctorDetails, availableInMin!);
+      _postWebEngageEvent(doctorDetails, availableInMin);
     }
   }, [doctorDetails, availableInMin]);
 
@@ -294,7 +294,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const _postWebEngageEvent = (
     doctorDetails: getDoctorDetailsById_getDoctorDetailsById,
-    availableInMin: number
+    availableInMin?: number
   ) => {
     const doctorClinics = (doctorDetails.doctorHospital || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -311,8 +311,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               doctorClinics[0].facility.city
             }`
           : '',
-      'Available in': (availableInMin && `${availableInMin} minute(s)`) || '',
+      'Doctor Category': g(doctorDetails, 'doctorType')!,
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
     };
+
+    if (availableInMin) {
+      eventAttributes['Available in Minutes'] = availableInMin;
+    }
+
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
   };

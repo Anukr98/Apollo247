@@ -28,6 +28,7 @@ import {
   handleGraphQlError,
   addTestsToCart,
   doRequestAndAccessLocation,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -51,6 +52,7 @@ import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } fro
 import { useUIElements } from '../UIElementsProvider';
 import { useAppCommonData, LocationData } from '../AppCommonDataProvider';
 import { useApolloClient } from 'react-apollo-hooks';
+import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -211,6 +213,20 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
         });
     }
   };
+
+  const postOrderMedsAndTestsEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_ORDER_MEDS_TESTS] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
+  };
+
   const requestReadSmsPermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
@@ -364,6 +380,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     <Text
                       style={styles.yellowTextStyle}
                       onPress={async () => {
+                        postOrderMedsAndTestsEvent();
                         let item =
                           props.PastData!.caseSheet &&
                           props.PastData!.caseSheet.find((obj: any) => {
@@ -568,7 +585,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                         }
                       }}
                     >
-                      ORDER MEDS & TESTS
+                      {'ORDER MEDS & TESTS'}
                     </Text>
                   ) : null}
                   {g(item, 'followUp') ? (
