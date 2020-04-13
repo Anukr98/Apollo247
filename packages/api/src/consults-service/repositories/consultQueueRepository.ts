@@ -38,8 +38,8 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
     });
   }
 
-  async updateConsultQueueItems(ids: string[]) {
-    return this.update(ids, { isActive: false }).catch((error) => {
+  async updateConsultQueueItems(ids: string[], virtualJDId: string) {
+    return this.update(ids, { isActive: false, doctorId: virtualJDId }).catch((error) => {
       throw new AphError(AphErrorMessages.UPDATE_CONSULT_QUEUE_ERROR, undefined, { error });
     });
   }

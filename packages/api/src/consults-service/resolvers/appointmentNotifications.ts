@@ -104,7 +104,8 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
         unAttendedAppointmentIds
       );
       const activequeueItemIds = queueItems.map((queueItem) => queueItem.consultQueueItem_id);
-      if (activequeueItemIds.length) ConsultQueueRepo.updateConsultQueueItems(activequeueItemIds);
+      if (activequeueItemIds.length)
+        ConsultQueueRepo.updateConsultQueueItems(activequeueItemIds, virtualJDId);
       const activequeueItemAppointmentIds = queueItems.map(
         (queueItem) => queueItem.consultQueueItem_appointmentId
       );
