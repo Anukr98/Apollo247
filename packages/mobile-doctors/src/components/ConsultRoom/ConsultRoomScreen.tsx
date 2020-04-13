@@ -600,14 +600,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         );
         //setShowButtons(false);
         onStopConsult();
-        showAphAlert &&
-          showAphAlert({
-            title: 'Alert!',
-            description: 'Successfully Rescheduled',
-            onPressOk: () => {
-              hideAphAlert && hideAphAlert();
-            },
-          });
+        if (status === STATUS.NO_SHOW) {
+          showAphAlert &&
+            showAphAlert({
+              title: 'Alert!',
+              description:
+                'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.',
+              unDismissable: true,
+              onPressOk: () => {
+                hideAphAlert && hideAphAlert();
+                props.navigation.pop();
+              },
+            });
+        } else {
+          showAphAlert &&
+            showAphAlert({
+              title: 'Alert!',
+              description: 'Successfully Rescheduled',
+              unDismissable: true,
+              onPressOk: () => {
+                hideAphAlert && hideAphAlert();
+                props.navigation.pop();
+              },
+            });
+        }
       })
       .catch((e) => {
         setShowLoading(false);
