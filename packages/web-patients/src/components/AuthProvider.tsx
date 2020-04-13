@@ -16,6 +16,7 @@ import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
 import { LOGIN_TYPE } from 'graphql/types/globalTypes';
+import { clientRoutes } from 'helpers/clientRoutes';
 import {
   CUSTOM_LOGIN,
   CUSTOM_LOGIN_VERIFY_OTP,
@@ -149,6 +150,10 @@ export const AuthProvider: React.FC = (props) => {
 
   const [customLoginId, setCustomLoginId] = useState<AuthContextProps['customLoginId']>('');
 
+  const pageUrl = window.location.href;
+  if (pageUrl.includes('medicines') && pageUrl.includes('failed')) {
+    window.location.href = clientRoutes.medicinesCart();
+  }
   const signOut = () =>
     app
       .auth()
