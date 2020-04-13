@@ -757,3 +757,11 @@ export const Gift: React.FC<IconProps> = (props) => (
 export const PrescriptionPad: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_prescription_pad.png')} />
 );
+
+export const NotificationBellIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_notification_a.png')} />
+);
+
+export const NotificationCartIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_notification_b.png')} />
+);
