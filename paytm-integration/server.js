@@ -83,7 +83,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
       }
     }`,
   };
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   //updatePhrDocSummary api call
   axios
     .post(process.env.API_URL, updatePhrDocSummaryRequestJSON)

@@ -26,7 +26,7 @@ exports.noShowReminder = (req, res) => {
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
-    .post('http://localhost:4000', requestJSON)
+    .post(process.env.API_URL, requestJSON)
     .then((response) => {
       const fileName =
         process.env.PHARMA_LOGS_PATH +
@@ -92,7 +92,7 @@ exports.ApptReminder = (req, res) => {
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
-    .post('http://localhost:4000/', requestJSON)
+    .post(process.env.API_URL, requestJSON)
     .then((response) => {
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
@@ -121,7 +121,7 @@ exports.DailyAppointmentSummary = (req, res) => {
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
-    .post('http://localhost:4000', requestJSON)
+    .post(process.env.API_URL, requestJSON)
     .then((response) => {
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dailyAppointmentSummary.txt';
@@ -150,7 +150,7 @@ exports.PhysicalApptReminder = (req, res) => {
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
-    .post('http://localhost:4000', requestJSON)
+    .post(process.env.API_URL, requestJSON)
     .then((response) => {
       console.log(response);
       const fileName =
@@ -183,7 +183,7 @@ exports.updateSdSummary = (req, res) => {
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
-    .post('http://localhost:4000', updateSdSummaryRequestJSON)
+    .post(process.env.API_URL, updateSdSummaryRequestJSON)
     .then((response) => {
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateSdSummary.txt';
@@ -216,7 +216,7 @@ exports.updateJdSummary = (req, res) => {
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
-    .post('http://localhost:4000', updateJdSummaryRequestJSON)
+    .post(process.env.API_URL, updateJdSummaryRequestJSON)
     .then((response) => {
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateJdSummary.txt';
@@ -251,7 +251,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   //updateDoctorFeeSummary api call
   axios
-    .post('http://localhost:4000', updateDoctorFeeSummaryRequestJSON)
+    .post(process.env.API_URL, updateDoctorFeeSummaryRequestJSON)
     .then((response) => {
       const fileName =
         process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateDoctorFeeSummary.txt';
