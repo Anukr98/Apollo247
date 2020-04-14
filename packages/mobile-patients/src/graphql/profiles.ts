@@ -320,7 +320,9 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           onlineConsultationFees
           physicalConsultationFees
           specialty {
+            id
             name
+            userFriendlyNomenclature
           }
           specialization
           qualification
@@ -609,6 +611,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         fullName
         experience
         specialty {
+          id
           name
           userFriendlyNomenclature
         }
@@ -705,6 +708,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           photoUrl
           qualification
           specialty {
+            id
             name
             image
             userFriendlyNomenclature
@@ -784,6 +788,9 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         availableModes
       }
       specialty {
+        id
+        name
+        userFriendlyNomenclature
         specialistSingularTerm
         specialistPluralTerm
       }
@@ -1680,7 +1687,9 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           photoUrl
           qualification
           specialty {
+            id
             name
+            userFriendlyNomenclature
             image
           }
         }
@@ -1810,7 +1819,9 @@ export const GET_APPOINTMENT_DATA = gql`
           onlineConsultationFees
           physicalConsultationFees
           specialty {
+            id
             name
+            userFriendlyNomenclature
           }
           qualification
           city

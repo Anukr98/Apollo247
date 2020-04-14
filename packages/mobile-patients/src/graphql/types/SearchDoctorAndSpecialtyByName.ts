@@ -137,6 +137,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
   userFriendlyNomenclature: string | null;
 }

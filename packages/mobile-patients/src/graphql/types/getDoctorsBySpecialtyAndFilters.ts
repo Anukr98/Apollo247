@@ -67,6 +67,9 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
 
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty {
   __typename: "DoctorSpecialty";
+  id: string;
+  name: string;
+  userFriendlyNomenclature: string | null;
   specialistSingularTerm: string | null;
   specialistPluralTerm: string | null;
 }
