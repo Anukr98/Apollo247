@@ -71,7 +71,6 @@ export enum WebEngageEventName {
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
-  // ORDER_MEDICINES_CLICKED = 'Order Medicines clicked', // Possible duplicate of ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
   COMPLETED_AUTOMATED_QUESTIONS = 'Completed Automated Questions',
   JD_COMPLETED = 'JD Completed',
   PRESCRIPTION_RECEIVED = 'Prescription Received',
@@ -551,6 +550,7 @@ export interface WebEngageEvents {
   };
 
   [WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -579,7 +579,6 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  // [WebEngageEventName.ORDER_MEDICINES_CLICKED]: PatientInfo; // Possible duplicate
   [WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS]: {
     'Doctor Name': string;
     'Doctor Speciality': string;
@@ -607,6 +606,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CONTINUE_CONSULT_CLICKED]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -623,8 +623,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CONSULT_CARD_CLICKED]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
@@ -639,8 +640,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.RESCHEDULE_CLICKED]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
@@ -655,8 +657,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
@@ -672,8 +675,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CANCEL_CONSULTATION_CLICKED]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
@@ -689,6 +693,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.PRESCRIPTION_RECEIVED]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -706,6 +711,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.SR_DOCTOR_JOINED]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -722,6 +728,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.SD_CONSULTATION_STARTED]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -738,6 +745,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.SD_VIDEO_CALL_STARTED]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -771,6 +779,7 @@ export interface WebEngageEvents {
   //   'Customer ID': string;
   // };
   [WebEngageEventName.DOWNLOAD_PRESCRIPTION]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -788,6 +797,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS]: {
+    'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
@@ -804,8 +814,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
@@ -820,8 +831,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
@@ -836,8 +848,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CHAT_WITH_DOCTOR]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
@@ -852,8 +865,9 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.NO_SLOTS_FOUND]: {
-    // 'Speciality Name': string;
-    // 'Speciality ID': string;
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
     'Doctor Category': DoctorType;
     'Consult Date Time': Date;
     'Consult Mode': 'Online' | 'Physical';
