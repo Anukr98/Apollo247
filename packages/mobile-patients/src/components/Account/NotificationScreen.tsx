@@ -94,7 +94,6 @@ type CustomNotificationType =
 
 export interface NotificationScreenProps extends NavigationScreenProps {}
 export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => {
-  const [backPressCount, setbackPressCount] = useState<number>(0);
   const [messages, setMessages] = useState([]);
 
   const client = useApolloClient();
