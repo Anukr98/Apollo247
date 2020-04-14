@@ -1263,7 +1263,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>
             Consult Room
-            {appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE1' ? (
+            {appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE' ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
                 This appointment is under reschedule and waiting for the patient to accept the new
                 slot.
