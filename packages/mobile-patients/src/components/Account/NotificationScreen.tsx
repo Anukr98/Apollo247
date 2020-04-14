@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { BackHandler, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { STATUS } from '../../graphql/types/globalTypes';
@@ -116,18 +116,6 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   const onPressBack = () => {
     props.navigation.goBack();
   };
-
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      setbackPressCount(backPressCount + 1);
-      if (backPressCount === 1) {
-      }
-      return true;
-    });
-    return function cleanup() {
-      backHandler.remove();
-    };
-  }, [backPressCount]);
 
   const dateCalculate = (date: Date) => {
     let CalculatedDate;
