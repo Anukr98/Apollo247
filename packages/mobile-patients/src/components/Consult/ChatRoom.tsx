@@ -150,6 +150,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
+import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -422,6 +424,53 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
+
+  const postAppointmentWEGEvent = (
+    type:
+      | WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS
+      | WebEngageEventName.JD_COMPLETED
+      | WebEngageEventName.PRESCRIPTION_RECEIVED
+      | WebEngageEventName.SD_CONSULTATION_STARTED
+      | WebEngageEventName.SD_VIDEO_CALL_STARTED
+      | WebEngageEventName.DOWNLOAD_PRESCRIPTION
+      | WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS,
+    data:
+      | getAppointmentData_getAppointmentData_appointmentsHistory
+      | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS]
+      | WebEngageEvents[WebEngageEventName.JD_COMPLETED]
+      | WebEngageEvents[WebEngageEventName.PRESCRIPTION_RECEIVED]
+      | WebEngageEvents[WebEngageEventName.SD_CONSULTATION_STARTED]
+      | WebEngageEvents[WebEngageEventName.SD_VIDEO_CALL_STARTED]
+      | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION]
+      | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS] = {
+      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Consult ID': g(data, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    if (type == WebEngageEventName.DOWNLOAD_PRESCRIPTION) {
+      (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
+        'Download Screen'
+      ] = 'Chat';
+    }
+    postWebEngageEvent(type, eventAttributes);
+  };
 
   useEffect(() => {
     if (!currentPatient) {
@@ -787,6 +836,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (userAnswers) {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
+          postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
           console.log(data, 'data res, adding');
           const queueData = {
             queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
@@ -1241,6 +1291,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       message: (message) => {
         // console.log('messageevent', message);]
+        const messageType = g(message, 'message', 'message');
+        console.log(`pubnub.addListener - ${messageType}`, { message });
+
+        if (messageType == followupconsult) {
+          postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
+        }
+        if (messageType == stopConsultJr) {
+          postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
+        }
+        if (messageType == startConsultMsg) {
+          // Disc
+          postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
+          postAppointmentWEGEvent(WebEngageEventName.SR_DOCTOR_JOINED);
+        }
+        if (messageType == videoCallMsg && name == 'DOCTOR') {
+          postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
+        }
+
         message &&
           message.message &&
           message.message.message &&
@@ -2381,6 +2449,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 titleTextStyle={{ color: 'white' }}
                 onPress={() => {
                   try {
+                    postAppointmentWEGEvent(WebEngageEventName.DOWNLOAD_PRESCRIPTION);
                     CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
                     console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
 
@@ -2453,6 +2522,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                 onPress={() => {
                   try {
+                    postAppointmentWEGEvent(
+                      WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS
+                    );
                     CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
 
                     console.log('Followupdata', rowData.transferInfo.caseSheetId);
