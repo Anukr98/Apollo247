@@ -17,6 +17,7 @@ import {
   TestsCartMedicineIcon,
   TestsIcon,
   MedicineIcon,
+  NotificationIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -982,12 +983,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
-          {/* <TouchableOpacity
+          <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.navigation.navigate(AppRoutes.NotificationSettings)}
+            onPress={() => props.navigation.navigate(AppRoutes.NotificationScreen)}
           >
-            <NotificationIcon />
-          </TouchableOpacity> */}
+            <NotificationIcon style={{ marginLeft: 10, marginRight: 5 }} />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -1045,7 +1046,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </BottomPopUp>
       )}
       {showSpinner && <Spinner />}
-      <NotificationListener navigation={props.navigation} />
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {
@@ -1059,6 +1059,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }}
         />
       )}
+      <NotificationListener navigation={props.navigation} />
     </View>
   );
 };

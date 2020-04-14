@@ -73,6 +73,7 @@ import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayme
 import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
+import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -138,6 +139,7 @@ export enum AppRoutes {
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
   // ConsultDetailsById = 'ConsultDetailsById',
+  NotificationScreen = 'NotificationScreen',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -359,6 +361,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   // [AppRoutes.ConsultDetailsById]: {
   //   screen: ConsultDetailsById,
   // },
+  [AppRoutes.NotificationScreen]: {
+    screen: NotificationScreen,
+  },
 };
 
 const logTabEvents = (routing: any) => {
