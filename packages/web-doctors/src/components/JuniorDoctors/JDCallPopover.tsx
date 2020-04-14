@@ -905,6 +905,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     const disableconsult = new Date(props.appointmentDateTime);
     //console.log(disablecurrent, disableconsult, '111111111');
     const diff = moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
+    console.log(diff);
     if (disablecurrent >= disableconsult) {
       setRemainingConsultStartTime(0);
     } else if (diff <= 0) {
