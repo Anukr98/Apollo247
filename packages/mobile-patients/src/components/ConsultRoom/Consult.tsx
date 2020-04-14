@@ -18,7 +18,12 @@ import {
 import { GET_PATIENT_ALL_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
-import { callPermissions, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  callPermissions,
+  getNetStatus,
+  postWebEngageEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -40,13 +45,17 @@ import {
 } from 'react-native';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import { getPatientAllAppointments } from '../../graphql/types/getPatientAllAppointments';
-import { APPOINTMENT_STATE, STATUS } from '../../graphql/types/globalTypes';
+import { APPOINTMENT_STATE, STATUS, APPOINTMENT_TYPE } from '../../graphql/types/globalTypes';
 import { colors } from '../../theme/colors';
 import { ProfileList } from '../ui/ProfileList';
 import { Spinner } from '../ui/Spinner';
 import { TabHeader } from '../ui/TabHeader';
 import { TabsComponent } from '../ui/TabsComponent';
 import { useUIElements } from '../UIElementsProvider';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   nameTextContainerStyle: {
@@ -229,6 +238,45 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setNewRescheduleCount(1);
     }
   }, [currentPatient]);
+
+  const postConsultCardEvents = (
+    type: 'Card Click' | 'Continue Consult' | 'Chat with Doctor' | 'Fill Medical Details',
+    data: getPatinetAppointments_getPatinetAppointments_patinetAppointments
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CHAT_WITH_DOCTOR]
+      | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
+      | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
+      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Consult ID': g(data, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(
+      type == 'Card Click'
+        ? WebEngageEventName.CONSULT_CARD_CLICKED
+        : type == 'Chat with Doctor'
+        ? WebEngageEventName.CHAT_WITH_DOCTOR
+        : type == 'Continue Consult'
+        ? WebEngageEventName.CONTINUE_CONSULT_CLICKED
+        : WebEngageEventName.FILL_MEDICAL_DETAILS,
+      eventAttributes
+    );
+  };
 
   // console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
   const inputData = {
@@ -468,6 +516,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 activeOpacity={1}
                 style={[styles.doctorView]}
                 onPress={() => {
+                  postConsultCardEvents('Card Click', item);
                   CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
                   if (item.doctorInfo && selectedTab === tabs[0].title) {
                     item.appointmentType === 'ONLINE'
@@ -689,6 +738,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
+                            postConsultCardEvents(
+                              item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
+                              item
+                            );
+
                             if (item.doctorInfo && selectedTab === tabs[0].title) {
                               CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
                               props.navigation.navigate(AppRoutes.ChatRoom, {
@@ -717,6 +771,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
+                          postConsultCardEvents('Chat with Doctor', item);
                           CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
                           if (item.doctorInfo && selectedTab === tabs[0].title) {
                             props.navigation.navigate(AppRoutes.ChatRoom, {
