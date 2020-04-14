@@ -903,18 +903,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const checkTimeRemainToConsult = () => {
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
-    //console.log(disablecurrent, disableconsult, '111111111');
     const diff = moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
-    console.log(diff);
     if (disablecurrent >= disableconsult) {
       setRemainingConsultStartTime(0);
     } else if (diff <= 0) {
       setRemainingConsultStartTime(0);
     } else {
-      //console.log(new Date(disableconsult.getTime() - disablecurrent.getTime()).getMinutes());
-      // const diff = (disableconsult.getTime() - disablecurrent.getTime()) / 1000;
-      // const diffMins = diff / 60;
-      // setRemainingConsultStartTime(Math.round(diffMins));
       setRemainingConsultStartTime(diff);
     }
   };
@@ -1271,7 +1265,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
             ) : remainingConsultStartTime <= 10 && remainingConsultStartTime > -1 ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                {remainingConsultStartTime} minutes left for Senior Doctor to start the consult.
+                {remainingConsultStartTime} minute(s) left for Senior Doctor to start the consult.
               </div>
             ) : (
               !props.hasCameraMicPermission && (
