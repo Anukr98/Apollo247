@@ -18,6 +18,9 @@ import {
 } from 'notifications-service/resolvers/notifications';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
+  enum CODCity {
+    CHENNAI
+  }
   input MedicinePaymentMqInput {
     orderId: String!
     orderAutoId: Int!
@@ -29,6 +32,8 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     responseCode: String
     responseMessage: String
     bankTxnId: String
+    email: String
+    CODCity: [CODCity]
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -56,7 +61,13 @@ type MedicinePaymentMqInput = {
   responseCode: string;
   responseMessage: string;
   bankTxnId: string;
+  email: string;
+  CODCity: CODCity[];
 };
+
+enum CODCity {
+  'CHENNAI' = 'CHENNAI',
+}
 
 type SaveMedicineOrderResult = {
   errorCode: number;
