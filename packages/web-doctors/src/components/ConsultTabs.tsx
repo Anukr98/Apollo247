@@ -1200,9 +1200,14 @@ export const ConsultTabs: React.FC = () => {
           return _omit(instruction, ['__typename']);
         });
       }
-      setSaving(true);
 
-      console.log('followUpDate', followUpDate);
+      setSaving(true);
+      const ModifyCaseSheetsdUncaughtErr = {
+        api: 'ModifyCaseSheetsdSaveStart',
+        appointmentId: appointmentId,
+      };
+      sessionClient.notify(JSON.stringify(ModifyCaseSheetsdUncaughtErr));
+      console.log(followUpDate[0]);
       const followupISODate = new Date(followUpDate[0]).toISOString();
 
       console.log('followupISODate', followupISODate);
@@ -1284,7 +1289,14 @@ export const ConsultTabs: React.FC = () => {
         });
     } catch (error) {
       setSaving(false);
-      console.error('Caught in catch after error in saveCasesheetAction function', error);
+      console.log(error);
+      alert('Something went wrong, please try again.');
+      const ModifyCaseSheetsdUncaughtErr = {
+        api: 'ModifyCaseSheetsdUncaughtErr',
+        appointmentId: appointmentId,
+        error: JSON.stringify(error),
+      };
+      sessionClient.notify(JSON.stringify(ModifyCaseSheetsdUncaughtErr));
     }
   };
 
