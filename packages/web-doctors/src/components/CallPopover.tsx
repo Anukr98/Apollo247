@@ -2719,12 +2719,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
           <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
-              We are sorry, but it seems your patient is no longer active on the application. You
-              may wish to reschedule this consult.
+              {iscallAbandonment
+                ? 'We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.'
+                : 'It seems that your patient is no longer active on the application. Would you like to continue with the consult?'}
             </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
-              {iscallAbandonment ? 'Continue' : 'Continue Conult'}
+              {iscallAbandonment ? 'Continue' : 'Yes, continue consult'}
             </Button>
             <Button
               className={classes.consultButton}
@@ -2732,7 +2733,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 noShowAction(iscallAbandonment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
               }}
             >
-              {iscallAbandonment ? 'Reschedule' : 'OK Reschedule'}
+              {iscallAbandonment ? 'Reschedule' : 'No, reschedule'}
             </Button>
           </div>
         </Paper>
