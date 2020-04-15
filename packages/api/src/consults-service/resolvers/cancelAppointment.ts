@@ -138,7 +138,6 @@ const cancelAppointment: Resolver<
 
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
   const apptTime = format(istDateTime, 'hh:mm aa');
-  const patientName = appointment.patientName;
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointment.doctorId);
   let docName = '';
