@@ -120,46 +120,48 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
         .then(async (repsonse: any) => {
           setLoading && setLoading(false);
 
-          const arrayNotification = repsonse.data.data.map((el: any) => {
-            const o = Object.assign({}, el);
-            o.isActive = true;
-            return o;
-          });
+          try {
+            const arrayNotification = repsonse.data.data.map((el: any) => {
+              const o = Object.assign({}, el);
+              o.isActive = true;
+              return o;
+            });
 
-          // console.log('arrayNotification.......', arrayNotification);
+            // console.log('arrayNotification.......', arrayNotification);
 
-          const array = await AsyncStorage.getItem('selectedRow');
+            const array = await AsyncStorage.getItem('selectedRow');
 
-          if (array !== null) {
-            const arraySelected = JSON.parse(array);
+            if (array !== null) {
+              const arraySelected = JSON.parse(array);
 
-            const result = arrayNotification.map((el: any, index: number) => {
-              const o = Object.assign({});
-              if (arraySelected.length > index) {
-                o.id = el._id;
-                o.isSelected =
-                  arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
-              } else {
+              const result = arrayNotification.map((el: any, index: number) => {
+                const o = Object.assign({});
+                if (arraySelected.length > index) {
+                  o.id = el._id;
+                  o.isSelected =
+                    arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
+                } else {
+                  o.id = el._id;
+                  o.isSelected = false;
+                }
+                return o;
+              });
+
+              setSelected(result);
+              AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+            } else {
+              const result = arrayNotification.map((el: any) => {
+                const o = Object.assign({});
                 o.id = el._id;
                 o.isSelected = false;
-              }
-              return o;
-            });
+                return o;
+              });
+              setSelected(result);
+              AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+            }
 
-            setSelected(result);
-            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
-          } else {
-            const result = arrayNotification.map((el: any) => {
-              const o = Object.assign({});
-              o.id = el._id;
-              o.isSelected = false;
-              return o;
-            });
-            setSelected(result);
-            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
-          }
-
-          setMessages(arrayNotification);
+            setMessages(arrayNotification);
+          } catch (error) {}
         })
         .catch((error: Error) => {
           setLoading && setLoading(false);
