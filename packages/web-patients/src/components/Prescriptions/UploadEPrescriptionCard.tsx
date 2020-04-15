@@ -132,8 +132,6 @@ type EPrescriptionCardProps = {
   setIsEPrescriptionOpen?: (isEPrescriptionOpen: boolean) => void;
 };
 
-let selectedEPrescriptionRecords: EPrescription[] = [];
-
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
   const { ePrescriptionData, setEPrescriptionData } = useShoppingCart();
@@ -157,12 +155,6 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     },
     fetchPolicy: 'no-cache',
   });
-
-  useEffect(() => {
-    if (ePrescriptionData && ePrescriptionData.length > 0) {
-      selectedEPrescriptionRecords = ePrescriptionData;
-    }
-  }, [ePrescriptionData]);
 
   useEffect(() => {
     if (!pastPrescriptions || !pastMedicalOrders) {
