@@ -158,24 +158,6 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     fetchPolicy: 'no-cache',
   });
 
-  const DATE_FORMAT = 'DD MMM YYYY';
-
-  const getMedicines = (
-    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
-  ) =>
-    medicines
-      .filter((item) => item!.medicineName)
-      .map((item) => item!.medicineName)
-      .join(', ');
-
-  const getCaseSheet = (caseSheet: CaseSheet[]) =>
-    caseSheet!.find(
-      (item) =>
-        item!.doctorType == DoctorType.STAR_APOLLO ||
-        item!.doctorType == DoctorType.APOLLO ||
-        item!.doctorType == DoctorType.PAYROLL
-    )!;
-
   useEffect(() => {
     if (ePrescriptionData && ePrescriptionData.length > 0) {
       selectedEPrescriptionRecords = ePrescriptionData;
@@ -199,9 +181,6 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               setPastMedicalOrders(
                 data.getPatientPastConsultsAndPrescriptions.medicineOrders || []
               );
-            // const consultData = data.getPatientPastConsultsAndPrescriptions.consults || [];
-            // const medicalData = data.getPatientPastConsultsAndPrescriptions.medicineOrders || [];
-            // getFormattedData(consultData, medicalData);
             setLoading(false);
           } else {
             setLoading(false);
@@ -216,9 +195,23 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     }
   }, [pastPrescriptions, pastMedicalOrders]);
 
-  const isInCart = (id: string) => {
-    return ePrescriptionData && ePrescriptionData.findIndex((data) => data.id === id) !== -1;
-  };
+  const DATE_FORMAT = 'DD MMM YYYY';
+
+  const getMedicines = (
+    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
+  ) =>
+    medicines
+      .filter((item) => item!.medicineName)
+      .map((item) => item!.medicineName)
+      .join(', ');
+
+  const getCaseSheet = (caseSheet: CaseSheet[]) =>
+    caseSheet!.find(
+      (item) =>
+        item!.doctorType == DoctorType.STAR_APOLLO ||
+        item!.doctorType == DoctorType.APOLLO ||
+        item!.doctorType == DoctorType.PAYROLL
+    )!;
 
   const formattedEPrescriptions =
     pastMedicalOrders &&
@@ -235,7 +228,6 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: getMedicines(item!.medicineOrderLineItems! || []),
             prismPrescriptionFileId: item!.prismPrescriptionFileId,
-            checked: isInCart(item.id),
           } as any)
       )
       .concat(
@@ -250,7 +242,6 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               : '',
             doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
             forPatient: (currentPatient && currentPatient.firstName) || '',
-            checked: isInCart(item.id),
             medicines: (
               (getCaseSheet(item!.caseSheet) || { medicinePrescription: [] })
                 .medicinePrescription || []
