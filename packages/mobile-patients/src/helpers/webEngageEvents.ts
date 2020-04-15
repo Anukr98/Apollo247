@@ -95,8 +95,8 @@ export interface PatientInfo {
   'Patient Name': string;
   'Patient UHID': string;
   Relation: string;
-  Age: number;
-  Gender: string;
+  'Patient Age': number;
+  'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
 }
@@ -193,8 +193,8 @@ export interface WebEngageEvents {
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
-    // Age: number;
-    // Gender: string;
+    // 'Patient Age': number;
+    // 'Patient Gender': string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
@@ -212,8 +212,8 @@ export interface WebEngageEvents {
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
-    // Age: number;
-    // Gender: string;
+    // 'Patient Age': number;
+    // 'Patient Gender': string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
@@ -342,8 +342,8 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -367,8 +367,8 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
     'Doctor ID': string;
@@ -478,8 +478,8 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Customer ID': string;
     'Speciality ID': string;
     'Consult Date Time': Date;
@@ -507,13 +507,13 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     // Type: 'Consult' | 'Medicine' | 'Diagnostics';
-    'Rating Value': string;
+    Rating: string;
     'Rating Reason': string;
   };
   [WebEngageEventName.PHARMACY_FEEDBACK_GIVEN]: {
     'Patient UHID': string;
     // Type: 'Consult' | 'Medicine' | 'Diagnostics';
-    'Rating Value': string;
+    Rating: string;
     'Rating Reason': string;
   };
 
@@ -524,8 +524,8 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -537,8 +537,8 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -785,23 +785,6 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  // [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
-  //   'Speciality Name': string;
-  //   'Speciality ID': string;
-  //   'Doctor Category': DoctorType;
-  //   'Consult Date Time': Date;
-  //   'Consult Mode': 'Online' | 'Physical';
-  //   'Hospital Name': string;
-  //   'Hospital City': string;
-  //   'Consult ID': string;
-  //   Rating: string;
-  //   'Patient Name': string;
-  //   'Patient UHID': string;
-  //   Relation: string;
-  //   'Patient Age': number;
-  //   'Patient Gender': string;
-  //   'Customer ID': string;
-  // };
   [WebEngageEventName.DOWNLOAD_PRESCRIPTION]: {
     'Doctor Name': string;
     'Speciality Name': string;

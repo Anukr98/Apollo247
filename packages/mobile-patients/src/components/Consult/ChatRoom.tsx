@@ -5612,7 +5612,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      'Rating Value': rating,
+      Rating: rating,
       'Rating Reason': reason,
     };
     postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
