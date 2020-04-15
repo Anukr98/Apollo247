@@ -240,7 +240,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                             ? `${hotSeller.diagnostics.itemId}`
                                             : '',
                                           id: hotSeller.diagnostics ? hotSeller.diagnostics.id : '',
-                                          mou: details && details.length,
+                                          mou:
+                                            details && details.length
+                                              ? details && details.length
+                                              : 0,
                                           name: hotSeller.packageName || '',
                                           price: hotSeller.diagnostics
                                             ? hotSeller.diagnostics.rate

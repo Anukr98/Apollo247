@@ -359,7 +359,10 @@ export const SearchByTest: React.FC = (props) => {
     }
   }, [searchValue]);
 
-  const inclusionCount = testDetailsPackage && testDetailsPackage.length;
+  const inclusionCount =
+    testDetailsPackage && testDetailsPackage.length
+      ? testDetailsPackage && testDetailsPackage.length
+      : 0;
 
   let showError = false;
 
@@ -402,8 +405,8 @@ export const SearchByTest: React.FC = (props) => {
                   Sorry, we couldn't find what you are looking for :(
                 </FormHelperText>
               ) : (
-                  ''
-                )}
+                ''
+              )}
             </div>
             <div className={`${classes.searchSection}`}>
               <Scrollbars
@@ -418,8 +421,8 @@ export const SearchByTest: React.FC = (props) => {
                   ) : diagnosticList ? (
                     <TestCard testData={diagnosticList} mou={inclusionCount} />
                   ) : (
-                          'No data found'
-                        )}
+                    'No data found'
+                  )}
                 </div>
               </Scrollbars>
             </div>
