@@ -1303,7 +1303,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (messageType == startConsultMsg) {
           // Disc
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
-          postAppointmentWEGEvent(WebEngageEventName.SR_DOCTOR_JOINED);
         }
         if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
@@ -5588,14 +5587,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const postRatingGivenWEGEvent = (rating: string, reason: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.RATING_GIVEN] = {
-      'Patient UHID': g(currentPatient, 'id'),
+  const postRatingGivenWEGEvent = (
+    rating: string,
+    reason: string,
+    data:
+      | getAppointmentData_getAppointmentData_appointmentsHistory
+      | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_FEEDBACK_GIVEN] = {
+      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Consult ID': g(data, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
       'Rating Value': rating,
       'Rating Reason': reason,
-      Type: 'Consult',
     };
-    postWebEngageEvent(WebEngageEventName.RATING_GIVEN, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.CONSULT_FEEDBACK_GIVEN, eventAttributes);
   };
 
   return (

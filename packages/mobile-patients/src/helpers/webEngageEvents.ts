@@ -39,7 +39,7 @@ export enum WebEngageEventName {
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
   CONSULTATION_BOOKED = 'Consultation booked',
-  RATING_GIVEN = 'Rating Given',
+  PHARMACY_FEEDBACK_GIVEN = 'Pharmacy Feedback Given',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -74,10 +74,9 @@ export enum WebEngageEventName {
   COMPLETED_AUTOMATED_QUESTIONS = 'Completed Automated Questions',
   JD_COMPLETED = 'JD Completed',
   PRESCRIPTION_RECEIVED = 'Prescription Received',
-  SR_DOCTOR_JOINED = 'Sr doctor joined',
   SD_CONSULTATION_STARTED = 'SD Consultation Started',
   SD_VIDEO_CALL_STARTED = 'SD Video call started',
-  // CONSULT_FEEDBACK_GIVEN = 'Consult feedback Given', // Possible duplicate of RATING_GIVEN
+  CONSULT_FEEDBACK_GIVEN = 'Consult feedback Given',
   DOWNLOAD_PRESCRIPTION = 'Download Prescription',
   VIEW_PRESCRIPTION_IN_CONSULT_DETAILS = 'View Prescription in Consult Details',
   ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS = 'Order Medicines from Prescription details',
@@ -372,6 +371,10 @@ export interface WebEngageEvents {
     Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Hospital Name': string;
+    'Hospital City': string;
   };
   [WebEngageEventName.DOCTOR_CLICKED]: {
     'Doctor Name': string;
@@ -384,38 +387,42 @@ export interface WebEngageEvents {
     'Doctor Speciality': string;
   };
   [WebEngageEventName.CONSULT_NOW_CLICKED]: {
-    name: string;
-    specialisation: string;
-    experience: number;
     'language known': string; // Comma separated values
-    Hospital: string;
-    'Available in': string;
     Source: 'List' | 'Profile'; // List/Profile
+    'Available in Minutes'?: number;
+    'Consult Mode': 'Online' | 'Physical';
+    specialisation: string;
+    'Doctor Experience': number;
+    'Consult Date Time': Date;
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Speciality ID': string;
+    'Hospital Name': string;
+    'Hospital City': string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
-    'Mobile Number': number;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Customer ID': string;
-    slot: string;
   };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
-    name: string;
+    'Consult Mode': 'Online' | 'Physical';
     specialisation: string;
-    experience: number;
-    'language known': string; // Comma separated values
-    Hospital: string;
-    Source: 'List' | 'Profile'; // List/Profile
+    'Doctor Experience': number;
+    'Consult Date Time': Date;
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Speciality ID': string;
+    'Hospital Name': string;
+    'Hospital City': string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
-    'Mobile Number': number;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Customer ID': string;
-    slot: string;
   };
   [WebEngageEventName.CONSULT_SLOT_SELECTED]: {
     slot: string;
@@ -423,8 +430,11 @@ export interface WebEngageEvents {
     specialisation: string;
     experience: number;
     'language known': string; // Comma separated values
-    hospital: string;
-    consultType: 'clinic' | 'online';
+    'Consult Mode': 'Online' | 'Physical';
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Patient UHID': string;
+    'Consult Date Time': Date;
   };
   [WebEngageEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
@@ -438,8 +448,8 @@ export interface WebEngageEvents {
     'Doctor City': string;
     'Type of Doctor': DoctorType;
     'Doctor Specialty': string;
-    'Appointment Date': string;
-    'Appointment Time': string;
+    // 'Appointment Date': string;
+    // 'Appointment Time': string;
     'Actual Price': number;
     'Discount used ?': boolean;
     'Discount coupon'?: string;
@@ -451,14 +461,18 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Patient UHID': string;
     consultType: 'clinic' | 'online';
+    'Doctor ID': string;
+    'Speciality ID': string;
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult Date Time': Date;
   };
   [WebEngageEventName.CONSULTATION_BOOKED]: {
     'Consult ID': string;
     name: string;
     specialisation: string;
     category: string;
-    time: Date | string;
-    consultType: 'online' | 'clinic';
+    // time: Date | string;
     'clinic name': string;
     'clinic address': string; // whole address
     'Patient Name': string;
@@ -466,12 +480,39 @@ export interface WebEngageEvents {
     Relation: string;
     Age: number;
     Gender: string;
-    'Mobile Number': number;
     'Customer ID': string;
+    'Speciality ID': string;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Doctor ID': string;
+    'Doctor Name': string;
+    'Net Amount': number;
   };
-  [WebEngageEventName.RATING_GIVEN]: {
+  [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
     'Patient UHID': string;
-    Type: 'Consult' | 'Medicine' | 'Diagnostics';
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    // Type: 'Consult' | 'Medicine' | 'Diagnostics';
+    'Rating Value': string;
+    'Rating Reason': string;
+  };
+  [WebEngageEventName.PHARMACY_FEEDBACK_GIVEN]: {
+    'Patient UHID': string;
+    // Type: 'Consult' | 'Medicine' | 'Diagnostics';
     'Rating Value': string;
     'Rating Reason': string;
   };
@@ -703,23 +744,6 @@ export interface WebEngageEvents {
     'Hospital City': string;
     'Consult ID': string;
     'Source Screen': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Customer ID': string;
-  };
-  [WebEngageEventName.SR_DOCTOR_JOINED]: {
-    'Doctor Name': string;
-    'Speciality Name': string;
-    'Speciality ID': string;
-    'Doctor Category': DoctorType;
-    'Consult Date Time': Date;
-    'Consult Mode': 'Online' | 'Physical';
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Consult ID': string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;

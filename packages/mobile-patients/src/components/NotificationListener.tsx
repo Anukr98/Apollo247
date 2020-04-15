@@ -893,13 +893,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   };
 
   const postRatingGivenWEGEvent = (rating: string, reason: string) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.RATING_GIVEN] = {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_FEEDBACK_GIVEN] = {
       'Patient UHID': g(currentPatient, 'id'),
       'Rating Value': rating,
       'Rating Reason': reason,
-      Type: 'Medicine',
     };
-    postWebEngageEvent(WebEngageEventName.RATING_GIVEN, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMACY_FEEDBACK_GIVEN, eventAttributes);
   };
 
   return (

@@ -753,7 +753,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Doctor Category': doctorDetails.doctorType,
       'Online Price': Number(doctorDetails.onlineConsultationFees),
       'Physical Price': Number(doctorDetails.physicalConsultationFees),
-      'Doctor Speciality': g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
+      'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
   };
