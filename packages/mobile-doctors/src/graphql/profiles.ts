@@ -865,7 +865,18 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
       saveDoctorsFavouriteMedicineInput: $saveDoctorsFavouriteMedicineInput
     ) {
       medicineList {
+        externalId
         id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
       }
     }
   }
@@ -879,7 +890,18 @@ export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
       updateDoctorsFavouriteMedicineInput: $updateDoctorsFavouriteMedicineInput
     ) {
       medicineList {
+        externalId
         id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
       }
     }
   }
