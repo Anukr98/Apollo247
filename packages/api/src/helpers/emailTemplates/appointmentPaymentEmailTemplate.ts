@@ -9,6 +9,9 @@ export const appointmentPaymentEmailTemplate = _.template(`
 <li>Appointment No : <%- displayId %></li>
 <li>Patient Name : <%- firstName %></li>
 <li>Mobile Number : <%- mobileNumber %></li>
+<li>UHID : <%- uhid %></li>
+<li>Payment Received from Patient : <%- amountpaid %></li>
+<li>Email ID : <%- emailid %></li>
 <li>Doctor Name : <%- docfirstName +' '+ doclastName %></li>
 <li>Doctor Location : <%- hospitalcity %></li>
 <li>Appointment Date : <%- apptDate %></li>

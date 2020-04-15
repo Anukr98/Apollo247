@@ -137,7 +137,13 @@ const makeAppointmentPayment: Resolver<
     }
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
-    sendPatientAcknowledgements(processingAppointment, consultsDb, doctorsDb, patientsDb);
+    sendPatientAcknowledgements(
+      processingAppointment,
+      consultsDb,
+      doctorsDb,
+      patientsDb,
+      paymentInput
+    );
 
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
@@ -151,7 +157,8 @@ const sendPatientAcknowledgements = async (
   appointmentData: Appointment,
   consultsDb: Connection,
   doctorsDb: Connection,
-  patientsDb: Connection
+  patientsDb: Connection,
+  paymentInput: AppointmentPaymentInput
 ) => {
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
   const docDetails = await doctor.findById(appointmentData.doctorId);
@@ -222,6 +229,9 @@ const sendPatientAcknowledgements = async (
     displayId: appointmentData.displayId.toString(),
     firstName: patientDetails.firstName,
     mobileNumber: patientDetails.mobileNumber,
+    uhid: patientDetails.uhid,
+    amountpaid: paymentInput.amountPaid,
+    emailid: patientDetails.emailAddress,
     docfirstName: docDetails.firstName,
     doclastName: docDetails.lastName,
     hospitalcity: displayHospitalCity,
