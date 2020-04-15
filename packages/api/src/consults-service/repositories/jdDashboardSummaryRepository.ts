@@ -109,10 +109,9 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
           where: { appointment: appt.appointmentId, doctorType: DoctorType.JUNIOR },
         });
         if (caseSheetDets) {
-          const diffMins = Math.abs(
-            differenceInSeconds(caseSheetDets.createdDate, appt.createdDate)
-          )/60;
-          console.log('dates ',caseSheetDets.createdDate,appt.createdDate)
+          const diffMins =
+            Math.abs(differenceInSeconds(caseSheetDets.createdDate, appt.createdDate)) / 60;
+          console.log('dates ', caseSheetDets.createdDate, appt.createdDate);
           totalMins += diffMins;
           console.log(totalMins, 'total mins');
         } else {
@@ -132,12 +131,12 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     if (totalMins == 0 && apptIds.length == 0) {
       return 0;
     } else {
-      console.log('finalresult=>',totalMins/apptIds.length)
+      console.log('finalresult=>', totalMins / apptIds.length);
       return totalMins / apptIds.length;
     }
   }
 
-  async getTotalConsultsInQueue(selDate: Date, doctorId: string){
+  async getTotalConsultsInQueue(selDate: Date, doctorId: string) {
     const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
     return ConsultQueueItem.createQueryBuilder('consult_queue_item')
@@ -147,7 +146,6 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         toDate: newEndDate,
       })
       .getCount();
-
   }
 
   async timePerChat(selDate: Date, doctorId: string) {
@@ -161,7 +159,7 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       .where('case_sheet.createdDate Between :fromDate and :toDate', {
         fromDate: newStartDate,
         toDate: newEndDate,
-        status:CASESHEET_STATUS.COMPLETED
+        status: CASESHEET_STATUS.COMPLETED,
       })
       .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
       .getRawMany();

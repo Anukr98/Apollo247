@@ -1032,8 +1032,8 @@ export class JdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   caseSheetNotSatisfactory: number;
 
-  @Column({default:0})
-  totalConsultsInQueue:number
+  @Column({ default: 0 })
+  totalConsultsInQueue: number;
 
   @Column()
   createdDate: Date;
@@ -1152,11 +1152,11 @@ export class SdDashboardSummary extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 5, default: 0 })
   physicalConsultationFees: number;
 
-  @Column({default:0})
-  totalRescheduleCount:number;
+  @Column({ default: 0 })
+  totalRescheduleCount: number;
 
-  @Column({default:0})
-  totalCompletedChats:number;
+  @Column({ default: 0 })
+  totalCompletedChats: number;
 
   @Column()
   createdDate: Date;
