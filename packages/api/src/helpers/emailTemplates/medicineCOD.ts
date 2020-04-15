@@ -26,6 +26,7 @@ export const medicineCOD = _.template(
         <li>Landmark : <%- patientAddress.landmark %></li>
         <li>City : <%- patientAddress.city %></li>
         <li>State : <%- patientAddress.state %></li>
+        <li>Zipcode : <%- patientAddress.zipcode %></li>
       </ul>
      </li>
      <% } %>
