@@ -337,7 +337,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         'Consult Mode': 'Online',
         'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
         'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
-        'Consult ID': g(data, 'id')!,
+        // 'Consult ID': g(data, 'id')!,
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient UHID': g(currentPatient, 'uhid'),
         Relation: g(currentPatient, 'relation'),

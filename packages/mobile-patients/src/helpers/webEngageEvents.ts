@@ -897,7 +897,7 @@ export interface WebEngageEvents {
     'Consult Mode': 'Online' | 'Physical';
     'Hospital Name': string;
     'Hospital City': string;
-    'Consult ID': string;
+    // 'Consult ID': string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
