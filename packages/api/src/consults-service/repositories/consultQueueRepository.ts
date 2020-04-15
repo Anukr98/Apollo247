@@ -92,7 +92,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
         'consultQueueItem.appointmentId = appointment.id::VARCHAR'
       )
       .where('appointment.appointmentState NOT IN (:...appointmentStates)', {
-        appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE, APPOINTMENT_STATE.RESCHEDULE],
+        appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
       })
       .andWhere('appointment.appointmentDateTime >= :date', { date: new Date() })
       .andWhere('consultQueueItem.doctorId IN (:...ids)', { ids })
