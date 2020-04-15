@@ -608,7 +608,7 @@ export const Symptoms: React.FC = (props) => {
                                   value={details}
                                   onChange={(event) => {
                                     setDetails(event.target.value);
-                                    clearError();
+                                    //clearError();
                                   }}
                                   multiline
                                 />
