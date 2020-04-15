@@ -142,6 +142,9 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   const [pastMedicalOrders, setPastMedicalOrders] = useState<any[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [isRecordChecked, setIsRecordChecked] = useState<boolean>(false);
+  const [selectedEPrescriptions, setSelectedEPrescriptions] = useState<EPrescription[]>(
+    ePrescriptionData || []
+  );
 
   const patientPastConsultAndPrescriptionMutation = useMutation<
     getPatientPastConsultsAndPrescriptions,
@@ -154,6 +157,24 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     },
     fetchPolicy: 'no-cache',
   });
+
+  const DATE_FORMAT = 'DD MMM YYYY';
+
+  const getMedicines = (
+    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
+  ) =>
+    medicines
+      .filter((item) => item!.medicineName)
+      .map((item) => item!.medicineName)
+      .join(', ');
+
+  const getCaseSheet = (caseSheet: CaseSheet[]) =>
+    caseSheet!.find(
+      (item) =>
+        item!.doctorType == DoctorType.STAR_APOLLO ||
+        item!.doctorType == DoctorType.APOLLO ||
+        item!.doctorType == DoctorType.PAYROLL
+    )!;
 
   useEffect(() => {
     if (ePrescriptionData && ePrescriptionData.length > 0) {
@@ -178,6 +199,9 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               setPastMedicalOrders(
                 data.getPatientPastConsultsAndPrescriptions.medicineOrders || []
               );
+            // const consultData = data.getPatientPastConsultsAndPrescriptions.consults || [];
+            // const medicalData = data.getPatientPastConsultsAndPrescriptions.medicineOrders || [];
+            // getFormattedData(consultData, medicalData);
             setLoading(false);
           } else {
             setLoading(false);
@@ -192,23 +216,9 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
     }
   }, [pastPrescriptions, pastMedicalOrders]);
 
-  const DATE_FORMAT = 'DD MMM YYYY';
-
-  const getMedicines = (
-    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
-  ) =>
-    medicines
-      .filter((item) => item!.medicineName)
-      .map((item) => item!.medicineName)
-      .join(', ');
-
-  const getCaseSheet = (caseSheet: CaseSheet[]) =>
-    caseSheet!.find(
-      (item) =>
-        item!.doctorType == DoctorType.STAR_APOLLO ||
-        item!.doctorType == DoctorType.APOLLO ||
-        item!.doctorType == DoctorType.PAYROLL
-    )!;
+  const isInCart = (id: string) => {
+    return ePrescriptionData && ePrescriptionData.findIndex((data) => data.id === id) !== -1;
+  };
 
   const formattedEPrescriptions =
     pastMedicalOrders &&
@@ -219,11 +229,13 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             id: item!.id,
             date: moment(item!.quoteDateTime).format(DATE_FORMAT),
             uploadedUrl: item!.prescriptionImageUrl,
-            doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) ||
-              ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+            doctorName: `Meds Rx ${
+              (item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''
+            }`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: getMedicines(item!.medicineOrderLineItems! || []),
             prismPrescriptionFileId: item!.prismPrescriptionFileId,
+            checked: isInCart(item.id),
           } as any)
       )
       .concat(
@@ -238,6 +250,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               : '',
             doctorName: item!.doctorInfo ? `${item!.doctorInfo.fullName}` : '',
             forPatient: (currentPatient && currentPatient.firstName) || '',
+            checked: isInCart(item.id),
             medicines: (
               (getCaseSheet(item!.caseSheet) || { medicinePrescription: [] })
                 .medicinePrescription || []
@@ -249,12 +262,8 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .filter((item: any) => !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
-          moment(b.date, DATE_FORMAT)
-            .toDate()
-            .getTime() -
-          moment(a.date, DATE_FORMAT)
-            .toDate()
-            .getTime()
+          moment(b.date, DATE_FORMAT).toDate().getTime() -
+          moment(a.date, DATE_FORMAT).toDate().getTime()
       );
 
   const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
@@ -308,15 +317,23 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
+                  checked={
+                    selectedEPrescriptions.findIndex(
+                      (selectedPrescription) => selectedPrescription.id === pastPrescription.id
+                    ) !== -1
+                  }
                   onChange={(e) => {
                     if (e.target.checked) {
-                      selectedEPrescriptionRecords.push(pastPrescription);
+                      const selectedRecords = selectedEPrescriptions;
+                      selectedRecords.push(pastPrescription);
+                      setSelectedEPrescriptions(selectedRecords);
                     } else {
-                      selectedEPrescriptionRecords = selectedEPrescriptionRecords.filter(
+                      const selectedRecords = selectedEPrescriptions.filter(
                         (record) => record.id != pastPrescription.id
                       );
+                      setSelectedEPrescriptions(selectedRecords);
                     }
-                    setIsRecordChecked(selectedEPrescriptionRecords.length > 0);
+                    setIsRecordChecked(!isRecordChecked);
                   }}
                   className={classes.checkbox}
                   color="primary"
@@ -342,15 +359,23 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
+                  checked={
+                    selectedEPrescriptions.findIndex(
+                      (selectedPrescription) => selectedPrescription.id === pastPrescription.id
+                    ) !== -1
+                  }
                   onChange={(e) => {
                     if (e.target.checked) {
-                      selectedEPrescriptionRecords.push(pastPrescription);
+                      const selectedRecords = selectedEPrescriptions;
+                      selectedRecords.push(pastPrescription);
+                      setSelectedEPrescriptions(selectedRecords);
                     } else {
-                      selectedEPrescriptionRecords = selectedEPrescriptionRecords.filter(
+                      const selectedRecords = selectedEPrescriptions.filter(
                         (record) => record.id != pastPrescription.id
                       );
+                      setSelectedEPrescriptions(selectedRecords);
                     }
-                    setIsRecordChecked(selectedEPrescriptionRecords.length > 0);
+                    setIsRecordChecked(!isRecordChecked);
                   }}
                   className={classes.checkbox}
                   color="primary"
@@ -361,16 +386,16 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
         <div className={classes.uploadButtonWrapper}>
           <AphButton
             disabled={
-              ((!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0)) &&
-                (!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0))) ||
-              selectedEPrescriptionRecords.length === 0 ||
-              !isRecordChecked
+              ((!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0)) &&
+                (!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0))) ||
+              selectedEPrescriptions.length === 0
             }
             onClick={() => {
-              const finalEprescriptions = selectedEPrescriptionRecords;
-              selectedEPrescriptionRecords = [];
+              const finalEprescriptions = selectedEPrescriptions;
+              // setSelectedEPrescriptions([]);
               setEPrescriptionData && setEPrescriptionData(finalEprescriptions);
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
+
               const currentUrl = window.location.href;
               if (currentUrl.endsWith('/medicines')) {
                 window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
