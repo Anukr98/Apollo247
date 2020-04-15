@@ -13,7 +13,7 @@ export const appointmentPaymentEmailTemplate = _.template(`
 <li>Payment Received from Patient : <%- amountPaid %></li>
 <li>Email ID : <%- emailId %></li>
 <li>Doctor Name : <%- docfirstName +' '+ doclastName %></li>
-<li>Doctor Location : <%- hospitalcity %></li>
+<li>Doctor Hospital Location : <%- hospitalcity %></li>
 <li>Appointment Date : <%- apptDate %></li>
 <li>Appointment Slot : <%- apptTimeFormat %></li>
 <li>Mode of Consult : <%- appointmentType %> </li>
