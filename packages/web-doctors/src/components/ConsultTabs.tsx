@@ -1205,6 +1205,7 @@ export const ConsultTabs: React.FC = () => {
       const ModifyCaseSheetsdUncaughtErr = {
         api: 'ModifyCaseSheetsdSaveStart',
         appointmentId: appointmentId,
+        followUpDate: followUpDate ? followUpDate : '',
       };
       sessionClient.notify(JSON.stringify(ModifyCaseSheetsdUncaughtErr));
       console.log(followUpDate[0]);
