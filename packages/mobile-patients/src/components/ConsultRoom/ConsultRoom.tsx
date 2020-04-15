@@ -440,6 +440,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     async function fetchData() {
       try {
+        AsyncStorage.removeItem('deeplink');
+
         const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
         const item = JSON.parse(retrievedItem);
 
