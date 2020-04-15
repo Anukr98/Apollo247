@@ -24,9 +24,6 @@ import {
   STATUS,
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
-  ConsultQueueItem,
-  CaseSheet,
-  Appointment,
 } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
