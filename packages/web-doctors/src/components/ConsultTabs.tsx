@@ -1206,12 +1206,11 @@ export const ConsultTabs: React.FC = () => {
         api: 'ModifyCaseSheetsdSaveStart',
         appointmentId: appointmentId,
         followUpDate: followUpDate ? followUpDate : '',
+        followupISODate:
+          followUpDate && followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '',
       };
       sessionClient.notify(JSON.stringify(ModifyCaseSheetsdUncaughtErr));
-      console.log(followUpDate[0]);
       const followupISODate = new Date(followUpDate[0]).toISOString();
-
-      console.log('followupISODate', followupISODate);
       const followupDateArray = followupISODate.split('T');
 
       const inputVariables = {
