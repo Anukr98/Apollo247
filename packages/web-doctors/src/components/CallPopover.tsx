@@ -782,6 +782,7 @@ interface CallPopoverProps {
   presenceEventObject: any;
   hasCameraMicPermission: boolean;
 }
+let countdowntimer: any;
 let intervalId: any;
 let stoppedTimer: number;
 let timerIntervalId: any;
@@ -1041,8 +1042,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentInfo!.status !== STATUS.PENDING
     ) {
       console.log('Your appointment status is ' + appointmentInfo!.status);
-    } else if (startAppointmentButton) {
-      console.log('you can start your consult before 15 min and upto end time of appointment');
     }
   };
   // timer for audio/video call end
@@ -1346,7 +1345,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     startBtnInformationCheck();
   };
   const client = useApolloClient();
-  setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
     setRemainingTime(900);
     intervalId && clearInterval(intervalId);
@@ -1405,9 +1403,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = props.pubnub;
 
   useEffect(() => {
+    countdowntimer = setInterval(startConstultCheck, 1000);
     return function cleanup() {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
+      clearInterval(countdowntimer);
     };
   }, []);
 
