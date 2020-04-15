@@ -8,7 +8,7 @@ import {
   PatientLifeStyle,
   PatientMedicalHistory,
 } from 'profiles-service/entities';
-import { Appointment, ConsultQueueItem } from 'consults-service/entities';
+import { Appointment, ConsultQueueItem, APPOINTMENT_STATE } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -116,7 +116,7 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
   });
 
   inActiveQueueItems.reverse();
-  const dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
+  let dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
 
   //Get all the appointments of the queue items
   const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
@@ -125,11 +125,19 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
   //Map the appointments with appointment ids
   const appointmentIdMapper: { [key: string]: Appointment } = {};
   const patientIds: string[] = [];
+  const appointmentIdsToRemove: string[] = [];
   appointments.forEach((appointment) => {
-    appointmentIdMapper[appointment.id] = appointment;
-    patientIds.push(appointment.patientId);
+    if (appointment.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE) {
+      appointmentIdsToRemove.push(appointment.id);
+    } else {
+      appointmentIdMapper[appointment.id] = appointment;
+      patientIds.push(appointment.patientId);
+    }
   });
-
+  //Filter all the appointments with AWAITING_RESCHEDULE state
+  dbConsultQueue = dbConsultQueue.filter(
+    (queueItem) => !appointmentIdsToRemove.includes(queueItem.appointmentId)
+  );
   //Get all the patients of the queue items
   const patients = await patRepo.getPatientDetailsByIds(patientIds);
 

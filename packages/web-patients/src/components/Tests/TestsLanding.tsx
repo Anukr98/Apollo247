@@ -624,7 +624,7 @@ export const TestsLanding: React.FC = (props) => {
             </div>
             <div className={classes.windowBody}>
               <Typography variant="h2">{`Hi ${currentPatient &&
-                currentPatient.firstName}`}</Typography>
+                currentPatient.firstName},`}</Typography>
               <p>
                 {`Our diagnostic services are only available in Chennai and Hyderabad
                  for now. Kindly change location to Chennai or Hyderabad.`}
