@@ -375,7 +375,6 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             }
             onClick={() => {
               const finalEprescriptions = selectedEPrescriptions;
-              // setSelectedEPrescriptions([]);
               setEPrescriptionData && setEPrescriptionData(finalEprescriptions);
               props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
 
