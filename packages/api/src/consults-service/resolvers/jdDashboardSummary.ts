@@ -144,7 +144,10 @@ const updateJdSummary: Resolver<
         args.summaryDate,
         doctor.id
       );
-      const totalConsultsInQueue = await dashboardRepo.getTotalConsultsInQueue(args.summaryDate,doctor.id);
+      const totalConsultsInQueue = await dashboardRepo.getTotalConsultsInQueue(
+        args.summaryDate,
+        doctor.id
+      );
       const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
       let adminIds = '';
       if (adminIdRows.length > 0) {

@@ -482,6 +482,7 @@ export const TestDetails: React.FC = (props) => {
   ) => {
     return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
   };
+  const mou = testDetailsPackage && testDetailsPackage.length;
 
   return (
     <div className={classes.root}>
@@ -528,9 +529,9 @@ export const TestDetails: React.FC = (props) => {
                             testDetails.gender == 'B'
                               ? 'BOYS AND GIRLS'
                               : testDetails.gender == 'M'
-                                ? 'BOYS'
-                                : 'GIRLS'
-                            }`}
+                              ? 'BOYS'
+                              : 'GIRLS'
+                          }`}
                         </div>
                       )}
                       <div className={classes.textInfo}>
@@ -614,8 +615,8 @@ export const TestDetails: React.FC = (props) => {
                     isSmallScreen ? (
                       <div {...props} style={{ position: 'static' }} />
                     ) : (
-                        <div {...props} />
-                      )
+                      <div {...props} />
+                    )
                   }
                 >
                   <div className={classes.customScroll}>
@@ -639,8 +640,12 @@ export const TestDetails: React.FC = (props) => {
                             addCartItem({
                               itemId: `${testDetails.itemId}`,
                               id: testDetails.id,
-                              mou: 1,
-                              name: stripHtml(testDetails.itemName),
+                              mou,
+                              name: stripHtml(
+                                params.searchTestType === 'hot-seller'
+                                  ? params.itemName.split('_').join(' ')
+                                  : testDetails.itemName
+                              ),
                               price: testDetails.rate,
                               thumbnail: '',
                               collectionMethod: testDetails.collectionType!,
@@ -653,8 +658,8 @@ export const TestDetails: React.FC = (props) => {
                         ) : itemIndexInCart(testDetails) === -1 ? (
                           'Add To Cart'
                         ) : (
-                              'Added To Cart'
-                            )}
+                          'Added To Cart'
+                        )}
                       </AphButton>
                     </div>
                   </div>
@@ -662,12 +667,12 @@ export const TestDetails: React.FC = (props) => {
               </div>
             </div>
           ) : (
-              loading && (
-                <div className={classes.progressLoader}>
-                  <CircularProgress size={30} />
-                </div>
-              )
-            )}
+            loading && (
+              <div className={classes.progressLoader}>
+                <CircularProgress size={30} />
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>

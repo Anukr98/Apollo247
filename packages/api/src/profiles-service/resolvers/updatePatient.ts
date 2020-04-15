@@ -7,13 +7,10 @@ import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import {
-  sendPatientRegistrationNotification,
-  sendNotificationSMS,
-} from 'notifications-service/resolvers/notifications';
+import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
-import { RegistrationCodesRepository } from 'profiles-service/repositories/registrationCodesRepository';
+
 import {
   ReferralCodesMasterRepository,
   ReferalCouponMappingRepository,

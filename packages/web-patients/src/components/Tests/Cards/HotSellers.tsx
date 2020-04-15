@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
@@ -9,6 +9,7 @@ import { getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers } from 'grap
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { TEST_COLLECTION_TYPE } from 'graphql/types/globalTypes';
 import _replace from 'lodash/replace';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -119,6 +120,17 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
   const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
   const { data, isLoading } = props;
+  const [loading, setLoading] = useState(false);
+  const apiDetails = {
+    url: process.env.GET_PACKAGE_DATA,
+  };
+
+  const TestApiCredentials = {
+    UserName: process.env.TEST_DETAILS_PACKAGE_USERNAME,
+    Password: process.env.TEST_DETAILS_PACKAGE_PASSWORD,
+    InterfaceClient: process.env.TEST_DETAILS_PACKAGE_INTERFACE_CLIENT,
+  };
+
   const sliderSettings = {
     infinite: data && data.length > 6 ? true : false,
     speed: 500,
@@ -162,13 +174,14 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
   };
 
   const itemIndexInCart = (item: getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers) => {
-    return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
+    return diagnosticsCartItems.findIndex(
+      (cartItem) => cartItem.id == `${item && item.diagnostics ? item.diagnostics.id : ''}`
+    );
   };
 
   if (isLoading) {
     return <CircularProgress size={22} />;
   }
-
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -208,22 +221,46 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       <div className={classes.addToCart}>
                         {itemIndexInCart(hotSeller) === -1 ? (
                           <AphButton
-                            onClick={() =>
-                              addCartItem &&
-                              addCartItem({
-                                itemId: hotSeller.diagnostics
-                                  ? `${hotSeller.diagnostics.itemId}`
-                                  : '',
-                                id: hotSeller.id,
-                                mou: data.length,
-                                name: hotSeller.packageName || '',
-                                price: hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0,
-                                thumbnail: hotSeller.packageImage,
-                                collectionMethod: hotSeller.diagnostics
-                                  ? hotSeller.diagnostics.collectionType
-                                  : null,
-                              })
-                            }
+                            onClick={() => {
+                              setLoading(true);
+                              axios
+                                .post(apiDetails.url || '', {
+                                  ...TestApiCredentials,
+                                  ItemID: hotSeller.diagnostics
+                                    ? `${hotSeller.diagnostics.itemId}`
+                                    : '',
+                                })
+                                .then((data: any) => {
+                                  if (data && data.data && data.data.data && data.data.data) {
+                                    const details = data.data.data;
+                                    if (details && details.length > 0) {
+                                      addCartItem &&
+                                        addCartItem({
+                                          itemId: hotSeller.diagnostics
+                                            ? `${hotSeller.diagnostics.itemId}`
+                                            : '',
+                                          id: hotSeller.diagnostics ? hotSeller.diagnostics.id : '',
+                                          mou:
+                                            details && details.length
+                                              ? details && details.length
+                                              : 0,
+                                          name: hotSeller.packageName || '',
+                                          price: hotSeller.diagnostics
+                                            ? hotSeller.diagnostics.rate
+                                            : 0,
+                                          thumbnail: hotSeller.packageImage,
+                                          collectionMethod: hotSeller.diagnostics
+                                            ? hotSeller.diagnostics.collectionType
+                                            : null,
+                                        });
+                                    }
+                                    setLoading(false);
+                                  }
+                                })
+                                .catch((e: any) => {
+                                  setLoading(false);
+                                });
+                            }}
                           >
                             Add To Cart
                           </AphButton>
@@ -232,7 +269,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             onClick={() => {
                               removeCartItem &&
                                 removeCartItem(
-                                  hotSeller.id,
+                                  hotSeller.diagnostics ? hotSeller.diagnostics.id : '',
                                   hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
                                 );
                             }}

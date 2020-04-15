@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
       fontWeight: 500,
       marginBottom: 2,
+      textTransform: 'capitalize',
       [theme.breakpoints.down('xs')]: {
         flexGrow: 1,
         paddingBottom: 5,
@@ -183,7 +184,7 @@ export const TestsListingCard: React.FC = (props) => {
                 </div>
                 <div>
                   <div className={classes.medicineName}>{item.name}</div>
-                  <div className={classes.testsIncluded}>Includes 8 tests</div>
+                  <div className={classes.testsIncluded}>Includes {item.mou} tests</div>
                 </div>
               </div>
               <div className={classes.cartRight}>
