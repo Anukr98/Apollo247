@@ -313,12 +313,27 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 66,
       marginRight: 10,
     },
+    contentGroup: {
+      padding: 20,
+      paddingTop: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    bottomButtons: {
+      display: 'flex',
+    },
   };
 });
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const Appointments: React.FC = (props) => {
+  const pageUrl = window.location.href;
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
@@ -336,6 +351,8 @@ export const Appointments: React.FC = (props) => {
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
   const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
+  const [isFailurePayment, setIsFailurePayment] = React.useState(pageUrl.includes('failed'));
+  const [anchorEl, setAnchorEl] = React.useState(null);
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -678,6 +695,43 @@ export const Appointments: React.FC = (props) => {
           </a>
         </div>
       </AphDialog>
+
+      <Popover
+        open={isFailurePayment}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.contentGroup}>
+              <Typography variant="h3">uhhh :)</Typography>
+              <p> Your transaction for previous appointment was failed.</p>
+              <div className={classes.bottomButtons}>
+                <AphButton
+                  color="primary"
+                  classes={{ root: classes.addMemberBtn }}
+                  onClick={() => {
+                    setIsFailurePayment(false);
+                  }}
+                >
+                  ok
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
 
       {/* <Popover
         open={isPopoverOpen}

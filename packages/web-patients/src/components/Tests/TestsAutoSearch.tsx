@@ -239,8 +239,8 @@ export const TestsAutoSearch: React.FC = (props) => {
           Sorry, we couldn't find what you are looking for :(
         </FormHelperText>
       ) : (
-          ''
-        )}
+        ''
+      )}
       <Paper className={classes.autoSearchPopover}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'45vh'}>
           {loading && (

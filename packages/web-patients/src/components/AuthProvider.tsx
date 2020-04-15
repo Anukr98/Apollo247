@@ -154,10 +154,7 @@ export const AuthProvider: React.FC = (props) => {
   if (pageUrl.includes('medicines') && pageUrl.includes('failed')) {
     window.location.href = clientRoutes.medicinesCart();
   }
-  const pageUrls = window.location.href;
-  if (pageUrls.includes('appointments?status=') && pageUrl.includes('failed')) {
-    window.location.href = clientRoutes.doctorsLanding();
-  }
+
   const signOut = () =>
     app
       .auth()

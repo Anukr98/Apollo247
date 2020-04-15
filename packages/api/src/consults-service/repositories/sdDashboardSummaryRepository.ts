@@ -427,6 +427,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       })
       .andWhere('case_sheet."doctorId" = :doctorId', { doctorId })
       .andWhere('case_sheet."doctorType" != :docType', { docType: DoctorType.JUNIOR })
+      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
     console.log(prepTimeRows, 'case sheet prep time');
     if (prepTimeRows[0].totalrows > 0) {
