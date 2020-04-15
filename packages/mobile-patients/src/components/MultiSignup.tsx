@@ -50,9 +50,19 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getRelations,
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -416,6 +426,29 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     </TouchableOpacity>
   );
 
+  const _postWebEngageEvent = (patient: updatePatient_updatePatient_patient) => {
+    try {
+      const { firstName, lastName, dateOfBirth: date, gender, emailAddress: email } = patient;
+      const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient ? currentPatient.id : '',
+        'Customer First Name': (firstName || '')!.trim(),
+        'Customer Last Name': (lastName || '')!.trim(),
+        'Date of Birth': date ? moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+        Gender: gender!,
+        Email: (email || '').trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventAttributes['Referral Code'] = referral;
+      }
+
+      postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
   const renderButtons = () => {
     return (
       <StickyBottomComponent>
@@ -465,6 +498,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               {data
                 ? (console.log('data', data.updatePatient.patient),
                   getPatientApiCall(),
+                  _postWebEngageEvent(g(data, 'updatePatient', 'patient')!),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
