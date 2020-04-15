@@ -51,7 +51,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   isValidSearch,
@@ -111,6 +111,7 @@ export interface SearchByBrandProps
     title: string;
     category_id: string;
     isTest?: boolean; // Ignoring for now
+    movedFrom?: string;
   }> {}
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
@@ -248,7 +249,28 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             </TouchableOpacity>
           </View>
         }
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => {
+          try {
+            const MoveDoctor = props.navigation.getParam('movedFrom') || '';
+
+            console.log('MoveDoctor', MoveDoctor);
+            if (MoveDoctor === 'registration') {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [
+                    NavigationActions.navigate({
+                      routeName: AppRoutes.ConsultRoom,
+                    }),
+                  ],
+                })
+              );
+            } else {
+              props.navigation.goBack();
+            }
+          } catch (error) {}
+        }}
       />
     );
   };
