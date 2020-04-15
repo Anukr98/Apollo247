@@ -1,5 +1,5 @@
 import { EntityRepository, Repository, Connection } from 'typeorm';
-import { ConsultQueueItem } from 'consults-service/entities';
+import { ConsultQueueItem, Appointment, APPOINTMENT_STATE } from 'consults-service/entities';
 import { format, addDays } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DOCTOR_ONLINE_STATUS, DoctorType } from 'doctors-service/entities';
@@ -81,5 +81,22 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
         });
       });
     }
+  }
+
+  getQueueItemsByDoctorIds(ids: string[]) {
+    return this.createQueryBuilder('consultQueueItem')
+      .innerJoinAndMapOne(
+        'consultQueueItem.appointment',
+        Appointment,
+        'appointment',
+        'consultQueueItem.appointmentId = appointment.id::VARCHAR'
+      )
+      .where('appointment.appointmentState NOT IN (:...appointmentStates)', {
+        appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
+      })
+      .andWhere('appointment.appointmentDateTime >= :date', { date: new Date() })
+      .andWhere('consultQueueItem.doctorId IN (:...ids)', { ids })
+      .andWhere('consultQueueItem.isActive = :isactive', { isactive: true })
+      .getMany();
   }
 }

@@ -782,6 +782,7 @@ interface CallPopoverProps {
   presenceEventObject: any;
   hasCameraMicPermission: boolean;
 }
+let countdowntimer: any;
 let intervalId: any;
 let stoppedTimer: number;
 let timerIntervalId: any;
@@ -985,11 +986,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             (status: any, response: any) => {}
           );
           unSubscribeBrowserButtonsListener();
-          if (status === STATUS.NO_SHOW) {
-            alert(
-              'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.'
-            );
-          }
+          // if (status === STATUS.NO_SHOW) {
+          //   alert(
+          //     'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.'
+          //   );
+          // }
           navigateToCalendar();
         })
         .catch((e) => {
@@ -1041,8 +1042,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentInfo!.status !== STATUS.PENDING
     ) {
       console.log('Your appointment status is ' + appointmentInfo!.status);
-    } else if (startAppointmentButton) {
-      console.log('you can start your consult before 15 min and upto end time of appointment');
     }
   };
   // timer for audio/video call end
@@ -1346,7 +1345,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     startBtnInformationCheck();
   };
   const client = useApolloClient();
-  setInterval(startConstultCheck, 1000);
   const stopInterval = () => {
     setRemainingTime(900);
     intervalId && clearInterval(intervalId);
@@ -1405,9 +1403,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = props.pubnub;
 
   useEffect(() => {
+    countdowntimer = setInterval(startConstultCheck, 1000);
     return function cleanup() {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
+      clearInterval(countdowntimer);
     };
   }, []);
 
@@ -2719,12 +2719,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
           <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
-              We are sorry, but it seems your patient is no longer active on the application. You
-              may wish to reschedule this consult.
+              {iscallAbandonment
+                ? 'We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.'
+                : 'It seems that your patient is no longer active on the application. Would you like to continue with the consult?'}
             </h3>
 
             <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
-              {iscallAbandonment ? 'Continue' : 'Continue Conult'}
+              {iscallAbandonment ? 'Continue' : 'Yes, continue consult'}
             </Button>
             <Button
               className={classes.consultButton}
@@ -2732,7 +2733,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 noShowAction(iscallAbandonment ? STATUS.CALL_ABANDON : STATUS.NO_SHOW);
               }}
             >
-              {iscallAbandonment ? 'Reschedule' : 'OK Reschedule'}
+              {iscallAbandonment ? 'Reschedule' : 'No, reschedule'}
             </Button>
           </div>
         </Paper>

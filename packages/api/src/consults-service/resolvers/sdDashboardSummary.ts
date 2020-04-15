@@ -94,7 +94,12 @@ export const sdDashboardSummaryTypeDefs = gql`
       docLimit: Int
       docOffset: Int
     ): DashboardSummaryResult!
-    updateDoctorFeeSummary(summaryDate: Date, doctorId: String,docLimit:Int,docOffset:Int): DoctorFeeSummaryResult!
+    updateDoctorFeeSummary(
+      summaryDate: Date
+      doctorId: String
+      docLimit: Int
+      docOffset: Int
+    ): DoctorFeeSummaryResult!
     updateConsultRating(summaryDate: Date): FeedbackSummaryResult
     updatePatientType(doctorId: ID!): UpdatePatientTypeResult
     updateUserType: UpdateUserTypeResult
@@ -400,10 +405,10 @@ const updateSdSummary: Resolver<
         doctor.id,
         args.summaryDate
       );
-      const totalRescheduleCount= await dashboardRepo.getTotalRescheduleCount(
+      const totalRescheduleCount = await dashboardRepo.getTotalRescheduleCount(
         doctor.id,
         args.summaryDate
-      )
+      );
       const slotsCount = await dashboardRepo.getDoctorSlots(
         doctor.id,
         args.summaryDate,

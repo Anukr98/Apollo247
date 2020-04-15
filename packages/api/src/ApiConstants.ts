@@ -127,9 +127,16 @@ export enum ApiConstants {
   //pepipost configurations
   PEPIPOST_API_KEY = '0e396e4e9b5247d267c9a536cd154869',
 
+  //medicine COD email configuration starts
+  MEDICINE_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
+  MEDICINE_SUPPORT_CC_EMAILID = 'sumeeth.kumar@popcornapps.com,',
+  MEDICINE_SUPPORT_EMAILID_PRODUCTION = 'hd.chennai@apollopharmacy.org',
+  MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION = '',
+  //medicine COD email configuration ends
+
   //Patient app, help form email configurations
   PATIENT_HELP_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID = 'sriram.kanchan@popcornapps.com,sumeeth.kumar@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID = 'sriram.kanchan@popcornapps.com',
   PATIENT_HELP_FROM_EMAILID = 'info@apollo247.com', // 'info@pepisandbox.com',
   PATIENT_HELP_FROM_NAME = 'Apollo24*7',
   PATIENT_HELP_SUBJECT = 'Issue raised by customer : {0} - {1}, {2}',
@@ -180,7 +187,7 @@ export enum ApiConstants {
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
   PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
-  PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_APPT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com',

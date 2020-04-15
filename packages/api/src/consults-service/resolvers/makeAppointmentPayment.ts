@@ -19,7 +19,7 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
-import _ from 'lodash';
+
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 
@@ -137,7 +137,13 @@ const makeAppointmentPayment: Resolver<
     }
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
-    sendPatientAcknowledgements(processingAppointment, consultsDb, doctorsDb, patientsDb);
+    sendPatientAcknowledgements(
+      processingAppointment,
+      consultsDb,
+      doctorsDb,
+      patientsDb,
+      paymentInput
+    );
 
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
@@ -151,7 +157,8 @@ const sendPatientAcknowledgements = async (
   appointmentData: Appointment,
   consultsDb: Connection,
   doctorsDb: Connection,
-  patientsDb: Connection
+  patientsDb: Connection,
+  paymentInput: AppointmentPaymentInput
 ) => {
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
   const docDetails = await doctor.findById(appointmentData.doctorId);
@@ -198,8 +205,7 @@ const sendPatientAcknowledgements = async (
   let displayHospitalCity;
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
   const apptTime = format(istDateTime, 'hh:mm');
-  const getHours = istDateTime.getHours();
-  const getMinutes = istDateTime.getMinutes();
+
   let subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', hospitalCity);
   if (docDetails.doctorType == DoctorType.PAYROLL) {
     if (hospitalCity) {
@@ -222,6 +228,9 @@ const sendPatientAcknowledgements = async (
     displayId: appointmentData.displayId.toString(),
     firstName: patientDetails.firstName,
     mobileNumber: patientDetails.mobileNumber,
+    uhid: patientDetails.uhid,
+    amountPaid: paymentInput.amountPaid,
+    emailId: patientDetails.emailAddress,
     docfirstName: docDetails.firstName,
     doclastName: docDetails.lastName,
     hospitalcity: displayHospitalCity,

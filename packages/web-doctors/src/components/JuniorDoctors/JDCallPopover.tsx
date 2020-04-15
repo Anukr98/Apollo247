@@ -659,7 +659,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(0);
+  const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   // const startConsultDisableReason =
   //   appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE'
@@ -903,12 +903,16 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const checkTimeRemainToConsult = () => {
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
-    if (disablecurrent === disableconsult) {
-      setRemainingConsultStartTime(0);
-    } else {
-      const diff = (disableconsult.getTime() - disablecurrent.getTime()) / 1000;
-      const diffMins = diff / 60;
-      setRemainingConsultStartTime(Math.round(diffMins));
+    if (disablecurrent.toISOString().slice(0, 10) === disableconsult.toISOString().slice(0, 10)) {
+      const diff =
+        moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
+      if (disablecurrent >= disableconsult) {
+        setRemainingConsultStartTime(0);
+      } else if (diff <= 0) {
+        setRemainingConsultStartTime(0);
+      } else {
+        setRemainingConsultStartTime(diff);
+      }
     }
   };
 
@@ -1257,14 +1261,14 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>
             Consult Room
-            {appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE' ? (
+            {appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE1' ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
                 This appointment is under reschedule and waiting for the patient to accept the new
                 slot.
               </div>
-            ) : remainingConsultStartTime <= 10 && remainingConsultStartTime > 0 ? (
+            ) : remainingConsultStartTime <= 10 && remainingConsultStartTime > -1 ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                {remainingConsultStartTime} minutes left for Senior Doctor to start the consult.
+                {remainingConsultStartTime} minute(s) left for Senior Doctor to start the consult.
               </div>
             ) : (
               !props.hasCameraMicPermission && (

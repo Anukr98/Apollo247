@@ -8,7 +8,7 @@ import {
   PatientLifeStyle,
   PatientMedicalHistory,
 } from 'profiles-service/entities';
-import { Appointment, ConsultQueueItem } from 'consults-service/entities';
+import { Appointment, ConsultQueueItem, APPOINTMENT_STATE } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -114,16 +114,49 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
     take: limit,
     order: { id: 'DESC' },
   });
+
   inActiveQueueItems.reverse();
-  const dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
-  const consultQueue = await Promise.all(
-    dbConsultQueue.map(async (cq) => {
-      const { id, isActive } = cq;
-      const appointment = await apptRepo.findOneOrFail(cq.appointmentId);
-      const patient = await patRepo.findOneOrFail(appointment.patientId);
-      return { id, isActive, appointment, patient };
-    })
+  let dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
+
+  //Get all the appointments of the queue items
+  const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
+  const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
+
+  //Map the appointments with appointment ids
+  const appointmentIdMapper: { [key: string]: Appointment } = {};
+  const patientIds: string[] = [];
+  const appointmentIdsToRemove: string[] = [];
+  appointments.forEach((appointment) => {
+    if (appointment.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE) {
+      appointmentIdsToRemove.push(appointment.id);
+    } else {
+      appointmentIdMapper[appointment.id] = appointment;
+      patientIds.push(appointment.patientId);
+    }
+  });
+  //Filter all the appointments with AWAITING_RESCHEDULE state
+  dbConsultQueue = dbConsultQueue.filter(
+    (queueItem) => !appointmentIdsToRemove.includes(queueItem.appointmentId)
   );
+  //Get all the patients of the queue items
+  const patients = await patRepo.getPatientDetailsByIds(patientIds);
+
+  //Map the patients with patient ids
+  const patientIdMapper: { [key: string]: Patient } = {};
+  patients.forEach((patient) => {
+    patientIdMapper[patient.id] = patient;
+  });
+
+  //Create the response object with queue items
+  const consultQueue = dbConsultQueue.map((queueItem) => {
+    const { id, isActive, appointmentId } = queueItem;
+    return {
+      id,
+      isActive,
+      appointment: appointmentIdMapper[appointmentId],
+      patient: patientIdMapper[appointmentIdMapper[appointmentId].patientId],
+    };
+  });
   return consultQueue;
 };
 
@@ -160,6 +193,7 @@ type JuniorDoctorsList = {
   queueCount: number;
 };
 
+//This is not being used now. Refer to addToConsultQueueWithAutomatedQuestions
 const addToConsultQueue: Resolver<
   null,
   AddToConsultQueueInput,
@@ -183,14 +217,7 @@ const addToConsultQueue: Resolver<
 
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
-  /*const onlineJrDocs = await docRepo.find({
-    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-    doctorType: DoctorType.JUNIOR,
-    isActive: true,
-  });
-  const chosenJrDoc = _sample(onlineJrDocs);
-  if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  const doctorId = chosenJrDoc.id;*/
+
   const onlineJrDocs = await docRepo.find({
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
     doctorType: DoctorType.JUNIOR,
@@ -207,8 +234,10 @@ const addToConsultQueue: Resolver<
   } else {
     throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
   }
+
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
   await apptRepo.updateConsultStarted(appointmentId, true);
+
   function getJuniorDocInfo() {
     return new Promise(async (resolve, reject) => {
       onlineJrDocs.map(async (doctor) => {
@@ -228,6 +257,7 @@ const addToConsultQueue: Resolver<
   if (onlineJrDocs.length > 0) {
     await getJuniorDocInfo();
   }
+
   return {
     id,
     doctorId,
@@ -297,22 +327,45 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
 
-  const onlineJrDocs = await docRepo.find({
-    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+  const juniorDoctors = await docRepo.find({
     doctorType: DoctorType.JUNIOR,
     isActive: true,
   });
-  const juniorDocs = await docRepo.find({
-    doctorType: DoctorType.JUNIOR,
-    isActive: true,
+  //Get online JDs
+  const onlineJuniorDoctors = juniorDoctors.filter(
+    (doctor) => doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE
+  );
+  if (!onlineJuniorDoctors.length) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
+
+  const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
+  //Get queue items of online JDs
+  const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
+
+  //Map and get the count of queue items of each online JD
+  const jdQueueCounts: { [key: string]: number } = {};
+  consultQueueItems.map((queueItem) => {
+    if (jdQueueCounts[queueItem.doctorId]) {
+      jdQueueCounts[queueItem.doctorId] = jdQueueCounts[queueItem.doctorId] + 1;
+    } else {
+      jdQueueCounts[queueItem.doctorId] = 1;
+    }
   });
-  let doctorId: string = '0';
-  const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
-  if (nextDoctorId && nextDoctorId != '0') {
-    doctorId = nextDoctorId;
-  } else {
-    throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  }
+  onlineJuniorDoctorIds.map((id) => {
+    if (!jdQueueCounts[id]) {
+      jdQueueCounts[id] = 0;
+    }
+  });
+
+  let jdActiveAppointmentsCount = -1;
+  let doctorId = '';
+  //Map the object and find the JD with least queue item count
+  Object.keys(jdQueueCounts).map((key) => {
+    if (jdActiveAppointmentsCount == -1 || jdQueueCounts[key] < jdActiveAppointmentsCount) {
+      jdActiveAppointmentsCount = jdQueueCounts[key];
+      doctorId = key;
+    }
+  });
+
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
   await apptRepo.updateConsultStarted(appointmentId, true);
 
@@ -412,33 +465,23 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   //medicalHistory upsert ends
   //automated questions ends
 
-  function getJuniorDocInfo() {
-    return new Promise(async (resolve, reject) => {
-      onlineJrDocs.map(async (doctor) => {
-        const queueCount = await cqRepo.count({ where: { doctorId: doctor.id, isActive: true } });
-        const jrDoctor: JuniorDoctorsList = {
-          doctorName: doctor.firstName + ' ' + doctor.lastName,
-          juniorDoctorId: doctor.id,
-          queueCount,
-        };
-        jrDocList.push(jrDoctor);
-        if (jrDocList.length == onlineJrDocs.length) {
-          resolve(jrDocList);
-        }
-      });
-    });
-  }
-  if (onlineJrDocs.length > 0) {
-    await getJuniorDocInfo();
-  }
+  //create the juniorDoctorsList object
+  onlineJuniorDoctors.map((doctor) => {
+    const details = {
+      doctorName: doctor.firstName + ' ' + doctor.lastName,
+      juniorDoctorId: doctor.id,
+      queueCount: jdQueueCounts[doctor.id],
+    };
+    jrDocList.push(details);
+  });
   // update JdQuestionStatus
   await apptRepo.updateJdQuestionStatus(appointmentId, true);
 
   return {
     id,
     doctorId,
-    totalJuniorDoctors: juniorDocs.length,
-    totalJuniorDoctorsOnline: onlineJrDocs.length,
+    totalJuniorDoctors: juniorDoctors.length,
+    totalJuniorDoctorsOnline: onlineJuniorDoctors.length,
     juniorDoctorsList: jrDocList,
   };
 };
