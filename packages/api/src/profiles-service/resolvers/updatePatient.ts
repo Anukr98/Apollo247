@@ -33,6 +33,7 @@ export const updatePatientTypeDefs = gql`
     referralCode: String
     relation: Relation
     photoUrl: String
+    deviceCode: String
   }
 
   input UpdatePatientAllergiesInput {
