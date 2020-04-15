@@ -161,9 +161,9 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       .where('case_sheet.createdDate Between :fromDate and :toDate', {
         fromDate: newStartDate,
         toDate: newEndDate,
-        status:CASESHEET_STATUS.COMPLETED
       })
       .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
     //console.log(casesheetRows, 'timeperchat casesheet rows');
     if (casesheetRows.length > 0) {
