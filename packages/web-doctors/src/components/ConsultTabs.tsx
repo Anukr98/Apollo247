@@ -1202,14 +1202,15 @@ export const ConsultTabs: React.FC = () => {
       }
 
       setSaving(true);
-      const ModifyCaseSheetsdUncaughtErr = {
+      const ModifyCaseSheetsdSaveStart = {
         api: 'ModifyCaseSheetsdSaveStart',
         appointmentId: appointmentId,
         followUpDate: followUpDate ? followUpDate : '',
         followupISODate:
           followUpDate && followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '',
       };
-      sessionClient.notify(JSON.stringify(ModifyCaseSheetsdUncaughtErr));
+      console.log(ModifyCaseSheetsdSaveStart);
+      sessionClient.notify(JSON.stringify(ModifyCaseSheetsdSaveStart));
       const followupISODate = new Date(followUpDate[0]).toISOString();
       const followupDateArray = followupISODate.split('T');
 
