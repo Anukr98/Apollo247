@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
   },
   textStyle3: {
     ...theme.viewStyles.text('R', 13, '#02475b'),
+    marginBottom: 5,
   },
   inputStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -338,7 +339,11 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           });
         } else {
           // Order-Success, Show popup here & clear cart info
-          postwebEngageCheckoutCompletedEvent(`${orderAutoId}`);
+          try {
+            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`);
+          } catch (error) {
+            console.log(error);
+          }
 
           clearCartInfo && clearCartInfo();
           // setOrderInfo({
@@ -809,7 +814,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     return (
       <>
         <Text style={styles.textStyle1}>
-          {'Dear <customer name>,\n\nSUPERB!\n\nYour order request is in process\n'}
+          {`Dear ${g(currentPatient, 'firstName') ||
+            ''},\n\nSUPERB!\n\nYour order request is in process\n`}
         </Text>
         <Text style={styles.textStyle2}>
           {'Just one more step. New Regulation in your region requires your email id.\n'}
