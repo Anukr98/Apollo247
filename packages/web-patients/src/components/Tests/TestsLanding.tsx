@@ -25,6 +25,13 @@ import { OrderPlacedTest } from 'components/Tests/Cart/OrderPlacedTest';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MascotWithMessage } from 'components/MascotWithMessage';
 import { Alerts } from 'components/Alerts/Alerts';
+import { useLocationDetails } from 'components/LocationProvider';
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+} from 'graphql/types/getDiagnosticsCites';
+import { GET_DIAGNOSTICS_CITES } from 'graphql/profiles';
+import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from 'graphql/types/getDiagnosticsCites';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -294,6 +301,25 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 20,
       },
     },
+    bottomActions: {
+      paddingTop: 15,
+      paddingBottom: 15,
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      display: 'flex',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        fontWeight: 'bold',
+        color: '#fc9916',
+        padding: 0,
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
+      },
+    },
+    trackBtn: {
+      marginLeft: 'auto',
+    },
     mascotIcon: {
       position: 'absolute',
       right: 12,
@@ -309,11 +335,14 @@ type Patient = GetCurrentPatients_getCurrentPatients_patients;
 export const TestsLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
+  const { state, city, setCityId, setStateId, stateId, cityId } = useLocationDetails();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const client = useApolloClient();
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
+
+  const [isPopoverOpenTests, setIsPopoverOpenTests] = useState<boolean>(false);
 
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
@@ -328,6 +357,11 @@ export const TestsLanding: React.FC = (props) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [diagnosisDataError, setDiagnosisDataError] = useState<boolean>(false);
+
+  const [locationData, setLocationData] = useState<
+    (getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities | null)[] | null
+  >(null);
+
   const urlParams = new URLSearchParams(window.location.search);
 
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
@@ -365,6 +399,44 @@ export const TestsLanding: React.FC = (props) => {
         });
     }
   }, [diagnosisHotSellerData, diagnosticOrgansData]);
+
+  useEffect(() => {
+    client
+      .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+        query: GET_DIAGNOSTICS_CITES,
+        variables: {
+          cityName: city || '',
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+      })
+      .then(({ data }) => {
+        if (data && data.getDiagnosticsCites && data.getDiagnosticsCites.diagnosticsCities) {
+          const citiesList = data.getDiagnosticsCites.diagnosticsCities;
+          const requredCityDetails =
+            city &&
+            citiesList.length > 0 &&
+            citiesList.find((cityData) => cityData && cityData.cityname === city);
+          setLocationData(citiesList);
+          if (requredCityDetails) {
+            setCityId(requredCityDetails.cityid);
+            setStateId(requredCityDetails.stateid);
+          }
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  });
+  useEffect(() => {
+    if (
+      city &&
+      locationData &&
+      locationData.length > 0 &&
+      !locationData.find((cityData) => cityData && cityData!.cityname === city)
+    ) {
+      setIsPopoverOpenTests(true);
+    }
+  }, [locationData, city]);
 
   return (
     <div className={classes.root}>
@@ -531,6 +603,48 @@ export const TestsLanding: React.FC = (props) => {
             window.location.reload(true);
           }}
         />
+      </Popover>
+      <Popover
+        open={isPopoverOpenTests}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <Typography variant="h2">{`Hi ${currentPatient &&
+                currentPatient.firstName},`}</Typography>
+              <p>
+                {`Our diagnostic services are only available in Chennai and Hyderabad
+                 for now. Kindly change location to Chennai or Hyderabad.`}
+              </p>
+              <div className={classes.bottomActions}>
+                <AphButton
+                  className={classes.trackBtn}
+                  onClick={() => {
+                    setIsPopoverOpenTests(false);
+                    if (document.getElementById('locationId')) {
+                      document.getElementById('locationId')!.click();
+                    }
+                  }}
+                >
+                  Ok, Got it
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
       </Popover>
       <Alerts
         setAlertMessage={setAlertMessage}

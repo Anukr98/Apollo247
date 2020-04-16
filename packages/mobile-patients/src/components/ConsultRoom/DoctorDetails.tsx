@@ -46,7 +46,7 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
@@ -875,6 +875,29 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);
   };
 
+  const moveBack = () => {
+    try {
+      const MoveDoctor = props.navigation.getParam('movedFrom') || '';
+
+      console.log('MoveDoctor', MoveDoctor);
+      if (MoveDoctor === 'registration') {
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
+      } else {
+        props.navigation.goBack();
+      }
+    } catch (error) {}
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -997,14 +1020,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         //     <ShareGreen />
         //   </TouchableOpacity>
         // }
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => moveBack()}
       />
       {showSpinner && <Spinner />}
       {showOfflinePopup && (
         <NoInterNetPopup
           onClickClose={() => {
             setshowOfflinePopup(false);
-            props.navigation.goBack();
+            moveBack();
           }}
         />
       )}

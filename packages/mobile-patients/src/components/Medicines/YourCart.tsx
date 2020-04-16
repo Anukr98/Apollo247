@@ -3,6 +3,7 @@ import {
   formatAddress,
   handleGraphQlError,
   postWebEngageEvent,
+  g,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
@@ -1004,6 +1005,19 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setisEPrescriptionUploadComplete(true);
   };
 
+  const forwardToCheckout = () => {
+    const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
+    const zipcode = g(selectedAddress, 'zipcode');
+    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
+      (addr) => addr == Number(zipcode)
+    );
+    if (isChennaiAddress) {
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime, isChennaiOrder: true });
+    } else {
+      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+    }
+  };
+
   const onFinishUpload = () => {
     console.log(
       physicalPrescriptions,
@@ -1020,7 +1034,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+      forwardToCheckout();
     } else if (
       physicalPrescriptions.length == 0 &&
       ePrescriptions.length > 0 &&
@@ -1028,7 +1042,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ) {
       setLoading!(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+      forwardToCheckout();
     } else if (
       physicalPrescriptions.length > 0 &&
       ePrescriptions.length > 0 &&
@@ -1038,7 +1052,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setLoading!(false);
       setisPhysicalUploadComplete(false);
       setisEPrescriptionUploadComplete(false);
-      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+      forwardToCheckout();
     }
   };
 
@@ -1063,7 +1077,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     postwebEngageProceedToPayEvent();
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene, { deliveryTime });
+      forwardToCheckout();
     } else {
       if (prescriptions.length > 0) {
         physicalPrescriptionUpload();

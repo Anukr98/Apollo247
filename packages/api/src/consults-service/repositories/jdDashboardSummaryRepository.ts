@@ -10,7 +10,7 @@ import {
 import { DoctorType } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addDays, differenceInMinutes } from 'date-fns';
+import { format, addDays, differenceInMinutes, differenceInSeconds } from 'date-fns';
 
 type CasesheetPrepTime = {
   totalduration: number;
@@ -104,36 +104,48 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     const promises: object[] = [];
     async function getCasesheetTime(appt: ConsultQueueItem) {
       return new Promise<number>(async (resolve) => {
-        //console.log(appt, 'came here inside the appt');
+        console.log(appt, 'came here inside the appt');
         const caseSheetDets = await CaseSheet.findOne({
           where: { appointment: appt.appointmentId, doctorType: DoctorType.JUNIOR },
         });
-        //console.log(caseSheetDets, 'case sheet detsila');
         if (caseSheetDets) {
-          const diffMins = Math.abs(
-            differenceInMinutes(caseSheetDets.createdDate, appt.createdDate)
-          );
+          const diffMins =
+            Math.abs(differenceInSeconds(caseSheetDets.createdDate, appt.createdDate)) / 60;
+          console.log('dates ', caseSheetDets.createdDate, appt.createdDate);
           totalMins += diffMins;
-          //console.log(totalMins, 'total mins');
+          console.log(totalMins, 'total mins');
         } else {
           totalMins += 0;
         }
         resolve(totalMins);
       });
     }
-    //console.log(apptIds, apptIds.length);
+    console.log(apptIds, apptIds.length);
     if (apptIds.length > 0) {
       apptIds.forEach(async (appt) => {
         promises.push(getCasesheetTime(appt));
       });
     }
     await Promise.all(promises);
-    //console.log(apptIds.length, totalMins, 'wait time percasesheet');
+    console.log(apptIds.length, totalMins, 'wait time percasesheet');
     if (totalMins == 0 && apptIds.length == 0) {
       return 0;
     } else {
+      console.log('finalresult=>', totalMins / apptIds.length);
       return totalMins / apptIds.length;
     }
+  }
+
+  async getTotalConsultsInQueue(selDate: Date, doctorId: string) {
+    const newStartDate = new Date(format(addDays(selDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(selDate, 'yyyy-MM-dd') + 'T18:30');
+    return ConsultQueueItem.createQueryBuilder('consult_queue_item')
+      .where('consult_queue_item.doctorId = :docId', { docId: doctorId })
+      .andWhere('consult_queue_item.createdDate Between :fromDate AND :toDate', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .getCount();
   }
 
   async timePerChat(selDate: Date, doctorId: string) {
@@ -149,16 +161,18 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         toDate: newEndDate,
       })
       .andWhere('case_sheet."createdDoctorId" = :docId', { docId: doctorId })
+      .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
     //console.log(casesheetRows, 'timeperchat casesheet rows');
     if (casesheetRows.length > 0) {
       const duration = parseFloat((casesheetRows[0].totalduration / 60).toFixed(2));
       //console.log(duration, 'duration in imin', casesheetRows[0].appointmentidcount);
-      if (duration && duration > 0) {
-        return parseFloat((duration / casesheetRows[0].appointmentidcount).toFixed(2));
-      } else {
-        return 0;
-      }
+      // if (duration && duration > 0) {
+      //   return parseFloat((duration / casesheetRows[0].appointmentidcount).toFixed(2));
+      // } else {
+      //   return 0;
+      // }
+      return duration;
     } else {
       return 0;
     }

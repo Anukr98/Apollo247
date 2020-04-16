@@ -191,7 +191,7 @@ export const JuniorDoctor: React.FC = (props) => {
       .reverse();
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
-        <div className={classes.customScroll}>
+        <div className={classes.customScroll} onContextMenu={(e) => e.preventDefault()}>
           <div className={classes.boxGroup}>
             {activeConsults.map(({ id, patient, appointment, isActive }, index) => {
               isActiveConsultsAvailable = true;
@@ -217,7 +217,7 @@ export const JuniorDoctor: React.FC = (props) => {
         </div>
       </Scrollbars>,
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
-        <div className={classes.customScroll}>
+        <div className={classes.customScroll} onContextMenu={(e) => e.preventDefault()}>
           <div className={classes.boxGroup}>
             {pastConsults.map(({ id, patient, appointment, isActive }) => {
               isPastConsultsAvailable = true;

@@ -874,6 +874,10 @@ export const InitiateAppsFlyer = () => {
   console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch) == true) {
+      console.log('res.data', res.data);
+      console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
+      AsyncStorage.setItem('deeplink', decodeURIComponent(res.data.af_dp));
+
       if (res.data.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
         const campaign = res.data.campaign;
@@ -909,7 +913,10 @@ export const InitiateAppsFlyer = () => {
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution((res) => {
-    console.log(res);
+    console.log('onAppOpenAttribution', res);
+    console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
+
+    AsyncStorage.setItem('deeplink', decodeURIComponent(res.data.af_dp));
   });
 };
 

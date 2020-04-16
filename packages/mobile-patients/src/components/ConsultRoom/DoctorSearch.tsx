@@ -57,7 +57,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonLogEvent,
@@ -137,7 +142,10 @@ const styles = StyleSheet.create({
 let timeout: NodeJS.Timeout;
 
 // let doctorIds: (string | undefined)[] = [];
-export interface DoctorSearchProps extends NavigationScreenProps {}
+export interface DoctorSearchProps
+  extends NavigationScreenProps<{
+    movedFrom?: string;
+  }> {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   // const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
@@ -519,14 +527,29 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   }, [searchText]);
 
   const backDataFunctionality = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    // const movedata = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
-    // if (movedata == 'MoveDoctor') {
-    //   props.navigation.push(AppRoutes.SymptomChecker);
-    // } else {
-    CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
-    props.navigation.goBack();
-    // }
+    try {
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+      const MoveDoctor = props.navigation.getParam('movedFrom') || '';
+
+      console.log('MoveDoctor', MoveDoctor);
+      if (MoveDoctor === 'registration') {
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
+      } else {
+        CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
+        props.navigation.goBack();
+      }
+    } catch (error) {}
+
     return false;
   };
   const renderSearch = () => {

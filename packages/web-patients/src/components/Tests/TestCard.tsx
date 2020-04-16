@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
@@ -8,6 +8,7 @@ import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/s
 import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
 import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
 import stripHtml from 'string-strip-html';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -135,19 +136,65 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+type TestDetails = {
+  TestName: string;
+  SampleRemarks: string;
+  SampleTypeName: string;
+  TestParameters: string;
+};
+
 export interface TestListCardProps {
   testData:
     | searchDiagnostics_searchDiagnostics_diagnostics
     | getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics
     | null;
-  mou: number;
+  mou: number | null;
 }
 
 export const TestCard: React.FC<TestListCardProps> = (props) => {
   const classes = useStyles({});
   const { testData, mou } = props;
   const { addCartItem, removeCartItem, diagnosticsCartItems } = useDiagnosticsCart();
+  const [loading, setLoading] = useState(false);
+  const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
 
+  const apiDetails = {
+    url: process.env.GET_PACKAGE_DATA,
+  };
+
+  const TestApiCredentials = {
+    UserName: process.env.TEST_DETAILS_PACKAGE_USERNAME,
+    Password: process.env.TEST_DETAILS_PACKAGE_PASSWORD,
+    InterfaceClient: process.env.TEST_DETAILS_PACKAGE_INTERFACE_CLIENT,
+  };
+  useEffect(() => {
+    if (!testDetailsPackage) {
+      getPackageDetails();
+    }
+  }, [testDetailsPackage]);
+
+  const getPackageDetails = async () => {
+    setLoading(true);
+    axios
+      .post(apiDetails.url || '', {
+        ...TestApiCredentials,
+        ItemID: testData && testData.itemId,
+      })
+      .then((data: any) => {
+        if (data && data.data && data.data.data && data.data.data) {
+          const details = data.data.data;
+          if (details && details.length > 0) {
+            setTestDetailsPackage(details);
+          } else {
+            setTestDetailsPackage([]);
+          }
+          setLoading(false);
+        }
+      })
+      .catch((e: any) => {
+        setLoading(false);
+      });
+  };
   const itemIndexInCart = (
     item:
       | searchDiagnostics_searchDiagnostics_diagnostics
@@ -155,7 +202,10 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
   ) => {
     return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
   };
-
+  const testcount =
+    testDetailsPackage && testDetailsPackage.length
+      ? testDetailsPackage && testDetailsPackage.length
+      : 0;
   return (
     <div className={classes.root}>
       {testData && (
@@ -176,7 +226,15 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
                   <img src={require('images/ic_tests_icon.svg')} alt="" />
                 </div>
                 <div className={classes.medicineName}>
-                  {testData.itemName} <div className={classes.tabInfo}>Rs. {testData.rate}</div>
+                  {testData.itemName}
+                  {itemIndexInCart(testData) >= 0 ? (
+                    <div className={classes.tabInfo}>
+                      Includes {testDetailsPackage ? testcount : mou} tests
+                    </div>
+                  ) : (
+                    ''
+                  )}
+                  <div className={classes.tabInfo}>Rs.{testData.rate}</div>
                 </div>
               </div>
             </Link>
@@ -188,18 +246,19 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
                       src={require('images/ic_plus.svg')}
                       alt="Add Item"
                       title="Add item to Cart"
-                      onClick={() =>
+                      onClick={() => {
+                        getPackageDetails();
                         addCartItem &&
-                        addCartItem({
-                          itemId: `${testData.itemId}`,
-                          id: testData.id,
-                          mou,
-                          name: stripHtml(testData.itemName),
-                          price: testData.rate,
-                          thumbnail: '',
-                          collectionMethod: testData.collectionType!,
-                        })
-                      }
+                          addCartItem({
+                            itemId: `${testData.itemId}`,
+                            id: testData.id,
+                            mou: testDetailsPackage ? testcount : mou,
+                            name: stripHtml(testData.itemName),
+                            price: testData.rate,
+                            thumbnail: '',
+                            collectionMethod: testData.collectionType!,
+                          });
+                      }}
                     />
                   </AphButton>
                 ) : (

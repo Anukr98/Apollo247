@@ -1,15 +1,20 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    root: {},
+    root: {
+      [theme.breakpoints.down(900)]: {
+        marginBottom: -60,
+      },
+    },
     partnerWrapper: {
       backgroundColor: '#fff',
-      padding: '8px 20px 20px 20px',
+      padding: '8px 0 0 20px',
       marginTop: -93,
       [theme.breakpoints.down('xs')]: {
         marginTop: -80,
@@ -27,17 +32,28 @@ const useStyles = makeStyles((theme: Theme) => {
     imagesWrapper: {
       display: 'flex',
       marginTop: 15,
+      alignItems: 'center',
       '& img': {
         maxHeight: 40,
         marginRight: 20,
       },
     },
+    appLogo: {
+      maxHeight: '45px !important',
+    },
     partnerContent: {
       display: 'flex',
-      alignItems: 'center',
-      '& img': {
-        maxHeight: 40,
-      },
+    },
+    bannerDiv: {
+      minHeight: 186,
+      minWidth: 170,
+      marginLeft: 'auto',
+      position: 'relative',
+    },
+    bannerDivImg: {
+      position: 'absolute',
+      right: 0,
+      bottom: -5,
     },
     partnerText: {
       fontWeight: 600,
@@ -45,7 +61,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 20,
       marginTop: 17,
       marginBottom: 24,
-      maxWidth: '55%',
     },
     getStartedBtn: {
       padding: '9px 13px',
@@ -137,20 +152,38 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const SbiLandingPage: React.FC = (props) => {
   const classes = useStyles({});
+  // const utmSource = 'sbi';
+  // const utmMedium = 'banner';
+  // const utmCampaign = 'apollo247_econsults';
+  // const utmContent = '';
+  // const urlParams = `?utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}&utm_content=${utmContent}&tp_ref_code=${tpRefCode}`;
+  const tpRefCode = 'SBIYONO';
+  const urlParams = `?tp_ref_code=${tpRefCode}`;
+  const homePageUrl = clientRoutes.welcome();
+  const { currentPatient } = useAllCurrentPatients();
 
   return (
     <div className={classes.root}>
       <div className={classes.partnerWrapper}>
         <div className={classes.imagesWrapper}>
-          <img src={require('images/ic_logo.png')} />
-          <img src={require('images/sbi_logo.png')} />
+          <img className={classes.appLogo} src={require('images/ic_logo.png')} />
+          <img src={require('images/sbi_yono_logo.png')} />
         </div>
         <div className={classes.partnerContent}>
           <div>
             <div className={classes.partnerText}>An entire hospital now on your phone</div>
-            <Link to={clientRoutes.welcome()} className={classes.getStartedBtn} color="primary">
+            <Link
+              to={currentPatient && currentPatient.id ? homePageUrl : `${homePageUrl}${urlParams}`}
+              className={classes.getStartedBtn}
+              color="primary"
+            >
               Get Started
             </Link>
+          </div>
+          <div className={classes.bannerDiv}>
+            <div className={classes.bannerDivImg}>
+              <img src={require('images/holding-phone-mockup.png')} />
+            </div>
           </div>
         </div>
       </div>
@@ -160,7 +193,7 @@ export const SbiLandingPage: React.FC = (props) => {
             <div className={classes.cardsHeader}>Bank on us with your health.</div>
             <div className={classes.cardsBody}>
               Use coupon code <span className={classes.code}>‘SBI247’</span> for{' '}
-              <span className={classes.discountPrice}>Rs.500</span> off on your doctor consultation
+              <span className={classes.discountPrice}>Rs.247</span> off on your doctor consultation
             </div>
           </div>
           <div className={classes.healthImage}>
@@ -171,8 +204,8 @@ export const SbiLandingPage: React.FC = (props) => {
           <div className={classes.cardsImage}>
             <img src={require('images/ic_anytime.svg')} />
           </div>
-          <div className={classes.anytimeCardContent}>
-            <div className={classes.cardsHeader}>Anytime, anywhere</div>
+          <div>
+            <div className={classes.cardsHeader}>Consult Apollo Doctors</div>
             <div className={classes.cardsBody}>
               Round-the-clock consultations with Apollo Doctors over chat, audio, video
             </div>
@@ -181,18 +214,16 @@ export const SbiLandingPage: React.FC = (props) => {
         <div className={classes.cards}>
           <img src={require('images/ic_bike.svg')} />
           <div>
-            <div className={classes.cardsHeader}>At your doorstep</div>
-            <div className={classes.cardsBody}>
-              Order medicines, tests and health checkups from the comfort of your home
-            </div>
+            <div className={classes.cardsHeader}>Pharmacy at your doorstep</div>
+            <div className={classes.cardsBody}>Order medicines from the comfort of your home</div>
           </div>
         </div>
         <div className={classes.cards}>
           <div className={classes.healthCardImage}>
             <img src={require('images/ic_health_records.svg')} />
           </div>
-          <div className={classes.healthCardContent}>
-            <div className={classes.cardsHeader}>Health Records </div>
+          <div>
+            <div className={classes.cardsHeader}>Medical records vault</div>
             <div className={classes.cardsBody}>
               Keep all your medical records safe and accessible in our digital vault
             </div>

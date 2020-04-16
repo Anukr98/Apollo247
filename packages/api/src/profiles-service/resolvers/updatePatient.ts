@@ -7,13 +7,10 @@ import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import {
-  sendPatientRegistrationNotification,
-  sendNotificationSMS,
-} from 'notifications-service/resolvers/notifications';
+import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { trim } from 'lodash';
 import { isValidReferralCode } from '@aph/universal/dist/aphValidators';
-import { RegistrationCodesRepository } from 'profiles-service/repositories/registrationCodesRepository';
+
 import {
   ReferralCodesMasterRepository,
   ReferalCouponMappingRepository,
@@ -33,6 +30,7 @@ export const updatePatientTypeDefs = gql`
     referralCode: String
     relation: Relation
     photoUrl: String
+    deviceCode: String
   }
 
   input UpdatePatientAllergiesInput {
@@ -102,18 +100,18 @@ const updatePatient: Resolver<
     }
   }
 
-  let regCode = '';
-  const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
-  const getCode = await regCodeRepo.updateCodeStatus('', patient);
-  if (getCode) {
-    regCode = getCode[0].registrationCode;
-  }
+  // let regCode = '';
+  // const regCodeRepo = profilesDb.getCustomRepository(RegistrationCodesRepository);
+  // const getCode = await regCodeRepo.updateCodeStatus('', patient);
+  // if (getCode) {
+  //   regCode = getCode[0].registrationCode;
+  // }
 
   const getPatientList = await patientRepo.findByMobileNumber(updatePatient.mobileNumber);
   console.log(getPatientList, 'getPatientList for count');
   if (updatePatient.relation == Relation.ME || getPatientList.length == 1) {
     //send registration success notification here
-    sendPatientRegistrationNotification(updatePatient, profilesDb, regCode);
+    // sendPatientRegistrationNotification(updatePatient, profilesDb, regCode);
     if (updateAttrs.referralCode) {
       const referralCodesMasterRepo = await profilesDb.getCustomRepository(
         ReferralCodesMasterRepository

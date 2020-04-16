@@ -19,8 +19,9 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
-import _ from 'lodash';
+
 import { DoctorType } from 'doctors-service/entities';
+import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -136,7 +137,13 @@ const makeAppointmentPayment: Resolver<
     }
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
-    sendPatientAcknowledgements(processingAppointment, consultsDb, doctorsDb, patientsDb);
+    sendPatientAcknowledgements(
+      processingAppointment,
+      consultsDb,
+      doctorsDb,
+      patientsDb,
+      paymentInput
+    );
 
     //update appointment status
     //apptsRepo.updateAppointmentStatusUsingOrderId(paymentInput.orderId, STATUS.PENDING, false);
@@ -150,7 +157,8 @@ const sendPatientAcknowledgements = async (
   appointmentData: Appointment,
   consultsDb: Connection,
   doctorsDb: Connection,
-  patientsDb: Connection
+  patientsDb: Connection,
+  paymentInput: AppointmentPaymentInput
 ) => {
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
   const docDetails = await doctor.findById(appointmentData.doctorId);
@@ -197,8 +205,7 @@ const sendPatientAcknowledgements = async (
   let displayHospitalCity;
   const apptDate = format(istDateTime, 'dd/MM/yyyy');
   const apptTime = format(istDateTime, 'hh:mm');
-  const getHours = istDateTime.getHours();
-  const getMinutes = istDateTime.getMinutes();
+
   let subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', hospitalCity);
   if (docDetails.doctorType == DoctorType.PAYROLL) {
     if (hospitalCity) {
@@ -216,36 +223,20 @@ const sendPatientAcknowledgements = async (
     displayHospitalCity = hospitalCity;
   }
 
-  const mailTemplate = _.template(`
-  <html>
-  <body>  
-  <ol>
-  <p>New Appointment has been booked on Apollo 247 app with the following details </p>
-  <ul>
-  <li>Appointment No : <%- displayId %></li>
-  <li>Patient Name : <%- firstName %></li>
-  <li>Mobile Number : <%- mobileNumber %></li>
-  <li>Doctor Name : <%- docfirstName +' '+ doclastName %></li>
-  <li>Doctor Location : <%- hospitalcity %></li>
-  <li>Appointment Date : <%- apptDate %></li>
-  <li>Appointment Slot : <%- getHours +':'+ getMinutes %></li>
-  <li>Mode of Consult : <%- appointmentType %> </li>
-  </ul>
-  </ol>
-  </body>
-  </html>
-  `);
-  const mailContent = mailTemplate({
+  const apptTimeFormat = format(istDateTime, 'hh:mm aa');
+  const mailContent = appointmentPaymentEmailTemplate({
     displayId: appointmentData.displayId.toString(),
     firstName: patientDetails.firstName,
     mobileNumber: patientDetails.mobileNumber,
+    uhid: patientDetails.uhid,
+    amountPaid: paymentInput.amountPaid,
+    emailId: patientDetails.emailAddress,
     docfirstName: docDetails.firstName,
     doclastName: docDetails.lastName,
     hospitalcity: displayHospitalCity,
     appointmentType: appointmentData.appointmentType,
     apptDate,
-    getHours,
-    getMinutes,
+    apptTimeFormat,
   });
 
   subjectLine = subjectLine.replace('{1}', apptDate);

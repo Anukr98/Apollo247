@@ -26,6 +26,8 @@ const PORT = process.env.PORT || 7000;
 
 const { initPayment } = require('./paytm/services/index');
 
+const cronTabs = require('./cronTabs');
+
 app.use(cors());
 
 app.use(bodyParser.json());
@@ -42,217 +44,24 @@ app.get(
   })
 );
 
-app.get('/invokeNoShowReminder', (req, res) => {
-  const requestJSON = {
-    query: 'query { noShowReminderNotification {status apptsListCount noCaseSheetCount}}',
-  };
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      console.log(
-        response.data.data.noShowReminderNotification.noCaseSheetCount,
-        'notifications response is....'
-      );
-      const fileName =
-        process.env.PHARMA_LOGS_PATH +
-        new Date().getFullYear() +
-        '-' +
-        (new Date().getMonth() + 1) +
-        '-' +
-        new Date().getDate() +
-        '-apptNotifications.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        response.data.data.noShowReminderNotification.noCaseSheetCount +
-        ' - ' +
-        response.data.data.noShowReminderNotification.apptsListCount;
-      ('\n-------------------\n');
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-});
-
-app.get('/invokeApptReminder', (req, res) => {
-  console.log(req.query.inNextMin, 'inn ext mins');
-  const requestJSON = {
-    query:
-      'query { sendApptReminderNotification(inNextMin:' +
-      req.query.inNextMin +
-      '){status apptsListCount }}',
-  };
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      console.log(
-        response.data.data.sendApptReminderNotification.apptsListCount,
-        'notifications response is....'
-      );
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        response.data.data.sendApptReminderNotification.apptsListCount +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-});
-
-app.get('/invokeFollowUpNotification', (req, res) => {
-  const requestJSON = {
-    query: 'query { sendFollowUpNotification }',
-  };
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      console.log(response.data.data.sendFollowUpNotification, 'notifications response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-followUpNotifications.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        response.data.data.sendFollowUpNotification +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-});
-
-app.get('/invokeDailyAppointmentSummary', (req, res) => {
-  const requestJSON = {
-    query: 'query { sendDailyAppointmentSummary }',
-  };
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      console.log(response.data.data.sendDailyAppointmentSummary, 'notifications response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dailyAppointmentSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        response.data.data.sendDailyAppointmentSummary +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-});
-
-app.get('/invokePhysicalApptReminder', (req, res) => {
-  const requestJSON = {
-    query:
-      'query { sendPhysicalApptReminderNotification(inNextMin:' +
-      req.query.inNextMin +
-      ' ){status apptsListCount }}',
-  };
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      console.log(response);
-      console.log(
-        response.data.data.sendPhysicalApptReminderNotification.apptsListCount,
-        'notifications response is....'
-      );
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptNotifications.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-});
-
+app.get('/invokeAutoSubmitJDCasesheet', cronTabs.autoSubmitJDCasesheet);
+app.get('/invokeNoShowReminder', cronTabs.noShowReminder);
+app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
+app.get('/invokeApptReminder', cronTabs.ApptReminder);
+app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
+app.get('/invokePhysicalApptReminder', cronTabs.PhysicalApptReminder);
+app.get('/updateSdSummary', cronTabs.updateSdSummary);
+app.get('/updateJdSummary', cronTabs.updateJdSummary);
+app.get('/updateDoctorFeeSummary', cronTabs.updateDoctorFeeSummary);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
-  const updateDoctorFeeSummaryRequestJSON = {
-    query: `mutation{
-      updateDoctorFeeSummary(summaryDate:"${currentDate}",doctorId:"0"){
-        status
-      }
-    }`,
-  };
-  const updateSdSummaryRequestJSON = {
-    query: `mutation{
-      updateSdSummary(summaryDate:"${currentDate}",doctorId:"0"){
-        doctorId
-        doctorName
-        appointmentDateTime
-        totalConsultation
-      }
-    }`,
-  };
-  const updateJdSummaryRequestJSON = {
-    query: `mutation{
-      updateJdSummary(summaryDate:"${currentDate}",doctorId:"0"){
-        doctorId
-        doctorName
-        appointmentDateTime
-        totalConsultation
-      }
-    }`,
-  };
   const updatePhrDocSummaryRequestJSON = {
     query: `mutation{
-      updatePhrDocSummary(summaryDate:"${currentDate}"){
-        apptDocCount
-        medDocCount
-      }
-    }`,
+        updatePhrDocSummary(summaryDate:"${currentDate}"){
+          apptDocCount
+          medDocCount
+        }
+      }`,
   };
   const getAvailableDoctorsCountRequestJSON = {
     query: `{
@@ -274,78 +83,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
       }
     }`,
   };
-
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-
-  //updateDoctorFeeSummary api call
-  axios
-    .post(process.env.API_URL, updateDoctorFeeSummaryRequestJSON)
-    .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateDoctorFeeSummary, 'Summary response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        '\nupdateDoctorFeeSummary Response\n' +
-        response.data.data.updateDoctorFeeSummary +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-
-  //updateSdSummary api call
-  axios
-    .post(process.env.API_URL, updateSdSummaryRequestJSON)
-    .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateSdSummary, 'Summary response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        '\nupdateSdSummary Response\n' +
-        response.data.data.updateSdSummary +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-
-  //updateJdSummary api call
-  axios
-    .post(process.env.API_URL, updateJdSummaryRequestJSON)
-    .then((response) => {
-      console.log(response);
-      console.log(response.data.data.updateJdSummary, 'Summary response is....');
-      const fileName =
-        process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-dashboardSummary.txt';
-      let content =
-        new Date().toString() +
-        '\n---------------------------\n' +
-        '\nupdateJdSummary Response\n' +
-        response.data.data.updateJdSummary +
-        '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
-
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   //updatePhrDocSummary api call
   axios
     .post(process.env.API_URL, updatePhrDocSummaryRequestJSON)
@@ -360,7 +98,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         response.data.data.updatePhrDocSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -387,7 +125,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         response.data.data.getAvailableDoctorsCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -414,7 +152,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         response.data.data.updateConsultRating +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -427,7 +165,6 @@ app.get('/invokeDashboardSummaries', (req, res) => {
       console.log('error', error);
     });
 });
-
 app.get('/getCmToken', (req, res) => {
   axios.defaults.headers.common['authorization'] =
     'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
@@ -497,7 +234,7 @@ app.get('/consulttransaction', (req, res) => {
     '\n' +
     requestJSON +
     '\n-------------------\n';
-  fs.appendFile(fileName, content, function(err) {
+  fs.appendFile(fileName, content, function (err) {
     if (err) throw err;
     console.log('Updated!');
   });
@@ -506,7 +243,7 @@ app.get('/consulttransaction', (req, res) => {
     .then((response) => {
       let content = new Date().toString() + '\n---------------------------\nupdate response:';
       response.data.data.makeAppointmentPayment.appointment.id + '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -963,10 +700,7 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto
-            .createHash('sha512')
-            .update(code)
-            .digest('hex');
+          const hash = crypto.createHash('sha512').update(code).digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -1396,7 +1130,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -1411,7 +1145,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1788,7 +1522,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1803,7 +1537,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

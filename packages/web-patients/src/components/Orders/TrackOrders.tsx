@@ -12,6 +12,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
 import { GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails } from 'graphql/types/GetMedicineOrderDetails';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -223,6 +224,26 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     }
   }
 
+  const orderPayment =
+    orderDetailsData &&
+    orderDetailsData.medicineOrderPayments &&
+    orderDetailsData.medicineOrderPayments.length > 0 &&
+    orderDetailsData.medicineOrderPayments[0];
+
+  let isDisableCancel = false;
+  if (
+    orderDetailsData &&
+    orderDetailsData.medicineOrderPayments &&
+    orderDetailsData.medicineOrderPayments.length > 0
+  ) {
+    if (
+      (orderPayment && orderPayment.paymentType === 'COD') ||
+      (orderPayment && orderPayment.paymentType === 'CASHLESS')
+    ) {
+      isDisableCancel = true;
+    }
+  }
+
   return (
     <div className={classes.root}>
       <div className={classes.sectionHeader}>
@@ -239,12 +260,17 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         </div>
         {props.orderAutoId !== 0 && props.orderAutoId > 0 && (
           <>
-            <div className={classes.orderId}>
-              <span>ORDER #{props.orderAutoId}</span>
-            </div>
+            {(orderPayment && orderPayment.paymentType === 'COD') ||
+            (orderPayment && orderPayment.paymentType === 'CASHLESS') ? (
+              <div className={classes.orderId}>
+                <span>ORDER #{props.orderAutoId}</span>
+              </div>
+            ) : (
+              ''
+            )}
             <div className={classes.headerActions}>
               <AphButton
-                disabled={!props.orderAutoId || isDisable}
+                disabled={!props.orderAutoId || isDisable || !isDisableCancel}
                 onClick={handleClick}
                 className={classes.moreBtn}
               >

@@ -632,7 +632,7 @@ let transferObject: any = {
 };
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
-
+let countdowntimer: any;
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const params = useParams<JDConsultRoomParams>();
@@ -659,8 +659,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
-  const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
+  // const startConsultDisableReason =
+  //   appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE'
+  //     ? 'This appointment is under reschedule and waiting for the patient to accept the new slot.'
+  //     : '';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -681,7 +685,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
-  const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
+  //const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
   const [disableOnCancel, setDisableOnCancel] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = useState<boolean>(false);
@@ -896,53 +900,73 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     }, 1000);
   };
-  const startConstultCheck = () => {
+  const checkTimeRemainToConsult = () => {
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
-    const disableyear = disableconsult.getFullYear();
-    const disablemonth = disableconsult.getMonth() + 1;
-    const disableday = disableconsult.getDate();
-    let disablehour = disableconsult.getHours();
-    let disableminute = disableconsult.getMinutes() + 15;
-    const minusTime = new Date(disableconsult.getTime() - 15 * 60000);
-    const disablesecond = disableconsult.getSeconds();
-    if (disableminute > 59) {
-      const disablediff = disableminute - 60;
-      disablehour = disablehour + 1;
-      if (disablehour === 24) {
-        disablehour = 0;
+    if (disablecurrent.toISOString().slice(0, 10) === disableconsult.toISOString().slice(0, 10)) {
+      const diff =
+        moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
+      if (disablecurrent >= disableconsult) {
+        setRemainingConsultStartTime(0);
+      } else if (diff <= 0) {
+        setRemainingConsultStartTime(0);
+      } else {
+        setRemainingConsultStartTime(diff);
       }
-      disableminute = disablediff;
-    }
-    const disableaddedMinutes =
-      disableyear +
-      '-' +
-      disablemonth +
-      '-' +
-      disableday +
-      ' ' +
-      disablehour +
-      ':' +
-      disableminute +
-      ':' +
-      disablesecond;
-    const disableaddedTime = new Date(disableaddedMinutes);
-    if (
-      disablecurrent >= minusTime &&
-      disableaddedTime >= disablecurrent &&
-      localStorage.getItem('loggedInMobileNumber') !== currentPatient!.delegateNumber
-    ) {
-      setStartAppointmentButton(false);
-    } else {
-      setStartAppointmentButton(true);
-    }
-    if (appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE') {
-      setStartConsultDisableReason(
-        'This appointment is under reschedule and waiting for the patient to accept the new slot.'
-      );
     }
   };
-  setInterval(startConstultCheck, 1000);
+
+  // const startConstultCheck = () => {
+  //   const disablecurrent = new Date();
+  //   const disableconsult = new Date(props.appointmentDateTime);
+  //   const disableyear = disableconsult.getFullYear();
+  //   const disablemonth = disableconsult.getMonth() + 1;
+  //   const disableday = disableconsult.getDate();
+  //   let disablehour = disableconsult.getHours();
+  //   let disableminute = disableconsult.getMinutes() + 15;
+  //   const minusTime = new Date(disableconsult.getTime() - 15 * 60000);
+  //   const disablesecond = disableconsult.getSeconds();
+  //   if (disableminute > 59) {
+  //     const disablediff = disableminute - 60;
+  //     disablehour = disablehour + 1;
+  //     if (disablehour === 24) {
+  //       disablehour = 0;
+  //     }
+  //     disableminute = disablediff;
+  //   }
+  //   const disableaddedMinutes =
+  //     disableyear +
+  //     '-' +
+  //     (disablemonth < 10 ? '0' + disablemonth : disablemonth) +
+  //     '-' +
+  //     (disableday < 10 ? '0' + disableday : disableday) +
+  //     ' ' +
+  //     (disablehour < 10 ? '0' + disablehour : disablehour) +
+  //     ':' +
+  //     (disableminute < 10 ? '0' + disableminute : disableminute) +
+  //     ':' +
+  //     (disablesecond < 10 ? '0' + disablesecond : disablesecond);
+  //   const disableaddedTime = new Date(disableaddedMinutes.replace(/-/g, '/'));
+  //   var diff = (disablecurrent.getTime() - disableconsult.getTime()) / 1000;
+  //   diff /= 60;
+  //   console.log(Math.abs(Math.round(diff)));
+
+  //   console.log(disableconsult, disablecurrent);
+  //   if (
+  //     disablecurrent >= minusTime &&
+  //     disableaddedTime >= disablecurrent &&
+  //     localStorage.getItem('loggedInMobileNumber') !== currentPatient!.delegateNumber
+  //   ) {
+  //     setStartAppointmentButton(false);
+  //   } else {
+  //     setStartAppointmentButton(true);
+  //   }
+  //   if (appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE') {
+  //     setStartConsultDisableReason(
+  //       'This appointment is under reschedule and waiting for the patient to accept the new slot.'
+  //     );
+  //   }
+  // };
   const stopInterval = () => {
     setRemainingTime(900);
     intervalId && clearInterval(intervalId);
@@ -1017,7 +1041,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     if (props.isEnded) {
       onStopConsult();
       setStartAppointment(!startAppointment);
-      setStartAppointmentButton(true);
+      //setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
 
@@ -1042,9 +1066,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = new Pubnub(config);
 
   useEffect(() => {
+    countdowntimer = setInterval(checkTimeRemainToConsult, 1000);
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true,
+      //withPresence: true,
     });
     pubnub.addListener({
       status: (statusEvent) => {},
@@ -1078,6 +1103,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
+      clearInterval(countdowntimer);
     };
   }, []);
 
@@ -1235,9 +1261,14 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>
             Consult Room
-            {startConsultDisableReason !== '' ? (
+            {appointmentInfo!.appointmentState === 'AWAITING_RESCHEDULE1' ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                {startConsultDisableReason}
+                This appointment is under reschedule and waiting for the patient to accept the new
+                slot.
+              </div>
+            ) : remainingConsultStartTime <= 10 && remainingConsultStartTime > -1 ? (
+              <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
+                {remainingConsultStartTime} minute(s) left for Senior Doctor to start the consult.
               </div>
             ) : (
               !props.hasCameraMicPermission && (
@@ -1246,11 +1277,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 </div>
               )
             )}
-            {/* {!props.hasCameraMicPermission && (
-              <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                Note: Please allow access to Camera & Mic.
-              </div>
-            )} */}
           </div>
 
           {/* code commented as requested by the testing team

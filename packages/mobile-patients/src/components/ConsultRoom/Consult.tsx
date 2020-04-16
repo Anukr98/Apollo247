@@ -505,7 +505,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
 
-          var day1 = moment(appointmentDateTime).add(7, 'days');
+          var day1 = moment(appointmentDateTime)
+            .set('hour', 0)
+            .set('minute', 0)
+            .add(7 - 1, 'days'); // since we're calculating as EOD
           var day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
 

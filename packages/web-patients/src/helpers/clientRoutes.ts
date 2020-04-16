@@ -43,6 +43,7 @@ export const clientRoutes = {
   privacy: () => '/privacy',
   FAQ: () => '/faq',
   partnerSBI: () => '/partners/sbi',
+  contactUs: () => '/contact',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

@@ -69,7 +69,7 @@ import {
   ViewStyle,
   Image,
 } from 'react-native';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   WebEngageEvents,
@@ -863,8 +863,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (movedata == 'MoveDoctor') {
       props.navigation.push(AppRoutes.SymptomChecker);
     } else {
-      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Go back clicked');
-      props.navigation.goBack();
+      try {
+        const MoveDoctor = props.navigation.getParam('movedFrom') || '';
+        console.log('MoveDoctor', MoveDoctor);
+        if (MoveDoctor === 'registration') {
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: AppRoutes.ConsultRoom,
+                }),
+              ],
+            })
+          );
+        } else {
+          CommonLogEvent(AppRoutes.DoctorSearchListing, 'Go back clicked');
+          props.navigation.goBack();
+        }
+      } catch (error) {}
     }
     return false;
   };

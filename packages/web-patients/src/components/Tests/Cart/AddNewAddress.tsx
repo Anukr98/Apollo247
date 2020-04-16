@@ -13,6 +13,7 @@ import axios, { AxiosError, Cancel } from 'axios';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import FormHelperText from '@material-ui/core/FormHelperText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,6 +98,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'none',
       borderRadius: 10,
     },
+    helpText: {
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
   };
 });
 
@@ -124,6 +129,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const { setDeliveryAddressId } = useDiagnosticsCart();
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [isPincodevalid, setIsPincodeValid] = useState<boolean>(true);
   const disableSubmit =
     address1.length === 0 || address2.length === 0 || addressType.length <= 0 || pincode.length < 6;
 
@@ -132,6 +138,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
     PATIENT_ADDRESS_TYPE.OFFICE,
     PATIENT_ADDRESS_TYPE.OTHER,
   ];
+  let showError = false;
 
   // Auto-fetching the city and state using Pincode
   // ------------------------------------------------
@@ -142,6 +149,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
         `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${process.env.GOOGLE_API_KEY}`
       )
       .then(({ data }) => {
+        if (data && data.results.length === 0) {
+          setAddress2(' ');
+        }
+        setIsPincodeValid(data && data.results && data.results.length > 0 ? true : false);
         try {
           if (data && data.results[0] && data.results[0].address_components) {
             const addressComponents = data.results[0].address_components || [];
@@ -169,6 +180,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           }
         } catch {
           (e: AxiosError) => console.log(e);
+          showError = true;
         }
       })
       .catch((e: AxiosError) => {
@@ -178,6 +190,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
   const saveAddressMutation = useMutation(SAVE_PATIENT_ADDRESS);
 
+  if (!isPincodevalid) {
+    showError = true;
+  }
   return (
     <div className={classes.shadowHide}>
       <div className={classes.dialogContent}>
@@ -226,8 +241,16 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       maxLength: 100,
                     }}
                     value={address2}
+                    error={showError}
                   />
                 </div>
+                {showError ? (
+                  <FormHelperText className={classes.helpText} component="div" error={showError}>
+                    Unable to add address
+                  </FormHelperText>
+                ) : (
+                  ''
+                )}
                 <div className={classes.formGroup}>
                   <label>Address Type</label>
                   <Grid container spacing={1} className={classes.btnGroup}>

@@ -12,7 +12,7 @@ export interface DiagnosticsCartItem {
   id: string;
   itemId: string;
   name: string;
-  mou: number; // package of how many tests (eg. 10)
+  mou: number | null; // package of how many tests (eg. 10)
   price: number;
   thumbnail: string | null;
   specialPrice?: number;

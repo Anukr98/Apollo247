@@ -52,6 +52,12 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getAppointmentsByIds(ids: string[]) {
+    return this.createQueryBuilder('appointment')
+      .where('appointment.id IN (:...ids)', { ids })
+      .getMany();
+  }
+
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
@@ -950,6 +956,17 @@ export class AppointmentRepository extends Repository<Appointment> {
   updateJdQuestionStatus(id: string, isJdQuestionsComplete: boolean) {
     return this.update(id, {
       isJdQuestionsComplete,
+    });
+  }
+
+  updateJdQuestionStatusbyIds(ids: string[]) {
+    return this.update([...ids], {
+      isJdQuestionsComplete: true,
+      isConsultStarted: true,
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
     });
   }
 

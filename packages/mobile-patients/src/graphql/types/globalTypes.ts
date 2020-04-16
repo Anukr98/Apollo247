@@ -37,6 +37,10 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum CODCity {
+  CHENNAI = "CHENNAI",
+}
+
 export enum CONSULTS_RX_SEARCH_FILTER {
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
@@ -574,6 +578,8 @@ export interface MedicinePaymentMqInput {
   responseCode?: string | null;
   responseMessage?: string | null;
   bankTxnId?: string | null;
+  email?: string | null;
+  CODCity?: CODCity | null;
 }
 
 export interface OtpVerificationInput {
@@ -722,6 +728,7 @@ export interface UpdatePatientInput {
   referralCode?: string | null;
   relation?: Relation | null;
   photoUrl?: string | null;
+  deviceCode?: string | null;
 }
 
 export interface UploadDocumentInput {

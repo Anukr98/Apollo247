@@ -266,8 +266,8 @@ export const OrderSummary: React.FC = () => {
         .catch((e) => {
           setIsAlertOpen(true);
           setAlertMessage('something went wrong');
-          setDiagnosisDataError(true);
           console.log(e);
+          setDiagnosisDataError(true);
         })
         .finally(() => {
           setIsLoading(false);

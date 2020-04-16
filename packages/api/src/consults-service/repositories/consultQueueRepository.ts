@@ -1,8 +1,10 @@
 import { EntityRepository, Repository, Connection } from 'typeorm';
-import { ConsultQueueItem } from 'consults-service/entities';
+import { ConsultQueueItem, Appointment, APPOINTMENT_STATE } from 'consults-service/entities';
 import { format, addDays } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DOCTOR_ONLINE_STATUS, DoctorType } from 'doctors-service/entities';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 @EntityRepository(ConsultQueueItem)
 export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
@@ -28,6 +30,18 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
 
   findByAppointmentId(appointmentId: string) {
     return this.findOne({ where: { appointmentId } });
+  }
+
+  async saveConsultQueueItems(consultQueueAttrs: Partial<ConsultQueueItem>[]) {
+    return this.save(consultQueueAttrs).catch((error) => {
+      throw new AphError(AphErrorMessages.CREATE_CONSULT_QUEUE_ERROR, undefined, { error });
+    });
+  }
+
+  async updateConsultQueueItems(ids: string[], virtualJDId: string) {
+    return this.update(ids, { isActive: false, doctorId: virtualJDId }).catch((error) => {
+      throw new AphError(AphErrorMessages.UPDATE_CONSULT_QUEUE_ERROR, undefined, { error });
+    });
   }
 
   async getNextJuniorDoctor(doctorsDb: Connection) {
@@ -67,5 +81,22 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
         });
       });
     }
+  }
+
+  getQueueItemsByDoctorIds(ids: string[]) {
+    return this.createQueryBuilder('consultQueueItem')
+      .innerJoinAndMapOne(
+        'consultQueueItem.appointment',
+        Appointment,
+        'appointment',
+        'consultQueueItem.appointmentId = appointment.id::VARCHAR'
+      )
+      .where('appointment.appointmentState NOT IN (:...appointmentStates)', {
+        appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
+      })
+      .andWhere('appointment.appointmentDateTime >= :date', { date: new Date() })
+      .andWhere('consultQueueItem.doctorId IN (:...ids)', { ids })
+      .andWhere('consultQueueItem.isActive = :isactive', { isactive: true })
+      .getMany();
   }
 }

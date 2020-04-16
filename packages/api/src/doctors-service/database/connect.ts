@@ -113,9 +113,12 @@ export const connect = async () => {
       port: parseInt(process.env.DOCTORS_DB_PORT, 10),
       username: process.env.DOCTORS_DB_USER,
       password: process.env.DOCTORS_DB_PASSWORD,
-      database: `doctors_${process.env.NODE_ENV}`,
+      database: `doctors_${process.env.DB_NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: true,
+      extra: {
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
+      },
     },
     {
       name: 'consults-db',
@@ -145,8 +148,11 @@ export const connect = async () => {
       port: parseInt(process.env.CONSULTS_DB_PORT, 10),
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
-      database: `consults_${process.env.NODE_ENV}`,
+      database: `consults_${process.env.DB_NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
+      extra: {
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
+      },
     },
     {
       name: 'patients-db',
@@ -191,8 +197,11 @@ export const connect = async () => {
       port: parseInt(process.env.PROFILES_DB_PORT, 10),
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
-      database: `profiles_${process.env.NODE_ENV}`,
+      database: `profiles_${process.env.DB_NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
+      extra: {
+        connectionLimit: process.env.CONNECTION_POOL_LIMIT,
+      },
     },
   ]).catch((error) => {
     throw new Error(error);

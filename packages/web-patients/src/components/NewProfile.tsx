@@ -204,8 +204,11 @@ export interface NewProfileProps {
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
   const { patient } = props;
+  const urlParams = new URLSearchParams(window.location.search);
+  const tpRefCode = urlParams.get('tp_ref_code') ? String(urlParams.get('tp_ref_code')) : '';
+
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
-  const [referralCode, setReferralCode] = useState<string>('');
+  const [referralCode, setReferralCode] = useState<string>(tpRefCode);
   const [isValidReferralCode, setIsValidReferralCode] = useState<boolean>(true);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
   const [alertMessage, setAlertMessage] = useState<string>('');
@@ -460,6 +463,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                               setIsValidReferralCode(isValidReferralCode);
                             }}
                             inputProps={{ type: 'text', maxLength: 25 }}
+                            disabled={
+                              tpRefCode.length > 0 && tpRefCode === 'SBIYONO' ? true : false
+                            }
                           />
                           {!isValidReferralCode ? (
                             <FormHelperText

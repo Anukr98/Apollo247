@@ -1,10 +1,11 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel } from '@material-ui/core';
-import React from 'react';
+import { Theme, FormControlLabel, CircularProgress, Popover, Typography } from '@material-ui/core';
+import React, { useRef } from 'react';
 import { AphRadio, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
+import { AxiosPromise, AxiosResponse } from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -22,6 +23,32 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#01475b',
       },
+    },
+    actions: {
+      padding: '10px 20px 20px 20px',
+      display: 'flex',
+    },
+    noServiceRoot: {
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    viewCartBtn: {
+      fontSize: 13,
+      color: '#fc9916',
+      fontWeight: 'bold',
+      textAlign: 'right',
+      marginLeft: 'auto',
+      textTransform: 'uppercase',
     },
     buttonDisable: {
       backgroundColor: '#fed984',
@@ -68,12 +95,44 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   };
 });
 
 interface ViewAllAddressProps {
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
   formatAddress: (address: Address) => string;
+  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
@@ -84,8 +143,16 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
     deliveryAddresses,
     setStoreAddressId,
   } = useShoppingCart();
+  const [localDeliveryAddressId, setLocalDeliveryAddressId] = React.useState(deliveryAddressId);
+  const selectedAddress = deliveryAddresses.find((address) => address.id === deliveryAddressId);
+  const [localZipCode, setLocalZipCode] = React.useState(
+    selectedAddress && selectedAddress.zipcode ? selectedAddress.zipcode : ''
+  );
+  const [mutationLoading, setMutationLoading] = React.useState(false);
+  const [showPlaceNotFoundPopup, setShowPlaceNotFoundPopup] = React.useState(false);
+  const addToCartRef = useRef(null);
 
-  const disableSubmit = deliveryAddressId === '';
+  const disableSubmit = localDeliveryAddressId === '';
 
   return (
     <div className={classes.shadowHide}>
@@ -97,17 +164,18 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 <ul>
                   {deliveryAddresses.map((addressDetails, index) => {
                     const addressId = addressDetails.id;
+
                     return (
                       <li key={index}>
                         <FormControlLabel
-                          checked={deliveryAddressId === addressId}
+                          checked={localDeliveryAddressId === addressId}
                           className={classes.radioLabel}
                           value={addressId}
                           control={<AphRadio color="primary" />}
                           label={props.formatAddress(addressDetails)}
                           onChange={() => {
-                            setDeliveryAddressId && setDeliveryAddressId(addressId);
-                            setStoreAddressId && setStoreAddressId('');
+                            setLocalDeliveryAddressId(addressId);
+                            setLocalZipCode(addressDetails.zipcode || '');
                           }}
                         />
                       </li>
@@ -125,11 +193,74 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
           fullWidth
           disabled={disableSubmit}
           className={disableSubmit ? classes.buttonDisable : ''}
-          onClick={() => props.setIsViewAllAddressDialogOpen(false)}
+          onClick={() => {
+            setMutationLoading(true);
+            if (props.checkServiceAvailability) {
+              setMutationLoading(true);
+              props
+                .checkServiceAvailability(localZipCode)
+                .then((res: AxiosResponse) => {
+                  if (res && res.data && res.data.Availability) {
+                    props.setIsViewAllAddressDialogOpen(false);
+                    setDeliveryAddressId && setDeliveryAddressId(localDeliveryAddressId);
+                    setStoreAddressId && setStoreAddressId('');
+                  } else {
+                    setMutationLoading(false);
+                    setShowPlaceNotFoundPopup(true);
+                  }
+                })
+                .catch((e: any) => {
+                  setMutationLoading(false);
+                  console.log(e);
+                });
+            } else {
+              props.setIsViewAllAddressDialogOpen(false);
+            }
+          }}
         >
-          SAVE AND USE
+          {mutationLoading ? <CircularProgress size={20} color="secondary" /> : 'SAVE AND USE'}
         </AphButton>
       </div>
+      <Popover
+        open={showPlaceNotFoundPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.noServiceRoot}>
+              <div className={classes.windowBody}>
+                <Typography variant="h2">Uh oh! :(</Typography>
+                <p>
+                  Sorry! We’re working hard to get to this area! In the meantime, you can either
+                  pick up from a nearby store, or change the pincode.
+                </p>
+              </div>
+              <div className={classes.actions}>
+                <AphButton
+                  className={classes.viewCartBtn}
+                  onClick={() => {
+                    setShowPlaceNotFoundPopup(false);
+                  }}
+                >
+                  OK, GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

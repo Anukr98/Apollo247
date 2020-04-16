@@ -11,6 +11,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTICS, GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import FormHelperText from '@material-ui/core/FormHelperText';
+import axios from 'axios';
 import {
   searchDiagnostics,
   searchDiagnostics_searchDiagnostics_diagnostics,
@@ -202,7 +203,12 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type Params = { searchType: string; searchTestText: string };
-
+type TestDetails = {
+  TestName: string;
+  SampleRemarks: string;
+  SampleTypeName: string;
+  TestParameters: string;
+};
 export const SearchByTest: React.FC = (props) => {
   const classes = useStyles({});
   const params = useParams<Params>();
@@ -227,7 +233,40 @@ export const SearchByTest: React.FC = (props) => {
     diagnosticList,
     setDiagnosticList,
   ] = useState<getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics | null>(null);
+  const [testDetailsPackage, setTestDetailsPackage] = React.useState<TestDetails[] | null>(null);
 
+  const apiDetails = {
+    url: process.env.GET_PACKAGE_DATA,
+  };
+
+  const TestApiCredentials = {
+    UserName: process.env.TEST_DETAILS_PACKAGE_USERNAME,
+    Password: process.env.TEST_DETAILS_PACKAGE_PASSWORD,
+    InterfaceClient: process.env.TEST_DETAILS_PACKAGE_INTERFACE_CLIENT,
+  };
+
+  const getPackageDetails = async () => {
+    setLoading(true);
+    await axios
+      .post(apiDetails.url || '', {
+        ...TestApiCredentials,
+        ItemID: params.searchType === 'browser-packages' ? params.searchTestText : '',
+      })
+      .then((data: any) => {
+        if (data && data.data && data.data.data && data.data.data) {
+          const details = data.data.data;
+          if (details && details.length > 0) {
+            setTestDetailsPackage(details);
+          } else {
+            setTestDetailsPackage([]);
+          }
+          setLoading(false);
+        }
+      })
+      .catch((e: any) => {
+        setLoading(false);
+      });
+  };
   const getDiagnosticsOrgansData = async () => {
     setLoading(true);
     await client
@@ -266,7 +305,7 @@ export const SearchByTest: React.FC = (props) => {
 
   const onSearchTests = async (value: string) => {
     setLoading(true);
-    client
+    await client
       .query<searchDiagnostics>({
         query: SEARCH_DIAGNOSTICS,
         variables: {
@@ -301,20 +340,29 @@ export const SearchByTest: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (!testsList && !diagnosticList && city && city.length > 0) {
-      fetchResults();
+    if (!testDetailsPackage) {
+      getPackageDetails();
     }
-  }, [testsList, diagnosticList, city]);
+  }, [testDetailsPackage]);
 
   useEffect(() => {
-    if (city && city.length > 0) {
-      if (searchValue.trim().length > 2) {
-        onSearchTests(searchValue);
-      } else if ((testsList || diagnosticList) && searchValue.length === 0) {
-        fetchResults();
-      }
+    if (!testsList && !diagnosticList) {
+      fetchResults();
     }
-  }, [searchValue, city]);
+  }, [testsList, diagnosticList]);
+
+  useEffect(() => {
+    if (searchValue.trim().length > 2) {
+      onSearchTests(searchValue);
+    } else if ((testsList || diagnosticList) && searchValue.length === 0) {
+      fetchResults();
+    }
+  }, [searchValue]);
+
+  const inclusionCount =
+    testDetailsPackage && testDetailsPackage.length
+      ? testDetailsPackage && testDetailsPackage.length
+      : 0;
 
   let showError = false;
 
@@ -369,9 +417,9 @@ export const SearchByTest: React.FC = (props) => {
                   {loading ? (
                     <CircularProgress className={classes.loader} />
                   ) : testsList && testsList.length > 0 ? (
-                    testsList.map((test) => <TestCard testData={test} mou={testsList.length} />)
+                    testsList.map((test) => <TestCard testData={test} mou={inclusionCount} />)
                   ) : diagnosticList ? (
-                    <TestCard testData={diagnosticList} mou={1} />
+                    <TestCard testData={diagnosticList} mou={inclusionCount} />
                   ) : (
                     'No data found'
                   )}

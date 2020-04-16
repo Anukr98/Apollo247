@@ -14,7 +14,6 @@ import {
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from 'graphql/types/searchDiagnostics';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -161,8 +160,7 @@ export const TestsAutoSearch: React.FC = (props) => {
   const { city } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const [alertMessage, setAlertMessage] = useState<string>('');
-  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
   const [searchTests, setSearchTests] = useState<
     (searchDiagnostics_searchDiagnostics_diagnostics | null)[]
   >([]);
@@ -172,7 +170,7 @@ export const TestsAutoSearch: React.FC = (props) => {
 
   const onSearchTests = async (value: string) => {
     setLoading(true);
-    client
+    await client
       .query<searchDiagnostics>({
         query: SEARCH_DIAGNOSTICS,
         variables: {
@@ -190,8 +188,6 @@ export const TestsAutoSearch: React.FC = (props) => {
       })
       .catch((e) => {
         setLoading(false);
-        setIsAlertOpen(true);
-        setAlertMessage('something went wrong');
         console.log('Tests_onSearchMedicine', e);
       });
   };
@@ -252,7 +248,7 @@ export const TestsAutoSearch: React.FC = (props) => {
               <CircularProgress size={30} />
             </div>
           )}
-          {searchTests && searchTests.length > 0 && searchText.length > 2 && (
+          {searchTests && searchTests.length > 0 && (
             <div className={classes.searchList}>
               <ul>
                 {searchTests.map(
@@ -289,12 +285,6 @@ export const TestsAutoSearch: React.FC = (props) => {
           )}
         </Scrollbars>
       </Paper>
-      <Alerts
-        setAlertMessage={setAlertMessage}
-        alertMessage={alertMessage}
-        isAlertOpen={isAlertOpen}
-        setIsAlertOpen={setIsAlertOpen}
-      />
     </div>
   );
 };

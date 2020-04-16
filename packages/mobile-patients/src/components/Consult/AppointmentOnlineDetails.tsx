@@ -568,7 +568,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Payment</Text>
-                  <Text style={theme.viewStyles.yellowTextStyle}>ORDER SUMMARY</Text>
+                  <Text style={theme.viewStyles.yellowTextStyle}>BILL</Text>
                 </View>
                 <View style={styles.separatorStyle} />
                 <View style={styles.amountPaidStyles}>

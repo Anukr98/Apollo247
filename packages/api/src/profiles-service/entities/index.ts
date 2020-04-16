@@ -528,6 +528,9 @@ export class PatientDeviceTokens extends BaseEntity {
 //patient Starts
 @Entity()
 export class Patient extends BaseEntity {
+  @Column({ default: null, nullable: true })
+  deviceCode: string;
+
   @Column({ nullable: true })
   androidVersion: string;
 
