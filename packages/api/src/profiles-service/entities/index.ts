@@ -14,6 +14,7 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
+import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 
 export enum Gender {
   MALE = 'MALE',
@@ -1309,6 +1310,12 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column()
   city: string;
+
+  @Column()
+  bookingSource: BOOKINGSOURCE;
+
+  @Column()
+  deviceType: DEVICETYPE;
 
   @Column()
   diagnosticBranchCode: string;

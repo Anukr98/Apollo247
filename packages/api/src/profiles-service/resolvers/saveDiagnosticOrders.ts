@@ -27,6 +27,7 @@ import {
   sendDiagnosticOrderStatusNotification,
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
+import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 
 export const saveDiagnosticOrderTypeDefs = gql`
   enum DIAGNOSTIC_ORDER_STATUS {
@@ -62,6 +63,8 @@ export const saveDiagnosticOrderTypeDefs = gql`
     centerCity: String!
     centerState: String!
     centerLocality: String!
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     items: [DiagnosticLineItem]
   }
@@ -87,6 +90,15 @@ export const saveDiagnosticOrderTypeDefs = gql`
     ordersList: DiagnosticOrders
   }
 
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+  enum DEVICETYPE {
+    IOS
+    ANDROID
+  }
+
   type DiagnosticOrders {
     id: ID!
     patientId: ID!
@@ -108,6 +120,8 @@ export const saveDiagnosticOrderTypeDefs = gql`
     orderType: String!
     displayId: Int!
     createdDate: DateTime!
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     diagnosticOrderLineItems: [DiagnosticOrderLineItems]
     diagnosticOrdersStatus: [DiagnosticOrdersStatus]
@@ -155,6 +169,8 @@ type DiagnosticOrderInput = {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+  bookingSource: BOOKINGSOURCE;
+  deviceType: DEVICETYPE;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE;
   items: [DiagnosticLineItem];
 };
@@ -236,6 +252,8 @@ const SaveDiagnosticOrder: Resolver<
     centerName: diagnosticOrderInput.centerName,
     centerLocality: diagnosticOrderInput.centerLocality,
     centerState: diagnosticOrderInput.centerState,
+    bookingSource: diagnosticOrderInput.bookingSource,
+    deviceType: diagnosticOrderInput.deviceType,
     orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   };
 
