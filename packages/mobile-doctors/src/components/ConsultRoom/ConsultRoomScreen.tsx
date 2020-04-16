@@ -1969,6 +1969,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             cameraPosition={cameraPosition}
             setCameraPosition={setCameraPosition}
             firstName={PatientInfoAll ? PatientInfoAll.firstName || '' : ''}
+            profileImage={patientDetails ? patientDetails.photoUrl || '' : ''}
             chatReceived={chatReceived}
             callAccepted={callAccepted}
             setChatReceived={setChatReceived}

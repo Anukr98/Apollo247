@@ -49,10 +49,10 @@ export const Inbox: React.FC<PatientsProps> = (props) => {
             icon: <RoundIcon />,
             onPress: () => setmodelvisible(true),
           },
-          {
-            icon: <Notification />,
-            onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
-          },
+          // {
+          //   icon: <Notification />,
+          //   onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
+          // },
         ]}
       />
     );

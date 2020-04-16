@@ -69,7 +69,7 @@ import {
   UpdateDoctorFavouriteTestVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateDoctorFavouriteTest';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { medUsageType } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { medUsageType, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -472,8 +472,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         const resp = _data.data;
         console.log('Updated...:', resp);
 
-        GetFavouriteMedicineList();
-
+        setmedicineList(g(
+          resp,
+          'saveDoctorsFavouriteMedicine',
+          'medicineList'
+        ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
         setIsAddMedicine(false);
       })
       .catch((error) => {
@@ -502,7 +505,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         setLoading(false);
         const resp = _data.data;
         console.log('Updated...:', resp);
-        GetFavouriteMedicineList();
+        setmedicineList(g(
+          resp,
+          'updateDoctorFavouriteMedicine',
+          'medicineList'
+        ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
       })
       .catch((error) => {
         setLoading(false);

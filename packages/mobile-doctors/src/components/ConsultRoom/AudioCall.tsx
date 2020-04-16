@@ -7,6 +7,7 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
@@ -15,10 +16,13 @@ import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import React, { useState, RefObject, Dispatch, SetStateAction } from 'react';
 import { Dimensions, StyleProp, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { Image } from 'react-native-elements';
+import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 
 const { height, width } = Dimensions.get('window');
 
 export interface AudioCallProps extends NavigationScreenProps {
+  profileImage: string;
   chatReceived: boolean;
   callAccepted: boolean;
   sessionId: string;
@@ -79,7 +83,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
     borderRadius: 30,
   });
 
-  const { minutes, seconds, firstName, convertVideo } = props;
+  const { minutes, seconds, firstName, convertVideo, profileImage } = props;
 
   const renderMuteIcon = () => (
     <TouchableOpacity onPress={() => setMute(mute === true ? false : true)}>
@@ -90,12 +94,42 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
   return (
     <View style={props.audioCallStyles}>
       {!convertVideo && (
-        <PatientPlaceHolderImage
+        <View
           style={{
-            width: width,
             height: height,
+            width: width,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
           }}
-        />
+        >
+          {profileImage ? (
+            <Image
+              source={{
+                uri: profileImage,
+              }}
+              style={{ height: width, width: width }}
+              resizeMode={'contain'}
+              placeholderStyle={{
+                height: width,
+                width: width,
+                alignItems: 'center',
+                backgroundColor: 'transparent',
+              }}
+              PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+            />
+          ) : (
+            <UserPlaceHolder
+              style={{
+                height: 150,
+                width: width,
+                alignItems: 'center',
+                backgroundColor: 'white',
+                resizeMode: 'contain',
+              }}
+            />
+          )}
+        </View>
       )}
       {/* {!PipView && (
         <>
@@ -147,8 +181,8 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'black',
-          opacity: 0.6,
+          backgroundColor: 'rgba(0,0,0,0.1)',
+          // opacity: 0.6,
         }}
       />
 
@@ -223,7 +257,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
           marginHorizontal: 20,
           marginTop: 44,
           width: width - 40,
-          color: 'white',
+          color: theme.colors.INPUT_TEXT,
           ...theme.fonts.IBMPlexSansSemiBold(20),
           textAlign: 'center',
         }}
@@ -236,7 +270,7 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
           marginHorizontal: 20,
           marginTop: 81,
           width: width - 40,
-          color: 'white',
+          color: theme.colors.INPUT_TEXT,
           ...theme.fonts.IBMPlexSansSemiBold(12),
           textAlign: 'center',
           letterSpacing: 0.46,
@@ -279,8 +313,10 @@ export const AudioCall: React.FC<AudioCallProps> = (props) => {
           {props.chatReceived ? (
             <ChatWithNotification
               style={{
-                left: -20,
-                top: -20,
+                left: -18,
+                top: -16,
+                height: 90,
+                width: 90,
               }}
             />
           ) : (
