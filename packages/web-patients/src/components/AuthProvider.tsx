@@ -123,7 +123,10 @@ const app = firebase.initializeApp({
 // let otpVerifier: firebase.auth.ConfirmationResult;
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+  return (promise.then(
+    (data: R) => [data, null],
+    (err: E) => [null, err]
+  ) as any) as [R, E];
 }
 
 export const AuthProvider: React.FC = (props) => {
@@ -149,11 +152,6 @@ export const AuthProvider: React.FC = (props) => {
   >(false);
 
   const [customLoginId, setCustomLoginId] = useState<AuthContextProps['customLoginId']>('');
-
-  const pageUrl = window.location.href;
-  if (pageUrl.includes('medicines') && pageUrl.includes('failed')) {
-    window.location.href = clientRoutes.medicinesCart();
-  }
 
   const signOut = () =>
     app
