@@ -737,8 +737,8 @@ export const Appointments: React.FC = (props) => {
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.contentGroup}>
-              <Typography variant="h3">uhhh :)</Typography>
-              <p> Your transaction for previous appointment was failed.</p>
+              <Typography variant="h3">Uh oh.. :)</Typography>
+              <p> We're sorry but the payment failed</p>
               <div className={classes.bottomButtons}>
                 <AphButton
                   color="primary"
@@ -747,7 +747,7 @@ export const Appointments: React.FC = (props) => {
                     setIsFailurePayment(false);
                   }}
                 >
-                  ok
+                  OK,GOT IT
                 </AphButton>
               </div>
             </div>
