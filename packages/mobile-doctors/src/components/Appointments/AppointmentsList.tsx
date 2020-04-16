@@ -325,9 +325,12 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     } else {
                       showAphAlert &&
                         showAphAlert({
-                          title: 'Alert!',
+                          title: `Hi ${
+                            doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'
+                          } :)`,
+                          // title: 'Hi, ' + doctorDetails!.displayName + ':)',
                           description:
-                            'You can start this consultation only after Junior Doctor has filled the case sheet.',
+                            'As the patient has not done the pre-assessment, you will not be able to start the consult.',
                         });
                     }
                   }}
