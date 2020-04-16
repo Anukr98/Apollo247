@@ -264,6 +264,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const clearCartInfo = () => {
     localStorage.setItem('prescriptions', JSON.stringify([]));
+    localStorage.setItem('ePrescriptionData', JSON.stringify([]));
     setCartItems([]);
     setDeliveryAddressId('');
     setStoreAddressId('');
