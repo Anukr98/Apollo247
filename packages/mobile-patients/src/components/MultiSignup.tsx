@@ -49,6 +49,7 @@ import { NavigationActions } from 'react-navigation';
 import {
   CommonLogEvent,
   CommonBugFender,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
@@ -421,8 +422,15 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     try {
       const event: any = await AsyncStorage.getItem('deeplink');
       console.log(event, 'eventhandleOpenURL');
+      setBugFenderLog('multi_handleOpenURL', event);
 
       // const id = data[1];
+
+      // if (event) {
+      //   setBugFenderLog('nulti_check_if_null', event);
+      // } else {
+      //   setBugFenderLog('nulti_check_if_else_null', event);
+      // }
 
       if (event !== null) {
         let route = event.replace('apollopatients://', '');
@@ -431,6 +439,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         route = data[0];
 
         console.log(data, 'handleOpenURL');
+        setBugFenderLog('nulti_handleOpenURL_route', route);
+
         switch (route) {
           case 'Consult':
             console.log('Consult');
@@ -467,130 +477,39 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             break;
 
           default:
+            setBugFenderLog('multi_handleOpenURL', 'not_worked');
+            pushTheView('ConsultRoom');
             break;
         }
         console.log('route', route);
       } else {
+        setBugFenderLog('multi_handleOpenURL_ConsultRoom');
         pushTheView('ConsultRoom');
       }
     } catch (error) {}
   };
 
   const pushTheView = (routeName: String, id?: String) => {
-    console.log('pushTheView', routeName, id);
-    setTimeout(() => {
-      setVerifyingPhoneNumber(false);
+    try {
+      console.log('pushTheView', routeName, id);
+      setBugFenderLog('multi_pushTheView', routeName);
 
-      switch (routeName) {
-        case 'Consult':
-          console.log('Consult');
-          props.navigation.navigate('APPOINTMENTS');
-          break;
+      setTimeout(() => {
+        setVerifyingPhoneNumber(false);
 
-        case 'Medicine':
-          console.log('Medicine');
-          props.navigation.navigate('MEDICINES');
-          break;
+        switch (routeName) {
+          case 'Consult':
+            console.log('Consult');
+            props.navigation.navigate('APPOINTMENTS');
+            break;
 
-        case 'MedicineDetail':
-          console.log('MedicineDetail');
+          case 'Medicine':
+            console.log('Medicine');
+            props.navigation.navigate('MEDICINES');
+            break;
 
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.MedicineDetailsScene,
-                  params: {
-                    sku: id,
-                    movedFrom: 'registration',
-                  },
-                }),
-              ],
-            })
-          );
-          break;
-
-        case 'Test':
-          console.log('Test');
-          props.navigation.navigate('TESTS');
-          break;
-
-        case 'ConsultRoom':
-          console.log('ConsultRoom');
-
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.ConsultRoom,
-                }),
-              ],
-            })
-          );
-          break;
-        case 'Speciality':
-          console.log('Speciality id', id);
-
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.DoctorSearchListing,
-                  params: {
-                    specialityId: id ? id : '',
-                    movedFrom: 'registration',
-                  },
-                }),
-              ],
-            })
-          );
-          break;
-
-        case 'Doctor':
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.DoctorDetails,
-                  params: {
-                    doctorId: id,
-                    movedFrom: 'registration',
-                  },
-                }),
-              ],
-            })
-          );
-          break;
-
-        case 'DoctorSearch':
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.DoctorSearch,
-                  params: {
-                    movedFrom: 'registration',
-                  },
-                }),
-              ],
-            })
-          );
-          break;
-
-        case 'MedicineSearch':
-          if (id) {
-            const [itemId, name] = id.split(',');
-            console.log(itemId, name);
+          case 'MedicineDetail':
+            console.log('MedicineDetail');
 
             props.navigation.dispatch(
               StackActions.reset({
@@ -598,23 +517,121 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 key: null,
                 actions: [
                   NavigationActions.navigate({
-                    routeName: AppRoutes.SearchByBrand,
+                    routeName: AppRoutes.MedicineDetailsScene,
                     params: {
-                      category_id: itemId,
-                      title: `${name ? name : 'Products'}`.toUpperCase(),
+                      sku: id,
                       movedFrom: 'registration',
                     },
                   }),
                 ],
               })
             );
-          }
-          break;
+            break;
 
-        default:
-          break;
-      }
-    }, 500);
+          case 'Test':
+            console.log('Test');
+            props.navigation.navigate('TESTS');
+            break;
+
+          case 'ConsultRoom':
+            console.log('ConsultRoom');
+
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.ConsultRoom,
+                  }),
+                ],
+              })
+            );
+            break;
+          case 'Speciality':
+            console.log('Speciality id', id);
+
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.DoctorSearchListing,
+                    params: {
+                      specialityId: id ? id : '',
+                      movedFrom: 'registration',
+                    },
+                  }),
+                ],
+              })
+            );
+            break;
+
+          case 'Doctor':
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.DoctorDetails,
+                    params: {
+                      doctorId: id,
+                      movedFrom: 'registration',
+                    },
+                  }),
+                ],
+              })
+            );
+            break;
+
+          case 'DoctorSearch':
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [
+                  NavigationActions.navigate({
+                    routeName: AppRoutes.DoctorSearch,
+                    params: {
+                      movedFrom: 'registration',
+                    },
+                  }),
+                ],
+              })
+            );
+            break;
+
+          case 'MedicineSearch':
+            if (id) {
+              const [itemId, name] = id.split(',');
+              console.log(itemId, name);
+
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [
+                    NavigationActions.navigate({
+                      routeName: AppRoutes.SearchByBrand,
+                      params: {
+                        category_id: itemId,
+                        title: `${name ? name : 'Products'}`.toUpperCase(),
+                        movedFrom: 'registration',
+                      },
+                    }),
+                  ],
+                })
+              );
+            }
+            break;
+
+          default:
+            break;
+        }
+      }, 500);
+    } catch (error) {}
   };
 
   const renderButtons = () => {
@@ -681,6 +698,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('signUp', 'false'),
                   CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
+                  setBugFenderLog('multi_error', error),
                   setTimeout(() => {
                     setVerifyingPhoneNumber(false),
                       props.navigation.dispatch(
