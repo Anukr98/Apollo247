@@ -2,10 +2,10 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
-import { AphCheckbox } from 'components/AphCheckbox';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
+import { useParams } from 'hooks/routerHooks';
+import { SAVE_ORDER_CANCEL_STATUS } from 'graphql/profiles';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -111,18 +111,22 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface OrderPlacedProps {
-  orderAutoId: string;
-  orderStatus: string | null;
   setShowOrderPopup: (showOrderPopup: boolean) => void;
 }
 
 export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
   const classes = useStyles({});
+  const params = useParams<{
+    orderAutoId: string;
+    orderStatus: string;
+  }>();
+
+  const cancelOrder = useMutation(SAVE_ORDER_CANCEL_STATUS);
 
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
-        {props.orderStatus === 'success' ? (
+        {params.orderStatus === 'success' && (
           <>
             <Typography variant="h2">yay!</Typography>
             <p>
@@ -136,7 +140,7 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
                   </span>
                   <span>Medicines</span>
                 </div>
-                <div className={classes.invoiceNo}>#{props.orderAutoId}</div>
+                <div className={classes.invoiceNo}>#{params.orderAutoId}</div>
               </div>
               <div className={classes.bottomActions}>
                 <AphButton
@@ -160,13 +164,27 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
               </div>
             </div>
           </>
-        ) : (
+        )}
+        {params.orderStatus === 'failed' && (
           <>
             <Typography variant="h2">uh oh.. :(</Typography>
             <p>Your payment wasn’t successful due to bad network connectivity. Please try again.</p>
             <div className={classes.actions}>
               <AphButton
-                onClick={() => props.setShowOrderPopup(false)}
+                onClick={() => {
+                  props.setShowOrderPopup(false);
+                  cancelOrder({
+                    variables: {
+                      orderCancelInput: {
+                        orderNo:
+                          typeof params.orderAutoId === 'string'
+                            ? parseInt(params.orderAutoId)
+                            : params.orderAutoId,
+                        remarksCode: '',
+                      },
+                    },
+                  });
+                }}
                 color="primary"
                 classes={{ root: classes.button }}
               >

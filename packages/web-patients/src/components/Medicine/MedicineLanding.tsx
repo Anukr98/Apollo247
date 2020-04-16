@@ -11,7 +11,6 @@ import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
@@ -21,6 +20,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -332,11 +332,14 @@ export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
   const { currentPatient } = useAllCurrentPatients();
+  const { clearCartInfo } = useShoppingCart();
   const params = useParams<{
     orderAutoId: string;
     orderStatus: string;
   }>();
-  if (localStorage.getItem('orderStatus') === 'success') {
+
+  if (params.orderStatus === 'success') {
+    clearCartInfo && clearCartInfo();
     localStorage.removeItem(`${currentPatient && currentPatient.id}`);
     localStorage.removeItem('dp');
   }
@@ -344,14 +347,11 @@ export const MedicineLanding: React.FC = (props) => {
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
-  // const [showPopup, setShowPopup] = React.useState<boolean>(
-  //   window.location.pathname === '/medicines/added-to-cart'
-  // );
   const [showPrescriptionPopup, setShowPrescriptionPopup] = useState<boolean>(
     params.orderAutoId && params.orderAutoId === 'prescription' ? true : false
   );
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
-    localStorage.getItem('orderStatus') && params.orderAutoId !== 'prescription' ? true : false
+    params.orderStatus && params.orderAutoId !== 'prescription' ? true : false
   );
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
@@ -361,7 +361,7 @@ export const MedicineLanding: React.FC = (props) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
-  const savedLocalStatus = localStorage.getItem('orderStatus');
+
   const getMedicinePageProducts = async () => {
     await axios
       .post(
@@ -541,15 +541,10 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.mascotIcon}>
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
-            <OrderPlaced
-              orderAutoId={params.orderAutoId}
-              orderStatus={savedLocalStatus}
-              setShowOrderPopup={setShowOrderPopup}
-            />
+            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
           </div>
         </div>
       </Popover>
-      {/* showPrescriptionPopup */}
       <Popover
         open={showPrescriptionPopup}
         anchorEl={addToCartRef.current}

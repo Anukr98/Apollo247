@@ -525,6 +525,7 @@ export const MedicineCart: React.FC = (props) => {
       : deliveryMode === 'PICKUP'
       ? storeAddressId === ''
       : false;
+
   const uploadPrescriptionRequired = cartItems.findIndex(
     (v) => Number(v.is_prescription_required) === 1
   );
@@ -595,19 +596,16 @@ export const MedicineCart: React.FC = (props) => {
         if (data && data.SaveMedicineOrderPaymentMq) {
           const { errorCode, errorMessage } = data.SaveMedicineOrderPaymentMq;
           if (errorCode || (errorMessage && errorMessage.length > 0)) {
-            localStorage.setItem('orderStatus', 'failed');
-            window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString());
+            window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
           setCheckoutDialogOpen(false);
           clearCartInfo && clearCartInfo();
-          localStorage.setItem('orderStatus', 'success');
-          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString());
+          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
       })
       .catch((e) => {
-        localStorage.setItem('orderStatus', 'failed');
-        window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString());
+        window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
       })
       .finally(() => {
         setMutationLoading(false);
@@ -622,11 +620,9 @@ export const MedicineCart: React.FC = (props) => {
       variables,
     })
       .then(({ data }) => {
-        console.log(data);
         clearCartInfo && clearCartInfo();
         setTimeout(() => {
-          localStorage.setItem('orderStatus', 'success');
-          window.location.href = clientRoutes.medicinesCartInfo('prescription');
+          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
         }, 3000);
       })
       .catch((e) => {
@@ -678,7 +674,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -725,10 +721,11 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (cartItems && cartItems.length > 0) ||
+    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -1015,7 +1012,6 @@ export const MedicineCart: React.FC = (props) => {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
                       if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                        clearCartInfo && clearCartInfo();
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
