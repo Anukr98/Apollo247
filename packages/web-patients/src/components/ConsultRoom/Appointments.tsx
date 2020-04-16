@@ -8,6 +8,7 @@ import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 // import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
@@ -353,6 +354,8 @@ export const Appointments: React.FC = (props) => {
   const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
   const [isFailurePayment, setIsFailurePayment] = React.useState(pageUrl.includes('failed'));
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -537,7 +540,13 @@ export const Appointments: React.FC = (props) => {
                     );
                   })}
                   <MenuItem classes={{ selected: classes.menuSelected }}>
-                    <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                    <AphButton
+                      color="primary"
+                      classes={{ root: classes.addMemberBtn }}
+                      onClick={() => {
+                        setIsAddNewProfileDialogOpen(true);
+                      }}
+                    >
                       Add Member
                     </AphButton>
                   </MenuItem>
@@ -547,6 +556,19 @@ export const Appointments: React.FC = (props) => {
               <Typography variant="h1">hello there!</Typography>
             )}
             <p>{data && !loading && appointmentText()}</p>
+            <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+              <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
+              <AphDialogTitle>Add New Member</AphDialogTitle>
+              <AddNewProfile
+                closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+                  setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+                }
+                isMeClicked={false}
+                selectedPatientId=""
+                successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+                isProfileDelete={false}
+              />
+            </AphDialog>
           </div>
           <div>
             <Tabs
