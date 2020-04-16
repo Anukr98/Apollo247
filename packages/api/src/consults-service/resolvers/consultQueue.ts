@@ -193,6 +193,7 @@ type JuniorDoctorsList = {
   queueCount: number;
 };
 
+//This is not being used now. Refer to addToConsultQueueWithAutomatedQuestions
 const addToConsultQueue: Resolver<
   null,
   AddToConsultQueueInput,
@@ -201,7 +202,7 @@ const addToConsultQueue: Resolver<
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   await apptRepo.findOneOrFail(appointmentId);
-  const juniorDoctorsList: JuniorDoctorsList[] = [];
+  const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
   if (juniorDoctorCaseSheet != null) {
     const queueResult: AddToConsultQueueResult = {
@@ -209,7 +210,7 @@ const addToConsultQueue: Resolver<
       doctorId: '',
       totalJuniorDoctors: 0,
       totalJuniorDoctorsOnline: 0,
-      juniorDoctorsList,
+      juniorDoctorsList: jrDocList,
     };
     return queueResult;
   }
@@ -217,64 +218,52 @@ const addToConsultQueue: Resolver<
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
 
-  const juniorDoctors = await docRepo.find({
+  const onlineJrDocs = await docRepo.find({
+    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
     doctorType: DoctorType.JUNIOR,
     isActive: true,
   });
-  //Get online JDs
-  const onlineJuniorDoctors = juniorDoctors.filter(
-    (doctor) => doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE
-  );
-  if (!onlineJuniorDoctors.length) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-
-  const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
-  //Get queue items of online JDs
-  const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
-
-  //Map and get the count of queue items of each online JD
-  const jdQueueCounts: { [key: string]: number } = {};
-  consultQueueItems.map((queueItem) => {
-    if (jdQueueCounts[queueItem.doctorId]) {
-      jdQueueCounts[queueItem.doctorId] = jdQueueCounts[queueItem.doctorId] + 1;
-    } else {
-      jdQueueCounts[queueItem.doctorId] = 1;
-    }
+  const juniorDocs = await docRepo.find({
+    doctorType: DoctorType.JUNIOR,
+    isActive: true,
   });
-  onlineJuniorDoctorIds.map((id) => {
-    if (!jdQueueCounts[id]) {
-      jdQueueCounts[id] = 0;
-    }
-  });
-
-  let jdActiveAppointmentsCount = -1;
-  let doctorId = '';
-  //Map the object and find the JD with least queue item count
-  Object.keys(jdQueueCounts).map((key) => {
-    if (jdActiveAppointmentsCount == -1 || jdQueueCounts[key] < jdActiveAppointmentsCount) {
-      jdActiveAppointmentsCount = jdQueueCounts[key];
-      doctorId = key;
-    }
-  });
+  let doctorId: string = '0';
+  const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
+  if (nextDoctorId && nextDoctorId != '0') {
+    doctorId = nextDoctorId;
+  } else {
+    throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
+  }
 
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
   await apptRepo.updateConsultStarted(appointmentId, true);
 
-  //create the juniorDoctorsList object
-  onlineJuniorDoctors.map((doctor) => {
-    const details = {
-      doctorName: doctor.firstName + ' ' + doctor.lastName,
-      juniorDoctorId: doctor.id,
-      queueCount: jdQueueCounts[doctor.id],
-    };
-    juniorDoctorsList.push(details);
-  });
+  function getJuniorDocInfo() {
+    return new Promise(async (resolve, reject) => {
+      onlineJrDocs.map(async (doctor) => {
+        const queueCount = await cqRepo.count({ where: { doctorId: doctor.id, isActive: true } });
+        const jrDoctor: JuniorDoctorsList = {
+          doctorName: doctor.firstName + ' ' + doctor.lastName,
+          juniorDoctorId: doctor.id,
+          queueCount,
+        };
+        jrDocList.push(jrDoctor);
+        if (jrDocList.length == onlineJrDocs.length) {
+          resolve(jrDocList);
+        }
+      });
+    });
+  }
+  if (onlineJrDocs.length > 0) {
+    await getJuniorDocInfo();
+  }
 
   return {
     id,
     doctorId,
-    totalJuniorDoctors: juniorDoctors.length,
-    totalJuniorDoctorsOnline: onlineJuniorDoctors.length,
-    juniorDoctorsList,
+    totalJuniorDoctors: juniorDocs.length,
+    totalJuniorDoctorsOnline: onlineJrDocs.length,
+    juniorDoctorsList: jrDocList,
   };
 };
 
@@ -338,22 +327,45 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
 
-  const onlineJrDocs = await docRepo.find({
-    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+  const juniorDoctors = await docRepo.find({
     doctorType: DoctorType.JUNIOR,
     isActive: true,
   });
-  const juniorDocs = await docRepo.find({
-    doctorType: DoctorType.JUNIOR,
-    isActive: true,
+  //Get online JDs
+  const onlineJuniorDoctors = juniorDoctors.filter(
+    (doctor) => doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE
+  );
+  if (!onlineJuniorDoctors.length) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
+
+  const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
+  //Get queue items of online JDs
+  const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
+
+  //Map and get the count of queue items of each online JD
+  const jdQueueCounts: { [key: string]: number } = {};
+  consultQueueItems.map((queueItem) => {
+    if (jdQueueCounts[queueItem.doctorId]) {
+      jdQueueCounts[queueItem.doctorId] = jdQueueCounts[queueItem.doctorId] + 1;
+    } else {
+      jdQueueCounts[queueItem.doctorId] = 1;
+    }
   });
-  let doctorId: string = '0';
-  const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
-  if (nextDoctorId && nextDoctorId != '0') {
-    doctorId = nextDoctorId;
-  } else {
-    throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  }
+  onlineJuniorDoctorIds.map((id) => {
+    if (!jdQueueCounts[id]) {
+      jdQueueCounts[id] = 0;
+    }
+  });
+
+  let jdActiveAppointmentsCount = -1;
+  let doctorId = '';
+  //Map the object and find the JD with least queue item count
+  Object.keys(jdQueueCounts).map((key) => {
+    if (jdActiveAppointmentsCount == -1 || jdQueueCounts[key] < jdActiveAppointmentsCount) {
+      jdActiveAppointmentsCount = jdQueueCounts[key];
+      doctorId = key;
+    }
+  });
+
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
   await apptRepo.updateConsultStarted(appointmentId, true);
 
@@ -453,33 +465,23 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   //medicalHistory upsert ends
   //automated questions ends
 
-  function getJuniorDocInfo() {
-    return new Promise(async (resolve, reject) => {
-      onlineJrDocs.map(async (doctor) => {
-        const queueCount = await cqRepo.count({ where: { doctorId: doctor.id, isActive: true } });
-        const jrDoctor: JuniorDoctorsList = {
-          doctorName: doctor.firstName + ' ' + doctor.lastName,
-          juniorDoctorId: doctor.id,
-          queueCount,
-        };
-        jrDocList.push(jrDoctor);
-        if (jrDocList.length == onlineJrDocs.length) {
-          resolve(jrDocList);
-        }
-      });
-    });
-  }
-  if (onlineJrDocs.length > 0) {
-    await getJuniorDocInfo();
-  }
+  //create the juniorDoctorsList object
+  onlineJuniorDoctors.map((doctor) => {
+    const details = {
+      doctorName: doctor.firstName + ' ' + doctor.lastName,
+      juniorDoctorId: doctor.id,
+      queueCount: jdQueueCounts[doctor.id],
+    };
+    jrDocList.push(details);
+  });
   // update JdQuestionStatus
   await apptRepo.updateJdQuestionStatus(appointmentId, true);
 
   return {
     id,
     doctorId,
-    totalJuniorDoctors: juniorDocs.length,
-    totalJuniorDoctorsOnline: onlineJrDocs.length,
+    totalJuniorDoctors: juniorDoctors.length,
+    totalJuniorDoctorsOnline: onlineJuniorDoctors.length,
     juniorDoctorsList: jrDocList,
   };
 };

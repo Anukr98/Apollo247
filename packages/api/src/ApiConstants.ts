@@ -127,6 +127,13 @@ export enum ApiConstants {
   //pepipost configurations
   PEPIPOST_API_KEY = '0e396e4e9b5247d267c9a536cd154869',
 
+  //medicine COD email configuration starts
+  MEDICINE_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
+  MEDICINE_SUPPORT_CC_EMAILID = 'sumeeth.kumar@popcornapps.com,',
+  MEDICINE_SUPPORT_EMAILID_PRODUCTION = 'hd.chennai@apollopharmacy.org',
+  MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION = '',
+  //medicine COD email configuration ends
+
   //Patient app, help form email configurations
   PATIENT_HELP_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
   PATIENT_HELP_SUPPORT_CC_EMAILID = 'sriram.kanchan@popcornapps.com',
