@@ -374,7 +374,13 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
   console.log(isDateTimePickerVisible, 'isDateTimePickerVisible');
+
+  const [isSignupEventFired, setSignupEventFired] = useState(false);
+
   const _postWebEngageEvent = () => {
+    if (isSignupEventFired) {
+      return;
+    }
     try {
       const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
         'Customer ID': currentPatient ? currentPatient.id : '',
@@ -396,6 +402,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+      setSignupEventFired(true);
     } catch (error) {
       console.log({ error });
     }
