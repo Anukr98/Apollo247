@@ -71,7 +71,6 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
   const { doctorDetails } = useAuth();
 
   useEffect(() => {
-    console.log(doctorDetails, 'doctorDetailshi');
     setDoctorName((doctorDetails && doctorDetails.displayName) || '');
   }, [doctorDetails]);
 
@@ -224,10 +223,10 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
             icon: <RoundIcon />,
             onPress: () => setshowNeedHelp(true),
           },
-          {
-            icon: <Notification />,
-            onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
-          },
+          // {
+          //   icon: <Notification />,
+          //   onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
+          // },
         ]}
       />
     );

@@ -50,10 +50,10 @@ export const Sample: React.FC<PatientsProps> = (props) => {
             icon: <RoundIcon />,
             onPress: () => setshowNeedHelp(true),
           },
-          {
-            icon: <Notification />,
-            onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
-          },
+          // {
+          //   icon: <Notification />,
+          //   onPress: () => props.navigation.push(AppRoutes.NotificationScreen),
+          // },
         ]}
       />
     );
