@@ -20,6 +20,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -331,12 +332,14 @@ export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
   const { currentPatient } = useAllCurrentPatients();
+  const { clearCartInfo } = useShoppingCart();
   const params = useParams<{
     orderAutoId: string;
     orderStatus: string;
   }>();
 
   if (params.orderStatus === 'success') {
+    clearCartInfo && clearCartInfo();
     localStorage.removeItem(`${currentPatient && currentPatient.id}`);
     localStorage.removeItem('dp');
   }

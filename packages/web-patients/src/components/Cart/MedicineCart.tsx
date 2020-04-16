@@ -1012,7 +1012,6 @@ export const MedicineCart: React.FC = (props) => {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
                       if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                        clearCartInfo && clearCartInfo();
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
