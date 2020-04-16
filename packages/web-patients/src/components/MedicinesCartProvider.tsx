@@ -87,6 +87,8 @@ export interface MedicineCartContextProps {
   prescriptionUploaded: PrescriptionFormat | null;
   ePrescriptionData: EPrescription[] | null;
   setEPrescriptionData: ((ePrescriptionData: EPrescription[] | null) => void) | null;
+  uploadedEPrescription: boolean | null;
+  setUploadedEPrescription: ((uploadedEPrescription: boolean | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -115,6 +117,8 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setEPrescriptionData: null,
   prescriptionUploaded: null,
   setPrescriptionUploaded: null,
+  uploadedEPrescription: null,
+  setUploadedEPrescription: null,
 });
 
 export const MedicinesCartProvider: React.FC = (props) => {
@@ -161,6 +165,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
       ? JSON.parse(localStorage.getItem('ePrescriptionData') || '')
       : []
   );
+  const [uploadedEPrescription, setUploadedEPrescription] = React.useState<boolean | null>(false);
   const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>([]);
   const [isCartUpdated, setIsCartUpdated] = useState<boolean>(false);
 
@@ -194,10 +199,11 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setPrescriptionUploaded(defPresObject);
       }
     }
-    if (ePrescriptionData) {
+    if (ePrescriptionData && uploadedEPrescription) {
       localStorage.setItem('ePrescriptionData', JSON.stringify(ePrescriptionData));
+      setUploadedEPrescription(false);
     }
-  }, [prescriptionUploaded, ePrescriptionData]);
+  }, [prescriptionUploaded, ePrescriptionData, uploadedEPrescription]);
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     setCartItems([...cartItems, itemToAdd]);
@@ -296,6 +302,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setPrescriptionUploaded,
         ePrescriptionData,
         setEPrescriptionData,
+        uploadedEPrescription,
+        setUploadedEPrescription,
       }}
     >
       {props.children}
@@ -330,4 +338,6 @@ export const useShoppingCart = () => ({
   setPrescriptionUploaded: useShoppingCartContext().setPrescriptionUploaded,
   setEPrescriptionData: useShoppingCartContext().setEPrescriptionData,
   ePrescriptionData: useShoppingCartContext().ePrescriptionData,
+  uploadedEPrescription: useShoppingCartContext().uploadedEPrescription,
+  setUploadedEPrescription: useShoppingCartContext().setUploadedEPrescription,
 });
