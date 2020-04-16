@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
   },
   checkboxTextStyle: {
     ...theme.viewStyles.text('R', 13, '#02475b'),
+    flex: 1,
     marginLeft: 6,
     marginRight: 16,
   },
