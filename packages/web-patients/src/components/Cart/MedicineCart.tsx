@@ -599,9 +599,14 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
-          setCheckoutDialogOpen(false);
           clearCartInfo && clearCartInfo();
-          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
+          setTimeout(() => {
+            setCheckoutDialogOpen(false);
+            window.location.href = clientRoutes.medicinesCartInfo(
+              orderAutoId.toString(),
+              'success'
+            );
+          }, 3000);
         }
       })
       .catch((e) => {
