@@ -281,10 +281,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     //   if (item && item.facility && item.facility.facilityType)
     //     return item.facility.facilityType === 'HOSPITAL';
     // });
-    const eventAttributes:
+    let eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED] = {
-      // slot: NextAvailableSlot,
       'Consult Date Time': new Date(NextAvailableSlot),
       'Consult Mode': 'Online',
       specialisation: g(props.doctor, 'specialty', 'name')!,
@@ -305,14 +304,14 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     };
 
     if (type == 'now') {
-      (eventAttributes as WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED])[
-        'Available in Minutes'
-      ] = availableInMin;
-      (eventAttributes as WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED])['Source'] =
-        props.source;
-      (eventAttributes as WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED])[
-        'language known'
-      ] = g(props.doctor, 'languages')! || 'NA';
+      eventAttributes = {
+        ...eventAttributes,
+        'Available in Minutes': availableInMin,
+        Source: props.source,
+        'Language Known': g(props.doctor, 'languages')! || 'NA',
+        'Doctor Speciality': g(props.doctor, 'specialty', 'name')!,
+      } as WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED];
+
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
     } else {
       postWebEngageEvent(WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED, eventAttributes);

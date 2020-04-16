@@ -105,6 +105,10 @@ export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
 }
 
+export interface PatientInfoWithConsultId extends PatientInfo {
+  'Consult ID': string;
+}
+
 export interface PatientInfoWithNeedHelp extends PatientInfo {
   Source: 'Home Screen' | 'Medicines' | 'Tests' | 'My Account' | 'Doctor Search';
 }
@@ -128,7 +132,7 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Customer First Name': string;
     'Customer Last Name': string;
-    'Date of Birth': string;
+    'Date of Birth': Date | string;
     Gender: string;
     Email: string;
     'Referral Code'?: string;
@@ -387,8 +391,9 @@ export interface WebEngageEvents {
     'Doctor Speciality': string;
   };
   [WebEngageEventName.CONSULT_NOW_CLICKED]: {
-    'language known': string; // Comma separated values
+    'Language Known': string; // Comma separated values
     Source: 'List' | 'Profile'; // List/Profile
+    'Doctor Speciality': string;
     'Available in Minutes'?: number;
     'Consult Mode': 'Online' | 'Physical';
     specialisation: string;
@@ -425,7 +430,6 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.CONSULT_SLOT_SELECTED]: {
-    slot: string;
     doctorName: string;
     specialisation: string;
     experience: number;
@@ -473,8 +477,6 @@ export interface WebEngageEvents {
     specialisation: string;
     category: string;
     // time: Date | string;
-    'clinic name': string;
-    'clinic address': string; // whole address
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
@@ -566,9 +568,9 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.REORDER_MEDICINES]: PatientInfo;
 
-  [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfo;
+  [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 
-  [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfo;
+  [WebEngageEventName.PHR_CONSULT_CARD_CLICK]: PatientInfoWithConsultId;
 
   // ********** ConsultRoom Events ********** \\
 

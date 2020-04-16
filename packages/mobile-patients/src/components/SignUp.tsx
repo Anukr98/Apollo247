@@ -380,7 +380,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Customer First Name': firstName.trim(),
         'Customer Last Name': lastName.trim(),
-        'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        'Date of Birth': Moment(date, 'DD/MM/YYYY').toDate(),
         Gender:
           gender === 'Female'
             ? Gender['FEMALE']

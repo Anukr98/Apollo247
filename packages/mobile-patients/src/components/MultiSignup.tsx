@@ -434,7 +434,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Customer First Name': (firstName || '')!.trim(),
         'Customer Last Name': (lastName || '')!.trim(),
-        'Date of Birth': date ? moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+        'Date of Birth': date ? moment(date, 'DD/MM/YYYY').toDate() : '',
         Gender: gender!,
         Email: (email || '').trim(),
       };

@@ -511,7 +511,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
-  const postConsultCardClickEvent = () => {
+  const postConsultCardClickEvent = (consultId: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_CONSULT_CARD_CLICK] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -520,6 +520,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      'Consult ID': consultId,
     };
     postWebEngageEvent(WebEngageEventName.PHR_CONSULT_CARD_CLICK, eventAttributes);
   };
@@ -534,7 +535,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }}
         onClickCard={() => {
           if (item.doctorInfo) {
-            postConsultCardClickEvent();
+            postConsultCardClickEvent(item.id);
             props.navigation.navigate(AppRoutes.ConsultDetails, {
               CaseSheet: item.id,
               DoctorInfo: item.doctorInfo,

@@ -223,6 +223,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      'Consult ID': g(props.PastData, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.PHR_ORDER_MEDS_TESTS, eventAttributes);
   };

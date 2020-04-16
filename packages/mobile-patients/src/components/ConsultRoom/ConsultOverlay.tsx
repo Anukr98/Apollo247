@@ -216,13 +216,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       specialisation: g(props.doctor, 'specialty', 'name')!,
       category: g(props.doctor, 'doctorType')!, // send doctorType
       // time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      'clinic name': g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'clinic address':
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
-              doctorClinics[0].facility.city
-            }`
-          : '',
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
@@ -783,14 +776,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           return item.facility.facilityType === 'HOSPITAL';
       });
       const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_SLOT_SELECTED] = {
-        slot: slot,
         doctorName: g(props.doctor, 'fullName')!,
         specialisation: g(props.doctor, 'specialty', 'name')!,
         experience: Number(g(props.doctor, 'experience')!),
         'language known': g(props.doctor, 'languages')! || 'NA',
         'Consult Mode': tabs[0].title === selectedTab ? 'Online' : 'Physical',
         'Doctor ID': g(props.doctor, 'id')!,
-        'Speciality ID': g(props.doctor, 'id')!,
+        'Speciality ID': g(props.doctor, 'specialty', 'id')!,
         'Patient UHID': g(currentPatient, 'uhid'),
         'Consult Date Time': new Date(slot),
       };
