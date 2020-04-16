@@ -12,6 +12,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_MEDICINE_ORDER_DETAILS } from 'graphql/profiles';
 import { GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails as orederDetails } from 'graphql/types/GetMedicineOrderDetails';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -134,6 +135,37 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
@@ -163,6 +195,8 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
   };
   const [orderDetailsData, setOrderDetailsData] = useState<orederDetails | null>(null);
   const orderDetails = useMutation(GET_MEDICINE_ORDER_DETAILS);
+  const mascotRef = useRef(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (props.orderAutoId) {
@@ -329,6 +363,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         <CancelOrder
           setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
           orderAutoId={props.orderAutoId}
+          setIsPopoverOpen={setIsPopoverOpen}
         />
       </AphDialog>
       <AphDialog open={isReturnOrderDialogOpen} maxWidth="sm">
@@ -339,6 +374,31 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
           orderAutoId={props.orderAutoId}
         />
       </AphDialog>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <CancelOrderNotification
+              setIsCancelOrderDialogOpen={setIsCancelOrderDialogOpen}
+              setIsPopoverOpen={setIsPopoverOpen}
+            />
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

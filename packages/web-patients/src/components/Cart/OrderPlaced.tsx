@@ -4,8 +4,6 @@ import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useParams } from 'hooks/routerHooks';
-import { SAVE_ORDER_CANCEL_STATUS } from 'graphql/profiles';
-import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -121,8 +119,6 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
     orderStatus: string;
   }>();
 
-  const cancelOrder = useMutation(SAVE_ORDER_CANCEL_STATUS);
-
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
@@ -173,17 +169,6 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
               <AphButton
                 onClick={() => {
                   props.setShowOrderPopup(false);
-                  cancelOrder({
-                    variables: {
-                      orderCancelInput: {
-                        orderNo:
-                          typeof params.orderAutoId === 'string'
-                            ? parseInt(params.orderAutoId)
-                            : params.orderAutoId,
-                        remarksCode: '',
-                      },
-                    },
-                  });
                 }}
                 color="primary"
                 classes={{ root: classes.button }}
