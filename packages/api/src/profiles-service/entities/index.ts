@@ -1311,10 +1311,10 @@ export class DiagnosticOrders extends BaseEntity {
   @Column()
   city: string;
 
-  @Column()
+  @Column({ default: null, nullable: true })
   bookingSource: BOOKINGSOURCE;
 
-  @Column()
+  @Column({ default: null, nullable: true })
   deviceType: DEVICETYPE;
 
   @Column()
