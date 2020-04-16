@@ -8,6 +8,7 @@ import { ConsultationsCard } from 'components/ConsultRoom/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 // import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 // import {
@@ -313,12 +314,27 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 66,
       marginRight: 10,
     },
+    contentGroup: {
+      padding: 20,
+      paddingTop: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    bottomButtons: {
+      display: 'flex',
+    },
   };
 });
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const Appointments: React.FC = (props) => {
+  const pageUrl = window.location.href;
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const urlParams = new URLSearchParams(window.location.search);
@@ -336,6 +352,10 @@ export const Appointments: React.FC = (props) => {
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [photoUrl, setPhotoUrl] = React.useState<string>('');
   const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
+  const [isFailurePayment, setIsFailurePayment] = React.useState(pageUrl.includes('failed'));
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
@@ -520,7 +540,13 @@ export const Appointments: React.FC = (props) => {
                     );
                   })}
                   <MenuItem classes={{ selected: classes.menuSelected }}>
-                    <AphButton color="primary" classes={{ root: classes.addMemberBtn }}>
+                    <AphButton
+                      color="primary"
+                      classes={{ root: classes.addMemberBtn }}
+                      onClick={() => {
+                        setIsAddNewProfileDialogOpen(true);
+                      }}
+                    >
                       Add Member
                     </AphButton>
                   </MenuItem>
@@ -530,6 +556,19 @@ export const Appointments: React.FC = (props) => {
               <Typography variant="h1">hello there!</Typography>
             )}
             <p>{data && !loading && appointmentText()}</p>
+            <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+              <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
+              <AphDialogTitle>Add New Member</AphDialogTitle>
+              <AddNewProfile
+                closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+                  setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+                }
+                isMeClicked={false}
+                selectedPatientId=""
+                successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+                isProfileDelete={false}
+              />
+            </AphDialog>
           </div>
           <div>
             <Tabs
@@ -678,6 +717,43 @@ export const Appointments: React.FC = (props) => {
           </a>
         </div>
       </AphDialog>
+
+      <Popover
+        open={isFailurePayment}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.contentGroup}>
+              <Typography variant="h3">Uh oh.. :)</Typography>
+              <p> We're sorry but the payment failed</p>
+              <div className={classes.bottomButtons}>
+                <AphButton
+                  color="primary"
+                  classes={{ root: classes.addMemberBtn }}
+                  onClick={() => {
+                    setIsFailurePayment(false);
+                  }}
+                >
+                  OK,GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
 
       {/* <Popover
         open={isPopoverOpen}

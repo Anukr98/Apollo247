@@ -202,7 +202,10 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
   ) => {
     return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
   };
-  const testcount = testDetailsPackage && testDetailsPackage.length;
+  const testcount =
+    testDetailsPackage && testDetailsPackage.length
+      ? testDetailsPackage && testDetailsPackage.length
+      : 0;
   return (
     <div className={classes.root}>
       {testData && (

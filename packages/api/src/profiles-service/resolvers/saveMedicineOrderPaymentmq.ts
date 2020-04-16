@@ -17,7 +17,16 @@ import {
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
 
+import { medicineCOD } from 'helpers/emailTemplates/medicineCOD';
+import { sendMail } from 'notifications-service/resolvers/email';
+import { ApiConstants } from 'ApiConstants';
+import { EmailMessage } from 'types/notificationMessageTypes';
+
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
+  enum CODCity {
+    CHENNAI
+  }
+
   input MedicinePaymentMqInput {
     orderId: String!
     orderAutoId: Int!
@@ -29,6 +38,8 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     responseCode: String
     responseMessage: String
     bankTxnId: String
+    email: String
+    CODCity: CODCity
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -56,7 +67,13 @@ type MedicinePaymentMqInput = {
   responseCode: string;
   responseMessage: string;
   bankTxnId: string;
+  email: string;
+  CODCity: CODCity;
 };
+
+enum CODCity {
+  'CHENNAI' = 'CHENNAI',
+}
 
 type SaveMedicineOrderResult = {
   errorCode: number;
@@ -84,6 +101,12 @@ const SaveMedicineOrderPaymentMq: Resolver<
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
+
+  //get patient address
+  const patientAddress = orderDetails.patient.patientAddress.filter(
+    (item) => item.id === orderDetails.patientAddressId
+  );
+
   let currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
   if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     medicinePaymentMqInput.paymentDateTime = new Date();
@@ -147,6 +170,51 @@ const SaveMedicineOrderPaymentMq: Resolver<
     new Date(),
     currentStatus
   );
+
+  //send email notifictaion id if the city sent is in CODCity
+  if (
+    orderDetails.medicineOrderLineItems &&
+    medicinePaymentMqInput.CODCity &&
+    medicinePaymentMqInput.CODCity.length > 0
+  ) {
+    const mailContent = medicineCOD({ orderDetails, patientAddress: patientAddress[0] });
+
+    const subjectLine = ApiConstants.ORDER_PLACED_TITLE;
+    const subject =
+      process.env.NODE_ENV == 'production'
+        ? subjectLine
+        : subjectLine + ' from ' + process.env.NODE_ENV;
+
+    const toEmailId =
+      process.env.NODE_ENV == 'dev' ||
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
+        ? ApiConstants.MEDICINE_SUPPORT_EMAILID
+        : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
+
+    let ccEmailIds =
+      process.env.NODE_ENV == 'dev' ||
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
+        ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
+        : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
+
+    if (medicinePaymentMqInput.email && medicinePaymentMqInput.email.length > 0) {
+      ccEmailIds = ccEmailIds.concat(medicinePaymentMqInput.email);
+    }
+
+    const emailContent: EmailMessage = {
+      subject: subject,
+      fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
+      fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
+      messageContent: <string>mailContent,
+      toEmail: <string>toEmailId,
+      ccEmail: <string>ccEmailIds,
+    };
+
+    sendMail(emailContent);
+  }
+  //end email notification
 
   //medicine order in queue starts
   if (medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE') {
