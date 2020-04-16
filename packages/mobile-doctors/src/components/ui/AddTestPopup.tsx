@@ -47,7 +47,10 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   const [isSearchTestListVisible, setisSearchTestListVisible] = useState<boolean>(false);
 
   const [tempTestArray, settempTestArray] = useState<searchDiagnostic_searchDiagnostic[]>([]);
-  const tabsData = [{ title: 'ADD BLOOD TEST' }, { title: 'SCANS & HEALTH CHECK' }];
+  const tabsData = [
+    { title: 'ADD TEST' },
+    //  { title: 'SCANS & HEALTH CHECK' }
+  ];
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
 
   const client = useApolloClient();
@@ -177,80 +180,80 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
         }}
       >
         <View style={{ flex: 1 }}>
-          {selectedTab == 'ADD BLOOD TEST' ? (
-            <View>
-              <View
-                style={{
-                  marginVertical: 20,
-                  padding: 20,
-                  backgroundColor: '#ffffff',
-                  zIndex: 16,
-                  elevation: 16,
-                  shadowColor: '#808080',
-                  shadowOffset: { width: 2, height: 10 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 10,
-                  // marginBottom: 100,
-                }}
-              >
-                <View>
-                  <TextInputComponent
-                    placeholder={strings.smartPrescr.search_test}
-                    inputStyle={styles.inputView}
-                    multiline={true}
-                    value={searchTestVal}
-                    onChangeText={(value) => {
-                      setsearchTestVal(value);
-                      GetSearchDiagnostics(value);
-                      setisSearchTestListVisible(true);
-                    }}
-                    autoCorrect={true}
-                  />
-                </View>
-                {loading ? (
-                  <ActivityIndicator animating={true} size="small" color="green" />
-                ) : (
-                  <>
-                    <View style={{ top: -38, bottom: 0, marginLeft: -20 }}>
-                      {isSearchTestListVisible && GetSearchResultOfTests()}
-                    </View>
-                    <View style={{ marginRight: 20 }}>
-                      {tempTestArray &&
-                        tempTestArray.map((item, index) => {
-                          console.log('......tempTestArray:', tempTestArray);
-                          return (
-                            <ChipIconView
-                              title={item.itemname || ''}
-                              onPress={(e: any) => {
-                                console.log('deleted');
-                                settempTestArray(tempTestArray.slice(1));
-                                setsearchTestVal('');
-                                console.log('delete tempTestArray:', tempTestArray);
-                                setisSearchTestListVisible(false);
-                              }}
-                            />
-                          );
-                        })}
-                    </View>
-                  </>
-                )}
+          {/* {selectedTab == 'ADD TEST' ? ( */}
+          <View>
+            <View
+              style={{
+                marginVertical: 20,
+                padding: 20,
+                backgroundColor: '#ffffff',
+                zIndex: 16,
+                elevation: 16,
+                shadowColor: '#808080',
+                shadowOffset: { width: 2, height: 10 },
+                shadowOpacity: 0.2,
+                shadowRadius: 10,
+                // marginBottom: 100,
+              }}
+            >
+              <View>
+                <TextInputComponent
+                  placeholder={strings.smartPrescr.search_test}
+                  inputStyle={styles.inputView}
+                  multiline={true}
+                  value={searchTestVal}
+                  onChangeText={(value) => {
+                    setsearchTestVal(value);
+                    GetSearchDiagnostics(value);
+                    setisSearchTestListVisible(true);
+                  }}
+                  autoCorrect={true}
+                />
               </View>
-              <View style={{ backgroundColor: '#ffffff' }}>
-                <View style={styles.doneButtonStyle}>
-                  <Button
-                    title={strings.buttons.done}
-                    disabled={searchTestVal ? false : !tempTestArray.length}
-                    onPress={() => {
-                      props.onPressDone(searchTestVal, tempTestArray);
-                      //   settestsSearchList([]);
-                      //   settempTestArray([]);
-                      //   setsearchTestVal('');
-                    }}
-                  />
-                </View>
+              {loading ? (
+                <ActivityIndicator animating={true} size="small" color="green" />
+              ) : (
+                <>
+                  <View style={{ top: -38, bottom: 0, marginLeft: -20 }}>
+                    {isSearchTestListVisible && GetSearchResultOfTests()}
+                  </View>
+                  <View style={{ marginRight: 20 }}>
+                    {tempTestArray &&
+                      tempTestArray.map((item, index) => {
+                        console.log('......tempTestArray:', tempTestArray);
+                        return (
+                          <ChipIconView
+                            title={item.itemname || ''}
+                            onPress={(e: any) => {
+                              console.log('deleted');
+                              settempTestArray(tempTestArray.slice(1));
+                              setsearchTestVal('');
+                              console.log('delete tempTestArray:', tempTestArray);
+                              setisSearchTestListVisible(false);
+                            }}
+                          />
+                        );
+                      })}
+                  </View>
+                </>
+              )}
+            </View>
+            <View style={{ backgroundColor: '#ffffff' }}>
+              <View style={styles.doneButtonStyle}>
+                <Button
+                  title={strings.buttons.done}
+                  disabled={searchTestVal ? false : !tempTestArray.length}
+                  onPress={() => {
+                    props.onPressDone(searchTestVal, tempTestArray);
+                    //   settestsSearchList([]);
+                    //   settempTestArray([]);
+                    //   setsearchTestVal('');
+                  }}
+                />
               </View>
             </View>
-          ) : (
+          </View>
+          {/* ) : (
             <View>
               <View style={{ marginVertical: 20, padding: 20, backgroundColor: '#ffffff' }}>
                 <View style={{ alignItems: 'center', ...theme.fonts.IBMPlexSansMedium(20) }}>
@@ -261,7 +264,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                 <Button title={strings.buttons.done} />
               </View>
             </View>
-          )}
+          )} */}
         </View>
       </View>
     </AphOverlay>
