@@ -23,6 +23,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getStatus } from 'components/Orders/OrderStatusCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -271,43 +272,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       );
     }
     return null;
-  };
-
-  const getStatus = (status: MEDICINE_ORDER_STATUS) => {
-    switch (status) {
-      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-        return 'Order Initiated';
-      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-        return 'Order Placed';
-      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-        return 'Order Verified';
-      case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-        return 'Order Failed';
-      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-        return 'Order Confirmed';
-      case MEDICINE_ORDER_STATUS.CANCELLED:
-        return 'Order Cancelled';
-      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-        return 'Order Cancel Requested';
-      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-        return 'Order Out for Delivery';
-      case MEDICINE_ORDER_STATUS.DELIVERED:
-        return 'Order Delivered';
-      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
-        return 'Order Payment Success';
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-        return 'Prescription Uploaded';
-      case MEDICINE_ORDER_STATUS.PICKEDUP:
-        return 'Order Picked up';
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-        return 'Prescription Cart Ready';
-      case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-        return 'Return Initiated';
-      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-        return 'Return Accepted';
-      default:
-        return 'Order Initiated';
-    }
   };
 
   const getOrderStatus = (status: (statusDetails | null)[]) => {
