@@ -106,6 +106,44 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  getAllDoctorsInfo(id: string) {
+    if (id == '0') {
+      return this.find({
+        where: [{ isActive: true }],
+        relations: [
+          'specialty',
+          'doctorHospital',
+          'doctorHospital.facility',
+          'consultHours',
+          'starTeam',
+          'bankAccount',
+          'packages',
+          'starTeam.associatedDoctor',
+          'starTeam.associatedDoctor.specialty',
+          'starTeam.associatedDoctor.doctorHospital',
+          'starTeam.associatedDoctor.doctorHospital.facility',
+        ],
+      });
+    } else {
+      return this.find({
+        where: [{ id, isActive: true }],
+        relations: [
+          'specialty',
+          'doctorHospital',
+          'doctorHospital.facility',
+          'consultHours',
+          'starTeam',
+          'bankAccount',
+          'packages',
+          'starTeam.associatedDoctor',
+          'starTeam.associatedDoctor.specialty',
+          'starTeam.associatedDoctor.doctorHospital',
+          'starTeam.associatedDoctor.doctorHospital.facility',
+        ],
+      });
+    }
+  }
+
   findByIdWithStatusExclude(id: string) {
     return this.findOne({
       where: [{ id }],
