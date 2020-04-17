@@ -9,6 +9,7 @@ import {
   OneApollo,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
+  CheckedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -24,6 +25,7 @@ import {
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  CODCity,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -39,7 +41,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   SafeAreaView,
@@ -49,6 +51,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import { Slider } from 'react-native-elements';
 import firebase from 'react-native-firebase';
@@ -62,7 +67,9 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -173,16 +180,60 @@ const styles = StyleSheet.create({
     color: theme.colors.APP_YELLOW,
     lineHeight: 24,
   },
+  textStyle1: {
+    ...theme.viewStyles.text('R', 13, '#02475b'),
+    textAlign: 'justify',
+    paddingTop: 27,
+  },
+  textStyle2: {
+    ...theme.viewStyles.text('M', 13, '#02475b'),
+    textAlign: 'justify',
+  },
+  textStyle3: {
+    ...theme.viewStyles.text('R', 13, '#02475b'),
+    marginBottom: 5,
+  },
+  inputStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  checkboxViewStyle: {
+    flexDirection: 'row',
+    marginTop: 10,
+  },
+  checkboxTextStyle: {
+    ...theme.viewStyles.text('R', 13, '#02475b'),
+    flex: 1,
+    marginLeft: 6,
+    marginRight: 16,
+  },
+  separatorStyle: {
+    marginTop: 19,
+    marginBottom: 20,
+    backgroundColor: '#02475b',
+    opacity: 0.1,
+  },
 });
 
-export interface CheckoutSceneProps extends NavigationScreenProps {}
+export interface CheckoutSceneProps
+  extends NavigationScreenProps<{
+    deliveryTime: string;
+    isChennaiOrder: boolean;
+  }> {}
 
 export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
+  const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
+  const { currentPatient } = useAllCurrentPatients();
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
-  const [isCashOnDelivery, setCashOnDelivery] = useState(false);
+  const [isCashOnDelivery, setCashOnDelivery] = useState(isChennaiOrder ? true : false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>(g(currentPatient, 'emailAddress') || '');
+  const [emailIdCheckbox, setEmailIdCheckbox] = useState<boolean>(
+    g(currentPatient, 'emailAddress') ? false : true
+  );
+  const [agreementCheckbox, setAgreementCheckbox] = useState<boolean>(false);
+
   // const [orderInfo, setOrderInfo] = useState({
   //   pickupStoreName: '',
   //   pickupStoreAddress: '',
@@ -208,10 +259,17 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     stores,
     coupon,
   } = useShoppingCart();
-  const { currentPatient } = useAllCurrentPatients();
 
   const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
+
+  useEffect(() => {
+    if (email) {
+      setEmailIdCheckbox(false);
+    } else {
+      setEmailIdCheckbox(true);
+    }
+  }, [emailIdCheckbox, email]);
 
   const postwebEngageCheckoutCompletedEvent = (orderAutoId: string) => {
     const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
@@ -260,6 +318,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
+        // Values for chennai COD order
+        email: isChennaiOrder && email ? email.trim() : null,
+        CODCity: isChennaiOrder ? CODCity.CHENNAI : null,
       },
     };
     console.log(JSON.stringify(paymentInfo));
@@ -279,7 +340,11 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           });
         } else {
           // Order-Success, Show popup here & clear cart info
-          postwebEngageCheckoutCompletedEvent(`${orderAutoId}`);
+          try {
+            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`);
+          } catch (error) {
+            console.log(error);
+          }
 
           clearCartInfo && clearCartInfo();
           // setOrderInfo({
@@ -746,13 +811,113 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     );
   };
 
+  const renderChennaiOrderForm = () => {
+    return (
+      <>
+        <Text style={styles.textStyle1}>
+          {`Dear ${g(currentPatient, 'firstName') ||
+            ''},\n\nSUPERB!\n\nYour order request is in process\n`}
+        </Text>
+        <Text style={styles.textStyle2}>
+          {'Just one more step. New Regulation in your region requires your email id.\n'}
+        </Text>
+        <Text style={styles.textStyle3}>{'Your email id please'}</Text>
+        <TextInputComponent
+          value={`${email}`}
+          onChangeText={(email) => setEmail(email)}
+          placeholder={'name@email.com'}
+          inputStyle={styles.inputStyle}
+        />
+        <TouchableOpacity
+          onPress={() => setEmailIdCheckbox(!emailIdCheckbox)}
+          activeOpacity={1}
+          style={styles.checkboxViewStyle}
+        >
+          {emailIdCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+          <Text style={styles.checkboxTextStyle}>
+            {
+              'Check this box if you don’t have an Email Id & want us to share your order details over SMS.'
+            }
+          </Text>
+        </TouchableOpacity>
+        <Spearator style={styles.separatorStyle} />
+        <TouchableOpacity
+          onPress={() => setAgreementCheckbox(!agreementCheckbox)}
+          activeOpacity={1}
+          style={[styles.checkboxViewStyle, { marginTop: 0 }]}
+        >
+          {agreementCheckbox ? <CheckedIcon /> : <CheckUnselectedIcon />}
+          <Text style={styles.checkboxTextStyle}>
+            {'I agree to share my medicine requirements with Apollo Pharmacy for home delivery.'}
+          </Text>
+        </TouchableOpacity>
+      </>
+    );
+  };
+
+  const isSatisfyingEmailRegex = (value: string) =>
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const onPressChennaiOrderPayButton = () => {
+    if (!(email === '' || (email && isSatisfyingEmailRegex(email.trim())))) {
+      showAphAlert!({ title: 'Uh oh.. :(', description: 'Enter valid email' });
+    } else {
+      try {
+        CommonLogEvent(AppRoutes.CheckoutScene, `SUBMIT TO CONFIRM ORDER`);
+      } catch (error) {
+        CommonBugFender('CheckoutScene_renderPayButton_try', error);
+      }
+      initiateOrder();
+    }
+  };
+
+  const renderChennaiOrderPayButton = () => {
+    const isPayDisabled = !agreementCheckbox;
+    return (
+      <StickyBottomComponent
+        style={[styles.stickyBottomComponentStyle, { paddingHorizontal: 0, paddingTop: 25 }]}
+      >
+        <Button
+          style={{ width: '100%' }}
+          title={`SUBMIT TO CONFIRM ORDER`}
+          onPress={onPressChennaiOrderPayButton}
+          disabled={isPayDisabled}
+        />
+      </StickyBottomComponent>
+    );
+  };
+
+  const renderChennaiOrderFormAndPayButton = () => {
+    const keyboardVerticalOffset =
+      Platform.OS === 'android' ? { keyboardVerticalOffset: 110 } : { keyboardVerticalOffset: 30 };
+
+    return (
+      <View style={{ ...theme.viewStyles.card(16, 20, 10, '#fff'), flex: 1 }}>
+        {/* <KeyboardAvoidingView style={{ flex: 1 }} behavior={'padding'} {...keyboardVerticalOffset}> */}
+        <ScrollView contentContainerStyle={{ flex: 1 }} bounces={false}>
+          {renderChennaiOrderForm()}
+          {renderChennaiOrderPayButton()}
+        </ScrollView>
+        {/* </KeyboardAvoidingView> */}
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {/* {renderOneApolloAndHealthCreditsCard()} */}
-        {renderPaymentModesCard()}
-        {renderPayButton()}
+        {isChennaiOrder ? (
+          renderChennaiOrderFormAndPayButton()
+        ) : (
+          <>
+            {renderPaymentModesCard()}
+            {renderPayButton()}
+          </>
+        )}
       </SafeAreaView>
       {showSpinner && <Spinner />}
     </View>

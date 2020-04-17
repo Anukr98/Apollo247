@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 31
-        versionName "1.92"
+        versionCode 32
+        versionName "2.11"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -200,6 +200,7 @@ android {
 }
 
 dependencies {
+    implementation project(':@bugfender_rn-bugfender')
     implementation project(':react-native-fbsdk')
     implementation project(':react-native-appsflyer')
     implementation 'com.webengage:android-sdk:3.+'

@@ -14,6 +14,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
   CommonLogEvent,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getNetStatus, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -216,6 +217,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('OTPVerification_removeFromStore_try', error);
+      setBugFenderLog('OTPVerification_removeFromStore_try', error);
       console.log(error, 'error');
       // Error removing data
     }
@@ -257,6 +259,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       }
     } catch (error) {
       CommonBugFender('OTPVerification_getTimerData_try', error);
+      setBugFenderLog('OTPVerification_getTimerData_try', error);
+
       // Error retrieving data
       console.log(error.message);
     }
@@ -306,6 +310,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       await AsyncStorage.setItem('timeOutData', JSON.stringify(timeOutData));
     } catch (error) {
       CommonBugFender('OTPVerification__storeTimerData_try', error);
+      setBugFenderLog('OTPVerification__storeTimerData_try', error);
+
       console.log(error, 'error');
       // Error saving data
     }
@@ -388,9 +394,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     })
                     .catch((e) => {
                       CommonBugFender('OTPVerification_sendOtp', e);
+                      setBugFenderLog('OTPVerification_sendOtp', e);
                     });
                 } else {
                   console.log('else error');
+                  setBugFenderLog('OTP_ENTERED_WRONG', data.reason as Error);
 
                   try {
                     setshowErrorBottomLine(true);
@@ -411,6 +419,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     setInvalidOtpCount(invalidOtpCount + 1);
                   } catch (error) {
                     CommonBugFender('OTP_ENTERED_try', error);
+                    setBugFenderLog('OTP_ENTERED_try', error);
+
                     setshowSpinner(false);
                     // console.log(error);
                   }
@@ -421,6 +431,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   console.log({
                     error,
                   });
+                  setBugFenderLog('OTP_ENTERED_FAIL', error);
+
                   setshowErrorBottomLine(true);
                   setOnOtpClick(false);
                   setshowSpinner(false);
@@ -442,6 +454,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   CommonLogEvent('OTP_ENTERED_FAIL', JSON.stringify(error));
                 } catch (error) {
                   CommonBugFender('OTP_ENTERED_FAIL_try', error);
+                  setBugFenderLog('OTP_ENTERED_FAIL_try', error);
+
                   setshowSpinner(false);
                   console.log(error);
                 }
@@ -452,9 +466,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('OTPVerification_getNetStatus_onClickOk', e);
+          setBugFenderLog('OTPVerification_getNetStatus_onClickOk', e);
         });
     } catch (error) {
       CommonBugFender('OTPVerification_KEYBOARD_DISMISS', error);
+      setBugFenderLog('OTPVerification_KEYBOARD_DISMISS', error);
     }
   };
 
@@ -484,6 +500,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         CommonBugFender('OTPVerification_getOTPPatientApiCall', error);
         console.log('getOTPPatientApiCallerror', error);
         setOpenFillerView(false);
+        setBugFenderLog('OTPVerification_getOTPPatientApiCall', error);
       });
   };
 
@@ -641,6 +658,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 props.navigation.setParams({ loginId: resendResult.loginId });
 
                 CommonBugFender('OTP_RESEND_SUCCESS', resendResult as Error);
+                setBugFenderLog('OTP_RESEND_SUCCESS', resendResult as Error);
+
                 setShowResentTimer(true);
                 console.log('confirmResult login', resendResult);
               })
@@ -648,6 +667,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 console.log(error, 'error');
                 console.log(error.message, 'errormessage');
                 CommonBugFender('OTP_RESEND_FAIL', error);
+                setBugFenderLog('OTP_RESEND_FAIL', error);
+
                 Alert.alert('Error', 'The interaction was cancelled by the user.');
               });
           } else {
@@ -656,6 +677,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('OTPVerification_getNetStatus', e);
+          setBugFenderLog('OTPVerification_getNetStatus', e);
         });
     } catch (error) {}
   };
