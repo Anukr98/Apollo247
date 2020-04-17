@@ -9,8 +9,10 @@ import {
   MedicineOrderLineItems,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from 'profiles-service/entities';
-import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
+// import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -101,8 +103,8 @@ type MedicineCartInput = {
   prescriptionImageUrl: string;
   prismPrescriptionFileId: string;
   orderTat: string;
-  bookingSource: BOOKINGSOURCE;
-  deviceType: DEVICETYPE;
+  bookingSource: BOOKING_SOURCE;
+  deviceType: DEVICE_TYPE;
   items: MedicineCartItem[];
 };
 

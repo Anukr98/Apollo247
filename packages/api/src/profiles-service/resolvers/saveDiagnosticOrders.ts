@@ -10,6 +10,8 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   Gender,
   DiagnosticOrdersStatus,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -27,7 +29,6 @@ import {
   sendDiagnosticOrderStatusNotification,
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
-import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 
 export const saveDiagnosticOrderTypeDefs = gql`
   enum DIAGNOSTIC_ORDER_STATUS {
@@ -169,8 +170,8 @@ type DiagnosticOrderInput = {
   centerCity: string;
   centerState: string;
   centerLocality: string;
-  bookingSource: BOOKINGSOURCE;
-  deviceType: DEVICETYPE;
+  bookingSource: BOOKING_SOURCE;
+  deviceType: DEVICE_TYPE;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE;
   items: [DiagnosticLineItem];
 };
