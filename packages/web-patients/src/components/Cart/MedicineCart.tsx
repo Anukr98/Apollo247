@@ -692,7 +692,6 @@ export const MedicineCart: React.FC = (props) => {
               medicineDeliveryType: deliveryAddressId
                 ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-              bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
               shopId: storeAddressId || '0',
               appointmentId: '',
               patinetAddressId: deliveryAddressId || '',
@@ -716,7 +715,6 @@ export const MedicineCart: React.FC = (props) => {
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
             : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
           shopId: storeAddressId || '0',
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
