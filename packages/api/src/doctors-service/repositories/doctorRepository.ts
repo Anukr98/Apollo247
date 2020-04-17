@@ -26,6 +26,12 @@ import { DoctorConsultHoursRepository } from 'doctors-service/repositories/docto
 import { ApiConstants } from 'ApiConstants';
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
+type DoctorSlot = {
+  slotId: number;
+  slot: string;
+  status: string;
+};
+
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
   async getDoctorSlots(availableDate: Date, doctorId: string) {
@@ -50,6 +56,7 @@ export class DoctorRepository extends Repository<Doctor> {
     }
     timeSlots = timeSlots.concat(timeSlotsNext);
     const availableSlots: string[] = [];
+    const doctorSlots: DoctorSlot[] = [];
     let rowCount = 0;
     if (timeSlots && timeSlots.length > 0) {
       timeSlots.map((timeSlot) => {
@@ -87,6 +94,7 @@ export class DoctorRepository extends Repository<Doctor> {
             startTime = new Date(previousDate.toDateString() + ' ' + stTime);
           }
         }
+        let slotCount = 0;
         Array(slotsCount)
           .fill(0)
           .map(() => {
@@ -111,6 +119,12 @@ export class DoctorRepository extends Repository<Doctor> {
                 new Date(generatedSlot) < new Date(checkEnd)
               ) {
                 if (!availableSlots.includes(generatedSlot)) {
+                  const slotInfo = {
+                    slotId: ++slotCount,
+                    slot: generatedSlot,
+                    status: 'OPEN',
+                  };
+                  doctorSlots.push(slotInfo);
                   availableSlots.push(generatedSlot);
                 }
               }
@@ -121,12 +135,12 @@ export class DoctorRepository extends Repository<Doctor> {
         const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
         if (lastMins < timeSlot.consultDuration) {
           availableSlots.pop();
+          doctorSlots.pop();
         }
         rowCount++;
       });
     }
-    console.log(availableSlots, 'available slots');
-    return availableSlots;
+    return doctorSlots;
   }
 
   getDoctorProfileData(id: string) {

@@ -9,6 +9,7 @@ export const doctorDataElasticTypeDefs = gql`
     insertDataElastic(id: String, limit: Int, offset: Int): String
     deleteDocumentElastic(id: String): String
     addDoctorSlotsElastic(id: String, slotDate: String): String
+    updateDoctorSlotStatus(id: String, slotDate: String, slot: String, status: String): String
   }
 `;
 
@@ -27,6 +28,34 @@ const deleteDocumentElastic: Resolver<null, { id: string }, DoctorsServiceContex
   return 'Document deleted';
 };
 
+const updateDoctorSlotStatus: Resolver<
+  null,
+  { id: string; slotDate: string; slot: string; status: string },
+  DoctorsServiceContext,
+  string
+> = async (parent, args, { doctorsDb }) => {
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const doc1: RequestParams.Update = {
+    index: 'doctors',
+    type: 'posts',
+    id: args.id,
+    body: {
+      script: {
+        source:
+          'for (int i = 0; i < ctx._source.doctorSlots.length; ++i) { if(ctx._source.doctorSlots[i].slotDate == params.slotDate) { for(int k=0;k<ctx._source.doctorSlots[i].slots.length;k++){if(ctx._source.doctorSlots[i].slots[k].slot == params.slot){ ctx._source.doctorSlots[i].slots[k].status = params.status;}}}}',
+        params: {
+          slotDate: args.slotDate,
+          slot: args.slot,
+          status: args.status,
+        },
+      },
+    },
+  };
+  const updateResp = await client.update(doc1);
+  console.log(updateResp, 'updateResp');
+  return 'slot status updated ' + args.id;
+};
+
 const addDoctorSlotsElastic: Resolver<
   null,
   { id: string; slotDate: string },
@@ -40,7 +69,7 @@ const addDoctorSlotsElastic: Resolver<
     body: {
       query: {
         match: {
-          'doctorSlots.Slotdate': args.slotDate,
+          'doctorSlots.slotDate': args.slotDate,
         },
       },
     },
@@ -62,23 +91,17 @@ const addDoctorSlotsElastic: Resolver<
           source: 'ctx._source.doctorSlots.add(params.slot)',
           params: {
             slot: {
-              Slotdate: args.slotDate,
-              slots: [
-                {
-                  id: 1,
-                  slot: '2020-04-13T14:30',
-                  status: 'OPEN',
-                },
-              ],
+              slotDate: args.slotDate,
+              slots: doctorSlots,
             },
           },
         },
       },
     };
-    //const updateResp = await client.update(doc1);
-    //console.log(updateResp, 'updateResp');
+    const updateResp = await client.update(doc1);
+    console.log(updateResp, 'updateResp');
   }
-  return 'Document deleted';
+  return 'Document updated: ' + args.id;
 };
 
 const insertDataElastic: Resolver<
@@ -222,5 +245,10 @@ const insertDataElastic: Resolver<
 };
 
 export const doctorDataElasticResolvers = {
-  Mutation: { insertDataElastic, deleteDocumentElastic, addDoctorSlotsElastic },
+  Mutation: {
+    insertDataElastic,
+    deleteDocumentElastic,
+    addDoctorSlotsElastic,
+    updateDoctorSlotStatus,
+  },
 };
