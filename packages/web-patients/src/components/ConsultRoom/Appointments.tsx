@@ -752,7 +752,7 @@ export const Appointments: React.FC = (props) => {
                     setIsFailurePayment(false);
                   }}
                 >
-                  OK,GOT IT
+                  OK, GOT IT
                 </AphButton>
               </div>
             </div>
