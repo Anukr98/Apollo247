@@ -3,13 +3,12 @@ import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { ConsultHours } from 'doctors-service/entities/';
-import { CloudConnectionPool } from '@elastic/elasticsearch/lib/pool';
 
 export const doctorDataElasticTypeDefs = gql`
   extend type Mutation {
-    insertDataElastic(id: String): String
+    insertDataElastic(id: String, limit: Int, offset: Int): String
     deleteDocumentElastic(id: String): String
+    addDoctorSlotsElastic(id: String, slotDate: String): String
   }
 `;
 
@@ -18,7 +17,7 @@ const deleteDocumentElastic: Resolver<null, { id: string }, DoctorsServiceContex
   args,
   { doctorsDb }
 ) => {
-  const client = new Client({ node: 'http://104.211.242.175:9200' });
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const deleteParams: RequestParams.Delete = {
     id: args.id,
     index: 'doctors',
@@ -28,19 +27,74 @@ const deleteDocumentElastic: Resolver<null, { id: string }, DoctorsServiceContex
   return 'Document deleted';
 };
 
-const insertDataElastic: Resolver<null, { id: string }, DoctorsServiceContext, string> = async (
-  parent,
-  args,
-  { doctorsDb }
-) => {
-  const client = new Client({ node: 'http://104.211.242.175:9200' });
+const addDoctorSlotsElastic: Resolver<
+  null,
+  { id: string; slotDate: string },
+  DoctorsServiceContext,
+  string
+> = async (parent, args, { doctorsDb }) => {
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const searchParams: RequestParams.Search = {
+    index: 'doctors',
+    type: 'posts',
+    body: {
+      query: {
+        match: {
+          'doctorSlots.Slotdate': args.slotDate,
+        },
+      },
+    },
+  };
+  const getDetails = await client.search(searchParams);
+
+  console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'searchhitCount');
+
+  if (getDetails.body.hits.hits.length == 0) {
+    const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctorSlots = await docRepo.getDoctorSlots(new Date(args.slotDate), args.id);
+    console.log(doctorSlots, 'doctor slots');
+    const doc1: RequestParams.Update = {
+      index: 'doctors',
+      type: 'posts',
+      id: args.id,
+      body: {
+        script: {
+          source: 'ctx._source.doctorSlots.add(params.slot)',
+          params: {
+            slot: {
+              Slotdate: args.slotDate,
+              slots: [
+                {
+                  id: 1,
+                  slot: '2020-04-13T14:30',
+                  status: 'OPEN',
+                },
+              ],
+            },
+          },
+        },
+      },
+    };
+    //const updateResp = await client.update(doc1);
+    //console.log(updateResp, 'updateResp');
+  }
+  return 'Document deleted';
+};
+
+const insertDataElastic: Resolver<
+  null,
+  { id: string; limit: number; offset: number },
+  DoctorsServiceContext,
+  string
+> = async (parent, args, { doctorsDb }) => {
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const allDocsInfo = await docRepo.getAllDoctorsInfo(args.id);
+  const allDocsInfo = await docRepo.getAllDoctorsInfo(args.id, args.limit, args.offset);
   let extDocData = '',
     newDocData = '';
   if (allDocsInfo.length > 0) {
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < allDocsInfo.length; i++) {
       const searchParams: RequestParams.Search = {
         index: 'doctors',
         type: 'posts',
@@ -166,8 +220,7 @@ const insertDataElastic: Resolver<null, { id: string }, DoctorsServiceContext, s
 
   return 'Elastic search query. NewdocData: ' + newDocData + ' ExtDocdata: ' + extDocData;
 };
-//insert data features ends here
 
 export const doctorDataElasticResolvers = {
-  Mutation: { insertDataElastic, deleteDocumentElastic },
+  Mutation: { insertDataElastic, deleteDocumentElastic, addDoctorSlotsElastic },
 };

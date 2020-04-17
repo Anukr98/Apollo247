@@ -5,6 +5,7 @@ import {
   DoctorType,
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
+  ConsultHours,
 } from 'doctors-service/entities';
 import {
   Range,
@@ -18,7 +19,6 @@ import {
   DoctorsObject,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { format, differenceInMinutes, addMinutes, addDays } from 'date-fns';
-
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -28,6 +28,107 @@ import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
+  async getDoctorSlots(availableDate: Date, doctorId: string) {
+    let previousDate: Date = availableDate;
+    let prevDaySlots = 0;
+    previousDate = addDays(availableDate, -1);
+    const checkStart = `${previousDate.toDateString()} 18:30:00`;
+    const checkEnd = `${availableDate.toDateString()} 18:30:00`;
+    console.log(checkStart, checkEnd, 'check start end');
+    let weekDay = format(previousDate, 'EEEE').toUpperCase();
+    let timeSlots = await ConsultHours.find({
+      where: { doctor: doctorId, weekDay },
+      order: { startTime: 'ASC' },
+    });
+    weekDay = format(availableDate, 'EEEE').toUpperCase();
+    const timeSlotsNext = await ConsultHours.find({
+      where: { doctor: doctorId, weekDay },
+      order: { startTime: 'ASC' },
+    });
+    if (timeSlots.length > 0) {
+      prevDaySlots = 1;
+    }
+    timeSlots = timeSlots.concat(timeSlotsNext);
+    const availableSlots: string[] = [];
+    let rowCount = 0;
+    if (timeSlots && timeSlots.length > 0) {
+      timeSlots.map((timeSlot) => {
+        let st = `${availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
+        const ed = `${availableDate.toDateString()} ${timeSlot.endTime.toString()}`;
+        let consultStartTime = new Date(st);
+        let consultEndTime = new Date(ed);
+
+        if (consultEndTime < consultStartTime) {
+          st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
+          consultStartTime = new Date(st);
+        }
+        const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
+        if (timeSlot.weekDay != timeSlot.actualDay) {
+          consultEndTime = addMinutes(consultEndTime, 1);
+        }
+        let slotsCount =
+          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
+        if (slotsCount - Math.floor(slotsCount) == 0.5) {
+          slotsCount = Math.ceil(slotsCount);
+        } else {
+          slotsCount = Math.floor(slotsCount);
+        }
+        const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
+        let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+        if (prevDaySlots == 0) {
+          startTime = new Date(addDays(previousDate, 1).toDateString() + ' ' + stTime);
+        }
+        if (rowCount > 0) {
+          const nextDate = addDays(previousDate, 1);
+          const ed = `${nextDate.toDateString()} ${timeSlot.startTime.toString()}`;
+          const td = `${nextDate.toDateString()} 00:00:00`;
+          if (new Date(ed) >= new Date(td) && timeSlot.weekDay != timeSlots[rowCount - 1].weekDay) {
+            previousDate = addDays(previousDate, 1);
+            startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+          }
+        }
+        Array(slotsCount)
+          .fill(0)
+          .map(() => {
+            const stTime = startTime;
+            startTime = addMinutes(startTime, timeSlot.consultDuration);
+            const stTimeHours = stTime
+              .getUTCHours()
+              .toString()
+              .padStart(2, '0');
+            const stTimeMins = stTime
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0');
+            const startDateStr = format(stTime, 'yyyy-MM-dd');
+            const endStr = ':00.000Z';
+            const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
+            const timeWithBuffer = addMinutes(new Date(), timeSlot.consultBuffer);
+
+            if (new Date(generatedSlot) > timeWithBuffer) {
+              if (
+                new Date(generatedSlot) >= new Date(checkStart) &&
+                new Date(generatedSlot) < new Date(checkEnd)
+              ) {
+                if (!availableSlots.includes(generatedSlot)) {
+                  availableSlots.push(generatedSlot);
+                }
+              }
+            }
+            return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
+          });
+        const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
+        const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
+        if (lastMins < timeSlot.consultDuration) {
+          availableSlots.pop();
+        }
+        rowCount++;
+      });
+    }
+    console.log(availableSlots, 'available slots');
+    return availableSlots;
+  }
+
   getDoctorProfileData(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
@@ -106,7 +207,7 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
-  getAllDoctorsInfo(id: string) {
+  getAllDoctorsInfo(id: string, limit: number, offset: number) {
     if (id == '0') {
       return this.find({
         where: [{ isActive: true }],
@@ -123,6 +224,8 @@ export class DoctorRepository extends Repository<Doctor> {
           'starTeam.associatedDoctor.doctorHospital',
           'starTeam.associatedDoctor.doctorHospital.facility',
         ],
+        take: limit,
+        skip: offset,
       });
     } else {
       return this.find({
