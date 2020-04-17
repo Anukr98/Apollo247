@@ -135,7 +135,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.008"
+        versionName "1.000"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -213,7 +213,6 @@ dependencies {
     implementation project(':react-native-splash-screen')
     implementation project(':react-native-vector-icons')
     implementation project(':react-native-gesture-handler')
-    implementation project(':react-native-android-sms-listener')
     implementation project(':@react-native-community_geolocation')
     implementation project(':@react-native-community_netinfo')
 
