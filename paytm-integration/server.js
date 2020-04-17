@@ -98,7 +98,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         response.data.data.updatePhrDocSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -125,7 +125,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         response.data.data.getAvailableDoctorsCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -152,7 +152,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         response.data.data.updateConsultRating +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -234,7 +234,7 @@ app.get('/consulttransaction', (req, res) => {
     '\n' +
     requestJSON +
     '\n-------------------\n';
-  fs.appendFile(fileName, content, function (err) {
+  fs.appendFile(fileName, content, function(err) {
     if (err) throw err;
     console.log('Updated!');
   });
@@ -243,7 +243,7 @@ app.get('/consulttransaction', (req, res) => {
     .then((response) => {
       let content = new Date().toString() + '\n---------------------------\nupdate response:';
       response.data.data.makeAppointmentPayment.appointment.id + '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -531,7 +531,23 @@ app.post('/paymed-response', (req, res) => {
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
   const responseMessage = payload.RESPMSG;
   const responseCode = payload.RESPCODE;
-
+  const fileName = process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaResp.txt';
+  let content =
+    new Date().toString() +
+    '\n---------------------------\n' +
+    'appt id:' +
+    req.session.orderAutoId +
+    '\n' +
+    transactionStatus +
+    ' - ' +
+    responseMessage +
+    ' - ' +
+    responseCode +
+    '\n-------------------\n';
+  fs.appendFile(fileName, content, function(err) {
+    if (err) throw err;
+    console.log('Updated!');
+  });
   /* never execute a transaction if the payment status is failed */
   if (transactionStatus === 'failed') {
     if (reqSource === 'web') {
@@ -700,7 +716,10 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto.createHash('sha512').update(code).digest('hex');
+          const hash = crypto
+            .createHash('sha512')
+            .update(code)
+            .digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -1130,7 +1149,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -1145,7 +1164,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function (err) {
+                    fs.appendFile(fileName, content, function(err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1522,7 +1541,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function (err) {
+          fs.appendFile(fileName, content, function(err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1537,7 +1556,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function (err) {
+              fs.appendFile(fileName, content, function(err) {
                 if (err) throw err;
                 console.log('Updated!');
               });
