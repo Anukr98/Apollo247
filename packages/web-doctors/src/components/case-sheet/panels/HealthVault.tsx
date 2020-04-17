@@ -433,9 +433,9 @@ export const HealthVault: React.FC = () => {
                       </a>
                     )}
                   </ListItemAvatar>
-                  <div hidden>
+                  {/* <div hidden>
                     {prismIdList && prismIdList.push(item && item.prismFileId && item.prismFileId)}{' '}
-                  </div>
+                  </div> */}
                   <ListItemText
                     primary={
                       <Fragment>
