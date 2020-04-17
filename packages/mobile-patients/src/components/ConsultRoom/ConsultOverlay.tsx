@@ -32,6 +32,8 @@ import {
   BookAppointmentInput,
   DoctorType,
   AppointmentType,
+  BOOKINGSOURCE,
+  DEVICETYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   getNetStatus,
@@ -327,6 +329,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
       couponCode: coupon ? coupon : null,
+      bookingSource: BOOKINGSOURCE.MOBILE,
+      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
     };
     console.log(appointmentInput, 'input');
     const price = coupon ? doctorDiscountedFees : Number(doctorFees);
