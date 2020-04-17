@@ -10,6 +10,8 @@ import {
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   Gender,
   DiagnosticOrdersStatus,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -62,6 +64,8 @@ export const saveDiagnosticOrderTypeDefs = gql`
     centerCity: String!
     centerState: String!
     centerLocality: String!
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     items: [DiagnosticLineItem]
   }
@@ -87,6 +91,15 @@ export const saveDiagnosticOrderTypeDefs = gql`
     ordersList: DiagnosticOrders
   }
 
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+  enum DEVICETYPE {
+    IOS
+    ANDROID
+  }
+
   type DiagnosticOrders {
     id: ID!
     patientId: ID!
@@ -108,6 +121,8 @@ export const saveDiagnosticOrderTypeDefs = gql`
     orderType: String!
     displayId: Int!
     createdDate: DateTime!
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     diagnosticOrderLineItems: [DiagnosticOrderLineItems]
     diagnosticOrdersStatus: [DiagnosticOrdersStatus]
@@ -155,6 +170,8 @@ type DiagnosticOrderInput = {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+  bookingSource: BOOKING_SOURCE;
+  deviceType: DEVICE_TYPE;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE;
   items: [DiagnosticLineItem];
 };
@@ -236,6 +253,8 @@ const SaveDiagnosticOrder: Resolver<
     centerName: diagnosticOrderInput.centerName,
     centerLocality: diagnosticOrderInput.centerLocality,
     centerState: diagnosticOrderInput.centerState,
+    bookingSource: diagnosticOrderInput.bookingSource,
+    deviceType: diagnosticOrderInput.deviceType,
     orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
   };
 
