@@ -212,10 +212,10 @@ export class MedicineOrders extends BaseEntity {
   @Column()
   deliveryType: MEDICINE_DELIVERY_TYPE;
 
-  @Column({ default: BOOKING_SOURCE.MOBILE, nullable: true })
+  @Column({ default: BOOKING_SOURCE.MOBILE })
   bookingSource: BOOKING_SOURCE;
 
-  @Column({ default: null, nullable: true })
+  @Column({ default: null })
   deviceType: DEVICE_TYPE;
 
   @Column('decimal', { precision: 10, scale: 2 })
@@ -1321,10 +1321,10 @@ export class DiagnosticOrders extends BaseEntity {
   @Column()
   city: string;
 
-  @Column({ default: BOOKING_SOURCE.MOBILE, nullable: true })
+  @Column({ default: BOOKING_SOURCE.MOBILE })
   bookingSource: BOOKING_SOURCE;
 
-  @Column({ default: null, nullable: true })
+  @Column({ default: null })
   deviceType: DEVICE_TYPE;
 
   @Column()
