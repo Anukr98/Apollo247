@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 10,
     },
     noData: {
+      marginTop: 10,
       [theme.breakpoints.down('xs')]: {
         marginTop: 25,
         paddingLeft: 10,
