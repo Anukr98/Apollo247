@@ -14,7 +14,6 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 
 export enum Gender {
   MALE = 'MALE',
@@ -213,7 +212,7 @@ export class MedicineOrders extends BaseEntity {
   @Column()
   deliveryType: MEDICINE_DELIVERY_TYPE;
 
-  @Column({ default: BOOKINGSOURCE.MOBILE, nullable: true })
+  @Column({ default: BOOKING_SOURCE.MOBILE, nullable: true })
   bookingSource: BOOKING_SOURCE;
 
   @Column({ default: null, nullable: true })
@@ -1322,7 +1321,7 @@ export class DiagnosticOrders extends BaseEntity {
   @Column()
   city: string;
 
-  @Column({ default: BOOKINGSOURCE.MOBILE, nullable: true })
+  @Column({ default: BOOKING_SOURCE.MOBILE, nullable: true })
   bookingSource: BOOKING_SOURCE;
 
   @Column({ default: null, nullable: true })
