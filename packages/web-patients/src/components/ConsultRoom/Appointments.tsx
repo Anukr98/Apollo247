@@ -183,12 +183,6 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'initial',
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
     },
     successPopoverWindow: {
       display: 'flex',
@@ -327,6 +321,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     bottomButtons: {
       display: 'flex',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        marginLeft: 'auto',
+        fontWeight: 'bold',
+        color: '#fc9916',
+        padding: 0,
+        '&:hover': {
+          backgroundColor: 'transparent',
+          color: '#fc9916',
+        },
+      },
     },
   };
 });
@@ -742,12 +748,11 @@ export const Appointments: React.FC = (props) => {
               <div className={classes.bottomButtons}>
                 <AphButton
                   color="primary"
-                  classes={{ root: classes.addMemberBtn }}
                   onClick={() => {
                     setIsFailurePayment(false);
                   }}
                 >
-                  OK,GOT IT
+                  OK, GOT IT
                 </AphButton>
               </div>
             </div>

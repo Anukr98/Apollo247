@@ -22,7 +22,10 @@ import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
 import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } from '../graphql/types/getCaseSheet';
 import { apiRoutes } from './apiRoutes';
-import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonBugFender,
+  setBugFenderLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import ApolloClient from 'apollo-client';
 import {
@@ -874,6 +877,20 @@ export const InitiateAppsFlyer = () => {
   console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch) == true) {
+      console.log('res.data', res.data);
+      // if (res.data.af_dp !== undefined) {
+      try {
+        AsyncStorage.setItem('deeplink', res.data.af_dp);
+        console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
+        setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
+      } catch (error) {}
+
+      // } else {
+      //   setBugFenderLog('APPS_FLYER_DEEP_LINK_decode_else');
+      // }
+
       if (res.data.af_status === 'Non-organic') {
         const media_source = res.data.media_source;
         const campaign = res.data.campaign;
@@ -909,7 +926,10 @@ export const InitiateAppsFlyer = () => {
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution((res) => {
-    console.log(res);
+    console.log('onAppOpenAttribution', res);
+    console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
+
+    // AsyncStorage.setItem('deeplink', decodeURIComponent(res.data.af_dp));
   });
 };
 

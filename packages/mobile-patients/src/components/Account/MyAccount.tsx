@@ -278,6 +278,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.setItem('selectUserId', '');
       AsyncStorage.removeItem('phoneNumber');
       AsyncStorage.setItem('logginHappened', 'false');
+      AsyncStorage.removeItem('deeplink');
+
       props.navigation.dispatch(
         StackActions.reset({
           index: 0,

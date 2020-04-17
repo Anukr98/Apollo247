@@ -9,7 +9,10 @@ import {
   MedicineOrderLineItems,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from 'profiles-service/entities';
+// import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -54,6 +57,8 @@ export const saveMedicineOrderTypeDefs = gql`
     estimatedAmount: Float
     patientId: ID!
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
     patientAddressId: ID!
     devliveryCharges: Float
     prescriptionImageUrl: String
@@ -98,6 +103,8 @@ type MedicineCartInput = {
   prescriptionImageUrl: string;
   prismPrescriptionFileId: string;
   orderTat: string;
+  bookingSource: BOOKING_SOURCE;
+  deviceType: DEVICE_TYPE;
   items: MedicineCartItem[];
 };
 
@@ -163,6 +170,8 @@ const SaveMedicineOrder: Resolver<
     prismPrescriptionFileId: MedicineCartInput.prismPrescriptionFileId,
     currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
     orderTat: MedicineCartInput.orderTat,
+    bookingSource: MedicineCartInput.bookingSource,
+    deviceType: MedicineCartInput.deviceType,
     patientAddressId: MedicineCartInput.patientAddressId,
   };
 

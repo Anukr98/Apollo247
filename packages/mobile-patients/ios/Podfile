@@ -86,6 +86,7 @@ target 'ApolloPatient' do
   pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
   pod 'react-native-fbsdk', :path => '../node_modules/react-native-fbsdk'
+  pod 'RNBugfender', :path => '../node_modules/@bugfender/rn-bugfender'
 
   # ServiceExtension Target
 

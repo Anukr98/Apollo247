@@ -22,6 +22,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
+  BOOKINGSOURCE,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -560,6 +561,7 @@ export const MedicineCart: React.FC = (props) => {
             deliveryMode === 'HOME'
               ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
               : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
+          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
           estimatedAmount: parseFloat(totalAmount),
           devliveryCharges: deliveryCharges,
           prescriptionImageUrl: [
@@ -726,7 +728,11 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
+    (!nonCartFlow &&
+      uploadPrescriptionRequired === -1 &&
+      cartItems &&
+      cartItems.length > 0 &&
+      deliveryTime) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;

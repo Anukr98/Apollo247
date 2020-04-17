@@ -45,6 +45,7 @@ export const clientRoutes = {
   FAQ: () => '/faq',
   partnerSBI: () => '/partners/sbi',
   contactUs: () => '/contact',
+  checkout: () => '/checkout',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

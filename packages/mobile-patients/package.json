@@ -54,6 +54,7 @@
     "@aph/mobile-ui-components": "file:../mobile-ui-components",
     "@aph/shared-ui-components": "file:../shared-ui-components",
     "@aph/universal": "file:../universal",
+    "@bugfender/rn-bugfender": "^1.1.0",
     "@praktice/navigator-react-native-sdk": "0.0.2",
     "@react-native-community/async-storage": "^1.7.1",
     "@react-native-community/geolocation": "^2.0.2",
