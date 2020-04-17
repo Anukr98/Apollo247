@@ -11,10 +11,13 @@ import { AppConfig } from '../strings/AppConfig';
 import { Client } from 'bugsnag-react-native';
 import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 import AsyncStorage from '@react-native-community/async-storage';
+import Bugfender from '@bugfender/rn-bugfender';
 
 const bugsnag = new Client();
 const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
 const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
+
+Bugfender.init('ZawMMlDXsIzVNhaPh928FvY9YCvMfLDe');
 
 export const DeviceHelper = () => {
   const isIphoneX = () => {
@@ -80,5 +83,17 @@ export const CommonSetUserBugsnag = (phoneNumber: string) => {
     bugsnag.setUser(phoneNumber, phoneNumber);
   } catch (error) {
     aphConsole.log('CommonSetUserBugsnag error', error);
+  }
+};
+
+export const setBugFenderLog = async (stringName: string, errorValue?: any) => {
+  try {
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const devicePlatform = Platform.OS === 'ios' ? 'iOS' : 'android';
+    const error = JSON.stringify(errorValue);
+    console.log('setBugFenderLog', error);
+    Bugfender.d(`${stringName} ${phoneNumber}`, `${devicePlatform} ${error}`);
+  } catch (error) {
+    aphConsole.log('setBugFenderLog error', error);
   }
 };

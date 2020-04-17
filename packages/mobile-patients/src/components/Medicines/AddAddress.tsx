@@ -108,7 +108,6 @@ const AddressOptions: addressOptions[] = [
   },
 ];
 export const AddAddress: React.FC<AddAddressProps> = (props) => {
-  console.log('KeyName', props.navigation.getParam('KeyName'));
   const isEdit = props.navigation.getParam('KeyName') === 'Update';
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -748,21 +747,25 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   })
                   .finally(() => setshowSpinner(false));
               }}
+              style={{
+                width: 145,
+                height: 45,
+                marginLeft: width - 165,
+                ...Platform.select({
+                  ios: {
+                    marginTop: isIphoneX ? height * 0.1 : height * 0.08,
+                  },
+                  android: {
+                    marginTop: height * 0.05,
+                  },
+                }),
+              }}
             >
               <View
                 style={{
                   backgroundColor: 'white',
                   width: 145,
                   height: 45,
-                  marginLeft: width - 165,
-                  ...Platform.select({
-                    ios: {
-                      marginTop: isIphoneX ? height * 0.1 : height * 0.08,
-                    },
-                    android: {
-                      marginTop: height * 0.05,
-                    },
-                  }),
                   borderRadius: 10,
                   alignItems: 'center',
                   justifyContent: 'center',

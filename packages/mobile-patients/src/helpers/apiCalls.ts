@@ -221,6 +221,9 @@ export interface GetPackageDataResponse {
   data: PackageInclusion[];
 }
 
+export interface NotificationResponse {
+  data: { data: [] };
+}
 /*
 type CityOptions =
   | 'hyderabad'
@@ -689,4 +692,14 @@ export const GenerateTokenforCM = (
   const url = `${config.CONDITIONAL_MANAGENET_BASE_URL}/getCmToken?appUserId=${uhid}&userName=${userName}&gender=${gender}&emailId=${emailId}&phoneNumber=${phoneNumber}`;
   console.log('GenerateTokenforCMurl', url);
   return Axios.get(url);
+};
+
+export const notifcationsApi = (params: {
+  phone: string;
+  size: number;
+}): Promise<AxiosResponse<NotificationResponse>> => {
+  return Axios.get('https://notifications.apollo247.com/notificatons', {
+    headers: { 'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj' },
+    params: params,
+  });
 };
