@@ -1,8 +1,11 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { List, ListItem, Avatar, IconButton, Theme, Modal } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
+import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
@@ -322,20 +325,46 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
+  const { appointmentDocuments, pastAppointments, patientDetails } = useContext(
+    CaseSheetContextJrd
+  );
+  const client = useApolloClient();
+  var prismIdList: any = [];
+  const [prismImageList, setPrismImageList] = useState<any>([]);
+
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
   const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
+  const [loading, setLoading] = React.useState(true);
   useEffect(() => {
     if (documentArray && documentArray.documentPath) {
       const data = {
-        documentPath: documentArray.documentPath || '',
+        documentPath: documentArray.documentPath,
+        prismFileId: documentArray.prismFileId,
       };
       appointmentDocuments!.push(data as appointmentDocumentType);
       setDocumentArray((null as unknown) as appointmentDocumentType);
     }
   });
+  const downloadDocumentsInputVariable = {
+    fileIds: prismIdList,
+    patientId: patientDetails && patientDetails.id,
+  };
 
+  useEffect(() => {
+    if (downloadDocumentsInputVariable.patientId) {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENTS,
+          variables: { downloadDocumentsInput: downloadDocumentsInputVariable },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          setPrismImageList(data.downloadDocuments.downloadPaths);
+          setLoading(false);
+        });
+    }
+  }, []);
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
@@ -385,6 +414,28 @@ export const HealthVault: React.FC = () => {
           ) : (
             <div className={classes.noDataFound}>No data Found</div>
           )}
+          {!loading &&
+            prismImageList &&
+            prismImageList.length > 0 &&
+            prismImageList.map((item: any, index: any) => (
+              <div
+                key={index}
+                className={classes.listItem}
+                onClick={() => {
+                  setModalOpen(true);
+                  setImgPrevUrl(item as string);
+                }}
+              >
+                <Avatar alt={item as string} src={item as string} className={classes.bigAvatar} />
+
+                <div className={classes.listData}>
+                  <h4 className={classes.fileName}>
+                    {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
+                  </h4>
+                  <span></span>
+                </div>
+              </div>
+            ))}
         </div>
       </div>
       <div className={classes.sectionGroup}></div>

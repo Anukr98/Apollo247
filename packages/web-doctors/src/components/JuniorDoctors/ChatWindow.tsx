@@ -476,6 +476,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
+        if (
+          message.message.url &&
+          message.message.fileType &&
+          message.message.fileType === 'image' &&
+          message.message.id !== doctorId
+        ) {
+          const data = {
+            documentPath: message.message.url,
+          };
+          setDocumentArray((data as unknown) as appointmentDocument);
+        }
         resetMessagesAction();
         if (
           !showVideoChat &&
