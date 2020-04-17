@@ -208,6 +208,12 @@ export class MedicineOrders extends BaseEntity {
   @Column()
   deliveryType: MEDICINE_DELIVERY_TYPE;
 
+  @Column({ default: BOOKINGSOURCE.MOBILE, nullable: true })
+  bookingSource: BOOKINGSOURCE;
+
+  @Column({ default: null, nullable: true })
+  deviceType: DEVICETYPE;
+
   @Column('decimal', { precision: 10, scale: 2 })
   estimatedAmount: number;
 
@@ -1311,7 +1317,7 @@ export class DiagnosticOrders extends BaseEntity {
   @Column()
   city: string;
 
-  @Column({ default: null, nullable: true })
+  @Column({ default: BOOKINGSOURCE.MOBILE, nullable: true })
   bookingSource: BOOKINGSOURCE;
 
   @Column({ default: null, nullable: true })

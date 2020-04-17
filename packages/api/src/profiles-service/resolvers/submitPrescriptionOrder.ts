@@ -6,6 +6,7 @@ import {
   MedicineOrdersStatus,
   MEDICINE_ORDER_PAYMENT_TYPE,
 } from 'profiles-service/entities';
+import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -19,6 +20,8 @@ export const submitPrescriptionOrderTypeDefs = gql`
   input SubmitPrescriptionOrderInput {
     orderId: Int
     paymentType: MEDICINE_ORDER_PAYMENT_TYPE!
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
     amountPaid: Float!
     paymentRefId: String
     paymentStatus: String
@@ -44,6 +47,8 @@ export const submitPrescriptionOrderTypeDefs = gql`
 type SubmitPrescriptionOrderInput = {
   orderId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  bookingSource: BOOKINGSOURCE;
+  deviceType: DEVICETYPE;
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
@@ -172,6 +177,8 @@ const submitPrescriptionOrder: Resolver<
         PaymentSource: submitPrescriptionOrderInput.paymentType,
         PaymentStatus: submitPrescriptionOrderInput.paymentStatus,
         PaymentOrderId: submitPrescriptionOrderInput.paymentRefId,
+        BookingSource: submitPrescriptionOrderInput.bookingSource,
+        DeviceType: submitPrescriptionOrderInput.deviceType,
       },
       ItemDetails: orderLineItems,
       PrescUrl: orderPrescriptionUrl,
