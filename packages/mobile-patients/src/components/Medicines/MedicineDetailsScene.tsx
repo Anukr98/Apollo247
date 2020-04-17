@@ -55,7 +55,13 @@ import {
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  FlatList,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -212,6 +218,7 @@ export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
     sku: string;
     title: string;
+    movedFrom: string;
   }> {}
 
 export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props) => {
@@ -528,7 +535,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   `You will be notified when ${medicineName} is back in stock.`
                 );
                 postwebEngageNotifyMeEvent(medicineDetails);
-                props.navigation.goBack();
+                moveBack();
                 showAphAlert!({
                   title: 'Okay! :)',
                   description: `You will be notified when ${medicineName} is back in stock.`,
@@ -1293,12 +1300,35 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     );
   };
 
+  const moveBack = () => {
+    try {
+      const MoveDoctor = props.navigation.getParam('movedFrom') || '';
+
+      console.log('MoveDoctor', MoveDoctor);
+      if (MoveDoctor === 'registration') {
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.ConsultRoom,
+              }),
+            ],
+          })
+        );
+      } else {
+        props.navigation.goBack();
+      }
+    } catch (error) {}
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => moveBack()}
           title={'PRODUCT DETAIL'}
           titleStyle={{ marginHorizontal: 10 }}
           container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}

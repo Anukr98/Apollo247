@@ -114,12 +114,58 @@ type OrderStatusCardProps = {
   isLoading: boolean;
 };
 
+export const getStatus = (status: MEDICINE_ORDER_STATUS) => {
+  switch (status) {
+    case MEDICINE_ORDER_STATUS.CANCELLED:
+      return 'Order Cancelled';
+    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+      return 'Cancel Requested';
+    case MEDICINE_ORDER_STATUS.DELIVERED:
+      return 'Order Delivered';
+    case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
+      return 'Items Returned';
+    case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
+      return 'Order Confirmed';
+    case MEDICINE_ORDER_STATUS.ORDER_FAILED:
+      return 'Order Failed';
+    case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+      return 'Order Placed';
+    case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+      return 'Order Verified';
+    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      return 'Order Shipped';
+    case MEDICINE_ORDER_STATUS.PICKEDUP:
+      return 'Order Picked Up';
+    case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
+      return 'Prescription Cart Ready';
+    case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+      return 'Prescription Uploaded';
+    case MEDICINE_ORDER_STATUS.QUOTE:
+      return 'Quote';
+    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+      return 'Return Accepted';
+    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+      return 'Return Requested';
+    case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
+      return 'Payment Success';
+    case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
+      return 'Order Initiated';
+    case MEDICINE_ORDER_STATUS.PAYMENT_FAILED:
+      return 'Payment Failed';
+    case MEDICINE_ORDER_STATUS.READY_AT_STORE:
+      return 'Ready At Store';
+    case 'TO_BE_DELIVERED' as any:
+      return 'Expected Order Delivery';
+  }
+};
+
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const classes = useStyles({});
 
   const getSortedstatusList = (statusList: (statusDetails | null)[]) => {
     if (statusList && statusList.length > 0) {
       const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
+      console.log(filteredStatusList);
       return filteredStatusList.sort(
         (a, b) =>
           moment(a && a.statusDate)
@@ -156,40 +202,6 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   ];
 
   const completedStatusArray = ['CANCELLED', 'ORDER_FAILED', 'DELIVERED', 'OUT_FOR_DELIVERY'];
-  const getStatus = (status: MEDICINE_ORDER_STATUS) => {
-    switch (status) {
-      case MEDICINE_ORDER_STATUS.ORDER_INITIATED:
-        return 'Order Initiated';
-      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-        return 'Order Placed';
-      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-        return 'Order Verified';
-      case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-        return 'Order Failed';
-      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-        return 'Order Confirmed';
-      case MEDICINE_ORDER_STATUS.CANCELLED:
-        return 'Order Cancelled';
-      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-        return 'Order Cancel Requested';
-      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-        return 'Order Out for Delivery';
-      case MEDICINE_ORDER_STATUS.DELIVERED:
-        return 'Order Deliverd';
-      case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
-        return 'Order Payment Success';
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-        return 'Prescription Uploaded';
-      case MEDICINE_ORDER_STATUS.PICKEDUP:
-        return 'Order Picked up';
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-        return 'Prescription Cart Ready';
-      case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-        return 'Return Initiated';
-      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-        return 'Return Accepted';
-    }
-  };
 
   return (
     <Grid container spacing={2}>

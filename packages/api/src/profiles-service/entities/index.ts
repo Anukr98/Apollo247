@@ -117,6 +117,11 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
   CASHLESS = 'CASHLESS',
 }
 
+export enum BOOKING_SOURCE {
+  WEB = 'WEB',
+  MOBILE = 'MOBILE',
+}
+
 export enum DEVICE_TYPE {
   IOS = 'IOS',
   ANDROID = 'ANDROID',
@@ -206,6 +211,12 @@ export class MedicineOrders extends BaseEntity {
 
   @Column()
   deliveryType: MEDICINE_DELIVERY_TYPE;
+
+  @Column({ default: BOOKING_SOURCE.MOBILE })
+  bookingSource: BOOKING_SOURCE;
+
+  @Column({ default: null })
+  deviceType: DEVICE_TYPE;
 
   @Column('decimal', { precision: 10, scale: 2 })
   estimatedAmount: number;
@@ -1309,6 +1320,12 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column()
   city: string;
+
+  @Column({ default: BOOKING_SOURCE.MOBILE })
+  bookingSource: BOOKING_SOURCE;
+
+  @Column({ default: null })
+  deviceType: DEVICE_TYPE;
 
   @Column()
   diagnosticBranchCode: string;

@@ -251,6 +251,34 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     const currentScreenName = await AsyncStorage.getItem('setCurrentName');
     aphConsole.log('setCurrentName', currentScreenName);
 
+    // const notificationArray = [];
+    // let array: any = await AsyncStorage.getItem('allNotification');
+    // // console.log('array', array);
+
+    // const obj: any = {};
+    // obj['data'] = notification.data;
+    // obj['date'] = new Date();
+
+    // if (array !== null) {
+    //   array = JSON.parse(array);
+    //   array.date = new Date();
+    //   array.isRead = 'false';
+    //   array.push(obj);
+
+    //   if (array.length <= 10) {
+    //     notificationArray.push(...array);
+    //   } else {
+    //     notificationArray.push(...array.slice(1));
+    //   }
+    // } else {
+    //   notificationArray.push(obj);
+    // }
+
+    // console.log('notificationArray', notificationArray, notificationArray.length);
+
+    // AsyncStorage.setItem('allNotification', JSON.stringify(notificationArray));
+    // AsyncStorage.removeItem('allNotification');
+
     if (
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||

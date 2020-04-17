@@ -37,6 +37,10 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum CODCity {
+  CHENNAI = "CHENNAI",
+}
+
 export enum CONSULTS_RX_SEARCH_FILTER {
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
@@ -406,6 +410,8 @@ export interface DiagnosticOrderInput {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
 }
@@ -479,6 +485,8 @@ export interface MedicineCartInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
   patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
@@ -524,6 +532,8 @@ export interface MedicinePaymentMqInput {
   responseCode?: string | null;
   responseMessage?: string | null;
   bankTxnId?: string | null;
+  email?: string | null;
+  CODCity?: CODCity | null;
 }
 
 export interface OrderCancelInput {
@@ -584,6 +594,7 @@ export interface PrescriptionMedicineInput {
   appointmentId?: string | null;
   isEprescription?: number | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
+  bookingSource?: BOOKINGSOURCE | null;
 }
 
 export interface PrescriptionMedicinePaymentDetails {
