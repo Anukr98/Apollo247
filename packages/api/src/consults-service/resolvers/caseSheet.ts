@@ -432,6 +432,11 @@ export const caseSheetTypeDefs = gql`
     ): PatientPrescriptionSentResponse
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
+    generatePrescriptionTemp(
+      caseSheetId: ID!
+      sentToPatient: Boolean!
+      mobileNumber: String!
+    ): PatientPrescriptionSentResponse
   }
 
   extend type Query {
@@ -989,6 +994,80 @@ const updatePatientPrescriptionSentStatus: Resolver<
   };
 };
 
+//api for temporary use
+const generatePrescriptionTemp: Resolver<
+  null,
+  { caseSheetId: string; sentToPatient: boolean; mobileNumber: string },
+  ConsultServiceContext,
+  PatientPrescriptionSentResponse
+> = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
+  //validate is active Doctor
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(args.mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(args.caseSheetId);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+  let caseSheetAttrs: Partial<CaseSheet> = {
+    sentToPatient: args.sentToPatient,
+    blobName: '',
+    prismFileId: '',
+  };
+
+  if (args.sentToPatient) {
+    //convert casesheet to prescription
+    const client = new AphStorageClient(
+      process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+      process.env.AZURE_STORAGE_CONTAINER_NAME
+    );
+
+    const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
+    const pdfDocument = generateRxPdfDocument(rxPdfData);
+    const uploadedPdfData = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
+    if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+
+    const uploadPdfInput = {
+      fileType: UPLOAD_FILE_TYPES.PDF,
+      base64FileInput: uploadedPdfData.base64pdf,
+      patientId: patientData.id,
+      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+      status: CASESHEET_STATUS.COMPLETED,
+    };
+
+    const prismUploadResponse = await uploadPdfBase64ToPrism(
+      uploadPdfInput,
+      patientData,
+      patientsDb
+    );
+    const pushNotificationInput = {
+      appointmentId: getCaseSheetData.appointment.id,
+      notificationType: NotificationType.PRESCRIPTION_READY,
+      blobName: uploadedPdfData.name,
+    };
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
+    caseSheetAttrs = {
+      sentToPatient: args.sentToPatient,
+      blobName: uploadedPdfData.name,
+      prismFileId: prismUploadResponse.fileId,
+      status: CASESHEET_STATUS.COMPLETED,
+    };
+  }
+
+  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+  return {
+    success: true,
+    blobName: caseSheetAttrs.blobName || '',
+    prismFileId: caseSheetAttrs.prismFileId || '',
+  };
+};
+
 export const caseSheetResolvers = {
   Appointment: {
     doctorInfo(appointments: Appointment) {
@@ -1006,6 +1085,7 @@ export const caseSheetResolvers = {
     updatePatientPrescriptionSentStatus,
     createJuniorDoctorCaseSheet,
     createSeniorDoctorCaseSheet,
+    generatePrescriptionTemp,
   },
 
   Query: {
