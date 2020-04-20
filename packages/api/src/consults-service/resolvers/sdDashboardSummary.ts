@@ -49,8 +49,9 @@ export const sdDashboardSummaryTypeDefs = gql`
     REPEAT
   }
 
-  type UpdateAWayAndOnlineCountResult {
-    updated: Boolean
+  type UpdateAwayAndOnlineCountResult {
+    onlineCount: Int
+    awayCount: Int
   }
 
   type UpdatePatientTypeResult {
@@ -113,10 +114,10 @@ export const sdDashboardSummaryTypeDefs = gql`
       specialityId: String
       weekDay: WeekDay
     ): updateUtilizationCapacityResult
-    updateDoctorsAWayAndOnlineCount(
+    updateDoctorsAwayAndOnlineCount(
       doctorId: String
       summaryDate: Date
-    ): UpdateAWayAndOnlineCountResult
+    ): UpdateAwayAndOnlineCountResult
   }
 
   extend type Query {
@@ -131,8 +132,9 @@ type DashboardSummaryResult = {
   totalConsultation: number;
 };
 
-type UpdateAWayAndOnlineCountResult = {
-  updated: boolean;
+type UpdateAwayAndOnlineCountResult = {
+  onlineCount: number;
+  awayCount: number;
 };
 
 type UpdateUserTypeResult = {
@@ -524,26 +526,22 @@ const getopenTokFileUrl: Resolver<
   const fileUrls = await dashboardRepo.getFileDownloadUrls(args.appointmentId);
   return { urls: fileUrls };
 };
-const updateDoctorsAWayAndOnlineCount: Resolver<
+const updateDoctorsAwayAndOnlineCount: Resolver<
   null,
   {
     doctorId: string;
     summaryDate: Date;
     docLimit: number;
     docOffset: number;
-    awayCount: number;
-    onlineCount: number;
   },
   ConsultServiceContext,
-  UpdateAWayAndOnlineCountResult
+  UpdateAwayAndOnlineCountResult
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo, consultHoursRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId, args.docLimit, args.docOffset);
-  if (docsList.length > 0) {
-    const finalResult = await Result(docsList, consultHoursRepo, args.summaryDate);
-    await dashboardRepo.saveData(finalResult[0], finalResult[1], args.summaryDate);
-  }
-  return { updated: true };
+  const finalResult = await Result(docsList, consultHoursRepo, args.summaryDate);
+  await dashboardRepo.saveData(finalResult[0], finalResult[1], args.summaryDate);
+  return { onlineCount: finalResult[0], awayCount: finalResult[1] };
 };
 const Result = async (
   docList: Doctor[],
@@ -648,7 +646,7 @@ export const sdDashboardSummaryResolvers = {
     updateUtilizationCapacity,
     updatePatientType,
     updateUserType,
-    updateDoctorsAWayAndOnlineCount,
+    updateDoctorsAwayAndOnlineCount,
   },
   Query: {
     getopenTokFileUrl,
