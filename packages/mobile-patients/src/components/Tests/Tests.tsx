@@ -104,6 +104,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import moment from 'moment';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -1919,7 +1920,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderLocationNotServingPopup = () => {
     showAphAlert!({
       title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`,
+      description: string.diagnostics.nonServiceableMsg.replace(
+        '{{city_name}}',
+        g(locationDetails, 'displayName')!
+      ),
       onPressOk: () => {
         hideAphAlert!();
         setshowLocationpopup(true);

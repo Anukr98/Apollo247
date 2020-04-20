@@ -51,6 +51,7 @@ import { getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription } fro
 import { useUIElements } from '../UIElementsProvider';
 import { useAppCommonData, LocationData } from '../AppCommonDataProvider';
 import { useApolloClient } from 'react-apollo-hooks';
+// import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -505,7 +506,10 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 if (!locationDetails) {
                                   // Alert.alert(
                                   //   'Uh oh.. :(',
-                                  //   'Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.'
+                                  //   string.diagnostics.nonServiceableMsg.replace(
+                                  //     '{{city_name}}',
+                                  //     g(locationDetails, 'displayName')!
+                                  //   )
                                   // );
                                   // return;
                                   try {

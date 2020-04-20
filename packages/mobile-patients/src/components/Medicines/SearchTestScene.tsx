@@ -61,6 +61,7 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -160,7 +161,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
   >([]);
 
-  const { locationForDiagnostics } = useAppCommonData();
+  const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -275,7 +276,10 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const renderLocationNotServingPopup = () => {
     showAphAlert!({
       title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`,
+      description: string.diagnostics.nonServiceableMsg.replace(
+        '{{city_name}}',
+        g(locationDetails, 'displayName')!
+      ),
     });
   };
 

@@ -243,6 +243,10 @@
       }
     ]
   },
+  "diagnostics": {
+    "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
+    "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode."
+  },
   "orders": {
     "urOrders": "MY ORDERS",
     "trackOrder": "Track Order",

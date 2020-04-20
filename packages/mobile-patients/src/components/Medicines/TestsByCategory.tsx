@@ -48,7 +48,7 @@ import {
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import moment from 'moment';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -115,7 +115,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
-  const { locationForDiagnostics } = useAppCommonData();
+  const { locationForDiagnostics, locationDetails } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
   useEffect(() => {
@@ -575,7 +575,10 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const renderLocationNotServingPopup = () => {
     showAphAlert!({
       title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`,
+      description: string.diagnostics.nonServiceableMsg.replace(
+        '{{city_name}}',
+        g(locationDetails, 'displayName')!
+      ),
     });
   };
 
