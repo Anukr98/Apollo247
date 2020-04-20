@@ -554,63 +554,130 @@ app.post('/paymed-response', (req, res) => {
     if (err) throw err;
     console.log('Updated!');
   });
-  /* never execute a transaction if the payment status is failed */
-  if (transactionStatus === 'failed') {
-    if (reqSource === 'web') {
-      const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
-      res.redirect(redirectUrl);
-    } else {
-      res.redirect(
-        `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=${responseMessage}&responseCode=${responseCode}`
+  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios({
+    url: process.env.API_URL,
+    method: 'post',
+    data: {
+      query: `
+            query {
+              getMedicineOrderDetails(orderAutoId:${payload.ORDERID}) {
+                MedicineOrderDetails {
+                  id
+                  shopId
+                  orderAutoId
+                  estimatedAmount
+                  pharmaRequest
+                  devliveryCharges
+                  deliveryType
+                  patientAddressId
+                  prescriptionImageUrl
+                  orderType
+                  bookingSource
+                  currentStatus
+                  patient{
+                    mobileNumber
+                    firstName
+                    lastName
+                    emailAddress
+                    dateOfBirth
+                  }
+                  medicineOrderLineItems{
+                    medicineSKU
+                    medicineName
+                    mrp
+                    mou
+                    price
+                    quantity        
+                  }
+                  medicineOrderPayments{
+                    id
+                    bankTxnId
+                    paymentType
+                    amountPaid
+                    paymentRefId
+                    paymentStatus
+                  }
+                }
+              }
+            }
+          `,
+    },
+  }).then(async (response) => {
+    if (
+      response &&
+      response.data &&
+      response.data.data &&
+      response.data.data.getMedicineOrderDetails &&
+      response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+    ) {
+      console.log(
+        response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
+        '======order details======='
       );
+      const bookingSource =
+        response.data.data.getMedicineOrderDetails.MedicineOrderDetails.bookingSource;
+
+      /* never execute a transaction if the payment status is failed */
+      if (transactionStatus === 'failed') {
+        if (bookingSource === 'WEB') {
+          const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+          res.redirect(redirectUrl);
+        } else {
+          res.redirect(
+            `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=${responseMessage}&responseCode=${responseCode}`
+          );
+        }
+      }
+
+      /*save response in apollo24x7*/
+      axios.defaults.headers.common['authorization'] = token;
+
+      // this needs to be altered later.
+      const requestJSON = {
+        query:
+          'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
+          payload.ORDERID +
+          ', paymentType: CASHLESS, amountPaid: ' +
+          payload.TXNAMOUNT +
+          ', paymentRefId: "' +
+          payload.TXNID +
+          '", paymentStatus: "' +
+          payload.STATUS +
+          '", paymentDateTime: "' +
+          date +
+          '", responseCode: "' +
+          payload.RESPCODE +
+          '", responseMessage: "' +
+          payload.RESPMSG +
+          '", bankTxnId: "' +
+          payload.BANKTXNID +
+          '" }){ errorCode, errorMessage,orderStatus }}',
+      };
+
+      /// write medicineoirder
+      axios
+        .post(process.env.API_URL, requestJSON)
+        .then((response) => {
+          console.log(response, 'response is....');
+          if (bookingSource === 'WEB') {
+            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            res.redirect(redirectUrl);
+          } else {
+            res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
+          }
+        })
+        .catch((error) => {
+          console.log('error', error);
+          if (bookingSource === 'WEB') {
+            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            res.redirect(redirectUrl);
+          } else {
+            res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
+          }
+        });
     }
-  }
-
-  /*save response in apollo24x7*/
-  axios.defaults.headers.common['authorization'] = token;
-
-  // this needs to be altered later.
-  const requestJSON = {
-    query:
-      'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
-      payload.ORDERID +
-      ', paymentType: CASHLESS, amountPaid: ' +
-      payload.TXNAMOUNT +
-      ', paymentRefId: "' +
-      payload.TXNID +
-      '", paymentStatus: "' +
-      payload.STATUS +
-      '", paymentDateTime: "' +
-      date +
-      '", responseCode: "' +
-      payload.RESPCODE +
-      '", responseMessage: "' +
-      payload.RESPMSG +
-      '", bankTxnId: "' +
-      payload.BANKTXNID +
-      '" }){ errorCode, errorMessage,orderStatus }}',
-  };
-
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      console.log(response, 'response is....');
-      if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
-        res.redirect(redirectUrl);
-      } else {
-        res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
-      }
-    })
-    .catch((error) => {
-      console.log('error', error);
-      if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
-        res.redirect(redirectUrl);
-      } else {
-        res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
-      }
-    });
+  });
 });
 
 app.get('/mob', (req, res) => {
