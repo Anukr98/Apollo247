@@ -176,7 +176,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    searchTextFromProp && onSearchMedicine(searchTextFromProp);
+    searchTextFromProp && onSearchTest(searchTextFromProp);
   }, []);
 
   useEffect(() => {
@@ -272,8 +272,19 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     });
   };
 
-  const onSearchMedicine = (_searchText: string) => {
+  const renderLocationNotServingPopup = () => {
+    showAphAlert!({
+      title: `Hi ${currentPatient && currentPatient.firstName},`,
+      description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`,
+    });
+  };
+
+  const onSearchTest = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
+      if (!g(locationForDiagnostics, 'cityId')) {
+        renderLocationNotServingPopup();
+        return;
+      }
       setSearchText(_searchText);
       if (!(_searchText && _searchText.length > 2)) {
         setMedicineList([]);
@@ -298,7 +309,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           setIsLoading(false);
         })
         .catch((e) => {
-          CommonBugFender('SearchTestScene_onSearchMedicine', e);
+          CommonBugFender('SearchTestScene_onSearchTest', e);
           setIsLoading(false);
           showGenericALert(e);
         });
@@ -427,7 +438,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           placeholder="Search tests &amp; packages"
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            onSearchTest(value);
           }}
         />
         {renderSorryMessage}

@@ -424,7 +424,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           value={searchText}
           onSubmitEditing={goToSearchPage}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            onSearchTest(value);
           }}
           autoCorrect={false}
           rightIcon={rigthIconView}
@@ -572,8 +572,19 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
-  const onSearchMedicine = (_searchText: string) => {
+  const renderLocationNotServingPopup = () => {
+    showAphAlert!({
+      title: `Hi ${currentPatient && currentPatient.firstName},`,
+      description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`,
+    });
+  };
+
+  const onSearchTest = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
+      if (!g(locationForDiagnostics, 'cityId')) {
+        renderLocationNotServingPopup();
+        return;
+      }
       setSearchText(_searchText);
       if (!(_searchText && _searchText.length > 2)) {
         setMedicineList([]);
@@ -597,7 +608,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           setsearchSate('success');
         })
         .catch((e) => {
-          CommonBugFender('TestsByCategory_onSearchMedicine', e);
+          CommonBugFender('TestsByCategory_onSearchTest', e);
           // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');
