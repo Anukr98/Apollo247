@@ -37,6 +37,7 @@ import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
+import { ChennaiCheckout } from 'components/Cart/ChennaiCheckout';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -472,6 +473,9 @@ export const MedicineCart: React.FC = (props) => {
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isChennaiCheckoutDialogOpen, setIsChennaiCheckoutDialogOpen] = React.useState<boolean>(
+    false
+  );
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
@@ -681,7 +685,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -967,6 +971,7 @@ export const MedicineCart: React.FC = (props) => {
         <div className={classes.checkoutBtn}>
           <AphButton
             onClick={() => {
+              setIsChennaiCheckoutDialogOpen(true);
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
                 setCheckoutDialogOpen(true);
               } else if (
@@ -1062,6 +1067,13 @@ export const MedicineCart: React.FC = (props) => {
           }}
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
         />
+      </AphDialog>
+
+      {/* Chennai Checkout Dialog */}
+      <AphDialog open={isChennaiCheckoutDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsChennaiCheckoutDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle>Checkout</AphDialogTitle>
+        <ChennaiCheckout />
       </AphDialog>
 
       <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">
