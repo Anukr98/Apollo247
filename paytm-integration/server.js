@@ -232,7 +232,13 @@ app.get('/consulttransaction', (req, res) => {
     'appt id:' +
     req.query.ORDERID +
     '\n' +
-    requestJSON +
+    txnId +
+    ' - ' +
+    req.query.STATUS +
+    ' - ' +
+    req.query.RESPCODE +
+    ' - ' +
+    req.query.RESPMSG +
     '\n-------------------\n';
   fs.appendFile(fileName, content, function(err) {
     if (err) throw err;
@@ -536,7 +542,7 @@ app.post('/paymed-response', (req, res) => {
     new Date().toString() +
     '\n---------------------------\n' +
     'appt id:' +
-    req.session.orderAutoId +
+    payload.ORDERID +
     '\n' +
     transactionStatus +
     ' - ' +
@@ -551,7 +557,7 @@ app.post('/paymed-response', (req, res) => {
   /* never execute a transaction if the payment status is failed */
   if (transactionStatus === 'failed') {
     if (reqSource === 'web') {
-      const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
+      const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
       res.redirect(redirectUrl);
     } else {
       res.redirect(
@@ -590,7 +596,7 @@ app.post('/paymed-response', (req, res) => {
     .then((response) => {
       console.log(response, 'response is....');
       if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
+        const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
         res.redirect(redirectUrl);
       } else {
         res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
@@ -599,7 +605,7 @@ app.post('/paymed-response', (req, res) => {
     .catch((error) => {
       console.log('error', error);
       if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
+        const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
         res.redirect(redirectUrl);
       } else {
         res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
