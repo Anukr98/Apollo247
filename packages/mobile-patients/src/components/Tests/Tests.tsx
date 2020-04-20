@@ -225,13 +225,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (locationDetails && locationDetails.city && currentPatient) {
+    if (diagnosticsCities.length) {
+      // Don't call getDiagnosticsCites API if already fetched
+      return;
+    }
+
+    if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
       client
         .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
           query: GET_DIAGNOSTICS_CITES,
           variables: {
-            cityName: locationDetails.city,
-            patientId: (currentPatient && currentPatient.id) || '',
+            cityName: locationDetails!.city,
+            patientId: currentPatient.id || '',
           },
         })
         .then(({ data }) => {
@@ -247,11 +252,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           showAphAlert!({
             unDismissable: true,
             title: 'Uh oh! :(',
-            description: 'Something went wrong.',
+            description:
+              "Something went wrong. We're unable to check diagnostics serviceability for your location.",
           });
         });
     }
-  }, [locationDetails]);
+  }, [locationDetails, currentPatient, diagnosticsCities]);
 
   useEffect(() => {
     !locationDetails &&

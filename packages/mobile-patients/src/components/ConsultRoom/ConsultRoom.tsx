@@ -31,6 +31,7 @@ import {
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
+  GET_DIAGNOSTICS_CITES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -86,7 +87,11 @@ import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/Loc
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
@@ -204,6 +209,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     locationDetails,
     isCurrentLocationFetched,
     setCurrentLocationFetched,
+    setDiagnosticsCities,
+    diagnosticsCities,
     notificationCount,
     setNotificationCount,
     setAllNotifications,
@@ -242,6 +249,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ConsultRoom_updateLocation', e);
       });
   };
+
+  useEffect(() => {
+    if (diagnosticsCities.length) {
+      // Don't call getDiagnosticsCites API if already fetched
+      return;
+    }
+    if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
+      client
+        .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+          query: GET_DIAGNOSTICS_CITES,
+          variables: {
+            cityName: locationDetails!.city,
+            patientId: currentPatient.id || '',
+          },
+        })
+        .then(({ data }) => {
+          const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
+          setDiagnosticsCities!(
+            cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
+          );
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultRoom_GET_DIAGNOSTICS_CITES', e);
+        });
+    }
+  }, [locationDetails, currentPatient, diagnosticsCities]);
 
   const askLocationPermission = () => {
     showAphAlert!({
