@@ -1,9 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel, Checkbox } from '@material-ui/core';
-import React from 'react';
-import _isEmpty from 'lodash/isEmpty';
+import { Theme, FormControlLabel, Checkbox, CircularProgress } from '@material-ui/core';
+import React, { useState } from 'react';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
+import { useCurrentPatient } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -67,26 +67,59 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
+    buttonDisable: {
+      backgroundColor: '#fed984',
+      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
+    },
   };
 });
 
-export const ChennaiCheckout: React.FC = () => {
+export interface submitFormType {
+  userEmail: string;
+}
+
+type ChennaiCheckoutFormProps = {
+  submitForm: (obj: submitFormType) => void;
+  isLoading: boolean;
+};
+
+export const ChennaiCheckout: React.FC<ChennaiCheckoutFormProps> = (props) => {
   const classes = useStyles({});
+  const [patientEmailExists, setPatientEmailExists] = useState(false);
+  const [consentFormChecked, setConsentFormChecked] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+
+  const patient = useCurrentPatient();
+  if (patient && patient.emailAddress) {
+    if (!patientEmailExists) {
+      setPatientEmailExists(true);
+      setUserEmail(patient.emailAddress);
+    }
+  }
 
   return (
     <>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
         <div className={classes.pageBox}>
-          <div className={classes.name}>Dear &lt;customer name&gt;,</div>
+          <div className={classes.name}>
+            Dear {patient && patient.firstName && `${patient.firstName} ${patient.lastName}`},
+          </div>
           <div className={classes.greeting}>Superb!</div>
           <p>Your order request is in process</p>
           <p>
             <b>Just one more step. New Regulation in your region requires your email id.</b>
           </p>
           <div className={classes.formGroup}>
-            <AphTextField label="Your email id please" placeholder="name@email.com" />
+            <AphTextField
+              label="Your email id please"
+              placeholder="name@email.com"
+              onChange={(event) => setUserEmail(event.target.value)}
+              value={userEmail}
+            />
             <div className={classes.checkboxGroup}>
               <FormControlLabel
+                checked={!userEmail.length}
+                onChange={(patientEmailExists) => setPatientEmailExists(!patientEmailExists)}
                 control={
                   <Checkbox
                     classes={{
@@ -99,6 +132,7 @@ export const ChennaiCheckout: React.FC = () => {
             </div>
             <div className={`${classes.checkboxGroup} ${classes.borderTop}`}>
               <FormControlLabel
+                onChange={() => setConsentFormChecked(!consentFormChecked)}
                 control={
                   <Checkbox
                     classes={{
@@ -113,7 +147,18 @@ export const ChennaiCheckout: React.FC = () => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton color="primary">Submit to confirm order</AphButton>
+        <AphButton
+          disabled={!consentFormChecked}
+          className={!consentFormChecked ? classes.buttonDisable : ''}
+          onClick={() => props.submitForm({ userEmail })}
+          color="primary"
+        >
+          {props.isLoading ? (
+            <CircularProgress size={22} color="secondary" />
+          ) : (
+            `Submit to confirm order`
+          )}
+        </AphButton>
       </div>
     </>
   );
