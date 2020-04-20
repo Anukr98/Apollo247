@@ -49,7 +49,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     REPEAT
   }
 
-  type updateAWayAndOnlineCountResult {
+  type UpdateAWayAndOnlineCountResult {
     updated: Boolean
   }
 
@@ -116,7 +116,7 @@ export const sdDashboardSummaryTypeDefs = gql`
     updateDoctorsAWayAndOnlineCount(
       doctorId: String
       summaryDate: Date
-    ): updateAWayAndOnlineCountResult
+    ): UpdateAWayAndOnlineCountResult
   }
 
   extend type Query {
@@ -131,7 +131,7 @@ type DashboardSummaryResult = {
   totalConsultation: number;
 };
 
-type updateAWayAndOnlineCountResult = {
+type UpdateAWayAndOnlineCountResult = {
   updated: boolean;
 };
 
@@ -526,15 +526,22 @@ const getopenTokFileUrl: Resolver<
 };
 const updateDoctorsAWayAndOnlineCount: Resolver<
   null,
-  { doctorId: string; summaryDate: Date; docLimit: number; docOffset: number },
+  {
+    doctorId: string;
+    summaryDate: Date;
+    docLimit: number;
+    docOffset: number;
+    awayCount: number;
+    onlineCount: number;
+  },
   ConsultServiceContext,
-  updateAWayAndOnlineCountResult
+  UpdateAWayAndOnlineCountResult
 > = async (parent, args, context) => {
   const { docRepo, dashboardRepo, consultHoursRepo } = getRepos(context);
   const docsList = await docRepo.getAllDoctors(args.doctorId, args.docLimit, args.docOffset);
   if (docsList.length > 0) {
     const finalResult = await Result(docsList, consultHoursRepo, args.summaryDate);
-    await dashboardRepo.saveData(finalResult[1], finalResult[0], args.summaryDate);
+    await dashboardRepo.saveData(finalResult[0], finalResult[1], args.summaryDate);
   }
   return { updated: true };
 };
@@ -572,7 +579,7 @@ const Result = async (
         });
       }
       if (index + 1 === array.length) {
-        resolve([awayCount, onlineCount]);
+        resolve([onlineCount, awayCount]);
       }
     });
   });
