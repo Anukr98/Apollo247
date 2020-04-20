@@ -12,7 +12,7 @@ import {
   PATIENT_TYPE,
   AppointmentDocuments,
 } from 'consults-service/entities';
-import { ConsultMode, WeekDay, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
+import { ConsultMode, WeekDay, DOCTOR_ONLINE_STATUS, Doctor } from 'doctors-service/entities';
 import { FEEDBACKTYPE } from 'profiles-service/entities';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -47,6 +47,11 @@ export const sdDashboardSummaryTypeDefs = gql`
   enum PATIENT_TYPE {
     NEW
     REPEAT
+  }
+
+  type UpdateAwayAndOnlineCountResult {
+    onlineCount: Int
+    awayCount: Int
   }
 
   type UpdatePatientTypeResult {
@@ -109,6 +114,10 @@ export const sdDashboardSummaryTypeDefs = gql`
       specialityId: String
       weekDay: WeekDay
     ): updateUtilizationCapacityResult
+    updateDoctorsAwayAndOnlineCount(
+      doctorId: String
+      summaryDate: Date
+    ): UpdateAwayAndOnlineCountResult
   }
 
   extend type Query {
@@ -121,6 +130,11 @@ type DashboardSummaryResult = {
   doctorName: string;
   appointmentDateTime: Date;
   totalConsultation: number;
+};
+
+type UpdateAwayAndOnlineCountResult = {
+  onlineCount: number;
+  awayCount: number;
 };
 
 type UpdateUserTypeResult = {
@@ -330,39 +344,6 @@ const updateSdSummary: Resolver<
         });
         totalSlotsTime = difference / timeSlots[0].consultDuration;
       }
-
-      const docsList = await docRepo.getAllDoctors('0', args.docLimit, args.docOffset);
-      let awayCount = 0;
-      let onlineCount = 0;
-      if (docsList.length > 0) {
-        docsList.map(async (doctor) => {
-          const weekDay = format(args.summaryDate, 'EEEE').toUpperCase();
-          const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
-          if (timeSlots.length) {
-            timeSlots.forEach(async (timeSlot) => {
-              const currentTime = new Date();
-              const st = new Date(
-                format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.startTime.toString()
-              );
-              const ed = new Date(
-                format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.endTime.toString()
-              );
-              const betweenConsultHours = isWithinInterval(currentTime, {
-                start: st,
-                end: ed,
-              });
-              if (betweenConsultHours == true) {
-                if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.AWAY) {
-                  awayCount++;
-                } else if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE) {
-                  onlineCount++;
-                }
-              }
-            });
-          }
-        });
-      }
-
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,
         args.summaryDate,
@@ -454,8 +435,6 @@ const updateSdSummary: Resolver<
         audioConsultations: auidoCount,
         videoConsultations: videoCount,
         chatConsultations: chatCount,
-        noOfAwayDoctors: awayCount,
-        noOfOnlineDoctors: onlineCount,
         totalFollowUp: paidFollowUpCount + unpaidFollowUpCount,
         rescheduledByDoctor: reschduleCount,
         rescheduledByPatient: patientReschduleCount,
@@ -547,6 +526,62 @@ const getopenTokFileUrl: Resolver<
   const fileUrls = await dashboardRepo.getFileDownloadUrls(args.appointmentId);
   return { urls: fileUrls };
 };
+const updateDoctorsAwayAndOnlineCount: Resolver<
+  null,
+  {
+    doctorId: string;
+    summaryDate: Date;
+    docLimit: number;
+    docOffset: number;
+  },
+  ConsultServiceContext,
+  UpdateAwayAndOnlineCountResult
+> = async (parent, args, context) => {
+  const { docRepo, dashboardRepo, consultHoursRepo } = getRepos(context);
+  const docsList = await docRepo.getAllDoctors(args.doctorId, args.docLimit, args.docOffset);
+  const finalResult = await Result(docsList, consultHoursRepo, args.summaryDate);
+  await dashboardRepo.saveData(finalResult[0], finalResult[1], args.summaryDate);
+  return { onlineCount: finalResult[0], awayCount: finalResult[1] };
+};
+const Result = async (
+  docList: Doctor[],
+  consultHoursRepo: DoctorConsultHoursRepository,
+  summaryDate: Date
+) => {
+  let onlineCount = 0;
+  let awayCount = 0;
+  return new Promise<number[]>((resolve, reject) => {
+    docList.map(async (doctor, index, array) => {
+      const weekDay = format(summaryDate, 'EEEE').toUpperCase();
+      const timeSlots = await consultHoursRepo.getConsultHours(doctor.id, weekDay);
+      if (timeSlots.length) {
+        timeSlots.forEach(async (timeSlot) => {
+          const currentTime = new Date();
+          const startTime = new Date(
+            format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.startTime.toString()
+          );
+          const endTime = new Date(
+            format(currentTime, 'yyyy-MM-dd') + 'T' + timeSlot.endTime.toString()
+          );
+          const betweenConsultHours = isWithinInterval(currentTime, {
+            start: startTime,
+            end: endTime,
+          });
+          if (betweenConsultHours == true) {
+            if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.AWAY) {
+              awayCount++;
+            } else if (doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE) {
+              onlineCount++;
+            }
+          }
+        });
+      }
+      if (index + 1 === array.length) {
+        resolve([onlineCount, awayCount]);
+      }
+    });
+  });
+};
 const updateSpecialtyCount: Resolver<
   null,
   { specialityId: string; weekDay: string },
@@ -611,6 +646,7 @@ export const sdDashboardSummaryResolvers = {
     updateUtilizationCapacity,
     updatePatientType,
     updateUserType,
+    updateDoctorsAwayAndOnlineCount,
   },
   Query: {
     getopenTokFileUrl,
