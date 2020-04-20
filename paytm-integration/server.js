@@ -554,7 +554,7 @@ app.post('/paymed-response', (req, res) => {
     if (err) throw err;
     console.log('Updated!');
   });
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
+  axios.defaults.headers.common['authorization'] = token;
   axios({
     url: process.env.API_URL,
     method: 'post',
