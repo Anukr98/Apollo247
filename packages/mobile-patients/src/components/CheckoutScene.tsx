@@ -26,6 +26,8 @@ import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
   CODCity,
+  BOOKINGSOURCE,
+  DEVICETYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -419,6 +421,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               isMedicine: null,
             } as MedicineCartItem)
         ),
+        bookingSource: BOOKINGSOURCE.MOBILE,
+        deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       },
     };
 
