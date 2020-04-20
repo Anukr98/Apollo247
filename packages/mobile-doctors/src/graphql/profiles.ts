@@ -921,6 +921,7 @@ export const ADD_DOCTOR_FAVOURITE_TEST = gql`
   mutation AddDoctorFavouriteTest($itemname: String!) {
     addDoctorFavouriteTest(itemname: $itemname) {
       testList {
+        id
         itemname
       }
     }
@@ -932,6 +933,7 @@ export const UPDATE_DOCTOR_FAVOURITE_TEST = gql`
     updateDoctorFavouriteTest(id: $id, itemname: $itemname) {
       testList {
         id
+        itemname
       }
     }
   }
