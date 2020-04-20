@@ -77,38 +77,38 @@ export const ChennaiCheckout: React.FC = () => {
     <>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
         <div className={classes.pageBox}>
-        <div className={classes.name}>Dear &lt;customer name&gt;,</div>
-        <div className={classes.greeting}>Superb!</div>
-        <p>Your order request is in process</p>
-        <p>
-          <b>Just one more step. New Regulation in your region requires your email id.</b>
-        </p>
-        <div className={classes.formGroup}>
-          <AphTextField label="Your email id please" placeholder="name@email.com" />
-          <div className={classes.checkboxGroup}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  classes={{
-                    root: classes.checkboxRoot,
-                  }}
-                />
-              }
-              label="Check this box if you don’t have an Email Id & want us to share your order details over SMS."
-            />
-          </div>
-          <div className={`${classes.checkboxGroup} ${classes.borderTop}`}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  classes={{
-                    root: classes.checkboxRoot,
-                  }}
-                />
-              }
-              label="I agree to share my medicine requirements with Apollo Pharmacy for home delivery."
-            />
-          </div>
+          <div className={classes.name}>Dear &lt;customer name&gt;,</div>
+          <div className={classes.greeting}>Superb!</div>
+          <p>Your order request is in process</p>
+          <p>
+            <b>Just one more step. New Regulation in your region requires your email id.</b>
+          </p>
+          <div className={classes.formGroup}>
+            <AphTextField label="Your email id please" placeholder="name@email.com" />
+            <div className={classes.checkboxGroup}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    classes={{
+                      root: classes.checkboxRoot,
+                    }}
+                  />
+                }
+                label="Check this box if you don’t have an Email Id & want us to share your order details over SMS."
+              />
+            </div>
+            <div className={`${classes.checkboxGroup} ${classes.borderTop}`}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    classes={{
+                      root: classes.checkboxRoot,
+                    }}
+                  />
+                }
+                label="I agree to share my medicine requirements with Apollo Pharmacy for home delivery."
+              />
+            </div>
           </div>
         </div>
       </Scrollbars>
