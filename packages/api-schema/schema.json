@@ -1200,7 +1200,7 @@
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "FavouriteMedicineList",
+              "name": "GetDoctorFavouriteMedicineListResult",
               "ofType": null
             },
             "isDeprecated": false,
@@ -10976,7 +10976,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "FavouriteMedicineList",
+        "name": "GetDoctorFavouriteMedicineListResult",
         "description": null,
         "fields": [
           {
@@ -10989,6 +10989,22 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "DoctorFavouriteMedicine",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "allowedDosages",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
                 "ofType": null
               }
             },
@@ -11169,6 +11185,30 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "routeOfAdministration",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "ROUTE_OF_ADMINISTRATION",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "medicineCustomDosage",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -11268,6 +11308,60 @@
           },
           {
             "name": "TWICE_A_DAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ALTERNATE_DAY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "THREE_TIMES_A_WEEK",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ONCE_A_WEEK",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "EVERY_HOUR",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "EVERY_TWO_HOURS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "EVERY_FOUR_HOURS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "TWICE_A_WEEK",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ONCE_IN_15_DAYS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ONCE_A_MONTH",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11463,6 +11557,95 @@
           },
           {
             "name": "TABLET",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "ROUTE_OF_ADMINISTRATION",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "ORALLY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SUBLINGUAL",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PER_RECTAL",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "LOCAL_APPLICATION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INTRAMUSCULAR",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INTRAVENOUS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SUBCUTANEOUS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "INHALE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "GARGLE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "ORAL_DROPS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "NASAL_DROPS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "EYE_DROPS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "EAR_DROPS",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -13179,6 +13362,30 @@
             "type": {
               "kind": "ENUM",
               "name": "MEDICINE_UNIT",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "routeOfAdministration",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "ROUTE_OF_ADMINISTRATION",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "medicineCustomDosage",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
@@ -14976,6 +15183,22 @@
               "kind": "OBJECT",
               "name": "CaseSheet",
               "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "allowedDosages",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -26634,9 +26857,56 @@
               }
             },
             "defaultValue": null
+          },
+          {
+            "name": "routeOfAdministration",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "ROUTE_OF_ADMINISTRATION",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "medicineCustomDosage",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "FavouriteMedicineList",
+        "description": null,
+        "fields": [
+          {
+            "name": "medicineList",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "DoctorFavouriteMedicine",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
         "enumValues": null,
         "possibleTypes": null
       },
@@ -26792,6 +27062,26 @@
             "type": {
               "kind": "ENUM",
               "name": "MEDICINE_UNIT",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "routeOfAdministration",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "ROUTE_OF_ADMINISTRATION",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "medicineCustomDosage",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "defaultValue": null
@@ -28293,6 +28583,26 @@
             "type": {
               "kind": "ENUM",
               "name": "MEDICINE_UNIT",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "routeOfAdministration",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "ROUTE_OF_ADMINISTRATION",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "medicineCustomDosage",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "defaultValue": null
