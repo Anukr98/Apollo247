@@ -30,6 +30,7 @@ type DoctorSlot = {
   slotId: number;
   slot: string;
   status: string;
+  slotType: string;
 };
 
 @EntityRepository(Doctor)
@@ -123,6 +124,7 @@ export class DoctorRepository extends Repository<Doctor> {
                     slotId: ++slotCount,
                     slot: generatedSlot,
                     status: 'OPEN',
+                    slotType: ConsultMode.ONLINE,
                   };
                   doctorSlots.push(slotInfo);
                   availableSlots.push(generatedSlot);

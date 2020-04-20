@@ -68,8 +68,19 @@ const addDoctorSlotsElastic: Resolver<
     type: 'posts',
     body: {
       query: {
-        match: {
-          'doctorSlots.slotDate': args.slotDate,
+        bool: {
+          must: [
+            {
+              match: {
+                'doctorSlots.slotDate': args.slotDate,
+              },
+            },
+            {
+              match: {
+                doctorId: args.id,
+              },
+            },
+          ],
         },
       },
     },
@@ -163,6 +174,7 @@ const insertDataElastic: Resolver<
         }
         //console.log(allDocsInfo[i].doctorSecretary.id, 'specialty dets');
         const doctorData = {
+          doctorId: allDocsInfo[i].id,
           firstName: allDocsInfo[i].firstName,
           lastName: allDocsInfo[i].lastName,
           mobileNumber: allDocsInfo[i].mobileNumber,
