@@ -883,7 +883,7 @@ export const InitiateAppsFlyer = () => {
         AsyncStorage.setItem('deeplink', res.data.af_dp);
         console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
-        setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
+        // setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
 

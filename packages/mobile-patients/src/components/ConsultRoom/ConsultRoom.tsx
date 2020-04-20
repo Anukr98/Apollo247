@@ -71,7 +71,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import { GenerateTokenforCM } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -204,6 +204,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     locationDetails,
     isCurrentLocationFetched,
     setCurrentLocationFetched,
+    notificationCount,
+    setNotificationCount,
+    setAllNotifications,
+    setisSelected,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -217,7 +221,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
-  const { analytics, getPatientApiCall } = useAuth();
+  const { analytics } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
@@ -438,40 +442,112 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [enableCM]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        AsyncStorage.removeItem('deeplink');
-
-        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-        const item = JSON.parse(retrievedItem);
-
-        const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-        let allPatients;
-
-        if (callByPrism === 'true') {
-          allPatients =
-            item && item.data && item.data.getCurrentPatients
-              ? item.data.getCurrentPatients.patients
-              : null;
-        } else {
-          allPatients =
-            item && item.data && item.data.getPatientByMobileNumber
-              ? item.data.getPatientByMobileNumber.patients
-              : null;
-        }
-
-        const patientDetails = allPatients
-          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-          : null;
-
-        CommonSetUserBugsnag(
-          patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-        );
-      } catch (error) {}
-    }
-
-    fetchData();
+    AsyncStorage.removeItem('deeplink');
+    storePatientDetailsTOBugsnag();
+    callAPIForNotificationResult();
   }, []);
+
+  const storePatientDetailsTOBugsnag = async () => {
+    try {
+      let allPatients: any;
+
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem);
+
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
+      if (callByPrism === 'true') {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+      } else {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+      }
+
+      const patientDetails = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
+
+      const array: any = await AsyncStorage.getItem('selectedRow');
+      const arraySelected = JSON.parse(array);
+      const selectedCount = arraySelected.filter((item: any) => {
+        return item.isSelected === false;
+      });
+      setNotificationCount && setNotificationCount(selectedCount.length);
+
+      CommonSetUserBugsnag(
+        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+      );
+    } catch (error) {}
+  };
+
+  const callAPIForNotificationResult = async () => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+
+    const params = {
+      phone: '91' + storedPhoneNumber,
+      size: 10,
+    };
+    console.log('params', params);
+    notifcationsApi(params)
+      .then(async (repsonse: any) => {
+        try {
+          const arrayNotification = repsonse.data.data.map((el: any) => {
+            const o = Object.assign({}, el);
+            o.isActive = true;
+            return o;
+          });
+
+          // console.log('arrayNotification.......', arrayNotification);
+
+          const array = await AsyncStorage.getItem('selectedRow');
+          let result;
+          if (array !== null) {
+            const arraySelected = JSON.parse(array);
+
+            result = arrayNotification.map((el: any, index: number) => {
+              const o = Object.assign({});
+              if (arraySelected.length > index) {
+                o.id = el._id;
+                o.isSelected =
+                  arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
+              } else {
+                o.id = el._id;
+                o.isSelected = false;
+              }
+              return o;
+            });
+
+            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+          } else {
+            result = arrayNotification.map((el: any) => {
+              const o = Object.assign({});
+              o.id = el._id;
+              o.isSelected = false;
+              return o;
+            });
+            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+          }
+
+          const selectedCount = result.filter((item: any) => {
+            return item.isSelected === false;
+          });
+
+          setNotificationCount && setNotificationCount(selectedCount.length);
+          setisSelected && setisSelected(arrayNotification);
+          setAllNotifications && setAllNotifications(arrayNotification);
+
+          AsyncStorage.setItem('allNotification', JSON.stringify(arrayNotification));
+        } catch (error) {}
+      })
+      .catch((error: Error) => {
+        console.log('error', error);
+      });
+  };
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {
@@ -990,6 +1066,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             onPress={() => props.navigation.navigate(AppRoutes.NotificationScreen)}
           >
             <NotificationIcon style={{ marginLeft: 10, marginRight: 5 }} />
+            {notificationCount > 0 && renderBadge(notificationCount, {})}
           </TouchableOpacity>
         </View>
       </View>
