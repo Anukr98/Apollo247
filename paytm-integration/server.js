@@ -566,38 +566,11 @@ app.post('/paymed-response', (req, res) => {
                   id
                   shopId
                   orderAutoId
-                  estimatedAmount
-                  pharmaRequest
                   devliveryCharges
                   deliveryType
-                  patientAddressId
-                  prescriptionImageUrl
-                  orderType
                   bookingSource
+                  patientId
                   currentStatus
-                  patient{
-                    mobileNumber
-                    firstName
-                    lastName
-                    emailAddress
-                    dateOfBirth
-                  }
-                  medicineOrderLineItems{
-                    medicineSKU
-                    medicineName
-                    mrp
-                    mou
-                    price
-                    quantity        
-                  }
-                  medicineOrderPayments{
-                    id
-                    bankTxnId
-                    paymentType
-                    amountPaid
-                    paymentRefId
-                    paymentStatus
-                  }
                 }
               }
             }
@@ -615,11 +588,15 @@ app.post('/paymed-response', (req, res) => {
         response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
         '======order details======='
       );
-      const bookingSource =
+      const bookingsourcefromDb =
         response.data.data.getMedicineOrderDetails.MedicineOrderDetails.bookingSource;
 
-      /* never execute a transaction if the payment status is failed */
+      let bookingSource = 'mobile';
+      if (bookingsourcefromDb) {
+        bookingSource = bookingsourcefromDb;
+      }
       if (transactionStatus === 'failed') {
+        /* never execute a transaction if the payment status is failed */
         if (bookingSource === 'WEB') {
           const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
           res.redirect(redirectUrl);
