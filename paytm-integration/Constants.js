@@ -9,4 +9,6 @@ module.exports = Object.freeze({
   UPDATE_SD_SUMMARY: `mutation{ updateSdSummary(summaryDate:"{0}",doctorId:"0",docLimit: {1} ,docOffset: {2} ){ doctorId doctorName appointmentDateTime totalConsultation } }`,
   UPDATE_JD_SUMMARY: `mutation{ updateJdSummary(summaryDate:"{0}",doctorId:"0",docLimit: {1} ,docOffset: {2} ){ doctorId doctorName appointmentDateTime totalConsultation } }`,
   UPDATE_DOCTOR_FEE_SUMMARY: `mutation{ updateDoctorFeeSummary(summaryDate:"{0}",doctorId:"0",docLimit:{1},docOffset:{2}){ status } }`,
+  DOCTOR_COUNT_SENIOR:`query {seniorDoctorCount}`,
+  DOCTOR_COUNT_JUNIOR:`query {juniorDoctorCount}`,
 });
