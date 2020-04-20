@@ -20,6 +20,9 @@ import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
+import { medicineSendPrescription } from 'helpers/emailTemplates/medicineSendPrescription';
+import { EmailMessage } from 'types/notificationMessageTypes';
+import { sendMail } from 'notifications-service/resolvers/email';
 
 export const savePrescriptionMedicineOrderTypeDefs = gql`
   input PrescriptionMedicineInput {
@@ -33,6 +36,13 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
     appointmentId: String
     isEprescription: Int
     payment: PrescriptionMedicinePaymentDetails
+    email: String
+    NonCartOrderCity: NonCartOrderCity
+    orderAutoId: Int
+  }
+
+  enum NonCartOrderCity {
+    CHENNAI
   }
 
   input PrescriptionMedicinePaymentDetails {
@@ -58,9 +68,14 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
   }
 `;
 
+enum NonCartOrderCity {
+  'CHENNAI' = 'CHENNAI',
+}
+
 type PrescriptionMedicineInput = {
   quoteId: string;
   shopId: string;
+  orderAutoId: number;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId: string;
@@ -69,6 +84,8 @@ type PrescriptionMedicineInput = {
   appointmentId: string;
   isEprescription: number;
   payment?: PrescriptionMedicinePaymentDetails;
+  email: string;
+  NonCartOrderCity: NonCartOrderCity;
 };
 
 type PrescriptionMedicinePaymentDetails = {
@@ -103,6 +120,18 @@ const SavePrescriptionMedicineOrder: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+    prescriptionMedicineInput.orderAutoId
+  );
+  if (!orderDetails) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+  //get patient address
+  const patientAddress = orderDetails.patient.patientAddress.filter(
+    (item) => item.id === orderDetails.patientAddressId
+  );
+
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
@@ -119,7 +148,7 @@ const SavePrescriptionMedicineOrder: Resolver<
     currentStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
     isEprescription: prescriptionMedicineInput.isEprescription,
   };
-  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  // const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
 
   if (saveOrder) {
@@ -248,7 +277,6 @@ const SavePrescriptionMedicineOrder: Resolver<
       textRes,
       ''
     );
-
     const orderResp: PharmaResponse = JSON.parse(textRes);
     console.log(orderResp, 'respp', orderResp.ordersResult.Message);
     if (orderResp.ordersResult.Status === false) {
@@ -269,6 +297,53 @@ const SavePrescriptionMedicineOrder: Resolver<
         new Date(),
         MEDICINE_ORDER_STATUS.ORDER_PLACED
       );
+
+      if (
+        prescriptionMedicineInput.NonCartOrderCity &&
+        prescriptionMedicineInput.NonCartOrderCity.length > 0
+      ) {
+        const mailContent = medicineSendPrescription({
+          orderDetails,
+          patientAddress: patientAddress[0],
+        });
+
+        const subjectLine = ApiConstants.UPLOAD_PRESCRIPTION_TITLE;
+        const subject =
+          process.env.NODE_ENV == 'production'
+            ? subjectLine
+            : subjectLine + ' from ' + process.env.NODE_ENV;
+
+        const toEmailId =
+          process.env.NODE_ENV == 'dev' ||
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
+            ? ApiConstants.MEDICINE_SUPPORT_EMAILID
+            : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
+
+        let ccEmailIds =
+          process.env.NODE_ENV == 'dev' ||
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
+            ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
+            : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
+
+        if (prescriptionMedicineInput.email && prescriptionMedicineInput.email.length > 0) {
+          ccEmailIds = ccEmailIds.concat(prescriptionMedicineInput.email);
+        }
+
+        const emailContent: EmailMessage = {
+          subject: subject,
+          fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
+          fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
+          messageContent: <string>mailContent,
+          toEmail: <string>toEmailId,
+          ccEmail: <string>ccEmailIds,
+        };
+
+        sendMail(emailContent);
+      }
+      //end email notification
+
       errorCode = 0;
       errorMessage = orderResp.ordersResult.Message;
       orderStatus = MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED;
