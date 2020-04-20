@@ -204,6 +204,7 @@ const apiDetails = {
 type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
+  selectedZipCode: (zipCode: string) => void;
 };
 
 export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
@@ -256,6 +257,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
               if (cartItems.length > 0) {
                 fetchDeliveryTime(zipCode);
+                props.selectedZipCode(zipCode);
               }
               setSelectedAddressDataIndex(index || 0);
             } else {
