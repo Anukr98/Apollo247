@@ -738,6 +738,10 @@ export const Ambulance: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ambulance.png')} />
 );
 
+export const Scan: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/Scan.png')} />
+);
+
 export const Diabetes: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_diabetes.png')} />
 );

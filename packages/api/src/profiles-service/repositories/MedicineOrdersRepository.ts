@@ -98,6 +98,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderDetailsByOderId(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
   getMedicineOrderById(patient: string, orderAutoId: number) {
     return this.findOne({
       where: { patient, orderAutoId },
