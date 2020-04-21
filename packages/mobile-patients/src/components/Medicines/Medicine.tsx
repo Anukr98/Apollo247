@@ -786,6 +786,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       price,
       image,
       thumbnail,
+      type_id,
     } = data.item;
 
     const addToCart = () => {
@@ -800,6 +801,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             : special_price
           : undefined,
         prescriptionRequired: is_prescription_required == '1',
+        isMedicine: type_id == 'Pharma',
         quantity: 1,
         thumbnail,
         isInStock: true,

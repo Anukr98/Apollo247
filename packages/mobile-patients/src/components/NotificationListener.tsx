@@ -459,6 +459,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                           : undefined,
                         quantity: items[index].qty || 1,
                         prescriptionRequired: medicineDetails.is_prescription_required == '1',
+                        isMedicine: medicineDetails.type_id == 'Pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                       } as ShoppingCartItem;
                     })

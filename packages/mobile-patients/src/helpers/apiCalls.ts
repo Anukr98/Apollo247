@@ -15,7 +15,7 @@ export interface MedicineProduct {
   small_image?: string | null;
   status: number;
   thumbnail: string | null;
-  type_id: string;
+  type_id: 'Fmcg' | 'Pharma';
   mou: string;
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
