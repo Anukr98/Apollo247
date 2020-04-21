@@ -51,10 +51,18 @@ import {
   CommonBugFender,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  getRelations,
+  postFirebaseEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
+import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { useApolloClient } from 'react-apollo-hooks';
+import { getDeviceTokenCount } from '../helpers/clientCalls';
 
 const { width, height } = Dimensions.get('window');
 
@@ -142,6 +150,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [referral, setReferral] = useState<string>('');
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
   const [allCurrentPatients, setAllCurrentPatients] = useState<any>();
+  const [isSignupEventFired, setSignupEventFired] = useState(false);
+  const [deviceToken, setDeviceToken] = useState<string>('');
+  const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -201,24 +212,85 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     fetchData();
   }, []);
 
-  // useEffect(() => {
-  //   setProfiles(allCurrentPatients ? allCurrentPatients : []);
-  //   const length =
-  //     profiles &&
-  //     (profiles.length == 1 ? profiles.length + ' account' : profiles.length + ' accounts');
-  //   const baseString =
-  //     'We have found ' +
-  //     length +
-  //     ' registered with this mobile number. Please tell us who is who ? :)';
-  //   setDiscriptionText(baseString);
+  useEffect(() => {
+    getDeviceCountAPICall();
+  }, []);
 
-  //   if (length !== 'undefined accounts') {
-  //     setShowText(true);
-  //     // console.log('length', length);
-  //   }
-  //   // console.log('discriptionText', discriptionText);
-  //   // console.log('allCurrentPatients', allCurrentPatients);
-  // }, [currentPatient, allCurrentPatients, analytics, profiles, discriptionText, showText]);
+  const client = useApolloClient();
+
+  const getDeviceCountAPICall = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    setDeviceToken(uniqueId);
+    console.log(uniqueId, 'uniqueId');
+
+    getDeviceTokenCount(client, uniqueId)
+      .then(({ data }: any) => {
+        console.log(data, 'data getDeviceTokenCount');
+        console.log(data.data.getDeviceCodeCount.deviceCount, 'data getDeviceTokenCount');
+
+        if (1 <= 2) {
+          setShowReferralCode(true);
+        } else {
+          setShowReferralCode(false);
+        }
+      })
+      .catch((e) => {
+        console.log('Error getDeviceTokenCount ', e);
+      });
+  };
+
+  const _postWebEngageEvent = async () => {
+    if (isSignupEventFired) {
+      return;
+    }
+    try {
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem);
+
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
+      let allPatients;
+
+      if (callByPrism === 'false') {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+      } else {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+      }
+
+      const patientDetails = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
+
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.REGISTRATION_DONE] = {
+        Customer_ID: g(patientDetails, 'id'),
+        Customer_First_Name: g(patientDetails, 'firstName'),
+        Customer_Last_Name: g(patientDetails, 'lastName'),
+        // 'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        // Gender:
+        //   gender === 'Female'
+        //     ? Gender['FEMALE']
+        //     : gender === 'Male'
+        //     ? Gender['MALE']
+        //     : Gender['OTHER'],
+        // Email: email.trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventFirebaseAttributes['Referral_Code'] = referral;
+      }
+
+      postFirebaseEvent(FirebaseEventName.REGISTRATION_DONE, eventFirebaseAttributes);
+      setSignupEventFired(true);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
 
   const renderUserForm = (
     allCurrentPatients: GetCurrentPatients_getCurrentPatients_patients | null,
@@ -667,7 +739,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         id: profile.id,
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
                         referralCode: (profile.relation == Relation.ME && trimReferral) || null,
-                        deviceCode: DeviceInfo.getUniqueId(),
+                        deviceCode: deviceToken,
                       };
                       console.log('patientsDetails', { patientsDetails });
                       CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
@@ -687,7 +759,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
+                  _postWebEngageEvent(),
                   handleOpenURL())
                 : null}
               {error
@@ -796,7 +868,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 profiles.map((allCurrentPatients, i: number) => (
                   <View key={i}>{renderUserForm(allCurrentPatients, i)}</View>
                 ))}
-              {renderReferral()}
+              {showReferralCode && renderReferral()}
               <View style={{ height: 80 }} />
             </Card>
           </KeyboardAwareScrollView>

@@ -15,6 +15,7 @@ import {
   getNetStatus,
   handleGraphQlError,
   postWebEngageEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -48,6 +49,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
+import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -290,7 +292,10 @@ export const Login: React.FC<LoginProps> = (props) => {
                   console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);
 
-                  CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
+                  const eventAttributes: FirebaseEvents[FirebaseEventName.MOBILE_NUMBER_ENTERED] = {
+                    mobilenumber: phoneNumber,
+                  };
+                  postFirebaseEvent(FirebaseEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
 
                   console.log('confirmResult login', confirmResult);
                   try {
