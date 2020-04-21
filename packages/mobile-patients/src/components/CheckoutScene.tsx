@@ -418,7 +418,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               // isPrescriptionNeeded: item.prescriptionRequired,
               prescriptionImageUrl: null,
               mou: parseInt(item.mou),
-              isMedicine: null,
+              isMedicine: item.isMedicine ? '1' : '0',
             } as MedicineCartItem)
         ),
         bookingSource: BOOKINGSOURCE.MOBILE,
