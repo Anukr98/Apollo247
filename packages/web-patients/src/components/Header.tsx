@@ -166,17 +166,21 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    hideVisibility: {
+      visibility: 'hidden',
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { isSigningIn, isSignedIn, verifyOtpError, setVerifyOtpError } = useAuth();
+  const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
+  const isMobileView = screen.width <= 768;
 
   return (
     <div className={classes.headerSticky}>
@@ -187,10 +191,8 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {isSignedIn && <LocationSearch />}
-          {isSignedIn && (
-            <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
-          )}
+          <LocationSearch />
+          <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             {isSignedIn ? (
               ''

@@ -217,7 +217,7 @@ export const LocationSearch: React.FC = (props) => {
     isUserDeniedLocationAccess,
     setIsUserDeniedLocationAccess,
   } = useLocationDetails();
-  const { isSigningIn } = useAuth();
+  const { isSigningIn, isSignedIn } = useAuth();
 
   const handleChange = (address: string) => setAddress(address);
 
@@ -290,6 +290,8 @@ export const LocationSearch: React.FC = (props) => {
     }
     return 'No location';
   };
+
+  const isMobileView = screen.width <= 768;
 
   return (
     <div className={classes.userLocation}>

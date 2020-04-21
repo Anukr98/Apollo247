@@ -4,6 +4,8 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { BottomNavigation, Theme } from '@material-ui/core';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { makeStyles } from '@material-ui/styles';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -74,69 +76,88 @@ const useStyles = makeStyles((theme: Theme) => {
 export const NavigationBottom: React.FC = (props) => {
   const classes = useStyles();
   const currentPath = window.location.pathname;
+  const { isSignedIn } = useAuth();
 
   return (
-    <BottomNavigation showLabels className={classes.root}>
-      <BottomNavigationAction
-        component={Link}
-        label="Appointments"
-        icon={<img src={require('images/bottom-nav/ic_appointments.svg')} />}
-        to={clientRoutes.appointments()}
-        className={currentPath === clientRoutes.appointments() ? classes.activeMenu : ''}
-        classes={{
-          root: classes.labelRoot,
-          label: classes.iconLabel,
-          selected: classes.iconSelected,
-        }}
-      />
-      <BottomNavigationAction
-        label="Health Records"
-        component={Link}
-        to={clientRoutes.healthRecords()}
-        icon={<img src={require('images/bottom-nav/ic_myhealth.svg')} />}
-        className={currentPath === clientRoutes.healthRecords() ? classes.activeMenu : ''}
-        classes={{
-          root: classes.labelRoot,
-          label: classes.iconLabel,
-          selected: classes.iconSelected,
-        }}
-      />
-      <BottomNavigationAction
-        label="Medicines"
-        component={Link}
-        to={clientRoutes.medicines()}
-        icon={<img src={require('images/bottom-nav/ic_medicines.svg')} />}
-        className={currentPath === clientRoutes.medicines() ? classes.activeMenu : ''}
-        classes={{
-          root: classes.labelRoot,
-          label: classes.iconLabel,
-          selected: classes.iconSelected,
-        }}
-      />
-      {/* <BottomNavigationAction
-        label="Tests"
-        component={Link}
-        to={clientRoutes.tests()}
-        icon={<img src={require('images/bottom-nav/ic_tests.svg')} />}
-        className={currentPath === clientRoutes.tests() ? classes.activeMenu : ''}
-        classes={{
-          root: classes.labelRoot,
-          label: classes.iconLabel,
-          selected: classes.iconSelected,
-        }}
-      /> */}
-      <BottomNavigationAction
-        label="My Account"
-        component={Link}
-        to={clientRoutes.myAccount()}
-        icon={<img src={require('images/bottom-nav/ic_account.svg')} />}
-        className={currentPath === clientRoutes.myAccount() ? classes.activeMenu : ''}
-        classes={{
-          root: classes.labelRoot,
-          label: classes.iconLabel,
-          selected: classes.iconSelected,
-        }}
-      />
-    </BottomNavigation>
+    <ProtectedWithLoginPopup>
+      {({ protectWithLoginPopup }) => (
+        <>
+          <BottomNavigation showLabels className={classes.root}>
+            <BottomNavigationAction
+              onClick={() => {
+                isSignedIn ? clientRoutes.appointments() : protectWithLoginPopup();
+              }}
+              component={Link}
+              label="Appointments"
+              icon={<img src={require('images/bottom-nav/ic_appointments.svg')} />}
+              to={clientRoutes.appointments()}
+              className={currentPath === clientRoutes.appointments() ? classes.activeMenu : ''}
+              classes={{
+                root: classes.labelRoot,
+                label: classes.iconLabel,
+                selected: classes.iconSelected,
+              }}
+            />
+            <BottomNavigationAction
+              onClick={() => {
+                isSignedIn ? clientRoutes.healthRecords() : protectWithLoginPopup();
+              }}
+              label="Health Records"
+              component={Link}
+              to={clientRoutes.healthRecords()}
+              icon={<img src={require('images/bottom-nav/ic_myhealth.svg')} />}
+              className={currentPath === clientRoutes.healthRecords() ? classes.activeMenu : ''}
+              classes={{
+                root: classes.labelRoot,
+                label: classes.iconLabel,
+                selected: classes.iconSelected,
+              }}
+            />
+            <BottomNavigationAction
+              label="Medicines"
+              component={Link}
+              to={clientRoutes.medicines()}
+              icon={<img src={require('images/bottom-nav/ic_medicines.svg')} />}
+              className={currentPath === clientRoutes.medicines() ? classes.activeMenu : ''}
+              classes={{
+                root: classes.labelRoot,
+                label: classes.iconLabel,
+                selected: classes.iconSelected,
+              }}
+            />
+            <BottomNavigationAction
+              onClick={() => {
+                isSignedIn ? clientRoutes.tests() : protectWithLoginPopup();
+              }}
+              label="Tests"
+              component={Link}
+              to={clientRoutes.tests()}
+              icon={<img src={require('images/bottom-nav/ic_tests.svg')} />}
+              className={currentPath === clientRoutes.tests() ? classes.activeMenu : ''}
+              classes={{
+                root: classes.labelRoot,
+                label: classes.iconLabel,
+                selected: classes.iconSelected,
+              }}
+            />
+            <BottomNavigationAction
+              onClick={() => {
+                isSignedIn ? clientRoutes.myAccount() : protectWithLoginPopup();
+              }}
+              label="My Account"
+              component={Link}
+              to={clientRoutes.myAccount()}
+              icon={<img src={require('images/bottom-nav/ic_account.svg')} />}
+              className={currentPath === clientRoutes.myAccount() ? classes.activeMenu : ''}
+              classes={{
+                root: classes.labelRoot,
+                label: classes.iconLabel,
+                selected: classes.iconSelected,
+              }}
+            />
+          </BottomNavigation>
+        </>
+      )}
+    </ProtectedWithLoginPopup>
   );
 };

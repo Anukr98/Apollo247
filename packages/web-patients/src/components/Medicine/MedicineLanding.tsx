@@ -234,7 +234,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 22,
       [theme.breakpoints.down('xs')]: {
         '&:last-child': {
-          paddingBottom: 10,
+          paddingBottom: 70,
         },
       },
     },
