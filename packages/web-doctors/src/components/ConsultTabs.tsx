@@ -429,7 +429,8 @@ export const ConsultTabs: React.FC = () => {
         if (
           message.message.url &&
           message.message.fileType &&
-          message.message.fileType === 'image'
+          message.message.fileType === 'image' &&
+          message.message.id !== doctorId
         ) {
           const data = {
             documentPath: message.message.url,

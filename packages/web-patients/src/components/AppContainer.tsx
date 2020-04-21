@@ -108,7 +108,6 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.FAQ()} component={Faq} />
           <Route exact path={clientRoutes.contactUs()} component={ContactUs} />
           <Route exact path={clientRoutes.partnerSBI()} component={SbiLandingPage} />
-          <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
           <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
           <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
@@ -120,9 +119,10 @@ const App: React.FC = () => {
           />
           <AuthRouted
             exact
-            path={clientRoutes.medicinesCartInfo(':orderAutoId')}
+            path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
             component={MedicineLanding}
           />
+          <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
           <AuthRouted
             exact
@@ -177,14 +177,11 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
           <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />{' '}
         </Switch>
-        {
-          pageName !== '/terms' &&
+        {pageName !== '/terms' &&
           pageName !== '/privacy' &&
           pageName !== '/faq' &&
           pageName !== '/contact' &&
-          pageName !== '/partners/sbi' && (        
-          <BottomLinks />
-        )}
+          pageName !== '/partners/sbi' && <BottomLinks />}
         {isSignedIn &&
           pageName !== '/terms' &&
           pageName !== '/privacy' &&

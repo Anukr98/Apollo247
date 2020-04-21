@@ -24,6 +24,11 @@ import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 import AsyncStorage from '@react-native-community/async-storage';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { height } = Dimensions.get('window');
 
@@ -136,6 +141,25 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
   const [currentIndex, setcurrentIndex] = useState<number>(0);
 
+  useEffect(() => {
+    const index = currentIndex + 1;
+    postWebEngageEvent(
+      index == 1
+        ? WebEngageEventName.ONBOARDING_SCREEN_1
+        : index == 2
+        ? WebEngageEventName.ONBOARDING_SCREEN_2
+        : index == 3
+        ? WebEngageEventName.ONBOARDING_SCREEN_3
+        : WebEngageEventName.ONBOARDING_SCREEN_4,
+      {}
+    );
+  }, [currentIndex]);
+
+  const postSkipClickedWEGEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.ONBOARDING_SKIP_CLICKED] = {};
+    postWebEngageEvent(WebEngageEventName.ONBOARDING_SKIP_CLICKED, eventAttributes);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainView}>
@@ -179,6 +203,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
           <Text
             style={styles.skipTextStyle}
             onPress={() => {
+              postSkipClickedWEGEvent();
               AsyncStorage.setItem('onboarding', 'true');
               props.navigation.replace(AppRoutes.Login);
             }}

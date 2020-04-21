@@ -1,11 +1,7 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { NotificationBellIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import {
-  getAppointmentCallStatus,
-  getAppointmentDataDetails,
-} from '@aph/mobile-patients/src/helpers/clientCalls';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { setBugFenderLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
@@ -13,9 +9,9 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { STATUS } from '../../graphql/types/globalTypes';
 import { notifcationsApi } from '../../helpers/apiCalls';
 import { AppRoutes } from '../NavigatorContainer';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   titleStyle: {
@@ -102,74 +98,109 @@ export interface NotificationScreenProps extends NavigationScreenProps {}
 export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [selected, setSelected] = useState<any[]>([]);
+  const [loader, setLoader] = useState(true);
 
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
 
+  const { setNotificationCount, allNotifications, isSelected } = useAppCommonData();
+  // let arrayNotification: any;
+
   useEffect(() => {
     async function fetchData() {
-      setLoading && setLoading(true);
-      const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+      setLoader(true);
+      const array: any = await AsyncStorage.getItem('selectedRow');
+      const arraySelected = JSON.parse(array);
+      if (arraySelected !== null) {
+        setSelected([...arraySelected]);
+      }
+      // console.log('arraySelected.......', arraySelected);
 
-      const params = {
-        phone: '91' + storedPhoneNumber,
-        size: 10,
-      };
-      console.log('params', params);
-      notifcationsApi(params)
-        .then(async (repsonse: any) => {
-          setLoading && setLoading(false);
+      const allStoredNotification: any = await AsyncStorage.getItem('allNotification');
+      const arrayNotification = JSON.parse(allStoredNotification);
+      if (arrayNotification !== null) {
+        setMessages([...arrayNotification]);
+      } else {
+        console.log('isSelected.......', allNotifications);
 
-          try {
-            const arrayNotification = repsonse.data.data.map((el: any) => {
-              const o = Object.assign({}, el);
-              o.isActive = true;
-              return o;
-            });
-
-            // console.log('arrayNotification.......', arrayNotification);
-
-            const array = await AsyncStorage.getItem('selectedRow');
-
-            if (array !== null) {
-              const arraySelected = JSON.parse(array);
-
-              const result = arrayNotification.map((el: any, index: number) => {
-                const o = Object.assign({});
-                if (arraySelected.length > index) {
-                  o.id = el._id;
-                  o.isSelected =
-                    arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
-                } else {
-                  o.id = el._id;
-                  o.isSelected = false;
-                }
-                return o;
-              });
-
-              setSelected(result);
-              AsyncStorage.setItem('selectedRow', JSON.stringify(result));
-            } else {
-              const result = arrayNotification.map((el: any) => {
-                const o = Object.assign({});
-                o.id = el._id;
-                o.isSelected = false;
-                return o;
-              });
-              setSelected(result);
-              AsyncStorage.setItem('selectedRow', JSON.stringify(result));
-            }
-
-            setMessages(arrayNotification);
-          } catch (error) {}
-        })
-        .catch((error: Error) => {
-          setLoading && setLoading(false);
-          console.log('error', error);
-        });
+        setSelected([...isSelected]);
+        setMessages([...allNotifications]);
+      }
+      console.log('arrayNotification.......', arrayNotification);
+      setLoader(false);
     }
     fetchData();
-  }, []);
+  }, [allNotifications]);
+
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     setLoading && setLoading(true);
+  //     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+
+  //     const params = {
+  //       phone: '91' + storedPhoneNumber,
+  //       size: 10,
+  //     };
+  //     console.log('params', params);
+  //     notifcationsApi(params)
+  //       .then(async (repsonse: any) => {
+  //         setLoading && setLoading(false);
+
+  //         try {
+  //           const arrayNotification = repsonse.data.data.map((el: any) => {
+  //             const o = Object.assign({}, el);
+  //             o.isActive = true;
+  //             return o;
+  //           });
+
+  //           // console.log('arrayNotification.......', arrayNotification);
+
+  //           const array = await AsyncStorage.getItem('selectedRow');
+  //           setBugFenderLog('handleOpenURL_route', array);
+
+  //           if (array !== null) {
+  //             const arraySelected = JSON.parse(array);
+
+  //             const result = arrayNotification.map((el: any, index: number) => {
+  //               const o = Object.assign({});
+  //               if (arraySelected.length > index) {
+  //                 o.id = el._id;
+  //                 o.isSelected =
+  //                   arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
+  //               } else {
+  //                 o.id = el._id;
+  //                 o.isSelected = false;
+  //               }
+  //               return o;
+  //             });
+
+  //             setSelected(result);
+  //             AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+  //           } else {
+  //             const result = arrayNotification.map((el: any) => {
+  //               const o = Object.assign({});
+  //               o.id = el._id;
+  //               o.isSelected = false;
+  //               return o;
+  //             });
+  //             setSelected(result);
+  //             AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+  //           }
+
+  //           setMessages(arrayNotification);
+  //           setLoader(false);
+  //         } catch (error) {
+  //           setLoader(false);
+  //         }
+  //       })
+  //       .catch((error: Error) => {
+  //         setLoading && setLoading(false);
+  //         setLoader(false);
+  //         console.log('error', error);
+  //       });
+  //   }
+  //   fetchData();
+  // }, []);
 
   // useEffect(() => {
   //   async function fetchData() {
@@ -345,11 +376,16 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   const updateSelectedView = (index: number) => {
     const arrayCoppied = selected;
     arrayCoppied[index].isSelected = true;
-    setSelected(arrayCoppied);
+    setSelected([...arrayCoppied]);
 
     const selectedOne = messages;
     selectedOne[index].isActive = false;
     setMessages([...selectedOne]);
+
+    const selectedCount = selected.filter((item: any) => {
+      return item.isSelected === false;
+    });
+    setNotificationCount && setNotificationCount(selectedCount.length);
 
     AsyncStorage.setItem('selectedRow', JSON.stringify(arrayCoppied));
   };
@@ -358,9 +394,13 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     const val = JSON.parse(item.notificatio_details.push_notification_content);
     return (
       <View
-        style={{ backgroundColor: selected[index].isSelected ? 'transparent' : 'white', flex: 1 }}
+        style={{
+          backgroundColor: selected && selected[index].isSelected ? 'transparent' : 'white',
+          flex: 1,
+        }}
       >
         <TouchableOpacity
+          activeOpacity={0.8}
           onPress={() => {
             updateSelectedView(index);
           }}
@@ -431,18 +471,33 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     if (event) {
       const CTAName = ctaNamesMethod(event);
 
-      return (
-        <Text
-          onPress={() => {
-            console.log(index, 'index');
-            updateSelectedView(index);
-            handleOpenURL(event.actionLink);
-          }}
-          style={styles.btnStyle}
-        >
-          {`GO TO ${CTAName}`}
-        </Text>
-      );
+      let routing = event.actionLink.replace('apollopatients://', '');
+      const data = routing.split('?');
+      routing = data[0];
+
+      if (
+        routing === 'Consult' ||
+        routing === 'Medicine' ||
+        routing === 'Test' ||
+        routing === 'Speciality' ||
+        routing === 'Doctor' ||
+        routing === 'DoctorSearch' ||
+        routing === 'MedicineSearch' ||
+        routing === 'MedicineDetail'
+      ) {
+        return (
+          <Text
+            onPress={() => {
+              console.log(index, 'index');
+              updateSelectedView(index);
+              handleOpenURL(event.actionLink);
+            }}
+            style={styles.btnStyle}
+          >
+            {`GO TO ${CTAName}`}
+          </Text>
+        );
+      }
     }
   };
 
@@ -667,6 +722,20 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
           numColumns={1}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={{ justifyContent: 'center', alignSelf: 'center', flex: 1, margin: 0 }}>
+              <Text
+                style={{
+                  marginTop: 20,
+                  color: '#fc9916',
+                  textAlign: 'center',
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                }}
+              >
+                {!loader && messages.length == 0 ? 'No notifications avaliable' : ''}
+              </Text>
+            </View>
+          }
         />
       </View>
     );

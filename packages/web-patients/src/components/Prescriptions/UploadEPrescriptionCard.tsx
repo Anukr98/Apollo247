@@ -134,7 +134,12 @@ type EPrescriptionCardProps = {
 
 export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
-  const { ePrescriptionData, setEPrescriptionData } = useShoppingCart();
+  const {
+    ePrescriptionData,
+    setEPrescriptionData,
+    setUploadedEPrescription,
+    uploadedEPrescription,
+  } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const [pastPrescriptions, setPastPrescriptions] = useState<any[] | null>(null);
   const [pastMedicalOrders, setPastMedicalOrders] = useState<any[] | null>(null);
@@ -143,6 +148,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
   const [selectedEPrescriptions, setSelectedEPrescriptions] = useState<EPrescription[]>(
     ePrescriptionData || []
   );
+  const [mutationLoading, setMutationLoading] = useState<boolean>(false);
 
   const patientPastConsultAndPrescriptionMutation = useMutation<
     getPatientPastConsultsAndPrescriptions,
@@ -214,9 +220,8 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             id: item!.id,
             date: moment(item!.quoteDateTime).format(DATE_FORMAT),
             uploadedUrl: item!.prescriptionImageUrl,
-            doctorName: `Meds Rx ${
-              (item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''
-            }`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+            doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) ||
+              ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
             forPatient: (currentPatient && currentPatient.firstName) || '',
             medicines: getMedicines(item!.medicineOrderLineItems! || []),
             prismPrescriptionFileId: item!.prismPrescriptionFileId,
@@ -245,8 +250,12 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
       .filter((item: any) => !!item.uploadedUrl)
       .sort(
         (a: any, b: any) =>
-          moment(b.date, DATE_FORMAT).toDate().getTime() -
-          moment(a.date, DATE_FORMAT).toDate().getTime()
+          moment(b.date, DATE_FORMAT)
+            .toDate()
+            .getTime() -
+          moment(a.date, DATE_FORMAT)
+            .toDate()
+            .getTime()
       );
 
   const PRESCRIPTION_VALIDITY_IN_DAYS = 180;
@@ -300,6 +309,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
+                  disabled={mutationLoading}
                   checked={
                     selectedEPrescriptions.findIndex(
                       (selectedPrescription) => selectedPrescription.id === pastPrescription.id
@@ -342,6 +352,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
                   </div>
                 </div>
                 <AphCheckbox
+                  disabled={mutationLoading}
                   checked={
                     selectedEPrescriptions.findIndex(
                       (selectedPrescription) => selectedPrescription.id === pastPrescription.id
@@ -371,16 +382,22 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             disabled={
               ((!pastMedicalOrders || (pastMedicalOrders && pastMedicalOrders.length === 0)) &&
                 (!pastPrescriptions || (pastPrescriptions && pastPrescriptions.length === 0))) ||
-              selectedEPrescriptions.length === 0
+              selectedEPrescriptions.length === 0 ||
+              mutationLoading
             }
             onClick={() => {
-              const finalEprescriptions = selectedEPrescriptions;
-              setEPrescriptionData && setEPrescriptionData(finalEprescriptions);
-              props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
+              setMutationLoading(true);
+              setEPrescriptionData && setEPrescriptionData(selectedEPrescriptions);
+              setUploadedEPrescription && setUploadedEPrescription(true);
 
               const currentUrl = window.location.href;
               if (currentUrl.endsWith('/medicines')) {
-                window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
+                setTimeout(() => {
+                  window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
+                }, 3000);
+              } else {
+                props.setIsEPrescriptionOpen && props.setIsEPrescriptionOpen(false);
+                setMutationLoading(false);
               }
             }}
             className={classes.uploadPrescription}
@@ -389,7 +406,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
             }}
             color="primary"
           >
-            Upload
+            {mutationLoading ? <CircularProgress size={22} color="secondary" /> : 'Upload'}
           </AphButton>
         </div>
       </div>

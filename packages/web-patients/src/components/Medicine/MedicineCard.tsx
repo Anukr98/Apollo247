@@ -18,6 +18,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#01475b',
       textAlign: 'center',
+      height: '100%',
     },
     bigAvatar: {
       width: 85,
@@ -54,10 +55,14 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 10,
     },
     noData: {
+      marginTop: 10,
       [theme.breakpoints.down('xs')]: {
         marginTop: 25,
         paddingLeft: 10,
       },
+    },
+    productName: {
+      minHeight: 45,
     },
   };
 });
@@ -105,7 +110,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 <div className={classes.bigAvatar}>
                   <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
                 </div>
-                {product.name}
+                <div className={classes.productName}>{product.name}</div>
               </Link>
               <div className={classes.priceGroup}>
                 Rs. {product.special_price ? product.special_price : product.price}{' '}

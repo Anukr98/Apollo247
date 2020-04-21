@@ -8,12 +8,14 @@ import {
   MEDICINE_FREQUENCY,
   MEDICINE_CONSUMPTION_DURATION,
   MEDICINE_FORM_TYPES,
+  ROUTE_OF_ADMINISTRATION,
 } from 'doctors-service/entities';
 import { DoctorFavouriteMedicineRepository } from 'doctors-service/repositories/doctorFavouriteMedicineRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { MEDICINE_UNIT } from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
 
 export const saveDoctorFavouriteMedicineTypeDefs = gql`
   enum MEDICINE_FORM_TYPES {
@@ -70,6 +72,31 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     ONCE_A_DAY
     THRICE_A_DAY
     TWICE_A_DAY
+    ALTERNATE_DAY
+    THREE_TIMES_A_WEEK
+    ONCE_A_WEEK
+    EVERY_HOUR
+    EVERY_TWO_HOURS
+    EVERY_FOUR_HOURS
+    TWICE_A_WEEK
+    ONCE_IN_15_DAYS
+    ONCE_A_MONTH
+  }
+
+  enum ROUTE_OF_ADMINISTRATION {
+    ORALLY
+    SUBLINGUAL
+    PER_RECTAL
+    LOCAL_APPLICATION
+    INTRAMUSCULAR
+    INTRAVENOUS
+    SUBCUTANEOUS
+    INHALE
+    GARGLE
+    ORAL_DROPS
+    NASAL_DROPS
+    EYE_DROPS
+    EAR_DROPS
   }
 
   input SaveDoctorsFavouriteMedicineInput {
@@ -85,6 +112,8 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineTimings: [MEDICINE_TIMINGS]!
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineUnit: MEDICINE_UNIT!
+    routeOfAdministration: ROUTE_OF_ADMINISTRATION
+    medicineCustomDosage: String
   }
 
   type DoctorFavouriteMedicine {
@@ -101,6 +130,8 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineUnit: MEDICINE_UNIT
+    routeOfAdministration: ROUTE_OF_ADMINISTRATION
+    medicineCustomDosage: String
   }
 
   input UpdateDoctorsFavouriteMedicineInput {
@@ -117,14 +148,21 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineTimings: [MEDICINE_TIMINGS]!
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineUnit: MEDICINE_UNIT
+    routeOfAdministration: ROUTE_OF_ADMINISTRATION
+    medicineCustomDosage: String
   }
 
   type FavouriteMedicineList {
     medicineList: [DoctorFavouriteMedicine]
   }
 
+  type GetDoctorFavouriteMedicineListResult {
+    medicineList: [DoctorFavouriteMedicine]
+    allowedDosages: [String]
+  }
+
   extend type Query {
-    getDoctorFavouriteMedicineList: FavouriteMedicineList
+    getDoctorFavouriteMedicineList: GetDoctorFavouriteMedicineListResult
   }
 
   extend type Mutation {
@@ -142,6 +180,11 @@ type FavouriteMedicineList = {
   medicineList: DoctorsFavouriteMedicine[];
 };
 
+type GetDoctorFavouriteMedicineListResult = {
+  medicineList: DoctorsFavouriteMedicine[];
+  allowedDosages: String[];
+};
+
 type SaveDoctorsFavouriteMedicineInput = {
   externalId: string;
   medicineConsumptionDuration: string;
@@ -155,6 +198,8 @@ type SaveDoctorsFavouriteMedicineInput = {
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
   medicineUnit: MEDICINE_UNIT;
+  routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
+  medicineCustomDosage?: string;
 };
 
 type SaveDoctorsFavouriteMedicineInputArgs = {
@@ -201,7 +246,7 @@ const getDoctorFavouriteMedicineList: Resolver<
   null,
   {},
   DoctorsServiceContext,
-  FavouriteMedicineList
+  GetDoctorFavouriteMedicineListResult
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
@@ -209,7 +254,10 @@ const getDoctorFavouriteMedicineList: Resolver<
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
   const favouriteTestList = await favouriteTestRepo.favouriteMedicines(doctordata.id);
-  return { medicineList: favouriteTestList };
+  return {
+    medicineList: favouriteTestList,
+    allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),
+  };
 };
 
 const removeFavouriteMedicine: Resolver<
@@ -254,6 +302,8 @@ type UpdateDoctorsFavouriteMedicineInput = {
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
   medicineUnit: string;
+  routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
+  medicineCustomDosage?: string;
 };
 
 type UpdateDoctorsFavouriteMedicineInputArgs = {

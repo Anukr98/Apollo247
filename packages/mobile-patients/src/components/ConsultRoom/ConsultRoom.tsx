@@ -4,6 +4,7 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import {
   Ambulance,
+  Scan,
   CartIcon,
   ConsultationRoom,
   Diabetes,
@@ -31,6 +32,7 @@ import {
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
+  GET_DIAGNOSTICS_CITES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -71,7 +73,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import { GenerateTokenforCM } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -86,7 +88,11 @@ import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/Loc
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
@@ -204,6 +210,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     locationDetails,
     isCurrentLocationFetched,
     setCurrentLocationFetched,
+    setDiagnosticsCities,
+    diagnosticsCities,
+    notificationCount,
+    setNotificationCount,
+    setAllNotifications,
+    setisSelected,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -217,7 +229,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
-  const { analytics, getPatientApiCall } = useAuth();
+  const { analytics } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
@@ -238,6 +250,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ConsultRoom_updateLocation', e);
       });
   };
+
+  useEffect(() => {
+    if (diagnosticsCities.length) {
+      // Don't call getDiagnosticsCites API if already fetched
+      return;
+    }
+    if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
+      client
+        .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+          query: GET_DIAGNOSTICS_CITES,
+          variables: {
+            cityName: locationDetails!.city,
+            patientId: currentPatient.id || '',
+          },
+        })
+        .then(({ data }) => {
+          const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
+          setDiagnosticsCities!(
+            cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
+          );
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultRoom_GET_DIAGNOSTICS_CITES', e);
+        });
+    }
+  }, [locationDetails, currentPatient, diagnosticsCities]);
 
   const askLocationPermission = () => {
     showAphAlert!({
@@ -440,40 +478,112 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [enableCM]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        AsyncStorage.removeItem('deeplink');
-
-        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-        const item = JSON.parse(retrievedItem);
-
-        const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-        let allPatients;
-
-        if (callByPrism === 'true') {
-          allPatients =
-            item && item.data && item.data.getCurrentPatients
-              ? item.data.getCurrentPatients.patients
-              : null;
-        } else {
-          allPatients =
-            item && item.data && item.data.getPatientByMobileNumber
-              ? item.data.getPatientByMobileNumber.patients
-              : null;
-        }
-
-        const patientDetails = allPatients
-          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-          : null;
-
-        CommonSetUserBugsnag(
-          patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-        );
-      } catch (error) {}
-    }
-
-    fetchData();
+    AsyncStorage.removeItem('deeplink');
+    storePatientDetailsTOBugsnag();
+    callAPIForNotificationResult();
   }, []);
+
+  const storePatientDetailsTOBugsnag = async () => {
+    try {
+      let allPatients: any;
+
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem);
+
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
+      if (callByPrism === 'true') {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+      } else {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+      }
+
+      const patientDetails = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
+
+      const array: any = await AsyncStorage.getItem('selectedRow');
+      const arraySelected = JSON.parse(array);
+      const selectedCount = arraySelected.filter((item: any) => {
+        return item.isSelected === false;
+      });
+      setNotificationCount && setNotificationCount(selectedCount.length);
+
+      CommonSetUserBugsnag(
+        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+      );
+    } catch (error) {}
+  };
+
+  const callAPIForNotificationResult = async () => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+
+    const params = {
+      phone: '91' + storedPhoneNumber,
+      size: 10,
+    };
+    console.log('params', params);
+    notifcationsApi(params)
+      .then(async (repsonse: any) => {
+        try {
+          const arrayNotification = repsonse.data.data.map((el: any) => {
+            const o = Object.assign({}, el);
+            o.isActive = true;
+            return o;
+          });
+
+          // console.log('arrayNotification.......', arrayNotification);
+
+          const array = await AsyncStorage.getItem('selectedRow');
+          let result;
+          if (array !== null) {
+            const arraySelected = JSON.parse(array);
+
+            result = arrayNotification.map((el: any, index: number) => {
+              const o = Object.assign({});
+              if (arraySelected.length > index) {
+                o.id = el._id;
+                o.isSelected =
+                  arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
+              } else {
+                o.id = el._id;
+                o.isSelected = false;
+              }
+              return o;
+            });
+
+            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+          } else {
+            result = arrayNotification.map((el: any) => {
+              const o = Object.assign({});
+              o.id = el._id;
+              o.isSelected = false;
+              return o;
+            });
+            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+          }
+
+          const selectedCount = result.filter((item: any) => {
+            return item.isSelected === false;
+          });
+
+          setNotificationCount && setNotificationCount(selectedCount.length);
+          setisSelected && setisSelected(arrayNotification);
+          setAllNotifications && setAllNotifications(arrayNotification);
+
+          AsyncStorage.setItem('allNotification', JSON.stringify(arrayNotification));
+        } catch (error) {}
+      })
+      .catch((error: Error) => {
+        console.log('error', error);
+      });
+  };
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {
@@ -908,46 +1018,152 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderCovidHeader = () => {
+    return (
+      <View style={{ marginHorizontal: 20, marginTop: 24 }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 17, '#0087ba', 1, 20) }}>
+          {AppConfig.Configuration.HOME_SCREEN_COVID_HEADER_TEXT}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderCovidScanBanner = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => {
+          {
+            props.navigation.navigate(AppRoutes.CovidScan);
+          }
+        }}
+        style={{
+          height: 0.06 * height,
+          marginHorizontal: 20,
+          marginTop: 16,
+          borderRadius: 10,
+          flex: 1,
+          flexDirection: 'row',
+          backgroundColor: '#02475b',
+        }}
+      >
+        <View
+          style={{
+            flex: 0.17,
+            borderTopLeftRadius: 10,
+            borderBottomLeftRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Scan style={{ height: 28, width: 21 }} />
+        </View>
+        <View
+          style={{
+            flex: 0.83,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
+            {AppConfig.Configuration.HOME_SCREEN_COVIDSCAN_BANNER_TEXT}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderEmergencyCallBanner = () => {
-    const heading = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT;
     const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           {
             postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
             Linking.openURL(`tel:${phoneNumber}`);
           }
         }}
+        style={{
+          height: 0.06 * height,
+          marginHorizontal: 20,
+          marginVertical: 16,
+          borderRadius: 10,
+          flex: 1,
+          flexDirection: 'row',
+          backgroundColor: '#d13135',
+        }}
       >
         <View
           style={{
-            marginHorizontal: 20,
-            marginVertical: 16,
-            paddingHorizontal: 10,
+            flex: 0.17,
+            borderTopLeftRadius: 10,
+            borderBottomLeftRadius: 10,
+            justifyContent: 'center',
             alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            backgroundColor: '#d13135',
-            borderRadius: 10,
           }}
         >
-          <Text
-            style={{
-              flex: 1,
-              paddingVertical: 10,
-              paddingRight: 10,
-              ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
-            }}
-          >
-            {heading}
+          <Ambulance style={{ height: 30, width: 30 }} />
+        </View>
+        <View
+          style={{
+            flex: 0.83,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
+            {AppConfig.Configuration.HOME_SCREEN_COVID_CONTACT_TEXT}
           </Text>
-          <Ambulance style={{ height: 41, width: 41 }} />
         </View>
       </TouchableOpacity>
     );
   };
+
+  // const renderEmergencyCallBanner = () => {
+  //   const heading = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT;
+  //   const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
+  //   return (
+  //     <TouchableOpacity
+  //       activeOpacity={1}
+  //       onPress={() => {
+  //         {
+  //           postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
+  //           Linking.openURL(`tel:${phoneNumber}`);
+  //         }
+  //       }}
+  //     >
+  //       <View
+  //         style={{
+  //           marginHorizontal: 20,
+  //           marginVertical: 16,
+  //           paddingHorizontal: 10,
+  //           alignItems: 'center',
+  //           flexDirection: 'row',
+  //           justifyContent: 'space-between',
+  //           backgroundColor: '#d13135',
+  //           borderRadius: 10,
+  //         }}
+  //       >
+  //         <Text
+  //           style={{
+  //             flex: 1,
+  //             paddingVertical: 10,
+  //             paddingRight: 10,
+  //             ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
+  //           }}
+  //         >
+  //           {heading}
+  //         </Text>
+  //         <Ambulance style={{ height: 41, width: 41 }} />
+  //       </View>
+  //     </TouchableOpacity>
+  //   );
+  // };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
@@ -992,6 +1208,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             onPress={() => props.navigation.navigate(AppRoutes.NotificationScreen)}
           >
             <NotificationIcon style={{ marginLeft: 10, marginRight: 5 }} />
+            {notificationCount > 0 && renderBadge(notificationCount, {})}
           </TouchableOpacity>
         </View>
       </View>
@@ -1015,6 +1232,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </ImageBackground>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
               {renderMenuOptions()}
+              {renderCovidHeader()}
+              {renderCovidScanBanner()}
               {renderEmergencyCallBanner()}
             </View>
           </View>

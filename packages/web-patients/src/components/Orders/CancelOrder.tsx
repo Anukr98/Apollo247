@@ -1,9 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
+
 import { SAVE_ORDER_CANCEL_STATUS } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
 
@@ -78,50 +78,18 @@ const useStyles = makeStyles((theme: Theme) => {
     shadowHide: {
       overflow: 'hidden',
     },
-    bottomPopover: {
-      overflow: 'initial',
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      [theme.breakpoints.down('xs')]: {
-        left: '0px !important',
-        maxWidth: '100%',
-        width: '100%',
-        top: '38px !important',
-      },
-    },
-    successPopoverWindow: {
-      display: 'flex',
-      marginRight: 5,
-      marginBottom: 5,
-    },
-    windowWrap: {
-      width: 368,
-      borderRadius: 10,
-      paddingTop: 36,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
-    },
-    mascotIcon: {
-      position: 'absolute',
-      right: 12,
-      top: -40,
-      '& img': {
-        maxWidth: 80,
-      },
-    },
   };
 });
 
 type CancelOrderProps = {
   orderAutoId: number;
   setIsCancelOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
+  setIsPopoverOpen: (isPopoverOpen: boolean) => void;
 };
 
 export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
   const classes = useStyles({});
-  const mascotRef = useRef(null);
 
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [selectedReason, setSelectedReason] = React.useState<string>('placeholder');
   const [showLoader, setShowLoader] = React.useState<boolean>(false);
 
@@ -206,42 +174,18 @@ export const CancelOrder: React.FC<CancelOrderProps> = (props) => {
                   data.saveOrderCancelStatus &&
                   data.saveOrderCancelStatus.requestStatus === 'true'
                 ) {
+                  props.setIsCancelOrderDialogOpen(false);
                   setShowLoader(false);
-                  setIsPopoverOpen(true);
+                  props.setIsPopoverOpen(true);
                 }
               })
               .catch((e) => console.log(e));
           }}
           color="primary"
         >
-          {showLoader ? <CircularProgress size={20} /> : 'Submit Request'}
+          {showLoader ? <CircularProgress size={20} color="secondary" /> : 'Submit Request'}
         </AphButton>
       </div>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <CancelOrderNotification
-              setIsCancelOrderDialogOpen={props.setIsCancelOrderDialogOpen}
-              setIsPopoverOpen={setIsPopoverOpen}
-            />
-          </div>
-        </div>
-      </Popover>
     </div>
   );
 };

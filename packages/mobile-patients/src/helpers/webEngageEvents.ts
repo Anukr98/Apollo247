@@ -3,6 +3,11 @@ import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum WebEngageEventName {
+  ONBOARDING_SCREEN_1 = 'Onboarding Screen 1',
+  ONBOARDING_SCREEN_2 = 'Onboarding Screen 2',
+  ONBOARDING_SCREEN_3 = 'Onboarding Screen 3',
+  ONBOARDING_SCREEN_4 = 'Onboarding Screen 4',
+  ONBOARDING_SKIP_CLICKED = 'Onboarding Skip Clicked',
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
@@ -121,6 +126,11 @@ export interface SpecialityClickedEvent extends PatientInfo {
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
+  [WebEngageEventName.ONBOARDING_SCREEN_1]: {};
+  [WebEngageEventName.ONBOARDING_SCREEN_2]: {};
+  [WebEngageEventName.ONBOARDING_SCREEN_3]: {};
+  [WebEngageEventName.ONBOARDING_SCREEN_4]: {};
+  [WebEngageEventName.ONBOARDING_SKIP_CLICKED]: {};
   [WebEngageEventName.MOBILE_ENTRY]: {};
   [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
   [WebEngageEventName.OTP_ENTERED]: YesOrNo;

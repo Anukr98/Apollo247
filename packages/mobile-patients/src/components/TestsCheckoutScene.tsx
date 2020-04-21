@@ -20,6 +20,8 @@ import {
   DiagnosticLineItem,
   DiagnosticOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
+  BOOKINGSOURCE,
+  DEVICETYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveDiagnosticOrder,
@@ -44,6 +46,7 @@ import {
   View,
   ViewStyle,
   Linking,
+  Platform,
 } from 'react-native';
 // import { Slider } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -316,6 +319,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             quantity: 1,
           } as DiagnosticLineItem)
       ),
+      bookingSource: BOOKINGSOURCE.MOBILE,
+      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
     };
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {

@@ -16,6 +16,11 @@ export const getMedicineOrdersListTypeDefs = gql`
     MedicineOrderDetails: MedicineOrders
   }
 
+  enum BOOKING_SOURCE {
+    WEB
+    MOBILE
+  }
+
   type MedicineOrders {
     id: ID!
     orderAutoId: Int
@@ -32,6 +37,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     orderTat: String
     orderType: MEDICINE_ORDER_TYPE
     currentStatus: MEDICINE_ORDER_STATUS
+    bookingSource: BOOKING_SOURCE
     medicineOrderLineItems: [MedicineOrderLineItems]
     medicineOrdersStatus: [MedicineOrdersStatus]
     medicineOrderPayments: [MedicineOrderPayments]
@@ -120,17 +126,25 @@ const getMedicineOrderDetails: Resolver<
   MedicineOrderDetailsResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  if (args.patientId) {
+    const patientDetails = await patientRepo.findById(args.patientId);
+    if (!patientDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    }
   }
-
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrderDetails = await medicineOrdersRepo.getMedicineOrderById(
-    args.patientId,
-    args.orderAutoId
-  );
-  console.log(MedicineOrderDetails);
+  let MedicineOrderDetails;
+  if (!args.patientId) {
+    MedicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByOderId(
+      args.orderAutoId
+    );
+  } else {
+    MedicineOrderDetails = await medicineOrdersRepo.getMedicineOrderById(
+      args.patientId,
+      args.orderAutoId
+    );
+  }
+  console.log(MedicineOrderDetails, 'medicineOrderDetails');
   if (!MedicineOrderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }

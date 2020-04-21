@@ -48,7 +48,7 @@ import {
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import moment from 'moment';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -115,7 +115,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
-  const { locationForDiagnostics } = useAppCommonData();
+  const { locationForDiagnostics, locationDetails } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
   useEffect(() => {
@@ -424,7 +424,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           value={searchText}
           onSubmitEditing={goToSearchPage}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            onSearchTest(value);
           }}
           autoCorrect={false}
           rightIcon={rigthIconView}
@@ -572,8 +572,22 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
-  const onSearchMedicine = (_searchText: string) => {
+  const renderLocationNotServingPopup = () => {
+    showAphAlert!({
+      title: `Hi ${currentPatient && currentPatient.firstName},`,
+      description: string.diagnostics.nonServiceableMsg.replace(
+        '{{city_name}}',
+        g(locationDetails, 'displayName')!
+      ),
+    });
+  };
+
+  const onSearchTest = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
+      if (!g(locationForDiagnostics, 'cityId')) {
+        renderLocationNotServingPopup();
+        return;
+      }
       setSearchText(_searchText);
       if (!(_searchText && _searchText.length > 2)) {
         setMedicineList([]);
@@ -597,7 +611,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           setsearchSate('success');
         })
         .catch((e) => {
-          CommonBugFender('TestsByCategory_onSearchMedicine', e);
+          CommonBugFender('TestsByCategory_onSearchTest', e);
           // aphConsole.log({ e });
           if (!Axios.isCancel(e)) {
             setsearchSate('fail');

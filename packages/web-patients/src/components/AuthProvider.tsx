@@ -150,11 +150,6 @@ export const AuthProvider: React.FC = (props) => {
 
   const [customLoginId, setCustomLoginId] = useState<AuthContextProps['customLoginId']>('');
 
-  const pageUrl = window.location.href;
-  if (pageUrl.includes('medicines') && pageUrl.includes('failed')) {
-    window.location.href = clientRoutes.medicinesCart();
-  }
-
   const signOut = () =>
     app
       .auth()
