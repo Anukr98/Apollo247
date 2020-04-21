@@ -111,18 +111,23 @@ export const caseSheetTypeDefs = gql`
   }
 
   enum MEDICINE_UNIT {
+    AS_PRESCRIBED
     BOTTLE
     CAPSULE
     CREAM
     DROPS
     GEL
+    GM
     INJECTION
     LOTION
     ML
+    MG
     NA
     OINTMENT
     OTHERS
+    PATCH
     POWDER
+    PUFF
     ROTACAPS
     SACHET
     SOAP
@@ -131,6 +136,7 @@ export const caseSheetTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    UNIT
   }
 
   enum Relation {
