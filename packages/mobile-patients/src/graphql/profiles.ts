@@ -2098,3 +2098,11 @@ export const SEND_CHAT_MESSAGE_TO_DOCTOR = gql`
     }
   }
 `;
+
+export const GET_DEVICE_TOKEN_COUNT = gql`
+  query getDeviceCodeCount($deviceCode: String!) {
+    getDeviceCodeCount(deviceCode: $deviceCode) {
+      deviceCount
+    }
+  }
+`;

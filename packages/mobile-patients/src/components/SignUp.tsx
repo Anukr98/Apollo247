@@ -65,6 +65,8 @@ import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import moment from 'moment';
 import DeviceInfo from 'react-native-device-info';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { useApolloClient } from 'react-apollo-hooks';
+import { getDeviceTokenCount } from '../helpers/clientCalls';
 
 const { height } = Dimensions.get('window');
 
@@ -194,14 +196,30 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      // getPatientApiCall();
-    }
-  }, [currentPatient]);
+    getDeviceCountAPICall();
+  }, []);
+
+  const client = useApolloClient();
 
   const getDeviceCountAPICall = async () => {
-    uniqueId = await DeviceInfo.getUniqueId();
+    const uniqueId = await DeviceInfo.getUniqueId();
+    setDeviceToken(uniqueId);
+    console.log(uniqueId, 'uniqueId');
+
+    getDeviceTokenCount(client, uniqueId)
+      .then(({ data }: any) => {
+        console.log(data, 'data getDeviceTokenCount');
+        console.log(data.data.getDeviceCodeCount.deviceCount, 'data getDeviceTokenCount');
+
+        if (data.data.getDeviceCodeCount.deviceCount <= 2) {
+          setShowReferralCode(true);
+        } else {
+          setShowReferralCode(false);
+        }
+      })
+      .catch((e) => {
+        console.log('Error getDeviceTokenCount ', e);
+      });
   };
 
   useEffect(() => {
@@ -374,7 +392,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
-          {renderReferral()}
+          {showReferralCode && renderReferral()}
         </Card>
       </View>
     );
@@ -720,11 +738,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                           allPatients[0]
                         : null;
 
-                      let uniqueId;
-                      try {
-                        uniqueId = await DeviceInfo.getUniqueId();
-                      } catch (error) {}
-
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,
                         mobileNumber: mePatient.mobileNumber,
@@ -741,7 +754,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
                         referralCode: trimReferral ? trimReferral : null,
-                        deviceCode: uniqueId,
+                        deviceCode: deviceToken,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({

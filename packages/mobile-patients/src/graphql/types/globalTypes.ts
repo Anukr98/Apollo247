@@ -139,12 +139,21 @@ export enum MEDICINE_FORM_TYPES {
 }
 
 export enum MEDICINE_FREQUENCY {
+  ALTERNATE_DAY = "ALTERNATE_DAY",
   AS_NEEDED = "AS_NEEDED",
+  EVERY_FOUR_HOURS = "EVERY_FOUR_HOURS",
+  EVERY_HOUR = "EVERY_HOUR",
+  EVERY_TWO_HOURS = "EVERY_TWO_HOURS",
   FIVE_TIMES_A_DAY = "FIVE_TIMES_A_DAY",
   FOUR_TIMES_A_DAY = "FOUR_TIMES_A_DAY",
   ONCE_A_DAY = "ONCE_A_DAY",
+  ONCE_A_MONTH = "ONCE_A_MONTH",
+  ONCE_A_WEEK = "ONCE_A_WEEK",
+  ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
+  TWICE_A_WEEK = "TWICE_A_WEEK",
 }
 
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -231,6 +240,10 @@ export enum MedicalTestUnit {
   GM_SLASH_DL = "GM_SLASH_DL",
   NONE = "NONE",
   _PERCENT_ = "_PERCENT_",
+}
+
+export enum NonCartOrderCity {
+  CHENNAI = "CHENNAI",
 }
 
 export enum OTP_STATUS {
@@ -648,6 +661,9 @@ export interface PrescriptionMedicineInput {
   appointmentId?: string | null;
   isEprescription?: number | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
+  email?: string | null;
+  NonCartOrderCity?: NonCartOrderCity | null;
+  orderAutoId?: number | null;
 }
 
 export interface PrescriptionMedicinePaymentDetails {
