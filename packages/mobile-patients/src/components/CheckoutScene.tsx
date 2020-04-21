@@ -40,6 +40,7 @@ import {
   postWebEngageEvent,
   formatAddress,
   postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -72,6 +73,7 @@ import {
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -295,6 +297,28 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
+
+    try {
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+        Order_ID: orderAutoId,
+        Order_Type: 'Cart',
+        Prescription_Required: uploadPrescriptionRequired,
+        Prescription_Added: !!(physicalPrescriptions.length || ePrescriptions.length),
+        Shipping_information: shippingInformation, // (Home/Store address)
+        Total_items_in_cart: cartItems.length,
+        Grand_Total: cartTotal + deliveryCharges,
+        Total_Discount_percentage: coupon
+          ? Number(((couponDiscount / cartTotal) * 100).toFixed(2))
+          : 0,
+        Discount_Amount: couponDiscount,
+        Delivery_charge: deliveryCharges,
+        Net_after_discount: grandTotal,
+        Payment_status: 1,
+        Payment_Type: isCashOnDelivery ? 'COD' : 'Prepaid',
+        Service_Area: 'Pharmacy',
+      };
+      postFirebaseEvent(FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED, eventFirebaseAttributes);
+    } catch (error) {}
   };
 
   const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>

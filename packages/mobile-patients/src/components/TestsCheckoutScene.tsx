@@ -31,6 +31,7 @@ import {
   g,
   postWebEngageEvent,
   formatAddress,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -54,6 +55,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -257,6 +259,28 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Service Area': 'Diagnostic',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, eventAttributes);
+
+    try {
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_CHECKOUT_COMPLETED] = {
+        Order_ID: orderAutoId,
+        Order_Type: 'Cart',
+        Prescription_Required: uploadPrescriptionRequired,
+        Prescription_Added: !!(physicalPrescriptions.length || ePrescriptions.length),
+        Shipping_information: shippingInformation, // (Home/Store address)
+        Total_items_in_cart: cartItems.length,
+        Grand_Total: cartTotal + deliveryCharges,
+        Total_Discount_percentage: coupon
+          ? Number(((couponDiscount / cartTotal) * 100).toFixed(2))
+          : 0,
+        Discount_Amount: couponDiscount,
+        Delivery_charge: deliveryCharges,
+        Net_after_discount: grandTotal,
+        Payment_status: 1,
+        Payment_Type: isCashOnDelivery ? 'COD' : 'Prepaid',
+        Service_Area: 'Diagnostic',
+      };
+      postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, eventFirebaseAttributes);
+    } catch (error) {}
   };
 
   const initiateOrder = async () => {

@@ -1024,17 +1024,19 @@ export const postFirebaseAddToCartEvent = (
   { sku, name, category_id, price, special_price }: MedicineProduct,
   source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source']
 ) => {
-  const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
-    'product name': name,
-    'product id': sku,
-    Brand: '',
-    'Brand ID': '',
-    'category name': '',
-    'category ID': category_id || '',
-    Price: price,
-    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
-    Quantity: 1,
-    Source: source,
-  };
-  postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  try {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
+      'product name': name,
+      'product id': sku,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': category_id || '',
+      Price: price,
+      'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+      Quantity: 1,
+      Source: source,
+    };
+    postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  } catch (error) {}
 };

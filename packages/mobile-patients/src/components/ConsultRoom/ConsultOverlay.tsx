@@ -42,6 +42,7 @@ import {
   postWebEngageEvent,
   callPermissions,
   postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -82,6 +83,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -238,6 +240,40 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     return eventAttributes;
   };
 
+  const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
+    const localTimeSlot = moment(new Date(time));
+    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
+
+    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
+      name: g(props.doctor, 'fullName')!,
+      specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
+      category: g(props.doctor, 'doctorType')!, // send doctorType
+      time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
+      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
+      clinic_name: g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
+      clinic_address:
+        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
+          : '',
+      Patient_Name: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      Patient_UHID: g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      Gender: g(currentPatient, 'gender'),
+      Mobile_Number: g(currentPatient, 'mobileNumber'),
+      Customer_ID: g(currentPatient, 'id'),
+      Consult_ID: id,
+    };
+    return eventAttributes;
+  };
+
   const makePayment = (id: string, amountPaid: number, paymentDateTime: string) => {
     client
       .mutate<makeAppointmentPayment, makeAppointmentPaymentVariables>({
@@ -272,6 +308,16 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             g(data, 'makeAppointmentPayment', 'appointment', 'id')!
           )
         );
+        try {
+          postFirebaseEvent(
+            FirebaseEventName.CONSULTATION_BOOKED,
+            getConsultationBookedFirebaseEventAttributes(
+              paymentDateTime,
+              g(data, 'makeAppointmentPayment', 'appointment', 'id')!
+            )
+          );
+        } catch (error) {}
+
         handleOrderSuccess(`${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`);
       })
       .catch((e) => {
@@ -359,6 +405,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
             price: coupon ? doctorDiscountedFees : Number(doctorFees),
             webEngageEventAttributes: getConsultationBookedEventAttributes(
+              g(apptmt, 'appointmentDateTime'),
+              g(data, 'data', 'bookAppointment', 'appointment', 'id')!
+            ),
+            fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
               g(apptmt, 'appointmentDateTime'),
               g(data, 'data', 'bookAppointment', 'appointment', 'id')!
             ),

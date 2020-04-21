@@ -6,7 +6,7 @@ export enum FirebaseEventName {
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
-  REGISTRATION_DONE = 'Registration_Done',
+  REGISTRATION_DONE = 'REGISTRATION_DONE',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
@@ -23,9 +23,9 @@ export enum FirebaseEventName {
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
-  PHARMACY_SUBMIT_PRESCRIPTION = 'Pharmacy Submit Prescription',
-  PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
+  PHARMACY_SUBMIT_PRESCRIPTION = 'PHARMACY_SUBMIT_PRESCRIPTION',
+  PHARMACY_CHECKOUT_COMPLETED = 'PHARMACY_CHECKOUT_COMPLETED',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'DIAGNOSTIC_CHECKOUT_COMPLETED',
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
@@ -36,7 +36,7 @@ export enum FirebaseEventName {
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
-  CONSULTATION_BOOKED = 'Consultation booked',
+  CONSULTATION_BOOKED = 'CONSULTATION_BOOKED',
   RATING_GIVEN = 'Rating Given',
 
   // HomePageElements Events
@@ -267,45 +267,45 @@ export interface FirebaseEvents {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
   };
   [FirebaseEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
-    'Order ID': string | number;
-    'Delivery type': 'home' | 'store pickup';
+    Order_ID: string | number;
+    Delivery_type: 'home' | 'store_pickup';
     StoreId?: string; //(incase of store delivery)
-    'Delivery address'?: string;
+    Delivery_address?: string;
     Pincode: string | number;
   };
   [FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
-    'Prescription Added': boolean;
-    'Shipping information': string; // (Home/Store address)
-    'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
-    'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
-    'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+    Order_ID: string | number;
+    Order_Type: 'Cart' | 'Non_Cart';
+    Prescription_Required: boolean;
+    Prescription_Added: boolean;
+    Shipping_information: string; // (Home/Store address)
+    Total_items_in_cart?: number; // Optional
+    Grand_Total?: number; // Optional
+    Total_Discount_percentage?: number; // Optional
+    Discount_Amount?: number; // Optional
+    Delivery_charge?: number; // Optional
+    Net_after_discount?: number; // Optional
+    Payment_status?: number; // Optional
+    Payment_Type?: 'COD' | 'Prepaid'; // Optional
+    Cart_ID?: string | number; // Optional
+    Service_Area: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
-    'Prescription Added': boolean;
-    'Shipping information': string; // (Home/Store address)
-    'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
-    'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
-    'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+    Order_ID: string | number;
+    Order_Type: 'Cart' | 'Non_Cart';
+    Prescription_Required: boolean;
+    Prescription_Added: boolean;
+    Shipping_information: string; // (Home/Store address)
+    Total_items_in_cart?: number; // Optional
+    Grand_Total?: number; // Optional
+    Total_Discount_percentage?: number; // Optional
+    Discount_Amount?: number; // Optional
+    Delivery_charge?: number; // Optional
+    Net_after_discount?: number; // Optional
+    Payment_status?: number; // Optionals
+    Payment_Type?: 'COD' | 'Prepaid'; // Optional
+    Cart_ID?: string | number; // Optional
+    Service_Area: 'Pharmacy' | 'Diagnostic';
   };
 
   // ********** ConsultEvents ********** \\
@@ -416,21 +416,21 @@ export interface FirebaseEvents {
     consultType: 'clinic' | 'online';
   };
   [FirebaseEventName.CONSULTATION_BOOKED]: {
-    'Consult ID': string;
+    Consult_ID: string;
     name: string;
     specialisation: string;
     category: string;
     time: Date | string;
     consultType: 'online' | 'clinic';
-    'clinic name': string;
-    'clinic address': string; // whole address
-    'Patient Name': string;
-    'Patient UHID': string;
+    clinic_name: string;
+    clinic_address: string; // whole address
+    Patient_Name: string;
+    Patient_UHID: string;
     Relation: string;
     Age: number;
     Gender: string;
-    'Mobile Number': number;
-    'Customer ID': string;
+    Mobile_Number: number;
+    Customer_ID: string;
   };
   [FirebaseEventName.RATING_GIVEN]: {
     'Patient UHID': string;
