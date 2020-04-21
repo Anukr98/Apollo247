@@ -32,6 +32,13 @@ export class PatientRepository extends Repository<Patient> {
       .getMany();
   }
 
+  getDeviceCodeCount(deviceCode: string) {
+    return this.count({
+      where: {
+        deviceCode,
+      },
+    });
+  }
   getPatientDetails(id: string) {
     return this.findOne({
       where: { id, isActive: true },

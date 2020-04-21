@@ -922,7 +922,21 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
   }
+  getSeniorDoctorCount() {
+    return this.count({
+      where: {
+        doctorType: Not('JUNIOR'),
+      },
+    });
+  }
 
+  getJuniorDoctorCount() {
+    return this.count({
+      where: {
+        doctorType: 'JUNIOR',
+      },
+    });
+  }
   getAllJuniorDoctors(doctorId: string, limit: number, offset: number) {
     if (doctorId == '0') {
       return this.find({

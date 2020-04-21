@@ -14,6 +14,9 @@ export const getPatientTypeDefs = gql`
   type PatientList {
     patients: [Patient]
   }
+  type DeviceCountResponse {
+    deviceCount: Int
+  }
   type GetPatientsResult {
     patients: [Patient!]!
   }
@@ -46,6 +49,7 @@ export const getPatientTypeDefs = gql`
     getAthsToken(patientId: String): PatientInfo
     getPatientByMobileNumber(mobileNumber: String): PatientList
     getPatients: GetPatientsResult
+    getDeviceCodeCount(deviceCode: String): DeviceCountResponse
   }
   extend type Mutation {
     deleteProfile(patientId: String): DeleteProfileResult!
@@ -170,6 +174,21 @@ const deleteProfile: Resolver<
   return { status: true };
 };
 
+type DeviceCountResponse = {
+  deviceCount: number;
+};
+const getDeviceCodeCount: Resolver<
+  null,
+  { deviceCode: string },
+  ProfilesServiceContext,
+  DeviceCountResponse
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+
+  const deviceCount = await patientRepo.getDeviceCodeCount(args.deviceCode);
+  return { deviceCount };
+};
+
 const getAthsToken: Resolver<
   null,
   { patientId: string },
@@ -201,6 +220,7 @@ export const getPatientResolvers = {
     getPatientByMobileNumber,
     getPatients,
     getAthsToken,
+    getDeviceCodeCount,
   },
   Mutation: {
     deleteProfile,
