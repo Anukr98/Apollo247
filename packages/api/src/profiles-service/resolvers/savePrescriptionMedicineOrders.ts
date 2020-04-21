@@ -15,7 +15,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
-import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
+import { PharmaResponse } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
