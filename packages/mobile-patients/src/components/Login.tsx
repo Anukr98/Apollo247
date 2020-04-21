@@ -1,10 +1,13 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 // import SmsListener from 'react-native-android-sms-listener';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
+import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { ApolloLogo } from './ApolloLogo';
+
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -50,6 +53,7 @@ import {
 import WebEngage from 'react-native-webengage';
 import AsyncStorage from '@react-native-community/async-storage';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { TouchableOpacity, ScrollView } from 'react-native-gesture-handler';
 
 const { height, width } = Dimensions.get('window');
 
@@ -61,6 +65,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.INPUT_TEXT,
     paddingRight: 6,
+    letterSpacing: 0.5,
     lineHeight: 28,
     paddingTop: Platform.OS === 'ios' ? 0 : 6,
     paddingBottom: Platform.OS === 'ios' ? 5 : 0,
@@ -76,7 +81,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
+    width: '85%',
     paddingBottom: 0,
   },
   inputView: {
@@ -84,7 +89,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
+    width: '85%',
     paddingBottom: 0,
   },
   bottomDescription: {
@@ -93,12 +98,16 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 12,
     ...theme.fonts.IBMPlexSansMedium(12),
+    letterSpacing: 0.04,
+    paddingHorizontal: 16,
   },
   bottomValidDescription: {
     lineHeight: 24,
     color: theme.colors.INPUT_SUCCESS_TEXT,
     opacity: 0.6,
     paddingTop: 8,
+    letterSpacing: 0.04,
+    paddingHorizontal: 16,
     paddingBottom: 12,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
@@ -114,7 +123,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface LoginProps extends NavigationScreenProps {}
+export interface LoginProps extends NavigationScreenProps { }
 
 const isPhoneNumberValid = (number: string) => {
   const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(number) ? false : true;
@@ -300,7 +309,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                   console.log('confirmResult login', confirmResult);
                   try {
                     signOut();
-                  } catch (error) {}
+                  } catch (error) { }
 
                   props.navigation.navigate(AppRoutes.OTPVerification, {
                     otpString,
@@ -324,7 +333,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           setShowSpinner(false);
         }
       });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const openWebView = () => {
@@ -376,36 +385,44 @@ export const Login: React.FC<LoginProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
-        <View style={{ height: 56 }} />
-        <Card
+        <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
+          <ApolloLogo style={{ width: 55, height: 47 }} resizeMode="contain" />
+        </View>
+        <View style={{ height: 16 }} />
+        <LoginCard
           cardContainer={{ marginTop: 0, paddingBottom: 12 }}
-          heading={string.login.hello}
+          heading={string.login.hello_login}
           description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
-              <ArrowYellow />
+              <ArrowYellow size="md" />
             ) : (
-              <ArrowDisabled />
-            )
+                <ArrowDisabled size="md" />
+              )
           }
           onClickButton={onClickOkay}
           disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
-          <View
-            style={[
-              { paddingTop: Platform.OS === 'ios' ? 22 : 15 },
-              phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
-            ]}
-          >
-            <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
-            <TextInput
-              autoFocus
-              style={styles.inputStyle}
-              keyboardType="numeric"
-              maxLength={10}
-              value={phoneNumber}
-              onChangeText={(value) => validateAndSetPhoneNumber(value)}
-            />
+          <View style={{ flexDirection: 'row', paddingHorizontal: 16 }}>
+            <View
+              style={[
+                {
+                  paddingTop: Platform.OS === 'ios' ? 22 : 15,
+                  // flex: 1
+                },
+                phoneNumber == '' || phoneNumberIsValid ? styles.inputValidView : styles.inputView,
+              ]}
+            >
+              <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
+              <TextInput
+                autoFocus
+                style={styles.inputStyle}
+                keyboardType="numeric"
+                maxLength={10}
+                value={phoneNumber}
+                onChangeText={(value) => validateAndSetPhoneNumber(value)}
+              />
+            </View>
           </View>
           <Text
             style={
@@ -421,7 +438,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
           <View
             style={{
-              marginRight: 32,
+              marginHorizontal: 16,
             }}
           >
             <HyperLink
@@ -429,7 +446,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 color: '#02475b',
                 ...fonts.IBMPlexSansBold(10),
                 lineHeight: 16,
-                letterSpacing: 0,
+                letterSpacing: 0.4
               }}
               linkText={(url) =>
                 url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
@@ -448,7 +465,10 @@ export const Login: React.FC<LoginProps> = (props) => {
               </Text>
             </HyperLink>
           </View>
-        </Card>
+        </LoginCard>
+        <ScrollView bounces={false}>
+          <LandingDataView />
+        </ScrollView>
         {onClickOpen && openWebView()}
       </SafeAreaView>
       {showSpinner ? <Spinner /> : null}
