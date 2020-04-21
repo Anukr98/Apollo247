@@ -23,8 +23,9 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
+  CODCity,
 } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
 import { useMutation } from 'react-apollo-hooks';
 import { MedicineListingCard } from 'components/Medicine/MedicineListingCard';
@@ -37,6 +38,7 @@ import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
+import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -472,10 +474,16 @@ export const MedicineCart: React.FC = (props) => {
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isChennaiCheckoutDialogOpen, setIsChennaiCheckoutDialogOpen] = React.useState<boolean>(
+    false
+  );
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
   const [couponCode, setCouponCode] = React.useState<string>('');
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
+  const [updatedUserEmail, setUpdatedUserEmail] = React.useState<string>('');
+
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
 
@@ -487,6 +495,7 @@ export const MedicineCart: React.FC = (props) => {
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   const [deliveryTime, setDeliveryTime] = React.useState<string>('');
+  const [selectedZip, setSelectedZip] = React.useState<string>('');
 
   const removeImagePrescription = (fileName: string) => {
     const finalPrescriptions =
@@ -580,7 +589,15 @@ export const MedicineCart: React.FC = (props) => {
 
   const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
 
-  const placeOrder = (orderId: string, orderAutoId: number) => {
+  const placeOrder = (orderId: string, orderAutoId: number, isChennaiCOD: boolean) => {
+    let chennaiOrderVariables = {};
+    if (isChennaiCOD) {
+      chennaiOrderVariables = {
+        CODCity: CODCity.CHENNAI,
+        email: updatedUserEmail,
+      };
+    }
+
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
         orderId: orderId,
@@ -590,6 +607,7 @@ export const MedicineCart: React.FC = (props) => {
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
+        ...(chennaiOrderVariables && chennaiOrderVariables),
       },
     };
 
@@ -604,6 +622,7 @@ export const MedicineCart: React.FC = (props) => {
           clearCartInfo && clearCartInfo();
           setTimeout(() => {
             setCheckoutDialogOpen(false);
+            setIsLoading(false);
             window.location.href = clientRoutes.medicinesCartInfo(
               orderAutoId.toString(),
               'success'
@@ -727,8 +746,23 @@ export const MedicineCart: React.FC = (props) => {
     }
   };
 
+  const submitChennaiCODOrder = (dataObj: submitFormType) => {
+    setIsLoading(true);
+    setUpdatedUserEmail(dataObj.userEmail);
+    paymentMutation().then((res) => {
+      if (res && res.data && res.data.SaveMedicineOrder) {
+        const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
+        placeOrder(orderId, orderAutoId, true);
+      }
+    });
+  };
+
   const isPaymentButtonEnable =
-    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
+    (!nonCartFlow &&
+      uploadPrescriptionRequired === -1 &&
+      cartItems &&
+      cartItems.length > 0 &&
+      deliveryTime) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -883,7 +917,11 @@ export const MedicineCart: React.FC = (props) => {
                 </Tabs>
                 {tabValue === 0 && (
                   <TabContainer>
-                    <HomeDelivery setDeliveryTime={setDeliveryTime} deliveryTime={deliveryTime} />
+                    <HomeDelivery
+                      selectedZipCode={setSelectedZip}
+                      setDeliveryTime={setDeliveryTime}
+                      deliveryTime={deliveryTime}
+                    />
                   </TabContainer>
                 )}
                 {tabValue === 1 && (
@@ -964,6 +1002,17 @@ export const MedicineCart: React.FC = (props) => {
           <AphButton
             onClick={() => {
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                const zipCodeInt = parseInt(selectedZip);
+                if (
+                  (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
+                  zipCodeInt === 603103 ||
+                  zipCodeInt === 603202 ||
+                  zipCodeInt === 603211
+                ) {
+                  // redirect to chennai orders form
+                  setIsChennaiCheckoutDialogOpen(true);
+                  return;
+                }
                 setCheckoutDialogOpen(true);
               } else if (
                 nonCartFlow &&
@@ -1023,7 +1072,7 @@ export const MedicineCart: React.FC = (props) => {
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                        placeOrder(orderId, orderAutoId);
+                        placeOrder(orderId, orderAutoId, false);
                       }
                     }
                   })
@@ -1058,6 +1107,13 @@ export const MedicineCart: React.FC = (props) => {
           }}
           setIsEPrescriptionOpen={setIsEPrescriptionOpen}
         />
+      </AphDialog>
+
+      {/* Chennai Checkout Dialog */}
+      <AphDialog open={isChennaiCheckoutDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsChennaiCheckoutDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle>Checkout</AphDialogTitle>
+        <ChennaiCheckout isLoading={isLoading} submitForm={submitChennaiCODOrder} />
       </AphDialog>
 
       <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">

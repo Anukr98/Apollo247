@@ -281,7 +281,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalWindow: {
       backgroundColor: theme.palette.common.black,
-      maxWidth: 900,
+      maxWidth: 1150,
       margin: 'auto',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
@@ -323,6 +323,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       '& img': {
         maxWidth: '100%',
+        width: 'auto',
         maxHeight: 'calc(100vh - 212px)',
       },
     },
@@ -475,6 +476,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
+        if (
+          message.message.url &&
+          message.message.fileType &&
+          message.message.fileType === 'image' &&
+          message.message.id !== doctorId
+        ) {
+          const data = {
+            documentPath: message.message.url,
+          };
+          setDocumentArray((data as unknown) as appointmentDocument);
+        }
         resetMessagesAction();
         if (
           !showVideoChat &&

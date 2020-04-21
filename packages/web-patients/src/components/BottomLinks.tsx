@@ -43,9 +43,15 @@ export const BottomLinks: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.container}>
         <div className={classes.bottomLinks}>
-          <Link to={clientRoutes.termsConditions()} target="_blank">Terms & Conditions</Link>
-          <Link to={clientRoutes.privacy()} target="_blank">Privacy Policy</Link>
-          <Link to={clientRoutes.contactUs()} target="_blank">Contact Us</Link>
+          <Link to={clientRoutes.termsConditions()} target="_blank">
+            Terms & Conditions
+          </Link>
+          <Link to={clientRoutes.privacy()} target="_blank">
+            Privacy Policy
+          </Link>
+          <Link to={clientRoutes.contactUs()} target="_blank">
+            Contact Us
+          </Link>
         </div>
       </div>
     </div>
