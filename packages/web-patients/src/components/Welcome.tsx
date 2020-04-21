@@ -44,7 +44,7 @@ export const Welcome: React.FC = (props) => {
           {isSignedIn && <PatientsOverview />}
         </div>
       </div>
-      {isSignedIn && <NavigationBottom />}
+      <NavigationBottom />
       {onePrimaryUser ? <Help /> : <ManageProfile />}
     </div>
   );
