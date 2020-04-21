@@ -52,13 +52,19 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  handleGraphQlError,
   getRelations,
+  postWebEngageEvent,
+  postAppsFlyerEvent,
   postFirebaseEvent,
   g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import DeviceInfo from 'react-native-device-info';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -239,7 +245,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       });
   };
 
-  const _postWebEngageEvent = async () => {
+  const _postFirebaseEvent = async () => {
     if (isSignupEventFired) {
       return;
     }
@@ -489,6 +495,29 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       </View>
     </TouchableOpacity>
   );
+
+  const _postWebEngageEvent = (patient: updatePatient_updatePatient_patient) => {
+    try {
+      const { firstName, lastName, dateOfBirth: date, gender, emailAddress: email } = patient;
+      const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
+        'Customer ID': currentPatient ? currentPatient.id : '',
+        'Customer First Name': (firstName || '')!.trim(),
+        'Customer Last Name': (lastName || '')!.trim(),
+        'Date of Birth': date ? moment(date, 'DD/MM/YYYY').toDate() : '',
+        Gender: gender!,
+        Email: (email || '').trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventAttributes['Referral Code'] = referral;
+      }
+
+      postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
 
   const handleOpenURL = async () => {
     try {
@@ -756,10 +785,11 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               {data
                 ? (console.log('data', data.updatePatient.patient),
                   getPatientApiCall(),
+                  _postWebEngageEvent(g(data, 'updatePatient', 'patient')!),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  _postWebEngageEvent(),
+                  _postFirebaseEvent(),
                   handleOpenURL())
                 : null}
               {error

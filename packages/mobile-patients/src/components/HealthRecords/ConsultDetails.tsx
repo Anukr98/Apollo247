@@ -49,6 +49,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   MEDICINE_UNIT,
   MEDICINE_CONSUMPTION_DURATION,
+  AppointmentType,
+  APPOINTMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonLogEvent,
@@ -62,6 +64,7 @@ import {
   g,
   addTestsToCart,
   doRequestAndAccessLocation,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
@@ -72,6 +75,12 @@ import {
   useAppCommonData,
   LocationData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -138,17 +147,20 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ConsultDetailsProps extends NavigationScreenProps {
-  CaseSheet: string;
-  DoctorInfo: any;
-  PatientId: any;
-  appointmentType: string;
-  appointmentDate: any;
-  DisplayId: any;
-  Displayoverlay: any;
-  isFollowcount: any;
-  BlobName: string;
-}
+export interface ConsultDetailsProps
+  extends NavigationScreenProps<{
+    CaseSheet: string; // this is the appointmentId
+    DoctorInfo:
+      | getDoctorDetailsById_getDoctorDetailsById
+      | getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo;
+    // PatientId: any;
+    appointmentType: APPOINTMENT_TYPE | AppointmentType;
+    // appointmentDate: any;
+    DisplayId: any;
+    Displayoverlay: any;
+    isFollowcount: any;
+    BlobName: string;
+  }> {}
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -160,6 +172,8 @@ type rescheduleType = {
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.state.params!.DoctorInfo;
+  const appointmentType = props.navigation.getParam('appointmentType');
+  const appointmentId = props.navigation.getParam('CaseSheet');
   console.log('phr', data);
 
   // const [loading, setLoading && setLoading] = useState<boolean>(true);
@@ -220,6 +234,46 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         // Alert.alert('Error');
       });
   }, []);
+
+  const postWEGEvent = (type: 'medicine' | 'test' | 'download prescription') => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS]
+      | WebEngageEvents[WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]
+      | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION] = {
+      'Doctor Name': g(data, 'fullName')!,
+      'Speciality ID': g(data, 'specialty', 'id')!,
+      'Speciality Name': g(data, 'specialty', 'name')!,
+      'Doctor Category': g(data, 'doctorType')!,
+      'Consult Date Time': moment(
+        g(caseSheetDetails, 'appointment', 'appointmentDateTime')
+      ).toDate(),
+      'Consult Mode': appointmentType == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Consult ID': appointmentId,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    if (type == 'download prescription') {
+      (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
+        'Download Screen'
+      ] = 'Prescription Details';
+    }
+    postWebEngageEvent(
+      type == 'medicine'
+        ? WebEngageEventName.ORDER_MEDICINES_FROM_PRESCRIPTION_DETAILS
+        : type == 'test'
+        ? WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS
+        : WebEngageEventName.DOWNLOAD_PRESCRIPTION,
+      eventAttributes
+    );
+  };
 
   const renderDoctorDetails = () => {
     return (
@@ -631,6 +685,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 })}
                 <TouchableOpacity
                   onPress={() => {
+                    postWEGEvent('medicine');
                     onAddToCart();
                   }}
                 >
@@ -818,6 +873,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 <TouchableOpacity
                   style={{ marginTop: 12 }}
                   onPress={() => {
+                    postWEGEvent('test');
                     onAddTestsToCart();
                   }}
                 >
@@ -880,6 +936,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       Alert.alert('No Image');
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
+                      postWEGEvent('download prescription');
                       let dirs = RNFetchBlob.fs.dirs;
 
                       console.log('blollb', props.navigation.state.params!.BlobName);
