@@ -6,24 +6,30 @@ export const medicineSendPrescription = _.template(
   <p> Kindly process the order for the customer basis the prescription uploaded:</p>
   <li>Patient Details
   <ul>
-     <li>First Name : <%- orderDetails.patient.firstName %></li>
-     <li>Last Name : <%- orderDetails.patient.lastName %></li> 
-     <li>UHID : <%- orderDetails.patient.uhid %></li> 
-     <li>Mobile Number : <%- orderDetails.patient.mobileNumber %></li>
-     <% if(patientAddress) {  %>
+     <li>First Name : <%- patientDetails.firstName %></li>
+     <li>Last Name : <%- patientDetails.lastName %></li> 
+     <li>UHID : <%- patientDetails.uhid %></li> 
+     <li>Mobile Number : <%- patientDetails.mobileNumber %></li>
+     <% if(patientAddressDetails) {  %>
      <li>Customer Delivery Address : 
       <ul>
-        <li>AddressLine1 : <%- patientAddress.addressLine1 %></li>
-        <li>AddressLine2 : <%- patientAddress.addressLine2 %> </li>
-        <li>Landmark : <%- patientAddress.landmark %></li>
-        <li>City : <%- patientAddress.city +', '+ patientAddress.state %></li>
-        <li>State : <%- patientAddress.state %></li>
-        <li>Zipcode : <%- patientAddress.zipcode %></li>
+        <li>AddressLine1 : <%- patientAddressDetails.Comm_addr %></li>
+        <li>AddressLine2 : <%- patientAddressDetails.Del_addr %> </li>
+        <li>Landmark : <%- patientAddressDetails.Landmark %></li>
+        <li>City : <%- patientAddressDetails.City +', '+ patientAddressDetails.State %></li>
+        <li>State : <%- patientAddressDetails.State %></li>
+        <li>Zipcode : <%- patientAddressDetails.PostCode %></li>
       </ul>
      </li>
      <% } %>
     </ul>
   </li>
+  <% _.each(prescriptionImages, function(order, index) { %>
+    <ul>
+    <li><%-order %></li>
+    </ul>
+  <% }); %>
+
   <li>Cash on Delivery. </li>
 
   </ul>
