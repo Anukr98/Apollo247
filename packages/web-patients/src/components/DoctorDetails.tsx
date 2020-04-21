@@ -10,6 +10,7 @@ import { AppointmentHistory } from 'components/AppointmentHistory';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import { useQuery } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
@@ -229,12 +230,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const currentUserId = currentPatient && currentPatient.id;
 
-  const { data, loading, error } = useQueryWithSkip<
-    GetDoctorDetailsById,
-    GetDoctorDetailsByIdVariables
-  >(GET_DOCTOR_DETAILS_BY_ID, {
-    variables: { id: doctorId },
-  });
+  const { data, loading, error } = useQuery<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
+    GET_DOCTOR_DETAILS_BY_ID,
+    {
+      variables: { id: doctorId },
+    }
+  );
 
   if (loading) {
     return <LinearProgress className={classes.loader} />;
