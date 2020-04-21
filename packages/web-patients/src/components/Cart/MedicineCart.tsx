@@ -1004,7 +1004,7 @@ export const MedicineCart: React.FC = (props) => {
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
                 const zipCodeInt = parseInt(selectedZip);
                 if (
-                  (zipCodeInt >= 600001 && zipCodeInt <= 600129) ||
+                  (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
                   zipCodeInt === 603103 ||
                   zipCodeInt === 603202 ||
                   zipCodeInt === 603211
