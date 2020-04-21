@@ -22,6 +22,7 @@ import {
   getParameterByName,
   postWebEngageEvent,
   postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WebView } from 'react-native-webview';
 import {
@@ -29,6 +30,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -47,6 +49,7 @@ export interface ConsultPaymentProps extends NavigationScreenProps {
   appointmentId: string;
   price: number;
   webEngageEventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED];
+  fireBaseEventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED];
 }
 {
 }
@@ -56,6 +59,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
   const appointmentId = props.navigation.getParam('appointmentId');
   const doctorName = props.navigation.getParam('doctorName');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
+  const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
@@ -87,8 +91,11 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
 
   const handleOrderSuccess = async () => {
     // BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-    postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+    try {
+      postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
+      postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+    } catch (error) {}
 
     setLoading!(false);
     props.navigation.dispatch(

@@ -31,6 +31,7 @@ import {
   g,
   postWebEngageEvent,
   formatAddress,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -53,6 +54,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -159,6 +161,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       Pincode: pinCode,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
+
+    try {
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_SUBMIT_PRESCRIPTION] = {
+        Order_ID: `${orderId}`,
+        Delivery_type: deliveryAddressId ? 'home' : 'store_pickup',
+        StoreId: storeId, // incase of store delivery
+        Delivery_address: deliveryAddressId ? deliveryAddressLine : storeAddressLine,
+        Pincode: pinCode,
+      };
+      postFirebaseEvent(FirebaseEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventFirebaseAttributes);
+    } catch (error) {}
   };
 
   const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
