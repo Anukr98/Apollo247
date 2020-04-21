@@ -149,6 +149,7 @@ const SavePrescriptionMedicineOrder: Resolver<
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
     let deliveryCity = 'Kakinada',
       deliveryZipcode = '500034',
+      deliveryAddress = 'Kakinada',
       deliveryAddress1 = 'Kakinada',
       deliveryAddress2 = 'pithapuram',
       deliveryState = 'Telangana',
@@ -162,6 +163,9 @@ const SavePrescriptionMedicineOrder: Resolver<
 
       deliveryAddress1 = patientAddressDetails.addressLine1;
       deliveryAddress2 = patientAddressDetails.addressLine2;
+
+      deliveryAddress =
+        patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
       if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
         deliveryCity = 'Kakinada';
       } else {
@@ -184,6 +188,14 @@ const SavePrescriptionMedicineOrder: Resolver<
         deliveryZipcode = patientAddressDetails.zipcode;
       }
     }
+    const patientDelivaryDetails = {
+      addressLine1: deliveryAddress1,
+      addressLine2: deliveryAddress2,
+      Landmark: Landmark,
+      City: deliveryCity,
+      State: deliveryState,
+      Zipcode: deliveryZipcode,
+    };
 
     const orderPrescriptionUrl: any[] = [];
     const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
@@ -217,13 +229,11 @@ const SavePrescriptionMedicineOrder: Resolver<
         OrderDate: new Date(),
         CustomerDetails: {
           MobileNo: patientDetails.mobileNumber.substr(3),
-          Comm_addr: deliveryAddress1,
-          Del_addr: deliveryAddress2,
+          Comm_addr: deliveryAddress,
+          Del_addr: deliveryAddress,
           FirstName: patientDetails.firstName,
           LastName: patientDetails.lastName,
-          Landmark: Landmark,
           City: deliveryCity,
-          State: deliveryState,
           PostCode: deliveryZipcode,
           MailId: patientDetails.emailAddress,
           Age: patientAge,
@@ -306,7 +316,7 @@ const SavePrescriptionMedicineOrder: Resolver<
       ) {
         const mailContent = medicineSendPrescription({
           patientDetails,
-          patientAddressDetails: medicineOrderPharma.tpdetails.CustomerDetails,
+          patientAddressDetails: patientDelivaryDetails,
           prescriptionImages: orderPrescriptionUrl,
         });
         const subjectLine = ApiConstants.UPLOAD_PRESCRIPTION_TITLE;
