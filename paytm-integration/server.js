@@ -531,7 +531,7 @@ app.post('/paymed-response', (req, res) => {
   const payload = req.body;
   const token = 'Bearer 3d1833da7020e0602165529446587434';
   const date = new Date(new Date().toUTCString()).toISOString();
-  const reqSource = req.session.source;
+  //const reqSource = req.session.source;
 
   /* make success and failure response */
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
@@ -541,7 +541,7 @@ app.post('/paymed-response', (req, res) => {
   let content =
     new Date().toString() +
     '\n---------------------------\n' +
-    'appt id:' +
+    'pharma order id:' +
     payload.ORDERID +
     '\n' +
     transactionStatus +
@@ -552,8 +552,9 @@ app.post('/paymed-response', (req, res) => {
     '\n-------------------\n';
   fs.appendFile(fileName, content, function(err) {
     if (err) throw err;
-    console.log('Updated!');
+    console.log('Updated!', payload.ORDERID);
   });
+  console.log(process.env.API_URL);
   axios.defaults.headers.common['authorization'] = token;
   axios({
     url: process.env.API_URL,
@@ -569,7 +570,6 @@ app.post('/paymed-response', (req, res) => {
                   devliveryCharges
                   deliveryType
                   bookingSource
-                  patientId
                   currentStatus
                 }
               }
@@ -577,6 +577,7 @@ app.post('/paymed-response', (req, res) => {
           `,
     },
   }).then(async (response) => {
+    console.log(response, response.data.errors, 'response');
     if (
       response &&
       response.data &&
