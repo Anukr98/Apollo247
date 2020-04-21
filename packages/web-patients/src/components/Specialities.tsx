@@ -14,7 +14,7 @@ import { Mutation } from 'react-apollo';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { SEARCH_TYPE } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients, getAllDoctorsSpecialities } from 'hooks/authHooks';
 // import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -103,7 +103,8 @@ export interface SpecialitiesProps {
 
 export const Specialities: React.FC<SpecialitiesProps> = (props) => {
   const classes = useStyles();
-  const { loading, error, data } = useQueryWithSkip<GetAllSpecialties>(GET_ALL_SPECIALITIES);
+  const { loading, error, data } = getAllDoctorsSpecialities();
+
   const { keyword, matched, speciality, disableFilter, specialityId, subHeading } = props;
 
   const { currentPatient } = useAllCurrentPatients();
