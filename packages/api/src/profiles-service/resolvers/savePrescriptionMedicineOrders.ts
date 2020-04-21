@@ -185,18 +185,12 @@ const SavePrescriptionMedicineOrder: Resolver<
       }
     }
 
-    const orderPrescriptionUrl: PrescriptionUrl[] = [];
+    const orderPrescriptionUrl: any[] = [];
     const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
-    let mailPrescriptionImages = '';
     let count: number = 1;
     if (prescriptionImages.length > 0) {
       prescriptionImages.map((imageUrl) => {
-        const url = {
-          url: imageUrl,
-        };
-        orderPrescriptionUrl.push(url);
-        mailPrescriptionImages +=
-          ' ' + 'Link to prescription' + count++ + ':' + ' ' + imageUrl + ', ';
+        orderPrescriptionUrl.push(` Link to prescription ${count++}: ${imageUrl} `);
       });
     }
     let selShopId = ApiConstants.PHARMA_DEFAULT_SHOPID.toString();
@@ -313,9 +307,8 @@ const SavePrescriptionMedicineOrder: Resolver<
         const mailContent = medicineSendPrescription({
           patientDetails,
           patientAddressDetails: medicineOrderPharma.tpdetails.CustomerDetails,
-          prescriptionImages: mailPrescriptionImages.split(','),
+          prescriptionImages: orderPrescriptionUrl,
         });
-
         const subjectLine = ApiConstants.UPLOAD_PRESCRIPTION_TITLE;
         const subject =
           process.env.NODE_ENV == 'production'

@@ -25,9 +25,7 @@ export const medicineSendPrescription = _.template(
     </ul>
   </li>
   <% _.each(prescriptionImages, function(order, index) { %>
-    <ul>
     <li><%-order %></li>
-    </ul>
   <% }); %>
 
   <li>Cash on Delivery. </li>
