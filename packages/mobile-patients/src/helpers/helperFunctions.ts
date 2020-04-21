@@ -25,6 +25,7 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import ApolloClient from 'apollo-client';
@@ -41,6 +42,8 @@ import WebEngage from 'react-native-webengage';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
+import firebase from 'react-native-firebase';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -1001,4 +1004,39 @@ export const postAppsFlyerAddToCartEvent = (
     Source: source,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
+  try {
+    console.log('\n********* FirebaseEvent Start *********\n');
+    console.log(`FirebaseEvent ${eventName}`, { eventName, attributes });
+    console.log('\n********* FirebaseEvent End *********\n');
+    // if (getBuildEnvironment() !== 'DEV') {
+    // Don't post events in DEV environment
+    firebase.analytics().logEvent(eventName, attributes);
+    // }
+  } catch (error) {
+    console.log('********* Unable to post FirebaseEvent *********', { error });
+  }
+};
+
+export const postFirebaseAddToCartEvent = (
+  { sku, name, category_id, price, special_price }: MedicineProduct,
+  source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source']
+) => {
+  try {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
+      'product name': name,
+      'product id': sku,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': category_id || '',
+      Price: price,
+      'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+      Quantity: 1,
+      Source: source,
+    };
+    postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  } catch (error) {}
 };
