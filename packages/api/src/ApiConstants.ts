@@ -62,6 +62,9 @@ export enum ApiConstants {
   ORDER_PLACED_TITLE = 'Medicine order is placed',
   ORDER_PLACED_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your order {1} is placed with us successfully.',
 
+  // medicine order out for delivery
+  UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
+
   //medicine order out for delivery
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
   ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
