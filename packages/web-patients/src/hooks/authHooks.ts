@@ -4,9 +4,6 @@ import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { Relation } from 'graphql/types/globalTypes';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { useQuery } from 'react-apollo-hooks';
-import { GetAllSpecialties } from 'graphql/types/GetAllSpecialties';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 
 const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
 
@@ -99,14 +96,5 @@ export const useLoginPopupState = (): {
   return {
     isLoginPopupVisible,
     setIsLoginPopupVisible,
-  };
-};
-
-export const getAllDoctorsSpecialities = () => {
-  const { loading, error, data } = useQuery<GetAllSpecialties>(GET_ALL_SPECIALITIES);
-  return {
-    loading,
-    error,
-    data,
   };
 };
