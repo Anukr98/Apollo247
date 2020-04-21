@@ -71,6 +71,8 @@ import { ConsultPayment } from '@aph/mobile-patients/src/components/ConsultRoom/
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
 import { ApplyConsultCoupon } from '@aph/mobile-patients/src/components/ConsultRoom/ApplyConsultCoupon';
+import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan'
+
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
@@ -138,6 +140,7 @@ export enum AppRoutes {
   ClinicSelection = 'ClinicSelection',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
+  CovidScan = 'CovidScan',
   // ConsultDetailsById = 'ConsultDetailsById',
   NotificationScreen = 'NotificationScreen',
 }
@@ -357,6 +360,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.RenderPdf]: {
     screen: RenderPdf,
+  },
+  [AppRoutes.CovidScan]: {
+    screen: CovidScan,
   },
   // [AppRoutes.ConsultDetailsById]: {
   //   screen: ConsultDetailsById,

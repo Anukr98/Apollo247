@@ -4,6 +4,7 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import {
   Ambulance,
+  Scan,
   CartIcon,
   ConsultationRoom,
   Diabetes,
@@ -1015,46 +1016,152 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderCovidHeader = () => {
+    return (
+      <View style={{ marginHorizontal: 20, marginTop: 24 }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 17, '#0087ba', 1, 20) }}>
+          {AppConfig.Configuration.HOME_SCREEN_COVID_HEADER_TEXT}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderCovidScanBanner = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.5}
+        onPress={() => {
+          {
+            props.navigation.navigate(AppRoutes.CovidScan);
+          }
+        }}
+        style={{
+          height: 0.06 * height,
+          marginHorizontal: 20,
+          marginTop: 16,
+          borderRadius: 10,
+          flex: 1,
+          flexDirection: 'row',
+          backgroundColor: '#02475b',
+        }}
+      >
+        <View
+          style={{
+            flex: 0.17,
+            borderTopLeftRadius: 10,
+            borderBottomLeftRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Scan style={{ height: 28, width: 21 }} />
+        </View>
+        <View
+          style={{
+            flex: 0.83,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
+            {AppConfig.Configuration.HOME_SCREEN_COVIDSCAN_BANNER_TEXT}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderEmergencyCallBanner = () => {
-    const heading = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT;
     const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
     return (
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.5}
         onPress={() => {
           {
             postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
             Linking.openURL(`tel:${phoneNumber}`);
           }
         }}
+        style={{
+          height: 0.06 * height,
+          marginHorizontal: 20,
+          marginVertical: 16,
+          borderRadius: 10,
+          flex: 1,
+          flexDirection: 'row',
+          backgroundColor: '#d13135',
+        }}
       >
         <View
           style={{
-            marginHorizontal: 20,
-            marginVertical: 16,
-            paddingHorizontal: 10,
+            flex: 0.17,
+            borderTopLeftRadius: 10,
+            borderBottomLeftRadius: 10,
+            justifyContent: 'center',
             alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            backgroundColor: '#d13135',
-            borderRadius: 10,
           }}
         >
-          <Text
-            style={{
-              flex: 1,
-              paddingVertical: 10,
-              paddingRight: 10,
-              ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
-            }}
-          >
-            {heading}
+          <Ambulance style={{ height: 30, width: 30 }} />
+        </View>
+        <View
+          style={{
+            flex: 0.83,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+          }}
+        >
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
+            {AppConfig.Configuration.HOME_SCREEN_COVID_CONTACT_TEXT}
           </Text>
-          <Ambulance style={{ height: 41, width: 41 }} />
         </View>
       </TouchableOpacity>
     );
   };
+
+  // const renderEmergencyCallBanner = () => {
+  //   const heading = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT;
+  //   const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
+  //   return (
+  //     <TouchableOpacity
+  //       activeOpacity={1}
+  //       onPress={() => {
+  //         {
+  //           postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
+  //           Linking.openURL(`tel:${phoneNumber}`);
+  //         }
+  //       }}
+  //     >
+  //       <View
+  //         style={{
+  //           marginHorizontal: 20,
+  //           marginVertical: 16,
+  //           paddingHorizontal: 10,
+  //           alignItems: 'center',
+  //           flexDirection: 'row',
+  //           justifyContent: 'space-between',
+  //           backgroundColor: '#d13135',
+  //           borderRadius: 10,
+  //         }}
+  //       >
+  //         <Text
+  //           style={{
+  //             flex: 1,
+  //             paddingVertical: 10,
+  //             paddingRight: 10,
+  //             ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
+  //           }}
+  //         >
+  //           {heading}
+  //         </Text>
+  //         <Ambulance style={{ height: 41, width: 41 }} />
+  //       </View>
+  //     </TouchableOpacity>
+  //   );
+  // };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
@@ -1123,6 +1230,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </ImageBackground>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
               {renderMenuOptions()}
+              {renderCovidHeader()}
+              {renderCovidScanBanner()}
               {renderEmergencyCallBanner()}
             </View>
           </View>

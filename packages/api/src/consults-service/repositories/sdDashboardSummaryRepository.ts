@@ -86,6 +86,18 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     }
   }
 
+  saveData(onlineCount: number, awayCount: number, summaryDate: Date) {
+    const date = format(summaryDate, "yyyy-MM-dd'T'HH:mm:ss.SSX");
+    return this.createQueryBuilder()
+      .update(SdDashboardSummary)
+      .set({
+        noOfAwayDoctors: awayCount,
+        noOfOnlineDoctors: onlineCount,
+      })
+      .where('appointmentDateTime = :summaryDate', { summaryDate: date })
+      .execute();
+  }
+
   saveFeedbackDetails(feedbackSummaryAttrs: Partial<FeedbackDashboardSummary>) {
     return FeedbackDashboardSummary.create(feedbackSummaryAttrs)
       .save()

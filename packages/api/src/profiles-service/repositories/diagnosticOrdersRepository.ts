@@ -138,6 +138,9 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       patientId = patientDetails.uhid;
     } else {
       patientId = await patientRepo.createNewUhid(patientDetails.id);
+      if (patientId == '') {
+        patientId = '0';
+      }
     }
 
     let visitType = 'Home Collection';
