@@ -54,6 +54,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -63,6 +64,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import moment from 'moment';
 import DeviceInfo from 'react-native-device-info';
+import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 
 const { height } = Dimensions.get('window');
 
@@ -147,6 +149,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { signOut, getPatientApiCall, getPatientByPrism } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
+  const [deviceToken, setDeviceToken] = useState<string>('');
+  const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -195,6 +199,10 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       // getPatientApiCall();
     }
   }, [currentPatient]);
+
+  const getDeviceCountAPICall = async () => {
+    uniqueId = await DeviceInfo.getUniqueId();
+  };
 
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
@@ -400,8 +408,27 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         eventAttributes['Referral Code'] = referral;
       }
 
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.REGISTRATION_DONE] = {
+        Customer_ID: currentPatient ? currentPatient.id : '',
+        Customer_First_Name: firstName.trim(),
+        Customer_Last_Name: lastName.trim(),
+        Date_of_Birth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        Email: email.trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventFirebaseAttributes['Referral_Code'] = referral;
+      }
+
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.REGISTRATION_DONE, eventFirebaseAttributes);
       setSignupEventFired(true);
     } catch (error) {
       console.log({ error });
@@ -693,6 +720,11 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                           allPatients[0]
                         : null;
 
+                      let uniqueId;
+                      try {
+                        uniqueId = await DeviceInfo.getUniqueId();
+                      } catch (error) {}
+
                       const patientsDetails: UpdatePatientInput = {
                         id: mePatient.id,
                         mobileNumber: mePatient.mobileNumber,
@@ -709,7 +741,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
                         referralCode: trimReferral ? trimReferral : null,
-                        deviceCode: DeviceInfo.getUniqueId(),
+                        deviceCode: uniqueId,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({
@@ -727,7 +759,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', 'false'),
-                      CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       handleOpenURL())
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}

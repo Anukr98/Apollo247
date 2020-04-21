@@ -51,10 +51,16 @@ import {
   CommonBugFender,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { handleGraphQlError, getRelations } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  handleGraphQlError,
+  getRelations,
+  postFirebaseEvent,
+  g,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
+import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -142,6 +148,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [referral, setReferral] = useState<string>('');
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
   const [allCurrentPatients, setAllCurrentPatients] = useState<any>();
+  const [isSignupEventFired, setSignupEventFired] = useState(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -219,6 +226,62 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   //   // console.log('discriptionText', discriptionText);
   //   // console.log('allCurrentPatients', allCurrentPatients);
   // }, [currentPatient, allCurrentPatients, analytics, profiles, discriptionText, showText]);
+
+  const _postWebEngageEvent = async () => {
+    if (isSignupEventFired) {
+      return;
+    }
+    try {
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem);
+
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
+      const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+      const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+
+      let allPatients;
+
+      if (callByPrism === 'false') {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+      } else {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+      }
+
+      const patientDetails = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
+
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.REGISTRATION_DONE] = {
+        Customer_ID: g(patientDetails, 'id'),
+        Customer_First_Name: g(patientDetails, 'firstName'),
+        Customer_Last_Name: g(patientDetails, 'lastName'),
+        // 'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        // Gender:
+        //   gender === 'Female'
+        //     ? Gender['FEMALE']
+        //     : gender === 'Male'
+        //     ? Gender['MALE']
+        //     : Gender['OTHER'],
+        // Email: email.trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventFirebaseAttributes['Referral_Code'] = referral;
+      }
+
+      postFirebaseEvent(FirebaseEventName.REGISTRATION_DONE, eventFirebaseAttributes);
+      setSignupEventFired(true);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
 
   const renderUserForm = (
     allCurrentPatients: GetCurrentPatients_getCurrentPatients_patients | null,
@@ -661,13 +724,17 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                       trimReferral = trimReferral.trim();
                     }
                     setVerifyingPhoneNumber(true);
+                    let uniqueId: any;
+                    try {
+                      uniqueId = await DeviceInfo.getUniqueId();
+                    } catch (error) {}
 
                     profiles.forEach(async (profile: updatePatient_updatePatient_patient) => {
                       const patientsDetails: UpdatePatientInput = {
                         id: profile.id,
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
                         referralCode: (profile.relation == Relation.ME && trimReferral) || null,
-                        deviceCode: DeviceInfo.getUniqueId(),
+                        deviceCode: uniqueId,
                       };
                       console.log('patientsDetails', { patientsDetails });
                       CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
@@ -687,7 +754,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
+                  _postWebEngageEvent(),
                   handleOpenURL())
                 : null}
               {error
