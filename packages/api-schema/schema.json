@@ -1285,6 +1285,30 @@
             "deprecationReason": null
           },
           {
+            "name": "seniorDoctorCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "juniorDoctorCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getJuniorDoctorDashboard",
             "description": null,
             "args": [
@@ -11593,6 +11617,12 @@
         "interfaces": null,
         "enumValues": [
           {
+            "name": "AS_PRESCRIBED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "BOTTLE",
             "description": null,
             "isDeprecated": false,
@@ -11623,6 +11653,12 @@
             "deprecationReason": null
           },
           {
+            "name": "GM",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "INJECTION",
             "description": null,
             "isDeprecated": false,
@@ -11636,6 +11672,12 @@
           },
           {
             "name": "ML",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MG",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11659,7 +11701,19 @@
             "deprecationReason": null
           },
           {
+            "name": "PATCH",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "POWDER",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PUFF",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11708,6 +11762,12 @@
           },
           {
             "name": "TABLET",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "UNIT",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

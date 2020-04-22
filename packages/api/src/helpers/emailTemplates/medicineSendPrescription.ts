@@ -13,24 +13,27 @@ export const medicineSendPrescription = _.template(
      <% if(patientAddressDetails) {  %>
      <li>Customer Delivery Address : 
       <ul>
-        <li>AddressLine1 : <%- patientAddressDetails.Comm_addr %></li>
-        <li>AddressLine2 : <%- patientAddressDetails.Del_addr %> </li>
+        <li>AddressLine1 : <%-patientAddressDetails.addressLine1 %></li>
+        <li>AddressLine2 : <%- patientAddressDetails.addressLine2 %> </li>
         <li>Landmark : <%- patientAddressDetails.Landmark %></li>
         <li>City : <%- patientAddressDetails.City +', '+ patientAddressDetails.State %></li>
         <li>State : <%- patientAddressDetails.State %></li>
-        <li>Zipcode : <%- patientAddressDetails.PostCode %></li>
+        <li>Zipcode : <%- patientAddressDetails.Zipcode %></li>
       </ul>
      </li>
      <% } %>
     </ul>
   </li>
-  <% _.each(prescriptionImages, function(order, index) { %>
-    <li><%-order %></li>
+  <li>Attachments : 
+  <ul>
+  <% _.each(prescriptionUrls, function(order, index) { %>
+    <li>Link to Prescription <%- index+1 %>:<a href = <%- order %> target="_blank"> <%- order %></a></li>
   <% }); %>
+  </ul>
+  </li>
 
   <li>Cash on Delivery. </li>
 
-  </ul>
   </body> 
   </html>
   `

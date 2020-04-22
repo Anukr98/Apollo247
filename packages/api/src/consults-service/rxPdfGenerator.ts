@@ -26,6 +26,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
+import { ApiConstants } from 'ApiConstants';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -42,6 +43,7 @@ export const convertCaseSheetToRxPdfData = async (
     ingredients: string[];
     frequency: string;
     instructions: string;
+    routeOfAdministration?: string;
   };
 
   let prescriptions: PrescriptionData[] | [];
@@ -54,21 +56,35 @@ export const convertCaseSheetToRxPdfData = async (
       let frequency;
       if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
         frequency = 'Apply';
-        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+        if (csRx.medicineCustomDosage) {
+          frequency =
+            frequency + ' ' + csRx.medicineCustomDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
+        } else if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
       } else {
         frequency = 'Take';
-        if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
-        if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit + '(s)';
+        if (csRx.medicineCustomDosage) {
+          frequency =
+            frequency + ' ' + csRx.medicineCustomDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
+        } else {
+          if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
+          if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit + '(s)';
+        }
       }
+
+      if (csRx.medicineFrequency && !csRx.medicineCustomDosage)
+        frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
+
       if (csRx.medicineConsumptionDuration) {
         frequency = frequency + ' for';
         frequency = frequency + ' ' + csRx.medicineConsumptionDuration;
-        if (csRx.medicineConsumptionDurationUnit)
-          frequency = frequency + ' ' + csRx.medicineConsumptionDurationUnit.replace('S', '(s)');
+        if (csRx.medicineConsumptionDurationUnit) {
+          const unit =
+            parseInt(csRx.medicineConsumptionDuration, 10) > 1
+              ? csRx.medicineConsumptionDurationUnit
+              : csRx.medicineConsumptionDurationUnit.replace('S', '');
+          frequency = frequency + ' ' + unit;
+        }
       }
-
-      if (csRx.medicineFrequency)
-        frequency = frequency + ' ' + csRx.medicineFrequency.split('_').join(' ');
 
       if (csRx.medicineToBeTaken)
         frequency =
@@ -79,7 +95,7 @@ export const convertCaseSheetToRxPdfData = async (
             .split('_')
             .join(' ');
 
-      if (csRx.medicineTimings) {
+      if (csRx.medicineTimings && !csRx.medicineCustomDosage) {
         if (
           csRx.medicineTimings.length == 1 &&
           csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
@@ -97,19 +113,19 @@ export const convertCaseSheetToRxPdfData = async (
               .join(' ');
         }
       }
-      if (csRx.medicineConsumptionDurationInDays && csRx.medicineConsumptionDurationUnit) {
-        frequency =
-          frequency +
-          ', for ' +
-          csRx.medicineConsumptionDurationInDays +
-          ' ' +
-          csRx.medicineConsumptionDurationUnit.replace('S', '(s)');
-      }
 
       frequency = _capitalize(frequency);
+      frequency += '.';
 
       const instructions = csRx.medicineInstructions;
-      return { name, ingredients, frequency, instructions } as PrescriptionData;
+      const routeOfAdministration = _capitalize(csRx.routeOfAdministration);
+      return {
+        name,
+        ingredients,
+        frequency,
+        instructions,
+        routeOfAdministration,
+      } as PrescriptionData;
     });
   }
   //medicine prescription ends
@@ -472,13 +488,23 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .text(`${prescription.frequency} `, margin + 30)
         .moveDown(0.8);
 
+      if (prescription.routeOfAdministration !== undefined) {
+        doc
+          .fontSize(10)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#000000')
+          .opacity(0.6)
+          .text(`To be taken: ${prescription.routeOfAdministration} `, margin + 30)
+          .moveDown(0.8);
+      }
+
       if (prescription.instructions !== undefined) {
         doc
           .fontSize(10)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#000000')
           .opacity(0.6)
-          .text(`${prescription.instructions} `, margin + 30)
+          .text(`Instructions: ${prescription.instructions} `, margin + 30)
           .moveDown(0.8);
       }
     });

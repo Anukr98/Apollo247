@@ -384,12 +384,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <ul>
           {deliveryAddresses.map(
             (address, idx) =>
-              // (idx ===
-              //   (selectedAddressDataIndex === deliveryAddresses.length - 1
-              //     ? selectedAddressDataIndex - 1
-              //     : selectedAddressDataIndex + 1) ||
               idx === selectedAddressDataIndex && (
-                <li>
+                <li key={idx}>
                   <FormControlLabel
                     checked={address.id === deliveryAddressId}
                     className={classes.radioLabel}
@@ -448,12 +444,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
       <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>
-          {/* <div className={classes.backArrow}>
-            <img src={require('images/ic_back.svg')} alt="" />
-          </div> */}
-          Add New Address
-        </AphDialogTitle>
+        <AphDialogTitle>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
           checkServiceAvailability={checkServiceAvailability}

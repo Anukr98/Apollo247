@@ -531,7 +531,7 @@ app.post('/paymed-response', (req, res) => {
   const payload = req.body;
   const token = 'Bearer 3d1833da7020e0602165529446587434';
   const date = new Date(new Date().toUTCString()).toISOString();
-  const reqSource = req.session.source;
+  //const reqSource = req.session.source;
 
   /* make success and failure response */
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
@@ -541,7 +541,7 @@ app.post('/paymed-response', (req, res) => {
   let content =
     new Date().toString() +
     '\n---------------------------\n' +
-    'appt id:' +
+    'pharma order id:' +
     payload.ORDERID +
     '\n' +
     transactionStatus +
@@ -552,8 +552,9 @@ app.post('/paymed-response', (req, res) => {
     '\n-------------------\n';
   fs.appendFile(fileName, content, function(err) {
     if (err) throw err;
-    console.log('Updated!');
+    console.log('Updated!', payload.ORDERID);
   });
+  console.log(process.env.API_URL);
   axios.defaults.headers.common['authorization'] = token;
   axios({
     url: process.env.API_URL,
@@ -569,7 +570,6 @@ app.post('/paymed-response', (req, res) => {
                   devliveryCharges
                   deliveryType
                   bookingSource
-                  patientId
                   currentStatus
                 }
               }
@@ -577,6 +577,7 @@ app.post('/paymed-response', (req, res) => {
           `,
     },
   }).then(async (response) => {
+    console.log(response, response.data.errors, 'response');
     if (
       response &&
       response.data &&
@@ -598,7 +599,7 @@ app.post('/paymed-response', (req, res) => {
       if (transactionStatus === 'failed') {
         /* never execute a transaction if the payment status is failed */
         if (bookingSource === 'WEB') {
-          const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+          const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
           res.redirect(redirectUrl);
         } else {
           res.redirect(
@@ -1015,6 +1016,7 @@ app.get('/processOrders', (req, res) => {
                     mou
                     price
                     quantity        
+                    isMedicine
                   }
                   medicineOrderPayments{
                     id
@@ -1066,6 +1068,9 @@ app.get('/processOrders', (req, res) => {
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails.pharmaRequest;
                 const orderLineItems = [];
                 const orderPrescriptionUrl = [];
+                let fmcgCount = 0,
+                  pharmaCount = 0;
+                let orderType = 'FMCG';
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderLineItems.map(
                   (item) => {
                     const lineItem = {
@@ -1077,10 +1082,17 @@ app.get('/processOrders', (req, res) => {
                       Price: item.price,
                       Status: true,
                     };
+                    console.log(item.isMedicine, item.medicineSKU, 'is medicine');
+                    if (item.isMedicine == '0') fmcgCount++;
+                    else pharmaCount++;
                     orderLineItems.push(lineItem);
                   }
                 );
-
+                console.log(fmcgCount, pharmaCount, 'count of types');
+                if (fmcgCount > 0 && pharmaCount > 0) orderType = 'Both';
+                else if (fmcgCount > 0 && pharmaCount == 0) orderType = 'FMCG';
+                else orderType = 'Pharma';
+                console.log('final order type', orderType);
                 //logic to add delivery charges line item starts here
                 const orderDetails =
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
@@ -1096,20 +1108,19 @@ app.get('/processOrders', (req, res) => {
                 //logic to add delivery charges line item ends here
 
                 let prescriptionImages = [];
-                let orderType = 'FMCG';
-                if (
-                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                    .prescriptionImageUrl != '' &&
-                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                    .prescriptionImageUrl != null
-                ) {
-                  prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
-                    ','
-                  );
-                  orderType = 'Pharma';
-                }
+
+                // if (
+                //   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                //     .prescriptionImageUrl != '' &&
+                //   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                //     .prescriptionImageUrl != null
+                // ) {
+                //   prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
+                //     ','
+                //   );
+                //   orderType = 'Pharma';
+                // }
                 if (prescriptionImages.length > 0) {
-                  orderType = 'Pharma';
                   prescriptionImages.map((imageUrl) => {
                     const url = {
                       url: imageUrl,

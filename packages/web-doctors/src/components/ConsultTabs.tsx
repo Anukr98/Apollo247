@@ -1254,19 +1254,24 @@ export const ConsultTabs: React.FC = () => {
           fetchPolicy: 'no-cache',
         })
         .then((_data) => {
+          setSaving(false);
           if (!flag) {
             setIsConfirmDialogOpen(true);
           }
           if (sendToPatientFlag) {
             sendToPatientAction();
           }
-          setSaving(false);
         })
         .catch((e) => {
-          const patientName =
-            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-            ' ' +
-            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+          setSaving(false);
+
+          const error = e ? JSON.parse(JSON.stringify(e)) : 'Error occured while update casesheet';
+          const errorMessage = e ? error.message : error;
+
+          console.error('Error occured while update casesheet', e);
+          console.log(errorMessage);
+          alert(errorMessage);
+
           const logObject = {
             api: 'ModifyCaseSheet',
             inputParam: JSON.stringify(inputVariables),
@@ -1274,20 +1279,14 @@ export const ConsultTabs: React.FC = () => {
             doctorId: currentPatient!.id,
             doctorDisplayName: currentPatient!.displayName,
             patientId: params.patientId,
-            patientName: patientName,
             currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
             appointmentDateTime: moment(new Date(appointmentDateTime)).format(
               'MMMM DD YYYY h:mm:ss a'
             ),
-            error: JSON.stringify(e),
+            error: e ? JSON.stringify(e) : 'Error occured while update casesheet',
           };
 
           sessionClient.notify(JSON.stringify(logObject));
-          const error = JSON.parse(JSON.stringify(e));
-          const errorMessage = error && error.message;
-          alert(errorMessage);
-          setSaving(false);
-          console.log('Error occured while update casesheet', e);
         });
     } catch (error) {
       setSaving(false);

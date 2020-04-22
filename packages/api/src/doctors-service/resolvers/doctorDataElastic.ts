@@ -163,6 +163,8 @@ const insertDataElastic: Resolver<
           consultHours.push(hourData);
         }
         let doctorSecratry = {};
+        let facility = {};
+        let specialty = {};
         if (allDocsInfo[i].doctorSecretary) {
           doctorSecratry = {
             docSecretaryId: allDocsInfo[i].doctorSecretary.id,
@@ -170,6 +172,34 @@ const insertDataElastic: Resolver<
             mobileNumber: allDocsInfo[i].doctorSecretary.secretary.mobileNumber,
             isActive: allDocsInfo[i].doctorSecretary.secretary.isActive,
             secretaryId: allDocsInfo[i].doctorSecretary.secretary.id,
+          };
+        }
+        if (allDocsInfo[i].doctorHospital.length > 0) {
+          facility = {
+            docFacilityId: allDocsInfo[i].doctorHospital[0].id,
+            name: allDocsInfo[i].doctorHospital[0].facility.name,
+            facilityType: allDocsInfo[i].doctorHospital[0].facility.facilityType,
+            streetLine1: allDocsInfo[i].doctorHospital[0].facility.streetLine1,
+            streetLine2: allDocsInfo[i].doctorHospital[0].facility.streetLine2,
+            streetLine3: allDocsInfo[i].doctorHospital[0].facility.streetLine3,
+            city: allDocsInfo[i].doctorHospital[0].facility.city,
+            state: allDocsInfo[i].doctorHospital[0].facility.state,
+            zipcode: allDocsInfo[i].doctorHospital[0].facility.zipcode,
+            imageUrl: allDocsInfo[i].doctorHospital[0].facility.imageUrl,
+            latitude: allDocsInfo[i].doctorHospital[0].facility.latitude,
+            longitude: allDocsInfo[i].doctorHospital[0].facility.longitude,
+            country: allDocsInfo[i].doctorHospital[0].facility.country,
+            facilityId: allDocsInfo[i].doctorHospital[0].facility.id,
+          };
+        }
+        if (allDocsInfo[i].specialty) {
+          specialty = {
+            specialtyId: allDocsInfo[i].specialty.id,
+            name: allDocsInfo[i].specialty.name,
+            image: allDocsInfo[i].specialty.image,
+            specialistSingularTerm: allDocsInfo[i].specialty.specialistSingularTerm,
+            specialistPluralTerm: allDocsInfo[i].specialty.specialistPluralTerm,
+            userFriendlyNomenclature: allDocsInfo[i].specialty.userFriendlyNomenclature,
           };
         }
         //console.log(allDocsInfo[i].doctorSecretary.id, 'specialty dets');
@@ -208,32 +238,8 @@ const insertDataElastic: Resolver<
           streetLine3: allDocsInfo[i].streetLine3,
           thumbnailUrl: allDocsInfo[i].thumbnailUrl,
           zip: allDocsInfo[i].zip,
-          specialty: {
-            specialtyId: allDocsInfo[i].specialty.id,
-            name: allDocsInfo[i].specialty.name,
-            image: allDocsInfo[i].specialty.image,
-            specialistSingularTerm: allDocsInfo[i].specialty.specialistSingularTerm,
-            specialistPluralTerm: allDocsInfo[i].specialty.specialistPluralTerm,
-            userFriendlyNomenclature: allDocsInfo[i].specialty.userFriendlyNomenclature,
-          },
-          facility: [
-            {
-              docFacilityId: allDocsInfo[i].doctorHospital[0].id,
-              name: allDocsInfo[i].doctorHospital[0].facility.name,
-              facilityType: allDocsInfo[i].doctorHospital[0].facility.facilityType,
-              streetLine1: allDocsInfo[i].doctorHospital[0].facility.streetLine1,
-              streetLine2: allDocsInfo[i].doctorHospital[0].facility.streetLine2,
-              streetLine3: allDocsInfo[i].doctorHospital[0].facility.streetLine3,
-              city: allDocsInfo[i].doctorHospital[0].facility.city,
-              state: allDocsInfo[i].doctorHospital[0].facility.state,
-              zipcode: allDocsInfo[i].doctorHospital[0].facility.zipcode,
-              imageUrl: allDocsInfo[i].doctorHospital[0].facility.imageUrl,
-              latitude: allDocsInfo[i].doctorHospital[0].facility.latitude,
-              longitude: allDocsInfo[i].doctorHospital[0].facility.longitude,
-              country: allDocsInfo[i].doctorHospital[0].facility.country,
-              facilityId: allDocsInfo[i].doctorHospital[0].facility.id,
-            },
-          ],
+          specialty,
+          facility,
           consultHours,
           doctorSecratry,
           doctorSlots: [],
