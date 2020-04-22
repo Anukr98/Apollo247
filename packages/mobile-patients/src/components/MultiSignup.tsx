@@ -245,59 +245,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
       });
   };
 
-  const _postFirebaseEvent = async () => {
-    if (isSignupEventFired) {
-      return;
-    }
-    try {
-      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
-
-      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-
-      let allPatients;
-
-      if (callByPrism === 'false') {
-        allPatients =
-          item && item.data && item.data.getPatientByMobileNumber
-            ? item.data.getPatientByMobileNumber.patients
-            : null;
-      } else {
-        allPatients =
-          item && item.data && item.data.getCurrentPatients
-            ? item.data.getCurrentPatients.patients
-            : null;
-      }
-
-      const patientDetails = allPatients
-        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-        : null;
-
-      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.REGISTRATION_DONE] = {
-        Customer_ID: g(patientDetails, 'id'),
-        Customer_First_Name: g(patientDetails, 'firstName'),
-        Customer_Last_Name: g(patientDetails, 'lastName'),
-        // 'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-        // Gender:
-        //   gender === 'Female'
-        //     ? Gender['FEMALE']
-        //     : gender === 'Male'
-        //     ? Gender['MALE']
-        //     : Gender['OTHER'],
-        // Email: email.trim(),
-      };
-      if (referral) {
-        // only send if referral has a value
-        eventFirebaseAttributes['Referral_Code'] = referral;
-      }
-
-      postFirebaseEvent(FirebaseEventName.REGISTRATION_DONE, eventFirebaseAttributes);
-      setSignupEventFired(true);
-    } catch (error) {
-      console.log({ error });
-    }
-  };
-
   const renderUserForm = (
     allCurrentPatients: GetCurrentPatients_getCurrentPatients_patients | null,
     i: number
@@ -498,6 +445,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   const _postWebEngageEvent = (patient: updatePatient_updatePatient_patient) => {
     try {
+      if (isSignupEventFired) {
+        return;
+      }
       const { firstName, lastName, dateOfBirth: date, gender, emailAddress: email } = patient;
       const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
         'Customer ID': currentPatient ? currentPatient.id : '',
@@ -514,6 +464,22 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.REGISTRATION_DONE] = {
+        Customer_ID: currentPatient ? currentPatient.id : '',
+        Customer_First_Name: (firstName || '')!.trim(),
+        Customer_Last_Name: (lastName || '')!.trim(),
+        Date_of_Birth: date ? moment(date, 'DD/MM/YYYY').toDate() : '',
+        Gender: gender!,
+        Email: (email || '').trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventFirebaseAttributes['Referral_Code'] = referral;
+      }
+
+      postFirebaseEvent(FirebaseEventName.REGISTRATION_DONE, eventFirebaseAttributes);
+      setSignupEventFired(true);
     } catch (error) {
       console.log({ error });
     }
@@ -789,7 +755,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  _postFirebaseEvent(),
                   handleOpenURL())
                 : null}
               {error

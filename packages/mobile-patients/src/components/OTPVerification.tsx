@@ -8,7 +8,7 @@ import {
   OkTextDisabled,
   Loader,
   ArrowDisabled,
-  ArrowYellow
+  ArrowYellow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_FAILURE_TEXT,
     ...theme.fonts.IBMPlexSansMedium(12),
     paddingBottom: 3,
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   bottomDescription: {
     lineHeight: 24,
@@ -756,7 +756,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       <View
         style={{
           marginTop: 12,
-          marginHorizontal: 16
+          marginHorizontal: 16,
         }}
       >
         <Hyperlink
@@ -830,15 +830,18 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const banner_image = require('@aph/mobile-patients/src/images/onboard/onboard_banner.png');
   const banner = () => {
     return (
-      <ImageBackground source={banner_image} style={{ height: 105, marginTop: 20, marginHorizontal: 10 }}>
+      <ImageBackground
+        source={banner_image}
+        style={{ height: 105, marginTop: 20, marginHorizontal: 10 }}
+      >
         <View style={{ padding: 16 }}>
           <Text style={styles.bannerTitle}>Specially for you :)</Text>
           <Text style={styles.bannerDescription}>
             Use coupon code
-              <Text style={styles.bannerWelcome}> ‘WELCOME’ </Text>
+            <Text style={styles.bannerWelcome}> ‘WELCOME’ </Text>
             {'\nfor'} <Text style={styles.bannerBoldText}> Rs. 999 </Text>off on your 1st doctor
-    {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% </Text>off on medicines
-            </Text>
+            {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% </Text>off on medicines
+          </Text>
         </View>
       </ImageBackground>
     );
@@ -856,7 +859,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   // };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   const { phoneNumber } = props.navigation.state.params!;
-  let descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`
+  let descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>

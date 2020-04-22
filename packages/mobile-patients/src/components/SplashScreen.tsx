@@ -138,18 +138,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const data = route.split('?');
       route = data[0];
 
-      console.log(data, 'data');
+      // console.log(data, 'data');
 
-      // const id = data[1];
+      let id = data[1].split('&');
+      try {
+        if (id.length > 0) {
+          id = id[0];
+        }
+      } catch (error) {}
+      console.log(id, 'id');
 
       switch (route) {
         case 'Consult':
           console.log('Consult');
-          getData('Consult', data.length === 2 ? data[1] : undefined);
+          getData('Consult', data.length === 2 ? id : undefined);
           break;
         case 'Medicine':
           console.log('Medicine');
-          getData('Medicine', data.length === 2 ? data[1] : undefined);
+          getData('Medicine', data.length === 2 ? id : undefined);
           break;
         case 'Test':
           console.log('Test');
@@ -157,11 +163,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
         case 'Speciality':
           console.log('Speciality handleopen');
-          if (data.length === 2) getData('Speciality', data[1]);
+          if (data.length === 2) getData('Speciality', id);
           break;
         case 'Doctor':
           console.log('Doctor handleopen');
-          if (data.length === 2) getData('Doctor', data[1]);
+          if (data.length === 2) getData('Doctor', id);
           break;
         case 'DoctorSearch':
           console.log('DoctorSearch handleopen');
@@ -170,11 +176,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
         case 'MedicineSearch':
           console.log('MedicineSearch handleopen');
-          getData('MedicineSearch', data.length === 2 ? data[1] : undefined);
+          getData('MedicineSearch', data.length === 2 ? id : undefined);
           break;
         case 'MedicineDetail':
           console.log('MedicineDetail handleopen');
-          getData('MedicineDetail', data.length === 2 ? data[1] : undefined);
+          getData('MedicineDetail', data.length === 2 ? id : undefined);
           break;
 
         default:
@@ -187,7 +193,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const getData = (routeName: String, id?: String, timeout?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
-      const onboarding = await AsyncStorage.getItem('onboarding');
+      // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
       const multiSignUp = await AsyncStorage.getItem('multiSignUp');
@@ -264,7 +270,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 props.navigation.replace(AppRoutes.Login);
               }
             }
-          } else if (onboarding == 'true') {
+          }
+          // else if (onboarding == 'true') {
+          //   setshowSpinner(false);
+
+          //   if (signUp == 'true') {
+          //     props.navigation.replace(AppRoutes.SignUp);
+          //   } else if (multiSignUp == 'true') {
+          //     if (mePatient) {
+          //       props.navigation.replace(AppRoutes.MultiSignup);
+          //     }
+          //   } else {
+          //     props.navigation.replace(AppRoutes.Login);
+          //   }
+          // }
+          else {
             setshowSpinner(false);
 
             if (signUp == 'true') {
@@ -276,9 +296,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
-          } else {
-            setshowSpinner(false);
-            props.navigation.replace(AppRoutes.Onboarding);
           }
           SplashScreenView.hide();
         },
