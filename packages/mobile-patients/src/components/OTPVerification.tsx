@@ -855,8 +855,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   //   }`;
   // };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
-  // const { phoneNumber } = props.navigation.state.params!;
-  let descriptionPhoneText = `Now enter the OTP sent to +91  for authentication`
+  const { phoneNumber } = props.navigation.state.params!;
+  let descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
