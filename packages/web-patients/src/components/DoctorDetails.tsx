@@ -1,7 +1,7 @@
 import { Theme, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'hooks/routerHooks';
 import { DoctorProfile } from 'components/DoctorProfile';
 import { DoctorClinics } from 'components/DoctorClinics';
@@ -10,7 +10,7 @@ import { AppointmentHistory } from 'components/AppointmentHistory';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
@@ -31,6 +31,7 @@ import { AphButton } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
 
 type Params = { id: string };
 
@@ -230,22 +231,37 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const apolloClient = useApolloClient();
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const currentUserId = currentPatient && currentPatient.id;
 
-  const { data, loading, error } = useQuery<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
-    GET_DOCTOR_DETAILS_BY_ID,
-    {
-      variables: { id: doctorId },
-    }
-  );
+  // const { data, loading, error } = useQuery<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
+  //   GET_DOCTOR_DETAILS_BY_ID,
+  //   {
+  //     variables: { id: doctorId },
+  //   }
+  // );
+  useEffect(() => {
+    setLoading(true);
+    apolloClient
+      .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
+        query: GET_DOCTOR_DETAILS_BY_ID,
+        variables: { id: doctorId }
+      })
+      .then((response) => {
+        setData(response.data);
+        setLoading(false);
+      });
+  }, []);
 
   if (loading) {
     return <LinearProgress className={classes.loader} />;
   }
-  if (error) {
-    return <div>Error....</div>;
-  }
+  // if (error) {
+  //   return <div>Error....</div>;
+  // }
 
   const availableForPhysicalConsultation = true,
     availableForVirtualConsultation = true;
@@ -412,6 +428,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             )}
           </Paper>
         </Modal>
+        <ManageProfile />
       </div>
     );
   } else {
