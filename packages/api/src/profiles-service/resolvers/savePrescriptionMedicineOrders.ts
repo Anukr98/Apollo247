@@ -15,7 +15,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
-import { PharmaResponse } from 'types/medicineOrderTypes';
+import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
@@ -197,12 +197,14 @@ const SavePrescriptionMedicineOrder: Resolver<
       Zipcode: deliveryZipcode,
     };
 
-    const orderPrescriptionUrl: any[] = [];
+    const orderPrescriptionUrl: PrescriptionUrl[] = [];
     const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
-    let count: number = 1;
     if (prescriptionImages.length > 0) {
       prescriptionImages.map((imageUrl) => {
-        orderPrescriptionUrl.push(` Link to prescription ${count++}: ${imageUrl} `);
+        const url = {
+          url: imageUrl,
+        };
+        orderPrescriptionUrl.push(url);
       });
     }
     let selShopId = ApiConstants.PHARMA_DEFAULT_SHOPID.toString();
