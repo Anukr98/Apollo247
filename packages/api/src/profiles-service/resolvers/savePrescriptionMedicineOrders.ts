@@ -10,6 +10,8 @@ import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MedicineOrdersStatus,
   PHARMA_CART_TYPE,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -26,6 +28,8 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
     quoteId: String
     shopId: String
     patientId: ID!
+    bookingSource: BOOKING_SOURCE
+    deviceType: DEVICE_TYPE
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
     patinetAddressId: ID
     prescriptionImageUrl: String!
@@ -62,6 +66,8 @@ type PrescriptionMedicineInput = {
   quoteId: string;
   shopId: string;
   patientId: string;
+  bookingSource: BOOKING_SOURCE;
+  deviceType: DEVICE_TYPE;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId: string;
   prescriptionImageUrl: string;
@@ -113,6 +119,8 @@ const SavePrescriptionMedicineOrder: Resolver<
     appointmentId: prescriptionMedicineInput.appointmentId,
     prescriptionImageUrl: prescriptionMedicineInput.prescriptionImageUrl,
     prismPrescriptionFileId: prescriptionMedicineInput.prismPrescriptionFileId,
+    bookingSource: prescriptionMedicineInput.bookingSource,
+    deviceType: prescriptionMedicineInput.deviceType,
     estimatedAmount: 0.0,
     devliveryCharges: 0.0,
     patientAddressId: prescriptionMedicineInput.patinetAddressId,
