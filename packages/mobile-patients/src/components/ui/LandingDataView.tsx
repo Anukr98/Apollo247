@@ -97,7 +97,7 @@ export const LandingDataView: React.FC<LandingDataViewProps> = (props) => {
                             <Text
                                 style={[
                                     styles.titleStyle,
-                                    index == landingData.length - 1 ? { marginTop: 20 } : { marginTop: 14 },
+                                    index == landingData.length - 1 ? { marginTop: 20 } : { marginTop: 14, marginBottom: 6 },
                                 ]}
                             >
                                 {item.title}
