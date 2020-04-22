@@ -552,7 +552,12 @@ export const MedicineCart: React.FC = (props) => {
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: null,
+            isMedicine:
+              cartItemDetails.type_id === 'Pharma'
+                ? '1'
+                : cartItemDetails.type_id === 'Fmcg'
+                ? '0'
+                : null,
           };
         })
       : [];
@@ -700,7 +705,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
