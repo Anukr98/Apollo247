@@ -721,6 +721,8 @@ export const MedicineCart: React.FC = (props) => {
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
               shopId: storeAddressId || '0',
               appointmentId: '',
+              bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
+
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
@@ -745,6 +747,7 @@ export const MedicineCart: React.FC = (props) => {
           shopId: storeAddressId || '0',
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
+          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
