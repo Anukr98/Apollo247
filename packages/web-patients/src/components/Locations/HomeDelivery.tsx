@@ -256,9 +256,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const index = addresses.findIndex((address) => address.id === deliveryAddressId);
               const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
               if (cartItems.length > 0) {
+                debugger
                 fetchDeliveryTime(zipCode);
-                props.selectedZipCode(zipCode);
               }
+              props.selectedZipCode(zipCode);
               setSelectedAddressDataIndex(index || 0);
             } else {
               setSelectedAddressDataIndex(0);
