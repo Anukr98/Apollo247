@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
+import { Popover, Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
@@ -39,6 +39,8 @@ import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/Save
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
+import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -468,6 +470,15 @@ export const MedicineCart: React.FC = (props) => {
     ePrescriptionData,
     setEPrescriptionData,
   } = useShoppingCart();
+
+  const addToCartRef = useRef(null);
+  const params = useParams<{
+    orderAutoId: string;
+    orderStatus: string;
+  }>();
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
+    params.orderStatus === 'failed' && params.orderAutoId ? true : false
+  );
 
   const urlParams = new URLSearchParams(window.location.search);
   const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
@@ -1047,6 +1058,29 @@ export const MedicineCart: React.FC = (props) => {
           </AphButton>
         </div>
       </div>
+
+      <Popover
+        open={showOrderPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
+          </div>
+        </div>
+      </Popover>
 
       <AphDialog open={checkoutDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} title={'Close'} />
