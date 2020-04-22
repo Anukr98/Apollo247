@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   inputStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
-    width: '80%',
+    width: '76%',
     color: theme.colors.INPUT_TEXT,
     paddingBottom: 4,
   },
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '85%',
+    width: '82%',
     paddingBottom: 0,
   },
   inputView: {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '85%',
+    width: '82%',
     paddingBottom: 0,
   },
   bottomDescription: {
@@ -395,9 +395,9 @@ export const Login: React.FC<LoginProps> = (props) => {
           description={string.login.please_enter_no}
           buttonIcon={
             phoneNumberIsValid && phoneNumber.replace(/^0+/, '').length === 10 ? (
-              <ArrowYellow size="md" />
+              <ArrowYellow size="md_l" />
             ) : (
-                <ArrowDisabled size="md" />
+                <ArrowDisabled size="md_l" />
               )
           }
           onClickButton={onClickOkay}

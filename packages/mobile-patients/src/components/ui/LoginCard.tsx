@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
     },
     buttonStyle: {
         position: 'absolute',
-        bottom: height <= 568 ? 65 : 50,
-        right: -9,
+        bottom: height <= 568 ? 72 : 56,
+        right: -4,
         height: 64,
         width: 64,
         zIndex: 20

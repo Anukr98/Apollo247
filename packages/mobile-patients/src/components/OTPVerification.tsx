@@ -950,12 +950,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               }}
               heading={string.login.great}
               description={isresent ? string.login.resend_otp_text : descriptionPhoneText}
-              buttonIcon={isValidOTP && otp.length === 6 ? <ArrowYellow size="md" /> : <ArrowDisabled size="md" />}
+              buttonIcon={isValidOTP && otp.length === 6 ? <ArrowYellow size="md_l" /> : <ArrowDisabled size="md_l" />}
               onClickButton={onClickOk}
               buttonStyle={{
                 position: 'absolute',
-                bottom: height <= 568 ? (showErrorMsg ? 93 : 67) : (showErrorMsg ? 78 : 52),
-                right: -5,
+                bottom: height <= 568 ? (showErrorMsg ? 99 : 73) : (showErrorMsg ? 84 : 58),
+                right: -3,
                 height: 64,
                 width: 64,
                 zIndex: 20
@@ -1008,7 +1008,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={showResentTimer ? () => { } : onClickResend}
-                  style={{ width: '50%', paddingHorizontal: 16, paddingTop: 12 }}
+                  style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
                 >
                   <Text
                     style={[

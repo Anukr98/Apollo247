@@ -3,16 +3,17 @@ import { Image, ImageProps } from 'react-native';
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
+  if (size === 'md_l') return { width: 54, height: 54 };
   if (size === 'lg') return { width: 64, height: 64 };
   return { width: 48, height: 48 };
 };
 
 interface IconProps extends Partial<ImageProps> {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'md_l' | 'lg';
 }
 
 export interface IconBaseProps extends ImageProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'md_l' | 'lg';
 }
 
 export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (
