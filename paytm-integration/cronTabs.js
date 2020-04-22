@@ -230,13 +230,13 @@ exports.updateSdSummary = (req, res) => {
   },5000*i)
   }
 }
-  }) .catch((error) => {
-    console.log('error', error);
-  });
 res.send({
   status: 'success',
   message: response.data,
 })
+  }) .catch((error) => {
+    console.log('error', error);
+  });
 }
 exports.updateJdSummary = (req, res) => {
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
@@ -292,13 +292,13 @@ exports.updateJdSummary = (req, res) => {
   },5000*i)
   }
 }
-  }) .catch((error) => {
-    console.log('error', error);
-  });
 res.send({
   status: 'success',
   message: response.data,
 })
+  }) .catch((error) => {
+    console.log('error', error);
+  });
 }
 
 exports.updateDoctorFeeSummary = (req, res) => {
@@ -355,12 +355,12 @@ exports.updateDoctorFeeSummary = (req, res) => {
   },5000*i)
   }
 }
-  }) .catch((error) => {
-    console.log('error', error);
-  });
 res.send({
   status: 'success',
   message: response.data,
 })
+  }) .catch((error) => {
+    console.log('error', error);
+  });
 }
 

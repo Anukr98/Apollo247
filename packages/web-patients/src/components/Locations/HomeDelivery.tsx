@@ -257,8 +257,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
               if (cartItems.length > 0) {
                 fetchDeliveryTime(zipCode);
-                props.selectedZipCode(zipCode);
               }
+              props.selectedZipCode(zipCode);
               setSelectedAddressDataIndex(index || 0);
             } else {
               setSelectedAddressDataIndex(0);
