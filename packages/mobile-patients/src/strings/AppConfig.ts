@@ -180,7 +180,7 @@ const ConfigurationProd = {
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   CONSULT_PG_BASE_URL: 'https://pmt.apollo247.com',
-  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
+  CONSULT_PG_SUCCESS_PATH: '/consultpg-success',
   CONSULT_PG_ERROR_PATH: '/consultpg-error?',
   DIAGNOSTICS_PG_BASE_URL: 'https://pmt.apollo247.com',
   DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',

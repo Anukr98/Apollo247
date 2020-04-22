@@ -742,6 +742,18 @@ export const Scan: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/Scan.png')} />
 );
 
+export const Success: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/Success.png')} />
+);
+
+export const Failure: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/Failure.png')} />
+);
+
+export const Pending: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/Pending.png')} />
+);
+
 export const Diabetes: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_diabetes.png')} />
 );
