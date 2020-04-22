@@ -954,7 +954,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               onClickButton={onClickOk}
               buttonStyle={{
                 position: 'absolute',
-                bottom: height <= 568 ? (showErrorMsg ? 99 : 73) : (showErrorMsg ? 84 : 58),
+                top: Platform.OS === 'ios' ? 156 : 164,
                 right: -3,
                 height: 64,
                 width: 64,
@@ -979,7 +979,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   onChangeText={isOtpValid}
                   keyboardType="numeric"
                   textContentType={'oneTimeCode'}
-                  autoFocus
                   maxLength={6}
                 />
                 {/* <OTPTextView
