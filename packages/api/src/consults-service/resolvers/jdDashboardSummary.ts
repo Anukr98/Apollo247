@@ -181,6 +181,7 @@ const updateJdSummary: Resolver<
         casesOngoing,
         caseSheetNotSatisfactory,
         totalConsultsInQueue,
+        updatedDate: new Date(),
         isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveJdDashboardDetails(dashboardSummaryAttrs);

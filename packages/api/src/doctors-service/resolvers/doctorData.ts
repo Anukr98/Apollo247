@@ -25,9 +25,33 @@ export const doctorDataTypeDefs = gql`
   extend type Query {
     insertData: String
     insertPincodeData: String
+    seniorDoctorCount: Int
+    juniorDoctorCount: Int
   }
 `;
-
+const getRepos = ({ doctorsDb }: DoctorsServiceContext) => ({
+  docRepo: doctorsDb.getCustomRepository(DoctorRepository),
+});
+const seniorDoctorCount: Resolver<
+  null,
+  { docOffset: number; docLimit: number },
+  DoctorsServiceContext,
+  number
+> = async (parent, args, context) => {
+  const { docRepo } = getRepos(context);
+  const seniorCount = await docRepo.getSeniorDoctorCount();
+  return seniorCount;
+};
+const juniorDoctorCount: Resolver<
+  null,
+  { docOffset: number; docLimit: number },
+  DoctorsServiceContext,
+  number
+> = async (parent, args, context) => {
+  const { docRepo } = getRepos(context);
+  const juniorCount = await docRepo.getJuniorDoctorCount();
+  return juniorCount;
+};
 const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   parent,
   args,
@@ -327,5 +351,5 @@ const insertPincodeData: Resolver<null, {}, DoctorsServiceContext, string> = asy
 };
 
 export const doctorDataResolvers = {
-  Query: { insertData, insertPincodeData },
+  Query: { insertData, insertPincodeData, seniorDoctorCount, juniorDoctorCount },
 };

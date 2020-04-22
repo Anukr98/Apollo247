@@ -133,6 +133,7 @@ interface ViewAllAddressProps {
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
   formatAddress: (address: Address) => string;
   checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
+  setDeliveryTime?: (deliveryTime: string) => void;
 }
 
 export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
@@ -202,6 +203,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 .then((res: AxiosResponse) => {
                   if (res && res.data && res.data.Availability) {
                     props.setIsViewAllAddressDialogOpen(false);
+                    props.setDeliveryTime && props.setDeliveryTime('');
                     setDeliveryAddressId && setDeliveryAddressId(localDeliveryAddressId);
                     setStoreAddressId && setStoreAddressId('');
                   } else {

@@ -169,6 +169,7 @@ type AddNewAddressProps = {
   disableActions?: boolean;
   forceRefresh?: (forceRefresh: boolean) => void;
   checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
+  setDeliveryTime?: (deliveryTime: string) => void;
 };
 
 type Address = {
@@ -444,6 +445,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                   .then(() => {
                     props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
+                    props.setDeliveryTime && props.setDeliveryTime('');
                     setDeliveryAddressId && setDeliveryAddressId(addressId);
                   })
                   .catch((error) => {
@@ -473,6 +475,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                             if (res && res.data && res.data.Availability) {
                               props.setIsAddAddressDialogOpen(false);
                               props.forceRefresh && props.forceRefresh(true);
+                              props.setDeliveryTime && props.setDeliveryTime('');
                               setDeliveryAddressId && setDeliveryAddressId(deliveryAddrsId);
                             } else {
                               setMutationLoading(false);

@@ -98,7 +98,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         response.data.data.updatePhrDocSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -125,7 +125,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         response.data.data.getAvailableDoctorsCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -152,7 +152,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         response.data.data.updateConsultRating +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -232,9 +232,15 @@ app.get('/consulttransaction', (req, res) => {
     'appt id:' +
     req.query.ORDERID +
     '\n' +
-    requestJSON +
+    txnId +
+    ' - ' +
+    req.query.STATUS +
+    ' - ' +
+    req.query.RESPCODE +
+    ' - ' +
+    req.query.RESPMSG +
     '\n-------------------\n';
-  fs.appendFile(fileName, content, function (err) {
+  fs.appendFile(fileName, content, function(err) {
     if (err) throw err;
     console.log('Updated!');
   });
@@ -243,7 +249,7 @@ app.get('/consulttransaction', (req, res) => {
     .then((response) => {
       let content = new Date().toString() + '\n---------------------------\nupdate response:';
       response.data.data.makeAppointmentPayment.appointment.id + '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -523,72 +529,133 @@ app.get('/paymed', (req, res) => {
 
 app.post('/paymed-response', (req, res) => {
   const payload = req.body;
-  const token = req.session.token;
+  const token = 'Bearer 3d1833da7020e0602165529446587434';
   const date = new Date(new Date().toUTCString()).toISOString();
-  const reqSource = req.session.source;
+  //const reqSource = req.session.source;
 
   /* make success and failure response */
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
   const responseMessage = payload.RESPMSG;
   const responseCode = payload.RESPCODE;
-
-  /* never execute a transaction if the payment status is failed */
-  if (transactionStatus === 'failed') {
-    if (reqSource === 'web') {
-      const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
-      res.redirect(redirectUrl);
-    } else {
-      res.redirect(
-        `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=${responseMessage}&responseCode=${responseCode}`
-      );
-    }
-  }
-
-  /*save response in apollo24x7*/
+  const fileName = process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaResp.txt';
+  let content =
+    new Date().toString() +
+    '\n---------------------------\n' +
+    'pharma order id:' +
+    payload.ORDERID +
+    '\n' +
+    transactionStatus +
+    ' - ' +
+    responseMessage +
+    ' - ' +
+    responseCode +
+    '\n-------------------\n';
+  fs.appendFile(fileName, content, function(err) {
+    if (err) throw err;
+    console.log('Updated!', payload.ORDERID);
+  });
+  console.log(process.env.API_URL);
   axios.defaults.headers.common['authorization'] = token;
+  axios({
+    url: process.env.API_URL,
+    method: 'post',
+    data: {
+      query: `
+            query {
+              getMedicineOrderDetails(orderAutoId:${payload.ORDERID}) {
+                MedicineOrderDetails {
+                  id
+                  shopId
+                  orderAutoId
+                  devliveryCharges
+                  deliveryType
+                  bookingSource
+                  currentStatus
+                }
+              }
+            }
+          `,
+    },
+  }).then(async (response) => {
+    console.log(response, response.data.errors, 'response');
+    if (
+      response &&
+      response.data &&
+      response.data.data &&
+      response.data.data.getMedicineOrderDetails &&
+      response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+    ) {
+      console.log(
+        response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
+        '======order details======='
+      );
+      const bookingsourcefromDb =
+        response.data.data.getMedicineOrderDetails.MedicineOrderDetails.bookingSource;
 
-  // this needs to be altered later.
-  const requestJSON = {
-    query:
-      'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
-      payload.ORDERID +
-      ', paymentType: CASHLESS, amountPaid: ' +
-      payload.TXNAMOUNT +
-      ', paymentRefId: "' +
-      payload.TXNID +
-      '", paymentStatus: "' +
-      payload.STATUS +
-      '", paymentDateTime: "' +
-      date +
-      '", responseCode: "' +
-      payload.RESPCODE +
-      '", responseMessage: "' +
-      payload.RESPMSG +
-      '", bankTxnId: "' +
-      payload.BANKTXNID +
-      '" }){ errorCode, errorMessage,orderStatus }}',
-  };
+      let bookingSource = 'mobile';
+      if (bookingsourcefromDb) {
+        bookingSource = bookingsourcefromDb;
+      }
+      if (transactionStatus === 'failed') {
+        /* never execute a transaction if the payment status is failed */
+        if (bookingSource === 'WEB') {
+          const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
+          res.redirect(redirectUrl);
+        } else {
+          res.redirect(
+            `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=${responseMessage}&responseCode=${responseCode}`
+          );
+        }
+      }
 
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      console.log(response, 'response is....');
-      if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
-        res.redirect(redirectUrl);
-      } else {
-        res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
-      }
-    })
-    .catch((error) => {
-      console.log('error', error);
-      if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}/${req.session.orderAutoId}/${transactionStatus}`;
-        res.redirect(redirectUrl);
-      } else {
-        res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
-      }
-    });
+      /*save response in apollo24x7*/
+      axios.defaults.headers.common['authorization'] = token;
+
+      // this needs to be altered later.
+      const requestJSON = {
+        query:
+          'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
+          payload.ORDERID +
+          ', paymentType: CASHLESS, amountPaid: ' +
+          payload.TXNAMOUNT +
+          ', paymentRefId: "' +
+          payload.TXNID +
+          '", paymentStatus: "' +
+          payload.STATUS +
+          '", paymentDateTime: "' +
+          date +
+          '", responseCode: "' +
+          payload.RESPCODE +
+          '", responseMessage: "' +
+          payload.RESPMSG +
+          '", bankTxnId: "' +
+          payload.BANKTXNID +
+          '" }){ errorCode, errorMessage,orderStatus }}',
+      };
+
+      /// write medicineoirder
+      axios
+        .post(process.env.API_URL, requestJSON)
+        .then((response) => {
+          console.log(response, 'response is....');
+          if (bookingSource === 'WEB') {
+            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            res.redirect(redirectUrl);
+          } else {
+            res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
+          }
+        })
+        .catch((error) => {
+          console.log('error', error);
+          if (bookingSource === 'WEB') {
+            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+            res.redirect(redirectUrl);
+          } else {
+            res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
+          }
+        });
+    }
+  });
 });
 
 app.get('/mob', (req, res) => {
@@ -700,7 +767,10 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto.createHash('sha512').update(code).digest('hex');
+          const hash = crypto
+            .createHash('sha512')
+            .update(code)
+            .digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -946,6 +1016,7 @@ app.get('/processOrders', (req, res) => {
                     mou
                     price
                     quantity        
+                    isMedicine
                   }
                   medicineOrderPayments{
                     id
@@ -997,6 +1068,9 @@ app.get('/processOrders', (req, res) => {
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails.pharmaRequest;
                 const orderLineItems = [];
                 const orderPrescriptionUrl = [];
+                let fmcgCount = 0,
+                  pharmaCount = 0;
+                let orderType = 'FMCG';
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.medicineOrderLineItems.map(
                   (item) => {
                     const lineItem = {
@@ -1008,10 +1082,17 @@ app.get('/processOrders', (req, res) => {
                       Price: item.price,
                       Status: true,
                     };
+                    console.log(item.isMedicine, item.medicineSKU, 'is medicine');
+                    if (item.isMedicine == '0') fmcgCount++;
+                    else pharmaCount++;
                     orderLineItems.push(lineItem);
                   }
                 );
-
+                console.log(fmcgCount, pharmaCount, 'count of types');
+                if (fmcgCount > 0 && pharmaCount > 0) orderType = 'Both';
+                else if (fmcgCount > 0 && pharmaCount == 0) orderType = 'FMCG';
+                else orderType = 'Pharma';
+                console.log('final order type', orderType);
                 //logic to add delivery charges line item starts here
                 const orderDetails =
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
@@ -1027,20 +1108,19 @@ app.get('/processOrders', (req, res) => {
                 //logic to add delivery charges line item ends here
 
                 let prescriptionImages = [];
-                let orderType = 'FMCG';
-                if (
-                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                    .prescriptionImageUrl != '' &&
-                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                    .prescriptionImageUrl != null
-                ) {
-                  prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
-                    ','
-                  );
-                  orderType = 'Pharma';
-                }
+
+                // if (
+                //   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                //     .prescriptionImageUrl != '' &&
+                //   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                //     .prescriptionImageUrl != null
+                // ) {
+                //   prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
+                //     ','
+                //   );
+                //   orderType = 'Pharma';
+                // }
                 if (prescriptionImages.length > 0) {
-                  orderType = 'Pharma';
                   prescriptionImages.map((imageUrl) => {
                     const url = {
                       url: imageUrl,
@@ -1130,7 +1210,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -1145,7 +1225,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function (err) {
+                    fs.appendFile(fileName, content, function(err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1522,7 +1602,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function (err) {
+          fs.appendFile(fileName, content, function(err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1537,7 +1617,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function (err) {
+              fs.appendFile(fileName, content, function(err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

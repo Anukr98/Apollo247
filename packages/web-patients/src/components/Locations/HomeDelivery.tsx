@@ -204,6 +204,7 @@ const apiDetails = {
 type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
+  selectedZipCode: (zipCode: string) => void;
 };
 
 export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
@@ -252,12 +253,13 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           const addresses = _data.data.getPatientAddressList.addressList.reverse();
           if (addresses && addresses.length > 0) {
             if (deliveryAddressId) {
+              const index = addresses.findIndex((address) => address.id === deliveryAddressId);
+              const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
               if (cartItems.length > 0) {
-                fetchDeliveryTime();
+                fetchDeliveryTime(zipCode);
               }
-              setSelectedAddressDataIndex(
-                addresses.findIndex((address) => address.id === deliveryAddressId) || 0
-              );
+              props.selectedZipCode(zipCode);
+              setSelectedAddressDataIndex(index || 0);
             } else {
               setSelectedAddressDataIndex(0);
             }
@@ -302,10 +304,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     );
   };
 
-  const fetchDeliveryTime = async () => {
+  const fetchDeliveryTime = async (zipCode: string) => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
-    const selectedAddress = deliveryAddresses.find((address) => address.id == deliveryAddressId);
     const lookUp = cartItems.map((item: MedicineCartItem) => {
       return { sku: item.sku, qty: item.quantity };
     });
@@ -314,7 +315,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       .post(
         apiDetails.deliveryUrl || '',
         {
-          postalcode: selectedAddress ? selectedAddress.zipcode : '',
+          postalcode: zipCode || '',
           ordertype: 'pharma',
           lookup: lookUp,
         },
@@ -383,12 +384,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         <ul>
           {deliveryAddresses.map(
             (address, idx) =>
-              // (idx ===
-              //   (selectedAddressDataIndex === deliveryAddresses.length - 1
-              //     ? selectedAddressDataIndex - 1
-              //     : selectedAddressDataIndex + 1) ||
               idx === selectedAddressDataIndex && (
-                <li>
+                <li key={idx}>
                   <FormControlLabel
                     checked={address.id === deliveryAddressId}
                     className={classes.radioLabel}
@@ -447,15 +444,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
       <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>
-          {/* <div className={classes.backArrow}>
-            <img src={require('images/ic_back.svg')} alt="" />
-          </div> */}
-          Add New Address
-        </AphDialogTitle>
+        <AphDialogTitle>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
           checkServiceAvailability={checkServiceAvailability}
+          setDeliveryTime={setDeliveryTime}
         />
       </AphDialog>
 
@@ -466,6 +459,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           setIsViewAllAddressDialogOpen={setIsViewAllAddressDialogOpen}
           formatAddress={formatAddress}
           checkServiceAvailability={checkServiceAvailability}
+          setDeliveryTime={setDeliveryTime}
         />
       </AphDialog>
       <Popover

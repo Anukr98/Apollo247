@@ -3,6 +3,9 @@ const Constants = require('./Constants');
 const fs = require('fs');
 const format = require('date-fns/format');
 
+
+
+
 exports.autoSubmitJDCasesheet = (req, res) => {
   const requestJSON = {
     query: Constants.AUTO_SUBMIT_JD_CASESHEET,
@@ -174,14 +177,32 @@ exports.PhysicalApptReminder = (req, res) => {
     });
 };
 exports.updateSdSummary = (req, res) => {
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  const docCountQuery =Constants.DOCTOR_COUNT_SENIOR
+  const seniorDataRequestJSON = {
+    query: docCountQuery,
+  };
+  axios
+  .post(process.env.API_URL,seniorDataRequestJSON)
+  .then((response)=>{
+    let docCount = response.data.data;
+    let finalResult = docCount.seniorDoctorCount
+    const doctorLimit = req.query.docLimit;
+  const docLimit = doctorLimit;
+  let totalSets =(parseInt)(finalResult/docLimit)+(finalResult % docLimit >0 ? 1:0)
+  let i;
   const currentDate = format(new Date(), 'yyyy-MM-dd');
+  for( i=0; i<totalSets; i++){ //loop for 10times
+    const docOffset =i*docLimit;
+    task(i);
+    function task(i){
+      setTimeout(()=>{
   let Query = Constants.UPDATE_SD_SUMMARY.replace('{0}', currentDate);
   (Query = Query.replace('{1}', req.query.docLimit)),
-    (Query = Query.replace('{2}', req.query.docOffset));
+    (Query = Query.replace('{2}', docOffset));
   const updateSdSummaryRequestJSON = {
     query: Query,
   };
-  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
     .post(process.env.API_URL, updateSdSummaryRequestJSON)
     .then((response) => {
@@ -193,28 +214,57 @@ exports.updateSdSummary = (req, res) => {
         '\nupdateSdSummary Response\n' +
         response.data.data.updateSdSummary +
         '\n-------------------\n';
+        console.log(response.data.data)
       fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
+      // res.send({
+      //   status: 'success',
+      //   message: response.data,
+      // });
     })
     .catch((error) => {
       console.log('error', error);
     });
-};
+  },5000*i)
+  }
+}
+res.send({
+  status: 'success',
+  message: response.data,
+})
+  }) .catch((error) => {
+    console.log('error', error);
+  });
+}
 exports.updateJdSummary = (req, res) => {
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  const docCountQuery =Constants.DOCTOR_COUNT_JUNIOR
+  const juniorDataRequestJSON = {
+    query: docCountQuery,
+  };
+  axios
+  .post(process.env.API_URL,juniorDataRequestJSON)
+  .then((response)=>{
+    let docCount = response.data.data;
+    let finalResult = docCount.juniorDoctorCount
+    const doctorLimit = req.query.docLimit;
+  const docLimit = doctorLimit;
+  let totalSets =(parseInt)(finalResult/docLimit)+(finalResult % docLimit >0 ? 1:0)
+  let i;
   const currentDate = format(new Date(), 'yyyy-MM-dd');
+  for( i=0; i<totalSets; i++){ //loop for 10times
+    const docOffset =i*docLimit;
+    task(i);
+    function task(i){
+      setTimeout(()=>{
   let Query = Constants.UPDATE_JD_SUMMARY.replace('{0}', currentDate);
   (Query = Query.replace('{1}', req.query.docLimit)),
-    (Query = Query.replace('{2}', req.query.docOffset));
+    (Query = Query.replace('{2}', docOffset));
   const updateJdSummaryRequestJSON = {
     query: Query,
   };
-  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
     .post(process.env.API_URL, updateJdSummaryRequestJSON)
     .then((response) => {
@@ -226,30 +276,58 @@ exports.updateJdSummary = (req, res) => {
         '\nupdateJdSummary Response\n' +
         response.data.data.updateJdSummary +
         '\n-------------------\n';
+        console.log(response.data.data)
       fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
+      // res.send({
+      //   status: 'success',
+      //   message: response.data,
+      // });
     })
     .catch((error) => {
       console.log('error', error);
     });
-};
+  },5000*i)
+  }
+}
+res.send({
+  status: 'success',
+  message: response.data,
+})
+  }) .catch((error) => {
+    console.log('error', error);
+  });
+}
 
 exports.updateDoctorFeeSummary = (req, res) => {
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  const docCountQuery =Constants.DOCTOR_COUNT_SENIOR
+  const seniorDataRequestJSON = {
+    query: docCountQuery,
+  };
+  axios
+  .post(process.env.API_URL,seniorDataRequestJSON)
+  .then((response)=>{
+    let docCount = response.data.data;
+    let finalResult = docCount.seniorDoctorCount
+    const doctorLimit = req.query.docLimit;
+  const docLimit = doctorLimit;
+  let totalSets =(parseInt)(finalResult/docLimit)+(finalResult % docLimit >0 ? 1:0)
+  let i;
   const currentDate = format(new Date(), 'yyyy-MM-dd');
+  for( i=0; i<totalSets; i++){ //loop for 10times
+    const docOffset =i*docLimit;
+    task(i);
+    function task(i){
+      setTimeout(()=>{
   let Query = Constants.UPDATE_DOCTOR_FEE_SUMMARY.replace('{0}', currentDate);
   (Query = Query.replace('{1}', req.query.docLimit)),
-    (Query = Query.replace('{2}', req.query.docOffset));
+    (Query = Query.replace('{2}', docOffset));
   const updateDoctorFeeSummaryRequestJSON = {
     query: Query,
   };
-  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
-  //updateDoctorFeeSummary api call
   axios
     .post(process.env.API_URL, updateDoctorFeeSummaryRequestJSON)
     .then((response) => {
@@ -261,16 +339,28 @@ exports.updateDoctorFeeSummary = (req, res) => {
         '\nupdateDoctorFeeSummary Response\n' +
         response.data.data.updateDoctorFeeSummary +
         '\n-------------------\n';
+        console.log(response.data.data)
       fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
-      res.send({
-        status: 'success',
-        message: response.data,
-      });
+      // res.send({
+      //   status: 'success',
+      //   message: response.data,
+      // });
     })
     .catch((error) => {
       console.log('error', error);
     });
-};
+  },5000*i)
+  }
+}
+res.send({
+  status: 'success',
+  message: response.data,
+})
+  }) .catch((error) => {
+    console.log('error', error);
+  });
+}
+

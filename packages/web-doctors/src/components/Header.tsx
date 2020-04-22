@@ -17,7 +17,7 @@ import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 import { LoggedInUserType, DOCTOR_ONLINE_STATUS, REQUEST_ROLES } from 'graphql/types/globalTypes';
-import { Offline, Online } from 'react-detect-offline';
+//import { Offline, Online } from 'react-detect-offline';
 import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/profiles';
 import Pubnub from 'pubnub';
 import {
@@ -313,7 +313,7 @@ export const Header: React.FC = (props) => {
   }, []);
   return (
     <header className={classes.header}>
-      <Offline>
+      {/* <Offline>
         <Dialog open={true} style={{ zIndex: 9999 }}>
           <DialogTitle>{''}</DialogTitle>
           <DialogContent>
@@ -322,7 +322,7 @@ export const Header: React.FC = (props) => {
             </DialogContentText>
           </DialogContent>
         </Dialog>
-      </Offline>
+      </Offline> */}
       {!isJuniorDoctor &&
         isSignedIn &&
         getCookieValue() !== 'audiocall' &&

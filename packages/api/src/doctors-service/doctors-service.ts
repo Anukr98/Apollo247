@@ -65,6 +65,11 @@ import {
   doctorFavouriteTestResolvers,
 } from 'doctors-service/resolvers/doctorFavouriteTest';
 
+import {
+  doctorDataElasticTypeDefs,
+  doctorDataElasticResolvers,
+} from 'doctors-service/resolvers/doctorDataElastic';
+
 import { winstonLogger } from 'customWinstonLogger';
 
 (async () => {
@@ -167,6 +172,10 @@ import { winstonLogger } from 'customWinstonLogger';
       {
         typeDefs: doctorFavouriteTestTypeDefs,
         resolvers: doctorFavouriteTestResolvers,
+      },
+      {
+        typeDefs: doctorDataElasticTypeDefs,
+        resolvers: doctorDataElasticResolvers,
       },
     ]),
     plugins: [

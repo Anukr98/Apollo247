@@ -32,6 +32,13 @@ export class PatientRepository extends Repository<Patient> {
       .getMany();
   }
 
+  getDeviceCodeCount(deviceCode: string) {
+    return this.count({
+      where: {
+        deviceCode,
+      },
+    });
+  }
   getPatientDetails(id: string) {
     return this.findOne({
       where: { id, isActive: true },
@@ -753,11 +760,13 @@ export class PatientRepository extends Repository<Patient> {
       ''
     );
     const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
-    this.updateUhid(id, uhidResp.result.toString());
-
-    this.createPrismUser(patientDetails, uhidResp.result.toString());
-
-    return uhidResp.result;
+    let newUhid = '';
+    if (uhidResp.retcode == '0') {
+      this.updateUhid(id, uhidResp.result.toString());
+      this.createPrismUser(patientDetails, uhidResp.result.toString());
+      newUhid = uhidResp.result;
+    }
+    return newUhid;
   }
 
   async createPrismUser(patientData: Patient, uhid: string) {
