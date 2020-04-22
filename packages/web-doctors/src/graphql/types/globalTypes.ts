@@ -118,18 +118,23 @@ export enum MEDICINE_TO_BE_TAKEN {
 }
 
 export enum MEDICINE_UNIT {
+  AS_PRESCRIBED = "AS_PRESCRIBED",
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROPS = "DROPS",
   GEL = "GEL",
+  GM = "GM",
   INJECTION = "INJECTION",
   LOTION = "LOTION",
+  MG = "MG",
   ML = "ML",
   NA = "NA",
   OINTMENT = "OINTMENT",
   OTHERS = "OTHERS",
+  PATCH = "PATCH",
   POWDER = "POWDER",
+  PUFF = "PUFF",
   ROTACAPS = "ROTACAPS",
   SACHET = "SACHET",
   SOAP = "SOAP",
@@ -138,6 +143,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+  UNIT = "UNIT",
 }
 
 export enum REQUEST_ROLES {
