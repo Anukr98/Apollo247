@@ -594,7 +594,6 @@ export interface PrescriptionMedicineInput {
   appointmentId?: string | null;
   isEprescription?: number | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
-  bookingSource?: BOOKINGSOURCE | null;
 }
 
 export interface PrescriptionMedicinePaymentDetails {
