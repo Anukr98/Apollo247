@@ -606,12 +606,17 @@ export const MedicineCart: React.FC = (props) => {
 
   const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
 
-  const placeOrder = (orderId: string, orderAutoId: number, isChennaiCOD: boolean) => {
+  const placeOrder = (
+    orderId: string,
+    orderAutoId: number,
+    isChennaiCOD: boolean,
+    userEmail?: string
+  ) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
       chennaiOrderVariables = {
         CODCity: CODCity.CHENNAI,
-        email: updatedUserEmail,
+        email: userEmail,
       };
     }
 
@@ -756,7 +761,6 @@ export const MedicineCart: React.FC = (props) => {
 
   const submitChennaiCODOrder = (dataObj: submitFormType) => {
     setIsLoading(true);
-    setUpdatedUserEmail(dataObj.userEmail);
     if (!(cartItems && cartItems.length)) {
       onPressSubmit();
       return;
@@ -764,7 +768,7 @@ export const MedicineCart: React.FC = (props) => {
     paymentMutation().then((res) => {
       if (res && res.data && res.data.SaveMedicineOrder) {
         const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
-        placeOrder(orderId, orderAutoId, true);
+        placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
       }
     });
   };
@@ -1114,7 +1118,7 @@ export const MedicineCart: React.FC = (props) => {
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                        placeOrder(orderId, orderAutoId, false);
+                        placeOrder(orderId, orderAutoId, false, '');
                       }
                     }
                   })
