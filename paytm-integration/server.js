@@ -599,7 +599,7 @@ app.post('/paymed-response', (req, res) => {
       if (transactionStatus === 'failed') {
         /* never execute a transaction if the payment status is failed */
         if (bookingSource === 'WEB') {
-          const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
+          const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
           res.redirect(redirectUrl);
         } else {
           res.redirect(
