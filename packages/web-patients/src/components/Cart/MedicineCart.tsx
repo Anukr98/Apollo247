@@ -469,6 +469,7 @@ export const MedicineCart: React.FC = (props) => {
     cartTotal,
     ePrescriptionData,
     setEPrescriptionData,
+    setCartItems,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -635,15 +636,9 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
-          clearCartInfo && clearCartInfo();
-          setTimeout(() => {
-            setCheckoutDialogOpen(false);
-            setIsLoading(false);
-            window.location.href = clientRoutes.medicinesCartInfo(
-              orderAutoId.toString(),
-              'success'
-            );
-          }, 3000);
+          setCheckoutDialogOpen(false);
+          setIsLoading(false);
+          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
       })
       .catch((e) => {
@@ -662,10 +657,7 @@ export const MedicineCart: React.FC = (props) => {
       variables,
     })
       .then(({ data }) => {
-        clearCartInfo && clearCartInfo();
-        setTimeout(() => {
-          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
-        }, 3000);
+        window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
       })
       .catch((e) => {
         console.log({ e });
@@ -1107,7 +1099,6 @@ export const MedicineCart: React.FC = (props) => {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
                       if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                        clearCartInfo && clearCartInfo();
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
