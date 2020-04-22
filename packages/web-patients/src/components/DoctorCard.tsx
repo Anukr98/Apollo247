@@ -22,6 +22,8 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import moment from 'moment';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useAuth } from 'hooks/authHooks';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 // import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorDetails } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 
@@ -139,7 +141,7 @@ interface DoctorCardProps {
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles();
-
+  const { isSignedIn } = useAuth();
   const { doctorDetails, nextAvailability } = props;
   const { currentPatient } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
@@ -238,8 +240,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                  _toLower(doctorDetails.lastName)
-                )}`
+                _toLower(doctorDetails.lastName)
+              )}`
           }
           className={classes.doctorAvatar}
         />
@@ -260,15 +262,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               doctorDetails.fullName
                 ? doctorDetails.fullName
                 : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                    _toLower(doctorDetails.lastName)
-                  )}`
+                  _toLower(doctorDetails.lastName)
+                )}`
             }
           >
             {doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                  _toLower(doctorDetails.lastName)
-                )}`}
+                _toLower(doctorDetails.lastName)
+              )}`}
           </div>
           <div className={classes.doctorType}>
             <span title={'Specialty'}>
@@ -299,57 +301,61 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           </div>
         </div>
       </div>
-      <Mutation<SaveSearch, SaveSearchVariables>
-        mutation={SAVE_PATIENT_SEARCH}
-        variables={{
-          saveSearchInput: {
-            type: SEARCH_TYPE.DOCTOR,
-            typeId: doctorId,
-            patient: currentPatient ? currentPatient.id : '',
-          },
-        }}
-        onCompleted={(data) => {
-          setIsPopoverOpen(true);
-        }}
-        onError={(error) => {
-          console.log(error);
-        }}
-      >
-        {(mutation) => (
-          <div
-            onClick={() => {
-              setPopupLoading(true);
-              mutation()
-                .then(() => {
-                  setPopupLoading(false);
-                })
-                .catch(() => {
-                  setPopupLoading(false);
-                });
+      <ProtectedWithLoginPopup>
+        {({ protectWithLoginPopup }) => (
+          <Mutation<SaveSearch, SaveSearchVariables>
+            mutation={SAVE_PATIENT_SEARCH}
+            variables={{
+              saveSearchInput: {
+                type: SEARCH_TYPE.DOCTOR,
+                typeId: doctorId,
+                patient: currentPatient ? currentPatient.id : '',
+              },
             }}
-            className={classes.bottomAction}
+            onCompleted={(data) => {
+              setIsPopoverOpen(true);
+            }}
+            onError={(error) => {
+              console.log(error);
+            }}
           >
-            <AphButton
-              fullWidth
-              color="primary"
-              className={classes.button}
-              title={
-                getDiffInMinutes() > 0 && getDiffInMinutes() <= 60
-                  ? 'Consult now'
-                  : 'Book appointments'
-              }
-            >
-              {popupLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
-                'CONSULT NOW'
-              ) : (
-                'BOOK APPOINTMENT'
-              )}
-            </AphButton>
-          </div>
+            {(mutation) => (
+              <div
+                onClick={() => {
+                  !isSignedIn ? protectWithLoginPopup() : setPopupLoading(true);
+                  mutation()
+                    .then(() => {
+                      setPopupLoading(false);
+                    })
+                    .catch(() => {
+                      setPopupLoading(false);
+                    });
+                }}
+                className={classes.bottomAction}
+              >
+                <AphButton
+                  fullWidth
+                  color="primary"
+                  className={classes.button}
+                  title={
+                    getDiffInMinutes() > 0 && getDiffInMinutes() <= 60
+                      ? 'Consult now'
+                      : 'Book appointments'
+                  }
+                >
+                  {popupLoading ? (
+                    <CircularProgress size={22} color="secondary" />
+                  ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
+                    'CONSULT NOW'
+                  ) : (
+                        'BOOK APPOINTMENT'
+                      )}
+                </AphButton>
+              </div>
+            )}
+          </Mutation>
         )}
-      </Mutation>
+      </ProtectedWithLoginPopup>
       <Modal
         open={isPopoverOpen}
         onClose={() => setIsPopoverOpen(false)}

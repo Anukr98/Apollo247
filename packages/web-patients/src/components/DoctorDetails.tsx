@@ -29,6 +29,8 @@ import { LocationProvider } from 'components/LocationProvider';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useAuth } from 'hooks/authHooks';
 
 type Params = { id: string };
 
@@ -218,6 +220,7 @@ const TabContainer: React.FC = (props) => {
 };
 
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+  const { isSignedIn } = useAuth();
   const classes = useStyles({});
   const params = useParams<Params>();
   const doctorId = params.id;
@@ -252,15 +255,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
         ? true
         : false;
 
     const isPayrollDoctor =
       doctorDetails &&
-      doctorDetails.getDoctorDetailsById &&
-      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
+        doctorDetails.getDoctorDetailsById &&
+        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
         ? true
         : false;
 
@@ -290,8 +293,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 240px)'
                   : isSmallScreen
-                  ? 'auto'
-                  : 'calc(100vh - 154px)'
+                    ? 'auto'
+                    : 'calc(100vh - 154px)'
               }
             >
               <div className={classes.doctorProfileSection}>
@@ -300,38 +303,50 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   avaPhy={availableForPhysicalConsultation}
                   avaOnline={availableForVirtualConsultation}
                 />
-                <div className={classes.searchSection}>
-                  <AphButton
-                    onClick={(e) => setIsPopoverOpen(true)}
-                    color="primary"
-                    className={classes.bookAppointment}
-                    title={' Book Appointment'}
-                  >
-                    Book Appointment
+                <ProtectedWithLoginPopup>
+                  {({ protectWithLoginPopup }) => (
+                    <div className={classes.searchSection}>
+                      <AphButton
+                        onClick={(e) => {
+                          !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true)
+                        }}
+                        color="primary"
+                        className={classes.bookAppointment}
+                        title={' Book Appointment'}
+                      >
+                        Book Appointment
                   </AphButton>
-                  <div className={classes.customScroll}>
-                    {!isPayrollDoctor && (
-                      <>
-                        <DoctorClinics doctorDetails={doctorDetails} />
-                        <StarDoctorTeam doctorDetails={doctorDetails} />
-                      </>
-                    )}
-                    <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
-                  </div>
-                </div>
+                      <div className={classes.customScroll}>
+                        {!isPayrollDoctor && (
+                          <>
+                            <DoctorClinics doctorDetails={doctorDetails} />
+                            <StarDoctorTeam doctorDetails={doctorDetails} />
+                          </>
+                        )}
+                        <AppointmentHistory doctorId={doctorId} patientId={currentUserId || ' '} />
+                      </div>
+                    </div>
+                  )}
+                </ProtectedWithLoginPopup>
               </div>
             </Scrollbars>
           </div>
         </div>
-        <div className={classes.flotingBtn}>
-          <AphButton
-            onClick={(e) => setIsPopoverOpen(true)}
-            color="primary"
-            title={' Book Appointment'}
-          >
-            Book Appointment
+        <ProtectedWithLoginPopup>
+          {({ protectWithLoginPopup }) => (
+            <div className={classes.flotingBtn}>
+              <AphButton
+                onClick={(e) => {
+                  !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true)
+                }}
+                color="primary"
+                title={' Book Appointment'}
+              >
+                Book Appointment
           </AphButton>
-        </div>
+            </div>
+          )}
+        </ProtectedWithLoginPopup>
         <Modal
           open={isPopoverOpen}
           onClose={() => setIsPopoverOpen(false)}
