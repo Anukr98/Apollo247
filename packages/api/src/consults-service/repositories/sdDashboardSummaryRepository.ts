@@ -657,6 +657,7 @@ export class CurrentAvailStatusRepository extends Repository<CurrentAvailability
       specialtyName: specialityName,
       totalCount: totalDoc,
       onlineCount: onlineDoc,
+      updatedDate: new Date(),
     };
     const specialityData = await this.findOne({ where: [{ specialityId }] });
     if (specialityData) {
@@ -683,6 +684,7 @@ export class UtilizationCapacityRepository extends Repository<UtilizationCapacit
       specialtyName: specialityName,
       doctorSlots: doctorSlots,
       slotsBooked: bookedSlots,
+      updatedDate: new Date(),
     };
     const Data = await this.findOne({ where: [{ specialityId }] });
     if (Data) {

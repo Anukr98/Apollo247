@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
+import { Popover, Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
@@ -39,6 +39,8 @@ import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/Save
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
+import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -467,7 +469,17 @@ export const MedicineCart: React.FC = (props) => {
     cartTotal,
     ePrescriptionData,
     setEPrescriptionData,
+    setCartItems,
   } = useShoppingCart();
+
+  const addToCartRef = useRef(null);
+  const params = useParams<{
+    orderAutoId: string;
+    orderStatus: string;
+  }>();
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
+    params.orderStatus === 'failed' && params.orderAutoId ? true : false
+  );
 
   const urlParams = new URLSearchParams(window.location.search);
   const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
@@ -624,15 +636,9 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
-          clearCartInfo && clearCartInfo();
-          setTimeout(() => {
-            setCheckoutDialogOpen(false);
-            setIsLoading(false);
-            window.location.href = clientRoutes.medicinesCartInfo(
-              orderAutoId.toString(),
-              'success'
-            );
-          }, 3000);
+          setCheckoutDialogOpen(false);
+          setIsLoading(false);
+          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
       })
       .catch((e) => {
@@ -651,10 +657,7 @@ export const MedicineCart: React.FC = (props) => {
       variables,
     })
       .then(({ data }) => {
-        clearCartInfo && clearCartInfo();
-        setTimeout(() => {
-          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
-        }, 3000);
+        window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
       })
       .catch((e) => {
         console.log({ e });
@@ -705,7 +708,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -754,6 +757,10 @@ export const MedicineCart: React.FC = (props) => {
   const submitChennaiCODOrder = (dataObj: submitFormType) => {
     setIsLoading(true);
     setUpdatedUserEmail(dataObj.userEmail);
+    if (!(cartItems && cartItems.length)) {
+      onPressSubmit();
+      return;
+    }
     paymentMutation().then((res) => {
       if (res && res.data && res.data.SaveMedicineOrder) {
         const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
@@ -772,6 +779,14 @@ export const MedicineCart: React.FC = (props) => {
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
 
+  const isChennaiZipCode = (zipCodeInt: Number) => {
+    return (
+      (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
+      zipCodeInt === 603103 ||
+      zipCodeInt === 603202 ||
+      zipCodeInt === 603211
+    );
+  };
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -1006,14 +1021,9 @@ export const MedicineCart: React.FC = (props) => {
         <div className={classes.checkoutBtn}>
           <AphButton
             onClick={() => {
+              const zipCodeInt = parseInt(selectedZip);
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                const zipCodeInt = parseInt(selectedZip);
-                if (
-                  (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
-                  zipCodeInt === 603103 ||
-                  zipCodeInt === 603202 ||
-                  zipCodeInt === 603211
-                ) {
+                if (isChennaiZipCode(zipCodeInt)) {
                   // redirect to chennai orders form
                   setIsChennaiCheckoutDialogOpen(true);
                   return;
@@ -1024,6 +1034,11 @@ export const MedicineCart: React.FC = (props) => {
                 ((prescriptions && prescriptions.length > 0) ||
                   (ePrescriptionData && ePrescriptionData.length > 0))
               ) {
+                if (isChennaiZipCode(zipCodeInt)) {
+                  // redirect to chennai orders form
+                  setIsChennaiCheckoutDialogOpen(true);
+                  return;
+                }
                 onPressSubmit();
               }
             }}
@@ -1047,6 +1062,29 @@ export const MedicineCart: React.FC = (props) => {
           </AphButton>
         </div>
       </div>
+
+      <Popover
+        open={showOrderPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
+          </div>
+        </div>
+      </Popover>
 
       <AphDialog open={checkoutDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} title={'Close'} />
@@ -1073,7 +1111,6 @@ export const MedicineCart: React.FC = (props) => {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
                       if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                        clearCartInfo && clearCartInfo();
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {

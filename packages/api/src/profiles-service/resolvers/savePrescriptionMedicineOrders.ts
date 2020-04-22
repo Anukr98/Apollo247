@@ -15,7 +15,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
-import { PharmaResponse } from 'types/medicineOrderTypes';
+import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
@@ -149,11 +149,11 @@ const SavePrescriptionMedicineOrder: Resolver<
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
     let deliveryCity = 'Kakinada',
       deliveryZipcode = '500034',
+      deliveryAddress1 = '',
+      deliveryAddress2 = '',
+      Landmark = '',
       deliveryAddress = 'Kakinada',
-      deliveryAddress1 = 'Kakinada',
-      deliveryAddress2 = 'pithapuram',
-      deliveryState = 'Telangana',
-      Landmark = 'SBI Bank';
+      deliveryState = 'Telangana';
     if (saveOrder.patientAddressId != null && saveOrder.patientAddressId != '') {
       const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
       const patientAddressDetails = await patientAddressRepo.findById(saveOrder.patientAddressId);
@@ -161,6 +161,8 @@ const SavePrescriptionMedicineOrder: Resolver<
         throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
       }
 
+      deliveryState = patientAddressDetails.state;
+      Landmark = patientAddressDetails.landmark;
       deliveryAddress1 = patientAddressDetails.addressLine1;
       deliveryAddress2 = patientAddressDetails.addressLine2;
 
@@ -171,17 +173,6 @@ const SavePrescriptionMedicineOrder: Resolver<
       } else {
         deliveryCity = patientAddressDetails.city;
       }
-      if (patientAddressDetails.state == '' || patientAddressDetails == null) {
-        deliveryState = 'Telangana';
-      } else {
-        deliveryState = patientAddressDetails.state;
-      }
-      if (patientAddressDetails.landmark == '' || patientAddressDetails == null) {
-        Landmark = 'SBI Bank';
-      } else {
-        Landmark = patientAddressDetails.landmark;
-      }
-
       if (patientAddressDetails.zipcode == '' || patientAddressDetails.zipcode == null) {
         deliveryZipcode = '500045';
       } else {
@@ -197,12 +188,14 @@ const SavePrescriptionMedicineOrder: Resolver<
       Zipcode: deliveryZipcode,
     };
 
-    const orderPrescriptionUrl: any[] = [];
+    const orderPrescriptionUrl: PrescriptionUrl[] = [];
     const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
-    let count: number = 1;
     if (prescriptionImages.length > 0) {
       prescriptionImages.map((imageUrl) => {
-        orderPrescriptionUrl.push(` Link to prescription ${count++}: ${imageUrl} `);
+        const url = {
+          url: imageUrl,
+        };
+        orderPrescriptionUrl.push(url);
       });
     }
     let selShopId = ApiConstants.PHARMA_DEFAULT_SHOPID.toString();
@@ -317,7 +310,7 @@ const SavePrescriptionMedicineOrder: Resolver<
         const mailContent = medicineSendPrescription({
           patientDetails,
           patientAddressDetails: patientDelivaryDetails,
-          prescriptionImages: orderPrescriptionUrl,
+          prescriptionUrls: prescriptionImages,
         });
         const subjectLine = ApiConstants.UPLOAD_PRESCRIPTION_TITLE;
         const subject =
