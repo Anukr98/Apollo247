@@ -592,7 +592,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.specialty = :specialty', { specialty })
       .andWhere('doctor.isActive = true')
-      .andWhere('doctor.issearchable = true')
+      .andWhere('doctor.isSearchable = true')
       //.andWhere('facility.city IN (:...cities)', { cities })
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
 
