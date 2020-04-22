@@ -708,7 +708,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -757,6 +757,10 @@ export const MedicineCart: React.FC = (props) => {
   const submitChennaiCODOrder = (dataObj: submitFormType) => {
     setIsLoading(true);
     setUpdatedUserEmail(dataObj.userEmail);
+    if (!(cartItems && cartItems.length)) {
+      onPressSubmit();
+      return;
+    }
     paymentMutation().then((res) => {
       if (res && res.data && res.data.SaveMedicineOrder) {
         const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
@@ -775,6 +779,14 @@ export const MedicineCart: React.FC = (props) => {
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
 
+  const isChennaiZipCode = (zipCodeInt: Number) => {
+    return (
+      (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
+      zipCodeInt === 603103 ||
+      zipCodeInt === 603202 ||
+      zipCodeInt === 603211
+    );
+  };
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -1009,14 +1021,9 @@ export const MedicineCart: React.FC = (props) => {
         <div className={classes.checkoutBtn}>
           <AphButton
             onClick={() => {
+              const zipCodeInt = parseInt(selectedZip);
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                const zipCodeInt = parseInt(selectedZip);
-                if (
-                  (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
-                  zipCodeInt === 603103 ||
-                  zipCodeInt === 603202 ||
-                  zipCodeInt === 603211
-                ) {
+                if (isChennaiZipCode(zipCodeInt)) {
                   // redirect to chennai orders form
                   setIsChennaiCheckoutDialogOpen(true);
                   return;
@@ -1027,6 +1034,11 @@ export const MedicineCart: React.FC = (props) => {
                 ((prescriptions && prescriptions.length > 0) ||
                   (ePrescriptionData && ePrescriptionData.length > 0))
               ) {
+                if (isChennaiZipCode(zipCodeInt)) {
+                  // redirect to chennai orders form
+                  setIsChennaiCheckoutDialogOpen(true);
+                  return;
+                }
                 onPressSubmit();
               }
             }}
