@@ -18,7 +18,8 @@ import Scrollbars from 'react-custom-scrollbars';
 import _find from 'lodash/find';
 import { useLocationDetails } from 'components/LocationProvider';
 import moment from 'moment';
-import { useQuery } from 'react-apollo-hooks';
+// import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -233,6 +234,9 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
   const [selectedFilterOption, setSelectedFilterOption] = useState<string>('all');
   const { currentPatient } = useAllCurrentPatients();
   const [tabValue, setTabValue] = useState('All Consults');
+  const apolloClient = useApolloClient();
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const consultOptions = {
     all: 'All Consults',
@@ -301,19 +305,32 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
   };
 
-  const { data, loading, refetch } = useQuery(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
-    variables: { filterInput: apiVairables },
-    fetchPolicy: 'no-cache',
-  });
+  // const { data, loading, refetch } = useQuery(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
+  //   variables: { filterInput: apiVairables },
+  //   fetchPolicy: 'no-cache',
+  // });
+  useEffect(() => {
+    setLoading(true);
+    apolloClient
+      .query({
+        query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
+        variables: { filterInput: apiVairables },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setData(response.data);
+        setLoading(false);
+      });
+  }, [currentLat, currentLong]);
 
   if (loading) disableFilter && disableFilter(true);
   else if (currentPatient && currentPatient.id.length > 0) disableFilter && disableFilter(false);
 
-  useEffect(() => {
-    if (currentLat || currentLong) {
-      refetch();
-    }
-  }, [currentLat, currentLong]);
+  // useEffect(() => {
+  //   if (currentLat || currentLong) {
+  //     refetch();
+  //   }
+  // }, [currentLat, currentLong]);
 
   if (loading)
     <div className={classes.circlularProgress}>
@@ -324,31 +341,31 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   const doctorsNextAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
       : [];
 
   const doctorsAvailability =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
       : [];
 
   const specialistPlural =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.specialty &&
-    data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.specialty &&
+      data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
       ? data.getDoctorsBySpecialtyAndFilters.specialty.specialistPluralTerm
       : '';
 
   const specialitySingular =
     data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.specialty &&
-    data.getDoctorsBySpecialtyAndFilters.specialty.specialistSingularTerm
+      data.getDoctorsBySpecialtyAndFilters &&
+      data.getDoctorsBySpecialtyAndFilters.specialty &&
+      data.getDoctorsBySpecialtyAndFilters.specialty.specialistSingularTerm
       ? data.getDoctorsBySpecialtyAndFilters.specialty.specialistSingularTerm
       : '';
 
@@ -377,13 +394,13 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           <div className={classes.noDataCard}>
             <h2>Uh oh! :(</h2>
             {data &&
-            data.getDoctorsBySpecialtyAndFilters &&
-            data.getDoctorsBySpecialtyAndFilters.doctors &&
-            data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
+              data.getDoctorsBySpecialtyAndFilters &&
+              data.getDoctorsBySpecialtyAndFilters.doctors &&
+              data.getDoctorsBySpecialtyAndFilters.doctors.length > 0
               ? noConsultFoundError
               : tabValue == 'Clinic Visit'
-              ? noDoctorFoundClinicError
-              : noDoctorFoundError}
+                ? noDoctorFoundClinicError
+                : noDoctorFoundError}
           </div>
         </Grid>
       </Grid>
@@ -400,18 +417,18 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
       selectedFilterOption === 'all'
         ? data.getDoctorsBySpecialtyAndFilters.doctors
         : _filter(data.getDoctorsBySpecialtyAndFilters.doctors, (doctors) => {
-            const consultMode =
-              doctors.consultHours &&
+          const consultMode =
+            doctors.consultHours &&
               doctors.consultHours.length > 0 &&
               doctors.consultHours[0] &&
               doctors.consultHours[0].consultMode
-                ? doctors.consultHours[0].consultMode
-                : '';
-            if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
-              return true;
-            }
-            return false;
-          });
+              ? doctors.consultHours[0].consultMode
+              : '';
+          if (consultMode === selectedFilterOption || consultMode === ConsultMode.BOTH) {
+            return true;
+          }
+          return false;
+        });
   }
 
   // console.log(doctorsNextAvailability, doctorsAvailability, 'next availability api....');
@@ -456,8 +473,8 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 345px)'
               : isLargeScreen
-              ? 'calc(100vh - 280px)'
-              : 'calc(100vh - 170px)'
+                ? 'calc(100vh - 280px)'
+                : 'calc(100vh - 170px)'
           }
         >
           <div className={classes.searchList}>
@@ -514,16 +531,16 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           </div>
         </Scrollbars>
       ) : (
-        <>
-          {!loading && data ? (
-            consultErrorMessage()
-          ) : (
-            <div className={classes.circlularProgress}>
-              <CircularProgress />
-            </div>
-          )}
-        </>
-      )}
+          <>
+            {!loading && data ? (
+              consultErrorMessage()
+            ) : (
+                <div className={classes.circlularProgress}>
+                  <CircularProgress />
+                </div>
+              )}
+          </>
+        )}
     </div>
   );
 };
