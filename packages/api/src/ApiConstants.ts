@@ -281,4 +281,5 @@ export enum ApiConstants {
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
   NO_JD_AVAILABLE_TEXT = 'No JD Available',
+  MEDICINE_TIMINGS = '(morning, noon, evening & night)',
 }
