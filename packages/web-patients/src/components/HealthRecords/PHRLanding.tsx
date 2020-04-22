@@ -323,6 +323,10 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     }
   }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
   const patient = useCurrentPatient();
+  const age =
+    patient && patient.dateOfBirth
+      ? moment().diff(patient.dateOfBirth, 'years')
+      : null;
   return (
     <div className={classes.root}>
       <Header />
@@ -334,9 +338,9 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
             onChange={(e, newValue) => {
               setTabValue(newValue);
               if (newValue) {
-                phrMedicalRecordsTabClickTracking(patient)
+                phrMedicalRecordsTabClickTracking({ ...patient, age })
               } else {
-                phrConsultTabClickTracking(patient)
+                phrConsultTabClickTracking({ ...patient, age })
               }
             }}
           >

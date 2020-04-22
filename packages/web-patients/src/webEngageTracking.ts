@@ -1,13 +1,7 @@
 //PHR Consult & RX
 export const phrConsultTabClickTracking = (userData: any) => {
     if (window.webengage) {
-        let { id,
-            mobileNumber,
-            firstName,
-            relation,
-            gender,
-            age,
-            uhid } = userData;
+        let { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
         window.webengage.track("PHR Consult & RX", {
             "Patient Name": firstName,
             "Patient UHID": uhid,
@@ -15,7 +9,7 @@ export const phrConsultTabClickTracking = (userData: any) => {
             "Gender": gender,
             "Mobile Number": mobileNumber,
             "Customer ID": id,
-            //"Age": age
+            "Age": age
         });
     }
 };
@@ -37,7 +31,7 @@ export const phrMedicalRecordsTabClickTracking = (userData: any) => {
             "Gender": gender,
             "Mobile Number": mobileNumber,
             "Customer ID": id,
-            //"Age": age
+            "Age": age
         });
     }
 };
@@ -55,7 +49,7 @@ export const uploadPrescriptionTracking = (data: any) => {
         "Patient Name": firstName,
         "Patient UHID": uhid,
         "Relation": relation,
-        // "Age": age,
+        "Age": age,
         "Gender": gender,
         "Mobile Number": mobileNumber,
         "Customer ID": id
@@ -75,30 +69,6 @@ export const itemsClickedTracking = (data: any) => {
         Type: type //Prescription/Test Result
     })
 }
-//PHR Order Meds & Tests
-export const phrOrderMedsAndTestsTracking = (data: any) => {
-    if (window.webenage) {
-        let { id,
-            mobileNumber,
-            firstName,
-            relation,
-            gender,
-            uhid,
-            age,
-            consultId } = data;
-        window.webengage.track("PHR Order Meds & Tests", {
-            "Patient Name": firstName,
-            "Patient UHID": uhid,
-            "Relation": relation,
-            "Gender": gender,
-            "Mobile Number": mobileNumber,
-            "Customer ID": id,
-            //Age: age,
-            "Consult ID": consultId
-        });
-    }
-
-}
 //PHR Consult Card click 
 export const phrConsultCardClickTracking = (data: any) => {
     if (window.webenage) {
@@ -115,7 +85,7 @@ export const phrConsultCardClickTracking = (data: any) => {
             "Patient UHID": uhid,
             "Relation": relation,
             "Gender": gender,
-            //Age: age,
+            Age: age,
             "Mobile Number": mobileNumber,
             "Customer ID": id,
             "Consult ID": consultId

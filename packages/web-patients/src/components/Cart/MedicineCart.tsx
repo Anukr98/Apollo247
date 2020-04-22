@@ -739,9 +739,14 @@ export const MedicineCart: React.FC = (props) => {
     false;
 
   const patient = useCurrentPatient()
+  
+  const age =
+    patient && patient.dateOfBirth
+      ? moment().diff(patient.dateOfBirth, 'years')
+      : null;
 
   const handleUploadPrescription = () => {
-    uploadPrescriptionTracking(patient)
+    uploadPrescriptionTracking({ ...patient, age })
     setIsUploadPreDialogOpen(true)
   }
 

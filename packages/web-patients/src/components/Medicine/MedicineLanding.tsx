@@ -21,6 +21,7 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import { uploadPrescriptionTracking } from "../../webEngageTracking";
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -400,9 +401,13 @@ export const MedicineLanding: React.FC = (props) => {
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
   const patient = useCurrentPatient()
+  const age =
+    patient && patient.dateOfBirth
+      ? moment().diff(patient.dateOfBirth, 'years')
+      : null;
 
   const handleUploadPrescription = () => {
-    uploadPrescriptionTracking(patient)
+    uploadPrescriptionTracking({ ...patient, age })
     setIsUploadPreDialogOpen(true)
   }
 

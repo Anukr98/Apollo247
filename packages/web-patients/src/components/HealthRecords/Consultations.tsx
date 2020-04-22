@@ -18,6 +18,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { phrConsultCardClickTracking } from '../../webEngageTracking'
+import { useCurrentPatient } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -353,10 +355,10 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
   const showDate = (date: string) => {
     return moment(new Date()).format('DD/MM/YYYY') ===
       moment(new Date(date)).format('DD/MM/YYYY') ? (
-      <span>Today , {moment(new Date(date)).format('DD MMM YYYY')}</span>
-    ) : (
-      <span>{moment(new Date(date)).format('DD MMM YYYY')}</span>
-    );
+        <span>Today , {moment(new Date(date)).format('DD MMM YYYY')}</span>
+      ) : (
+        <span>{moment(new Date(date)).format('DD MMM YYYY')}</span>
+      );
   };
   const currentPath = window.location.pathname;
 
@@ -375,7 +377,11 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
     }
     a.click();
   };
-
+  const patient = useCurrentPatient();
+  const age =
+    patient && patient.dateOfBirth
+      ? moment().diff(patient.dateOfBirth, 'years')
+      : null;
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -414,8 +420,8 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 364px)'
               : isSmallScreen
-              ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 280px)'
+                ? 'calc(100vh - 230px)'
+                : 'calc(100vh - 280px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -427,6 +433,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                     <div
                       className={classes.consultGroup}
                       onClick={() => {
+                        phrConsultCardClickTracking({ ...patient, age, consultId: consult.id })
                         setActiveConsult(consult);
                         if (isSmallScreen) {
                           setShowMobileDetails(true);
@@ -467,7 +474,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-        }`}
+          }`}
       >
         {consultsData && consultsData.length > 0 ? (
           <>
@@ -500,47 +507,47 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                  ? 'calc(100vh - 96px)'
-                  : 'calc(100vh - 250px)'
+                    ? 'calc(100vh - 96px)'
+                    : 'calc(100vh - 250px)'
               }
             >
               <div className={classes.consultationDetails}>
                 {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
-                (isSmallScreen && showMobileDetails && activeConsult) ? (
-                  <>
-                    <Symptoms caseSheetList={activeConsult.caseSheet} />
-                    <Prescription caseSheetList={activeConsult.caseSheet} />
-                    <PrescribedTests caseSheetList={activeConsult.caseSheet} />
-                    <Diagnosis caseSheetList={activeConsult.caseSheet} />
-                    <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
-                    <FollowUp caseSheetList={activeConsult.caseSheet} />
-                    {/* <PaymentInvoice />
+                  (isSmallScreen && showMobileDetails && activeConsult) ? (
+                    <>
+                      <Symptoms caseSheetList={activeConsult.caseSheet} />
+                      <Prescription caseSheetList={activeConsult.caseSheet} />
+                      <PrescribedTests caseSheetList={activeConsult.caseSheet} />
+                      <Diagnosis caseSheetList={activeConsult.caseSheet} />
+                      <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
+                      <FollowUp caseSheetList={activeConsult.caseSheet} />
+                      {/* <PaymentInvoice />
                 <PrescriptionPreview /> */}
-                  </>
-                ) : (
-                  activeConsult &&
-                  activeConsult.prescriptionImageUrl && (
-                    <div className={classes.prescriptionImage}>
-                      {activeConsult.prescriptionImageUrl.includes('.pdf') ? (
-                        <a href={activeConsult.prescriptionImageUrl}>Download File</a>
-                      ) : (
-                        <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
-                      )}
-                    </div>
-                  )
-                )}
+                    </>
+                  ) : (
+                    activeConsult &&
+                    activeConsult.prescriptionImageUrl && (
+                      <div className={classes.prescriptionImage}>
+                        {activeConsult.prescriptionImageUrl.includes('.pdf') ? (
+                          <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                        ) : (
+                            <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
+                          )}
+                      </div>
+                    )
+                  )}
               </div>
             </Scrollbars>
           </>
         ) : (
-          <div className={classes.noRecordFoundWrapper}>
-            <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy in
+                one place!
             </p>
-          </div>
-        )}
+            </div>
+          )}
       </div>
     </div>
   );
