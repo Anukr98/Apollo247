@@ -11593,6 +11593,12 @@
         "interfaces": null,
         "enumValues": [
           {
+            "name": "AS_PRESCRIBED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "BOTTLE",
             "description": null,
             "isDeprecated": false,
@@ -11623,6 +11629,12 @@
             "deprecationReason": null
           },
           {
+            "name": "GM",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "INJECTION",
             "description": null,
             "isDeprecated": false,
@@ -11636,6 +11648,12 @@
           },
           {
             "name": "ML",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "MG",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11659,7 +11677,19 @@
             "deprecationReason": null
           },
           {
+            "name": "PATCH",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "POWDER",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PUFF",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11708,6 +11738,12 @@
           },
           {
             "name": "TABLET",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "UNIT",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -23668,6 +23704,36 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "email",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "NonCartOrderCity",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "NonCartOrderCity",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "orderAutoId",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -23733,6 +23799,23 @@
         ],
         "interfaces": null,
         "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "NonCartOrderCity",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "CHENNAI",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
         "possibleTypes": null
       },
       {
