@@ -181,7 +181,6 @@ export const Header: React.FC = (props) => {
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
   const isMobileView = screen.width <= 768;
-
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
@@ -191,7 +190,7 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          <LocationSearch />
+          {currentPath !== '/' && <LocationSearch />}
           <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             {isSignedIn ? (
