@@ -129,13 +129,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   bannerWelcome: {
-    ...theme.fonts.IBMPlexSansSemiBold(12),
+    ...theme.fonts.IBMPlexSansSemiBold(13),
     lineHeight: 15,
     color: '#fcb717',
   },
   bannerBoldText: {
-    ...theme.fonts.IBMPlexSansSemiBold(12),
+    ...theme.fonts.IBMPlexSansSemiBold(13),
     color: theme.colors.WHITE,
+    lineHeight: 15,
   },
 });
 
@@ -151,7 +152,7 @@ export interface OTPVerificationProps
     otpString: string;
     phoneNumber: string;
     loginId: string;
-  }> { }
+  }> {}
 
 export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
@@ -701,7 +702,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           CommonBugFender('OTPVerification_getNetStatus', e);
           setBugFenderLog('OTPVerification_getNetStatus', e);
         });
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const openWebView = () => {
@@ -837,10 +838,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         <View style={{ padding: 16 }}>
           <Text style={styles.bannerTitle}>Specially for you :)</Text>
           <Text style={styles.bannerDescription}>
-            Use coupon code
-            <Text style={styles.bannerWelcome}> ‘WELCOME’ </Text>
-            {'\nfor'} <Text style={styles.bannerBoldText}> Rs. 999 </Text>off on your 1st doctor
-            {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% </Text>off on medicines
+            Use coupon code ‘<Text style={styles.bannerWelcome}>WELCOME</Text>
+            {'’ for\n'}
+            <Text style={styles.bannerBoldText}>Rs. 999 off</Text> on your 1st doctor
+            {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% off</Text> on medicines
           </Text>
         </View>
       </ImageBackground>
@@ -859,7 +860,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   // };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   const { phoneNumber } = props.navigation.state.params!;
-  let descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
+  const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -941,50 +942,56 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             {renderHyperLink()}
           </LoginCard>
         ) : (
-            <LoginCard
-              key={2}
-              cardContainer={{
-                marginTop: 0,
-                // height: 260,
-                paddingBottom: 12,
-              }}
-              headingTextStyle={{
-                marginTop: 10,
-              }}
-              heading={string.login.great}
-              description={isresent ? string.login.resend_otp_text : descriptionPhoneText}
-              buttonIcon={isValidOTP && otp.length === 6 ? <ArrowYellow size="md_l" /> : <ArrowDisabled size="md_l" />}
-              onClickButton={onClickOk}
-              buttonStyle={{
-                position: 'absolute',
-                top: Platform.OS === 'ios' ? 156 : 164,
-                right: -3,
-                height: 64,
-                width: 64,
-                zIndex: 20
-              }}
-              disableButton={isValidOTP && otp.length === 6 ? false : true}
-              descriptionTextStyle={{
-                paddingBottom: Platform.OS === 'ios' ? 0 : 1,
-              }}
-            >
-              <View style={styles.inputView}>
-                <TextInput
-                  style={[
-                    styles.codeInputStyle,
-                    {
-                      borderColor: showErrorBottomLine
-                        ? theme.colors.INPUT_BORDER_FAILURE
-                        : theme.colors.INPUT_BORDER_SUCCESS,
-                    },
-                  ]}
-                  value={otp}
-                  onChangeText={isOtpValid}
-                  keyboardType="numeric"
-                  textContentType={'oneTimeCode'}
-                  maxLength={6}
-                />
-                {/* <OTPTextView
+          <LoginCard
+            key={2}
+            cardContainer={{
+              marginTop: 0,
+              // height: 260,
+              paddingBottom: 12,
+            }}
+            headingTextStyle={{
+              marginTop: 10,
+            }}
+            heading={string.login.great}
+            description={isresent ? string.login.resend_otp_text : descriptionPhoneText}
+            buttonIcon={
+              isValidOTP && otp.length === 6 ? (
+                <ArrowYellow size="md_l" />
+              ) : (
+                <ArrowDisabled size="md_l" />
+              )
+            }
+            onClickButton={onClickOk}
+            buttonStyle={{
+              position: 'absolute',
+              top: Platform.OS === 'ios' ? 156 : 164,
+              right: -3,
+              height: 64,
+              width: 64,
+              zIndex: 20,
+            }}
+            disableButton={isValidOTP && otp.length === 6 ? false : true}
+            descriptionTextStyle={{
+              paddingBottom: Platform.OS === 'ios' ? 0 : 1,
+            }}
+          >
+            <View style={styles.inputView}>
+              <TextInput
+                style={[
+                  styles.codeInputStyle,
+                  {
+                    borderColor: showErrorBottomLine
+                      ? theme.colors.INPUT_BORDER_FAILURE
+                      : theme.colors.INPUT_BORDER_SUCCESS,
+                  },
+                ]}
+                value={otp}
+                onChangeText={isOtpValid}
+                keyboardType="numeric"
+                textContentType={'oneTimeCode'}
+                maxLength={6}
+              />
+              {/* <OTPTextView
                 handleTextChange={isOtpValid}
                 inputCount={6}
                 keyboardType="numeric"
@@ -999,46 +1006,46 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                   flex: 1,
                 }}
               /> */}
-              </View>
-              {showErrorMsg && (
-                <Text style={styles.errorText}>
-                  Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
-                  {invalidOtpCount == 2 ? 'try' : 'tries'}.
-                </Text>
-              )}
-              {
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={showResentTimer ? () => { } : onClickResend}
-                  style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
-                >
-                  <Text
-                    style={[
-                      styles.bottomDescription,
-                      showResentTimer
-                        ? {
+            </View>
+            {showErrorMsg && (
+              <Text style={styles.errorText}>
+                Incorrect OTP. You have {3 - invalidOtpCount} more{' '}
+                {invalidOtpCount == 2 ? 'try' : 'tries'}.
+              </Text>
+            )}
+            {
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={showResentTimer ? () => {} : onClickResend}
+                style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
+              >
+                <Text
+                  style={[
+                    styles.bottomDescription,
+                    showResentTimer
+                      ? {
                           opacity: 0.5,
                         }
-                        : {},
-                    ]}
-                  >
-                    {string.login.resend_opt}
-                    {showResentTimer && ' '}
-                    {showResentTimer && (
-                      <CountDownTimer
-                        timer={30}
-                        style={{
-                          color: theme.colors.LIGHT_BLUE,
-                        }}
-                        onStopTimer={onStopResendTimer}
-                      />
-                    )}
-                  </Text>
-                </TouchableOpacity>
-              }
-              {renderHyperLink()}
-            </LoginCard>
-          )}
+                      : {},
+                  ]}
+                >
+                  {string.login.resend_opt}
+                  {showResentTimer && ' '}
+                  {showResentTimer && (
+                    <CountDownTimer
+                      timer={30}
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                      }}
+                      onStopTimer={onStopResendTimer}
+                    />
+                  )}
+                </Text>
+              </TouchableOpacity>
+            }
+            {renderHyperLink()}
+          </LoginCard>
+        )}
         <ScrollView bounces={false}>
           {/* <View> */}
           {banner()}

@@ -206,12 +206,12 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     setDeviceToken(uniqueId);
     console.log(uniqueId, 'uniqueId');
 
-    getDeviceTokenCount(client, uniqueId)
+    getDeviceTokenCount(client, uniqueId.trim())
       .then(({ data }: any) => {
-        console.log(data, 'data getDeviceTokenCount');
+        // console.log(data, 'data getDeviceTokenCount');
         console.log(data.data.getDeviceCodeCount.deviceCount, 'data getDeviceTokenCount');
 
-        if (data.data.getDeviceCodeCount.deviceCount <= 2) {
+        if (parseInt(data.data.getDeviceCodeCount.deviceCount, 10) < 2) {
           setShowReferralCode(true);
         } else {
           setShowReferralCode(false);

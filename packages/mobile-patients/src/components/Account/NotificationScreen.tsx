@@ -103,7 +103,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
 
-  const { setNotificationCount, allNotifications, isSelected } = useAppCommonData();
+  const { setNotificationCount, allNotifications } = useAppCommonData();
   // let arrayNotification: any;
 
   useEffect(() => {
@@ -123,7 +123,6 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
       } else {
         console.log('isSelected.......', allNotifications);
 
-        setSelected([...isSelected]);
         setMessages([...allNotifications]);
       }
       console.log('arrayNotification.......', arrayNotification);
@@ -374,20 +373,16 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   };
 
   const updateSelectedView = (index: number) => {
-    const arrayCoppied = selected;
-    arrayCoppied[index].isSelected = true;
-    setSelected([...arrayCoppied]);
-
     const selectedOne = messages;
     selectedOne[index].isActive = false;
     setMessages([...selectedOne]);
 
-    const selectedCount = selected.filter((item: any) => {
-      return item.isSelected === false;
+    const selectedCount = messages.filter((item: any) => {
+      return item.isActive === true;
     });
     setNotificationCount && setNotificationCount(selectedCount.length);
 
-    AsyncStorage.setItem('selectedRow', JSON.stringify(arrayCoppied));
+    AsyncStorage.setItem('allNotification', JSON.stringify(messages));
   };
 
   const renderRow = (item: any, index: number) => {
@@ -395,7 +390,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     return (
       <View
         style={{
-          backgroundColor: selected && selected[index].isSelected ? 'transparent' : 'white',
+          backgroundColor: item.isActive ? 'white' : 'transparent',
           flex: 1,
         }}
       >

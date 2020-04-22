@@ -229,12 +229,12 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     setDeviceToken(uniqueId);
     console.log(uniqueId, 'uniqueId');
 
-    getDeviceTokenCount(client, uniqueId)
+    getDeviceTokenCount(client, uniqueId.trim())
       .then(({ data }: any) => {
-        console.log(data, 'data getDeviceTokenCount');
+        // console.log(data, 'data getDeviceTokenCount');
         console.log(data.data.getDeviceCodeCount.deviceCount, 'data getDeviceTokenCount');
 
-        if (1 <= 2) {
+        if (parseInt(data.data.getDeviceCodeCount.deviceCount, 10) < 2) {
           setShowReferralCode(true);
         } else {
           setShowReferralCode(false);

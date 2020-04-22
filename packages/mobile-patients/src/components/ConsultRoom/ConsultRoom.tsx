@@ -508,10 +508,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
         : null;
 
-      const array: any = await AsyncStorage.getItem('selectedRow');
+      const array: any = await AsyncStorage.getItem('allNotification');
       const arraySelected = JSON.parse(array);
       const selectedCount = arraySelected.filter((item: any) => {
-        return item.isSelected === false;
+        return item.isActive === true;
       });
       setNotificationCount && setNotificationCount(selectedCount.length);
 
@@ -532,49 +532,41 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     notifcationsApi(params)
       .then(async (repsonse: any) => {
         try {
-          const arrayNotification = repsonse.data.data.map((el: any) => {
-            const o = Object.assign({}, el);
-            o.isActive = true;
-            return o;
-          });
+          const array = await AsyncStorage.getItem('allNotification');
+          let arrayNotification;
 
-          // console.log('arrayNotification.......', arrayNotification);
-
-          const array = await AsyncStorage.getItem('selectedRow');
-          let result;
           if (array !== null) {
             const arraySelected = JSON.parse(array);
+            // console.log('arraySelected.......', arraySelected);
 
-            result = arrayNotification.map((el: any, index: number) => {
-              const o = Object.assign({});
+            arrayNotification = repsonse.data.data.map((el: any, index: number) => {
+              const o = Object.assign({}, el);
               if (arraySelected.length > index) {
-                o.id = el._id;
-                o.isSelected =
-                  arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
+                if (arraySelected[index]._id === el._id) {
+                  o.isActive =
+                    arraySelected[index]._id === el._id ? arraySelected[index].isActive : true;
+                } else {
+                  o.isActive = true;
+                }
               } else {
-                o.id = el._id;
-                o.isSelected = false;
+                o.isActive = true;
               }
               return o;
             });
-
-            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
           } else {
-            result = arrayNotification.map((el: any) => {
-              const o = Object.assign({});
-              o.id = el._id;
-              o.isSelected = false;
+            arrayNotification = repsonse.data.data.map((el: any) => {
+              const o = Object.assign({}, el);
+              o.isActive = true;
               return o;
             });
-            AsyncStorage.setItem('selectedRow', JSON.stringify(result));
           }
 
-          const selectedCount = result.filter((item: any) => {
-            return item.isSelected === false;
+          // console.log('arrayNotification.......', arrayNotification);
+          const selectedCount = arrayNotification.filter((item: any) => {
+            return item.isActive === true;
           });
 
           setNotificationCount && setNotificationCount(selectedCount.length);
-          setisSelected && setisSelected(arrayNotification);
           setAllNotifications && setAllNotifications(arrayNotification);
 
           AsyncStorage.setItem('allNotification', JSON.stringify(arrayNotification));
