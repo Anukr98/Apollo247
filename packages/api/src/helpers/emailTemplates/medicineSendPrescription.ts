@@ -24,13 +24,16 @@ export const medicineSendPrescription = _.template(
      <% } %>
     </ul>
   </li>
-  <% _.each(prescriptionImages, function(order, index) { %>
-    <li><a><%-order %></a></a></li>
+  <li>Attachments : 
+  <ul>
+  <% _.each(prescriptionUrls, function(order, index) { %>
+    <li>Link to Prescription <%- index+1 %>:<a href = <%- order %> target="_blank"> <%- order %></a></li>
   <% }); %>
+  </ul>
+  </li>
 
   <li>Cash on Delivery. </li>
 
-  </ul>
   </body> 
   </html>
   `
