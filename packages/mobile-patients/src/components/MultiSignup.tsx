@@ -742,6 +742,19 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         variables: {
                           patientInput: patientsDetails,
                         },
+                      }).then((_data) => {
+                        try {
+                          const { data } = _data as { data: updatePatient };
+                          const patient = g(data, 'updatePatient', 'patient')!;
+                          if (patient.relation == Relation.ME) {
+                            _postWebEngageEvent(patient);
+                          }
+                        } catch (error) {
+                          CommonLogEvent(
+                            AppRoutes.MultiSignup,
+                            `Error occured while sending webEngage event (${WebEngageEventName.REGISTRATION_DONE}) for PRISM profiles.`
+                          );
+                        }
                       });
                     });
                   }
@@ -751,7 +764,6 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
               {data
                 ? (console.log('data', data.updatePatient.patient),
                   getPatientApiCall(),
-                  _postWebEngageEvent(g(data, 'updatePatient', 'patient')!),
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
