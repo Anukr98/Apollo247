@@ -43,18 +43,23 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
   }
 
   enum MEDICINE_UNIT {
+    AS_PRESCRIBED
     BOTTLE
     CAPSULE
     CREAM
     DROPS
     GEL
+    GM
     INJECTION
     LOTION
     ML
+    MG
     NA
     OINTMENT
     OTHERS
+    PATCH
     POWDER
+    PUFF
     ROTACAPS
     SACHET
     SOAP
@@ -63,6 +68,7 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    UNIT
   }
 
   enum MEDICINE_FREQUENCY {

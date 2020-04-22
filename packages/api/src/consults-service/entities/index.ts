@@ -1392,6 +1392,7 @@ export interface RxPdfData {
     ingredients: string[];
     frequency: string;
     instructions?: string;
+    routeOfAdministration?: string;
   }[];
   generalAdvice: CaseSheetOtherInstruction[];
   diagnoses: CaseSheetDiagnosis[];
