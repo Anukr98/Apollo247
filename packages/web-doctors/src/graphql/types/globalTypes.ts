@@ -87,12 +87,21 @@ export enum MEDICINE_FORM_TYPES {
 }
 
 export enum MEDICINE_FREQUENCY {
+  ALTERNATE_DAY = "ALTERNATE_DAY",
   AS_NEEDED = "AS_NEEDED",
+  EVERY_FOUR_HOURS = "EVERY_FOUR_HOURS",
+  EVERY_HOUR = "EVERY_HOUR",
+  EVERY_TWO_HOURS = "EVERY_TWO_HOURS",
   FIVE_TIMES_A_DAY = "FIVE_TIMES_A_DAY",
   FOUR_TIMES_A_DAY = "FOUR_TIMES_A_DAY",
   ONCE_A_DAY = "ONCE_A_DAY",
+  ONCE_A_MONTH = "ONCE_A_MONTH",
+  ONCE_A_WEEK = "ONCE_A_WEEK",
+  ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
+  TWICE_A_WEEK = "TWICE_A_WEEK",
 }
 
 export enum MEDICINE_TIMINGS {
@@ -135,6 +144,22 @@ export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
+}
+
+export enum ROUTE_OF_ADMINISTRATION {
+  EAR_DROPS = "EAR_DROPS",
+  EYE_DROPS = "EYE_DROPS",
+  GARGLE = "GARGLE",
+  INHALE = "INHALE",
+  INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRAVENOUS = "INTRAVENOUS",
+  LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASAL_DROPS = "NASAL_DROPS",
+  ORALLY = "ORALLY",
+  ORAL_DROPS = "ORAL_DROPS",
+  PER_RECTAL = "PER_RECTAL",
+  SUBCUTANEOUS = "SUBCUTANEOUS",
+  SUBLINGUAL = "SUBLINGUAL",
 }
 
 export enum Relation {
@@ -277,6 +302,8 @@ export interface MedicinePrescriptionInput {
   medicineTimings?: (MEDICINE_TIMINGS | null)[] | null;
   medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineUnit?: MEDICINE_UNIT | null;
+  routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage?: string | null;
 }
 
 export interface ModifyCaseSheetInput {
@@ -348,6 +375,8 @@ export interface SaveDoctorsFavouriteMedicineInput {
   medicineTimings: (MEDICINE_TIMINGS | null)[];
   medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineUnit: MEDICINE_UNIT;
+  routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage?: string | null;
 }
 
 export interface SymptomInput {
@@ -382,6 +411,8 @@ export interface UpdateDoctorsFavouriteMedicineInput {
   medicineTimings: (MEDICINE_TIMINGS | null)[];
   medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineUnit?: MEDICINE_UNIT | null;
+  routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage?: string | null;
 }
 
 export interface UpdatePatientInput {
