@@ -101,7 +101,7 @@ export interface FirebaseEvents {
     Customer_ID: string;
     Customer_First_Name: string;
     Customer_Last_Name: string;
-    Date_of_Birth?: string;
+    Date_of_Birth?: Date | string;
     Gender?: string;
     Email?: string;
     Referral_Code?: string;
