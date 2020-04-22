@@ -752,9 +752,12 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const submitChennaiCODOrder = (dataObj: submitFormType) => {
-    debugger
     setIsLoading(true);
     setUpdatedUserEmail(dataObj.userEmail);
+    if (!(cartItems && cartItems.length)) {
+      onPressSubmit();
+      return;
+    }
     paymentMutation().then((res) => {
       if (res && res.data && res.data.SaveMedicineOrder) {
         const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
