@@ -325,6 +325,10 @@ export class Doctor extends BaseEntity {
   @Column({ default: true })
   isActive: Boolean;
 
+  @Index('Doctor_isSearchable')
+  @Column({ default: true })
+  isSearchable: Boolean;
+
   @Column({ nullable: true, type: 'text' })
   languages: string;
 
