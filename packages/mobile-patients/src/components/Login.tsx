@@ -415,7 +415,6 @@ export const Login: React.FC<LoginProps> = (props) => {
             >
               <Text style={styles.inputTextStyle}>{string.login.numberPrefix}</Text>
               <TextInput
-                autoFocus
                 style={styles.inputStyle}
                 keyboardType="numeric"
                 maxLength={10}

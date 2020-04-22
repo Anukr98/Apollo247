@@ -9,6 +9,7 @@ import {
     TouchableOpacityProps,
     View,
     ViewStyle,
+    Platform,
     Dimensions
 } from 'react-native';
 
@@ -38,8 +39,9 @@ const styles = StyleSheet.create({
     },
     buttonStyle: {
         position: 'absolute',
-        bottom: height <= 568 ? 72 : 56,
+        bottom: 0,
         right: -4,
+        top: Platform.OS === 'ios' ? (height <= 568 ? 164 : 146) : 152,
         height: 64,
         width: 64,
         zIndex: 20
