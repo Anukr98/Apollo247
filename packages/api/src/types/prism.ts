@@ -79,17 +79,19 @@ export interface PrismGetUsersResponse {
     };
     uhidValue: unknown;
     signUpUserData: {
-      userName: string;
       UHID: string;
-      hospital: string;
       activeStatus: string;
-      siteKey: string;
+      hospital: string;
       setActiveStatus: boolean;
+      setHospital: boolean;
       setSiteKey: boolean;
       setUHID: boolean;
-      setHospital: boolean;
-      uhid: string;
       setUserName: boolean;
+      siteKey: string;
+      uhid: string;
+      userName: string;
+      gender: string;
+      dob: number;
     }[];
   };
 }
