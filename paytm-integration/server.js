@@ -1040,14 +1040,6 @@ app.get('/processOrders', (req, res) => {
               response.data.data.getMedicineOrderDetails &&
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
             ) {
-              console.log(
-                response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
-                '======order details======='
-              );
-              console.log(
-                response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId,
-                'order details233'
-              );
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.currentStatus !=
                 'CANCELLED'
@@ -1088,16 +1080,12 @@ app.get('/processOrders', (req, res) => {
                     orderLineItems.push(lineItem);
                   }
                 );
-                console.log(fmcgCount, pharmaCount, 'count of types');
                 if (fmcgCount > 0 && pharmaCount > 0) orderType = 'Both';
                 else if (fmcgCount > 0 && pharmaCount == 0) orderType = 'FMCG';
                 else orderType = 'Pharma';
-                console.log('final order type', orderType);
                 //logic to add delivery charges line item starts here
                 const orderDetails =
                   response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
-                console.log('orderDetails===>', JSON.stringify(orderDetails));
-                console.log('AmtPaid===', orderDetails.medicineOrderPayments[0].amountPaid);
                 if (orderDetails.orderType == 'CART_ORDER') {
                   const amountPaid = orderDetails.deliveryCharges;
                   if (amountPaid > 0) {

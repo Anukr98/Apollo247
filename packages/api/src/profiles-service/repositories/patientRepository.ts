@@ -20,6 +20,11 @@ import { format } from 'date-fns';
 import { AthsTokenResponse } from 'types/uhidCreateTypes';
 import { log } from 'customWinstonLogger';
 
+type DeviceCount = {
+  mobilenumber: string;
+  mobilecount: number;
+};
+
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
   findById(id: string) {
@@ -32,12 +37,13 @@ export class PatientRepository extends Repository<Patient> {
       .getMany();
   }
 
-  getDeviceCodeCount(deviceCode: string) {
-    return this.count({
-      where: {
-        deviceCode,
-      },
-    });
+  async getDeviceCodeCount(deviceCode: string) {
+    const deviceCodeCount: DeviceCount[] = await this.createQueryBuilder('patient')
+      .select(['"mobileNumber" as mobilenumber', 'count("mobileNumber") as mobilecount'])
+      .where('patient."deviceCode" = :deviceCode', { deviceCode })
+      .groupBy('patient."mobileNumber"')
+      .getRawMany();
+    return deviceCodeCount.length;
   }
   getPatientDetails(id: string) {
     return this.findOne({
