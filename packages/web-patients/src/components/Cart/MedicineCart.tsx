@@ -24,6 +24,8 @@ import {
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
   CODCity,
+  NonCartOrderCity,
+  BOOKING_SOURCE,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -606,12 +608,17 @@ export const MedicineCart: React.FC = (props) => {
 
   const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
 
-  const placeOrder = (orderId: string, orderAutoId: number, isChennaiCOD: boolean) => {
+  const placeOrder = (
+    orderId: string,
+    orderAutoId: number,
+    isChennaiCOD: boolean,
+    userEmail?: string
+  ) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
       chennaiOrderVariables = {
         CODCity: CODCity.CHENNAI,
-        email: updatedUserEmail,
+        email: userEmail,
       };
     }
 
@@ -695,7 +702,14 @@ export const MedicineCart: React.FC = (props) => {
     );
   };
 
-  const onPressSubmit = async () => {
+  const onPressSubmit = async (userEmail?: string) => {
+    let chennaiOrderVariables = {};
+    if (userEmail && userEmail.length) {
+      chennaiOrderVariables = {
+        NonCartOrderCity: NonCartOrderCity.CHENNAI,
+        email: userEmail,
+      };
+    }
     setUploadingFiles(true);
     const ePresUrls =
       ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
@@ -708,7 +722,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -721,6 +735,8 @@ export const MedicineCart: React.FC = (props) => {
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
               shopId: storeAddressId || '0',
               appointmentId: '',
+              bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+              ...(chennaiOrderVariables && chennaiOrderVariables),
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
@@ -745,6 +761,8 @@ export const MedicineCart: React.FC = (props) => {
           shopId: storeAddressId || '0',
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
+          bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+          ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
@@ -756,11 +774,14 @@ export const MedicineCart: React.FC = (props) => {
 
   const submitChennaiCODOrder = (dataObj: submitFormType) => {
     setIsLoading(true);
-    setUpdatedUserEmail(dataObj.userEmail);
+    if (!(cartItems && cartItems.length)) {
+      onPressSubmit(dataObj.userEmail);
+      return;
+    }
     paymentMutation().then((res) => {
       if (res && res.data && res.data.SaveMedicineOrder) {
         const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
-        placeOrder(orderId, orderAutoId, true);
+        placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
       }
     });
   };
@@ -775,6 +796,14 @@ export const MedicineCart: React.FC = (props) => {
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
 
+  const isChennaiZipCode = (zipCodeInt: Number) => {
+    return (
+      (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
+      zipCodeInt === 603103 ||
+      zipCodeInt === 603202 ||
+      zipCodeInt === 603211
+    );
+  };
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -1009,14 +1038,9 @@ export const MedicineCart: React.FC = (props) => {
         <div className={classes.checkoutBtn}>
           <AphButton
             onClick={() => {
+              const zipCodeInt = parseInt(selectedZip);
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                const zipCodeInt = parseInt(selectedZip);
-                if (
-                  (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
-                  zipCodeInt === 603103 ||
-                  zipCodeInt === 603202 ||
-                  zipCodeInt === 603211
-                ) {
+                if (isChennaiZipCode(zipCodeInt)) {
                   // redirect to chennai orders form
                   setIsChennaiCheckoutDialogOpen(true);
                   return;
@@ -1027,6 +1051,11 @@ export const MedicineCart: React.FC = (props) => {
                 ((prescriptions && prescriptions.length > 0) ||
                   (ePrescriptionData && ePrescriptionData.length > 0))
               ) {
+                if (isChennaiZipCode(zipCodeInt)) {
+                  // redirect to chennai orders form
+                  setIsChennaiCheckoutDialogOpen(true);
+                  return;
+                }
                 onPressSubmit();
               }
             }}
@@ -1102,7 +1131,7 @@ export const MedicineCart: React.FC = (props) => {
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                        placeOrder(orderId, orderAutoId, false);
+                        placeOrder(orderId, orderAutoId, false, '');
                       }
                     }
                   })

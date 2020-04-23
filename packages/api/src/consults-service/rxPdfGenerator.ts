@@ -54,17 +54,19 @@ export const convertCaseSheetToRxPdfData = async (
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
       let frequency;
+      const customDosage = csRx.medicineCustomDosage
+        ? csRx.medicineCustomDosage.split('-').join(csRx.medicineUnit.toLowerCase() + ' - ') +
+          csRx.medicineUnit.toLowerCase()
+        : '';
       if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
         frequency = 'Apply';
         if (csRx.medicineCustomDosage) {
-          frequency =
-            frequency + ' ' + csRx.medicineCustomDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
+          frequency = frequency + ' ' + customDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
         } else if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
       } else {
         frequency = 'Take';
         if (csRx.medicineCustomDosage) {
-          frequency =
-            frequency + ' ' + csRx.medicineCustomDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
+          frequency = frequency + ' ' + customDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
         } else {
           if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
           if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit + '(s)';
@@ -488,7 +490,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .text(`${prescription.frequency} `, margin + 30)
         .moveDown(0.8);
 
-      if (prescription.routeOfAdministration !== undefined) {
+      if (prescription.routeOfAdministration) {
         doc
           .fontSize(10)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
@@ -498,7 +500,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .moveDown(0.8);
       }
 
-      if (prescription.instructions !== undefined) {
+      if (prescription.instructions) {
         doc
           .fontSize(10)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
@@ -530,7 +532,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnoses = (diagnoses: RxPdfData['diagnoses']) => {
     if (diagnoses) {
-      renderSectionHeader('Provisional Diagnosis');
+      renderSectionHeader(ApiConstants.CASESHEET_PROVISIONAL_HEADING.toString());
       diagnoses.forEach((diag, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();
