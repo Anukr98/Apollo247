@@ -240,8 +240,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                _toLower(doctorDetails.lastName)
-              )}`
+                  _toLower(doctorDetails.lastName)
+                )}`
           }
           className={classes.doctorAvatar}
         />
@@ -262,15 +262,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               doctorDetails.fullName
                 ? doctorDetails.fullName
                 : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                  _toLower(doctorDetails.lastName)
-                )}`
+                    _toLower(doctorDetails.lastName)
+                  )}`
             }
           >
             {doctorDetails.fullName
               ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                _toLower(doctorDetails.lastName)
-              )}`}
+                  _toLower(doctorDetails.lastName)
+                )}`}
           </div>
           <div className={classes.doctorType}>
             <span title={'Specialty'}>
@@ -348,8 +348,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   ) : getDiffInMinutes() > 0 && getDiffInMinutes() <= 60 ? (
                     'CONSULT NOW'
                   ) : (
-                        'BOOK APPOINTMENT'
-                      )}
+                    'BOOK APPOINTMENT'
+                  )}
                 </AphButton>
               </div>
             )}
