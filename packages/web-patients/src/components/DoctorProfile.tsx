@@ -8,14 +8,13 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from 'graphql/types/GetDoctorNextAvailableSlot';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
 // import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
 import { getAppStoreLink } from 'helpers/dateHelpers';
-import { useApolloClient } from 'react-apollo-hooks'
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -231,19 +230,6 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       ? doctorDetails.getDoctorDetailsById.id
       : '';
 
-  // const { data, loading } = useQuery<
-  //   GetDoctorNextAvailableSlot,
-  //   GetDoctorNextAvailableSlotVariables
-  // >(GET_DOCTOR_NEXT_AVAILABILITY, {
-  //   variables: {
-  //     DoctorNextAvailableSlotInput: {
-  //       doctorIds: [doctorId],
-  //       availableDate: format(new Date(), 'yyyy-MM-dd'),
-  //     },
-  //   },
-  //   fetchPolicy: 'network-only',
-  // });
-
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -255,7 +241,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
             availableDate: format(new Date(), 'yyyy-MM-dd'),
           },
         },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
       })
       .then((response) => {
         setData(response.data);
@@ -525,8 +511,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                   {education && education.includes(';') ? (
                     education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
                   ) : (
-                      <div>{education}</div>
-                    )}
+                    <div>{education}</div>
+                  )}
                 </div>
               </div>
               <div className={classes.infoRow}>

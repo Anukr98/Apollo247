@@ -14,7 +14,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { VisitClinic } from 'components/VisitClinic';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import {
@@ -237,18 +236,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const currentUserId = currentPatient && currentPatient.id;
 
-  // const { data, loading, error } = useQuery<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
-  //   GET_DOCTOR_DETAILS_BY_ID,
-  //   {
-  //     variables: { id: doctorId },
-  //   }
-  // );
   useEffect(() => {
     setLoading(true);
     apolloClient
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
         query: GET_DOCTOR_DETAILS_BY_ID,
-        variables: { id: doctorId }
+        variables: { id: doctorId },
       })
       .then((response) => {
         setData(response.data);
@@ -259,9 +252,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (loading) {
     return <LinearProgress className={classes.loader} />;
   }
-  // if (error) {
-  //   return <div>Error....</div>;
-  // }
 
   const availableForPhysicalConsultation = true,
     availableForVirtualConsultation = true;
@@ -271,15 +261,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (doctorDetails) {
     const isStarDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO
         ? true
         : false;
 
     const isPayrollDoctor =
       doctorDetails &&
-        doctorDetails.getDoctorDetailsById &&
-        doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.doctorType === DoctorType.PAYROLL
         ? true
         : false;
 
@@ -309,8 +299,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 240px)'
                   : isSmallScreen
-                    ? 'auto'
-                    : 'calc(100vh - 154px)'
+                  ? 'auto'
+                  : 'calc(100vh - 154px)'
               }
             >
               <div className={classes.doctorProfileSection}>
@@ -324,14 +314,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <div className={classes.searchSection}>
                       <AphButton
                         onClick={(e) => {
-                          !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true)
+                          !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
                         }}
                         color="primary"
                         className={classes.bookAppointment}
                         title={' Book Appointment'}
                       >
                         Book Appointment
-                  </AphButton>
+                      </AphButton>
                       <div className={classes.customScroll}>
                         {!isPayrollDoctor && (
                           <>
@@ -353,13 +343,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <div className={classes.flotingBtn}>
               <AphButton
                 onClick={(e) => {
-                  !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true)
+                  !isSignedIn ? protectWithLoginPopup() : setIsPopoverOpen(true);
                 }}
                 color="primary"
                 title={' Book Appointment'}
               >
                 Book Appointment
-          </AphButton>
+              </AphButton>
             </div>
           )}
         </ProtectedWithLoginPopup>
