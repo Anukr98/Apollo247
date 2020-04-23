@@ -82,6 +82,9 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'relative',
       paddingTop: 20,
     },
+    none: {
+      display: 'none',
+    },
     suggestionPopover: {
       boxShadow: 'none',
       maxHeight: 355,
@@ -1438,7 +1441,9 @@ export const MedicinePrescription: React.FC = () => {
     return (
       <AphButton
         key={daySlotitem.id}
-        className={daySlotitem.selected ? classes.activeBtnRed : ''}
+        className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
+          isCustomform && daySlotitem.id === 'AS_NEEDED' ? classes.none : ''
+        }`}
         onClick={() => {
           daySlotsToggleAction(daySlotitem.id);
         }}
@@ -1722,16 +1727,16 @@ export const MedicinePrescription: React.FC = () => {
                     .join(', ')
                     .toLowerCase()
                 : '';
+
             const unitHtmls =
-              medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
-                ? term(
-                    medicine.medicineUnit.toLowerCase(),
-                    medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
-                  )
-                : medicine.medicineUnit.toLowerCase() +
-                  (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
+              medUnitObject && medUnitObject[medicine.medicineUnit]
+                ? medUnitObject[medicine.medicineUnit].value
+                : medicine.medicineUnit.toLowerCase();
+
             const isInDuration =
-              medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
+              (medicine.medicineTimings.length === 1 &&
+                medicine.medicineTimings[0] === 'AS_NEEDED') ||
+              (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
                 ? ''
                 : 'in the ';
             let timesString =
@@ -1745,17 +1750,34 @@ export const MedicinePrescription: React.FC = () => {
             if (timesString && timesString !== '') {
               timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
             }
-            const dosageCount = medicine.medicineDosage;
-            const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
-            const unitHtml = `${unitHtmls}`;
+            let dosageHtml = '';
+            if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
+              const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
+              const customTimingArray = [];
+              if (dosageTimingArray && dosageTimingArray[0])
+                customTimingArray.push(dosageTimingArray[0] + unitHtmls);
+              if (dosageTimingArray && dosageTimingArray[1])
+                customTimingArray.push(dosageTimingArray[1] + unitHtmls);
+              if (dosageTimingArray && dosageTimingArray[2])
+                customTimingArray.push(dosageTimingArray[2] + unitHtmls);
+              if (dosageTimingArray && dosageTimingArray[3])
+                customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+              dosageHtml = customTimingArray.join(' - ');
+            } else {
+              dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
+            }
             return (
               <div style={{ position: 'relative' }} key={index}>
                 <Paper className={classes.medicineCard}>
                   <h5>{medicine.medicineName}</h5>
                   <h6>
-                    {`${takeApplyHtml} ${
-                      dosageCount && medicine.medicineFormTypes === 'OTHERS' ? dosageCount : ''
-                    } ${unitHtml} ${
+                    {`${medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'} ${dosageHtml}${
+                      timesString.length > 0 &&
+                      medicine.medicineCustomDosage &&
+                      medicine.medicineCustomDosage !== ''
+                        ? ' (' + timesString + ') '
+                        : ' '
+                    }${
                       medicine.medicineFrequency
                         ? medicine.medicineFrequency
                             .split('_')
@@ -1767,10 +1789,20 @@ export const MedicinePrescription: React.FC = () => {
                             .toLowerCase()
                     }
                     ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                      timesString.length > 0 ? timesString : ''
+                      timesString.length > 0 &&
+                      medicine.medicineCustomDosage &&
+                      medicine.medicineCustomDosage === ''
+                        ? timesString
+                        : ''
                     }
                     `}
                   </h6>
+                  {medicine.routeOfAdministration && (
+                    <h6>{`To be taken: ${medicine.routeOfAdministration
+                      .split('_')
+                      .join(' ')
+                      .toLowerCase()}`}</h6>
+                  )}
                   {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
                 </Paper>
                 {caseSheetEdit && (
@@ -1827,17 +1859,13 @@ export const MedicinePrescription: React.FC = () => {
                         .toLowerCase()
                     : '';
                 const favUnitHtmls =
-                  favMedicine.medicineUnit[favMedicine.medicineUnit.length - 1].toLowerCase() ===
-                  's'
-                    ? term(
-                        favMedicine.medicineUnit.toLowerCase(),
-                        favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
-                      )
-                    : favMedicine.medicineUnit.toLowerCase() +
-                      (favMedicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
+                  medUnitObject && medUnitObject[favMedicine.medicineUnit]
+                    ? medUnitObject[favMedicine.medicineUnit].value
+                    : favMedicine.medicineUnit.toLowerCase();
                 const isInDuration =
-                  favMedicine.medicineTimings.length === 1 &&
-                  favMedicine.medicineTimings[0] === 'AS_NEEDED'
+                  (favMedicine.medicineTimings.length === 1 &&
+                    favMedicine.medicineTimings[0] === 'AS_NEEDED') ||
+                  (favMedicine.medicineCustomDosage && favMedicine.medicineCustomDosage !== '')
                     ? ''
                     : 'in the ';
                 let favTimesString =
@@ -1853,19 +1881,36 @@ export const MedicinePrescription: React.FC = () => {
                   favTimesString = favTimesString.replace(/,(?=[^,]*$)/, 'and');
                 }
                 const favDosageCount = favMedicine.medicineDosage;
-                const favTakeApplyHtml =
-                  favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
-                const favUnitHtml = `${favUnitHtmls}`;
+                let favDosageHtml = '';
+                if (favMedicine.medicineCustomDosage && favMedicine.medicineCustomDosage !== '') {
+                  const favdosageTimingArray = favMedicine.medicineCustomDosage!.split('-');
+                  const favCustomTimingArray = [];
+                  if (favdosageTimingArray && favdosageTimingArray[0])
+                    favCustomTimingArray.push(favdosageTimingArray[0] + favUnitHtmls);
+                  if (favdosageTimingArray && favdosageTimingArray[1])
+                    favCustomTimingArray.push(favdosageTimingArray[1] + favUnitHtmls);
+                  if (favdosageTimingArray && favdosageTimingArray[2])
+                    favCustomTimingArray.push(favdosageTimingArray[2] + favUnitHtmls);
+                  if (favdosageTimingArray && favdosageTimingArray[3])
+                    favCustomTimingArray.push(favdosageTimingArray[3] + favUnitHtmls);
+                  favDosageHtml = favCustomTimingArray.join(' - ');
+                } else {
+                  favDosageHtml = favDosageCount + ' ' + favUnitHtmls;
+                }
                 return (
                   <div className={classes.paper} key={id}>
                     <Paper className={classes.favMedBg}>
                       <h5>{favMedicine.medicineName}</h5>
                       <h6>
-                        {`${favTakeApplyHtml} ${
-                          favDosageCount && favMedicine.medicineFormTypes === 'OTHERS'
-                            ? favDosageCount
-                            : ''
-                        } ${favUnitHtml} ${
+                        {`${
+                          favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                        } ${favDosageHtml}${
+                          favTimesString.length > 0 &&
+                          favMedicine.medicineCustomDosage &&
+                          favMedicine.medicineCustomDosage !== ''
+                            ? ' (' + favTimesString + ') '
+                            : ' '
+                        } ${
                           favMedicine.medicineFrequency
                             ? favMedicine.medicineFrequency
                                 .split('_')
@@ -1876,10 +1921,20 @@ export const MedicinePrescription: React.FC = () => {
                                 .join(' ')
                                 .toLowerCase()
                         } ${favDurations} ${favWhenString.length > 0 ? favWhenString : ''} ${
-                          favTimesString.length > 0 ? favTimesString : ''
+                          favTimesString.length > 0 &&
+                          favMedicine.medicineCustomDosage &&
+                          favMedicine.medicineCustomDosage === ''
+                            ? favTimesString
+                            : ''
                         }
                     `}
                       </h6>
+                      {favMedicine.routeOfAdministration && (
+                        <h6>{`To be taken: ${favMedicine.routeOfAdministration
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()}`}</h6>
+                      )}
                     </Paper>
                     <AphButton
                       variant="contained"

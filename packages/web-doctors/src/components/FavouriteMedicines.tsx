@@ -102,6 +102,9 @@ const useStyles = makeStyles((theme: Theme) =>
       borderBottomRightRadius: 10,
       color: '#02475b',
     },
+    none: {
+      display: 'none',
+    },
     suggestionsList: {
       margin: 0,
       padding: 0,
@@ -1329,7 +1332,9 @@ export const FavouriteMedicines: React.FC = () => {
     return (
       <button
         key={daySlotitem.id}
-        className={daySlotitem.selected ? classes.activeBtnRed : ''}
+        className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
+          isCustomform && daySlotitem.id === 'AS_NEEDED' ? classes.none : ''
+        }`}
         onClick={() => {
           daySlotsToggleAction(daySlotitem.id);
         }}

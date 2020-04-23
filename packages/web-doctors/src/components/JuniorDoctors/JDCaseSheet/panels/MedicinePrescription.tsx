@@ -551,6 +551,9 @@ const useStyles = makeStyles((theme: Theme) =>
     padBottomRow: {
       paddingTop: 30,
     },
+    none: {
+      display: 'none',
+    },
   })
 );
 
@@ -1330,15 +1333,12 @@ export const MedicinePrescription: React.FC = () => {
               .toLowerCase()
           : '';
       const unitHtmls =
-        medicine.medicineUnit[medicine.medicineUnit.length - 1].toLowerCase() === 's'
-          ? term(
-              medicine.medicineUnit.toLowerCase(),
-              medicine.medicineFormTypes === 'OTHERS' ? '(s)' : ''
-            )
-          : medicine.medicineUnit.toLowerCase() +
-            (medicine.medicineFormTypes === 'OTHERS' ? '(s)' : '');
+        medUnitObject && medUnitObject[medicine.medicineUnit]
+          ? medUnitObject[medicine.medicineUnit].value
+          : medicine.medicineUnit.toLowerCase();
       const isInDuration =
-        medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED'
+        (medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED') ||
+        (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
           ? ''
           : 'in the ';
       let timesString =
@@ -1352,17 +1352,34 @@ export const MedicinePrescription: React.FC = () => {
       if (timesString && timesString !== '') {
         timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
       }
-      const dosageCount = medicine.medicineDosage;
-      const takeApplyHtml = medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
-      const unitHtml = `${unitHtmls}`;
+      let dosageHtml = '';
+      if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
+        const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
+        const customTimingArray = [];
+        if (dosageTimingArray && dosageTimingArray[0])
+          customTimingArray.push(dosageTimingArray[0] + unitHtmls);
+        if (dosageTimingArray && dosageTimingArray[1])
+          customTimingArray.push(dosageTimingArray[1] + unitHtmls);
+        if (dosageTimingArray && dosageTimingArray[2])
+          customTimingArray.push(dosageTimingArray[2] + unitHtmls);
+        if (dosageTimingArray && dosageTimingArray[3])
+          customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+        dosageHtml = customTimingArray.join(' - ');
+      } else {
+        dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
+      }
       return (
         <div key={index} className={classes.medicineBox}>
           <div key={_uniqueId('med_id_')}>
             <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
-              {`${takeApplyHtml} ${
-                dosageCount && medicine.medicineFormTypes === 'OTHERS' ? dosageCount : ''
-              } ${unitHtml} ${
+              {`${medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'} ${dosageHtml}${
+                timesString.length > 0 &&
+                medicine.medicineCustomDosage &&
+                medicine.medicineCustomDosage !== ''
+                  ? ' (' + timesString + ') '
+                  : ' '
+              }${
                 medicine.medicineFrequency
                   ? medicine.medicineFrequency
                       .split('_')
@@ -1373,9 +1390,19 @@ export const MedicinePrescription: React.FC = () => {
                       .join(' ')
                       .toLowerCase()
               } ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                timesString.length > 0 ? timesString : ''
+                timesString.length > 0 &&
+                medicine.medicineCustomDosage &&
+                medicine.medicineCustomDosage === ''
+                  ? timesString
+                  : ''
               }`}
             </div>
+            {medicine.routeOfAdministration && (
+              <div className={classes.medicineInfo}>{`To be taken: ${medicine.routeOfAdministration
+                .split('_')
+                .join(' ')
+                .toLowerCase()}`}</div>
+            )}
             {medicine.medicineInstructions && (
               <div className={classes.medicineInfo}>{medicine.medicineInstructions}</div>
             )}
@@ -1397,7 +1424,9 @@ export const MedicinePrescription: React.FC = () => {
     return (
       <AphButton
         key={daySlotitem.id}
-        className={daySlotitem.selected ? classes.activeBtnRed : ''}
+        className={`${daySlotitem.selected ? classes.activeBtnRed : ''} ${
+          isCustomform && daySlotitem.id === 'AS_NEEDED' ? classes.none : ''
+        }`}
         onClick={() => {
           daySlotsToggleAction(daySlotitem.id);
         }}
