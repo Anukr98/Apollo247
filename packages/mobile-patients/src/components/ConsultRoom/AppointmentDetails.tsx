@@ -38,9 +38,15 @@ import {
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
   STATUS,
+  APPOINTMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { getNetStatus, statusBarHeight, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  statusBarHeight,
+  g,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -59,6 +65,10 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '../../graphql/types/getPatinetAppointments';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -325,6 +335,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
+        postAppointmentWEGEvents('Rescheduled by Customer');
         console.log(data, 'data');
         setshowSpinner(false);
         props.navigation.dispatch(
@@ -372,6 +383,42 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
 
+  const postAppointmentWEGEvents = (
+    type:
+      | WebEngageEventName.RESCHEDULE_CLICKED
+      | WebEngageEventName.CANCEL_CONSULTATION_CLICKED
+      | WebEngageEventName.CONTINUE_CONSULTATION_CLICKED
+      | WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER
+      | WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER
+    // data: getPatinetAppointments_getPatinetAppointments_patinetAppointments
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.RESCHEDULE_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CANCEL_CONSULTATION_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER]
+      | WebEngageEvents[WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER] = {
+      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Consult ID': g(data, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
   const cancelAppointmentApi = () => {
     setshowSpinner(true);
     const appointmentTransferInput = {
@@ -393,6 +440,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
+        postAppointmentWEGEvents(WebEngageEventName.CONSULTATION_CANCELLED_BY_CUSTOMER);
         setshowSpinner(false);
         console.log(data, 'data');
         // setSucessPopup(true);
@@ -572,6 +620,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 opacity: isAwaitingReschedule ? 1 : 0.5,
               }}
               onPress={() => {
+                postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
                 if (data.status == STATUS.COMPLETED) {
                   showAphAlert!({
                     title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -599,6 +648,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   marginLeft: 8,
                 }}
                 onPress={() => {
+                  data.isConsultStarted &&
+                    postAppointmentWEGEvents(WebEngageEventName.CONTINUE_CONSULTATION_CLICKED);
                   CommonLogEvent(AppRoutes.AppointmentDetails, 'START_CONSULTATION_CLICKED');
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
@@ -721,6 +772,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 <TouchableOpacity
                   style={styles.gotItStyles}
                   onPress={() => {
+                    postAppointmentWEGEvents(WebEngageEventName.RESCHEDULE_CLICKED);
                     setShowCancelPopup(false);
                     NextAvailableSlotAPI();
                   }}
@@ -732,6 +784,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 <TouchableOpacity
                   style={styles.gotItStyles}
                   onPress={() => {
+                    postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
                     CommonLogEvent(
                       AppRoutes.AppointmentDetails,
                       'AppointmentDetails  Cancel Concsult Clicked'

@@ -54,6 +54,7 @@ import {
   handleGraphQlError,
   postWebEngageEvent,
   postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
@@ -63,6 +64,9 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import moment from 'moment';
 import DeviceInfo from 'react-native-device-info';
+import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
+import { useApolloClient } from 'react-apollo-hooks';
+import { getDeviceTokenCount } from '../helpers/clientCalls';
 
 const { height } = Dimensions.get('window');
 
@@ -147,6 +151,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { signOut, getPatientApiCall, getPatientByPrism } = useAuth();
   // const [referredBy, setReferredBy] = useState<string>();
   const [isValidReferral, setValidReferral] = useState<boolean>(false);
+  const [deviceToken, setDeviceToken] = useState<string>('');
+  const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -190,11 +196,31 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      // getPatientApiCall();
-    }
-  }, [currentPatient]);
+    getDeviceCountAPICall();
+  }, []);
+
+  const client = useApolloClient();
+
+  const getDeviceCountAPICall = async () => {
+    const uniqueId = await DeviceInfo.getUniqueId();
+    setDeviceToken(uniqueId);
+    console.log(uniqueId, 'uniqueId');
+
+    getDeviceTokenCount(client, uniqueId.trim())
+      .then(({ data }: any) => {
+        // console.log(data, 'data getDeviceTokenCount');
+        console.log(data.data.getDeviceCodeCount.deviceCount, 'data getDeviceTokenCount');
+
+        if (parseInt(data.data.getDeviceCodeCount.deviceCount, 10) < 2) {
+          setShowReferralCode(true);
+        } else {
+          setShowReferralCode(false);
+        }
+      })
+      .catch((e) => {
+        console.log('Error getDeviceTokenCount ', e);
+      });
+  };
 
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
@@ -366,7 +392,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             }}
           />
           {/* <View style={{ height: 80 }} /> */}
-          {renderReferral()}
+          {showReferralCode && renderReferral()}
         </Card>
       </View>
     );
@@ -386,7 +412,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         'Customer ID': currentPatient ? currentPatient.id : '',
         'Customer First Name': firstName.trim(),
         'Customer Last Name': lastName.trim(),
-        'Date of Birth': Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        'Date of Birth': Moment(date, 'DD/MM/YYYY').toDate(),
         Gender:
           gender === 'Female'
             ? Gender['FEMALE']
@@ -400,8 +426,27 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         eventAttributes['Referral Code'] = referral;
       }
 
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.REGISTRATION_DONE] = {
+        Customer_ID: currentPatient ? currentPatient.id : '',
+        Customer_First_Name: firstName.trim(),
+        Customer_Last_Name: lastName.trim(),
+        Date_of_Birth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        Gender:
+          gender === 'Female'
+            ? Gender['FEMALE']
+            : gender === 'Male'
+            ? Gender['MALE']
+            : Gender['OTHER'],
+        Email: email.trim(),
+      };
+      if (referral) {
+        // only send if referral has a value
+        eventFirebaseAttributes['Referral_Code'] = referral;
+      }
+
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.REGISTRATION_DONE, eventFirebaseAttributes);
       setSignupEventFired(true);
     } catch (error) {
       console.log({ error });
@@ -709,7 +754,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                         dateOfBirth: formatDate,
                         emailAddress: email.trim(),
                         referralCode: trimReferral ? trimReferral : null,
-                        deviceCode: DeviceInfo.getUniqueId(),
+                        deviceCode: deviceToken,
                       };
                       console.log('patientsDetails', patientsDetails);
                       mutate({
@@ -727,7 +772,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', 'false'),
-                      CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       handleOpenURL())
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}

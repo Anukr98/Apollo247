@@ -208,6 +208,9 @@ export class Appointment extends BaseEntity {
   status: STATUS;
 
   @Column({ nullable: true })
+  sdConsultationDate: Date;
+
+  @Column({ nullable: true })
   transferParentId: string;
 
   @Column({ nullable: true })

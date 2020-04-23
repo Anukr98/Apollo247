@@ -37,6 +37,11 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum BOOKING_SOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -59,6 +64,11 @@ export enum ConsultType {
 }
 
 export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  IOS = "IOS",
+}
+
+export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
   IOS = "IOS",
 }
@@ -606,6 +616,8 @@ export interface PrescriptionMedicineInput {
   quoteId?: string | null;
   shopId?: string | null;
   patientId: string;
+  bookingSource?: BOOKING_SOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;

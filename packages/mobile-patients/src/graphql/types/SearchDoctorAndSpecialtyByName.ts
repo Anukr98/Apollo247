@@ -10,6 +10,7 @@ import { Geolocation, Salutation, DoctorType } from "./globalTypes";
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
   userFriendlyNomenclature: string | null;
 }
@@ -39,6 +40,8 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   displayName: string | null;
   fullName: string | null;
   experience: string | null;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
   specialization: string | null;
   qualification: string | null;
@@ -67,6 +70,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_s
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
   userFriendlyNomenclature: string | null;
 }
@@ -96,6 +100,8 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   displayName: string | null;
   fullName: string | null;
   experience: string | null;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty | null;
   specialization: string | null;
   qualification: string | null;
@@ -131,6 +137,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
   userFriendlyNomenclature: string | null;
 }

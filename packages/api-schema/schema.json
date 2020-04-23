@@ -6153,6 +6153,16 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "email",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
@@ -23648,6 +23658,26 @@
             "defaultValue": null
           },
           {
+            "name": "bookingSource",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "BOOKING_SOURCE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "deviceType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "DEVICE_TYPE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "medicineDeliveryType",
             "description": null,
             "type": {
@@ -24967,26 +24997,6 @@
                 "name": "MEDICINE_ORDER_PAYMENT_TYPE",
                 "ofType": null
               }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "bookingSource",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "BOOKINGSOURCE",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "deviceType",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "DEVICETYPE",
-              "ofType": null
             },
             "defaultValue": null
           },

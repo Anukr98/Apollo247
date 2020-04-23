@@ -282,7 +282,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     });
 
   const onAddCartItem = (item: MedicineProduct) => {
-    const { sku, mou, name, price, special_price, is_prescription_required, thumbnail } = item;
+    const {
+      sku,
+      mou,
+      name,
+      price,
+      special_price,
+      is_prescription_required,
+      thumbnail,
+      type_id,
+    } = item;
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
@@ -297,6 +306,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           : special_price
         : undefined,
       prescriptionRequired: is_prescription_required == '1',
+      isMedicine: type_id == 'Pharma',
       quantity: 1,
       thumbnail,
       isInStock: true,
