@@ -26,6 +26,8 @@ import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -399,7 +401,7 @@ export const AddRecords: React.FC = (props) => {
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const uploadDocumentMutation = useMutation(UPLOAD_DOCUMENT);
   const addMedicalRecordMutation = useMutation(ADD_MEDICAL_RECORD);
@@ -655,7 +657,8 @@ export const AddRecords: React.FC = (props) => {
       };
       reader.onerror = (error) => reject(error);
     });
-
+    const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   return (
     <div className={classes.root}>
       <Header />
@@ -1076,6 +1079,7 @@ export const AddRecords: React.FC = (props) => {
           </div>
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

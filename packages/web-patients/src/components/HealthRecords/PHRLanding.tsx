@@ -26,6 +26,8 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useMutation } from 'react-apollo-hooks';
 import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 import { Alerts } from 'components/Alerts/Alerts';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -90,7 +92,7 @@ type LandingProps = {
 export const PHRLanding: React.FC<LandingProps> = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const client = useApolloClient();
   const [consultsLoading, setConsultsLoading] = useState<boolean>(false);
   const [consultError, setConsultError] = useState<boolean>(false);
@@ -113,6 +115,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const [medicalError, setMedicalError] = useState<boolean>(false);
   const [medicalRecordError, setMedicalRecordError] = useState<boolean>(false);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+  const onePrimaryUser = 
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   useEffect(() => {
     if (
@@ -375,6 +379,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         />
       </div>
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

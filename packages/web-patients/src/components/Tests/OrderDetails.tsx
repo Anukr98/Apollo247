@@ -20,6 +20,8 @@ import moment from 'moment';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GET_DIAGNOSTIC_ORDER_LIST } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -340,7 +342,7 @@ export const OrderDetails: React.FC = () => {
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [displayId, setDisplayId] = React.useState<number>(0);
 
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
 
   const { data, error, loading } = useQueryWithSkip<
     GetDiagnosticOrdersList,
@@ -372,6 +374,8 @@ export const OrderDetails: React.FC = () => {
       setDisplayId(firstOrderInfo.displayId);
     }
   }
+
+  const onePrimaryUser = allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   return (
     <div>
       <Header />
@@ -457,6 +461,7 @@ export const OrderDetails: React.FC = () => {
           </div>
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

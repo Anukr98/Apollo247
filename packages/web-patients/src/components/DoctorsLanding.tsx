@@ -27,6 +27,8 @@ import { LocationContext } from './LocationProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useLocationDetails } from 'components/LocationProvider';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -360,7 +362,9 @@ export const DoctorsLanding: React.FC = (props) => {
     data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       : [];
-
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const onePrimaryUser =
+        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   // console.log('speciality id selected', specialtyId);
 
   if (
@@ -371,7 +375,7 @@ export const DoctorsLanding: React.FC = (props) => {
     specialitySelected.length === 0
   )
     showError = true;
-
+  
   return (
     <div className={classes.root}>
       <LocationContext.Consumer>
@@ -741,6 +745,7 @@ export const DoctorsLanding: React.FC = (props) => {
                 }}
               />
             </Popover>
+            {!onePrimaryUser && <ManageProfile />}
           </>
         )}
       </LocationContext.Consumer>

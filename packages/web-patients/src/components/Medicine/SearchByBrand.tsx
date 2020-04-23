@@ -10,6 +10,9 @@ import axios from 'axios';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -134,6 +137,9 @@ export const SearchByBrand: React.FC = (props) => {
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
+  const { allCurrentPatients } = useAllCurrentPatients()
+  const onePrimaryUser = 
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   useEffect(() => {
     if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
       axios
@@ -240,6 +246,7 @@ export const SearchByBrand: React.FC = (props) => {
           </div>
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

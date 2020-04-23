@@ -15,6 +15,9 @@ import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -229,6 +232,10 @@ export const SearchByMedicine: React.FC = (props) => {
         : special_price
       : null;
 
+  const { allCurrentPatients } = useAllCurrentPatients()
+  const onePrimaryUser = 
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+
   useEffect(() => {
     let priceFilterArray: MedicineProduct[] | null = null;
     if (
@@ -403,6 +410,7 @@ export const SearchByMedicine: React.FC = (props) => {
         </div>
       </div>
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

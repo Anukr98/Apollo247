@@ -8,6 +8,9 @@ import {
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderPayments as payments,
 } from 'graphql/types/GetMedicineOrderDetails';
 import { CircularProgress } from '@material-ui/core';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -126,6 +129,9 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
     props.orderDetailsData.medicineOrderPayments &&
     props.orderDetailsData.medicineOrderPayments.length > 0 &&
     props.orderDetailsData.medicineOrderPayments[0];
+    const {allCurrentPatients} = useAllCurrentPatients()
+    const onePrimaryUser = 
+      allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   return props.isLoading ? (
     <div className={classes.loader}>
@@ -175,6 +181,7 @@ export const OrdersSummary: React.FC<TrackOrdersProps> = (props) => {
       <div className={classes.disclaimerText}>
         Disclaimer: Price may vary when the actual bill is generated.
       </div>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   ) : null;
 };

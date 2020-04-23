@@ -23,6 +23,8 @@ import {
 } from 'graphql/types/getDiagnosticsData';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Alerts } from 'components/Alerts/Alerts';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -363,6 +365,9 @@ export const SearchByTest: React.FC = (props) => {
     testDetailsPackage && testDetailsPackage.length
       ? testDetailsPackage && testDetailsPackage.length
       : 0;
+  const {allCurrentPatients} = useAllCurrentPatients()
+  const onePrimaryUser = 
+        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   let showError = false;
 
@@ -435,6 +440,7 @@ export const SearchByTest: React.FC = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
       />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

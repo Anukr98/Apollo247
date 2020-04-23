@@ -7,6 +7,9 @@ import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
 import axios from 'axios';
 import { Brand } from './../../helpers/MedicineApiCalls';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -273,6 +276,9 @@ export const ViewAllBrands: React.FC = (props) => {
   const [data, setData] = useState<Brand[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showData, setShowData] = useState<filter[] | []>([]);
+  const { allCurrentPatients } = useAllCurrentPatients()
+  const onePrimaryUser = 
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
   useEffect(() => {
     if (!data) {
@@ -397,6 +403,7 @@ export const ViewAllBrands: React.FC = (props) => {
           </Scrollbars>
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

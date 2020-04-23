@@ -5,6 +5,9 @@ import { Header } from 'components/Header';
 import { MedicineCart } from 'components/Cart/MedicineCart';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { LocationProvider } from 'components/LocationProvider';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,6 +31,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicineCartLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const { allCurrentPatients } = useAllCurrentPatients()
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   return (
     <div className={classes.root}>
       <MedicinesCartContext.Consumer>
@@ -44,6 +50,7 @@ export const MedicineCartLanding: React.FC = (props) => {
           </>
         )}
       </MedicinesCartContext.Consumer>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

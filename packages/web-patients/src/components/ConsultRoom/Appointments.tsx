@@ -40,6 +40,8 @@ import { getAppStoreLink } from 'helpers/dateHelpers';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -362,7 +364,8 @@ export const Appointments: React.FC = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-
+  const onePrimaryUser = 
+  allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables
@@ -784,6 +787,7 @@ export const Appointments: React.FC = (props) => {
       </Popover> */}
 
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

@@ -18,6 +18,8 @@ import { AphButton } from '@aph/web-ui-components';
 import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -437,6 +439,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
     }
   };
 
+  const onePrimaryUser =
+        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  
   useEffect(() => {
     if (stopRedirect === 'continue' && isRedirect) {
       setTimeout(() => {
@@ -697,6 +702,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </div>
         </Popover>
       )}
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

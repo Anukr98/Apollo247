@@ -5,6 +5,9 @@ import React from 'react';
 import { MyProfile } from 'components/MyAccount/MyProfile';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageSettings } from 'components/Notifications/ManageSettings';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -50,7 +53,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const NotificationSettings: React.FC = (props) => {
   const classes = useStyles();
-
+  const { allCurrentPatients } = useAllCurrentPatients()
+  const onePrimaryUser = 
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   return (
     <div className={classes.root}>
       <Header />
@@ -67,6 +72,7 @@ export const NotificationSettings: React.FC = (props) => {
         </div>
       </div>
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };
