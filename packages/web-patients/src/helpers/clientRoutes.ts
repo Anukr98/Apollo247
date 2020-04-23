@@ -19,6 +19,8 @@ export const clientRoutes = {
   prescriptionsLanding: () => '/prescriptions',
   cartLanding: () => '/cart',
   medicinesCart: () => '/medicines-cart',
+  medicinesCartFailed: (orderAutoId: string, orderStatus: string) =>
+    `/medicines-cart/${orderAutoId}/${orderStatus}`,
   testsCart: () => '/tests-cart',
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/my-account',

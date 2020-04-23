@@ -1285,6 +1285,30 @@
             "deprecationReason": null
           },
           {
+            "name": "seniorDoctorCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "juniorDoctorCount",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getJuniorDoctorDashboard",
             "description": null,
             "args": [
@@ -23624,6 +23648,26 @@
             "defaultValue": null
           },
           {
+            "name": "bookingSource",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "BOOKING_SOURCE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "deviceType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "DEVICE_TYPE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "medicineDeliveryType",
             "description": null,
             "type": {
@@ -24943,26 +24987,6 @@
                 "name": "MEDICINE_ORDER_PAYMENT_TYPE",
                 "ofType": null
               }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "bookingSource",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "BOOKINGSOURCE",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "deviceType",
-            "description": null,
-            "type": {
-              "kind": "ENUM",
-              "name": "DEVICETYPE",
-              "ofType": null
             },
             "defaultValue": null
           },

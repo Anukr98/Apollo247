@@ -17,7 +17,7 @@ import {
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useMutation } from 'react-apollo-hooks';
-import { AppointmentType } from 'graphql/types/globalTypes';
+import { AppointmentType, BOOKINGSOURCE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 // import { Redirect } from 'react-router';
 import { Alerts } from 'components/Alerts/Alerts';
@@ -430,6 +430,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         bookAppointment: {
           patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
+          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
           appointmentDateTime: new Date(
             `${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`
           ).toISOString(),

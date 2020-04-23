@@ -123,6 +123,11 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
           <AuthRouted
             exact
+            path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
+            component={MedicineCartLanding}
+          />
+          <AuthRouted
+            exact
             path={clientRoutes.searchByMedicine(':searchMedicineType', ':searchText')}
             component={SearchByMedicine}
           />
