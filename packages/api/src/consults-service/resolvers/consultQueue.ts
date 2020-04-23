@@ -8,7 +8,12 @@ import {
   PatientLifeStyle,
   PatientMedicalHistory,
 } from 'profiles-service/entities';
-import { Appointment, ConsultQueueItem, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  CASESHEET_STATUS,
+  Appointment,
+  ConsultQueueItem,
+  APPOINTMENT_STATE,
+} from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -20,6 +25,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/patientFamilyHistoryRepository';
 import { PatientLifeStyleRepository } from 'profiles-service/repositories/patientLifeStyleRepository';
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
+import { ApiConstants } from 'ApiConstants';
 
 export const consultQueueTypeDefs = gql`
   type ConsultQueueItem {
@@ -335,39 +341,67 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const onlineJuniorDoctors = juniorDoctors.filter(
     (doctor) => doctor.onlineStatus == DOCTOR_ONLINE_STATUS.ONLINE
   );
-  if (!onlineJuniorDoctors.length) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-
-  const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
-  //Get queue items of online JDs
-  const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
-
-  //Map and get the count of queue items of each online JD
-  const jdQueueCounts: { [key: string]: number } = {};
-  consultQueueItems.map((queueItem) => {
-    if (jdQueueCounts[queueItem.doctorId]) {
-      jdQueueCounts[queueItem.doctorId] = jdQueueCounts[queueItem.doctorId] + 1;
-    } else {
-      jdQueueCounts[queueItem.doctorId] = 1;
-    }
-  });
-  onlineJuniorDoctorIds.map((id) => {
-    if (!jdQueueCounts[id]) {
-      jdQueueCounts[id] = 0;
-    }
-  });
-
-  let jdActiveAppointmentsCount = -1;
+  // if (!onlineJuniorDoctors.length) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
+  let queueId = 0;
+  const virtualJDId = process.env.VIRTUAL_JD_ID;
+  const createdDate = new Date();
   let doctorId = '';
-  //Map the object and find the JD with least queue item count
-  Object.keys(jdQueueCounts).map((key) => {
-    if (jdActiveAppointmentsCount == -1 || jdQueueCounts[key] < jdActiveAppointmentsCount) {
-      jdActiveAppointmentsCount = jdQueueCounts[key];
-      doctorId = key;
-    }
-  });
+  const jdQueueCounts: { [key: string]: number } = {};
+  if (onlineJuniorDoctors.length) {
+    const onlineJuniorDoctorIds = onlineJuniorDoctors.map((doctor) => doctor.id);
+    //Get queue items of online JDs
+    const consultQueueItems = await cqRepo.getQueueItemsByDoctorIds(onlineJuniorDoctorIds);
 
-  const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
-  await apptRepo.updateConsultStarted(appointmentId, true);
+    //Map and get the count of queue items of each online JD
+    consultQueueItems.map((queueItem) => {
+      if (jdQueueCounts[queueItem.doctorId]) {
+        jdQueueCounts[queueItem.doctorId] = jdQueueCounts[queueItem.doctorId] + 1;
+      } else {
+        jdQueueCounts[queueItem.doctorId] = 1;
+      }
+    });
+    onlineJuniorDoctorIds.map((id) => {
+      if (!jdQueueCounts[id]) {
+        jdQueueCounts[id] = 0;
+      }
+    });
+
+    let jdActiveAppointmentsCount = -1;
+    //Map the object and find the JD with least queue item count
+    Object.keys(jdQueueCounts).map((key) => {
+      if (jdActiveAppointmentsCount == -1 || jdQueueCounts[key] < jdActiveAppointmentsCount) {
+        jdActiveAppointmentsCount = jdQueueCounts[key];
+        doctorId = key;
+      }
+    });
+
+    const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
+    queueId = id;
+  } else {
+    const consultQueueAttrs = {
+      appointmentId: appointmentData.id,
+      createdDate: createdDate,
+      doctorId: virtualJDId,
+      isActive: false,
+    };
+    const { id } = await cqRepo.save(cqRepo.create(consultQueueAttrs));
+    queueId = id;
+    doctorId = virtualJDId;
+    const casesheetAttrs = {
+      createdDate: createdDate,
+      consultType: appointmentData.appointmentType,
+      createdDoctorId: process.env.VIRTUAL_JD_ID,
+      doctorType: DoctorType.JUNIOR,
+      doctorId: appointmentData.doctorId,
+      patientId: appointmentData.patientId,
+      appointment: appointmentData,
+      status: CASESHEET_STATUS.COMPLETED,
+      notes: ApiConstants.NO_JD_AVAILABLE_TEXT.toString(),
+    };
+    caseSheetRepo.savecaseSheet(casesheetAttrs);
+  }
+
+  apptRepo.updateJdQuestionStatusbyIds([appointmentId]);
 
   //automated questions starts
   const patientRepo = context.patientsDb.getCustomRepository(PatientRepository);
@@ -474,11 +508,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     };
     jrDocList.push(details);
   });
-  // update JdQuestionStatus
-  await apptRepo.updateJdQuestionStatus(appointmentId, true);
 
   return {
-    id,
+    id: queueId,
     doctorId,
     totalJuniorDoctors: juniorDoctors.length,
     totalJuniorDoctorsOnline: onlineJuniorDoctors.length,

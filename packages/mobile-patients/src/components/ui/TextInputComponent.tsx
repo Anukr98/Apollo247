@@ -65,6 +65,7 @@ export interface TextInputComponentProps {
   maxLength?: TextInputProps['maxLength'];
   keyboardType?: TextInputProps['keyboardType'];
   icon?: ReactNode;
+  autoCapitalize?: TextInputProps['autoCapitalize'];
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -93,6 +94,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           keyboardType={props.keyboardType}
           {...props.textInputprops}
           returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
+          autoCapitalize={props.autoCapitalize}
         />
       )}
       {props.icon && <View style={styles.iconStyle}>{props.icon}</View>}

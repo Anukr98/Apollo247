@@ -76,7 +76,7 @@
     "firebase": "^7.6.1",
     "graphql": "^14.5.3",
     "graphql-tag": "^2.10.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "opentok-network-test-js": "^2.0.2",
     "opentok-react-native": "^0.12.2",

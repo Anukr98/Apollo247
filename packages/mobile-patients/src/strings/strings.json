@@ -259,5 +259,23 @@
         "count": "0"
       }
     ]
-  }
+  },
+  "muiltdosages": [
+    {
+      "single": "tablet",
+      "multiple": "tablet(s)"
+    },
+    {
+      "single": "puff",
+      "multiple": "puff(s)"
+    },
+    {
+      "single": "unit",
+      "multiple": "unit(s)"
+    },
+    {
+      "single": "spray",
+      "multiple": "spray(s)"
+    }
+  ]
 }

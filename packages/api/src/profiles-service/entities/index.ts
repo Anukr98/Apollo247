@@ -1226,6 +1226,9 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true })
   itemCode: string;
 
+  @Column({ default: true })
+  isActive: Boolean;
+
   @Column({ nullable: true })
   itemAliasName: string;
 
@@ -1715,6 +1718,9 @@ export class PatientHelpTickets extends BaseEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
+
+  @Column({ nullable: true })
+  email: string;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
