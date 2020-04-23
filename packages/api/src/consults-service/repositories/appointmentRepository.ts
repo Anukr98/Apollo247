@@ -871,6 +871,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateSDAppointmentStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    sdConsultationDate: Date
+  ) {
+    this.update(id, { status, isSeniorConsultStarted, sdConsultationDate }).catch(
+      (createErrors) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      }
+    );
+  }
+
   updateAppointmentStatusUsingOrderId(
     paymentOrderId: string,
     status: STATUS,
