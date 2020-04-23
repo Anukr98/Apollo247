@@ -655,10 +655,10 @@ export const MedicinePrescription: React.FC = () => {
     medicinePrescription: selectedMedicinesArr,
     setMedicinePrescription: setSelectedMedicinesArr,
   } = useContext(CaseSheetContextJrd);
-  const [customDosageMorning, setCustomDosageMorning] = React.useState<number>(0);
-  const [customDosageNoon, setCustomDosageNoon] = React.useState<number>(0);
-  const [customDosageEvening, setCustomDosageEvening] = React.useState<number>(0);
-  const [customDosageNight, setCustomDosageNight] = React.useState<number>(0);
+  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('0');
+  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('0');
+  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('0');
+  const [customDosageNight, setCustomDosageNight] = React.useState<string>('0');
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
@@ -672,7 +672,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [tabletsCount, setTabletsCount] = React.useState<string>('1');
   const [medicineUnit, setMedicineUnit] = React.useState<string>('OTHERS');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
@@ -1074,7 +1074,7 @@ export const MedicinePrescription: React.FC = () => {
         setSelectedValue(suggestion.label);
         setSelectedId(suggestion.sku);
         setMedicine('');
-        setTabletsCount(1);
+        setTabletsCount('1');
         setLoading(false);
         setConsumptionDuration('');
       })
@@ -1209,18 +1209,18 @@ export const MedicinePrescription: React.FC = () => {
         selectedMedicinesArr[idx].medicineCustomDosage !== ''
       ) {
         const dosageTimingArray = selectedMedicinesArr[idx].medicineCustomDosage!.split('-');
-        setCustomDosageMorning(Number(dosageTimingArray[0]));
-        setCustomDosageNoon(Number(dosageTimingArray[1]));
-        setCustomDosageEvening(Number(dosageTimingArray[2]));
-        setCustomDosageNight(Number(dosageTimingArray[3]));
+        setCustomDosageMorning(dosageTimingArray[0]);
+        setCustomDosageNoon(dosageTimingArray[1]);
+        setCustomDosageEvening(dosageTimingArray[2]);
+        setCustomDosageNight(dosageTimingArray[3]);
         setIsCustomForm(true);
-        setTabletsCount(0);
+        setTabletsCount('');
       } else {
-        setTabletsCount(Number(selectedMedicinesArr[idx].medicineDosage!));
-        setCustomDosageMorning(0);
-        setCustomDosageNoon(0);
-        setCustomDosageEvening(0);
-        setCustomDosageNight(0);
+        setTabletsCount(selectedMedicinesArr[idx].medicineDosage!);
+        setCustomDosageMorning('0');
+        setCustomDosageNoon('0');
+        setCustomDosageEvening('0');
+        setCustomDosageNight('0');
         setIsCustomForm(false);
       }
       setFrequency(
@@ -1451,15 +1451,7 @@ export const MedicinePrescription: React.FC = () => {
       '-' +
       customDosageNight;
 
-    if (tabletsCount && isNaN(Number(tabletsCount))) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: false,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: true,
-      });
-    } else if (consumptionDuration && isNaN(Number(consumptionDuration))) {
+    if (consumptionDuration && isNaN(Number(consumptionDuration))) {
       setErrorState({
         ...errorState,
         durationErr: true,
@@ -1528,7 +1520,7 @@ export const MedicinePrescription: React.FC = () => {
 
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount('1');
       setSelectedValue('');
       setSelectedId('');
       setMedicineUnit('OTHERS');
@@ -1815,14 +1807,14 @@ export const MedicinePrescription: React.FC = () => {
                               <AphTextField
                                 autoFocus
                                 inputProps={{ maxLength: 6 }}
-                                value={
-                                  customDosageMorning && customDosageMorning <= 0
-                                    ? ''
-                                    : customDosageMorning
-                                }
+                                value={customDosageMorning}
                                 onChange={(event: any) => {
                                   setCustomDosageMorning(event.target.value);
                                 }}
+                                onKeyPress={(e) => {
+                                  if (isNaN(parseInt(e.key, 10)) && e.key !== '/' && e.key !== '.')
+                                    e.preventDefault();
+                                }}
                                 InputProps={{
                                   classes: {
                                     root: classes.inputRootNew,
@@ -1835,12 +1827,14 @@ export const MedicinePrescription: React.FC = () => {
                               <AphTextField
                                 autoFocus
                                 inputProps={{ maxLength: 6 }}
-                                value={
-                                  customDosageNoon && customDosageNoon <= 0 ? '' : customDosageNoon
-                                }
+                                value={customDosageNoon}
                                 onChange={(event: any) => {
                                   setCustomDosageNoon(event.target.value);
                                 }}
+                                onKeyPress={(e) => {
+                                  if (isNaN(parseInt(e.key, 10)) && e.key !== '/' && e.key !== '.')
+                                    e.preventDefault();
+                                }}
                                 InputProps={{
                                   classes: {
                                     root: classes.inputRootNew,
@@ -1853,14 +1847,14 @@ export const MedicinePrescription: React.FC = () => {
                               <AphTextField
                                 autoFocus
                                 inputProps={{ maxLength: 6 }}
-                                value={
-                                  customDosageEvening && customDosageEvening <= 0
-                                    ? ''
-                                    : customDosageEvening
-                                }
+                                value={customDosageEvening}
                                 onChange={(event: any) => {
                                   setCustomDosageEvening(event.target.value);
                                 }}
+                                onKeyPress={(e) => {
+                                  if (isNaN(parseInt(e.key, 10)) && e.key !== '/' && e.key !== '.')
+                                    e.preventDefault();
+                                }}
                                 InputProps={{
                                   classes: {
                                     root: classes.inputRootNew,
@@ -1873,13 +1867,13 @@ export const MedicinePrescription: React.FC = () => {
                               <AphTextField
                                 autoFocus
                                 inputProps={{ maxLength: 6 }}
-                                value={
-                                  customDosageNight && customDosageNight <= 0
-                                    ? ''
-                                    : customDosageNight
-                                }
+                                value={customDosageNight}
                                 onChange={(event: any) => {
                                   setCustomDosageNight(event.target.value);
+                                }}
+                                onKeyPress={(e) => {
+                                  if (isNaN(parseInt(e.key, 10)) && e.key !== '/' && e.key !== '.')
+                                    e.preventDefault();
                                 }}
                                 InputProps={{
                                   classes: {
@@ -1920,9 +1914,13 @@ export const MedicinePrescription: React.FC = () => {
                               <AphTextField
                                 autoFocus
                                 inputProps={{ maxLength: 6 }}
-                                value={tabletsCount && tabletsCount <= 0 ? '' : tabletsCount}
+                                value={tabletsCount}
                                 onChange={(event: any) => {
                                   setTabletsCount(event.target.value);
+                                }}
+                                onKeyPress={(e) => {
+                                  if (isNaN(parseInt(e.key, 10)) && e.key !== '/' && e.key !== '.')
+                                    e.preventDefault();
                                 }}
                                 InputProps={{
                                   classes: {

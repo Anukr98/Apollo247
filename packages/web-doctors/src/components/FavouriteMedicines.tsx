@@ -596,10 +596,10 @@ export const FavouriteMedicines: React.FC = () => {
   const [dosageList, setDosageList] = useState<any>([]);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
-  const [customDosageMorning, setCustomDosageMorning] = React.useState<number>(0);
-  const [customDosageNoon, setCustomDosageNoon] = React.useState<number>(0);
-  const [customDosageEvening, setCustomDosageEvening] = React.useState<number>(0);
-  const [customDosageNight, setCustomDosageNight] = React.useState<number>(0);
+  const [customDosageMorning, setCustomDosageMorning] = React.useState<string>('0');
+  const [customDosageNoon, setCustomDosageNoon] = React.useState<string>('0');
+  const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('0');
+  const [customDosageNight, setCustomDosageNight] = React.useState<string>('0');
   const [idx, setIdx] = React.useState();
   const [isUpdate, setIsUpdate] = React.useState(false);
   const [medicineInstruction, setMedicineInstruction] = React.useState<string>('');
@@ -610,7 +610,7 @@ export const FavouriteMedicines: React.FC = () => {
     dosageErr: false,
   });
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
-  const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [tabletsCount, setTabletsCount] = React.useState<string>('1');
   const [medicineUnit, setMedicineUnit] = React.useState<MEDICINE_UNIT>(MEDICINE_UNIT.OTHERS);
   const [loadingStatus, setLoading] = useState<boolean>(false);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
@@ -983,7 +983,7 @@ export const FavouriteMedicines: React.FC = () => {
         setSelectedValue(suggestion.label);
         setSelectedId(suggestion.sku);
         setMedicine('');
-        setTabletsCount(1);
+        setTabletsCount('1');
         setLoading(false);
       })
       .catch((error) => {
@@ -1087,7 +1087,6 @@ export const FavouriteMedicines: React.FC = () => {
           _data.data.getDoctorFavouriteMedicineList &&
           _data.data.getDoctorFavouriteMedicineList.allowedDosages
         ) {
-          console.log(_data.data.getDoctorFavouriteMedicineList.allowedDosages);
           setDosageList(_data.data.getDoctorFavouriteMedicineList.allowedDosages);
         }
         setSelectedMedicinesArr(medicineList);
@@ -1209,18 +1208,18 @@ export const FavouriteMedicines: React.FC = () => {
         selectedMedicinesArr[idx].medicineCustomDosage !== ''
       ) {
         const dosageTimingArray = selectedMedicinesArr[idx].medicineCustomDosage!.split('-');
-        setCustomDosageMorning(Number(dosageTimingArray[0]));
-        setCustomDosageNoon(Number(dosageTimingArray[1]));
-        setCustomDosageEvening(Number(dosageTimingArray[2]));
-        setCustomDosageNight(Number(dosageTimingArray[3]));
+        setCustomDosageMorning(dosageTimingArray[0]);
+        setCustomDosageNoon(dosageTimingArray[1]);
+        setCustomDosageEvening(dosageTimingArray[2]);
+        setCustomDosageNight(dosageTimingArray[3]);
         setIsCustomForm(true);
-        setTabletsCount(0);
+        setTabletsCount('');
       } else {
-        setTabletsCount(Number(selectedMedicinesArr[idx].medicineDosage!));
-        setCustomDosageMorning(0);
-        setCustomDosageNoon(0);
-        setCustomDosageEvening(0);
-        setCustomDosageNight(0);
+        setTabletsCount(selectedMedicinesArr[idx].medicineDosage!);
+        setCustomDosageMorning('0');
+        setCustomDosageNoon('0');
+        setCustomDosageEvening('0');
+        setCustomDosageNight('0');
         setIsCustomForm(false);
       }
       setFrequency(
@@ -1354,15 +1353,7 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if (tabletsCount && isNaN(Number(tabletsCount))) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: false,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: true,
-      });
-    } else if (consumptionDuration && isNaN(Number(consumptionDuration))) {
+    if (consumptionDuration && isNaN(Number(consumptionDuration))) {
       setErrorState({
         ...errorState,
         durationErr: true,
@@ -1448,7 +1439,7 @@ export const FavouriteMedicines: React.FC = () => {
 
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount('1');
       setMedicineUnit(MEDICINE_UNIT.OTHERS);
       setSelectedValue('');
       setSelectedId('');
@@ -1478,15 +1469,7 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageEvening +
       '-' +
       customDosageNight;
-    if (tabletsCount && isNaN(Number(tabletsCount))) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: false,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: true,
-      });
-    } else if (consumptionDuration && isNaN(Number(consumptionDuration))) {
+    if (consumptionDuration && isNaN(Number(consumptionDuration))) {
       setErrorState({
         ...errorState,
         durationErr: true,
@@ -1509,7 +1492,7 @@ export const FavouriteMedicines: React.FC = () => {
         medicineFormTypes: medicineForm,
         routeOfAdministration: roaOption,
         medicineFrequency: frequency,
-        medicineCustomDosage: medicineCustomDosage,
+        medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
       };
 
       const inputParams: any = {
@@ -1526,7 +1509,7 @@ export const FavouriteMedicines: React.FC = () => {
         medicineFormTypes: medicineForm,
         routeOfAdministration: roaOption,
         medicineFrequency: frequency,
-        medicineCustomDosage: medicineCustomDosage,
+        medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
       };
       if (isUpdate) {
         const medicineArray = selectedMedicinesArr;
@@ -1581,7 +1564,7 @@ export const FavouriteMedicines: React.FC = () => {
 
       setMedicineInstruction('');
       setConsumptionDuration('');
-      setTabletsCount(1);
+      setTabletsCount('1');
       setMedicineUnit(MEDICINE_UNIT.OTHERS);
       setSelectedValue('');
       setSelectedId('');
@@ -1786,7 +1769,7 @@ export const FavouriteMedicines: React.FC = () => {
                 onClick={() => {
                   setIsDialogOpen(false);
                   setShowDosage(false);
-                  setTabletsCount(1);
+                  setTabletsCount('1');
                   setMedicineUnit(MEDICINE_UNIT.OTHERS);
                   setConsumptionDuration('');
                   setMedicineInstruction('');
@@ -1906,14 +1889,18 @@ export const FavouriteMedicines: React.FC = () => {
                                   <AphTextField
                                     autoFocus
                                     inputProps={{ maxLength: 6 }}
-                                    value={
-                                      customDosageMorning && customDosageMorning <= 0
-                                        ? ''
-                                        : customDosageMorning
-                                    }
+                                    value={customDosageMorning}
                                     onChange={(event: any) => {
                                       setCustomDosageMorning(event.target.value);
                                     }}
+                                    onKeyPress={(e) => {
+                                      if (
+                                        isNaN(parseInt(e.key, 10)) &&
+                                        e.key !== '/' &&
+                                        e.key !== '.'
+                                      )
+                                        e.preventDefault();
+                                    }}
                                     InputProps={{
                                       classes: {
                                         root: classes.inputRootNew,
@@ -1927,14 +1914,18 @@ export const FavouriteMedicines: React.FC = () => {
                                   <AphTextField
                                     autoFocus
                                     inputProps={{ maxLength: 6 }}
-                                    value={
-                                      customDosageNoon && customDosageNoon <= 0
-                                        ? ''
-                                        : customDosageNoon
-                                    }
+                                    value={customDosageNoon}
                                     onChange={(event: any) => {
                                       setCustomDosageNoon(event.target.value);
                                     }}
+                                    onKeyPress={(e) => {
+                                      if (
+                                        isNaN(parseInt(e.key, 10)) &&
+                                        e.key !== '/' &&
+                                        e.key !== '.'
+                                      )
+                                        e.preventDefault();
+                                    }}
                                     InputProps={{
                                       classes: {
                                         root: classes.inputRootNew,
@@ -1948,13 +1939,17 @@ export const FavouriteMedicines: React.FC = () => {
                                   <AphTextField
                                     autoFocus
                                     inputProps={{ maxLength: 6 }}
-                                    value={
-                                      customDosageEvening && customDosageEvening <= 0
-                                        ? ''
-                                        : customDosageEvening
-                                    }
+                                    value={customDosageEvening}
                                     onChange={(event: any) => {
                                       setCustomDosageEvening(event.target.value);
+                                    }}
+                                    onKeyPress={(e) => {
+                                      if (
+                                        isNaN(parseInt(e.key, 10)) &&
+                                        e.key !== '/' &&
+                                        e.key !== '.'
+                                      )
+                                        e.preventDefault();
                                     }}
                                     InputProps={{
                                       classes: {
@@ -1968,13 +1963,17 @@ export const FavouriteMedicines: React.FC = () => {
                                   <AphTextField
                                     autoFocus
                                     inputProps={{ maxLength: 6 }}
-                                    value={
-                                      customDosageNight && customDosageNight <= 0
-                                        ? ''
-                                        : customDosageNight
-                                    }
+                                    value={customDosageNight}
                                     onChange={(event: any) => {
                                       setCustomDosageNight(event.target.value);
+                                    }}
+                                    onKeyPress={(e) => {
+                                      if (
+                                        isNaN(parseInt(e.key, 10)) &&
+                                        e.key !== '/' &&
+                                        e.key !== '.'
+                                      )
+                                        e.preventDefault();
                                     }}
                                     InputProps={{
                                       classes: {
@@ -2015,9 +2014,17 @@ export const FavouriteMedicines: React.FC = () => {
                                   <AphTextField
                                     autoFocus
                                     inputProps={{ maxLength: 6 }}
-                                    value={tabletsCount && tabletsCount <= 0 ? '' : tabletsCount}
+                                    value={tabletsCount}
                                     onChange={(event: any) => {
                                       setTabletsCount(event.target.value);
+                                    }}
+                                    onKeyPress={(e) => {
+                                      if (
+                                        isNaN(parseInt(e.key, 10)) &&
+                                        e.key !== '/' &&
+                                        e.key !== '.'
+                                      )
+                                        e.preventDefault();
                                     }}
                                     InputProps={{
                                       classes: {
@@ -2223,7 +2230,7 @@ export const FavouriteMedicines: React.FC = () => {
                       onClick={() => {
                         setIsDialogOpen(false);
                         setShowDosage(false);
-                        setTabletsCount(1);
+                        setTabletsCount('1');
                         setMedicineUnit(MEDICINE_UNIT.OTHERS);
                         setConsumptionDuration('');
                         setMedicineInstruction('');
