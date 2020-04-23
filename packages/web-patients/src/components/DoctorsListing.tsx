@@ -9,7 +9,6 @@ import _filter from 'lodash/filter';
 import _compact from 'lodash/compact';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
 import { SearchObject } from 'components/DoctorsFilter';
-// import { format, addDays } from 'date-fns';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConsultMode } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -18,7 +17,6 @@ import Scrollbars from 'react-custom-scrollbars';
 import _find from 'lodash/find';
 import { useLocationDetails } from 'components/LocationProvider';
 import moment from 'moment';
-// import { useQuery } from 'react-apollo-hooks';
 import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -305,10 +303,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
   };
 
-  // const { data, loading, refetch } = useQuery(GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, {
-  //   variables: { filterInput: apiVairables },
-  //   fetchPolicy: 'no-cache',
-  // });
   useEffect(() => {
     setLoading(true);
     apolloClient
@@ -325,12 +319,6 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
 
   if (loading) disableFilter && disableFilter(true);
   else if (currentPatient && currentPatient.id.length > 0) disableFilter && disableFilter(false);
-
-  // useEffect(() => {
-  //   if (currentLat || currentLong) {
-  //     refetch();
-  //   }
-  // }, [currentLat, currentLong]);
 
   if (loading)
     <div className={classes.circlularProgress}>
