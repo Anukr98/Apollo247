@@ -5,7 +5,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {
-  async searchDiagnostics(itemName: string, city: string, isActive: boolean) {
+  async searchDiagnostics(itemName: string, city: string) {
     console.log('itemName', itemName, 'city', city);
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
