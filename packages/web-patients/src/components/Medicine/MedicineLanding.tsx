@@ -562,7 +562,10 @@ export const MedicineLanding: React.FC = (props) => {
               <div className={classes.bottomActions}>
                 <AphButton
                   className={classes.trackBtn}
-                  onClick={() => setShowPrescriptionPopup(false)}
+                  onClick={() => {
+                    setShowPrescriptionPopup(false);
+                    window.location.href = clientRoutes.medicines();
+                  }}
                 >
                   Okay
                 </AphButton>
