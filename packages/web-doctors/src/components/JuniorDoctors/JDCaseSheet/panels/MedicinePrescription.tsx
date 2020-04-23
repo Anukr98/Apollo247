@@ -515,7 +515,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     inputRootNew: {
-      paddingRight: 35,
+      paddingRight: 10,
       margin: 0,
       width: 'auto',
       '&:before': {
@@ -546,6 +546,7 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: '15px 0 0 0',
       color: '#fc9916',
       fontWeight: 'bold',
+      cursor: 'pointer',
     },
     padBottomRow: {
       paddingTop: 30,

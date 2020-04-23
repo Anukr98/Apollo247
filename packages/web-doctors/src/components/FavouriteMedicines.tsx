@@ -284,6 +284,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#fc9916',
         fontWeight: 'bold',
         margin: 0,
+        cursor: 'pointer',
       },
     },
     radioGroup: {
@@ -452,7 +453,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     inputRootNew: {
-      paddingRight: 35,
+      paddingRight: 10,
       margin: 0,
       width: 'auto',
       '&:before': {
