@@ -260,7 +260,7 @@ export const convertCaseSheetToRxPdfData = async (
   if (caseSheet.appointment) {
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
-      consultDate: format(caseSheet.appointment.appointmentDateTime, 'dd/MM/yyyy'),
+      consultDate: format(caseSheet.appointment.sdConsultationDate, 'dd/MM/yyyy'),
       consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }
@@ -532,7 +532,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnoses = (diagnoses: RxPdfData['diagnoses']) => {
     if (diagnoses) {
-      renderSectionHeader('Provisional Diagnosis');
+      renderSectionHeader(ApiConstants.CASESHEET_PROVISIONAL_HEADING.toString());
       diagnoses.forEach((diag, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();

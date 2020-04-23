@@ -24,6 +24,8 @@ import {
   getNetStatus,
   timeTo12HrFormat,
   doRequestAndAccessLocation,
+  g,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
@@ -50,6 +52,8 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { useUIElements } from '../UIElementsProvider';
 import AsyncStorage from '@react-native-community/async-storage';
+import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -159,6 +163,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   );
   const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients();
 
   const client = useApolloClient();
 
@@ -358,6 +363,38 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         console.log('error', e);
       });
   };
+
+  useEffect(() => {
+    if (!timeArray || !selectedtiming) {
+      return;
+    }
+    const selectedTabSlots = (timeArray || []).find((item) => item.label == selectedtiming);
+    if (selectedTabSlots && selectedTabSlots.time.length == 0) {
+      console.log('NO_SLOTS_FOUND - ConsultPhysical', selectedtiming);
+      const data: getDoctorDetailsById_getDoctorDetailsById = props.doctor!;
+      const eventAttributes: WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND] = {
+        'Doctor Name': g(data, 'fullName')!,
+        'Speciality ID': g(data, 'specialty', 'id')!,
+        'Speciality Name': g(data, 'specialty', 'name')!,
+        'Doctor Category': g(data, 'doctorType')!,
+        'Consult Date Time': new Date(),
+        'Consult Mode': 'Physical',
+        'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
+        'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
+        // 'Consult ID': g(data, 'id')!,
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Customer ID': g(currentPatient, 'id'),
+      };
+      postWebEngageEvent(WebEngageEventName.NO_SLOTS_FOUND, eventAttributes);
+    }
+  }, [selectedtiming, timeArray]);
+
   const renderTimings = () => {
     return (
       <View>

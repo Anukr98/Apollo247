@@ -58,7 +58,9 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
+  userFriendlyNomenclature: string | null;
   image: string | null;
 }
 

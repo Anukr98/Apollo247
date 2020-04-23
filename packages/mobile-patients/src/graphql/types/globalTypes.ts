@@ -37,6 +37,11 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum BOOKING_SOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -139,12 +144,21 @@ export enum MEDICINE_FORM_TYPES {
 }
 
 export enum MEDICINE_FREQUENCY {
+  ALTERNATE_DAY = "ALTERNATE_DAY",
   AS_NEEDED = "AS_NEEDED",
+  EVERY_FOUR_HOURS = "EVERY_FOUR_HOURS",
+  EVERY_HOUR = "EVERY_HOUR",
+  EVERY_TWO_HOURS = "EVERY_TWO_HOURS",
   FIVE_TIMES_A_DAY = "FIVE_TIMES_A_DAY",
   FOUR_TIMES_A_DAY = "FOUR_TIMES_A_DAY",
   ONCE_A_DAY = "ONCE_A_DAY",
+  ONCE_A_MONTH = "ONCE_A_MONTH",
+  ONCE_A_WEEK = "ONCE_A_WEEK",
+  ONCE_IN_15_DAYS = "ONCE_IN_15_DAYS",
+  THREE_TIMES_A_WEEK = "THREE_TIMES_A_WEEK",
   THRICE_A_DAY = "THRICE_A_DAY",
   TWICE_A_DAY = "TWICE_A_DAY",
+  TWICE_A_WEEK = "TWICE_A_WEEK",
 }
 
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -194,18 +208,23 @@ export enum MEDICINE_TO_BE_TAKEN {
 }
 
 export enum MEDICINE_UNIT {
+  AS_PRESCRIBED = "AS_PRESCRIBED",
   BOTTLE = "BOTTLE",
   CAPSULE = "CAPSULE",
   CREAM = "CREAM",
   DROPS = "DROPS",
   GEL = "GEL",
+  GM = "GM",
   INJECTION = "INJECTION",
   LOTION = "LOTION",
+  MG = "MG",
   ML = "ML",
   NA = "NA",
   OINTMENT = "OINTMENT",
   OTHERS = "OTHERS",
+  PATCH = "PATCH",
   POWDER = "POWDER",
+  PUFF = "PUFF",
   ROTACAPS = "ROTACAPS",
   SACHET = "SACHET",
   SOAP = "SOAP",
@@ -214,6 +233,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = "SUSPENSION",
   SYRUP = "SYRUP",
   TABLET = "TABLET",
+  UNIT = "UNIT",
 }
 
 export enum MedicalRecordType {
@@ -231,6 +251,10 @@ export enum MedicalTestUnit {
   GM_SLASH_DL = "GM_SLASH_DL",
   NONE = "NONE",
   _PERCENT_ = "_PERCENT_",
+}
+
+export enum NonCartOrderCity {
+  CHENNAI = "CHENNAI",
 }
 
 export enum OTP_STATUS {
@@ -462,6 +486,8 @@ export interface DiagnosticOrderInput {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
 }
@@ -541,6 +567,8 @@ export interface MedicineCartInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
   patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
@@ -637,6 +665,8 @@ export interface PrescriptionMedicineInput {
   quoteId?: string | null;
   shopId?: string | null;
   patientId: string;
+  bookingSource?: BOOKING_SOURCE | null;
+  deviceType?: DEVICE_TYPE | null;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;
@@ -644,6 +674,9 @@ export interface PrescriptionMedicineInput {
   appointmentId?: string | null;
   isEprescription?: number | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
+  email?: string | null;
+  NonCartOrderCity?: NonCartOrderCity | null;
+  orderAutoId?: number | null;
 }
 
 export interface PrescriptionMedicinePaymentDetails {

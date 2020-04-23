@@ -147,7 +147,7 @@ export enum ApiConstants {
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'raj@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -193,7 +193,7 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
@@ -282,4 +282,5 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
   NO_JD_AVAILABLE_TEXT = 'No JD Available',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
+  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)',
 }
