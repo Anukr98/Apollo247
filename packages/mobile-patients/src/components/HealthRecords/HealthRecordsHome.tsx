@@ -59,6 +59,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -75,6 +76,8 @@ import {
   PRISM_DOCUMENT_CATEGORY,
   UPLOAD_FILE_TYPES,
   MEDICINE_DELIVERY_TYPE,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from '../../graphql/types/globalTypes';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
@@ -733,6 +736,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 prescriptionImageUrl: data.data!.uploadDocument.filePath || '',
                 prismPrescriptionFileId: data.data!.uploadDocument.fileId || '',
                 isEprescription: 0, // if atleat one prescription is E-Prescription then pass it as one.
+                bookingSource: BOOKING_SOURCE.MOBILE,
+                deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
               },
             };
             console.log({ prescriptionMedicineInput });

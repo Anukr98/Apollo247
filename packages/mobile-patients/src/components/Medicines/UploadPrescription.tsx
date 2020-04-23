@@ -26,6 +26,8 @@ import {
   PRISM_DOCUMENT_CATEGORY,
   UPLOAD_FILE_TYPES,
   NonCartOrderCity,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { SavePrescriptionMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
 import {
@@ -39,7 +41,15 @@ import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelectionView';
@@ -225,6 +235,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           // Values for chennai order
           email: isChennaiOrder && email ? email.trim() : null,
           NonCartOrderCity: isChennaiOrder ? NonCartOrderCity.CHENNAI : null,
+          bookingSource: BOOKING_SOURCE.MOBILE,
+          deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
         },
       };
       console.log({ prescriptionMedicineInput });
