@@ -1226,6 +1226,9 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true })
   itemCode: string;
 
+  @Column({ default: true })
+  isActive: Boolean;
+
   @Column({ nullable: true })
   itemAliasName: string;
 
