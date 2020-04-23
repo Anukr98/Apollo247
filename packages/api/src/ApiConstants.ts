@@ -281,4 +281,5 @@ export enum ApiConstants {
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
+  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)',
 }
