@@ -1,5 +1,5 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -7,7 +7,10 @@ import {
   OkText,
   OkTextDisabled,
   Loader,
+  ArrowDisabled,
+  ArrowYellow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -28,6 +31,8 @@ import {
   Dimensions,
   EmitterSubscription,
   Keyboard,
+  ImageBackground,
+  ScrollView,
   Platform,
   SafeAreaView,
   StyleSheet,
@@ -64,16 +69,18 @@ const styles = StyleSheet.create({
   },
   inputView: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     height: 56,
     // marginBottom: 8,
-    paddingTop: 2,
+    paddingTop: 10,
+    paddingHorizontal: 16,
   },
   errorText: {
     lineHeight: 24,
     color: theme.colors.INPUT_FAILURE_TEXT,
     ...theme.fonts.IBMPlexSansMedium(12),
     paddingBottom: 3,
+    paddingHorizontal: 16,
   },
   bottomDescription: {
     lineHeight: 24,
@@ -82,7 +89,7 @@ const styles = StyleSheet.create({
   },
   codeInputStyle: {
     borderBottomWidth: 2,
-    width: '100%',
+    width: '80%',
     margin: 0,
     height: 48,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
@@ -109,12 +116,28 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
-  // webView: {
-  //   marginTop: 0,
-  //   marginLeft: 0,
-  //   marginRight: 0,
-  //   marginBottom: 0,
-  // },
+  bannerTitle: {
+    color: theme.colors.WHITE,
+    ...theme.fonts.IBMPlexSansBold(15),
+    marginLeft: 24,
+  },
+  bannerDescription: {
+    ...theme.fonts.IBMPlexSansRegular(12),
+    color: theme.colors.WHITE,
+    lineHeight: 15,
+    marginLeft: 24,
+    marginTop: 8,
+  },
+  bannerWelcome: {
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    lineHeight: 15,
+    color: '#fcb717',
+  },
+  bannerBoldText: {
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    color: theme.colors.WHITE,
+    lineHeight: 15,
+  },
 });
 
 let timer = 900;
@@ -733,8 +756,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     return (
       <View
         style={{
-          marginRight: 32,
           marginTop: 12,
+          marginHorizontal: 16,
         }}
       >
         <Hyperlink
@@ -805,6 +828,26 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
+  const banner_image = require('@aph/mobile-patients/src/images/onboard/onboard_banner.png');
+  const banner = () => {
+    return (
+      <ImageBackground
+        source={banner_image}
+        style={{ height: 105, marginTop: 20, marginHorizontal: 10 }}
+      >
+        <View style={{ padding: 16 }}>
+          <Text style={styles.bannerTitle}>Specially for you :)</Text>
+          <Text style={styles.bannerDescription}>
+            Use coupon code ‘<Text style={styles.bannerWelcome}>WELCOME</Text>
+            {'’ for\n'}
+            <Text style={styles.bannerBoldText}>Rs. 999 off</Text> on your 1st doctor
+            {'\n'}consultation, <Text style={styles.bannerBoldText}> 10% off</Text> on medicines
+          </Text>
+        </View>
+      </ImageBackground>
+    );
+  };
+
   // const renderTime = () => {
   //   console.log(remainingTime, 'remainingTime', timer, 'timer');
 
@@ -816,6 +859,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   //   }`;
   // };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
+  const { phoneNumber } = props.navigation.state.params!;
+  const descriptionPhoneText = `Now enter the OTP sent to +91 ${phoneNumber} for authentication`;
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -842,7 +887,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
           </TouchableOpacity>
         </View>
         {invalidOtpCount === 3 && !isValidOTP ? (
-          <Card
+          <LoginCard
             key={1}
             cardContainer={{
               marginTop: 0,
@@ -895,9 +940,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               />
             </Text>
             {renderHyperLink()}
-          </Card>
+          </LoginCard>
         ) : (
-          <Card
+          <LoginCard
             key={2}
             cardContainer={{
               marginTop: 0,
@@ -908,9 +953,23 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               marginTop: 10,
             }}
             heading={string.login.great}
-            description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
-            buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
+            description={isresent ? string.login.resend_otp_text : descriptionPhoneText}
+            buttonIcon={
+              isValidOTP && otp.length === 6 ? (
+                <ArrowYellow size="md_l" />
+              ) : (
+                <ArrowDisabled size="md_l" />
+              )
+            }
             onClickButton={onClickOk}
+            buttonStyle={{
+              position: 'absolute',
+              top: Platform.OS === 'ios' ? 156 : 164,
+              right: -3,
+              height: 64,
+              width: 64,
+              zIndex: 20,
+            }}
             disableButton={isValidOTP && otp.length === 6 ? false : true}
             descriptionTextStyle={{
               paddingBottom: Platform.OS === 'ios' ? 0 : 1,
@@ -930,7 +989,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 onChangeText={isOtpValid}
                 keyboardType="numeric"
                 textContentType={'oneTimeCode'}
-                autoFocus
                 maxLength={6}
               />
               {/* <OTPTextView
@@ -959,7 +1017,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={showResentTimer ? () => {} : onClickResend}
-                style={{ width: '50%' }}
+                style={{ width: '50%', paddingLeft: 16, paddingTop: 12 }}
               >
                 <Text
                   style={[
@@ -986,8 +1044,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               </TouchableOpacity>
             }
             {renderHyperLink()}
-          </Card>
+          </LoginCard>
         )}
+        <ScrollView bounces={false}>
+          {/* <View> */}
+          {banner()}
+          <LandingDataView />
+          {/* </View> */}
+        </ScrollView>
         {onClickOpen && openWebView()}
         {openFillerView && fillerView()}
       </SafeAreaView>

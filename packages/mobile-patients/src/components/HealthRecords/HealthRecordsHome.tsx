@@ -59,6 +59,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -75,6 +76,8 @@ import {
   PRISM_DOCUMENT_CATEGORY,
   UPLOAD_FILE_TYPES,
   MEDICINE_DELIVERY_TYPE,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from '../../graphql/types/globalTypes';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
 import { useShoppingCart } from '../ShoppingCartProvider';
@@ -441,8 +444,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
               'Patient UHID': g(currentPatient, 'uhid'),
               Relation: g(currentPatient, 'relation'),
-              Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-              Gender: g(currentPatient, 'gender'),
+              'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+              'Patient Gender': g(currentPatient, 'gender'),
               'Mobile Number': g(currentPatient, 'mobileNumber'),
               'Customer ID': g(currentPatient, 'id'),
             };
@@ -452,8 +455,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
               'Patient UHID': g(currentPatient, 'uhid'),
               Relation: g(currentPatient, 'relation'),
-              Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-              Gender: g(currentPatient, 'gender'),
+              'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+              'Patient Gender': g(currentPatient, 'gender'),
               'Mobile Number': g(currentPatient, 'mobileNumber'),
               'Customer ID': g(currentPatient, 'id'),
             };
@@ -478,8 +481,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
               'Patient UHID': g(currentPatient, 'uhid'),
               Relation: g(currentPatient, 'relation'),
-              Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-              Gender: g(currentPatient, 'gender'),
+              'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+              'Patient Gender': g(currentPatient, 'gender'),
               'Mobile Number': g(currentPatient, 'mobileNumber'),
               'Customer ID': g(currentPatient, 'id'),
             };
@@ -511,6 +514,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const postConsultCardClickEvent = (consultId: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_CONSULT_CARD_CLICK] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Consult ID': consultId,
+    };
+    postWebEngageEvent(WebEngageEventName.PHR_CONSULT_CARD_CLICK, eventAttributes);
+  };
+
   const renderConsult = (item: any, index: number) => {
     return (
       <HealthConsultView
@@ -521,6 +538,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }}
         onClickCard={() => {
           if (item.doctorInfo) {
+            postConsultCardClickEvent(item.id);
             props.navigation.navigate(AppRoutes.ConsultDetails, {
               CaseSheet: item.id,
               DoctorInfo: item.doctorInfo,
@@ -718,6 +736,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 prescriptionImageUrl: data.data!.uploadDocument.filePath || '',
                 prismPrescriptionFileId: data.data!.uploadDocument.fileId || '',
                 isEprescription: 0, // if atleat one prescription is E-Prescription then pass it as one.
+                bookingSource: BOOKING_SOURCE.MOBILE,
+                deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
               },
             };
             console.log({ prescriptionMedicineInput });

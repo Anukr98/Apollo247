@@ -1,13 +1,16 @@
 type YesOrNo = { value: 'Yes' | 'No' };
 
-export enum AppsFlyerEventName {
-  MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
+export enum FirebaseEventName {
+  MOBILE_ENTRY = 'Mobile Entry',
+  MOBILE_NUMBER_ENTERED = 'Mobile_Number_Entered',
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
-  REGISTRATION_DONE = 'Registration Done',
+  OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
+  REGISTRATION_DONE = 'REGISTRATION_DONE',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
+  NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
@@ -20,9 +23,9 @@ export enum AppsFlyerEventName {
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
-  PHARMACY_SUBMIT_PRESCRIPTION = 'Pharmacy Submit Prescription',
-  PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
-  DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
+  PHARMACY_SUBMIT_PRESCRIPTION = 'PHARMACY_SUBMIT_PRESCRIPTION',
+  PHARMACY_CHECKOUT_COMPLETED = 'PHARMACY_CHECKOUT_COMPLETED',
+  DIAGNOSTIC_CHECKOUT_COMPLETED = 'DIAGNOSTIC_CHECKOUT_COMPLETED',
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
   DOCTOR_CLICKED = 'Doctor Clicked',
@@ -33,7 +36,8 @@ export enum AppsFlyerEventName {
   CONSULT_SLOT_SELECTED = 'Consult Slot Selected',
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
-  CONSULTATION_BOOKED = 'Consultation booked',
+  CONSULTATION_BOOKED = 'CONSULTATION_BOOKED',
+  RATING_GIVEN = 'Rating Given',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -65,8 +69,8 @@ export interface PatientInfo {
   'Patient Name': string;
   'Patient UHID': string;
   Relation: string;
-  'Patient Age': number;
-  'Patient Gender': string;
+  Age: number;
+  Gender: string;
   'Mobile Number': string;
   'Customer ID': string;
 }
@@ -83,43 +87,47 @@ export interface SpecialityClickedEvent extends PatientInfo {
   'Speciality Name': string;
 }
 
-export interface AppsFlyerEvents {
+export interface FirebaseEvents {
   // ********** AppEvents ********** \\
 
-  [AppsFlyerEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
-  [AppsFlyerEventName.OTP_ENTERED]: YesOrNo;
-  [AppsFlyerEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
-  [AppsFlyerEventName.REGISTRATION_DONE]: {
-    'Customer ID': string;
-    'Customer First Name': string;
-    'Customer Last Name': string;
-    'Date of Birth': string;
-    'Patient Gender': string;
-    Email: string;
-    'Referral Code'?: string;
+  [FirebaseEventName.MOBILE_ENTRY]: {};
+  [FirebaseEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
+  [FirebaseEventName.OTP_ENTERED]: YesOrNo;
+  [FirebaseEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
+  [FirebaseEventName.OTP_VERIFICATION_SUCCESS]: {
+    Mobile_Number: string;
   };
-  [AppsFlyerEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
+  [FirebaseEventName.REGISTRATION_DONE]: {
+    Customer_ID: string;
+    Customer_First_Name: string;
+    Customer_Last_Name: string;
+    Date_of_Birth?: Date | string;
+    Gender?: string;
+    Email?: string;
+    Referral_Code?: string;
+  };
+  [FirebaseEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
 
   // ********** Home Screen Events ********** \\
 
-  [AppsFlyerEventName.BUY_MEDICINES]: PatientInfoWithSource;
-  [AppsFlyerEventName.ORDER_TESTS]: PatientInfoWithSource;
-  [AppsFlyerEventName.MANAGE_DIABETES]: PatientInfo;
-  [AppsFlyerEventName.TRACK_SYMPTOMS]: PatientInfo;
-  [AppsFlyerEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
-  [AppsFlyerEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
-  [AppsFlyerEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
-  [AppsFlyerEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
-  [AppsFlyerEventName.MY_ACCOUNT]: PatientInfo;
-  [AppsFlyerEventName.FIND_A_DOCTOR]: PatientInfo;
+  [FirebaseEventName.BUY_MEDICINES]: PatientInfoWithSource;
+  [FirebaseEventName.ORDER_TESTS]: PatientInfoWithSource;
+  [FirebaseEventName.MANAGE_DIABETES]: PatientInfo;
+  [FirebaseEventName.TRACK_SYMPTOMS]: PatientInfo;
+  [FirebaseEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
+  [FirebaseEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
+  [FirebaseEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
+  [FirebaseEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
+  [FirebaseEventName.MY_ACCOUNT]: PatientInfo;
+  [FirebaseEventName.FIND_A_DOCTOR]: PatientInfo;
 
   // ********** PharmacyEvents ********** \\
 
-  [AppsFlyerEventName.SEARCH]: {
+  [FirebaseEventName.SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
   };
-  [AppsFlyerEventName.PHARMACY_PRODUCT_CLICKED]: {
+  [FirebaseEventName.PHARMACY_PRODUCT_CLICKED]: {
     'product name': string;
     'product id': string; // (SKUID)
     Brand: string;
@@ -129,13 +137,22 @@ export interface AppsFlyerEvents {
     Source: 'Home' | 'List' | 'Search';
     'Section Name': string;
   };
-  [AppsFlyerEventName.CATEGORY_CLICKED]: {
+  [FirebaseEventName.NOTIFY_ME]: {
+    'product name': string;
+    'product id': string; // (SKUID)
+    Brand: string;
+    'Brand ID': string;
+    'category name': string;
+    'category ID': string;
+  };
+
+  [FirebaseEventName.CATEGORY_CLICKED]: {
     'category name': string;
     'category ID': string;
     Source: 'Home'; // Home
     'Section Name': string;
   };
-  [AppsFlyerEventName.PHARMACY_ADD_TO_CART]: {
+  [FirebaseEventName.PHARMACY_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
@@ -149,12 +166,12 @@ export interface AppsFlyerEvents {
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
+    // Age: number;
+    // Gender: string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
-  [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
+  [FirebaseEventName.DIAGNOSTIC_ADD_TO_CART]: {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
@@ -168,12 +185,12 @@ export interface AppsFlyerEvents {
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
+    // Age: number;
+    // Gender: string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
-  [AppsFlyerEventName.BUY_NOW]: {
+  [FirebaseEventName.BUY_NOW]: {
     'product name': string;
     'product id': string; // (SKUID)
     Brand: string;
@@ -185,7 +202,7 @@ export interface AppsFlyerEvents {
     Quantity: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
+  [FirebaseEventName.PHARMACY_CART_VIEWED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -197,7 +214,7 @@ export interface AppsFlyerEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.DIAGNOSTIC_CART_VIEWED]: {
+  [FirebaseEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -209,7 +226,7 @@ export interface AppsFlyerEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
+  [FirebaseEventName.PHARMACY_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -221,7 +238,7 @@ export interface AppsFlyerEvents {
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
+  [FirebaseEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -233,78 +250,78 @@ export interface AppsFlyerEvents {
     'Pin Code': string | number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.PHARMACY_PAYMENT_INITIATED]: {
+  [FirebaseEventName.PHARMACY_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
+  [FirebaseEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
     'Payment mode': 'Online' | 'COD';
     Amount: number;
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
+  [FirebaseEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
   };
-  [AppsFlyerEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
+  [FirebaseEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
   };
-  [AppsFlyerEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
-    'Order ID': string | number;
-    'Delivery type': 'home' | 'store pickup';
+  [FirebaseEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
+    Order_ID: string | number;
+    Delivery_type: 'home' | 'store_pickup';
     StoreId?: string; //(incase of store delivery)
-    'Delivery address'?: string;
+    Delivery_address?: string;
     Pincode: string | number;
   };
-  [AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
-    'Prescription Added': boolean;
-    'Shipping information': string; // (Home/Store address)
-    'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
-    'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
-    'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+  [FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED]: {
+    Order_ID: string | number;
+    Order_Type: 'Cart' | 'Non_Cart';
+    Prescription_Required: boolean;
+    Prescription_Added: boolean;
+    Shipping_information: string; // (Home/Store address)
+    Total_items_in_cart?: number; // Optional
+    Grand_Total?: number; // Optional
+    Total_Discount_percentage?: number; // Optional
+    Discount_Amount?: number; // Optional
+    Delivery_charge?: number; // Optional
+    Net_after_discount?: number; // Optional
+    Payment_status?: number; // Optional
+    Payment_Type?: 'COD' | 'Prepaid'; // Optional
+    Cart_ID?: string | number; // Optional
+    Service_Area: 'Pharmacy' | 'Diagnostic';
   };
-  [AppsFlyerEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
-    'Order ID': string | number;
-    'Order Type': 'Cart' | 'Non Cart';
-    'Prescription Required': boolean;
-    'Prescription Added': boolean;
-    'Shipping information': string; // (Home/Store address)
-    'Total items in cart'?: number; // Optional
-    'Grand Total'?: number; // Optional
-    'Total Discount %'?: number; // Optional
-    'Discount Amount'?: number; // Optional
-    'Delivery charge'?: number; // Optional
-    'Net after discount'?: number; // Optional
-    'Payment status'?: number; // Optional
-    'Payment Type'?: 'COD' | 'Prepaid'; // Optional
-    'Cart ID'?: string | number; // Optional
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+  [FirebaseEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
+    Order_ID: string | number;
+    Order_Type: 'Cart' | 'Non_Cart';
+    Prescription_Required: boolean;
+    Prescription_Added: boolean;
+    Shipping_information: string; // (Home/Store address)
+    Total_items_in_cart?: number; // Optional
+    Grand_Total?: number; // Optional
+    Total_Discount_percentage?: number; // Optional
+    Discount_Amount?: number; // Optional
+    Delivery_charge?: number; // Optional
+    Net_after_discount?: number; // Optional
+    Payment_status?: number; // Optionals
+    Payment_Type?: 'COD' | 'Prepaid'; // Optional
+    Cart_ID?: string | number; // Optional
+    Service_Area: 'Pharmacy' | 'Diagnostic';
   };
 
   // ********** ConsultEvents ********** \\
 
-  [AppsFlyerEventName.DOCTOR_SEARCH]: {
+  [FirebaseEventName.DOCTOR_SEARCH]: {
     'Search Text': string;
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };
-  [AppsFlyerEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
-  [AppsFlyerEventName.DOCTOR_PROFILE_VIEWED]: {
+  [FirebaseEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
+  [FirebaseEventName.DOCTOR_PROFILE_VIEWED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -312,7 +329,7 @@ export interface AppsFlyerEvents {
     Hospital: string;
     'Available in': string;
   };
-  [AppsFlyerEventName.BOOK_APPOINTMENT]: {
+  [FirebaseEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
     'Doctor City': string;
     'Type of Doctor': string;
@@ -320,16 +337,16 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };
-  [AppsFlyerEventName.DOCTOR_CLICKED]: {
+  [FirebaseEventName.DOCTOR_CLICKED]: {
     'Doctor Name': string;
     Source: 'List' | 'Search';
   };
-  [AppsFlyerEventName.CONSULT_NOW_CLICKED]: {
+  [FirebaseEventName.CONSULT_NOW_CLICKED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -340,14 +357,14 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': number;
     'Customer ID': string;
     slot: string;
   };
   // confirm the type of data for the below
-  [AppsFlyerEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
+  [FirebaseEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
     name: string;
     specialisation: string;
     experience: number;
@@ -357,13 +374,13 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': number;
     'Customer ID': string;
     slot: string;
   };
-  [AppsFlyerEventName.CONSULT_SLOT_SELECTED]: {
+  [FirebaseEventName.CONSULT_SLOT_SELECTED]: {
     slot: string;
     doctorName: string;
     specialisation: string;
@@ -372,13 +389,13 @@ export interface AppsFlyerEvents {
     hospital: string;
     consultType: 'clinic' | 'online';
   };
-  [AppsFlyerEventName.CONSULT_COUPON_APPLIED]: {
+  [FirebaseEventName.CONSULT_COUPON_APPLIED]: {
     CouponCode: string;
     'Net Amount'?: number;
     'Discount Amount'?: number;
     'Coupon Applied': boolean;
   };
-  [AppsFlyerEventName.PAY_BUTTON_CLICKED]: {
+  [FirebaseEventName.PAY_BUTTON_CLICKED]: {
     Amount: number;
     'Doctor Name': string;
     'Doctor City': string;
@@ -398,101 +415,107 @@ export interface AppsFlyerEvents {
     'Patient UHID': string;
     consultType: 'clinic' | 'online';
   };
-  [AppsFlyerEventName.CONSULTATION_BOOKED]: {
-    'Consult ID': string;
+  [FirebaseEventName.CONSULTATION_BOOKED]: {
+    Consult_ID: string;
     name: string;
     specialisation: string;
     category: string;
     time: Date | string;
     consultType: 'online' | 'clinic';
-    'clinic name': string;
-    'clinic address': string; // whole address
-    'Patient Name': string;
-    'Patient UHID': string;
+    clinic_name: string;
+    clinic_address: string; // whole address
+    Patient_Name: string;
+    Patient_UHID: string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Mobile Number': number;
-    'Customer ID': string;
+    Age: number;
+    Gender: string;
+    Mobile_Number: number;
+    Customer_ID: string;
+  };
+  [FirebaseEventName.RATING_GIVEN]: {
+    'Patient UHID': string;
+    Type: 'Consult' | 'Medicine' | 'Diagnostics';
+    'Rating Value': string;
+    'Rating Reason': string;
   };
 
-  [AppsFlyerEventName.FEATURED_TEST_CLICKED]: {
+  [FirebaseEventName.FEATURED_TEST_CLICKED]: {
     'Product name': string;
     'Product id (SKUID)': string;
     Source: 'Home' | 'List';
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };
 
-  [AppsFlyerEventName.BROWSE_PACKAGE]: {
+  [FirebaseEventName.BROWSE_PACKAGE]: {
     'Package Name': string;
     // Category: string; we don't have category for test
     Source: 'Home' | 'List';
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };
 
   // ********** Health Records ********** \\
 
-  [AppsFlyerEventName.CONSULT_RX]: {
+  [FirebaseEventName.CONSULT_RX]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };
 
-  [AppsFlyerEventName.MEDICAL_RECORDS]: {
+  [FirebaseEventName.MEDICAL_RECORDS]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };
 
-  [AppsFlyerEventName.ADD_RECORD]: {
+  [FirebaseEventName.ADD_RECORD]: {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
   };
 
-  [AppsFlyerEventName.UPLOAD_PRESCRIPTION]: {
+  [FirebaseEventName.UPLOAD_PRESCRIPTION]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };
 
-  [AppsFlyerEventName.UPLOAD_PHOTO]: {
+  [FirebaseEventName.UPLOAD_PHOTO]: {
     Source: 'Take Photo' | 'Gallery'; // List/Profile
   };
 
-  [AppsFlyerEventName.ITEMS_CLICKED]: {
+  [FirebaseEventName.ITEMS_CLICKED]: {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
     Type: 'Prescription' | 'Test Result';
   };
 
-  [AppsFlyerEventName.REORDER_MEDICINES]: {
+  [FirebaseEventName.REORDER_MEDICINES]: {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
+    Age: number;
+    Gender: string;
     'Mobile Number': string;
     'Customer ID': string;
   };

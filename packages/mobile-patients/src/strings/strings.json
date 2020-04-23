@@ -21,8 +21,8 @@
   },
   "login": {
     "hello": "hello!",
-    "please_enter_no": "Please enter your mobile number to login",
-    "otp_sent_to": "OTP will be sent to this number",
+    "please_enter_no": "Please enter your number to get access to an entire hospital on your phone!",
+    "otp_sent_to": "An OTP will be sent to this number",
     "wrong_number": "This seems like a wrong number",
     "numberPrefix": "+91",
     "great": "great!",
@@ -39,7 +39,8 @@
     "okay": "okay!",
     "best_general_physicians_text": "Here are our best General Physicians",
     "all_consults": "All Consults",
-    "distance": "Distance"
+    "distance": "Distance",
+    "hello_login": "hello! :)"
   },
   "home": {
     "hi": "hi",
@@ -221,6 +222,10 @@
         "name": "Insulin"
       }
     ]
+  },
+  "diagnostics": {
+    "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
+    "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode."
   },
   "orders": {
     "urOrders": "MY ORDERS",

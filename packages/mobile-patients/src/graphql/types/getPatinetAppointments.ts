@@ -23,7 +23,9 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
 
 export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_doctorHospital_facility {

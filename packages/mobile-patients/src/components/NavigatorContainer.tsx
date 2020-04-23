@@ -76,6 +76,7 @@ import { CovidScan } from '@aph/mobile-patients/src/components/CovidScan'
 // import { ConsultDetailsById } from './ConsultRoom/ConsultDetailsById';
 import { Tests } from './Tests/Tests';
 import { NotificationScreen } from '@aph/mobile-patients/src/components/Account/NotificationScreen';
+import { ChennaiNonCartOrderForm } from '@aph/mobile-patients/src/components/Medicines/ChennaiNonCartOrderForm';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -113,6 +114,7 @@ export enum AppRoutes {
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
   UploadPrescription = 'UploadPrescription',
+  ChennaiNonCartOrderForm = 'ChennaiNonCartOrderForm',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
   HealthRecordsHome = 'HealthRecordsHome',
   ConsultDetails = 'ConsultDetails',
@@ -275,6 +277,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.UploadPrescription]: {
     screen: UploadPrescription,
+  },
+  [AppRoutes.ChennaiNonCartOrderForm]: {
+    screen: ChennaiNonCartOrderForm,
   },
   [AppRoutes.YourCart]: {
     screen: YourCart,
