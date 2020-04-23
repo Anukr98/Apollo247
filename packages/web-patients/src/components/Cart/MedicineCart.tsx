@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
+import { Popover, Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
@@ -24,6 +24,8 @@ import {
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
   CODCity,
+  NonCartOrderCity,
+  BOOKING_SOURCE,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -39,6 +41,8 @@ import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/Save
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
+import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -467,7 +471,17 @@ export const MedicineCart: React.FC = (props) => {
     cartTotal,
     ePrescriptionData,
     setEPrescriptionData,
+    setCartItems,
   } = useShoppingCart();
+
+  const addToCartRef = useRef(null);
+  const params = useParams<{
+    orderAutoId: string;
+    orderStatus: string;
+  }>();
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
+    params.orderStatus === 'failed' && params.orderAutoId ? true : false
+  );
 
   const urlParams = new URLSearchParams(window.location.search);
   const nonCartFlow = urlParams.get('prescription') ? urlParams.get('prescription') : false;
@@ -552,7 +566,12 @@ export const MedicineCart: React.FC = (props) => {
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             prescriptionImageUrl: '',
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: null,
+            isMedicine:
+              cartItemDetails.type_id === 'Pharma'
+                ? '1'
+                : cartItemDetails.type_id === 'Fmcg'
+                ? '0'
+                : null,
           };
         })
       : [];
@@ -589,12 +608,17 @@ export const MedicineCart: React.FC = (props) => {
 
   const savePayment = useMutation(SAVE_MEDICINE_ORDER_PAYMENT);
 
-  const placeOrder = (orderId: string, orderAutoId: number, isChennaiCOD: boolean) => {
+  const placeOrder = (
+    orderId: string,
+    orderAutoId: number,
+    isChennaiCOD: boolean,
+    userEmail?: string
+  ) => {
     let chennaiOrderVariables = {};
     if (isChennaiCOD) {
       chennaiOrderVariables = {
         CODCity: CODCity.CHENNAI,
-        email: updatedUserEmail,
+        email: userEmail,
       };
     }
 
@@ -619,15 +643,9 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
             return;
           }
-          clearCartInfo && clearCartInfo();
-          setTimeout(() => {
-            setCheckoutDialogOpen(false);
-            setIsLoading(false);
-            window.location.href = clientRoutes.medicinesCartInfo(
-              orderAutoId.toString(),
-              'success'
-            );
-          }, 3000);
+          setCheckoutDialogOpen(false);
+          setIsLoading(false);
+          window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'success');
         }
       })
       .catch((e) => {
@@ -646,10 +664,7 @@ export const MedicineCart: React.FC = (props) => {
       variables,
     })
       .then(({ data }) => {
-        clearCartInfo && clearCartInfo();
-        setTimeout(() => {
-          window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
-        }, 3000);
+        window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
       })
       .catch((e) => {
         console.log({ e });
@@ -687,7 +702,14 @@ export const MedicineCart: React.FC = (props) => {
     );
   };
 
-  const onPressSubmit = async () => {
+  const onPressSubmit = async (userEmail?: string) => {
+    let chennaiOrderVariables = {};
+    if (userEmail && userEmail.length) {
+      chennaiOrderVariables = {
+        NonCartOrderCity: NonCartOrderCity.CHENNAI,
+        email: userEmail,
+      };
+    }
     setUploadingFiles(true);
     const ePresUrls =
       ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
@@ -713,6 +735,8 @@ export const MedicineCart: React.FC = (props) => {
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
               shopId: storeAddressId || '0',
               appointmentId: '',
+              bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+              ...(chennaiOrderVariables && chennaiOrderVariables),
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
@@ -737,6 +761,8 @@ export const MedicineCart: React.FC = (props) => {
           shopId: storeAddressId || '0',
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
+          bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+          ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
@@ -748,11 +774,14 @@ export const MedicineCart: React.FC = (props) => {
 
   const submitChennaiCODOrder = (dataObj: submitFormType) => {
     setIsLoading(true);
-    setUpdatedUserEmail(dataObj.userEmail);
+    if (!(cartItems && cartItems.length)) {
+      onPressSubmit(dataObj.userEmail);
+      return;
+    }
     paymentMutation().then((res) => {
       if (res && res.data && res.data.SaveMedicineOrder) {
         const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
-        placeOrder(orderId, orderAutoId, true);
+        placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
       }
     });
   };
@@ -767,6 +796,14 @@ export const MedicineCart: React.FC = (props) => {
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
 
+  const isChennaiZipCode = (zipCodeInt: Number) => {
+    return (
+      (zipCodeInt >= 600001 && zipCodeInt <= 600130) ||
+      zipCodeInt === 603103 ||
+      zipCodeInt === 603202 ||
+      zipCodeInt === 603211
+    );
+  };
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -1001,14 +1038,9 @@ export const MedicineCart: React.FC = (props) => {
         <div className={classes.checkoutBtn}>
           <AphButton
             onClick={() => {
+              const zipCodeInt = parseInt(selectedZip);
               if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                const zipCodeInt = parseInt(selectedZip);
-                if (
-                  (zipCodeInt >= 600001 && zipCodeInt <= 600129) ||
-                  zipCodeInt === 603103 ||
-                  zipCodeInt === 603202 ||
-                  zipCodeInt === 603211
-                ) {
+                if (isChennaiZipCode(zipCodeInt)) {
                   // redirect to chennai orders form
                   setIsChennaiCheckoutDialogOpen(true);
                   return;
@@ -1019,6 +1051,11 @@ export const MedicineCart: React.FC = (props) => {
                 ((prescriptions && prescriptions.length > 0) ||
                   (ePrescriptionData && ePrescriptionData.length > 0))
               ) {
+                if (isChennaiZipCode(zipCodeInt)) {
+                  // redirect to chennai orders form
+                  setIsChennaiCheckoutDialogOpen(true);
+                  return;
+                }
                 onPressSubmit();
               }
             }}
@@ -1042,6 +1079,29 @@ export const MedicineCart: React.FC = (props) => {
           </AphButton>
         </div>
       </div>
+
+      <Popover
+        open={showOrderPopup}
+        anchorEl={addToCartRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <OrderPlaced setShowOrderPopup={setShowOrderPopup} />
+          </div>
+        </div>
+      </Popover>
 
       <AphDialog open={checkoutDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setCheckoutDialogOpen(false)} title={'Close'} />
@@ -1068,11 +1128,10 @@ export const MedicineCart: React.FC = (props) => {
                       const { orderId, orderAutoId } = res.data.SaveMedicineOrder;
                       const currentPatiendId = currentPatient ? currentPatient.id : '';
                       if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                        clearCartInfo && clearCartInfo();
                         const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                         window.location.href = pgUrl;
                       } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
-                        placeOrder(orderId, orderAutoId, false);
+                        placeOrder(orderId, orderAutoId, false, '');
                       }
                     }
                   })

@@ -254,6 +254,7 @@ const updateConsultRating: Resolver<
       validHubOrdersDelivered: validHubOrders[1],
       validVdcOrders: validHubOrders[2],
       validVdcOrdersDelivered: validHubOrders[3],
+      updatedDate: new Date(),
     };
     await dashboardRepo.saveFeedbackDetails(feedbackAttrs);
   }
@@ -278,6 +279,7 @@ const updatePhrDocSummary: Resolver<
     standAloneDoc: standAloneDocCount[0],
     oldStandAloneDoc: standAloneDocCount[1],
     oldAppointmentDoc: oldDocCount,
+    updatedDate: new Date(),
   };
   await dashboardRepo.saveDocumentSummary(phrDocAttrs);
   return { apptDocCount: docCount, medDocCount: prescritionCount[0] };
@@ -453,6 +455,7 @@ const updateSdSummary: Resolver<
         physicalConsultationFees: Number(doctor.physicalConsultationFees),
         totalRescheduleCount,
         totalCompletedChats,
+        updatedDate: new Date(),
         isActive: <boolean>doctor.isActive,
       };
       await dashboardRepo.saveDashboardDetails(dashboardSummaryAttrs);
@@ -505,6 +508,7 @@ const updateDoctorFeeSummary: Resolver<
         areaName: doctor.doctorHospital[0].facility.city,
         appointmentsCount: totalConsults,
         isActive: <boolean>doctor.isActive,
+        updatedDate: new Date(),
       };
       await dashboardRepo.saveDoctorFeeSummaryDetails(doctorFeeAttrs);
     }
