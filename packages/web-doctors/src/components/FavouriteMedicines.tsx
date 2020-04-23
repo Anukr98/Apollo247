@@ -1660,7 +1660,6 @@ export const FavouriteMedicines: React.FC = () => {
               {value && medUnitObject[value]
                 ? medUnitObject[value].value
                 : value.toLowerCase().replace('_', ' ')}
-              {/* {value.toLowerCase().replace('_', ' ')} */}
             </MenuItem>
           );
         })
