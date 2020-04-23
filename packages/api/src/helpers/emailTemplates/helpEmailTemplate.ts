@@ -2,8 +2,12 @@ import _ from 'lodash';
 
 export const helpEmailTemplate = _.template(
   `<html>
-  <body>
-  <p> #original_sender{<%- patientDetails.mobileNumber %>@apollo247.org} </p>
+  <body>  
+  <% if(helpEmailInput.email != null) {  %>
+    <p> #original_sender{<%- helpEmailInput.email %>} </p>   
+  <% } else { %> 
+    <p> #original_sender{<%- patientDetails.mobileNumber %>@apollo247.org} </p>
+  <% } %>  
   <p> Patient Help Form</p>
   <ul>
   <li>Need help with  : <%- helpEmailInput.category %></li>
