@@ -140,22 +140,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       // console.log(data, 'data');
 
-      let id = data[1].split('&');
+      let linkId = data[1].split('&');
       try {
-        if (id.length > 0) {
-          id = id[0];
+        if (linkId.length > 0) {
+          linkId = linkId[0];
         }
       } catch (error) {}
-      console.log(id, 'id');
+      console.log(linkId, 'linkId');
 
       switch (route) {
         case 'Consult':
           console.log('Consult');
-          getData('Consult', data.length === 2 ? id : undefined);
+          getData('Consult', data.length === 2 ? linkId : undefined);
           break;
         case 'Medicine':
           console.log('Medicine');
-          getData('Medicine', data.length === 2 ? id : undefined);
+          getData('Medicine', data.length === 2 ? linkId : undefined);
           break;
         case 'Test':
           console.log('Test');
@@ -163,11 +163,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
         case 'Speciality':
           console.log('Speciality handleopen');
-          if (data.length === 2) getData('Speciality', id);
+          if (data.length === 2) getData('Speciality', linkId);
           break;
         case 'Doctor':
           console.log('Doctor handleopen');
-          if (data.length === 2) getData('Doctor', id);
+          if (data.length === 2) getData('Doctor', linkId);
           break;
         case 'DoctorSearch':
           console.log('DoctorSearch handleopen');
@@ -176,11 +176,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
         case 'MedicineSearch':
           console.log('MedicineSearch handleopen');
-          getData('MedicineSearch', data.length === 2 ? id : undefined);
+          getData('MedicineSearch', data.length === 2 ? linkId : undefined);
           break;
         case 'MedicineDetail':
           console.log('MedicineDetail handleopen');
-          getData('MedicineDetail', data.length === 2 ? id : undefined);
+          getData('MedicineDetail', data.length === 2 ? linkId : undefined);
           break;
 
         default:
