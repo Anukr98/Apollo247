@@ -992,6 +992,17 @@ export const MedicinePrescription: React.FC = () => {
       defaultRoa: ROUTE_OF_ADMINISTRATION.ORALLY,
     },
   };
+  const medUnitObject: any = {
+    ML: { value: 'ml' },
+    MG: { value: 'mg' },
+    GM: { value: 'gm' },
+    TABLET: { value: 'tablet(s)' },
+    PUFF: { value: 'puff(s)' },
+    UNIT: { value: 'unit(s)' },
+    SPRAY: { value: 'spray(s)' },
+    PATCH: { value: 'patch' },
+    AS_PRESCRIBED: { value: 'As prescribed' },
+  };
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
 
   const [searchInput, setSearchInput] = useState('');
@@ -1591,7 +1602,10 @@ export const MedicinePrescription: React.FC = () => {
               }}
               value={value}
             >
-              {value.toLowerCase().replace('_', ' ')}
+              {value && medUnitObject[value]
+                ? medUnitObject[value].value
+                : value.toLowerCase().replace('_', ' ')}
+              {/* {value.toLowerCase().replace('_', ' ')} */}
             </MenuItem>
           );
         })

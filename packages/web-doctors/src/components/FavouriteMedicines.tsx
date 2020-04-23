@@ -612,6 +612,7 @@ export const FavouriteMedicines: React.FC = () => {
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [medicineUnit, setMedicineUnit] = React.useState<MEDICINE_UNIT>(MEDICINE_UNIT.OTHERS);
+  const [loadingStatus, setLoading] = useState<boolean>(false);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -639,7 +640,6 @@ export const FavouriteMedicines: React.FC = () => {
       selected: false,
     },
   ]);
-  const [loadingStatus, setLoading] = useState<boolean>(false);
   const [toBeTakenSlots, setToBeTakenSlots] = React.useState<SlotsObject[]>([
     {
       id: 'afterfood',
@@ -905,6 +905,17 @@ export const FavouriteMedicines: React.FC = () => {
       defaultRoa: ROUTE_OF_ADMINISTRATION.ORALLY,
     },
   };
+  const medUnitObject: any = {
+    ML: { value: 'ml' },
+    MG: { value: 'mg' },
+    GM: { value: 'gm' },
+    TABLET: { value: 'tablet(s)' },
+    PUFF: { value: 'puff(s)' },
+    UNIT: { value: 'unit(s)' },
+    SPRAY: { value: 'spray(s)' },
+    PATCH: { value: 'patch' },
+    AS_PRESCRIBED: { value: 'As prescribed' },
+  };
   const client = useApolloClient();
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
   const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
@@ -1076,6 +1087,7 @@ export const FavouriteMedicines: React.FC = () => {
           _data.data.getDoctorFavouriteMedicineList &&
           _data.data.getDoctorFavouriteMedicineList.allowedDosages
         ) {
+          console.log(_data.data.getDoctorFavouriteMedicineList.allowedDosages);
           setDosageList(_data.data.getDoctorFavouriteMedicineList.allowedDosages);
         }
         setSelectedMedicinesArr(medicineList);
@@ -1645,7 +1657,10 @@ export const FavouriteMedicines: React.FC = () => {
               }}
               value={value}
             >
-              {value.toLowerCase().replace('_', ' ')}
+              {value && medUnitObject[value]
+                ? medUnitObject[value].value
+                : value.toLowerCase().replace('_', ' ')}
+              {/* {value.toLowerCase().replace('_', ' ')} */}
             </MenuItem>
           );
         })
