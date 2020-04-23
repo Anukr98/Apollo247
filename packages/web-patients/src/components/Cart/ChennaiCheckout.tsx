@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, FormControlLabel, Checkbox, CircularProgress } from '@material-ui/core';
 import React, { useState } from 'react';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { isEmailValid } from '@aph/universal/dist/aphValidators';
 import Scrollbars from 'react-custom-scrollbars';
 import { useCurrentPatient } from 'hooks/authHooks';
 
@@ -71,6 +72,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fed984',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2) !important',
     },
+    error: {
+      color: '#890000',
+    },
   };
 });
 
@@ -87,6 +91,7 @@ export const ChennaiCheckout: React.FC<ChennaiCheckoutFormProps> = (props) => {
   const classes = useStyles({});
   const [patientEmailExists, setPatientEmailExists] = useState(false);
   const [consentFormChecked, setConsentFormChecked] = useState(false);
+  const [emailValid, setEmailValid] = useState(true);
   const [userEmail, setUserEmail] = useState('');
 
   const patient = useCurrentPatient();
@@ -96,6 +101,14 @@ export const ChennaiCheckout: React.FC<ChennaiCheckoutFormProps> = (props) => {
       setUserEmail(patient.emailAddress);
     }
   }
+
+  const handleEmailValidityCheck = () => {
+    if (userEmail.length && !isEmailValid(userEmail)) {
+      setEmailValid(false);
+    } else {
+      setEmailValid(true);
+    }
+  };
 
   return (
     <>
@@ -115,7 +128,9 @@ export const ChennaiCheckout: React.FC<ChennaiCheckoutFormProps> = (props) => {
               placeholder="name@email.com"
               onChange={(event) => setUserEmail(event.target.value)}
               value={userEmail}
+              onBlur={handleEmailValidityCheck}
             />
+            {!emailValid && <div className={classes.error}>Invalid email</div>}
             <div className={classes.checkboxGroup}>
               <FormControlLabel
                 checked={!userEmail.length}
@@ -148,8 +163,8 @@ export const ChennaiCheckout: React.FC<ChennaiCheckoutFormProps> = (props) => {
       </Scrollbars>
       <div className={classes.bottomActions}>
         <AphButton
-          disabled={!consentFormChecked}
-          className={!consentFormChecked ? classes.buttonDisable : ''}
+          disabled={!consentFormChecked || !emailValid}
+          className={!consentFormChecked || !emailValid ? classes.buttonDisable : ''}
           onClick={() => props.submitForm({ userEmail })}
           color="primary"
         >

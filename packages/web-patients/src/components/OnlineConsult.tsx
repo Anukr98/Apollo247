@@ -13,7 +13,7 @@ import {
 } from 'graphql/types/GetDoctorAvailableSlots';
 import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { useMutation } from 'react-apollo-hooks';
-import { AppointmentType } from 'graphql/types/globalTypes';
+import { AppointmentType, BOOKINGSOURCE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
@@ -505,6 +505,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           patientId: currentPatient ? currentPatient.id : '',
           doctorId: doctorId,
           appointmentDateTime: appointmentDateTime,
+          bookingSource: screen.width < 768 ? BOOKINGSOURCE.MOBILE : BOOKINGSOURCE.WEB,
           appointmentType: AppointmentType.ONLINE,
           hospitalId: hospitalId,
           couponCode: couponCode ? couponCode : null,
