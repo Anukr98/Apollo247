@@ -86,9 +86,10 @@ import {
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import {
   g,
-  medUsageType,
   messageCodes,
   nameFormater,
+  medUnitFormatArray,
+  medicineDescription,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
@@ -117,6 +118,7 @@ import {
   NavigationScreenProps,
 } from 'react-navigation';
 import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 
 const { width } = Dimensions.get('window');
 
@@ -270,6 +272,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const client = useApolloClient();
 
   const {
+    caseSheet,
     caseSheetEdit,
     setCaseSheetEdit,
     showEditPreviewButtons,
@@ -478,6 +481,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                     medicineTimings: i.medicineTimings || [],
                     medicineToBeTaken: i.medicineToBeTaken || [],
                     medicineUnit: i.medicineUnit,
+                    routeOfAdministration: i.routeOfAdministration,
+                    medicineCustomDosage: i.medicineCustomDosage || '',
                   };
                 } else {
                   return '';
@@ -520,8 +525,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     showLoading && setLoading && setLoading(true);
     setShowButtons(true);
     const input = getInputData();
-    console.log('input', input);
-
     client
       .mutate<modifyCaseSheet, modifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
@@ -1283,11 +1286,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
       | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
   ) => {
-    const type = medUsageType(item.medicineUnit);
-    const unit: string =
-      item.medicineUnit === MEDICINE_UNIT.OTHERS
-        ? 'other'
-        : (item.medicineUnit || '').toLowerCase();
     return (
       <Text
         style={{
@@ -1301,41 +1299,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             ...theme.viewStyles.text('S', 12, '#02475b', 1, 14, 0.02),
           }}
         >
-          {type + ' '}
-          {item.medicineDosage ? (type === 'Take' ? item.medicineDosage : '') + ' ' : ''}
-          {item.medicineUnit ? (type === 'Take' ? unit + '(s) ' : unit + ' ') : ''}
-          {item.medicineFrequency ? nameFormater(item.medicineFrequency).toLowerCase() + ' ' : ''}
-          {item.medicineConsumptionDurationInDays
-            ? `for ${item.medicineConsumptionDurationInDays} ${
-                item.medicineConsumptionDurationUnit
-                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-                  : ``
-              }`
-            : ''}
-          {item.medicineToBeTaken && item.medicineToBeTaken.length
-            ? item.medicineToBeTaken
-                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '').toLowerCase())
-                .join(', ') + ' '
-            : ''}
-          {item.medicineTimings && item.medicineTimings.length
-            ? 'in the ' +
-              (item.medicineTimings.length > 1
-                ? item.medicineTimings
-                    .slice(0, -1)
-                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '').toLowerCase())
-                    .join(', ') +
-                  ' and ' +
-                  nameFormater(
-                    (item.medicineTimings &&
-                      item.medicineTimings[item.medicineTimings.length - 1]) ||
-                      ''
-                  ).toLowerCase() +
-                  ' '
-                : item.medicineTimings
-                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '').toLowerCase())
-                    .join(', ') + ' ')
-            : ''}
-          {'\n' + item.medicineInstructions}
+          {medicineDescription(item)}
         </Text>
       </Text>
     );
@@ -1365,11 +1329,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                         caseSheetEdit &&
                           props.overlayDisplay(
                             <AddMedicinePopUp
+                              allowedDosages={g(caseSheet, 'allowedDosages')}
                               data={showdata}
                               onClose={() => props.overlayDisplay(null)}
                               onAddnew={(data) => {
-                                console.log(medicinePrescriptionData, selectedMedicinesId);
-
                                 setMedicinePrescriptionData([
                                   ...(medicinePrescriptionData.filter(
                                     (
@@ -1385,7 +1348,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                     ...selectedMedicinesId.filter(
                                       (i) => i !== (data.externalId || data.id)
                                     ),
-                                    data.externalId || '',
+                                    data.externalId || data.id || '',
                                   ].filter((i) => i !== '')
                                 );
                               }}
@@ -1455,24 +1418,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           caseSheetEdit &&
                             props.overlayDisplay(
                               <AddMedicinePopUp
-                                data={
-                                  {
-                                    id: med.id,
-                                    externalId: med.externalId,
-                                    medicineName: med.medicineName,
-                                    medicineDosage: med.medicineDosage,
-                                    medicineToBeTaken: med.medicineToBeTaken,
-                                    medicineInstructions: med.medicineInstructions,
-                                    medicineTimings: med.medicineTimings,
-                                    medicineUnit: med.medicineUnit,
-                                    medicineConsumptionDurationInDays:
-                                      med.medicineConsumptionDurationInDays,
-                                    medicineConsumptionDuration: med.medicineConsumptionDuration,
-                                    medicineFrequency: med.medicineFrequency,
-                                    medicineConsumptionDurationUnit:
-                                      med.medicineConsumptionDurationUnit,
-                                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
-                                }
+                                allowedDosages={g(caseSheet, 'allowedDosages')}
+                                data={med}
                                 onClose={() => props.overlayDisplay(null)}
                                 onAddnew={(data) => {
                                   console.log(medicinePrescriptionData, selectedMedicinesId);
@@ -1503,42 +1450,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                 }}
                               />
                             );
-
-                          //   if (
-                          //     (medicinePrescriptionData &&
-                          //       medicinePrescriptionData.findIndex(
-                          //         (
-                          //           i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
-                          //         ) => ((i || {}).externalId || (i || {}).id) === compareId
-                          //       ) < 0) ||
-                          //     medicinePrescriptionData === null ||
-                          //     medicinePrescriptionData === undefined
-                          //   ) {
-                          //     caseSheetEdit &&
-                          //       setMedicinePrescriptionData([
-                          //         ...(medicinePrescriptionData || []),
-                          //         {
-                          //           id: med.id,
-                          //           externalId: med.externalId,
-                          //           medicineName: med.medicineName,
-                          //           medicineDosage: med.medicineDosage,
-                          //           medicineToBeTaken: med.medicineToBeTaken,
-                          //           medicineInstructions: med.medicineInstructions,
-                          //           medicineTimings: med.medicineTimings,
-                          //           medicineUnit: med.medicineUnit,
-                          //           medicineConsumptionDurationInDays:
-                          //             med.medicineConsumptionDurationInDays,
-                          //           medicineConsumptionDuration: med.medicineConsumptionDuration,
-                          //           medicineFrequency: med.medicineFrequency,
-                          //           medicineConsumptionDurationUnit:
-                          //             med.medicineConsumptionDurationUnit,
-                          //         } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                          //       ]);
-                          //   }
-                          //   setSelectedMedicinesId(
-                          //     [...selectedMedicinesId, compareId || ''].filter((i) => i !== '')
-                          //   );
-                          // }
                         }}
                       >
                         <View style={[styles.dataCardsStyle, { marginVertical: 4 }]}>
@@ -1559,6 +1470,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               onPress={() =>
                 props.overlayDisplay(
                   <AddMedicinePopUp
+                    allowedDosages={g(caseSheet, 'allowedDosages')}
                     onClose={() => props.overlayDisplay(null)}
                     onAddnew={(data) => {
                       if (
@@ -1576,7 +1488,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                         ]);
                         setSelectedMedicinesId(
-                          [...selectedMedicinesId, data.externalId || ''].filter((i) => i !== '')
+                          [
+                            ...selectedMedicinesId.filter((i) => i !== data.externalId || data.id),
+                            data.externalId || data.id || '',
+                          ].filter((i) => i !== '')
                         );
                       } else {
                         Alert.alert('', strings.alerts.already_exists);

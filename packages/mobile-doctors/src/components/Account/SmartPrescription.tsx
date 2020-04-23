@@ -69,13 +69,14 @@ import {
   UpdateDoctorFavouriteTestVariables,
 } from '@aph/mobile-doctors/src/graphql/types/UpdateDoctorFavouriteTest';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { medUsageType, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = SmartPrescriptionStyles;
 
@@ -114,7 +115,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
   const [EditTestId, setEditTestId] = useState<string>('');
   const [showNeedHelp, setshowNeedHelp] = useState(false);
-
+  const [allowedDosages, setAllowedDosages] = useState<string[]>([]);
   useEffect(() => {
     GetFavouriteMedicineList();
     GetFavouriteTestList();
@@ -135,9 +136,16 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           _data.data.getDoctorFavouriteMedicineList.medicineList
         ) {
           const tempmedicineList = _data.data.getDoctorFavouriteMedicineList!.medicineList;
-
+          setAllowedDosages(
+            (g(_data, 'data', 'getDoctorFavouriteMedicineList', 'allowedDosages') || [])
+              .map((item) => item || '')
+              .filter((i) => i !== '')
+          );
           console.log('MedicineList', tempmedicineList);
-
+          AsyncStorage.setItem(
+            'allowedDosages',
+            JSON.stringify(g(_data, 'data', 'getDoctorFavouriteMedicineList', 'allowedDosages'))
+          );
           setmedicineList(tempmedicineList);
         }
         setLoading(false);
@@ -626,6 +634,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       {isAdvice && showAdvice()}
       {isAddMedicine && (
         <AddMedicinePopUp
+          allowedDosages={allowedDosages}
           data={dataMed}
           onClose={() => {
             setIsAddMedicine(false);
@@ -636,32 +645,16 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
               console.log('update_Doctor_FavouriteMedicine');
 
               update_Doctor_FavouriteMedicine({
-                ...(data as UpdateDoctorsFavouriteMedicineInput),
+                ...data,
                 medicineConsumptionDurationInDays: Number(data.medicineConsumptionDurationInDays),
-                medicineFormTypes:
-                  medUsageType(data.medicineUnit!) === 'Apply'
-                    ? MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
-                    : MEDICINE_FORM_TYPES.OTHERS,
-              });
+              } as UpdateDoctorsFavouriteMedicineInput);
             } else {
-              console.log('Save_Doctor_FavouriteMedicine');
+              delete data.id;
+              console.log('Save_Doctor_FavouriteMedicine', data);
               Save_Doctor_FavouriteMedicine({
-                externalId: data.externalId,
-                medicineConsumptionDuration: data.medicineConsumptionDuration,
+                ...data,
                 medicineConsumptionDurationInDays: Number(data.medicineConsumptionDurationInDays),
-                medicineConsumptionDurationUnit: data.medicineConsumptionDurationUnit,
-                medicineDosage: data.medicineDosage!,
-                medicineFormTypes:
-                  medUsageType(data.medicineUnit!) === 'Apply'
-                    ? MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
-                    : MEDICINE_FORM_TYPES.OTHERS,
-                medicineFrequency: data.medicineFrequency,
-                medicineInstructions: data.medicineInstructions,
-                medicineName: data.medicineName!,
-                medicineTimings: data.medicineTimings!,
-                medicineToBeTaken: data.medicineToBeTaken,
-                medicineUnit: data.medicineUnit!,
-              });
+              } as SaveDoctorsFavouriteMedicineInput);
             }
           }}
         />
