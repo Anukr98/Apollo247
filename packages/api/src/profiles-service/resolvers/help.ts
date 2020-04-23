@@ -23,6 +23,7 @@ export const helpTypeDefs = gql`
     reason: String
     comments: String
     patientId: ID
+    email: String
   }
 
   extend type Query {
@@ -35,6 +36,7 @@ type HelpEmailInput = {
   reason: string;
   comments: string;
   patientId: string;
+  email: string;
 };
 
 type HelpEmailInputArgs = { helpEmailInput: HelpEmailInput };
@@ -63,6 +65,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     comments: helpEmailInput.comments,
     reason: helpEmailInput.reason,
     patient: patientDetails,
+    email: helpEmailInput.email,
   };
   await helpTicketRepo.saveHelpTicket(helpTicketAttrs);
   const startDate = addDays(new Date(), -10);
