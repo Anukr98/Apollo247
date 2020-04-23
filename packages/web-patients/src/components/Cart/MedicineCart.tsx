@@ -24,6 +24,8 @@ import {
   UPLOAD_FILE_TYPES,
   BOOKINGSOURCE,
   CODCity,
+  NonCartOrderCity,
+  BOOKING_SOURCE,
 } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
@@ -700,7 +702,14 @@ export const MedicineCart: React.FC = (props) => {
     );
   };
 
-  const onPressSubmit = async () => {
+  const onPressSubmit = async (userEmail?: string) => {
+    let chennaiOrderVariables = {};
+    if (userEmail && userEmail.length) {
+      chennaiOrderVariables = {
+        NonCartOrderCity: NonCartOrderCity.CHENNAI,
+        email: userEmail,
+      };
+    }
     setUploadingFiles(true);
     const ePresUrls =
       ePrescriptionData && ePrescriptionData.map((item) => item.uploadedUrl).filter((i) => i);
@@ -726,6 +735,8 @@ export const MedicineCart: React.FC = (props) => {
                 : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
               shopId: storeAddressId || '0',
               appointmentId: '',
+              bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+              ...(chennaiOrderVariables && chennaiOrderVariables),
               patinetAddressId: deliveryAddressId || '',
               prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
               prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
@@ -750,6 +761,8 @@ export const MedicineCart: React.FC = (props) => {
           shopId: storeAddressId || '0',
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
+          bookingSource: screen.width < 768 ? BOOKING_SOURCE.MOBILE : BOOKING_SOURCE.WEB,
+          ...(chennaiOrderVariables && chennaiOrderVariables),
           prescriptionImageUrl: [...ePresUrls].join(','),
           prismPrescriptionFileId: [...ePresPrismIds].join(','),
           isEprescription: ePrescriptionData && ePrescriptionData.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
@@ -762,7 +775,7 @@ export const MedicineCart: React.FC = (props) => {
   const submitChennaiCODOrder = (dataObj: submitFormType) => {
     setIsLoading(true);
     if (!(cartItems && cartItems.length)) {
-      onPressSubmit();
+      onPressSubmit(dataObj.userEmail);
       return;
     }
     paymentMutation().then((res) => {
