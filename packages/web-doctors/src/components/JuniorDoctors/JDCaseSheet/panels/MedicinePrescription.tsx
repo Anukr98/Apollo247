@@ -716,29 +716,7 @@ export const MedicinePrescription: React.FC = () => {
       selected: false,
     },
   ]);
-  const OtherTypes = [
-    'SYRUP',
-    'DROPS',
-    'CAPSULE',
-    'INJECTION',
-    'TABLET',
-    'BOTTLE',
-    'SUSPENSION',
-    'ROTACAPS',
-    'SACHET',
-    'ML',
-    'OTHERS',
-  ];
-  const gelLotionOintmentTypes = [
-    'POWDER',
-    'CREAM',
-    'SOAP',
-    'GEL',
-    'LOTION',
-    'SPRAY',
-    'OINTMENT',
-    'OTHERS',
-  ];
+
   let dosageFrequency = [
     {
       id: MEDICINE_FREQUENCY.ONCE_A_DAY,
@@ -2119,7 +2097,6 @@ export const MedicinePrescription: React.FC = () => {
                         </Grid>
                       </Grid>
                     </div>
-
                     <div className={`${classes.sectionGroup} ${classes.padBottomRow}`}>
                       <div
                         className={`${classes.sectionTitle} ${classes.noPadding} ${classes.instructionsWrapper}`}
