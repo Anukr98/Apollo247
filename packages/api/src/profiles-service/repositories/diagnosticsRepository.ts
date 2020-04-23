@@ -5,12 +5,13 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {
-  async searchDiagnostics(itemName: string, city: string) {
+  async searchDiagnostics(itemName: string, city: string, isActive: boolean) {
     console.log('itemName', itemName, 'city', city);
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
       .andWhere('diagnostics.city = :cityName', { cityName: city })
+      .andWhere('diagnostics.isActive = true')
       .getMany();
   }
 
@@ -19,6 +20,7 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
+      .andWhere('diagnostics.isActive = true')
       .getMany();
   }
 

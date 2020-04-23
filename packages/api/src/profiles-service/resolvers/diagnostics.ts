@@ -99,7 +99,6 @@ export const diagnosticsTypeDefs = gql`
       city: String
       patientId: String
       searchText: String!
-      isActive: Boolean
     ): SearchDiagnosticsResult!
     searchDiagnosticsById(itemIds: String): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
@@ -167,7 +166,7 @@ type DiagnosticsData = {
 
 const searchDiagnostics: Resolver<
   null,
-  { city: string; patientId: string; searchText: string; isActive: boolean },
+  { city: string; patientId: string; searchText: string },
   ProfilesServiceContext,
   SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
