@@ -532,7 +532,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnoses = (diagnoses: RxPdfData['diagnoses']) => {
     if (diagnoses) {
-      renderSectionHeader('Provisional Diagnosis');
+      renderSectionHeader(ApiConstants.CASESHEET_PROVISIONAL_HEADING.toString());
       diagnoses.forEach((diag, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();
