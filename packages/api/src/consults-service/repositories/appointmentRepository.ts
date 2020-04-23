@@ -1325,6 +1325,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       .andWhere('appointment.status in(:status1)', {
         status1: STATUS.PENDING,
       })
+      .andWhere('appointment.appointmentState != :state', {
+        state: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      })
       .getMany();
   }
   /*return this.find({
