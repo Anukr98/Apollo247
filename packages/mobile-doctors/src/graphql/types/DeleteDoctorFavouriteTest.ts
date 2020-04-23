@@ -8,6 +8,7 @@
 
 export interface DeleteDoctorFavouriteTest_deleteDoctorFavouriteTest_testList {
   __typename: "DoctorsFavouriteTests";
+  id: string;
   itemname: string;
 }
 

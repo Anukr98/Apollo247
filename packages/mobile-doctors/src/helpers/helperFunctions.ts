@@ -1,10 +1,19 @@
 import moment from 'moment';
 import NetInfo from '@react-native-community/netinfo';
-import { MEDICINE_UNIT } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  MEDICINE_UNIT,
+  MEDICINE_FORM_TYPES,
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import Permissions, { PERMISSIONS, Permission } from 'react-native-permissions';
 import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
+import _ from 'lodash';
+import { string } from '@aph/mobile-doctors/src/strings/string';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
+import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
@@ -109,36 +118,124 @@ export const getNetStatus = async () => {
 
 export const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
-export const nameFormater = (name: string) => {
-  const val = name.replace(/_/g, ' ');
-  return val[0].toUpperCase() + val.slice(1).toLowerCase();
+export const nameFormater = (
+  name: string,
+  caseFormat?: 'lower' | 'upper' | 'title' | 'camel' | 'default'
+) => {
+  if (caseFormat === 'title') {
+    return _.startCase(name.toLowerCase());
+  } else if (caseFormat === 'camel') {
+    return _.camelCase(name);
+  } else if (caseFormat === 'lower') {
+    return _.lowerCase(name);
+  } else if (caseFormat === 'upper') {
+    return _.upperCase(name);
+  } else {
+    return _.capitalize(name.replace(/_/g, ' '));
+  }
 };
 
-export const medUsageType = (med: MEDICINE_UNIT | null) => {
-  switch (med) {
-    case MEDICINE_UNIT.POWDER:
-    case MEDICINE_UNIT.CREAM:
-    case MEDICINE_UNIT.SOAP:
-    case MEDICINE_UNIT.GEL:
-    case MEDICINE_UNIT.LOTION:
-    case MEDICINE_UNIT.SPRAY:
-    case MEDICINE_UNIT.SOLUTION:
-    case MEDICINE_UNIT.OINTMENT:
-      return 'Apply';
-    case MEDICINE_UNIT.SYRUP:
-    case MEDICINE_UNIT.DROPS:
-    case MEDICINE_UNIT.CAPSULE:
-    case MEDICINE_UNIT.INJECTION:
-    case MEDICINE_UNIT.TABLET:
-    case MEDICINE_UNIT.BOTTLE:
-    case MEDICINE_UNIT.SUSPENSION:
-    case MEDICINE_UNIT.ROTACAPS:
-    case MEDICINE_UNIT.SACHET:
-    case MEDICINE_UNIT.ML:
-      return 'Take';
-    default:
-      return 'Apply';
+export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
+  let formatedValue = nameFormater(item, 'lower');
+  const existsIndex = string.smartPrescr.muiltdosages.findIndex((i) => i.single === formatedValue);
+  if (existsIndex > -1) {
+    formatedValue = string.smartPrescr.muiltdosages[existsIndex].multiple;
   }
+  return {
+    key: item,
+    value: formatedValue,
+  };
+});
+
+export const medicineDescription = (
+  item:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+    | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
+) => {
+  const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
+  const customDosage = item.medicineCustomDosage ? item.medicineCustomDosage.split('-') : [];
+
+  const unit: string =
+    (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
+  return `${type + ' '}${
+    customDosage.length > 0
+      ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
+          item.medicineTimings && item.medicineTimings.length
+            ? '(' +
+              (item.medicineTimings.length > 1
+                ? item.medicineTimings
+                    .slice(0, -1)
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') +
+                  ' & ' +
+                  nameFormater(
+                    (item.medicineTimings &&
+                      item.medicineTimings[item.medicineTimings.length - 1]) ||
+                      '',
+                    'lower'
+                  ) +
+                  ') '
+                : item.medicineTimings
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') + ' ')
+            : ''
+        }${
+          item.medicineConsumptionDurationInDays
+            ? `for ${item.medicineConsumptionDurationInDays} ${
+                item.medicineConsumptionDurationUnit
+                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                  : ``
+              }`
+            : ''
+        }${
+          item.medicineToBeTaken && item.medicineToBeTaken.length
+            ? item.medicineToBeTaken
+                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                .join(', ') + '.'
+            : ''
+        }`
+      : `${item.medicineDosage ? item.medicineDosage : ''} ${item.medicineUnit ? unit + ' ' : ''}${
+          item.medicineFrequency ? nameFormater(item.medicineFrequency, 'lower') + ' ' : ''
+        }${
+          item.medicineConsumptionDurationInDays
+            ? `for ${item.medicineConsumptionDurationInDays} ${
+                item.medicineConsumptionDurationUnit
+                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                  : ``
+              }`
+            : ''
+        }${
+          item.medicineToBeTaken && item.medicineToBeTaken.length
+            ? item.medicineToBeTaken
+                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                .join(', ') + ' '
+            : ''
+        }${
+          item.medicineTimings && item.medicineTimings.length
+            ? 'in the ' +
+              (item.medicineTimings.length > 1
+                ? item.medicineTimings
+                    .slice(0, -1)
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') +
+                  ' & ' +
+                  nameFormater(
+                    (item.medicineTimings &&
+                      item.medicineTimings[item.medicineTimings.length - 1]) ||
+                      '',
+                    'lower'
+                  ) +
+                  ' '
+                : item.medicineTimings
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') + ' ')
+            : ''
+        }`
+  }${
+    item.routeOfAdministration
+      ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
+      : ''
+  }${item.medicineInstructions ? '\nInstuctions: ' + item.medicineInstructions : ''}`;
 };
 
 export const formatInt = (value: string) => {

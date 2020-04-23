@@ -9,7 +9,6 @@ import {
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { useEffect } from 'react';
 import {
-  AsyncStorage,
   Image,
   ImageSourcePropType,
   ImageStyle,
@@ -23,6 +22,7 @@ import {
 import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = OnboardingStyles;
 

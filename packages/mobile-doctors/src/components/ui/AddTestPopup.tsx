@@ -17,7 +17,7 @@ import {
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ActivityIndicator, Alert, Keyboard, Text, View } from 'react-native';
 
@@ -54,6 +54,12 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
 
   const client = useApolloClient();
+
+  useEffect(() => {
+    if (props.searchTestVal) {
+      GetSearchDiagnostics(props.searchTestVal.replace(/\s+/g, ' '));
+    }
+  }, []);
 
   const getTempTestArray = (Testitemname: searchDiagnostic_searchDiagnostic | null) => {
     if (Testitemname) {
@@ -112,9 +118,10 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   };
 
   const GetSearchDiagnostics = (search_value: string) => {
-    console.log(search_value);
+    setsearchTestVal(search_value);
     if (search_value.length > 2) {
       setLoading(true);
+      setisSearchTestListVisible(true);
       client
         .query<searchDiagnostic, searchDiagnosticVariables>({
           query: SEARCH_DIAGNOSTIC,
@@ -123,10 +130,21 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
         })
         .then((_data) => {
           if (_data && _data.data && _data.data.searchDiagnostic) {
+            const dataArray: (searchDiagnostic_searchDiagnostic | null)[] = [];
             const searchTestResp = _data.data.searchDiagnostic;
-            console.log('SearchResults :', searchTestResp);
-            // getSearchListOptions(searchTestResp);
-            settestsSearchList(searchTestResp);
+            if (
+              searchTestResp.findIndex(
+                (i) => i && (i.itemname || '').toLowerCase() === search_value.trim().toLowerCase()
+              ) === -1
+            ) {
+              dataArray.push({
+                itemname: search_value.trim(),
+              } as searchDiagnostic_searchDiagnostic);
+            }
+
+            dataArray.push(...searchTestResp);
+            console.log(searchTestResp, dataArray, 'sdfghjk');
+            settestsSearchList(dataArray);
           }
 
           setLoading(false);
@@ -203,11 +221,9 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                   multiline={true}
                   value={searchTestVal}
                   onChangeText={(value) => {
-                    setsearchTestVal(value);
-                    GetSearchDiagnostics(value);
-                    setisSearchTestListVisible(true);
+                    GetSearchDiagnostics(value.replace(/\s+/g, ' '));
                   }}
-                  autoCorrect={true}
+                  autoFocus={true}
                 />
               </View>
               {loading ? (
@@ -242,7 +258,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
               <View style={styles.doneButtonStyle}>
                 <Button
                   title={strings.buttons.done}
-                  disabled={searchTestVal ? false : !tempTestArray.length}
+                  disabled={!tempTestArray.length}
                   onPress={() => {
                     props.onPressDone(searchTestVal, tempTestArray);
                     //   settestsSearchList([]);

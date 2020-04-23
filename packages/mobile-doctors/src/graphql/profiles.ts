@@ -539,6 +539,8 @@ export const GET_CASESHEET = gql`
           medicineFormTypes
           medicineFrequency
           medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
         }
         otherInstructions {
           instruction
@@ -620,6 +622,7 @@ export const GET_CASESHEET = gql`
         }
         updatedDate
       }
+      allowedDosages
     }
   }
 `;
@@ -871,12 +874,15 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
         medicineConsumptionDurationInDays
         medicineConsumptionDurationUnit
         medicineDosage
+        medicineFormTypes
         medicineFrequency
         medicineInstructions
         medicineName
         medicineTimings
         medicineToBeTaken
         medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
     }
   }
@@ -896,12 +902,15 @@ export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
         medicineConsumptionDurationInDays
         medicineConsumptionDurationUnit
         medicineDosage
+        medicineFormTypes
         medicineFrequency
         medicineInstructions
         medicineName
         medicineTimings
         medicineToBeTaken
         medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
     }
   }
@@ -911,7 +920,21 @@ export const REMOVE_FAVOURITE_MEDICINE = gql`
   mutation RemoveFavouriteMedicine($id: String) {
     removeFavouriteMedicine(id: $id) {
       medicineList {
+        externalId
         id
+        medicineConsumptionDuration
+        medicineConsumptionDurationInDays
+        medicineConsumptionDurationUnit
+        medicineDosage
+        medicineFormTypes
+        medicineFrequency
+        medicineInstructions
+        medicineName
+        medicineTimings
+        medicineToBeTaken
+        medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
     }
   }
@@ -921,6 +944,7 @@ export const ADD_DOCTOR_FAVOURITE_TEST = gql`
   mutation AddDoctorFavouriteTest($itemname: String!) {
     addDoctorFavouriteTest(itemname: $itemname) {
       testList {
+        id
         itemname
       }
     }
@@ -932,6 +956,7 @@ export const UPDATE_DOCTOR_FAVOURITE_TEST = gql`
     updateDoctorFavouriteTest(id: $id, itemname: $itemname) {
       testList {
         id
+        itemname
       }
     }
   }
@@ -941,6 +966,7 @@ export const DELETE_DOCTOR_FAVOURITE_TEST = gql`
   mutation DeleteDoctorFavouriteTest($testId: ID!) {
     deleteDoctorFavouriteTest(testId: $testId) {
       testList {
+        id
         itemname
       }
     }
@@ -990,6 +1016,7 @@ export const DELETE_DOCTOR_FAVOURITE_ADVICE = gql`
     }
   }
 `;
+
 export const UPLOAD_CHAT_FILE = gql`
   mutation uploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
     uploadChatDocument(
@@ -1051,13 +1078,17 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineConsumptionDurationInDays
         medicineConsumptionDurationUnit
         medicineDosage
+        medicineFormTypes
         medicineFrequency
         medicineInstructions
         medicineName
         medicineTimings
         medicineToBeTaken
         medicineUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
+      allowedDosages
     }
   }
 `;

@@ -10,7 +10,7 @@ import {
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
-import { medUsageType, nameFormater } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { nameFormater, medicineDescription } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
@@ -165,11 +165,6 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           {medicine &&
             medicine.map((item, index) => {
               if (item) {
-                const type = medUsageType(item.medicineUnit);
-                const unit: string =
-                  item.medicineUnit === MEDICINE_UNIT.OTHERS
-                    ? 'other'
-                    : (item.medicineUnit || '').toLowerCase();
                 return (
                   <View
                     style={
@@ -179,58 +174,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                     }
                   >
                     {renderSubHeading(`${index + 1}. ${item.medicineName}`)}
-                    {renderDescription(
-                      `${type + ' '}${
-                        item.medicineDosage
-                          ? (type === 'Take' ? item.medicineDosage : '') + ' '
-                          : ''
-                      }${item.medicineUnit ? (type === 'Take' ? unit + '(s) ' : unit + ' ') : ''}${
-                        item.medicineFrequency
-                          ? nameFormater(item.medicineFrequency).toLowerCase() + ' '
-                          : ''
-                      }${
-                        item.medicineConsumptionDurationInDays
-                          ? `for ${item.medicineConsumptionDurationInDays} ${
-                              item.medicineConsumptionDurationUnit
-                                ? `${item.medicineConsumptionDurationUnit
-                                    .slice(0, -1)
-                                    .toLowerCase()}(s) `
-                                : ``
-                            }`
-                          : ''
-                      }${
-                        item.medicineToBeTaken && item.medicineToBeTaken.length
-                          ? item.medicineToBeTaken
-                              .map((i: MEDICINE_TO_BE_TAKEN | null) =>
-                                nameFormater(i || '').toLowerCase()
-                              )
-                              .join(', ') + ' '
-                          : ''
-                      }${
-                        item.medicineTimings && item.medicineTimings.length
-                          ? 'in the ' +
-                            (item.medicineTimings.length > 1
-                              ? item.medicineTimings
-                                  .slice(0, -1)
-                                  .map((i: MEDICINE_TIMINGS | null) =>
-                                    nameFormater(i || '').toLowerCase()
-                                  )
-                                  .join(', ') +
-                                ' and ' +
-                                nameFormater(
-                                  (item.medicineTimings &&
-                                    item.medicineTimings[item.medicineTimings.length - 1]) ||
-                                    ''
-                                ).toLowerCase() +
-                                ' '
-                              : item.medicineTimings
-                                  .map((i: MEDICINE_TIMINGS | null) =>
-                                    nameFormater(i || '').toLowerCase()
-                                  )
-                                  .join(', ') + ' ')
-                          : ''
-                      }${'\n' + item.medicineInstructions}`
-                    )}
+                    {renderDescription(medicineDescription(item))}
                   </View>
                 );
               }
