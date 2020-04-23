@@ -62,6 +62,9 @@ export enum ApiConstants {
   ORDER_PLACED_TITLE = 'Medicine order is placed',
   ORDER_PLACED_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your order {1} is placed with us successfully.',
 
+  // medicine order out for delivery
+  UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
+
   //medicine order out for delivery
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
   ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
@@ -276,4 +279,8 @@ export enum ApiConstants {
   AUTO_SUBMIT_JD_CASESHEET_RESPONSE = 'Checked all the appointments scheduled after 10 minutes',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
+  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
+  NO_JD_AVAILABLE_TEXT = 'No JD Available',
+  MEDICINE_TIMINGS = '(morning, noon, evening & night)',
+  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)',
 }

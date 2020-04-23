@@ -12,7 +12,7 @@ import {
   Index,
 } from 'typeorm';
 import { IsDate } from 'class-validator';
-import { DoctorType } from 'doctors-service/entities';
+import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -485,6 +485,15 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_DAY = 'ONCE_A_DAY',
   THRICE_A_DAY = 'THRICE_A_DAY',
   TWICE_A_DAY = 'TWICE_A_DAY',
+  ALTERNATE_DAY = 'ALTERNATE_DAY',
+  THREE_TIMES_A_WEEK = 'THREE_TIMES_A_WEEK',
+  ONCE_A_WEEK = 'ONCE_A_WEEK',
+  EVERY_HOUR = 'EVERY_HOUR',
+  EVERY_TWO_HOUR = 'EVERY_TWO_HOURS',
+  EVERY_FOUR_HOUR = 'EVERY_FOUR_HOURS',
+  TWICE_A_WEEK = 'TWICE_A_WEEK',
+  ONCE_IN_15_DAYS = 'ONCE_IN_15_DAYS',
+  ONCE_A_MONTH = 'ONCE_IN_15_DAYS',
 }
 export enum MEDICINE_TIMINGS {
   AS_NEEDED = 'AS_NEEDED',
@@ -504,18 +513,23 @@ export enum CASESHEET_STATUS {
 }
 
 export enum MEDICINE_UNIT {
+  AS_PRESCRIBED = 'AS_PRESCRIBED',
   BOTTLE = 'BOTTLE',
   CAPSULE = 'CAPSULE',
   CREAM = 'CREAM',
   DROPS = 'DROPS',
   GEL = 'GEL',
+  GM = 'GM',
   INJECTION = 'INJECTION',
   LOTION = 'LOTION',
   ML = 'ML',
+  MG = 'MG',
   NA = 'NA',
   OINTMENT = 'OINTMENT',
   OTHERS = 'OTHERS',
+  PATCH = 'PATCH',
   POWDER = 'POWDER',
+  PUFF = 'PUFF',
   ROTACAPS = 'ROTACAPS',
   SACHET = 'SACHET',
   SOAP = 'SOAP',
@@ -524,6 +538,7 @@ export enum MEDICINE_UNIT {
   SUSPENSION = 'SUSPENSION',
   SYRUP = 'SYRUP',
   TABLET = 'TABLET',
+  UNIT = 'UNIT',
 }
 
 export enum AUDIT_STATUS {
@@ -544,6 +559,8 @@ export type CaseSheetMedicinePrescription = {
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
   medicineUnit: MEDICINE_UNIT;
+  routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
+  medicineCustomDosage?: string;
 };
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
@@ -1375,6 +1392,7 @@ export interface RxPdfData {
     ingredients: string[];
     frequency: string;
     instructions?: string;
+    routeOfAdministration?: string;
   }[];
   generalAdvice: CaseSheetOtherInstruction[];
   diagnoses: CaseSheetDiagnosis[];

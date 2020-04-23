@@ -1,7 +1,7 @@
 //PHR Consult & RX
 export const phrConsultTabClickTracking = (userData: any) => {
     if (window.webengage) {
-        let { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
+        const { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
         window.webengage.track("PHR Consult & RX", {
             "Patient Name": firstName,
             "Patient UHID": uhid,
@@ -16,7 +16,7 @@ export const phrConsultTabClickTracking = (userData: any) => {
 //PHR Medical Records
 export const phrMedicalRecordsTabClickTracking = (userData: any) => {
     if (window.webengage) {
-        let { id,
+        const { id,
             mobileNumber,
             firstName,
             relation,
@@ -44,7 +44,7 @@ export const addRecordClickTracking = (source: string) => {
 }
 //Upload Prescription
 export const uploadPrescriptionTracking = (data: any) => {
-    let { id, mobileNumber, firstName, relation, age, gender, uhid } = data;
+    const { id, mobileNumber, firstName, relation, age, gender, uhid } = data;
     window.webengage.track("Upload Prescription", {
         "Patient Name": firstName,
         "Patient UHID": uhid,
@@ -63,7 +63,7 @@ export const uploadPhotoTracking = (source: string) => {
 }
 //Items Clicked
 export const itemsClickedTracking = (data: any) => {
-    let { source, type } = data;
+    const { source, type } = data;
     window.webengage.track("Items Clicked", {
         Source: source, //Consult/Medical
         Type: type //Prescription/Test Result
@@ -72,7 +72,7 @@ export const itemsClickedTracking = (data: any) => {
 //PHR Consult Card click 
 export const phrConsultCardClickTracking = (data: any) => {
     if (window.webenage) {
-        let { id,
+        const { id,
             mobileNumber,
             firstName,
             relation,

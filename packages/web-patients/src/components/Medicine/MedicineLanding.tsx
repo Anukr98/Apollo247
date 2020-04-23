@@ -22,6 +22,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import { uploadPrescriptionTracking } from "../../webEngageTracking";
 import moment from 'moment';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -327,14 +328,33 @@ export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
   const { currentPatient } = useAllCurrentPatients();
+  const {
+    clearCartInfo,
+    cartItems,
+    setCartItems,
+    ePrescriptionData,
+    prescriptions,
+  } = useShoppingCart();
   const params = useParams<{
     orderAutoId: string;
     orderStatus: string;
   }>();
 
   if (params.orderStatus === 'success') {
-    localStorage.removeItem(`${currentPatient && currentPatient.id}`);
-    localStorage.removeItem('dp');
+    if (cartItems.length > 0 && params.orderAutoId !== 'prescription') {
+      // the length condition check is mandatory else it will execute it infinity times
+      localStorage.removeItem(`${currentPatient && currentPatient.id}`);
+      localStorage.removeItem('dp');
+      setCartItems && setCartItems([]);
+      clearCartInfo && clearCartInfo();
+    }
+    if (
+      params.orderAutoId === 'prescription' &&
+      ((ePrescriptionData && ePrescriptionData.length > 0) ||
+        (prescriptions && prescriptions.length > 0)) // the length condition check is mandatory else it will execute it infinity times
+    ) {
+      clearCartInfo && clearCartInfo();
+    }
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
