@@ -157,6 +157,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           }
         )
       }
+      let flag = false
       for (let slots of doctor.doctorSlots) {
         for (let slot of slots['slots']) {
           if (slot.status == "OPEN") {
@@ -171,9 +172,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 "referenceSlot": slot.slot
               }
             );
+            flag = true;
             break;
           }
         }
+        if (flag) { break; }
+
       }
       matchedDoctors.push(doctor);
     }
@@ -223,10 +227,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             }
           )
         }
+        let flag = false;
         for (let slots of doctor.doctorSlots) {
           for (let slot of slots['slots']) {
             if (slot.status == "OPEN") {
-              console.log(slot.status);
+              flag = true;
+
               possibleDoctorsNextAvailability.push(
                 {
                   "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
@@ -239,6 +245,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               );
               break;
             }
+          }
+          if (flag) {
+            break;
           }
         }
         possibleDoctors.push(doctor);
