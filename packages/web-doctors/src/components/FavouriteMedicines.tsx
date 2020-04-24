@@ -1308,9 +1308,25 @@ export const FavouriteMedicines: React.FC = () => {
     });
   };
   const daySlotsToggleAction = (slotId: string) => {
+    let isAsNeededSelected = false;
+    if (slotId === 'AS_NEEDED') {
+      daySlots.map((slot: SlotsObject) => {
+        if (slot && slot.id === 'AS_NEEDED' && !slot.selected) {
+          isAsNeededSelected = true;
+        }
+      });
+    }
     const slots = daySlots.map((slot: SlotsObject) => {
-      if (slot && slotId === slot.id) {
-        slot.selected = !slot.selected;
+      if (!isAsNeededSelected) {
+        if (slot && slot.id === 'AS_NEEDED') {
+          slot.selected = false;
+        } else {
+          if (slot && slotId === slot.id) {
+            slot.selected = !slot.selected;
+          }
+        }
+      } else {
+        slot.selected = slot && slotId === slot.id && slotId === 'AS_NEEDED' ? true : false;
       }
       return slot;
     });
