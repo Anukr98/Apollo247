@@ -14,30 +14,34 @@ import {
   Remove,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import { RadioButtons } from '@aph/mobile-doctors/src/components/ui/RadioButtons';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import {
   MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FORM_TYPES,
   MEDICINE_FREQUENCY,
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
-  MEDICINE_FORM_TYPES,
   ROUTE_OF_ADMINISTRATION,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
+  formatFractionalNumber,
   formatInt,
   isValidSearch,
-  nameFormater,
-  formatFloating,
   medUnitFormatArray,
+  nameFormater,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   BackHandler,
   Dimensions,
   FlatList,
@@ -48,12 +52,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from 'react-native';
-import { RadioButtons } from '@aph/mobile-doctors/src/components/ui/RadioButtons';
-import AsyncStorage from '@react-native-community/async-storage';
-import { string } from '@aph/mobile-doctors/src/strings/string';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -568,11 +567,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           placeholder=""
           placeholderTextColor="rgba(1, 71, 91, 0.3)"
           value={medicineDosage}
-          maxLength={5}
+          maxLength={7}
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-          onChange={(text) =>
-            setMedicineDosage((formatFloating(text.nativeEvent.text) || '').toString())
-          }
+          onChange={(text) => {
+            setMedicineDosage(formatFractionalNumber(text.nativeEvent.text));
+          }}
         />
       );
     } else {
@@ -589,7 +588,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               placeholder={''}
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={existingAnswers.value}
-              maxLength={5}
+              maxLength={7}
               selectionColor={theme.colors.INPUT_CURSOR_COLOR}
               onChange={(text) => {
                 setMedTimingAnswers([
@@ -597,7 +596,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   {
                     key: existingAnswers.key,
                     selected: existingAnswers.selected,
-                    value: (formatFloating(text.nativeEvent.text) || '').toString(),
+                    value: formatFractionalNumber(text.nativeEvent.text),
                   },
                 ]);
               }}
@@ -978,9 +977,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           setMedName(item.name);
           if (item.name === item.sku) {
             setMedicineSelected(item as MedicineProductDetails);
+            setExternalId(item.sku);
             setMedType(MEDICINE_UNIT.OTHERS);
           } else {
             medDetailsApi(item.sku);
+            setExternalId(item.sku);
           }
         }}
       >

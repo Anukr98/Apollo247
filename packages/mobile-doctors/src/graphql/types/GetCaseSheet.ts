@@ -188,6 +188,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   followUpConsultType: APPOINTMENT_TYPE | null;
   consultType: string | null;
   notes: string | null;
+  updatedDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {

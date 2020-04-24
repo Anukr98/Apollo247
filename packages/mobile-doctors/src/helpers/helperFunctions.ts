@@ -277,6 +277,9 @@ export const formatFloating = (value: string) => {
       : parseFloat(value);
   return number || 0;
 };
+export const formatFractionalNumber = (value: string) => {
+  return (value.match(/[0-9]+[.]?[0-9]*([\/]){0,1}([0-9]+[.]?[0-9]*)*/) || [''])[0];
+};
 export const getDateArray = (start: Date, end: Date) => {
   const arr = [];
   const dt = new Date(start);

@@ -42,6 +42,7 @@ export interface PreviewPrescriptionProps
     followUp: string | null;
     onEditPress: () => void;
     onSendPress: () => void;
+    onback?: () => void;
   }> {}
 
 export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) => {
@@ -54,7 +55,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
   const followUp = props.navigation.getParam('followUp');
   const onEditPress = props.navigation.getParam('onEditPress');
   const onSendPress = props.navigation.getParam('onSendPress');
-
+  const onback = props.navigation.getParam('onback');
   const renderHeader = () => {
     return (
       <Header
@@ -64,7 +65,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
         }}
         leftIcon={'backArrow'}
         headerText={'Prescription'}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => (onback ? onback() : props.navigation.goBack())}
       />
     );
   };

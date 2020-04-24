@@ -646,6 +646,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
 
               update_Doctor_FavouriteMedicine({
                 ...data,
+                externalId: data.externalId === data.medicineName ? '' : data.externalId,
                 medicineConsumptionDurationInDays: Number(data.medicineConsumptionDurationInDays),
               } as UpdateDoctorsFavouriteMedicineInput);
             } else {
@@ -653,6 +654,7 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
               console.log('Save_Doctor_FavouriteMedicine', data);
               Save_Doctor_FavouriteMedicine({
                 ...data,
+                externalId: data.externalId === data.medicineName ? '' : data.externalId,
                 medicineConsumptionDurationInDays: Number(data.medicineConsumptionDurationInDays),
               } as SaveDoctorsFavouriteMedicineInput);
             }

@@ -209,6 +209,7 @@ export const MODIFY_CASESHEET = gql`
         appointmentDateTime
         appointmentDocuments {
           documentPath
+          prismFileId
         }
         appointmentState
         appointmentType
@@ -219,6 +220,7 @@ export const MODIFY_CASESHEET = gql`
         parentId
         status
         rescheduleCount
+        rescheduleCountByDoctor
         isFollowUp
         followUpParentId
         isTransfer
@@ -247,6 +249,29 @@ export const MODIFY_CASESHEET = gql`
         streetLine2
         streetLine3
         zip
+        registrationNumber
+        signature
+        specialty {
+          createdDate
+          id
+          image
+          name
+          specialistSingularTerm
+          specialistPluralTerm
+          userFriendlyNomenclature
+          displayOrder
+        }
+        doctorHospital {
+          facility {
+            city
+            country
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+            zipcode
+          }
+        }
       }
       consultType
       diagnosis {
@@ -263,16 +288,21 @@ export const MODIFY_CASESHEET = gql`
       followUpConsultType
       id
       medicinePrescription {
-        medicineConsumptionDurationInDays
+        id
+        externalId
         medicineName
         medicineDosage
+        medicineToBeTaken
+        medicineInstructions
         medicineTimings
         medicineUnit
-        medicineInstructions
+        medicineConsumptionDurationInDays
         medicineConsumptionDuration
         medicineFormTypes
         medicineFrequency
         medicineConsumptionDurationUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
       notes
       otherInstructions {
@@ -288,6 +318,7 @@ export const MODIFY_CASESHEET = gql`
       }
       status
       sentToPatient
+      updatedDate
     }
   }
 `;
@@ -564,6 +595,7 @@ export const GET_CASESHEET = gql`
         followUpConsultType
         consultType
         notes
+        updatedDate
       }
       pastAppointments {
         id
