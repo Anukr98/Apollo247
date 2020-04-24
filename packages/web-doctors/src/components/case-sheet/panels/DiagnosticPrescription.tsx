@@ -12,6 +12,8 @@ import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescrip
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GET_DOCTOR_FAVOURITE_TESTS } from 'graphql/doctors';
 import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 interface OptionType {
   itemname: string;
@@ -265,8 +267,10 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+type Params = { id: string; patientId: string; tabValue: string };
 export const DiagnosticPrescription: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
   const [searchInput, setSearchInput] = useState('');
   const [favTests, setFavTests] = useState();
   const {
@@ -344,7 +348,6 @@ export const DiagnosticPrescription: React.FC = () => {
 
   useEffect(() => {
     if (idx >= 0) {
-      setSelectedValues(selectedValues);
       suggestions!.map((item, idx) => {
         selectedValues!.map((val) => {
           if (item!.itemname === val.itemname) {
@@ -416,8 +419,14 @@ export const DiagnosticPrescription: React.FC = () => {
       )
     );
   }
+
   const handleDelete = (item: any, idx: number) => {
     selectedValues!.splice(idx, 1);
+    const storageItem = getLocalStorageItem(params.id);
+    if (storageItem) {
+      storageItem.diagnosticPrescription = selectedValues;
+      updateLocalStorageItem(params.id, storageItem);
+    }
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
     setIdx(sum);
@@ -498,6 +507,11 @@ export const DiagnosticPrescription: React.FC = () => {
               <Autosuggest
                 onSuggestionSelected={(e, { suggestion }) => {
                   selectedValues && selectedValues.push(suggestion);
+                  const storageItem = getLocalStorageItem(params.id);
+                  if (storageItem) {
+                    storageItem.diagnosticPrescription = selectedValues;
+                    updateLocalStorageItem(params.id, storageItem);
+                  }
                   setSelectedValues(selectedValues);
                   setShowAddCondition(false);
                   suggestions = suggestions.filter(
@@ -520,6 +534,11 @@ export const DiagnosticPrescription: React.FC = () => {
                     if (e.which == 13 || e.keyCode == 13) {
                       if (selectedValues && suggestions.length === 1) {
                         selectedValues.push(suggestions[0]);
+                        const storageItem = getLocalStorageItem(params.id);
+                        if (storageItem) {
+                          storageItem.diagnosticPrescription = selectedValues;
+                          updateLocalStorageItem(params.id, storageItem);
+                        }
                         setSelectedValues(selectedValues);
                         setShowAddCondition(false);
                         suggestions = suggestions.filter((val) => selectedValues.includes(val!));

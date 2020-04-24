@@ -40,6 +40,8 @@ import {
   GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList,
 } from 'graphql/types/GetDoctorFavouriteMedicineList';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -666,8 +668,10 @@ export interface MedicineProductsResponse {
 }
 let cancel: any;
 
+type Params = { id: string; patientId: string; tabValue: string };
 export const MedicinePrescription: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
 
   const {
     medicinePrescription: selectedMedicinesArr,
@@ -1205,6 +1209,11 @@ export const MedicinePrescription: React.FC = () => {
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
     selectedMedicinesArr!.splice(idx, 1);
+    const storageItem = getLocalStorageItem(params.id);
+    if (storageItem) {
+      storageItem.medicinePrescription = selectedMedicinesArr;
+      updateLocalStorageItem(params.id, storageItem);
+    }
     setSelectedMedicinesArr(selectedMedicinesArr);
     const sum = idx + Math.random();
     setIdx(sum);
@@ -1350,15 +1359,11 @@ export const MedicinePrescription: React.FC = () => {
     });
     setShowDosage(true);
   };
-  useEffect(() => {
-    if (idx >= 0) {
-      setSelectedMedicines(selectedMedicines);
-      setSelectedMedicinesArr(selectedMedicinesArr);
-    }
-  }, [selectedMedicines, idx, selectedMedicinesArr]);
+
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
+
   useEffect(() => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
       selectedMedicinesArr!.forEach((res: any) => {
@@ -1542,6 +1547,12 @@ export const MedicinePrescription: React.FC = () => {
       if (isUpdate) {
         const medicineArray = selectedMedicinesArr;
         medicineArray!.splice(idx, 1, inputParamsArr);
+
+        const storageItem = getLocalStorageItem(params.id);
+        if (storageItem) {
+          storageItem.medicinePrescription = medicineArray;
+          updateLocalStorageItem(params.id, storageItem);
+        }
         setSelectedMedicinesArr(medicineArray);
         const medicineObj = selectedMedicines;
         medicineObj.splice(idx, 1, inputParams);
@@ -1549,6 +1560,11 @@ export const MedicinePrescription: React.FC = () => {
       } else {
         const medicineArray = selectedMedicinesArr;
         medicineArray!.push(inputParamsArr);
+        const storageItem = getLocalStorageItem(params.id);
+        if (storageItem) {
+          storageItem.medicinePrescription = medicineArray;
+          updateLocalStorageItem(params.id, storageItem);
+        }
         setSelectedMedicinesArr(medicineArray);
         const medicineObj = selectedMedicines;
         medicineObj.push(inputParams);
