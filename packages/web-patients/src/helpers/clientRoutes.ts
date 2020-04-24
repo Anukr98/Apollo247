@@ -48,6 +48,7 @@ export const clientRoutes = {
   partnerSBI: () => '/partners/sbi',
   contactUs: () => '/contact',
   covidLanding: () => '/covid19',
+  covidDetails: () => '/covid19/article',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
