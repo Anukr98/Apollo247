@@ -901,12 +901,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const postDoctorClickWEGEvent = (
-    doctorName: string,
+    doctorDetails: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
-      'Doctor Name': doctorName,
+      'Doctor Name': doctorDetails.fullName!,
       Source: source,
+      'Doctor ID': doctorDetails.id,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Doctor Category': doctorDetails.doctorType,
+      'Online Price': Number(doctorDetails.onlineConsultationFees),
+      'Physical Price': Number(doctorDetails.physicalConsultationFees),
+      'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
     };
     postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, eventAttributes);
@@ -930,7 +936,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           numberOfLines={numberOfLines}
           availableModes={filter ? filter : null}
           onPress={() => {
-            postDoctorClickWEGEvent(rowData.fullName!, 'List');
+            postDoctorClickWEGEvent(rowData, 'List');
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
             });

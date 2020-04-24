@@ -191,6 +191,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient ? currentPatient.id : '';
   const [state, setState] = useState<string>('');
+  const [city, setCity] = useState<string>('');
   const { setDeliveryAddressId } = useShoppingCart();
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
@@ -226,6 +227,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
         props.currentAddress.addressLine2.length > 0
           ? props.currentAddress.addressLine2
           : '';
+      const cityAndStateArr = address2 && address2.length > 0 ? address2.split(',') : [];
+      const city = cityAndStateArr.length > 0 && cityAndStateArr[0] ? cityAndStateArr[0] : '';
+      const state =
+        cityAndStateArr.length > 0 && cityAndStateArr[1] ? cityAndStateArr[1].trim() : '';
       const pincode =
         props.currentAddress &&
         props.currentAddress.zipcode &&
@@ -247,6 +252,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
       // console.log(address1, address2, pincode, addressType, 'in use effect.......');
       setAddress1(address1);
       setAddress2(address2);
+      setState(state);
+      setCity(city);
       setPincode(pincode);
       setAddressType(addressType);
       setAddressId(addressId);
@@ -291,6 +298,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
             ).long_name;
 
             setState(state || '');
+            setCity(city || '');
             setPincode(pincode || '');
             const location = city ? city.concat(', ').concat(state) : state;
 
@@ -434,7 +442,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     UpdatePatientAddressInput: {
                       id: addressId,
                       addressLine1: address1,
-                      addressLine2: address2,
+                      // addressLine2: address2,
+                      city: city,
+                      state: state,
                       zipcode: pincode,
                       mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                       addressType: addressType as PATIENT_ADDRESS_TYPE,
@@ -457,7 +467,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     patientAddress: {
                       patientId: currentPatientId,
                       addressLine1: address1,
-                      addressLine2: address2,
+                      // addressLine2: address2,
+                      city: city,
+                      state: state,
                       zipcode: pincode,
                       mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
                       addressType: addressType as PATIENT_ADDRESS_TYPE,

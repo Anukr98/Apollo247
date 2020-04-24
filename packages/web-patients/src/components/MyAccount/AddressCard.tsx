@@ -83,8 +83,6 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
   const deleteAddRef = useRef(null);
   const deleteAddressMutation = useMutation(DELETE_PATIENT_ADDRESS);
 
-  // console.log('THE PROPS ARE: ', props);
-
   const addressDivs = props.addresses.map((address) => {
     return (
       <Grid item xs={12} key={`${address.id}`}>
@@ -102,7 +100,7 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
               : address.addressType}
           </div>
           {address.addressLine1}
-          <br /> {`${address.addressLine2} - ${address.zipcode}`}
+          <br /> {`${address.city}, ${address.state} - ${address.zipcode}`}
         </div>
       </Grid>
     );

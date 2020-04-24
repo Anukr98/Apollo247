@@ -205,6 +205,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           quantity: data.quantity,
           name: data.medicineName,
           prescriptionRequired: medicineDetails.is_prescription_required == '1',
+          isMedicine: medicineDetails.type_id == 'Pharma',
         } as ShoppingCartItem);
         if (medicineDetails.is_prescription_required == '1') {
           addEPrescription!({
@@ -477,8 +478,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                   )}`,
                   'Patient UHID': g(currentPatient, 'uhid'),
                   Relation: g(currentPatient, 'relation'),
-                  Age: Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-                  Gender: g(currentPatient, 'gender'),
+                  'Patient Age': Math.round(
+                    moment().diff(currentPatient.dateOfBirth, 'years', true)
+                  ),
+                  'Patient Gender': g(currentPatient, 'gender'),
                   'Mobile Number': g(currentPatient, 'mobileNumber'),
                   'Customer ID': g(currentPatient, 'id'),
                 };

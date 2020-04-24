@@ -15,6 +15,7 @@ import { getConnection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { log, debugLog } from 'customWinstonLogger';
+import { Gender } from 'doctors-service/entities';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -104,6 +105,7 @@ const getCurrentPatients: Resolver<
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   let patients;
+
   patients = await patientRepo.findByMobileNumber(mobileNumber);
   if (patients.length == 0) {
     const callStartTime = new Date();
@@ -233,15 +235,21 @@ const getCurrentPatients: Resolver<
       homeLogger('CREATE_OR_RETURN_PATIENTS_START');
 
       //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
+
       patientPromises = uhids.response!.signUpUserData.map((data) => {
         return findOrCreatePatient(
           { uhid: data.UHID, mobileNumber },
           {
             firstName: data.userName,
             lastName: '',
-            gender: undefined,
+            gender: data.gender
+              ? data.gender.toUpperCase() === Gender.FEMALE
+                ? Gender.FEMALE
+                : Gender.MALE
+              : undefined,
             mobileNumber,
             uhid: data.UHID,
+            dateOfBirth: data.dob == 0 ? undefined : new Date(data.dob),
           }
         );
       });
@@ -421,9 +429,14 @@ const getLoginPatients: Resolver<
         {
           firstName: data.userName,
           lastName: '',
-          gender: undefined,
+          gender: data.gender
+            ? data.gender.toUpperCase() === Gender.FEMALE
+              ? Gender.FEMALE
+              : Gender.MALE
+            : undefined,
           mobileNumber,
           uhid: data.UHID,
+          dateOfBirth: data.dob == 0 ? undefined : new Date(data.dob),
         }
       );
     });
