@@ -185,7 +185,7 @@ export enum ApiConstants {
   GET_CURRENT_PATIENTS_API_LOG_FILE = '/debug-logs/get-current-patients.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
-  CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
+  CC_MAIL = 'raj@popcornapps.com',
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
