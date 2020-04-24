@@ -125,7 +125,7 @@ let intervalId: NodeJS.Timeout;
 let stoppedTimer: number;
 let timerId: NodeJS.Timeout;
 let callhandelBack: boolean = true;
-
+let autoSaveTimerId: NodeJS.Timeout;
 // let joinTimerId: any;
 // let diffInHours: number;
 // let callAbandonmentTimer: any;
@@ -230,7 +230,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [showCancelReason, setshowCancelReason] = useState<boolean>(false);
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
-
+  const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
+  const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
     CANCEL_APPOINTMENT
   );
@@ -270,6 +271,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       willBlurSubscription && willBlurSubscription.remove();
       stopNoShow();
       stopMissedCallTimer();
+      stopAutoSaveTimer();
     };
   }, []);
 
@@ -277,7 +279,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     try {
       console.log(callhandelBack, 'is back called');
       if (callhandelBack) {
-        saveDetails(true, undefined, () => {
+        saveDetails(true, true, undefined, () => {
           setLoading && setLoading(false);
           props.navigation.pop();
         });
@@ -415,6 +417,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setPrescriptionPdf(
       `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(caseSheet, 'caseSheetDetails', 'blobName')}`
     );
+    setSavedTime(g(caseSheet, 'caseSheetDetails', 'updatedDate'));
   };
   const getCaseSheetAPI = () => {
     setLoading && setLoading(true);
@@ -554,6 +557,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const saveDetails = (
     showLoading: boolean,
+    autoSave: boolean,
     inputdata?: ModifyCaseSheetInput,
     callBack?: () => void
   ) => {
@@ -575,6 +579,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           } as GetCaseSheet_getCaseSheet | null | undefined;
           setcaseSheet(modifiedData);
           setData(modifiedData);
+          setIsAutoSaved(autoSave);
           if (callBack) {
             setLoading && setLoading(true);
             callBack();
@@ -658,6 +663,37 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     missedCallTimer && clearInterval(missedCallTimer);
   };
   const [missedCallCounter, setMissedCallCounter] = useState<number>(0);
+
+  const startAutoSaveTimer = (timer: number, callback?: () => void) => {
+    stopAutoSaveTimer();
+    autoSaveTimerId = setInterval(() => {
+      timer = timer - 1;
+      console.log('auto timer started', timer);
+      if (timer === 0) {
+        stopAutoSaveTimer();
+        callback && callback();
+      }
+    }, 1000);
+  };
+
+  const stopAutoSaveTimer = () => {
+    console.log('auto timer stopped', autoSaveTimerId);
+    autoSaveTimerId && clearInterval(autoSaveTimerId);
+  };
+
+  const timerLoop = (timer: number) => {
+    startAutoSaveTimer(timer, () => {
+      saveDetails(false, true);
+      timerLoop(timer);
+    });
+  };
+  useEffect(() => {
+    if (caseSheetEdit) {
+      timerLoop(45);
+    } else {
+      stopAutoSaveTimer();
+    }
+  }, [caseSheetEdit]);
 
   const stopAllCalls = () => {
     console.log('isA', isAudioCall, '\nisVe', isCall);
@@ -1466,7 +1502,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   showLoading: boolean,
                   inputdata?: ModifyCaseSheetInput,
                   callBack?: () => void
-                ) => saveDetails(showLoading, inputdata, callBack)}
+                ) => saveDetails(showLoading, false, inputdata, callBack)}
                 caseSheetEdit={caseSheetEdit}
                 setCaseSheetEdit={setCaseSheetEdit}
                 showEditPreviewButtons={showEditPreviewButtons}
@@ -1800,7 +1836,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           },
         ]}
         middleText={strings.consult_room.consult_room}
-        timerremaintext={!consultStarted ? PatientConsultTime : undefined}
+        // timerremaintext={!consultStarted ? PatientConsultTime : undefined}
+        timerremaintext={
+          isAutoSaved ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:MM:SS') : undefined
+        }
         headingContainer={{
           marginLeft:
             (appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE' ||
