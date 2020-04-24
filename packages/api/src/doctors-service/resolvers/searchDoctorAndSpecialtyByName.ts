@@ -12,10 +12,9 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { differenceInMinutes } from 'date-fns';
 import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
 import { ApiConstants } from 'ApiConstants';
-
+import { differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
@@ -61,7 +60,7 @@ type PossibleSearchMatches = {
 type SearchDoctorAndSpecialtyByNameResult = {
   doctors: Doctor[];
   specialties: DoctorSpecialty[];
-  doctorsNextAvailability?: DoctorSlotAvailability[];
+  doctorsNextAvailability: DoctorSlotAvailability[];
   possibleMatches: PossibleSearchMatches;
   otherDoctors?: Doctor[];
   otherDoctorsNextAvailability?: DoctorSlotAvailability[];
@@ -87,6 +86,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     callStartTime,
     identifier
   );
+
   searchLogger('API_CALL___STARTED');
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
   let matchedDoctors = [],
@@ -99,7 +99,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
 
   try {
+    // const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+
+    //get facility distances from user geolocation
+    // let facilityDistances: FacilityDistanceMap = {};
+    // if (args.geolocation) {
+    //   searchLogger('GEOLOCATION_API_CALL___START');
+    //   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+    //   facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
+    //   searchLogger('GEOLOCATION_API_CALL___END');
+    // }
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
     console.log(searchTextLowerCase)
@@ -119,7 +129,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         },
       },
     };
+    console.log(docSearchParams, "params");
     const responseDoctors = await client.search(docSearchParams);
+    console.log(responseDoctors);
     for (const doc of responseDoctors.body.hits.hits) {
       const doctor = doc._source;
       doctor["id"] = doctor.doctorId;
@@ -145,7 +157,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           }
         )
       }
-      for (let slots of doctor._source.doctorSlots) {
+      for (let slots of doctor.doctorSlots) {
         for (let slot of slots['slots']) {
           if (slot.status == "OPEN") {
             matchedDoctorsNextAvailability.push(
@@ -160,10 +172,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             );
           }
         }
-        matchedDoctors.push(doctor);
       }
+      matchedDoctors.push(doctor);
     }
-
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
@@ -177,7 +188,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             bool: {
               must: [
                 {
-                  match: { "doctorSlots.slots.status": "OPEN" },
+                  match: { "fullName": "*" },
                 }
               ],
             },
@@ -210,10 +221,10 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             }
           )
         }
-        for (let slots of doctor._source.doctorSlots) {
+        for (let slots of doctor.doctorSlots) {
           for (let slot of slots['slots']) {
             if (slot.status == "OPEN") {
-              matchedDoctorsNextAvailability.push(
+              possibleDoctorsNextAvailability.push(
                 {
                   "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
                   "physicalSlot": slot.slotType === "ONLINE" ? "" : slot.slot,
@@ -228,6 +239,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         }
         possibleDoctors.push(doctor);
       }
+
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
@@ -260,7 +272,7 @@ const getPossibleDoctorsAndSpecialties = async (
   let allPossibleDoctors: Doctor[] = [];
   let allPossibleSpecialties: DoctorSpecialty[] = [];
   let sortedPossibleDoctors: Doctor[] = [];
-  let sortedPossibleDoctorsNextAvailability = [];
+  let sortedPossibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   const generalPhysicianName = ApiConstants.GENERAL_PHYSICIAN.toString();
   const specialtyId = await specialtyRepository.findSpecialtyIdsByNames([generalPhysicianName]);
 
@@ -303,7 +315,7 @@ const getSortedDoctors = async (
   );
 
   let sortedDoctors: Doctor[] = doctors;
-  let sortedDoctorsNextAvailability = [];
+  let sortedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const consultsRepository = consultsDb.getCustomRepository(AppointmentRepository);
