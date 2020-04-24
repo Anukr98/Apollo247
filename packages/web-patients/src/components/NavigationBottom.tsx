@@ -90,9 +90,7 @@ export const NavigationBottom: React.FC = (props) => {
         <>
           <BottomNavigation showLabels className={classes.root}>
             <BottomNavigationAction
-              onClick={() => {
-                clientRoutes.welcome();
-              }}
+              onClick={() => clientRoutes.welcome()}
               component={Link}
               label="Home"
               icon={<img src={require('images/bottom-nav/ic_home.svg')} />}
@@ -105,9 +103,7 @@ export const NavigationBottom: React.FC = (props) => {
               }}
             />
             <BottomNavigationAction
-              onClick={() => {
-                clientRoutes.doctorsLanding();
-              }}
+              onClick={() => clientRoutes.doctorsLanding()}
               label="Doctors"
               component={Link}
               to={clientRoutes.doctorsLanding()}
@@ -145,14 +141,12 @@ export const NavigationBottom: React.FC = (props) => {
               }}
             />
             <BottomNavigationAction
-              onClick={() => {
-                isSignedIn ? clientRoutes.myAccount() : protectWithLoginPopup();
-              }}
+              onClick={() => clientRoutes.covidLanding()}
               label="Covid-19"
               component={Link}
-              to={clientRoutes.myAccount()}
+              to={clientRoutes.covidLanding()}
               icon={<img src={require('images/bottom-nav/ic_covid.svg')} />}
-              className={currentPath === clientRoutes.myAccount() ? classes.activeMenu : ''}
+              className={currentPath === clientRoutes.covidLanding() ? classes.activeMenu : ''}
               classes={{
                 root: classes.labelRoot,
                 label: classes.iconLabel,
