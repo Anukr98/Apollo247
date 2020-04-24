@@ -40,55 +40,42 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // BackHandler.addEventListener('hardwareBackPress', () => {handleBack()});
-    // return () => {
-    //   BackHandler.removeEventListener('hardwareBackPress', () => {
-    //     console.log('navigating to previous screen');
-    //   });
-    // };
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
   }, []);
+
+  const navigatetoStatusscreen = (status: string) => {
+    props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
+      orderId: appointmentId,
+      price: price,
+      doctorName: doctorName,
+      appointmentDateTime: appointmentInput.appointmentDateTime,
+      appointmentType: appointmentInput.appointmentType,
+      status: status,
+    });
+  };
 
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
     console.log({ data, redirectedUrl });
     console.log(`RedirectedUrl: ${redirectedUrl}`);
 
-    const isMatchesSuccessUrl =
-      (redirectedUrl &&
-        redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1) ||
-      false;
-    const isMatchesFailUrl =
-      (redirectedUrl &&
-        redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1) ||
-      false;
-
-    if (isMatchesSuccessUrl) {
-      // BOOKING SUCCESSFULL
-      props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
-        orderId: appointmentId,
-        price: price,
-        doctorName: doctorName,
-        appointmentDateTime: appointmentInput.appointmentDateTime,
-        appointmentType: appointmentInput.appointmentType,
-        status: 'success',
-      });
-    }
-    if (isMatchesFailUrl) {
-      // BOOKING FAILED
-      props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
-        orderId: appointmentId,
-        price: price,
-        doctorName: doctorName,
-        appointmentDateTime: appointmentInput.appointmentDateTime,
-        appointmentType: appointmentInput.appointmentType,
-        status: 'failure',
-      });
+    if (redirectedUrl) {
+      if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1) {
+        navigatetoStatusscreen('success');
+      } else if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1) {
+        navigatetoStatusscreen('failure');
+      } else if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_PENDING_PATH) > -1) {
+        navigatetoStatusscreen('pending');
+      }
     }
   };
 
   const renderwebView = () => {
     console.log(JSON.stringify(paymentTypeID));
-    const baseUrl = 'https://1d762210.ngrok.io';
+    const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     const url = `${baseUrl}/make-payment`;
 
     return (
@@ -129,8 +116,22 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const handleBack = () => {
     Alert.alert('Alert', 'Are you sure you want to cancel the transaction?', [
       { text: 'No' },
-      { text: 'Yes', onPress: () => props.navigation.goBack() },
+      {
+        text: 'Yes',
+        onPress: () => {
+          BackHandler.removeEventListener('hardwareBackPress', handleBack);
+          props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
+            orderId: appointmentId,
+            price: price,
+            doctorName: doctorName,
+            appointmentDateTime: appointmentInput.appointmentDateTime,
+            appointmentType: appointmentInput.appointmentType,
+            status: 'pending',
+          });
+        },
+      },
     ]);
+    return true;
   };
 
   return (

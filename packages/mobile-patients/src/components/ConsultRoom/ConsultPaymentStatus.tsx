@@ -17,6 +17,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -34,12 +35,11 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const appointmentType = props.navigation.getParam('appointmentType');
 
   useEffect(() => {
-    // BackHandler.addEventListener('hardwareBackPress', handleBack);
-    // getTxnStatus();
-
-    // return () => {
-    //   BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    // };
+    getTxnStatus();
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
   }, []);
 
   const getTxnStatus = () => {
@@ -47,11 +47,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
-    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    Alert.alert('Alert', 'Do you want to go back?', [
-      { text: 'No' },
-      { text: 'Yes', onPress: () => props.navigation.goBack() },
-    ]);
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.navigate(AppRoutes.ConsultRoom);
+    return true;
   };
 
   const statusIcon = () => {
@@ -266,6 +264,16 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
+  const handleButton = () => {
+    if (status == 'success') {
+      props.navigation.navigate('APPOINTMENTS');
+    } else if (status == 'failure') {
+      props.navigation.navigate(AppRoutes.DoctorSearch);
+    } else {
+      props.navigation.navigate(AppRoutes.ConsultRoom);
+    }
+  };
+
   const renderButton = () => {
     return (
       <TouchableOpacity
@@ -278,6 +286,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           justifyContent: 'center',
           alignItems: 'center',
           elevation: 5,
+        }}
+        onPress={() => {
+          handleButton();
         }}
       >
         <Text style={{ ...theme.viewStyles.text('SB', 13, '#ffffff', 1, 24) }}>

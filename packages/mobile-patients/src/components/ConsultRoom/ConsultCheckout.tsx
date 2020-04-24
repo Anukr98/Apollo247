@@ -41,6 +41,13 @@ import {
   DoctorType,
   AppointmentType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import Axios from 'axios';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -62,7 +69,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+ 
 
   const [bankOptions, setbankOptions] = useState([
     {
@@ -91,32 +100,51 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     },
   ]);
 
-  const [paymentOptions, setpaymentOptions] = useState([
-    {
-      name: 'DEBIT CARD',
-      imagePath: require('../ui/icons/card.png'),
-      paymentMode: 'DC',
-    },
-    {
-      name: 'CREDIT CARD',
-      imagePath: require('../ui/icons/card.png'),
-      paymentMode: 'CC',
-    },
-    {
-      name: 'PAYTM',
-      imagePath: require('../ui/icons/paytm.png'),
-      paymentMode: 'PPI',
-    },
-    {
-      name: 'UPI',
-      imagePath: require('../ui/icons/Bhim.png'),
-      paymentMode: 'UPI',
-    },
+  type paymentOptions = {
+    name: string;
+    paymentMode: string;
+    enabled: boolean;
+    seq: number;
+  };
+
+  const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([
+   
   ]);
 
   useEffect(() => {
-    // bookAppointment();
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    fetchPaymentOptions();
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
   }, []);
+
+  const fetchPaymentOptions = () => {
+    const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
+    const url = `${baseUrl}/list-of-payment-methods`;
+
+    Axios.get(url)
+      .then((data: any) => {
+        console.log(JSON.stringify(data), 'objobj');
+        setLoading(false);
+        let options: paymentOptions[] = [];
+        data.forEach((item: any) => {
+          if (item && item.enabled && item.paymentMode != 'NB') {
+            options.push(item);
+          } else if (item && item.enabled && item.paymentMode == 'NB') {
+            setbankOptions(item.banksList);
+          }
+        });
+        options.sort((a, b) => {
+          return a.seq - b.seq;
+        });
+        setpaymentOptions(options);
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingPaymentOptions', error);
+        console.log(error);
+      });
+  };
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
@@ -189,7 +217,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
             });
-        setLoading(false);
       });
   };
 
@@ -384,11 +411,17 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   };
 
   const handleBack = () => {
-    // BackHandler.removeEventListener('hardwareBackPress', handleBack);
     Alert.alert('Alert', 'Do you want to go back?', [
       { text: 'No' },
-      { text: 'Yes', onPress: () => props.navigation.goBack() },
+      {
+        text: 'Yes',
+        onPress: () => {
+          BackHandler.removeEventListener('hardwareBackPress', handleBack);
+          props.navigation.navigate(AppRoutes.DoctorSearch);
+        },
+      },
     ]);
+    return true;
   };
 
   const renderLoading = () => {
