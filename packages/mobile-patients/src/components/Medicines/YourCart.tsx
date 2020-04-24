@@ -298,8 +298,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     const cartItemsReplica =
-      cartItems.map(({ id, quantity }) => ({ id, quantity } as ShoppingCartItem)).toString() +
-      deliveryAddressId;
+      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
     if (lastCartItemsReplica == cartItemsReplica) {
       return;
     }
