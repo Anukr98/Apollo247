@@ -539,17 +539,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const arraySelected = JSON.parse(array);
             // console.log('arraySelected.......', arraySelected);
 
-            arrayNotification = repsonse.data.data.map((el: any, index: number) => {
+            arrayNotification = repsonse.data.data.map((el: any) => {
               const o = Object.assign({}, el);
-              if (arraySelected.length > index) {
-                if (arraySelected[index]._id === el._id) {
-                  o.isActive =
-                    arraySelected[index]._id === el._id ? arraySelected[index].isActive : true;
-                } else {
-                  o.isActive = true;
-                }
-              } else {
+
+              const result = arraySelected.filter((obj: any) => {
+                return obj._id == el._id;
+              });
+              if (result.length === 0) {
+                // console.log('result.length', result);
                 o.isActive = true;
+              } else {
+                o.isActive = result[0].isActive;
+                // console.log('result', result);
+                // console.log('result.isActive', result[0].isActive);
               }
               return o;
             });

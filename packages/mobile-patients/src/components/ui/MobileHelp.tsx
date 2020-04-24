@@ -269,9 +269,9 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const renderEmailField = () => {
     return (
       <View style={{ marginTop: 12 }}>
-        <Text style={styles.fieldLabel}>Please enter your Email ID</Text>
+        <Text style={styles.fieldLabel}>Please enter your email address</Text>
         <TextInputComponent
-          placeholder={'Enter your Email ID…'}
+          placeholder={'Enter email address'}
           value={email}
           autoCapitalize="none"
           keyboardType="email-address"
@@ -339,7 +339,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const showAlert = () => {
     showAphAlert!({
       title: `Hi,`,
-      description: `Please enter valid email address`,
+      description: `Please enter your valid email address`,
       unDismissable: true,
       CTAs: [
         {
