@@ -884,6 +884,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setdeliveryTime('');
               setdeliveryError('');
               setshowDeliverySpinner(false);
+              setLastCartItemsReplica('');
             }}
             selectedTab={selectedTab}
           />
