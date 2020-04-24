@@ -53,6 +53,7 @@ import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { BottomLinks } from 'components/BottomLinks';
 import { ContactUs } from 'components/ContactUs';
+import { CovidLanding } from 'components/Covid/CovidLanding';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,6 +79,11 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    noHeaders: {
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 0,
+      },
+    },    
   };
 });
 
@@ -92,7 +98,7 @@ const App: React.FC = () => {
 
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
-      <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
+      <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn} ${pageName === '/covid19' && classes.noHeaders}`}>
         <Helmet>
           <script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
@@ -100,6 +106,7 @@ const App: React.FC = () => {
         </Helmet>
         <Switch>
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
+          <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
           <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
           <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />

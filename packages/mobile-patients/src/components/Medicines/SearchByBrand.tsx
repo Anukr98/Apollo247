@@ -174,7 +174,16 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     });
 
   const onAddCartItem = (item: MedicineProduct) => {
-    const { sku, mou, name, price, special_price, is_prescription_required, thumbnail } = item;
+    const {
+      sku,
+      mou,
+      name,
+      price,
+      special_price,
+      is_prescription_required,
+      thumbnail,
+      type_id,
+    } = item;
     addCartItem!({
       id: sku,
       mou,
@@ -186,6 +195,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           : special_price
         : undefined,
       prescriptionRequired: is_prescription_required == '1',
+      isMedicine: type_id == 'Pharma',
       quantity: 1,
       thumbnail,
       isInStock: true,

@@ -41,6 +41,12 @@ export interface AppCommonDataContextProps {
   setNeedHelpToContactInMessage: ((value: string) => void) | null;
   isCurrentLocationFetched: boolean;
   setCurrentLocationFetched: ((value: boolean) => void) | null;
+  notificationCount: number;
+  setNotificationCount: ((arg0: number) => void) | null;
+  allNotifications: any;
+  setAllNotifications: ((arg0: any[]) => void) | null;
+  isSelected: any;
+  setisSelected: ((arg0: any[]) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -63,6 +69,12 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setNeedHelpToContactInMessage: null,
   isCurrentLocationFetched: false, // this variable is defined only to avoid asking location multiple times in Home Screen until the app is killed and re-opened again
   setCurrentLocationFetched: null,
+  notificationCount: 0,
+  setNotificationCount: null,
+  allNotifications: [],
+  setAllNotifications: null,
+  isSelected: [],
+  setisSelected: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -129,6 +141,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     ).stateid || '') as string,
   };
 
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+  const [allNotifications, setAllNotifications] = useState<any[]>([]);
+  const [isSelected, setisSelected] = useState<any[]>([]);
+
   useEffect(() => {
     // update location from async storage the very first time app opened
     const updateLocationFromStorage = async () => {
@@ -166,6 +182,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setEnt,
         needHelpToContactInMessage,
         setNeedHelpToContactInMessage,
+        notificationCount,
+        setNotificationCount,
+        allNotifications,
+        setAllNotifications,
+        isSelected,
+        setisSelected,
       }}
     >
       {props.children}

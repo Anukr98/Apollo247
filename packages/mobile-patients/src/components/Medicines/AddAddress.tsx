@@ -254,12 +254,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update') {
       if (!isChanged) {
+        const cityState = city.split(',').map((item) => (item || '').trim());
         const updateaddressInput = {
           id: addressData.id,
           addressLine1: addressLine1,
           addressLine2: '',
-          city: city,
-          state: state,
+          city: cityState[0] || '',
+          state: cityState[1] || state,
           zipcode: pincode,
           landmark: landMark,
           mobileNumber: phoneNumber,
@@ -294,12 +295,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         props.navigation.goBack();
       }
     } else {
+      const cityState = city.split(',').map((item) => (item || '').trim());
       const addressInput = {
         patientId: userId,
         addressLine1: addressLine1,
         addressLine2: '',
-        city: city,
-        state: state,
+        city: cityState[0] || '',
+        state: cityState[1] || state,
         zipcode: pincode,
         landmark: landMark,
         mobileNumber: phoneNumber,

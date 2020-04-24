@@ -65,8 +65,8 @@ export interface PatientInfo {
   'Patient Name': string;
   'Patient UHID': string;
   Relation: string;
-  Age: number;
-  Gender: string;
+  'Patient Age': number;
+  'Patient Gender': string;
   'Mobile Number': string;
   'Customer ID': string;
 }
@@ -94,7 +94,7 @@ export interface AppsFlyerEvents {
     'Customer First Name': string;
     'Customer Last Name': string;
     'Date of Birth': string;
-    Gender: string;
+    'Patient Gender': string;
     Email: string;
     'Referral Code'?: string;
   };
@@ -149,8 +149,8 @@ export interface AppsFlyerEvents {
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
-    // Age: number;
-    // Gender: string;
+    // 'Patient Age': number;
+    // 'Patient Gender': string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
@@ -168,8 +168,8 @@ export interface AppsFlyerEvents {
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
-    // Age: number;
-    // Gender: string;
+    // 'Patient Age': number;
+    // 'Patient Gender': string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
@@ -298,8 +298,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -320,8 +320,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -340,8 +340,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': number;
     'Customer ID': string;
     slot: string;
@@ -357,8 +357,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': number;
     'Customer ID': string;
     slot: string;
@@ -410,8 +410,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': number;
     'Customer ID': string;
   };
@@ -423,8 +423,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -436,8 +436,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -448,8 +448,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -458,8 +458,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -472,8 +472,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };
@@ -491,8 +491,8 @@ export interface AppsFlyerEvents {
     'Patient Name': string;
     'Patient UHID': string;
     Relation: string;
-    Age: number;
-    Gender: string;
+    'Patient Age': number;
+    'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
   };

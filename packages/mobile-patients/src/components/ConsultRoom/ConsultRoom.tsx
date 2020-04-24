@@ -32,6 +32,7 @@ import {
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
+  GET_DIAGNOSTICS_CITES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -72,7 +73,7 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import { GenerateTokenforCM } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { GenerateTokenforCM, notifcationsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -87,7 +88,11 @@ import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/Loc
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 const { Vitals } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
@@ -205,6 +210,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     locationDetails,
     isCurrentLocationFetched,
     setCurrentLocationFetched,
+    setDiagnosticsCities,
+    diagnosticsCities,
+    notificationCount,
+    setNotificationCount,
+    setAllNotifications,
+    setisSelected,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -218,7 +229,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
-  const { analytics, getPatientApiCall } = useAuth();
+  const { analytics } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
@@ -239,6 +250,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         CommonBugFender('ConsultRoom_updateLocation', e);
       });
   };
+
+  useEffect(() => {
+    if (diagnosticsCities.length) {
+      // Don't call getDiagnosticsCites API if already fetched
+      return;
+    }
+    if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
+      client
+        .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+          query: GET_DIAGNOSTICS_CITES,
+          variables: {
+            cityName: locationDetails!.city,
+            patientId: currentPatient.id || '',
+          },
+        })
+        .then(({ data }) => {
+          const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
+          setDiagnosticsCities!(
+            cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
+          );
+        })
+        .catch((e) => {
+          CommonBugFender('ConsultRoom_GET_DIAGNOSTICS_CITES', e);
+        });
+    }
+  }, [locationDetails, currentPatient, diagnosticsCities]);
 
   const askLocationPermission = () => {
     showAphAlert!({
@@ -320,8 +357,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
     };
@@ -439,40 +478,104 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [enableCM]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        AsyncStorage.removeItem('deeplink');
-
-        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-        const item = JSON.parse(retrievedItem);
-
-        const callByPrism: any = await AsyncStorage.getItem('callByPrism');
-        let allPatients;
-
-        if (callByPrism === 'true') {
-          allPatients =
-            item && item.data && item.data.getCurrentPatients
-              ? item.data.getCurrentPatients.patients
-              : null;
-        } else {
-          allPatients =
-            item && item.data && item.data.getPatientByMobileNumber
-              ? item.data.getPatientByMobileNumber.patients
-              : null;
-        }
-
-        const patientDetails = allPatients
-          ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
-          : null;
-
-        CommonSetUserBugsnag(
-          patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
-        );
-      } catch (error) {}
-    }
-
-    fetchData();
+    AsyncStorage.removeItem('deeplink');
+    storePatientDetailsTOBugsnag();
+    callAPIForNotificationResult();
   }, []);
+
+  const storePatientDetailsTOBugsnag = async () => {
+    try {
+      let allPatients: any;
+
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem);
+
+      const callByPrism: any = await AsyncStorage.getItem('callByPrism');
+
+      if (callByPrism === 'true') {
+        allPatients =
+          item && item.data && item.data.getCurrentPatients
+            ? item.data.getCurrentPatients.patients
+            : null;
+      } else {
+        allPatients =
+          item && item.data && item.data.getPatientByMobileNumber
+            ? item.data.getPatientByMobileNumber.patients
+            : null;
+      }
+
+      const patientDetails = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
+
+      const array: any = await AsyncStorage.getItem('allNotification');
+      const arraySelected = JSON.parse(array);
+      const selectedCount = arraySelected.filter((item: any) => {
+        return item.isActive === true;
+      });
+      setNotificationCount && setNotificationCount(selectedCount.length);
+
+      CommonSetUserBugsnag(
+        patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
+      );
+    } catch (error) {}
+  };
+
+  const callAPIForNotificationResult = async () => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+
+    const params = {
+      phone: '91' + storedPhoneNumber,
+      size: 10,
+    };
+    console.log('params', params);
+    notifcationsApi(params)
+      .then(async (repsonse: any) => {
+        try {
+          const array = await AsyncStorage.getItem('allNotification');
+          let arrayNotification;
+
+          if (array !== null) {
+            const arraySelected = JSON.parse(array);
+            // console.log('arraySelected.......', arraySelected);
+
+            arrayNotification = repsonse.data.data.map((el: any, index: number) => {
+              const o = Object.assign({}, el);
+              if (arraySelected.length > index) {
+                if (arraySelected[index]._id === el._id) {
+                  o.isActive =
+                    arraySelected[index]._id === el._id ? arraySelected[index].isActive : true;
+                } else {
+                  o.isActive = true;
+                }
+              } else {
+                o.isActive = true;
+              }
+              return o;
+            });
+          } else {
+            arrayNotification = repsonse.data.data.map((el: any) => {
+              const o = Object.assign({}, el);
+              o.isActive = true;
+              return o;
+            });
+          }
+
+          // console.log('arrayNotification.......', arrayNotification);
+          const selectedCount = arrayNotification.filter((item: any) => {
+            return item.isActive === true;
+          });
+
+          setNotificationCount && setNotificationCount(selectedCount.length);
+          setAllNotifications && setAllNotifications(arrayNotification);
+
+          AsyncStorage.setItem('allNotification', JSON.stringify(arrayNotification));
+        } catch (error) {}
+      })
+      .catch((error: Error) => {
+        console.log('error', error);
+      });
+  };
 
   const buildName = () => {
     switch (apiRoutes.graphql()) {
@@ -1097,6 +1200,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             onPress={() => props.navigation.navigate(AppRoutes.NotificationScreen)}
           >
             <NotificationIcon style={{ marginLeft: 10, marginRight: 5 }} />
+            {notificationCount > 0 && renderBadge(notificationCount, {})}
           </TouchableOpacity>
         </View>
       </View>
