@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, Gender, Relation, DoctorType } from "./globalTypes";
+import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, Gender, Relation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetJuniorDoctorCaseSheet
@@ -38,6 +38,8 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   medicineFormTypes: MEDICINE_FORM_TYPES | null;
   medicineFrequency: MEDICINE_FREQUENCY | null;
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions {
@@ -179,6 +181,8 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointme
   medicineFormTypes: MEDICINE_FORM_TYPES | null;
   medicineFrequency: MEDICINE_FREQUENCY | null;
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_otherInstructions {
@@ -216,6 +220,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointme
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet {
   __typename: "CaseSheetFullDetails";
   caseSheetDetails: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails | null;
+  allowedDosages: (string | null)[] | null;
   juniorDoctorCaseSheet: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet | null;
   patientDetails: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails | null;
   pastAppointments: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments | null)[] | null;
