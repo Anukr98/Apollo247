@@ -179,129 +179,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
     }
     elasticMatch.push({ 'specialty.name': (args.filterInput.specialtyName || ApiConstants.GENERAL_PHYSICIAN.toString()) })
-    let specialtyIds;
-    if (args.filterInput.specialtyName.length === 0) {
-      const generalPhysicianName = ApiConstants.GENERAL_PHYSICIAN.toString();
-      specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames([generalPhysicianName]);
-    } else {
-      specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames(args.filterInput.specialtyName);
-    }
-
-    if (specialtyIds.length === 1) {
-      finalSpecialtyDetails = await specialtiesRepo.findById(specialtyIds[0].id);
-      if (!finalSpecialtyDetails) {
-        throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
-      }
-    }
-
-    if (specialtyIds.length >= 1) {
-      args.filterInput.specialty = specialtyIds[0].id;
-      const {
-        consultNowDoctors,
-        bookNowDoctors,
-        doctorNextAvailSlots,
-        doctorsConsultModeAvailability,
-      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
-
-      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
-      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
-      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
-        doctorNextAvailSlots.doctorAvailalbeSlots
-      );
-      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
-        doctorsConsultModeAvailability
-      );
-    }
-
-    if (specialtyIds.length >= 2) {
-      args.filterInput.specialty = specialtyIds[1].id;
-      const {
-        consultNowDoctors,
-        bookNowDoctors,
-        doctorNextAvailSlots,
-        doctorsConsultModeAvailability,
-      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
-
-      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
-      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
-      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
-        doctorNextAvailSlots.doctorAvailalbeSlots
-      );
-      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
-        doctorsConsultModeAvailability
-      );
-    }
-
-    if (specialtyIds.length >= 3) {
-      args.filterInput.specialty = specialtyIds[2].id;
-      const {
-        consultNowDoctors,
-        bookNowDoctors,
-        doctorNextAvailSlots,
-        doctorsConsultModeAvailability,
-      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
-
-      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
-      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
-      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
-        doctorNextAvailSlots.doctorAvailalbeSlots
-      );
-      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
-        doctorsConsultModeAvailability
-      );
-    }
-  } else {
-    if (!args.filterInput.specialty) {
-      throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
-    }
-
-    finalSpecialtyDetails = await specialtiesRepo.findById(args.filterInput.specialty);
-    if (!finalSpecialtyDetails) {
-      throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
-    }
-
-    const {
-      consultNowDoctors,
-      bookNowDoctors,
-      doctorNextAvailSlots,
-      doctorsConsultModeAvailability,
-    } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
-
-    finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
-    finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
-    finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
-      doctorNextAvailSlots.doctorAvailalbeSlots
-    );
-    finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
-      doctorsConsultModeAvailability
-    );
   }
 
-  let finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
-  const possibleDoctorIds = finalSortedDoctors.map((doctor) => {
-    return doctor.id;
-  });
-
-  const possibleDoctorsOrder: Doctor[] = [];
-  const possibleEmptyDoctorsOrder: Doctor[] = [];
-  const finalDoctorNextAvailSlotsOrder: DoctorSlotAvailability[] = [];
-  const finalEmptyDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
-  finalDoctorNextAvailSlots.map((docSlot) => {
-    const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
-    if (docSlot.referenceSlot != '') {
-      // console.log(docSlot.referenceSlot, docIndex);
-      possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
-      finalDoctorNextAvailSlotsOrder.push(docSlot);
-    } else {
-      possibleEmptyDoctorsOrder.push(finalSortedDoctors[docIndex]);
-      finalEmptyDoctorsNextAvailabilityOrder.push(docSlot);
-    }
-  });
-  // console.log(possibleEmptyDoctorsOrder.length, possibleDoctorsOrder.length);
-  finalSortedDoctors = possibleDoctorsOrder.concat(possibleEmptyDoctorsOrder);
-  finalDoctorNextAvailSlots = finalDoctorNextAvailSlotsOrder.concat(
-    finalEmptyDoctorsNextAvailabilityOrder
-  );
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     type: 'posts',
@@ -320,7 +199,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   };
-  console.log(JSON.stringify(searchParams));
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
   let docs = [];
@@ -342,7 +220,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
               "referenceSlot": slot.slot
             }
           );
-          console.log(slot);
         }
       }
     };
@@ -351,14 +228,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       doctorId: doc._source.doctorId
     });
     finalSpecialityDetails.push(doc._source.specialty)
-    console.log(doc._source);
   };
-  console.log({
-    doctors: docs,
-    doctorsNextAvailability: finalDoctorNextAvailSlots,
-    doctorsAvailability: finalDoctorsConsultModeAvailability,
-    specialty: finalSpecialityDetails,
-  })
   searchLogger(`API_CALL___END`);
   return {
     doctors: docs,
@@ -401,27 +271,6 @@ const applyFilterLogic = async (
     searchLogger('FILTERING_DOCTORS___START');
     filteredDoctors = await doctorRepository.filterDoctors(filterInput);
     searchLogger('FILTERING_DOCTORS___END');
-    // console.log('basic filtered doctors: ',filteredDoctors)
-
-    //apply sort algorithm
-    // if (filteredDoctors.length > 1) {
-    //   //get patient and matched doctors previous appointments starts here
-    //   const filteredDoctorIds = filteredDoctors.map((doctor) => {
-    //     return doctor.id;
-    //   });
-    //   const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
-    //     filterInput.patientId,
-    //     filteredDoctorIds
-    //   );
-    //   const consultedDoctorIds = previousAppointments.map((appt) => {
-    //     return appt.doctorId;
-    //   });
-    //   //get patient and matched doctors previous appointments ends here
-
-    //   filteredDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-    //     return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
-    //   });
-    // }
 
     //get filtered doctor ids
     const doctorIds = filteredDoctors.map((doctor) => {
