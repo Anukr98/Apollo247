@@ -175,53 +175,60 @@
     "filter_data": [
       {
         "label": "City",
-        "options": ["Hyderabad", "Chennai"]
+        "options": [
+          "Hyderabad",
+          "Chennai"
+        ]
       },
       {
         "label": "Experience In Years",
-        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
+        "options": [
+          "0 - 5",
+          "6 - 10",
+          "11 - 15",
+          "15+"
+        ]
       },
       {
         "label": "Availability",
-        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
+        "options": [
+          "Now",
+          "Today",
+          "Tomorrow",
+          "Next 3 Days"
+        ]
       },
       {
         "label": "Fees In Rupees",
-        "options": ["100 - 500", "501 - 1000", "1000+"]
+        "options": [
+          "100 - 500",
+          "501 - 1000",
+          "1000+"
+        ]
       },
       {
         "label": "Gender",
-        "options": ["Male", "Female"]
+        "options": [
+          "Male",
+          "Female"
+        ]
       },
       {
         "label": "Language",
-        "options": ["Hindi", "English", "Telugu"]
+        "options": [
+          "Hindi",
+          "English",
+          "Telugu"
+        ]
       }
     ]
   },
-  "medicine": {
-    "pastMedicineSearches": [
-      {
-        "id": "1",
-        "name": "Metformin"
-      },
-      {
-        "id": "2",
-        "name": "Sulfonylureas"
-      },
-      {
-        "id": "3",
-        "name": "Crocin"
-      },
-      {
-        "id": "4",
-        "name": "DPP-4 Inhibitors"
-      },
-      {
-        "id": "5",
-        "name": "Insulin"
-      }
-    ]
+  "medicine": {},
+  "medicine_cart": {
+    "tatUnServiceableAlertTitle": "We’re sorry!",
+    "tatUnServiceableAlertDesc": "Some items in your order are not deliverable to the selected address.\n\nYou may either change the address or delete the item from your cart.",
+    "tatUnServiceableAlertRemoveCTA": "REMOVE ITEMS",
+    "tatUnServiceableAlertChangeCTA": "CHANGE THE ADDRESS"
   },
   "diagnostics": {
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",

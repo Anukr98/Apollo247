@@ -21,6 +21,7 @@ export interface ShoppingCartItem {
   thumbnail: string | null;
   specialPrice?: number;
   isInStock: boolean;
+  unserviceable?: boolean;
   isMedicine: boolean;
 }
 

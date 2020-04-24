@@ -42,7 +42,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
@@ -58,6 +58,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -126,6 +127,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     updateCartItem,
     removeCartItem,
     cartItems,
+    setCartItems,
     addresses,
     setDeliveryAddressId,
     deliveryAddressId,
@@ -152,13 +154,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { showAphAlert, setLoading } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const { locationDetails } = useAppCommonData();
+  const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
+  const scrollViewRef = useRef<ScrollView | null>();
 
   useEffect(() => {
     if (cartItems.length) {
@@ -287,7 +291,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   useEffect(() => {
+    if (!deliveryAddressId && cartItems.length > 0) {
+      setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
+    }
+  }, [deliveryAddressId]);
+
+  useEffect(() => {
+    const cartItemsReplica =
+      cartItems.map(({ id, quantity }) => ({ id, quantity } as ShoppingCartItem)).toString() +
+      deliveryAddressId;
+    if (lastCartItemsReplica == cartItemsReplica) {
+      return;
+    }
+
     if (deliveryAddressId && cartItems.length > 0) {
+      setLastCartItemsReplica(cartItemsReplica);
       const selectedAddress = addresses.find((address) => address.id == deliveryAddressId);
       setdeliveryTime('...');
       setshowDeliverySpinner(true);
@@ -297,7 +315,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       if (selectedAddress) {
         getDeliveryTime({
           postalcode: selectedAddress.zipcode || '',
-          ordertype: 'pharma',
+          ordertype: getTatOrderType(cartItems),
           lookup: lookUp,
         })
           .then((res) => {
@@ -310,17 +328,42 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   Array.isArray(res.data.tat) &&
                   res.data.tat.length
                 ) {
-                  let tatItems = res.data.tat;
-                  tatItems.sort(({ deliverydate: item1 }, { deliverydate: item2 }) => {
-                    return moment(item1, 'D-MMM-YYYY HH:mm a') > moment(item2, 'D-MMM-YYYY HH:mm a')
-                      ? -1
-                      : moment(item1, 'D-MMM-YYYY HH:mm a') < moment(item2, 'D-MMM-YYYY HH:mm a')
-                      ? 1
-                      : 0;
-                  });
-                  setdeliveryTime(
-                    moment(tatItems[0].deliverydate, 'D-MMM-YYYY HH:mm a').toString()
-                  );
+                  const tatItems = res.data.tat;
+                  // filter out the sku's which has deliverydate > X days from the current date
+                  const unserviceableSkus = tatItems
+                    .filter(
+                      ({ deliverydate }) =>
+                        moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
+                        AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
+                    )
+                    .map(({ artCode }) => artCode);
+
+                  if (unserviceableSkus.length) {
+                    // update cart items to unserviceable
+                    const updatedCartItems = cartItems.map((item) => ({
+                      ...item,
+                      unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
+                    }));
+                    setCartItems!(updatedCartItems);
+                    showUnServiceableItemsAlert();
+                  }
+
+                  const serviceableItems = tatItems
+                    .filter(({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku))
+                    .map(({ deliverydate }) => deliverydate);
+
+                  if (serviceableItems.length) {
+                    const tatDate = serviceableItems.reduce(
+                      (acc, curr) =>
+                        moment(curr, 'D-MMM-YYYY HH:mm a') > moment(acc, 'D-MMM-YYYY HH:mm a')
+                          ? curr
+                          : acc,
+                      serviceableItems[0]
+                    );
+                    setdeliveryTime(moment(tatDate, 'D-MMM-YYYY HH:mm a').toString());
+                  } else {
+                    setdeliveryTime('No items are serviceable.');
+                  }
                 } else if (typeof res.data === 'string') {
                   setdeliveryError(res.data);
                 } else if (typeof res.data.errorMSG === 'string') {
@@ -343,11 +386,63 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   description: 'Something went wrong, Unable to fetch delivery time',
                 });
               setshowDeliverySpinner(false);
+              postTatResponseFailureEvent(err, g(selectedAddress, 'zipcode')!, lookUp);
             }
           });
       }
     }
   }, [deliveryAddressId, cartItems]);
+
+  const getTatOrderType = (cartItems: ShoppingCartItem[]) => {
+    const isPharma = cartItems.find((item) => item.isMedicine);
+    const isFmcg = cartItems.find((item) => !item.isMedicine);
+    return isPharma && isFmcg ? 'both' : isPharma ? 'pharma' : 'fmcg';
+  };
+
+  const showUnServiceableItemsAlert = () => {
+    showAphAlert!({
+      title: string.medicine_cart.tatUnServiceableAlertTitle,
+      description: string.medicine_cart.tatUnServiceableAlertDesc,
+      titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+      CTAs: [
+        {
+          text: string.medicine_cart.tatUnServiceableAlertChangeCTA,
+          type: 'orange-link',
+          onPress: onPressChangeAddress,
+        },
+        {
+          text: string.medicine_cart.tatUnServiceableAlertRemoveCTA,
+          type: 'orange-link',
+          onPress: removeUnServiceableItems,
+        },
+      ],
+    });
+  };
+
+  const onPressChangeAddress = () => {
+    hideAphAlert!();
+    scrollViewRef.current && scrollViewRef.current.scrollToEnd();
+  };
+
+  const removeUnServiceableItems = () => {
+    hideAphAlert!();
+    setCartItems!(cartItems.filter((item) => !item.unserviceable));
+    scrollViewRef.current && scrollViewRef.current.scrollTo(0, 0, true);
+  };
+
+  const postTatResponseFailureEvent = (
+    error: object,
+    pincode: string,
+    lookUp: { sku: string; qty: number }[]
+  ) => {
+    try {
+      postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, {
+        pincode,
+        lookUp,
+        error,
+      });
+    } catch (error) {}
+  };
 
   const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
     if (!(unit < 1)) {
@@ -489,7 +584,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               }}
               isCardExpanded={true}
               isInStock={medicine.isInStock}
-              showRemoveWhenOutOfStock={!medicine.isInStock}
+              unserviceable={medicine.unserviceable}
+              showRemoveWhenOutOfStock={!medicine.isInStock || medicine.unserviceable}
               isPrescriptionRequired={medicine.prescriptionRequired}
               subscriptionStatus={'unsubscribed'}
               packOfCount={parseInt(medicine.mou || '0')}
@@ -506,6 +602,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [checkingServicability, setCheckingServicability] = useState(false);
 
   const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    if (deliveryAddressId && deliveryAddressId == address.id) {
+      return;
+    }
     setdeliveryTime('');
     setdeliveryError('');
     setshowDeliverySpinner(false);
@@ -929,6 +1028,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     cartItems.length > 0 &&
     !showDeliverySpinner &&
     !cartItems.find((item) => !item.isInStock) &&
+    !cartItems.find((item) => item.unserviceable) &&
     !!(deliveryAddressId || storeId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
@@ -1092,7 +1192,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
-        <ScrollView bounces={false}>
+        <ScrollView
+          ref={(ref) => {
+            scrollViewRef.current = ref;
+          }}
+          bounces={false}
+        >
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             <MedicineUploadPrescriptionView navigation={props.navigation} />
