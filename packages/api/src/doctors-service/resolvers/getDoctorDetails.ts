@@ -320,12 +320,11 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   return doctordata;
 };
 
-const getDoctorDetailsById: Resolver<
-  null,
-  { id: string },
-  DoctorsServiceContext,
-  string
-> = async (parent, args, { doctorsDb }) => {
+const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, string> = async (
+  parent,
+  args,
+  { doctorsDb }
+) => {
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const searchParams: RequestParams.Search = {
     index: 'doctors',
@@ -345,9 +344,22 @@ const getDoctorDetailsById: Resolver<
     },
   };
   const getDetails = await client.search(searchParams);
+  let doctorData, facilities;
 
+  if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
+    doctorData = getDetails.body.hits.hits[0]._source;
+    doctorData.id = doctorData.doctorId;
+    doctorData.specialty.id = doctorData.specialty.specialtyId;
+    doctorData.doctorHospital = [];
+    facilities = doctorData.facility;
+    facilities = Array.isArray(facilities) ? facilities : [facilities];
+    for (const facility of facilities) {
+      facility.id = facility.docFacilityId;
+      doctorData.doctorHospital.push({ facility });
+    }
+  }
   // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length + 1, 'searchhitCount');
-  return getDetails.body.hits.hits[0]._source
+  return doctorData;
 };
 
 type LoggedInUserDetails = {
