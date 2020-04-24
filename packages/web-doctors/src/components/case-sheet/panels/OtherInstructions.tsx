@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Typography, Chip, Theme, Grid } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { InputBase, Button } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
+import { Button } from '@material-ui/core';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GetDoctorFavouriteAdviceList,
@@ -19,34 +19,37 @@ const useStyles = makeStyles((theme: Theme) =>
       height: 250,
       flexGrow: 1,
     },
-    textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
+    textFieldWrapper: {
+      position: 'relative',
+      marginTop: 6,
+      '& button': {
+        position: 'absolute',
+        right: 0,
+        top: 4,
+        minWidth: 'auto',
+        margin: 0,
+        padding: 10,
+        '& img': {
+          margin: 0,
         },
       },
-    },
-    textFieldWrapper: {
-      border: 'solid 1px #30c1a3',
-      borderRadius: 10,
-      width: '100%',
-      padding: 16,
-      color: '#01475b',
-      fontSize: 14,
-      fontWeight: 500,
-      position: 'relative',
-      paddingRight: 48,
+      '& textarea': {
+        paddingRight: 50,
+      },
     },
     chatSubmitBtn: {
-      position: 'absolute',
-      top: '50%',
-      marginTop: -18,
-      right: 10,
-      minWidth: 'auto',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
       padding: 0,
+      marginTop: 12,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
       '& img': {
-        maxWidth: 36,
+        marginRight: 8,
       },
     },
     contentContainer: {
@@ -173,7 +176,7 @@ export const OtherInstructions: React.FC = () => {
   const client = useApolloClient();
   const [otherInstruct, setOtherInstruct] = useState('');
   const { caseSheetEdit } = useContext(CaseSheetContext);
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState(0);
   const [adviceList, setAdviceList] = useState<
     (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[] | null
   >([]);
@@ -236,19 +239,20 @@ export const OtherInstructions: React.FC = () => {
             </Typography>
           </Typography>
           {showAddInputText && (
-            <Typography component="div" className={classes.textFieldWrapper}>
-              <InputBase
+            <div className={classes.textFieldWrapper}>
+              <AphTextField
                 autoFocus
                 fullWidth
-                className={classes.textFieldColor}
+                multiline
                 placeholder="Enter instruction here.."
                 value={otherInstruct}
                 onChange={(e) => {
                   setOtherInstruct(e.target.value);
                 }}
-              ></InputBase>
+              />
               <Button
                 className={classes.chatSubmitBtn}
+                disableRipple
                 onClick={() => {
                   if (otherInstruct.trim() !== '') {
                     selectedValues!.splice(idx, 0, {
@@ -270,9 +274,9 @@ export const OtherInstructions: React.FC = () => {
                   }
                 }}
               >
-                <img src={require('images/ic_plus.png')} alt="" />
+                <img src={require('images/ic_plus.svg')} alt="" />
               </Button>
-            </Typography>
+            </div>
           )}
           {!showAddInputText && caseSheetEdit && (
             <AphButton
