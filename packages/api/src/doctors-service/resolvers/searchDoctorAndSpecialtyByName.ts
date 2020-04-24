@@ -133,7 +133,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     const responseDoctors = await client.search(docSearchParams);
     console.log(responseDoctors);
     for (const doc of responseDoctors.body.hits.hits) {
-      let doctor = doc._source;
+      const doctor = doc._source;
       doctor["id"] = doctor.doctorId;
       doctor["doctorHospital"] = []
       for (const facility of doctor.facility) {
@@ -157,7 +157,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           }
         )
       }
-      matchedDoctors.push(doc._source);
+      matchedDoctors.push(doctor);
     }
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
@@ -181,10 +181,30 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       };
       const responsePossibleDoctors = await client.search(PossibleDoctorParams);
       for (const doc of responsePossibleDoctors.body.hits.hits) {
-        let doctor = doc._source
-        doctor["id"] = doctor.doctorId
-        console.log(doctor);
-        console.log(doc._source);
+        const doctor = doc._source;
+        doctor["id"] = doctor.doctorId;
+        doctor["doctorHospital"] = []
+        for (const facility of doctor.facility) {
+          doctor["doctorHospital"].push(
+            {
+              "facility": {
+                name: facility.name,
+                facilityType: facility.facilityType,
+                streetLine1: facility.streetLine1,
+                streetLine2: facility.streetLine2,
+                streetLine3: facility.streetLine3,
+                city: facility.city,
+                state: facility.state,
+                zipcode: facility.zipcode,
+                imageUrl: facility.imageUrl,
+                latitude: facility.latitude,
+                longitude: facility.longitude,
+                country: facility.country,
+                id: facility.facilityId,
+              }
+            }
+          )
+        }
         possibleDoctors.push(doctor);
       }
 
