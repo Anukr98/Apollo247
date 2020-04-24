@@ -67,7 +67,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     activeMenu: {
       backgroundColor: '#02475b',
-      color: '#fff !important'
+      color: '#fff !important',
+      '& img': {
+        filter:
+          'invert(100%) sepia(86%) saturate(0%) hue-rotate(69deg) brightness(115%) contrast(100%)',
+      },
+      '& span': {
+        color: '#ffffff',
+      },
     },
   };
 });
@@ -84,7 +91,7 @@ export const NavigationBottom: React.FC = (props) => {
           <BottomNavigation showLabels className={classes.root}>
             <BottomNavigationAction
               onClick={() => {
-                clientRoutes.welcome()
+                clientRoutes.welcome();
               }}
               component={Link}
               label="Home"
