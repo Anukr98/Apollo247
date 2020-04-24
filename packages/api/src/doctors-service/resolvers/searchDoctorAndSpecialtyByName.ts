@@ -100,7 +100,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   try {
     // const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    // const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+    const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
 
     //get facility distances from user geolocation
     // let facilityDistances: FacilityDistanceMap = {};
@@ -132,10 +132,34 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     console.log(docSearchParams, "params");
     const responseDoctors = await client.search(docSearchParams);
     console.log(responseDoctors);
-    for (let doc of responseDoctors.body.hits.hits) {
+    for (const doc of responseDoctors.body.hits.hits) {
+      let doctor = doc._source;
+      doctor["id"] = doctor.doctorId;
+      doctor["doctorHospital"] = []
+      for (const facility of doctor.facility) {
+        doctor["doctorHospital"].push(
+          {
+            "facility": {
+              name: facility.name,
+              facilityType: facility.facilityType,
+              streetLine1: facility.streetLine1,
+              streetLine2: facility.streetLine2,
+              streetLine3: facility.streetLine3,
+              city: facility.city,
+              state: facility.state,
+              zipcode: facility.zipcode,
+              imageUrl: facility.imageUrl,
+              latitude: facility.latitude,
+              longitude: facility.longitude,
+              country: facility.country,
+              id: facility.facilityId,
+            }
+          }
+        )
+      }
       matchedDoctors.push(doc._source);
     }
-    // matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
+    matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
     //fetch possible doctors only if there are not matched doctors and specialties
@@ -156,8 +180,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         },
       };
       const responsePossibleDoctors = await client.search(PossibleDoctorParams);
-      for (let doc of responsePossibleDoctors.body.hits.hits) {
-        possibleDoctors.push(doc._source);
+      for (const doc of responsePossibleDoctors.body.hits.hits) {
+        let doctor = doc._source
+        doctor["id"] = doctor.doctorId
+        console.log(doctor);
+        console.log(doc._source);
+        possibleDoctors.push(doctor);
       }
 
     }
