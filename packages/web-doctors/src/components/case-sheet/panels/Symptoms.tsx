@@ -17,6 +17,8 @@ import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components'
 import Scrollbars from 'react-custom-scrollbars';
 import { isEmpty, trim } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -239,8 +241,13 @@ interface errorObject {
   howOfftenError: boolean;
   severityError: boolean;
 }
+
+type Params = { id: string; patientId: string; tabValue: string };
+
 export const Symptoms: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
+
   const { symptoms, setSymptoms } = useContext(CaseSheetContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [symptom, setSymptom] = React.useState('');
@@ -260,6 +267,11 @@ export const Symptoms: React.FC = (props) => {
 
   const deleteSymptom = (idx: any) => {
     symptoms!.splice(idx, 1);
+    const storageItem = getLocalStorageItem(params.id);
+    if (storageItem) {
+      storageItem.symptoms = symptoms;
+      updateLocalStorageItem(params.id, storageItem);
+    }
     setSymptoms(symptoms);
     const sum = idx + Math.random();
     setIdx(sum);
@@ -332,6 +344,11 @@ export const Symptoms: React.FC = (props) => {
         currentSymptom.howOften = howOften;
         currentSymptom.since = since;
         currentSymptom.details = details;
+        const storageItem = getLocalStorageItem(params.id);
+        if (storageItem) {
+          storageItem.symptoms[idxValue] = currentSymptom;
+          updateLocalStorageItem(params.id, storageItem);
+        }
       } else {
         const inputParams: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms = {
           __typename: 'SymptomList',
@@ -343,6 +360,11 @@ export const Symptoms: React.FC = (props) => {
         };
         const x = symptoms;
         x!.push(inputParams);
+        const storageItem = getLocalStorageItem(params.id);
+        if (storageItem) {
+          storageItem.symptoms = x;
+          updateLocalStorageItem(params.id, storageItem);
+        }
         setSymptoms(x);
       }
       setIsUpdate(false);
@@ -351,11 +373,12 @@ export const Symptoms: React.FC = (props) => {
       clearError();
     }
   };
-  useEffect(() => {
-    if (idx >= 0) {
-      setSymptoms(symptoms);
-    }
-  }, [symptoms, idx]);
+
+  // useEffect(() => {
+  //   if (idx >= 0) {
+  //     setSymptoms(symptoms);
+  //   }
+  // }, [symptoms, idx]);
 
   const showSymptom = (idx: number) => {
     if (symptoms && symptoms.length > 0) {
