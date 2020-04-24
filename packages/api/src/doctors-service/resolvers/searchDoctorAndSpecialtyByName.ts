@@ -171,6 +171,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                 "referenceSlot": slot.slot
               }
             );
+            break;
           }
         }
       }
@@ -236,6 +237,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   "referenceSlot": slot.slot
                 }
               );
+              break;
             }
           }
         }
