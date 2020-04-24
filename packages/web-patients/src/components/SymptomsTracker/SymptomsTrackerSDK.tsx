@@ -19,7 +19,7 @@ import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -439,8 +439,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
     }
   };
 
-  const onePrimaryUser =
-        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = hasOnePrimaryUser()
   
   useEffect(() => {
     if (stopRedirect === 'continue' && isRedirect) {

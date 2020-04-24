@@ -26,8 +26,6 @@ import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
-import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -657,8 +655,6 @@ export const AddRecords: React.FC = (props) => {
       };
       reader.onerror = (error) => reject(error);
     });
-    const onePrimaryUser =
-    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   return (
     <div className={classes.root}>
       <Header />
@@ -1079,7 +1075,6 @@ export const AddRecords: React.FC = (props) => {
           </div>
         </div>
       </div>
-      {!onePrimaryUser && <ManageProfile />}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

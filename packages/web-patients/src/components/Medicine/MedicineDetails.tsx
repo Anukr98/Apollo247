@@ -13,9 +13,9 @@ import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Alerts } from 'components/Alerts/Alerts';
-import { useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
+
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -394,10 +394,8 @@ export const MedicineDetails: React.FC = (props) => {
         alert(e);
       });
   };
-  const { allCurrentPatients } = useAllCurrentPatients()
-  const onePrimaryUser = 
-    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
-
+  
+  const onePrimaryUser = hasOnePrimaryUser()
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);

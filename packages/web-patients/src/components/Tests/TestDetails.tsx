@@ -29,8 +29,7 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
 } from 'graphql/types/getDiagnosticsData';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { hasOnePrimaryUser } from "../../helpers/onePrimaryUser"
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -487,9 +486,7 @@ export const TestDetails: React.FC = (props) => {
     return diagnosticsCartItems.findIndex((cartItem) => cartItem.id == `${item.id}`);
   };
   const mou = testDetailsPackage && testDetailsPackage.length;
-  const {allCurrentPatients} = useAllCurrentPatients()
-  const onePrimaryUser = 
-    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = hasOnePrimaryUser()
 
   return (
     <div className={classes.root}>

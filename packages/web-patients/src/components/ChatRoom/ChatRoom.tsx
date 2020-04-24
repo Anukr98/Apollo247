@@ -37,7 +37,7 @@ import { useMutation } from 'react-apollo-hooks';
 import Scrollbars from 'react-custom-scrollbars';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -514,8 +514,7 @@ export const ChatRoom: React.FC = (props) => {
   };
 
   const {allCurrentPatients} = useAllCurrentPatients()
-  const onePrimaryUser = 
-        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = hasOnePrimaryUser()
 
   if (loading) {
     return <LinearProgress />;

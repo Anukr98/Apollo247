@@ -33,7 +33,7 @@ import {
 import { GET_DIAGNOSTICS_CITES } from 'graphql/profiles';
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from 'graphql/types/getDiagnosticsCites';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -370,8 +370,7 @@ export const TestsLanding: React.FC = (props) => {
     urlParams.get('orderstatus') === 'success' ? true : false
   );
 
-  const onePrimaryUser =
-        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = hasOnePrimaryUser()
   
   useEffect(() => {
     if (!diagnosisHotSellerData && !diagnosticOrgansData) {

@@ -7,8 +7,6 @@ import { useCurrentPatient, useAllCurrentPatients } from 'hooks/authHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageAddressBook } from 'components/MyAccount/ManageAddressBook';
 import { LinearProgress } from '@material-ui/core';
-import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -60,9 +58,6 @@ const useStyles = makeStyles((theme: Theme) => {
 export const AddressBook: React.FC = (props) => {
   const classes = useStyles();
   const patient = useCurrentPatient();
-  const {allCurrentPatients} = useAllCurrentPatients()
-  const onePrimaryUser = 
-        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   if (!patient)
     return (
       <div className={classes.pageLoader}>
@@ -86,7 +81,6 @@ export const AddressBook: React.FC = (props) => {
         </div>
       </div>
       <NavigationBottom />
-      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

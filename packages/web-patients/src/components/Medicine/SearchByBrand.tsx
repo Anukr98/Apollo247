@@ -12,7 +12,7 @@ import { MedicineProductsResponse, MedicineProduct } from './../../helpers/Medic
 import { useParams } from 'hooks/routerHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -137,9 +137,7 @@ export const SearchByBrand: React.FC = (props) => {
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [showResponsiveFilter, setShowResponsiveFilter] = useState<boolean>(false);
   const [disableFilters, setDisableFilters] = useState<boolean>(true);
-  const { allCurrentPatients } = useAllCurrentPatients()
-  const onePrimaryUser = 
-    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = hasOnePrimaryUser()
   useEffect(() => {
     if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
       axios

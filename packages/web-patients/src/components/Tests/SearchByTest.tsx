@@ -24,7 +24,7 @@ import {
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -366,8 +366,7 @@ export const SearchByTest: React.FC = (props) => {
       ? testDetailsPackage && testDetailsPackage.length
       : 0;
   const {allCurrentPatients} = useAllCurrentPatients()
-  const onePrimaryUser = 
-        allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = hasOnePrimaryUser()
 
   let showError = false;
 

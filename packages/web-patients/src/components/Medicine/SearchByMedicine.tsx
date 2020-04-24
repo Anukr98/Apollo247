@@ -16,8 +16,7 @@ import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { AphButton } from '@aph/web-ui-components';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
-import { Relation } from 'graphql/types/globalTypes';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -232,9 +231,7 @@ export const SearchByMedicine: React.FC = (props) => {
         : special_price
       : null;
 
-  const { allCurrentPatients } = useAllCurrentPatients()
-  const onePrimaryUser = 
-    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const onePrimaryUser = hasOnePrimaryUser()
 
   useEffect(() => {
     let priceFilterArray: MedicineProduct[] | null = null;
