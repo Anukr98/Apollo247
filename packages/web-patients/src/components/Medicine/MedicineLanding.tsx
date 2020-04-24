@@ -564,7 +564,6 @@ export const MedicineLanding: React.FC = (props) => {
                   className={classes.trackBtn}
                   onClick={() => {
                     setShowPrescriptionPopup(false);
-                    window.location.href = clientRoutes.medicines();
                   }}
                 >
                   Okay
