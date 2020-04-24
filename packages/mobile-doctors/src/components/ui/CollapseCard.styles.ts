@@ -6,11 +6,10 @@ export default StyleSheet.create({
   headingText: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(17),
-    margin: 16,
     textAlign: 'left',
     justifyContent: 'center',
+    flex: 1,
   },
-
   container: {
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -26,11 +25,12 @@ export default StyleSheet.create({
     shadowOpacity: 0.2,
     elevation: 5,
   },
-
+  subContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 16,
+  },
   arrowview: {
-    marginTop: 16,
-    alignSelf: 'flex-end',
-    justifyContent: 'flex-end',
-    marginRight: 16,
+    justifyContent: 'center',
   },
 });

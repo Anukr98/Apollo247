@@ -40,6 +40,7 @@
     "reach_an_expert": " to reach an expert from our team who will resolve your issue.",
     "uh_oh": "Uh oh.. :(",
     "oops_msg": "Oops! seems like we are having an issue. Please try again.",
+    "oops_msg_saving": "Oops! seems like we are having an issue while saving case sheet. Please try again.",
     "custom": "custom",
     "default": "default"
   },
@@ -300,7 +301,7 @@
   "case_sheet": {
     "chief_complaints": "Chief Complaints",
     "vitals": "Vitals",
-    "patient_history_lifestyle": "Patient History & Lifestyle",
+    "patient_history_lifestyle": "Patient History, Lifestyle & Habits",
     "online": "Online ",
     "jr_doctor_notes": "Junior Doctor’s Notes",
     "test_prescription": "Test Prescription",
@@ -312,7 +313,7 @@
     "follow_up_after": "Follow Up After",
     "recommend_consult_type": "Recommended Consult Type",
     "in_person": "In-person",
-    "diagnosis": "Diagnosis",
+    "diagnosis": "Provisional Diagnosed Medical Condition\n(Acceptable in ICD-10 nomenclature)",
     "instructions_to_patient": "Instructions to the patient",
     "how_do_you_talk": "How do you want to talk to the patient?",
     "advice_instructions": "Advice/Instructions",
