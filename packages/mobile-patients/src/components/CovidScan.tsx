@@ -1,28 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
-import {
-  Dimensions,
-  ImageBackground,
-  Linking,
-  Platform,
-  SafeAreaView,
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-  NativeModules,
-  ActivityIndicator,
-  NavState,
-  Alert,
-} from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, View, ActivityIndicator, NavState, Alert } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { WebView } from 'react-native-webview';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 export interface CovidScanProps extends NavigationScreenProps {}
 
