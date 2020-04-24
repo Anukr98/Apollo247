@@ -99,21 +99,6 @@ export const NavigationBottom: React.FC = (props) => {
               }}
             />
             <BottomNavigationAction
-              onClick={() => {
-                isSignedIn ? clientRoutes.healthRecords() : protectWithLoginPopup();
-              }}
-              label="Health Records"
-              component={Link}
-              to={clientRoutes.healthRecords()}
-              icon={<img src={require('images/bottom-nav/ic_myhealth.svg')} />}
-              className={currentPath === clientRoutes.healthRecords() ? classes.activeMenu : ''}
-              classes={{
-                root: classes.labelRoot,
-                label: classes.iconLabel,
-                selected: classes.iconSelected,
-              }}
-            />
-            <BottomNavigationAction
               label="Medicines"
               component={Link}
               to={clientRoutes.medicines()}

@@ -26,6 +26,7 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useMutation } from 'react-apollo-hooks';
 import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 import { Alerts } from 'components/Alerts/Alerts';
+import { MyProfile } from 'components/MyAccount/MyProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -73,6 +74,36 @@ const useStyles = makeStyles((theme: Theme) => {
     rootTabContainer: {
       padding: 0,
     },
+    myAccountPage: {
+      borderRadius: '0 0 10px 10px',
+      backgroundColor: '#f7f8f5',
+      [theme.breakpoints.down('xs')]: {
+        backgroundColor: 'transparent',
+        paddingBottom: 20,
+      },
+    },
+    myAccountSection: {
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        padding: '20px 3px 20px 20px',
+      },
+    },
+    leftSection: {
+      width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
+    },
+    rightSection: {
+      width: 'calc(100% - 328px)',
+      paddingRight: 15,
+      paddingTop: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingTop: 56,
+        paddingRight: 0,
+      },
+    }
   };
 });
 
@@ -325,48 +356,57 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.healthRecordsPage}>
-          <Tabs
-            value={tabValue}
-            classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-            onChange={(e, newValue) => {
-              setTabValue(newValue);
-            }}
-          >
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label={`Consults & Rx — ${consultsData ? consultsData.length : 0}`}
-            />
-            <Tab
-              classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-              label={`Medical Records — ${allCombinedData ? allCombinedData.length : 0}`}
-            />
-          </Tabs>
+        <div className={classes.myAccountPage}>
+          <div className={classes.myAccountSection}>
+            <div className={classes.leftSection}>
+              <MyProfile />
+            </div>
+            <div className={classes.rightSection}>
+              <div className={classes.healthRecordsPage}>
+                <Tabs
+                  value={tabValue}
+                  classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                  onChange={(e, newValue) => {
+                    setTabValue(newValue);
+                  }}
+                >
+                  <Tab
+                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    label={`Consults & Rx — ${consultsData ? consultsData.length : 0}`}
+                  />
+                  <Tab
+                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                    label={`Medical Records — ${allCombinedData ? allCombinedData.length : 0}`}
+                  />
+                </Tabs>
 
-          {tabValue === 0 && (
-            <TabContainer>
-              <Consultations
-                loading={consultsLoading}
-                error={consultError}
-                consultsData={consultsData}
-                allConsultsData={allConsultsData}
-                setConsultsData={setConsultsData}
-              />
-            </TabContainer>
-          )}
-          {tabValue === 1 && (
-            <TabContainer>
-              <MedicalRecords
-                error={medicalError || medicalRecordError}
-                loading={medicalLoading}
-                allCombinedData={allCombinedData}
-                activeData={activeMedicalData}
-                setActiveData={setActiveMedicalData}
-                deleteReport={deleteReport}
-              />
-            </TabContainer>
-          )}
-        </div>
+                {tabValue === 0 && (
+                  <TabContainer>
+                    <Consultations
+                      loading={consultsLoading}
+                      error={consultError}
+                      consultsData={consultsData}
+                      allConsultsData={allConsultsData}
+                      setConsultsData={setConsultsData}
+                    />
+                  </TabContainer>
+                )}
+                {tabValue === 1 && (
+                  <TabContainer>
+                    <MedicalRecords
+                      error={medicalError || medicalRecordError}
+                      loading={medicalLoading}
+                      allCombinedData={allCombinedData}
+                      activeData={activeMedicalData}
+                      setActiveData={setActiveMedicalData}
+                      deleteReport={deleteReport}
+                    />
+                  </TabContainer>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>   
         <Alerts
           setAlertMessage={setAlertMessage}
           alertMessage={alertMessage}
