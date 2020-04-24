@@ -206,10 +206,12 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
           JSON.stringify(res),
           ''
         );
+        console.log('apiURLForStatus res===========', res);
         return res.json();
       })
       .catch((error) => {
         //logging error here
+        console.log('apiURLForStatus error===========', error);
         log(
           'smsOtpAPILogger',
           `STATUS_CALL_ERROR`,
