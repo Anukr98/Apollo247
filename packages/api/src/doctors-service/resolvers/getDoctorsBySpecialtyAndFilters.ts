@@ -160,16 +160,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   let finalSpecialtyDetails;
   let finalSpecialityDetails = [];
   var elasticMatch = [];
-  const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
 
   //get facility distances from user geolocation
-  let facilityDistances: FacilityDistanceMap = {};
-  if (args.filterInput.geolocation) {
-    searchLogger(`GEOLOCATION_API_CALL___START`);
-    const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-    facilityDistances = await facilityRepo.getAllFacilityDistances(args.filterInput.geolocation);
-    searchLogger(`GEOLOCATION_API_CALL___END`);
-  }
+  // let facilityDistances: FacilityDistanceMap = {};
+  // if (args.filterInput.geolocation) {
+  //   searchLogger(`GEOLOCATION_API_CALL___START`);
+  //   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+  //   facilityDistances = await facilityRepo.getAllFacilityDistances(args.filterInput.geolocation);
+  //   searchLogger(`GEOLOCATION_API_CALL___END`);
+  // }
 
   if (
     args.filterInput.specialtySearchType &&
