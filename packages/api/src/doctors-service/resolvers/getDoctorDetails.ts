@@ -357,6 +357,9 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
       facility.id = facility.docFacilityId;
       doctorData.doctorHospital.push({ facility });
     }
+    for (const consultHours of doctorData.consultHours) {
+      consultHours.id = consultHours.consultHoursId;
+    }
   }
   // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length + 1, 'searchhitCount');
   return doctorData;
