@@ -337,14 +337,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                     )
                     .map(({ artCode }) => artCode);
 
+                  // update cart items to unserviceable/serviceable
+                  const updatedCartItems = cartItems.map((item) => ({
+                    ...item,
+                    unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
+                  }));
+                  setCartItems!(updatedCartItems);
+
                   if (unserviceableSkus.length) {
-                    // update cart items to unserviceable
-                    const updatedCartItems = cartItems.map((item) => ({
-                      ...item,
-                      unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
-                    }));
-                    setCartItems!(updatedCartItems);
-                    showUnServiceableItemsAlert();
+                    showUnServiceableItemsAlert(updatedCartItems);
                   }
 
                   const serviceableItems = tatItems
@@ -398,7 +399,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return isPharma && isFmcg ? 'both' : isPharma ? 'pharma' : 'fmcg';
   };
 
-  const showUnServiceableItemsAlert = () => {
+  const showUnServiceableItemsAlert = (cartItems: ShoppingCartItem[]) => {
     showAphAlert!({
       title: string.medicine_cart.tatUnServiceableAlertTitle,
       description: string.medicine_cart.tatUnServiceableAlertDesc,
@@ -412,7 +413,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         {
           text: string.medicine_cart.tatUnServiceableAlertRemoveCTA,
           type: 'orange-link',
-          onPress: removeUnServiceableItems,
+          onPress: () => removeUnServiceableItems(cartItems),
         },
       ],
     });
@@ -423,7 +424,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     scrollViewRef.current && scrollViewRef.current.scrollToEnd();
   };
 
-  const removeUnServiceableItems = () => {
+  const removeUnServiceableItems = (cartItems: ShoppingCartItem[]) => {
     hideAphAlert!();
     setCartItems!(cartItems.filter((item) => !item.unserviceable));
     scrollViewRef.current && scrollViewRef.current.scrollTo(0, 0, true);
@@ -884,6 +885,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setdeliveryTime('');
               setdeliveryError('');
               setshowDeliverySpinner(false);
+              setLastCartItemsReplica('');
             }}
             selectedTab={selectedTab}
           />
