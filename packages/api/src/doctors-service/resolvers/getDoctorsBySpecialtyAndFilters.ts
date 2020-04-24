@@ -10,9 +10,8 @@ import {
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-
-import { format, addMinutes, addDays } from 'date-fns';
-
+import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
+import { format, addMinutes, addDays, differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -159,7 +158,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
     finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
   let finalSpecialtyDetails;
-
+  let finalSpecialityDetails = [];
+  var elasticMatch = [];
   const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
 
   //get facility distances from user geolocation
@@ -178,7 +178,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (!args.filterInput.specialtyName) {
       throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
     }
-
+    elasticMatch.push({ 'specialty.name': (args.filterInput.specialtyName || ApiConstants.GENERAL_PHYSICIAN.toString()) })
     let specialtyIds;
     if (args.filterInput.specialtyName.length === 0) {
       const generalPhysicianName = ApiConstants.GENERAL_PHYSICIAN.toString();
@@ -289,7 +289,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   finalDoctorNextAvailSlots.map((docSlot) => {
     const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
     if (docSlot.referenceSlot != '') {
-      console.log(docSlot.referenceSlot, docIndex);
+      // console.log(docSlot.referenceSlot, docIndex);
       possibleDoctorsOrder.push(finalSortedDoctors[docIndex]);
       finalDoctorNextAvailSlotsOrder.push(docSlot);
     } else {
@@ -297,14 +297,71 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       finalEmptyDoctorsNextAvailabilityOrder.push(docSlot);
     }
   });
-  console.log(possibleEmptyDoctorsOrder.length, possibleDoctorsOrder.length);
+  // console.log(possibleEmptyDoctorsOrder.length, possibleDoctorsOrder.length);
   finalSortedDoctors = possibleDoctorsOrder.concat(possibleEmptyDoctorsOrder);
   finalDoctorNextAvailSlots = finalDoctorNextAvailSlotsOrder.concat(
     finalEmptyDoctorsNextAvailabilityOrder
   );
+  const searchParams: RequestParams.Search = {
+    index: 'doctors',
+    type: 'posts',
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              match: { 'specialty.name': 'Neurology' },
+            },
+            {
+              match: { "doctorSlots.slots.status": "OPEN" },
+            },
+          ],
+        },
+      },
+    },
+  };
+  console.log(JSON.stringify(searchParams));
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const getDetails = await client.search(searchParams);
+  let docs = [];
+  finalDoctorNextAvailSlots = [];
+  finalDoctorsConsultModeAvailability = [];
+  finalSpecialityDetails = [];
+  for (let doc of getDetails.body.hits.hits) {
+    docs.push(doc._source);
+    for (let slots of doc._source.doctorSlots) {
+      for (let slot of slots['slots']) {
+        if (slot.status == "OPEN") {
+          finalDoctorNextAvailSlots.push(
+            {
+              "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              "physicalSlot": slot.slotType === "ONLINE" ? "" : slot.slot,
+              "currentDateTime": new Date(),
+              "doctorId": doc._source.doctorId,
+              "onlineSlot": slot.slot,
+              "referenceSlot": slot.slot
+            }
+          );
+          console.log(slot);
+        }
+      }
+    };
+    finalDoctorsConsultModeAvailability.push({
+      availableModes: [doc._source.consultHours[0].consultMode],
+      doctorId: doc._source.doctorId
+    });
+    finalSpecialityDetails.push(doc._source.specialty)
+    console.log(doc._source);
+  };
+  console.log({
+    doctors: docs,
+    doctorsNextAvailability: finalDoctorNextAvailSlots,
+    doctorsAvailability: finalDoctorsConsultModeAvailability,
+    specialty: finalSpecialityDetails,
+  })
   searchLogger(`API_CALL___END`);
   return {
-    doctors: finalSortedDoctors,
+    doctors: docs,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
