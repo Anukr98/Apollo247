@@ -24,7 +24,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     labelRoot: {
-      borderTop: '4px solid #fff',
       flex: 'auto',
       minWidth: 'auto',
       [theme.breakpoints.up(560)]: {
@@ -67,8 +66,15 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
     },
     activeMenu: {
-      backgroundColor: '#f7f8f5',
-      borderTop: '4px solid #00b38e',
+      backgroundColor: '#02475b',
+      color: '#fff !important',
+      '& img': {
+        filter:
+          'invert(100%) sepia(86%) saturate(0%) hue-rotate(69deg) brightness(115%) contrast(100%)',
+      },
+      '& span': {
+        color: '#ffffff',
+      },
     },
   };
 });
@@ -84,14 +90,12 @@ export const NavigationBottom: React.FC = (props) => {
         <>
           <BottomNavigation showLabels className={classes.root}>
             <BottomNavigationAction
-              onClick={() => {
-                isSignedIn ? clientRoutes.appointments() : protectWithLoginPopup();
-              }}
+              onClick={() => clientRoutes.welcome()}
               component={Link}
-              label="Appointments"
-              icon={<img src={require('images/bottom-nav/ic_appointments.svg')} />}
-              to={clientRoutes.appointments()}
-              className={currentPath === clientRoutes.appointments() ? classes.activeMenu : ''}
+              label="Home"
+              icon={<img src={require('images/bottom-nav/ic_home.svg')} />}
+              to={clientRoutes.welcome()}
+              className={currentPath === clientRoutes.welcome() ? classes.activeMenu : ''}
               classes={{
                 root: classes.labelRoot,
                 label: classes.iconLabel,
@@ -99,14 +103,12 @@ export const NavigationBottom: React.FC = (props) => {
               }}
             />
             <BottomNavigationAction
-              onClick={() => {
-                isSignedIn ? clientRoutes.healthRecords() : protectWithLoginPopup();
-              }}
-              label="Health Records"
+              onClick={() => clientRoutes.doctorsLanding()}
+              label="Doctors"
               component={Link}
-              to={clientRoutes.healthRecords()}
-              icon={<img src={require('images/bottom-nav/ic_myhealth.svg')} />}
-              className={currentPath === clientRoutes.healthRecords() ? classes.activeMenu : ''}
+              to={clientRoutes.doctorsLanding()}
+              icon={<img src={require('images/bottom-nav/ic_doctors.svg')} />}
+              className={currentPath === clientRoutes.doctorsLanding() ? classes.activeMenu : ''}
               classes={{
                 root: classes.labelRoot,
                 label: classes.iconLabel,
@@ -114,7 +116,7 @@ export const NavigationBottom: React.FC = (props) => {
               }}
             />
             <BottomNavigationAction
-              label="Medicines"
+              label="Pharmacy"
               component={Link}
               to={clientRoutes.medicines()}
               icon={<img src={require('images/bottom-nav/ic_medicines.svg')} />}
@@ -126,9 +128,7 @@ export const NavigationBottom: React.FC = (props) => {
               }}
             />
             <BottomNavigationAction
-              onClick={() => {
-                isSignedIn ? clientRoutes.tests() : protectWithLoginPopup();
-              }}
+              onClick={() => clientRoutes.tests()}
               label="Tests"
               component={Link}
               to={clientRoutes.tests()}
@@ -141,14 +141,12 @@ export const NavigationBottom: React.FC = (props) => {
               }}
             />
             <BottomNavigationAction
-              onClick={() => {
-                isSignedIn ? clientRoutes.myAccount() : protectWithLoginPopup();
-              }}
-              label="My Account"
+              onClick={() => clientRoutes.covidLanding()}
+              label="Covid-19"
               component={Link}
-              to={clientRoutes.myAccount()}
-              icon={<img src={require('images/bottom-nav/ic_account.svg')} />}
-              className={currentPath === clientRoutes.myAccount() ? classes.activeMenu : ''}
+              to={clientRoutes.covidLanding()}
+              icon={<img src={require('images/bottom-nav/ic_covid.svg')} />}
+              className={currentPath === clientRoutes.covidLanding() ? classes.activeMenu : ''}
               classes={{
                 root: classes.labelRoot,
                 label: classes.iconLabel,
