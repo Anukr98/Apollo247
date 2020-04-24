@@ -160,12 +160,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       for (let slots of doctor.doctorSlots) {
         for (let slot of slots['slots']) {
           if (slot.status == "OPEN") {
+            console.log(slot.status);
             matchedDoctorsNextAvailability.push(
               {
                 "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
                 "physicalSlot": slot.slotType === "ONLINE" ? "" : slot.slot,
                 "currentDateTime": new Date(),
-                "doctorId": doctor._source.doctorId,
+                "doctorId": doctor.doctorId,
                 "onlineSlot": slot.slot,
                 "referenceSlot": slot.slot
               }
@@ -224,12 +225,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         for (let slots of doctor.doctorSlots) {
           for (let slot of slots['slots']) {
             if (slot.status == "OPEN") {
+              console.log(slot.status);
               possibleDoctorsNextAvailability.push(
                 {
                   "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
                   "physicalSlot": slot.slotType === "ONLINE" ? "" : slot.slot,
                   "currentDateTime": new Date(),
-                  "doctorId": doctor._source.doctorId,
+                  "doctorId": doctor.doctorId,
                   "onlineSlot": slot.slot,
                   "referenceSlot": slot.slot
                 }
