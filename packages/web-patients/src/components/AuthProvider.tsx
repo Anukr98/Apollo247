@@ -3,6 +3,7 @@ import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
+import TagManager from 'react-gtm-module';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
@@ -155,6 +156,17 @@ export const AuthProvider: React.FC = (props) => {
       .auth()
       .signOut()
       .then(() => {
+        /**Gtm code start start */
+        const tagManagerArgs = {
+          dataLayer: {
+            referance: 'Login/Signup',
+            action: 'Logout',
+          },
+          dataLayerName: 'Profile',
+        };
+        TagManager.dataLayer(tagManagerArgs);
+        /**Gtm code start end */
+
         localStorage.removeItem('currentUser');
         window.location.reload();
       });
@@ -341,7 +353,37 @@ export const AuthProvider: React.FC = (props) => {
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
+      console.log(user);
       if (user) {
+        /**Gtm code start */
+        const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
+
+        if (isNewUser) {
+          const tagManagerArgs = {
+            dataLayer: {
+              referance: 'Login/Signup',
+              action: 'Register',
+              data: {
+                mobileNumber: user.uid,
+                preApolloCustomer: false,
+                numberOfProfile: 1,
+              },
+            },
+            dataLayerName: 'Profile',
+          };
+          TagManager.dataLayer(tagManagerArgs);
+        } else {
+          const tagManagerArgs = {
+            dataLayer: {
+              referance: 'Login/Signup',
+              action: 'Login',
+            },
+            dataLayerName: 'Profile',
+          };
+          TagManager.dataLayer(tagManagerArgs);
+        }
+        /**Gtm code start end */
+
         const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);

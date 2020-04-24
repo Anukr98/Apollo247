@@ -1,4 +1,5 @@
 import React from 'react';
+import TagManager from 'react-gtm-module';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 
 export interface ProtectedWithLoginPopupProps {
@@ -10,7 +11,20 @@ export const ProtectedWithLoginPopup: React.FC<ProtectedWithLoginPopupProps> = (
   const { isSignedIn, isSigningIn } = useAuth();
   const isProtected = !isSignedIn && !isSigningIn;
   const protectWithLoginPopup = () => {
-    if (isProtected) setLoginPopupVisible(true);
+    if (isProtected) {
+      /**Gtm code start start */
+      const tagManagerArgs = {
+        dataLayer: {
+          referance: 'Login/Signup',
+          action: 'Intent',
+        },
+        dataLayerName: 'Profile',
+      };
+      TagManager.dataLayer(tagManagerArgs);
+      /**Gtm code start end */
+
+      setLoginPopupVisible(true);
+    }
   };
   return props.children({ protectWithLoginPopup, isProtected });
 };
