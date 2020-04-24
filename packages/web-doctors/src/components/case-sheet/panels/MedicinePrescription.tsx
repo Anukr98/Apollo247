@@ -1360,6 +1360,12 @@ export const MedicinePrescription: React.FC = () => {
     setShowDosage(true);
   };
 
+  // useEffect(() => {
+  //   if (idx >= 0) {
+  //     setSelectedMedicines(selectedMedicines);
+  //     setSelectedMedicinesArr(selectedMedicinesArr);
+  //   }
+  // }, [selectedMedicines, idx, selectedMedicinesArr]);
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.label;
   }
