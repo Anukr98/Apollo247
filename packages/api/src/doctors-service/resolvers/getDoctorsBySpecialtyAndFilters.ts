@@ -159,7 +159,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
   let finalSpecialtyDetails;
   let finalSpecialityDetails = [];
-  var elasticMatch = [];
+  const elasticMatch = [];
 
   //get facility distances from user geolocation
   // let facilityDistances: FacilityDistanceMap = {};

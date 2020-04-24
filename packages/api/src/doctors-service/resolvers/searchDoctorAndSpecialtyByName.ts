@@ -158,8 +158,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         )
       }
       let flag = false
-      for (let slots of doctor.doctorSlots) {
-        for (let slot of slots['slots']) {
+      for (const slots of doctor.doctorSlots) {
+        for (const slot of slots['slots']) {
           if (slot.status == "OPEN") {
             console.log(slot.status);
             matchedDoctorsNextAvailability.push(
@@ -228,8 +228,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           )
         }
         let flag = false;
-        for (let slots of doctor.doctorSlots) {
-          for (let slot of slots['slots']) {
+        for (const slots of doctor.doctorSlots) {
+          for (const slot of slots['slots']) {
             if (slot.status == "OPEN") {
               flag = true;
 
