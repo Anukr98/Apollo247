@@ -506,6 +506,7 @@ export interface HelpEmailInput {
   reason?: string | null;
   comments?: string | null;
   patientId?: string | null;
+  email?: string | null;
 }
 
 export interface MedicineCartInput {
