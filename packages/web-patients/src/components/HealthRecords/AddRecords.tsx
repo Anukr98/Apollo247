@@ -547,6 +547,9 @@ export const AddRecords: React.FC = (props) => {
                     setshowSpinner(false);
                     setUploadedDocuments([]);
                     refFileInput.current.value = null;
+                    /**Gtm code start start */
+                    (window as any).gep('Profile', 'Record Added', `${typeOfRecord} - Self`);
+                    /**Gtm code start start */
                     window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
                   })
                   .catch((e) => {
@@ -601,6 +604,9 @@ export const AddRecords: React.FC = (props) => {
             setshowSpinner(false);
             setUploadedDocuments([]);
             refFileInput.current.value = null;
+            /**Gtm code start start */
+            (window as any).gep('Profile', 'Record Added', `${typeOfRecord} - Self`);
+            /**Gtm code start start */
             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
           })
           .catch((e) => {

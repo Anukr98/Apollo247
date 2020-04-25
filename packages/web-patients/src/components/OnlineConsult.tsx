@@ -748,6 +748,21 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             }
             onClick={() => {
               // let appointmentDateTime = '';
+
+              /**Gtm code start start */
+              let speciality = '';
+
+              if (
+                doctorDetails &&
+                doctorDetails.getDoctorDetailsById &&
+                doctorDetails.getDoctorDetailsById.specialty &&
+                doctorDetails.getDoctorDetailsById.specialty.name
+              ) {
+                speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+              }
+              (window as any).gep('Consultations', speciality, 'Order Initiated', revisedAmount);
+              /**Gtm code start end */
+
               if (scheduleLater || !consultNowAvailable) {
                 const dateForScheduleLater =
                   dateSelected.length > 0

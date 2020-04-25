@@ -363,6 +363,14 @@ export const Appointments: React.FC = (props) => {
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
+  useEffect(() => {
+    if (isFailurePayment) {
+      /**Gtm code start start */
+      (window as any).gep('Consultations', specialtyName, 'Failed / Cancelled');
+      /**Gtm code start end */
+    }
+  }, [isFailurePayment]);
+
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables
@@ -479,6 +487,22 @@ export const Appointments: React.FC = (props) => {
         setPhotoUrl(photoUrl);
         setIsConfirmedPopoverOpen(true);
         setIsConfirmPopupLoaded(true);
+
+        /**Gtm code start start */
+        (window as any).gep('Consultations', specialty, 'Order Success', '{{ Bill Value }}');
+        (window as any)._cb(
+          '{{ mobile number }}',
+          specialty,
+          '{{ User Location }}',
+          '{{ Doctor Location }}',
+          '{{ Booking Type }}',
+          '{{ Scheduled Date - Current Date }}',
+          '{{ Coupon Code }}',
+          '{{ Coupon Value }}',
+          '{{ Final Booking Value }}'
+        );
+        /**Gtm code start end */
+
         // console.log(isAppointmentAvailable);
       }
     }

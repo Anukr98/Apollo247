@@ -591,6 +591,20 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           color="primary"
           disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
           onClick={(e) => {
+            /**Gtm code start start */
+            let speciality = '';
+
+            if (
+              doctorDetails &&
+              doctorDetails.getDoctorDetailsById &&
+              doctorDetails.getDoctorDetailsById.specialty &&
+              doctorDetails.getDoctorDetailsById.specialty.name
+            ) {
+              speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+            }
+            (window as any).gep('Consultations', speciality, 'Order Initiated', revisedAmount);
+            /**Gtm code start end */
+
             setMutationLoading(true);
             // console.log(
             //   new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString(),

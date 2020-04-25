@@ -14,7 +14,6 @@ import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
-import TagManager from 'react-gtm-module';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 import { useAuth } from 'hooks/authHooks';
@@ -289,14 +288,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 e.preventDefault();
 
                 /**Gtm code start start */
-                const tagManagerArgs = {
-                  dataLayer: {
-                    referance: 'Login/Signup',
-                    action: 'Otp Entered',
-                  },
-                  dataLayerName: 'Profile',
-                };
-                TagManager.dataLayer(tagManagerArgs);
+                (window as any).gep('Profile', 'Signup / Login', 'OTP Entered');
                 /**Gtm code start end */
 
                 verifyOtp(otp, customLoginId).then((authToken) => {
@@ -343,14 +335,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
           /**Gtm code start start */
-          const tagManagerArgs = {
-            dataLayer: {
-              referance: 'Login/Signup',
-              action: 'Mobile Entered',
-            },
-            dataLayerName: 'Profile',
-          };
-          TagManager.dataLayer(tagManagerArgs);
+          (window as any).gep('Profile', 'Signup / Login', 'Mobile Entered');
           /**Gtm code start end */
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;

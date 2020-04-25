@@ -462,9 +462,14 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       fullName,
       languages,
       lastName,
+      city,
       onlineConsultationFees,
       physicalConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
+
+    /**Gtm code start start */
+    (window as any).gep('Consultations', speciality, `${city} Doctor Profile Viewed`);
+    /**Gtm code start end */
 
     const isStarDoctor =
       doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO ? true : false;

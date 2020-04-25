@@ -3,7 +3,6 @@ import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
-import TagManager from 'react-gtm-module';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
@@ -157,14 +156,7 @@ export const AuthProvider: React.FC = (props) => {
       .signOut()
       .then(() => {
         /**Gtm code start start */
-        const tagManagerArgs = {
-          dataLayer: {
-            referance: 'Login/Signup',
-            action: 'Logout',
-          },
-          dataLayerName: 'Profile',
-        };
-        TagManager.dataLayer(tagManagerArgs);
+        (window as any).gep('Profile', 'Signup / Login', 'Signout');
         /**Gtm code start end */
 
         localStorage.removeItem('currentUser');
@@ -353,34 +345,15 @@ export const AuthProvider: React.FC = (props) => {
 
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
-      console.log(user);
       if (user) {
         /**Gtm code start */
         const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
 
         if (isNewUser) {
-          const tagManagerArgs = {
-            dataLayer: {
-              referance: 'Login/Signup',
-              action: 'Register',
-              data: {
-                mobileNumber: user.uid,
-                preApolloCustomer: false,
-                numberOfProfile: 1,
-              },
-            },
-            dataLayerName: 'Profile',
-          };
-          TagManager.dataLayer(tagManagerArgs);
+          (window as any).gep('Profile', 'Signup / Login', 'Register');
+          (window as any)._ur(user.uid, false, 1);
         } else {
-          const tagManagerArgs = {
-            dataLayer: {
-              referance: 'Login/Signup',
-              action: 'Login',
-            },
-            dataLayerName: 'Profile',
-          };
-          TagManager.dataLayer(tagManagerArgs);
+          (window as any).gep('Profile', 'Signup / Login', 'Login');
         }
         /**Gtm code start end */
 
