@@ -89,6 +89,7 @@ export interface CaseSheetContextPropsJrd {
   lifeStyle: string;
   familyHistory: string;
   menstrualHistory: string;
+  dosageList: any;
 
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
@@ -154,6 +155,7 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   lifeStyle: '',
   familyHistory: '',
   menstrualHistory: '',
+  dosageList: [],
 
   setBp: () => {},
   setHeight: () => {},

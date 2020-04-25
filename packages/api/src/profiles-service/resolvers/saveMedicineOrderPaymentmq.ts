@@ -217,7 +217,10 @@ const SaveMedicineOrderPaymentMq: Resolver<
   //end email notification
 
   //medicine order in queue starts
-  if (medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE') {
+  if (
+    medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
+    medicinePaymentMqInput.paymentStatus != 'PENDING'
+  ) {
     const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
     const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
     const queueName = process.env.AZURE_SERVICE_BUS_QUEUE_NAME

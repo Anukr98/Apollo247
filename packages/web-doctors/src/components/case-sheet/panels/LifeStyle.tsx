@@ -5,6 +5,8 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
 import { Script } from 'vm';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -89,8 +91,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
 }));
+
+type Params = { id: string; patientId: string; tabValue: string };
 export const LifeStyle: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
+
   const {
     loading,
     patientDetails,
@@ -124,6 +130,26 @@ export const LifeStyle: React.FC = () => {
     }
   };
 
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.id);
+    switch (type) {
+      case 'pastMedicalHistory':
+        return localStorageItem ? localStorageItem.pastMedicalHistory : pastMedicalHistory;
+      case 'pastSurgicalHistory':
+        return localStorageItem ? localStorageItem.pastSurgicalHistory : pastSurgicalHistory;
+      case 'drugAllergies':
+        return localStorageItem ? localStorageItem.drugAllergies : drugAllergies;
+      case 'dietAllergies':
+        return localStorageItem ? localStorageItem.dietAllergies : dietAllergies;
+      case 'lifeStyle':
+        return localStorageItem ? localStorageItem.lifeStyle : lifeStyle;
+      case 'menstrualHistory':
+        return localStorageItem ? localStorageItem.menstrualHistory : menstrualHistory;
+      case 'familyHistory':
+        return localStorageItem ? localStorageItem.familyHistory : familyHistory;
+    }
+  };
+
   return loading && !patientDetails ? (
     <div></div>
   ) : (
@@ -139,8 +165,13 @@ export const LifeStyle: React.FC = () => {
               disabled={!caseSheetEdit}
               fullWidth
               multiline
-              defaultValue={pastMedicalHistory}
+              defaultValue={getDefaultValue('pastMedicalHistory')}
               onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.pastMedicalHistory = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
                 setPastMedicalHistory(e.target.value);
               }}
             />
@@ -156,8 +187,13 @@ export const LifeStyle: React.FC = () => {
               disabled={!caseSheetEdit}
               fullWidth
               multiline
-              defaultValue={pastSurgicalHistory}
+              defaultValue={getDefaultValue('pastSurgicalHistory')}
               onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.pastSurgicalHistory = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
                 setPastSurgicalHistory(e.target.value);
               }}
             />
@@ -175,8 +211,13 @@ export const LifeStyle: React.FC = () => {
               id="drugAllergies"
               fullWidth
               multiline
-              defaultValue={drugAllergies}
+              defaultValue={getDefaultValue('drugAllergies')}
               onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.drugAllergies = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
                 setDrugAllergies(e.target.value);
               }}
             />
@@ -193,8 +234,13 @@ export const LifeStyle: React.FC = () => {
               disabled={!caseSheetEdit}
               fullWidth
               multiline
-              defaultValue={dietAllergies}
+              defaultValue={getDefaultValue('dietAllergies')}
               onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.dietAllergies = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
                 setDietAllergies(e.target.value);
               }}
             />
@@ -211,8 +257,13 @@ export const LifeStyle: React.FC = () => {
               disabled={!caseSheetEdit}
               fullWidth
               multiline
-              defaultValue={lifeStyle}
+              defaultValue={getDefaultValue('lifeStyle')}
               onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.lifeStyle = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
                 setLifeStyle(e.target.value);
               }}
             />
@@ -230,8 +281,13 @@ export const LifeStyle: React.FC = () => {
                 disabled={!caseSheetEdit}
                 fullWidth
                 multiline
-                defaultValue={menstrualHistory}
+                defaultValue={getDefaultValue('menstrualHistory')}
                 onBlur={(e) => {
+                  const storageItem = getLocalStorageItem(params.id);
+                  if (storageItem) {
+                    storageItem.menstrualHistory = e.target.value;
+                    updateLocalStorageItem(params.id, storageItem);
+                  }
                   setMenstrualHistory(e.target.value);
                 }}
               />
@@ -248,8 +304,13 @@ export const LifeStyle: React.FC = () => {
               disabled={!caseSheetEdit}
               fullWidth
               multiline
-              defaultValue={familyHistory}
+              defaultValue={getDefaultValue('familyHistory')}
               onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.familyHistory = e.target.value;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
                 setFamilyHistory(e.target.value);
               }}
             />
