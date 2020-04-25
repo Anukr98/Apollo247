@@ -138,7 +138,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
-> = async (parent, args, { doctorsDb, consultsDb }) => {
+> = async (parent, args, { }) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -153,23 +153,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   searchLogger(`API_CALL___START`);
 
-  let finalConsultNowDoctors: Doctor[] = [],
-    finalBookNowDoctors: Doctor[] = [],
-    finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
+  let finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
     finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
   let finalSpecialtyDetails;
   let finalSpecialityDetails = [];
   const elasticMatch = [];
-
-  //get facility distances from user geolocation
-  // let facilityDistances: FacilityDistanceMap = {};
-  // if (args.filterInput.geolocation) {
-  //   searchLogger(`GEOLOCATION_API_CALL___START`);
-  //   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-  //   facilityDistances = await facilityRepo.getAllFacilityDistances(args.filterInput.geolocation);
-  //   searchLogger(`GEOLOCATION_API_CALL___END`);
-  // }
-
+  elasticMatch.push({ match: { "doctorSlots.slots.status": "OPEN" } })
   if (
     args.filterInput.specialtySearchType &&
     args.filterInput.specialtySearchType == SpecialtySearchType.NAME
@@ -177,7 +166,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (!args.filterInput.specialtyName) {
       throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
     }
-    elasticMatch.push({ 'specialty.name': (args.filterInput.specialtyName || ApiConstants.GENERAL_PHYSICIAN.toString()) })
+    elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(",") } })
   }
 
   const searchParams: RequestParams.Search = {
@@ -186,18 +175,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     body: {
       query: {
         bool: {
-          must: [
-            {
-              match: { 'specialty.name': 'Neurology' },
-            },
-            {
-              match: { "doctorSlots.slots.status": "OPEN" },
-            },
-          ],
+          must: elasticMatch,
         },
       },
     },
   };
+  console.log(elasticMatch);
+
+  console.log(JSON.stringify(searchParams));
+
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
   let docs = [];
@@ -205,10 +191,35 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   finalDoctorsConsultModeAvailability = [];
   finalSpecialityDetails = [];
   for (let doc of getDetails.body.hits.hits) {
-    docs.push(doc._source);
+    const doctor = doc._source;
+    doctor["id"] = doctor.doctorId;
+    doctor["doctorHospital"] = [];
+    for (const facility of doctor.facility) {
+      doctor["doctorHospital"].push(
+        {
+          "facility": {
+            name: facility.name,
+            facilityType: facility.facilityType,
+            streetLine1: facility.streetLine1,
+            streetLine2: facility.streetLine2,
+            streetLine3: facility.streetLine3,
+            city: facility.city,
+            state: facility.state,
+            zipcode: facility.zipcode,
+            imageUrl: facility.imageUrl,
+            latitude: facility.latitude,
+            longitude: facility.longitude,
+            country: facility.country,
+            id: facility.facilityId,
+          }
+        }
+      )
+    }
+    let flag = false;
     for (let slots of doc._source.doctorSlots) {
       for (let slot of slots['slots']) {
         if (slot.status == "OPEN") {
+          flag = true;
           finalDoctorNextAvailSlots.push(
             {
               "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
@@ -219,9 +230,14 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
               "referenceSlot": slot.slot
             }
           );
+          break;
         }
       }
+      if (flag) {
+        break;
+      }
     };
+    docs.push(doctor);
     finalDoctorsConsultModeAvailability.push({
       availableModes: [doc._source.consultHours[0].consultMode],
       doctorId: doc._source.doctorId
