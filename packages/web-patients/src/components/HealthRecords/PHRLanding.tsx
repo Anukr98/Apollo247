@@ -90,7 +90,7 @@ type LandingProps = {
 export const PHRLanding: React.FC<LandingProps> = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [consultsLoading, setConsultsLoading] = useState<boolean>(false);
   const [consultError, setConsultError] = useState<boolean>(false);

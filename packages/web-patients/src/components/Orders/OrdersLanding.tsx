@@ -3,7 +3,6 @@ import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import React, { useState } from 'react';
 import { Header } from 'components/Header';
 import { YourOrders } from 'components/Orders/YourOrders';
-import { ManageProfile } from 'components/ManageProfile';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

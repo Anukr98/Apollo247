@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
 import { MyProfile } from 'components/MyAccount/MyProfile';
-import { useCurrentPatient, useAllCurrentPatients } from 'hooks/authHooks';
+import { useCurrentPatient } from 'hooks/authHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageAddressBook } from 'components/MyAccount/ManageAddressBook';
 import { LinearProgress } from '@material-ui/core';

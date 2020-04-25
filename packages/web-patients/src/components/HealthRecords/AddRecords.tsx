@@ -399,7 +399,7 @@ export const AddRecords: React.FC = (props) => {
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
 
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const uploadDocumentMutation = useMutation(UPLOAD_DOCUMENT);
   const addMedicalRecordMutation = useMutation(ADD_MEDICAL_RECORD);
