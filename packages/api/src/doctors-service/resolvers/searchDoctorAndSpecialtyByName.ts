@@ -11,8 +11,8 @@ import {
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
+//import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+import { Client, RequestParams } from '@elastic/elasticsearch';
 import { ApiConstants } from 'ApiConstants';
 import { differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
@@ -88,14 +88,14 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   );
 
   searchLogger('API_CALL___STARTED');
+  let matchedSpecialties: DoctorSpecialty[] = [];
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
-  let matchedDoctors = [],
-    matchedSpecialties: DoctorSpecialty[] = [],
+  const matchedDoctors = [],
     matchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  let possibleDoctors = [],
+  const possibleDoctors = [],
     possibleSpecialties: DoctorSpecialty[] = [],
     possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  let otherDoctors: Doctor[] = [],
+  const otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
 
   try {
@@ -112,7 +112,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     // }
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
-    console.log(searchTextLowerCase)
+    console.log(searchTextLowerCase);
     // matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase, pincodeCity);
     const docSearchParams: RequestParams.Search = {
       index: 'doctors',
@@ -122,62 +122,61 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           bool: {
             must: [
               {
-                match: { 'fullName': searchTextLowerCase + '*' },
+                match: { fullName: searchTextLowerCase + '*' },
               },
             ],
           },
         },
       },
     };
-    console.log(docSearchParams, "params");
+    console.log(docSearchParams, 'params');
     const responseDoctors = await client.search(docSearchParams);
-    console.log(responseDoctors);
     for (const doc of responseDoctors.body.hits.hits) {
       const doctor = doc._source;
-      doctor["id"] = doctor.doctorId;
-      doctor["doctorHospital"] = []
-      for (const facility of doctor.facility) {
-        doctor["doctorHospital"].push(
-          {
-            "facility": {
-              name: facility.name,
-              facilityType: facility.facilityType,
-              streetLine1: facility.streetLine1,
-              streetLine2: facility.streetLine2,
-              streetLine3: facility.streetLine3,
-              city: facility.city,
-              state: facility.state,
-              zipcode: facility.zipcode,
-              imageUrl: facility.imageUrl,
-              latitude: facility.latitude,
-              longitude: facility.longitude,
-              country: facility.country,
-              id: facility.facilityId,
-            }
-          }
-        )
+      doctor['id'] = doctor.doctorId;
+      if (doctor.specialty) {
+        doctor.specialty.id = doctor.specialty.specialtyId;
       }
-      let flag = false
+      doctor['doctorHospital'] = [];
+      for (const facility of doctor.facility) {
+        doctor['doctorHospital'].push({
+          facility: {
+            name: facility.name,
+            facilityType: facility.facilityType,
+            streetLine1: facility.streetLine1,
+            streetLine2: facility.streetLine2,
+            streetLine3: facility.streetLine3,
+            city: facility.city,
+            state: facility.state,
+            zipcode: facility.zipcode,
+            imageUrl: facility.imageUrl,
+            latitude: facility.latitude,
+            longitude: facility.longitude,
+            country: facility.country,
+            id: facility.facilityId,
+          },
+        });
+      }
+      let flag = false;
       for (const slots of doctor.doctorSlots) {
         for (const slot of slots['slots']) {
-          if (slot.status == "OPEN") {
+          if (slot.status == 'OPEN') {
             console.log(slot.status);
-            matchedDoctorsNextAvailability.push(
-              {
-                "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
-                "physicalSlot": slot.slotType === "ONLINE" ? "" : slot.slot,
-                "currentDateTime": new Date(),
-                "doctorId": doctor.doctorId,
-                "onlineSlot": slot.slot,
-                "referenceSlot": slot.slot
-              }
-            );
+            matchedDoctorsNextAvailability.push({
+              availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+              physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
+              currentDateTime: new Date(),
+              doctorId: doctor.doctorId,
+              onlineSlot: slot.slot,
+              referenceSlot: slot.slot,
+            });
             flag = true;
             break;
           }
         }
-        if (flag) { break; }
-
+        if (flag) {
+          break;
+        }
       }
       matchedDoctors.push(doctor);
     }
@@ -194,8 +193,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             bool: {
               must: [
                 {
-                  match: { "fullName": "*" },
-                }
+                  match: { fullName: '*' },
+                },
               ],
             },
           },
@@ -204,55 +203,52 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       const responsePossibleDoctors = await client.search(PossibleDoctorParams);
       for (const doc of responsePossibleDoctors.body.hits.hits) {
         const doctor = doc._source;
-        doctor["id"] = doctor.doctorId;
-        doctor["doctorHospital"] = []
-        for (const facility of doctor.facility) {
-          doctor["doctorHospital"].push(
-            {
-              "facility": {
-                name: facility.name,
-                facilityType: facility.facilityType,
-                streetLine1: facility.streetLine1,
-                streetLine2: facility.streetLine2,
-                streetLine3: facility.streetLine3,
-                city: facility.city,
-                state: facility.state,
-                zipcode: facility.zipcode,
-                imageUrl: facility.imageUrl,
-                latitude: facility.latitude,
-                longitude: facility.longitude,
-                country: facility.country,
-                id: facility.facilityId,
-              }
-            }
-          )
+        doctor['id'] = doctor.doctorId;
+        doctor['doctorHospital'] = [];
+        doctor['activeSlotCount'] = 0;
+        if (doctor.specialty) {
+          doctor.specialty.id = doctor.specialty.specialtyId;
         }
-        let flag = false;
+        for (const facility of doctor.facility) {
+          doctor['doctorHospital'].push({
+            facility: {
+              name: facility.name,
+              facilityType: facility.facilityType,
+              streetLine1: facility.streetLine1,
+              streetLine2: facility.streetLine2,
+              streetLine3: facility.streetLine3,
+              city: facility.city,
+              state: facility.state,
+              zipcode: facility.zipcode,
+              imageUrl: facility.imageUrl,
+              latitude: facility.latitude,
+              longitude: facility.longitude,
+              country: facility.country,
+              id: facility.facilityId,
+            },
+          });
+        }
         for (const slots of doctor.doctorSlots) {
           for (const slot of slots['slots']) {
-            if (slot.status == "OPEN") {
-              flag = true;
-
-              possibleDoctorsNextAvailability.push(
-                {
-                  "availableInMinutes": Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
-                  "physicalSlot": slot.slotType === "ONLINE" ? "" : slot.slot,
-                  "currentDateTime": new Date(),
-                  "doctorId": doctor.doctorId,
-                  "onlineSlot": slot.slot,
-                  "referenceSlot": slot.slot
-                }
-              );
-              break;
+            if (slot.status == 'OPEN') {
+              if (doctor['activeSlotCount'] === 0) {
+                possibleDoctorsNextAvailability.push({
+                  availableInMinutes: Math.abs(
+                    differenceInMinutes(new Date(), new Date(slot.slot))
+                  ),
+                  physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
+                  currentDateTime: new Date(),
+                  doctorId: doctor.doctorId,
+                  onlineSlot: slot.slot,
+                  referenceSlot: slot.slot,
+                });
+              }
+              doctor['activeSlotCount'] += 1;
             }
-          }
-          if (flag) {
-            break;
           }
         }
         possibleDoctors.push(doctor);
       }
-
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
@@ -260,11 +256,15 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   searchLogger(`API_CALL___END`);
 
   return {
-    doctors: matchedDoctors,
+    doctors: matchedDoctors
+      .sort((a, b) => parseFloat(a.activeSlotCount) - parseFloat(b.activeSlotCount))
+      .reverse(),
     doctorsNextAvailability: matchedDoctorsNextAvailability,
     specialties: matchedSpecialties,
     possibleMatches: {
-      doctors: possibleDoctors,
+      doctors: possibleDoctors
+        .sort((a, b) => parseFloat(a.activeSlotCount) - parseFloat(b.activeSlotCount))
+        .reverse(),
       doctorsNextAvailability: possibleDoctorsNextAvailability,
       specialties: possibleSpecialties,
     },
