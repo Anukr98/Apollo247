@@ -202,7 +202,10 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE = gql`
         medicineName
         id
         externalId
+        routeOfAdministration
+        medicineCustomDosage
       }
+      allowedDosages
     }
   }
 `;

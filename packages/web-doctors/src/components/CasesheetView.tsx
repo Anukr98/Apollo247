@@ -243,7 +243,17 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       selected: false,
     },
   ];
-
+  const medUnitObject: any = {
+    ML: { value: 'ml' },
+    MG: { value: 'mg' },
+    GM: { value: 'gm' },
+    TABLET: { value: 'tablet(s)' },
+    PUFF: { value: 'puff(s)' },
+    UNIT: { value: 'unit(s)' },
+    SPRAY: { value: 'spray(s)' },
+    PATCH: { value: 'patch' },
+    AS_PRESCRIBED: { value: 'As prescribed' },
+  };
   const getAge = (date: string) => {
     if (date) {
       return Math.abs(
@@ -306,16 +316,16 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 .join(', ')
                 .toLowerCase()
             : '';
-        let unitHtmls = prescription!.medicineUnit!.toLowerCase();
-        unitHtmls =
-          unitHtmls[unitHtmls.length - 1].toLowerCase() === 's'
-            ? term(unitHtmls, prescription!.medicineFormTypes === 'OTHERS' ? '(s)' : '')
-            : unitHtmls + (prescription!.medicineFormTypes === 'OTHERS' ? '(s)' : '');
+        const unitHtmls =
+          prescription && medUnitObject && medUnitObject[prescription!.medicineUnit!]
+            ? medUnitObject[prescription!.medicineUnit!].value
+            : prescription!.medicineUnit!.toLowerCase();
         const isInDuration =
           prescription &&
-          prescription!.medicineTimings &&
-          prescription!.medicineTimings!.length === 1 &&
-          prescription!.medicineTimings[0] === 'AS_NEEDED'
+          ((prescription!.medicineTimings &&
+            prescription!.medicineTimings!.length === 1 &&
+            prescription!.medicineTimings[0] === 'AS_NEEDED') ||
+            (prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''))
             ? ''
             : 'in the ';
         let timesString =
@@ -329,18 +339,35 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         if (timesString && timesString !== '') {
           timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
         }
-        const dosageCount = prescription!.medicineDosage;
-        const takeApplyHtml = prescription!.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply';
-        const unitHtml = `${unitHtmls}`;
+        let dosageHtml = '';
+        if (prescription!.medicineCustomDosage && prescription!.medicineCustomDosage! !== '') {
+          const dosageTimingArray = prescription!.medicineCustomDosage!.split('-');
+          const customTimingArray = [];
+          if (dosageTimingArray && dosageTimingArray[0])
+            customTimingArray.push(dosageTimingArray[0] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[1])
+            customTimingArray.push(dosageTimingArray[1] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[2])
+            customTimingArray.push(dosageTimingArray[2] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[3])
+            customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+          dosageHtml = customTimingArray.join(' - ');
+        } else {
+          dosageHtml = prescription!.medicineDosage! + ' ' + unitHtmls;
+        }
 
         return (
           <li>
             {prescription.medicineName}
             <br />
             <span>
-              {`${takeApplyHtml} ${
-                dosageCount && prescription!.medicineFormTypes === 'OTHERS' ? dosageCount : ''
-              } ${unitHtml} ${
+              {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${dosageHtml}${
+                timesString.length > 0 &&
+                prescription!.medicineCustomDosage! &&
+                prescription!.medicineCustomDosage! !== ''
+                  ? ' (' + timesString + ') '
+                  : ' '
+              }${
                 prescription!.medicineFrequency
                   ? prescription!.medicineFrequency
                       .split('_')
@@ -351,9 +378,23 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                       .join(' ')
                       .toLowerCase()
               } ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                timesString.length > 0 ? timesString : ''
+                timesString.length > 0 &&
+                prescription!.medicineCustomDosage! &&
+                prescription!.medicineCustomDosage! === ''
+                  ? timesString
+                  : ''
               }`}
             </span>
+            {prescription.routeOfAdministration &&
+              !isEmpty(trim(prescription.routeOfAdministration)) && (
+                <>
+                  <br />
+                  <span>{`To be taken: ${prescription.routeOfAdministration
+                    .split('_')
+                    .join(' ')
+                    .toLowerCase()}`}</span>
+                </>
+              )}
             {prescription.medicineInstructions &&
               !isEmpty(trim(prescription.medicineInstructions)) && (
                 <>
