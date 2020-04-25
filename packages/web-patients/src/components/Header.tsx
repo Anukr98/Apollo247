@@ -69,9 +69,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.down(900)]: {
-        display: 'none',
-      },
     },
     userAccountActive: {
       backgroundColor: '#f7f8f5',
