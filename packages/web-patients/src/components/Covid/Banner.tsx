@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       [theme.breakpoints.up(1220)]: {
         padding: 40,
-      }
+      },
     },
     backArrow: {
       cursor: 'pointer',
@@ -45,6 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
       verticalAlign: 'middle',
     },
     subcribeBtn: {
+      visibility: 'hidden',
       marginLeft: 'auto',
       backgroundColor: '#fff',
       color: '#fc9916',
@@ -92,7 +93,10 @@ export const Banner: React.FC = (props) => {
   const classes = useStyles();
 
   return (
-    <div className={classes.root} style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }} >
+    <div
+      className={classes.root}
+      style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
+    >
       <div className={classes.bannerTop}>
         <Link to={clientRoutes.welcome()}>
           <div className={classes.backArrow}>

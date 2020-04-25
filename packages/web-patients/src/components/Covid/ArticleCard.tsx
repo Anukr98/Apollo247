@@ -70,15 +70,20 @@ const useStyles = makeStyles((theme: Theme) => {
       top: '50%',
       marginTop: -30,
     },
+    iFrameVideo: {
+      position: 'relative',
+      height: '220px',
+      width: '100%',
+    },
   };
 });
 
-
 type ArticleItem = {
-  image: string;
+  thumbnailWeb: string;
+  thumbnailMobile: string;
   type: string;
-  title: string;
-  description: string;
+  postTitle: string;
+  shortDescription: string;
 };
 
 interface ArticleItemProps {
@@ -87,14 +92,25 @@ interface ArticleItemProps {
 
 const ArticleItem: React.FC<ArticleItemProps> = (props) => {
   const classes = useStyles();
-  const { image, title, description, type } = props.item;
-
+  const { thumbnailMobile, thumbnailWeb, postTitle, shortDescription, type } = props.item;
+  const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
   return (
     <Grid item sm={4} xs={12}>
       <div className={classes.card}>
         <Link to="#">
           <div className={classes.cardHeader}>
-            <img src={image} alt="" />
+            {type === 'VIDEO' ? (
+              <iframe
+                width="305"
+                height="204"
+                className={classes.iFrameVideo}
+                color="#fcb716"
+                src="https://www.youtube.com/embed/G-D2ZSv-_fA"
+                allow="accelerometer; fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              ></iframe>
+            ) : (
+              <img src={image} alt="" />
+            )}
             <div className={`${classes.videoOverlay}`}>
               <div className={classes.overlayWrap}>
                 <img src={require('images/ic_play.svg')} alt="" />
@@ -103,8 +119,8 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
           </div>
           <div className={classes.cardContent}>
             <div className={classes.type}>{type}</div>
-            <h4 className={classes.title}>{title}</h4>
-            <div className={classes.content}>{description}</div>
+            <h4 className={classes.title}>{postTitle}</h4>
+            <div className={classes.content}>{shortDescription}</div>
           </div>
         </Link>
       </div>
@@ -112,33 +128,39 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
   );
 };
 
-export const ArticleCard: React.FC = (props) => {
+interface ArticleCardProps {
+  content: [];
+}
+
+export const ArticleCard: React.FC<ArticleCardProps> = (props) => {
   const classes = useStyles();
-  const articleItems: ArticleItem[] = [
-    {
-      image: require('images/articles/articles-01.png'),
-      type: 'Article',
-      title: 'Basic protective measures against the new coronavirus',
-      description: `Stay aware of the latest information on the COVID-19 outbreak, available on the WHO website and through your national and local public health authority.`,
-    },
-    {
-      image: require('images/articles/articles-02.png'),
-      type: 'Report',
-      title: `COVID-19 –Situation Report`,
-      description: 'If you are not in an area where COVID-19 is spreading or have not travelled from an area where COVID-19 is spreading or have not been in contact with an infected patient, your risk of infection is low. ',
-    },
-    {
-      image: require('images/articles/articles-03.png'),
-      type: 'Article',
-      title: 'Advice on the use of masks in the context of COVID-19',
-      description: 'The use of masks made of other materials (e.g., cotton fabric), also known as nonmedical masks, in the community setting has not been well evaluated.',
-    },
-  ];
+  // const articleItems: ArticleItem[] = [
+  //   {
+  //     thumbnailWeb: require('images/articles/articles-01.png'),
+  //     type: 'Article',
+  //     title: 'Basic protective measures against the new coronavirus',
+  //     description: `Stay aware of the latest information on the COVID-19 outbreak, available on the WHO website and through your national and local public health authority.`,
+  //   },
+  //   {
+  //     thumbnailWeb: require('images/articles/articles-02.png'),
+  //     type: 'Report',
+  //     title: `COVID-19 –Situation Report`,
+  //     description:
+  //       'If you are not in an area where COVID-19 is spreading or have not travelled from an area where COVID-19 is spreading or have not been in contact with an infected patient, your risk of infection is low. ',
+  //   },
+  //   {
+  //     thumbnailWeb: require('images/articles/articles-03.png'),
+  //     type: 'Article',
+  //     title: 'Advice on the use of masks in the context of COVID-19',
+  //     description:
+  //       'The use of masks made of other materials (e.g., cotton fabric), also known as nonmedical masks, in the community setting has not been well evaluated.',
+  //   },
+  // ];
 
   return (
     <div className={classes.root}>
       <Grid container spacing={2}>
-        {articleItems.map((item, i) => (
+        {props.content.map((item, i) => (
           <ArticleItem item={item} key={i} />
         ))}
       </Grid>

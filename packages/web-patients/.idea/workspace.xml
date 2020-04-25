@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="8e68c75a-6264-47ae-b46c-846df83c8943" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/src/components/AppLocations.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/AppLocations.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/AuthProvider.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/AuthProvider.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/BottomLinks.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/BottomLinks.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/DoctorsFilter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/DoctorsFilter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Medicine/MedicineInformation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Medicine/MedicineInformation.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Prescriptions/UploadEPrescriptionCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Prescriptions/UploadEPrescriptionCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/graphql/types/globalTypes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/graphql/types/globalTypes.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectId" id="1aZb3FdsV0dm9A1KKO523xoAB5k" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
+    <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8e68c75a-6264-47ae-b46c-846df83c8943" name="Default Changelist" comment="" />
+      <created>1586945861793</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1586945861793</updated>
+      <workItem from="1586945863100" duration="6989000" />
+      <workItem from="1587113242130" duration="7000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="100" y="100" width="1592" height="920" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1586946764708">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="100" y="100" width="1592" height="920" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1586946764708" />
+    <state x="596" y="305" width="600" height="510" key="find.popup" timestamp="1586950722312">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="596" y="305" width="600" height="510" key="find.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1586950722312" />
+    <state x="559" y="249" width="672" height="678" key="search.everywhere.popup" timestamp="1586952072426">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="559" y="249" width="672" height="678" key="search.everywhere.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1586952072426" />
+  </component>
+</project>
