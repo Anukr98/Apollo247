@@ -11,6 +11,7 @@ import { AddSymptomPopUp } from '@aph/mobile-doctors/src/components/ui/AddSympto
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
+import { useParams } from 'hooks/routerHooks';
 import {
   AddPlus,
   Audio,
@@ -235,7 +236,9 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setUrl: Dispatch<SetStateAction<string>>;
 }
 
+type Params = { id: string; patientId: string; tabValue: string };
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
+  const params = useParams<Params>();
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
   console.log(Appintmentdatetimeconsultpage, 'Appintmentdatetimeconsultpage');
   const AppId = props.navigation.getParam('AppId');
@@ -596,9 +599,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             age > -1 ? Math.round(age).toString() : '-'
           }`,
           vitals: medicalHistory
-            ? `Weight: ${medicalHistory.weight || '-'} | Height: ${medicalHistory.height ||
-                '-'} | BP: ${medicalHistory.bp ||
-                '-'} | Temperature: ${medicalHistory.temperature || '-'} `
+            ? `Weight: ${medicalHistory.weight || '-'} | Height: ${
+                medicalHistory.height || '-'
+              } | BP: ${medicalHistory.bp || '-'} | Temperature: ${
+                medicalHistory.temperature || '-'
+              } `
             : '',
           uhid: patientDetails.uhid,
           appId: displayId,
@@ -676,10 +681,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     // is in the same screen for next 10 minutes we can keep on checking and enable consult button, no need to refresh the page
     // StartConsult Button will be disabled for previous (completed) appointments.
     const _now = moment(new Date());
-    const _consultStartTime = moment
-      .utc(Appintmentdatetimeconsultpage)
-      .clone()
-      .local();
+    const _consultStartTime = moment.utc(Appintmentdatetimeconsultpage).clone().local();
     const _consultEndTime = _consultStartTime.clone().add(15, 'minutes');
     const _consultSubtractTime = _consultStartTime.clone().subtract(15, 'minutes');
 
@@ -767,6 +769,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <Button
               title={'SEND TO PATIENT'}
               onPress={() => {
+                localStorage.removeItem(`${params.id}`);
                 sendToPatientAction();
               }}
               style={styles.buttonendStyle}

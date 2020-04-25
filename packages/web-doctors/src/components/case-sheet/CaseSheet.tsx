@@ -25,6 +25,8 @@ import {
 } from 'components/case-sheet/panels';
 import { UserCard } from 'components/case-sheet/UserCard';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -151,135 +153,243 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CashSheetProps {
   startAppointment: boolean;
 }
-
+let autoSaveIntervalId: any;
+type Params = { id: string; patientId: string; tabValue: string };
 export const CaseSheet: React.FC<CashSheetProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const {
+    symptoms,
+    setSymptoms,
+    weight,
+    setWeight,
+    height,
+    setHeight,
+    temperature,
+    setTemperature,
+    bp,
+    setBp,
+    notes,
+    setSRDNotes,
+    pastMedicalHistory,
+    setPastMedicalHistory,
+    pastSurgicalHistory,
+    setPastSurgicalHistory,
+    drugAllergies,
+    setDrugAllergies,
+    dietAllergies,
+    setDietAllergies,
+    lifeStyle,
+    setLifeStyle,
+    menstrualHistory,
+    setMenstrualHistory,
+    familyHistory,
+    setFamilyHistory,
+    diagnosis,
+    setDiagnosis,
+    medicinePrescription,
+    setMedicinePrescription,
+    followUp,
+    setFollowUp,
+    followUpAfterInDays,
+    setFollowUpAfterInDays,
+    followUpDate,
+    setFollowUpDate,
+    diagnosticPrescription,
+    setDiagnosticPrescription,
+    otherInstructions,
+    setOtherInstructions,
+    caseSheetEdit,
+  } = useContext(CaseSheetContext);
+  const params = useParams<Params>();
 
-  const [symptoms, setSymptoms] = useState<boolean>(props.startAppointment);
-  const [lifestyle, setLifestyle] = useState<boolean>(props.startAppointment);
-  const [healthVault, setHealthVault] = useState<boolean>(props.startAppointment);
-  const [note, setNotes] = useState<boolean>(props.startAppointment);
-  const [diagnosis, setDiagnosis] = useState<boolean>(props.startAppointment);
-  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(props.startAppointment);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(
+  const [symptomsState, setSymptomsState] = useState<boolean>(props.startAppointment);
+  const [lifestyleState, setLifestyleState] = useState<boolean>(props.startAppointment);
+  const [healthVaultState, setHealthVaultState] = useState<boolean>(props.startAppointment);
+  const [noteState, setNotesState] = useState<boolean>(props.startAppointment);
+  const [diagnosisState, setDiagnosisState] = useState<boolean>(props.startAppointment);
+  const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<boolean>(
     props.startAppointment
   );
-  const [followUpPanel, setFollowUpPanel] = useState<boolean>(props.startAppointment);
-  const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
-  const [vitals, setVitals] = useState<boolean>(props.startAppointment);
-
+  const [diagnosticPrescriptionState, setDiagnosticPrescriptionState] = useState<boolean>(
+    props.startAppointment
+  );
+  const [followUpPanelState, setFollowUpPanelState] = useState<boolean>(props.startAppointment);
+  const [otherInstructionsState, setOtherInstructionsState] = useState<boolean>(
+    props.startAppointment
+  );
+  const [vitalsState, setVitalsState] = useState<boolean>(props.startAppointment);
+  const [firstTimeLanding, setFirstTimeLanding] = useState<boolean>(true);
   const items = [
     {
       key: 'symptoms',
       value: 'Chief Complaints',
-      state: symptoms,
+      state: symptomsState,
       component: <Symptoms />,
     },
     {
       key: 'lifestyle',
       value: 'Patient’s Medical and Family History',
-      state: lifestyle,
+      state: lifestyleState,
       component: <LifeStyle />,
     },
     {
       key: 'vital',
       value: 'Vitals',
-      state: vitals,
+      state: vitalsState,
       component: <Vital />,
     },
     {
       key: 'healthVault',
       value: 'Patient Health Vault',
-      state: healthVault,
+      state: healthVaultState,
       component: <HealthVault />,
     },
     {
       key: 'note',
       value: "Junior Doctor's Notes",
-      state: note,
+      state: noteState,
       component: <DoctorsNotes />,
     },
     {
       key: 'diagnosis',
       value: 'Provisional Diagnosis',
-      state: diagnosis,
+      state: diagnosisState,
       component: <Diagnosis />,
     },
     {
       key: 'medicinePrescription',
       value: 'Medication Prescribed',
-      state: medicinePrescription,
+      state: medicinePrescriptionState,
       component: <MedicinePrescription />,
     },
     {
       key: 'diagnosticPrescription',
       value: 'Tests',
-      state: diagnosticPrescription,
+      state: diagnosticPrescriptionState,
       component: <DiagnosticPrescription />,
     },
     {
       key: 'otherInstructions',
       value: 'Advice/Instructions',
-      state: otherInstructions,
+      state: otherInstructionsState,
       component: <OtherInstructions />,
     },
     {
       key: 'followup',
       value: 'Follow up (Free)',
-      state: followUpPanel,
+      state: followUpPanelState,
       component: <FollowUp startAppointment={props.startAppointment} />,
     },
   ];
 
   useEffect(() => {
-    setDiagnosis(props.startAppointment);
-    setSymptoms(props.startAppointment);
-    setLifestyle(props.startAppointment);
-    setHealthVault(props.startAppointment);
-    setNotes(props.startAppointment);
-    setMedicinePrescription(props.startAppointment);
-    setDiagnosticPrescription(props.startAppointment);
-    setFollowUpPanel(props.startAppointment);
-    setOtherInstructions(props.startAppointment);
-    setVitals(props.startAppointment);
+    setDiagnosisState(props.startAppointment);
+    setSymptomsState(props.startAppointment);
+    setLifestyleState(props.startAppointment);
+    setHealthVaultState(props.startAppointment);
+    setNotesState(props.startAppointment);
+    setMedicinePrescriptionState(props.startAppointment);
+    setDiagnosticPrescriptionState(props.startAppointment);
+    setFollowUpPanelState(props.startAppointment);
+    setOtherInstructionsState(props.startAppointment);
+    setVitalsState(props.startAppointment);
   }, [props.startAppointment]);
-  const { notes, setSRDNotes } = useContext(CaseSheetContext);
+
+  useEffect(() => {
+    if (firstTimeLanding) {
+      const storageItem = getLocalStorageItem(params.id);
+      if (!storageItem) {
+        const caseSheetObject = {
+          symptoms: symptoms,
+          weight: weight,
+          height: height,
+          temperature: temperature,
+          bp: bp,
+          pastMedicalHistory: pastMedicalHistory,
+          pastSurgicalHistory: pastSurgicalHistory,
+          drugAllergies: drugAllergies,
+          dietAllergies: dietAllergies,
+          lifeStyle: lifeStyle,
+          menstrualHistory: menstrualHistory,
+          familyHistory: familyHistory,
+          diagnosis: diagnosis,
+          medicinePrescription: medicinePrescription,
+          otherInstructions: otherInstructions,
+          followUp: followUp,
+          followUpAfterInDays: followUpAfterInDays,
+          followUpDate: followUpDate,
+          notes: notes,
+          diagnosticPrescription: diagnosticPrescription,
+        };
+        updateLocalStorageItem(params.id, caseSheetObject);
+        setFirstTimeLanding(false);
+      } else {
+        setSymptoms(storageItem.symptoms);
+        setWeight(storageItem.weight);
+        setHeight(storageItem.height);
+        setTemperature(storageItem.temperature);
+        setBp(storageItem.bp);
+        setSRDNotes(storageItem.notes);
+        setPastMedicalHistory(storageItem.pastMedicalHistory);
+        setPastSurgicalHistory(storageItem.pastSurgicalHistory);
+        setDrugAllergies(storageItem.drugAllergies);
+        setDietAllergies(storageItem.dietAllergies);
+        setLifeStyle(storageItem.lifeStyle);
+        setMenstrualHistory(storageItem.menstrualHistory);
+        setFamilyHistory(storageItem.familyHistory);
+        setDiagnosis(storageItem.diagnosis);
+        setMedicinePrescription(storageItem.medicinePrescription);
+        setFollowUp(storageItem.followUp);
+        setFollowUpAfterInDays(storageItem.followUpAfterInDays);
+        setFollowUpDate(storageItem.followUpDate);
+        setDiagnosticPrescription(storageItem.diagnosticPrescription);
+        setOtherInstructions(storageItem.otherInstructions);
+        setFirstTimeLanding(false);
+      }
+    }
+  }, [firstTimeLanding]);
+
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
   ) => {
     switch (expansionKey) {
       case 'symptoms':
-        setSymptoms(isExpanded);
+        setSymptomsState(isExpanded);
         break;
       case 'lifestyle':
-        setLifestyle(isExpanded);
+        setLifestyleState(isExpanded);
         break;
       case 'vital':
-        setVitals(isExpanded);
+        setVitalsState(isExpanded);
         break;
       case 'healthVault':
-        setHealthVault(isExpanded);
+        setHealthVaultState(isExpanded);
         break;
       case 'note':
-        setNotes(isExpanded);
+        setNotesState(isExpanded);
         break;
       case 'diagnosis':
-        setDiagnosis(isExpanded);
+        setDiagnosisState(isExpanded);
         break;
       case 'medicinePrescription':
-        setMedicinePrescription(isExpanded);
+        setMedicinePrescriptionState(isExpanded);
         break;
       case 'diagnosticPrescription':
-        setDiagnosticPrescription(isExpanded);
+        setDiagnosticPrescriptionState(isExpanded);
         break;
       case 'followup':
-        setFollowUpPanel(isExpanded);
+        setFollowUpPanelState(isExpanded);
         break;
       case 'otherInstructions':
-        setOtherInstructions(isExpanded);
+        setOtherInstructionsState(isExpanded);
         break;
     }
+  };
+
+  const getNotesDefaultValue = () => {
+    const storageItem = getLocalStorageItem(params.id);
+    return storageItem ? storageItem.notes : notes;
   };
 
   return (
@@ -314,8 +424,13 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
             fullWidth
             className={classes.textFieldColor}
             placeholder="What you enter here won't be shown to the patient.."
-            defaultValue={notes}
+            defaultValue={getNotesDefaultValue()}
             onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.id);
+              if (storageItem) {
+                storageItem.notes = e.target.value;
+                updateLocalStorageItem(params.id, storageItem);
+              }
               setSRDNotes(e.target.value);
             }}
             disabled={!props.startAppointment}

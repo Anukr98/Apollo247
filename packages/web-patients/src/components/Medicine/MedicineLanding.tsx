@@ -436,11 +436,19 @@ export const MedicineLanding: React.FC = (props) => {
                     <CircularProgress size={30} />
                   </div>
                 )}
-                {data && data.mainbanners && (
-                  <div className={classes.productsBanner}>
-                    <img src={`${apiDetails.imageUrl}${data.mainbanners[0].image}`} alt="" />
-                  </div>
-                )}
+                {data &&
+                  data.mainbanners_desktop &&
+                  data.mainbanners_desktop.length &&
+                  data.mainbanners_desktop[0] &&
+                  data.mainbanners_desktop[0].image &&
+                  data.mainbanners_desktop[0].image !== '' && (
+                    <div className={classes.productsBanner}>
+                      <img
+                        src={`${apiDetails.imageUrl}${data.mainbanners_desktop[0].image}`}
+                        alt=""
+                      />
+                    </div>
+                  )}
               </div>
               <div className={classes.rightSection}>
                 <div className={classes.medicineSection}>
@@ -562,7 +570,9 @@ export const MedicineLanding: React.FC = (props) => {
               <div className={classes.bottomActions}>
                 <AphButton
                   className={classes.trackBtn}
-                  onClick={() => setShowPrescriptionPopup(false)}
+                  onClick={() => {
+                    setShowPrescriptionPopup(false);
+                  }}
                 >
                   Okay
                 </AphButton>

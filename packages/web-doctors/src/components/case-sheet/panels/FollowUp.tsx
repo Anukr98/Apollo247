@@ -9,6 +9,8 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import DateFnsUtils from '@date-io/date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { addDays } from 'date-fns';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const useStyles = makeStyles(() => ({
   followUpContainer: {
@@ -254,8 +256,11 @@ interface CashSheetProps {
   startAppointment: boolean;
 }
 
+type Params = { id: string; patientId: string; tabValue: string };
 export const FollowUp: React.FC<CashSheetProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
+
   const {
     followUp,
     setFollowUp,
@@ -295,9 +300,14 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
     }
 
     followUpAfterInDays[0] = `${followUpDays}`;
-    setFollowUpAfterInDays(followUpAfterInDays);
-
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
+    const storageItem = getLocalStorageItem(params.id);
+    if (storageItem) {
+      storageItem.followUpAfterInDays = followUpAfterInDays;
+      storageItem.followUpDate = followUpDate;
+      updateLocalStorageItem(params.id, storageItem);
+    }
+    setFollowUpAfterInDays(followUpAfterInDays);
     setFollowUpDate(followUpDate);
   }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
   const isFollowUpDisable = true;
@@ -314,6 +324,11 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
             onChange={(e) => {
               setShouldFollowUp(e.target.checked);
               followUp[0] = e.target.checked;
+              const storageItem = getLocalStorageItem(params.id);
+              if (storageItem) {
+                storageItem.followUp = followUp;
+                updateLocalStorageItem(params.id, storageItem);
+              }
               setFollowUp(followUp);
             }}
             value="followup"

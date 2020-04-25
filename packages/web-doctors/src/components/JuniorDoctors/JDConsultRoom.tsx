@@ -433,6 +433,7 @@ export const JDConsultRoom: React.FC = () => {
   const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
 
   /* case sheet data*/
+  const [dosageList, setDosageList] = useState<any>([]);
   const [symptoms, setSymptoms] = useState<
     GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[] | null
   >(null);
@@ -616,6 +617,9 @@ export const JDConsultRoom: React.FC = () => {
         .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
+          _data!.data!.getJuniorDoctorCaseSheet!.allowedDosages
+            ? setDosageList(_data!.data!.getJuniorDoctorCaseSheet!.allowedDosages)
+            : setDosageList([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
             ? setCaseSheetId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id)
@@ -1237,6 +1241,7 @@ export const JDConsultRoom: React.FC = () => {
         <CaseSheetContextJrd.Provider
           value={{
             loading: !loaded,
+            dosageList: dosageList,
             caseSheetId: appointmentId,
             patientDetails: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails,
             appointmentInfo: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment,

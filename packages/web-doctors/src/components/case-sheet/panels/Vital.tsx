@@ -4,6 +4,8 @@ import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField } from '@aph/web-ui-components';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -104,8 +106,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
+type Params = { id: string; patientId: string; tabValue: string };
 export const Vital: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
   const {
     loading,
     patientDetails,
@@ -131,6 +135,20 @@ export const Vital: React.FC = () => {
     }
   };
 
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.id);
+    switch (type) {
+      case 'height':
+        return localStorageItem ? localStorageItem.height : height;
+      case 'weight':
+        return localStorageItem ? localStorageItem.weight : weight;
+      case 'bp':
+        return localStorageItem ? localStorageItem.bp : bp;
+      case 'temperature':
+        return localStorageItem ? localStorageItem.temperature : temperature;
+    }
+  };
+
   return loading && !patientDetails ? (
     <div></div>
   ) : (
@@ -146,8 +164,13 @@ export const Vital: React.FC = () => {
                 onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
                 multiline
-                defaultValue={height}
+                defaultValue={getDefaultValue('height')}
                 onBlur={(e) => {
+                  const storageItem = getLocalStorageItem(params.id);
+                  if (storageItem) {
+                    storageItem.height = e.target.value;
+                    updateLocalStorageItem(params.id, storageItem);
+                  }
                   setHeight(e.target.value);
                 }}
                 disabled={!caseSheetEdit}
@@ -163,8 +186,13 @@ export const Vital: React.FC = () => {
                 onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                 fullWidth
                 multiline
-                defaultValue={weight}
+                defaultValue={getDefaultValue('weight')}
                 onBlur={(e) => {
+                  const storageItem = getLocalStorageItem(params.id);
+                  if (storageItem) {
+                    storageItem.weight = e.target.value;
+                    updateLocalStorageItem(params.id, storageItem);
+                  }
                   setWeight(e.target.value);
                 }}
                 disabled={!caseSheetEdit}
@@ -181,8 +209,13 @@ export const Vital: React.FC = () => {
                   onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                   fullWidth
                   multiline
-                  defaultValue={bp}
+                  defaultValue={getDefaultValue('bp')}
                   onBlur={(e) => {
+                    const storageItem = getLocalStorageItem(params.id);
+                    if (storageItem) {
+                      storageItem.bp = e.target.value;
+                      updateLocalStorageItem(params.id, storageItem);
+                    }
                     setBp(e.target.value);
                   }}
                   disabled={!caseSheetEdit}
@@ -198,8 +231,13 @@ export const Vital: React.FC = () => {
                   onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                   fullWidth
                   multiline
-                  defaultValue={temperature}
+                  defaultValue={getDefaultValue('temperature')}
                   onBlur={(e) => {
+                    const storageItem = getLocalStorageItem(params.id);
+                    if (storageItem) {
+                      storageItem.temperature = e.target.value;
+                      updateLocalStorageItem(params.id, storageItem);
+                    }
                     setTemperature(e.target.value);
                   }}
                   disabled={!caseSheetEdit}

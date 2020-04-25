@@ -344,7 +344,7 @@ const updateSdSummary: Resolver<
             new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime)
           );
         });
-        totalSlotsTime = difference / timeSlots[0].consultDuration;
+        totalSlotsTime = difference;
       }
       const totalConsultations = await dashboardRepo.getAppointmentsByDoctorId(
         doctor.id,
