@@ -18,6 +18,8 @@ import { AphButton } from '@aph/web-ui-components';
 import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -437,6 +439,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
     }
   };
 
+  const onePrimaryUser = hasOnePrimaryUser()
+  
   useEffect(() => {
     if (stopRedirect === 'continue' && isRedirect) {
       setTimeout(() => {
@@ -697,6 +701,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </div>
         </Popover>
       )}
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

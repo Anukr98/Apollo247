@@ -32,6 +32,8 @@ import {
 } from 'graphql/types/getDiagnosticsCites';
 import { GET_DIAGNOSTICS_CITES } from 'graphql/profiles';
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from 'graphql/types/getDiagnosticsCites';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -367,6 +369,9 @@ export const TestsLanding: React.FC = (props) => {
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
     urlParams.get('orderstatus') === 'success' ? true : false
   );
+
+  const onePrimaryUser = hasOnePrimaryUser()
+  
   useEffect(() => {
     if (!diagnosisHotSellerData && !diagnosticOrgansData) {
       setIsLoading(true);
@@ -653,6 +658,7 @@ export const TestsLanding: React.FC = (props) => {
         setIsAlertOpen={setIsAlertOpen}
       />
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

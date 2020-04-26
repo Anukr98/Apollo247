@@ -362,7 +362,6 @@ export const Appointments: React.FC = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-
   // const { data, loading, error } = useQueryWithSkip<
   //   GetPatientAppointments,
   //   GetPatientAppointmentsVariables

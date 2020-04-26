@@ -5,6 +5,8 @@ import { Header } from 'components/Header';
 import { MedicineCart } from 'components/Cart/MedicineCart';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { LocationProvider } from 'components/LocationProvider';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -28,6 +30,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MedicineCartLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser()
   return (
     <div className={classes.root}>
       <MedicinesCartContext.Consumer>
@@ -44,6 +47,7 @@ export const MedicineCartLanding: React.FC = (props) => {
           </>
         )}
       </MedicinesCartContext.Consumer>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };
