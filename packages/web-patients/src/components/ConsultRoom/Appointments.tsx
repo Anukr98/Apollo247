@@ -366,7 +366,7 @@ export const Appointments: React.FC = (props) => {
   useEffect(() => {
     if (isFailurePayment) {
       /**Gtm code start start */
-      (window as any).gep('Consultations', specialtyName, 'Failed / Cancelled');
+      window.gep('Consultations', specialtyName, 'Failed / Cancelled');
       /**Gtm code start end */
     }
   }, [isFailurePayment]);
@@ -489,8 +489,8 @@ export const Appointments: React.FC = (props) => {
         setIsConfirmPopupLoaded(true);
 
         /**Gtm code start start */
-        (window as any).gep('Consultations', specialty, 'Order Success', '{{ Bill Value }}');
-        (window as any)._cb(
+        window.gep('Consultations', specialty, 'Order Success', '{{ Bill Value }}');
+        window._cb(
           '{{ mobile number }}',
           specialty,
           '{{ User Location }}',

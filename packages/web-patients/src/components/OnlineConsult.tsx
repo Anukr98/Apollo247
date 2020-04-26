@@ -760,7 +760,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               ) {
                 speciality = doctorDetails.getDoctorDetailsById.specialty.name;
               }
-              (window as any).gep('Consultations', speciality, 'Order Initiated', revisedAmount);
+              window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
               /**Gtm code start end */
 
               if (scheduleLater || !consultNowAvailable) {

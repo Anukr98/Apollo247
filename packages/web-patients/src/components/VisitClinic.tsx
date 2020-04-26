@@ -602,7 +602,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             ) {
               speciality = doctorDetails.getDoctorDetailsById.specialty.name;
             }
-            (window as any).gep('Consultations', speciality, 'Order Initiated', revisedAmount);
+            window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
             /**Gtm code start end */
 
             setMutationLoading(true);
