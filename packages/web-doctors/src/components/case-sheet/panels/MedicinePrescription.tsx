@@ -2102,7 +2102,7 @@ export const MedicinePrescription: React.FC = () => {
                                       root: classes.inputRootNew,
                                     },
                                   }}
-                                  error={errorState.dosageErr}
+                                  //error={errorState.dosageErr}
                                 />
                               </Grid>
                               <Grid item lg={2} md={2} xs={2}>
@@ -2126,7 +2126,7 @@ export const MedicinePrescription: React.FC = () => {
                                       root: classes.inputRootNew,
                                     },
                                   }}
-                                  error={errorState.dosageErr}
+                                  //error={errorState.dosageErr}
                                 />
                               </Grid>
                               <Grid item lg={2} md={2} xs={2}>
@@ -2150,7 +2150,7 @@ export const MedicinePrescription: React.FC = () => {
                                       root: classes.inputRootNew,
                                     },
                                   }}
-                                  error={errorState.dosageErr}
+                                  //error={errorState.dosageErr}
                                 />
                               </Grid>
                               <Grid item lg={2} md={2} xs={2}>
@@ -2174,7 +2174,7 @@ export const MedicinePrescription: React.FC = () => {
                                       root: classes.inputRootNew,
                                     },
                                   }}
-                                  error={errorState.dosageErr}
+                                  //error={errorState.dosageErr}
                                 />
                               </Grid>
                               <Grid item lg={4} md={4} xs={4}>
@@ -2238,7 +2238,7 @@ export const MedicinePrescription: React.FC = () => {
                                       root: classes.inputRootNew,
                                     },
                                   }}
-                                  error={errorState.dosageErr}
+                                  //error={errorState.dosageErr}
                                 />
                               </Grid>
                               <Grid item lg={3} md={3} xs={3}>
@@ -2357,7 +2357,7 @@ export const MedicinePrescription: React.FC = () => {
                             onChange={(event: any) => {
                               setConsumptionDuration(event.target.value);
                             }}
-                            error={errorState.durationErr}
+                            //error={errorState.durationErr}
                           />
                         </div>
                       </Grid>
@@ -2626,7 +2626,7 @@ export const MedicinePrescription: React.FC = () => {
                                         root: classes.inputRootNew,
                                       },
                                     }}
-                                    error={errorState.dosageErr}
+                                    //error={errorState.dosageErr}
                                   />
                                 </Grid>
                                 <Grid item lg={2} md={2} xs={2}>
@@ -2650,7 +2650,7 @@ export const MedicinePrescription: React.FC = () => {
                                         root: classes.inputRootNew,
                                       },
                                     }}
-                                    error={errorState.dosageErr}
+                                    //error={errorState.dosageErr}
                                   />
                                 </Grid>
                                 <Grid item lg={2} md={2} xs={2}>
@@ -2674,7 +2674,7 @@ export const MedicinePrescription: React.FC = () => {
                                         root: classes.inputRootNew,
                                       },
                                     }}
-                                    error={errorState.dosageErr}
+                                    //error={errorState.dosageErr}
                                   />
                                 </Grid>
                                 <Grid item lg={2} md={2} xs={2}>
@@ -2698,7 +2698,7 @@ export const MedicinePrescription: React.FC = () => {
                                         root: classes.inputRootNew,
                                       },
                                     }}
-                                    error={errorState.dosageErr}
+                                    //error={errorState.dosageErr}
                                   />
                                 </Grid>
                                 <Grid item lg={4} md={4} xs={4}>
@@ -2762,7 +2762,7 @@ export const MedicinePrescription: React.FC = () => {
                                         root: classes.inputRootNew,
                                       },
                                     }}
-                                    error={errorState.dosageErr}
+                                    //error={errorState.dosageErr}
                                   />
                                 </Grid>
                                 <Grid item lg={3} md={3} xs={3}>
@@ -2880,7 +2880,7 @@ export const MedicinePrescription: React.FC = () => {
                               onChange={(event: any) => {
                                 setConsumptionDuration(event.target.value);
                               }}
-                              error={errorState.durationErr}
+                              //error={errorState.durationErr}
                             />
                           </div>
                         </Grid>
