@@ -575,6 +575,11 @@ const useStyles = makeStyles((theme: Theme) =>
     padBottom: {
       paddingBottom: 15,
     },
+    numDays: {
+      position: 'relative',
+      top: -5,
+      left: 7,
+    },
   })
 );
 
@@ -2415,7 +2420,7 @@ export const MedicinePrescription: React.FC = () => {
                           </AphSelect>
                         </div>
                       </Grid>
-                      <Grid item lg={12} xs={12}>
+                      <div className={classes.numDays}>
                         {errorState.durationErr && (
                           <FormHelperText
                             className={classes.helpText}
@@ -2425,7 +2430,7 @@ export const MedicinePrescription: React.FC = () => {
                             Please enter number of {term(forUnit.toLowerCase(), '(s)')}
                           </FormHelperText>
                         )}
-                      </Grid>
+                      </div>
                       <Grid item lg={12} xs={12}>
                         <h6 className={classes.instructionText}>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
@@ -2938,7 +2943,7 @@ export const MedicinePrescription: React.FC = () => {
                             </AphSelect>
                           </div>
                         </Grid>
-                        <Grid item lg={12} xs={12}>
+                        <div className={classes.numDays}>
                           {errorState.durationErr && (
                             <FormHelperText
                               className={classes.helpText}
@@ -2948,7 +2953,7 @@ export const MedicinePrescription: React.FC = () => {
                               Please enter number of {term(forUnit.toLowerCase(), '(s)')}
                             </FormHelperText>
                           )}
-                        </Grid>
+                        </div>
                         <Grid item lg={12} xs={12}>
                           <h6 className={classes.instructionText}>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
