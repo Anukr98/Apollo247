@@ -1874,6 +1874,13 @@ export const ADD_TO_CONSULT_QUEUE = gql`
     addToConsultQueue(appointmentId: $appointmentId) {
       id
       doctorId
+      totalJuniorDoctorsOnline
+      juniorDoctorsList {
+        juniorDoctorId
+        doctorName
+        queueCount
+      }
+      totalJuniorDoctors
     }
   }
 `;
