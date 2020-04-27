@@ -575,6 +575,11 @@ const useStyles = makeStyles((theme: Theme) =>
     padBottom: {
       paddingBottom: 15,
     },
+    numDays: {
+      position: 'relative',
+      top: -5,
+      left: 7,
+    },
   })
 );
 
@@ -1495,13 +1500,13 @@ export const MedicinePrescription: React.FC = () => {
       return slot.selected !== false;
     });
     const medicineCustomDosage =
-      customDosageMorning +
+      customDosageMorning.trim() +
       '-' +
-      customDosageNoon +
+      customDosageNoon.trim() +
       '-' +
-      customDosageEvening +
+      customDosageEvening.trim() +
       '-' +
-      customDosageNight;
+      customDosageNight.trim();
     if (!isCustomform && tabletsCount === '') {
       setErrorState({
         ...errorState,
@@ -2093,7 +2098,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2117,7 +2123,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2141,7 +2148,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2165,7 +2173,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2229,7 +2238,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2357,6 +2367,9 @@ export const MedicinePrescription: React.FC = () => {
                             onChange={(event: any) => {
                               setConsumptionDuration(event.target.value);
                             }}
+                            onKeyPress={(e) => {
+                              if (isNaN(parseInt(e.key, 10))) e.preventDefault();
+                            }}
                             //error={errorState.durationErr}
                           />
                         </div>
@@ -2415,7 +2428,7 @@ export const MedicinePrescription: React.FC = () => {
                           </AphSelect>
                         </div>
                       </Grid>
-                      <Grid item lg={12} xs={12}>
+                      <div className={classes.numDays}>
                         {errorState.durationErr && (
                           <FormHelperText
                             className={classes.helpText}
@@ -2425,7 +2438,7 @@ export const MedicinePrescription: React.FC = () => {
                             Please enter number of {term(forUnit.toLowerCase(), '(s)')}
                           </FormHelperText>
                         )}
-                      </Grid>
+                      </div>
                       <Grid item lg={12} xs={12}>
                         <h6 className={classes.instructionText}>Instructions/Notes</h6>
                         <div className={classes.numberTablets}>
@@ -2617,7 +2630,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2641,7 +2655,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2665,7 +2680,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2689,7 +2705,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2753,7 +2770,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2880,6 +2898,9 @@ export const MedicinePrescription: React.FC = () => {
                               onChange={(event: any) => {
                                 setConsumptionDuration(event.target.value);
                               }}
+                              onKeyPress={(e) => {
+                                if (isNaN(parseInt(e.key, 10))) e.preventDefault();
+                              }}
                               //error={errorState.durationErr}
                             />
                           </div>
@@ -2938,7 +2959,7 @@ export const MedicinePrescription: React.FC = () => {
                             </AphSelect>
                           </div>
                         </Grid>
-                        <Grid item lg={12} xs={12}>
+                        <div className={classes.numDays}>
                           {errorState.durationErr && (
                             <FormHelperText
                               className={classes.helpText}
@@ -2948,7 +2969,7 @@ export const MedicinePrescription: React.FC = () => {
                               Please enter number of {term(forUnit.toLowerCase(), '(s)')}
                             </FormHelperText>
                           )}
-                        </Grid>
+                        </div>
                         <Grid item lg={12} xs={12}>
                           <h6 className={classes.instructionText}>Instructions/Notes</h6>
                           <div className={classes.numberTablets}>
