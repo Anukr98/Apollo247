@@ -956,6 +956,10 @@ export const FavouriteMedicines: React.FC = () => {
       )
       .then((result) => {
         setIsCustomForm(false);
+        setCustomDosageMorning('0');
+        setCustomDosageNoon('0');
+        setCustomDosageEvening('0');
+        setCustomDosageNight('0');
         if (
           result &&
           result.data &&
