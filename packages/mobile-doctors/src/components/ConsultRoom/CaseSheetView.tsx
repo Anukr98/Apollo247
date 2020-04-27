@@ -11,6 +11,7 @@ import { AddSymptomPopUp } from '@aph/mobile-doctors/src/components/ui/AddSympto
 import { AddTestPopup } from '@aph/mobile-doctors/src/components/ui/AddTestPopup';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { CollapseCard } from '@aph/mobile-doctors/src/components/ui/CollapseCard';
+import { useParams } from 'hooks/routerHooks';
 import {
   AddPlus,
   Audio,
@@ -228,7 +229,9 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setUrl: Dispatch<SetStateAction<string>>;
 }
 
+type Params = { id: string; patientId: string; tabValue: string };
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
+  const params = useParams<Params>();
   const Appintmentdatetimeconsultpage = props.navigation.getParam('Appintmentdatetime');
 
   const AppId = props.navigation.getParam('AppId');
@@ -597,6 +600,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             <Button
               title={'SEND TO PATIENT'}
               onPress={() => {
+                localStorage.removeItem(`${params.id}`);
                 sendToPatientAction();
               }}
               style={styles.buttonendStyle}

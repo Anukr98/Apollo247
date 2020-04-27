@@ -25,12 +25,16 @@ import {
   MEDICINE_DELIVERY_TYPE,
   PRISM_DOCUMENT_CATEGORY,
   UPLOAD_FILE_TYPES,
+  NonCartOrderCity,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { SavePrescriptionMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
 import {
   g,
   postWebEngageEvent,
   formatAddress,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -39,12 +43,12 @@ import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Image,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
@@ -53,6 +57,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -72,30 +78,6 @@ const styles = StyleSheet.create({
   leftText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  deliveryPinCodeContaner: {
-    ...theme.viewStyles.cardContainer,
-    paddingHorizontal: 20,
-    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f7f8f5',
-  },
-  pinCodeStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    flex: 0.9,
-  },
-  pinCodeTextInput: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-    borderBottomWidth: 2,
-    paddingBottom: 3,
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
-    width: Platform.OS === 'ios' ? 51 : 54,
   },
 });
 
@@ -159,6 +141,17 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       Pincode: pinCode,
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventAttributes);
+
+    try {
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_SUBMIT_PRESCRIPTION] = {
+        Order_ID: `${orderId}`,
+        Delivery_type: deliveryAddressId ? 'home' : 'store_pickup',
+        StoreId: storeId, // incase of store delivery
+        Delivery_address: deliveryAddressId ? deliveryAddressLine : storeAddressLine,
+        Pincode: pinCode,
+      };
+      postFirebaseEvent(FirebaseEventName.PHARMACY_SUBMIT_PRESCRIPTION, eventFirebaseAttributes);
+    } catch (error) {}
   };
 
   const submitPrescriptionMedicineOrder = (variables: SavePrescriptionMedicineOrderVariables) => {
@@ -188,7 +181,20 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       });
   };
 
-  const onPressSubmit = async () => {
+  const onPressSubmit = () => {
+    const selectedAddress = addresses.find((addr) => addr.id == deliveryAddressId);
+    const zipcode = g(selectedAddress, 'zipcode');
+    const isChennaiAddress = AppConfig.Configuration.CHENNAI_PHARMA_DELIVERY_PINCODES.find(
+      (addr) => addr == Number(zipcode)
+    );
+    if (isChennaiAddress) {
+      props.navigation.navigate(AppRoutes.ChennaiNonCartOrderForm, { onSubmitOrder });
+    } else {
+      onSubmitOrder(false);
+    }
+  };
+
+  const onSubmitOrder = async (isChennaiOrder: boolean, email?: string) => {
     CommonLogEvent(
       AppRoutes.UploadPrescription,
       'Graph ql call for save prescription medicine order'
@@ -226,6 +232,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
           prismPrescriptionFileId: [...phyPresPrismIds, ...ePresPrismIds].join(','),
           isEprescription: EPrescriptions.length ? 1 : 0, // if atleat one prescription is E-Prescription then pass it as one.
+          // Values for chennai order
+          email: isChennaiOrder && email ? email.trim() : null,
+          NonCartOrderCity: isChennaiOrder ? NonCartOrderCity.CHENNAI : null,
+          bookingSource: BOOKING_SOURCE.MOBILE,
+          deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
         },
       };
       console.log({ prescriptionMedicineInput });

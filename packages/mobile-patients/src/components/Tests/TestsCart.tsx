@@ -81,6 +81,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -834,9 +835,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               color: '#0087ba',
             }}
           >
-            {(currentPatient && currentPatient.firstName) || 'Hi'}, our diagnostic services are only
-            available in Chennai and Hyderabad for now. Kindly enter a pin code for Chennai or
-            Hyderabad to proceed.
+            {string.diagnostics.nonServiceablePinCodeMsg}
           </Text>
         )}
 

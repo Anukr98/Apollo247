@@ -186,7 +186,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   useEffect(() => {
     if (doctorDetails && availableInMin) {
-      _postWebEngageEvent(doctorDetails, availableInMin!);
+      _postWebEngageEvent(doctorDetails, availableInMin);
     }
   }, [doctorDetails, availableInMin]);
 
@@ -294,7 +294,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const _postWebEngageEvent = (
     doctorDetails: getDoctorDetailsById_getDoctorDetailsById,
-    availableInMin: number
+    availableInMin?: number
   ) => {
     const doctorClinics = (doctorDetails.doctorHospital || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -302,7 +302,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     });
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_PROFILE_VIEWED] = {
       name: g(doctorDetails, 'fullName')!,
-      specialisation: g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
+      specialisation: g(doctorDetails, 'specialty', 'name')!,
       experience: Number(doctorDetails.experience!),
       'language known': g(doctorDetails, 'languages') || 'NA',
       Hospital:
@@ -311,8 +311,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               doctorClinics[0].facility.city
             }`
           : '',
-      'Available in': (availableInMin && `${availableInMin} minute(s)`) || '',
+      'Doctor Category': g(doctorDetails, 'doctorType')!,
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
     };
+
+    if (availableInMin) {
+      eventAttributes['Available in Minutes'] = availableInMin;
+    }
+
     postWebEngageEvent(WebEngageEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_PROFILE_VIEWED, eventAttributes);
   };
@@ -833,18 +840,36 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const postBookAppointmentWEGEvent = () => {
+    const doctorClinics = (doctorDetails?.doctorHospital || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
     const eventAttributes: WebEngageEvents[WebEngageEventName.BOOK_APPOINTMENT] = {
       'Doctor Name': g(doctorDetails, 'fullName')!,
       'Doctor City': g(doctorDetails, 'city')!,
       'Type of Doctor': g(doctorDetails, 'doctorType')!,
-      'Doctor Specialty': g(doctorDetails, 'specialty', 'userFriendlyNomenclature')!,
+      'Doctor Specialty': g(doctorDetails, 'specialty', 'name')!,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
+      'Doctor ID': g(doctorDetails, 'id')!,
+      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Hospital Name':
+        doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}`
+          : '',
+
+      'Hospital City':
+        doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.city}`
+          : '',
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.BOOK_APPOINTMENT, eventAttributes);

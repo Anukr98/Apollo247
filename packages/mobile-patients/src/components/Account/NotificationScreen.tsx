@@ -11,6 +11,7 @@ import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { notifcationsApi } from '../../helpers/apiCalls';
 import { AppRoutes } from '../NavigatorContainer';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   titleStyle: {
@@ -102,75 +103,103 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   const client = useApolloClient();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
 
+  const { setNotificationCount, allNotifications } = useAppCommonData();
+  // let arrayNotification: any;
+
   useEffect(() => {
     async function fetchData() {
-      setLoading && setLoading(true);
-      const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+      setLoader(true);
+      const array: any = await AsyncStorage.getItem('selectedRow');
+      const arraySelected = JSON.parse(array);
+      if (arraySelected !== null) {
+        setSelected([...arraySelected]);
+      }
+      // console.log('arraySelected.......', arraySelected);
 
-      const params = {
-        phone: '91' + storedPhoneNumber,
-        size: 10,
-      };
-      console.log('params', params);
-      notifcationsApi(params)
-        .then(async (repsonse: any) => {
-          setLoading && setLoading(false);
+      const allStoredNotification: any = await AsyncStorage.getItem('allNotification');
+      const arrayNotification = JSON.parse(allStoredNotification);
+      if (arrayNotification !== null) {
+        setMessages([...arrayNotification]);
+      } else {
+        console.log('isSelected.......', allNotifications);
 
-          try {
-            const arrayNotification = repsonse.data.data.map((el: any) => {
-              const o = Object.assign({}, el);
-              o.isActive = true;
-              return o;
-            });
-
-            // console.log('arrayNotification.......', arrayNotification);
-
-            const array = await AsyncStorage.getItem('selectedRow');
-            setBugFenderLog('handleOpenURL_route', array);
-
-            if (array !== null) {
-              const arraySelected = JSON.parse(array);
-
-              const result = arrayNotification.map((el: any, index: number) => {
-                const o = Object.assign({});
-                if (arraySelected.length > index) {
-                  o.id = el._id;
-                  o.isSelected =
-                    arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
-                } else {
-                  o.id = el._id;
-                  o.isSelected = false;
-                }
-                return o;
-              });
-
-              setSelected(result);
-              AsyncStorage.setItem('selectedRow', JSON.stringify(result));
-            } else {
-              const result = arrayNotification.map((el: any) => {
-                const o = Object.assign({});
-                o.id = el._id;
-                o.isSelected = false;
-                return o;
-              });
-              setSelected(result);
-              AsyncStorage.setItem('selectedRow', JSON.stringify(result));
-            }
-
-            setMessages(arrayNotification);
-            setLoader(false);
-          } catch (error) {
-            setLoader(false);
-          }
-        })
-        .catch((error: Error) => {
-          setLoading && setLoading(false);
-          setLoader(false);
-          console.log('error', error);
-        });
+        setMessages([...allNotifications]);
+      }
+      console.log('arrayNotification.......', arrayNotification);
+      setLoader(false);
     }
     fetchData();
-  }, []);
+  }, [allNotifications]);
+
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     setLoading && setLoading(true);
+  //     const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+
+  //     const params = {
+  //       phone: '91' + storedPhoneNumber,
+  //       size: 10,
+  //     };
+  //     console.log('params', params);
+  //     notifcationsApi(params)
+  //       .then(async (repsonse: any) => {
+  //         setLoading && setLoading(false);
+
+  //         try {
+  //           const arrayNotification = repsonse.data.data.map((el: any) => {
+  //             const o = Object.assign({}, el);
+  //             o.isActive = true;
+  //             return o;
+  //           });
+
+  //           // console.log('arrayNotification.......', arrayNotification);
+
+  //           const array = await AsyncStorage.getItem('selectedRow');
+  //           setBugFenderLog('handleOpenURL_route', array);
+
+  //           if (array !== null) {
+  //             const arraySelected = JSON.parse(array);
+
+  //             const result = arrayNotification.map((el: any, index: number) => {
+  //               const o = Object.assign({});
+  //               if (arraySelected.length > index) {
+  //                 o.id = el._id;
+  //                 o.isSelected =
+  //                   arraySelected[index].id === el._id ? arraySelected[index].isSelected : false;
+  //               } else {
+  //                 o.id = el._id;
+  //                 o.isSelected = false;
+  //               }
+  //               return o;
+  //             });
+
+  //             setSelected(result);
+  //             AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+  //           } else {
+  //             const result = arrayNotification.map((el: any) => {
+  //               const o = Object.assign({});
+  //               o.id = el._id;
+  //               o.isSelected = false;
+  //               return o;
+  //             });
+  //             setSelected(result);
+  //             AsyncStorage.setItem('selectedRow', JSON.stringify(result));
+  //           }
+
+  //           setMessages(arrayNotification);
+  //           setLoader(false);
+  //         } catch (error) {
+  //           setLoader(false);
+  //         }
+  //       })
+  //       .catch((error: Error) => {
+  //         setLoading && setLoading(false);
+  //         setLoader(false);
+  //         console.log('error', error);
+  //       });
+  //   }
+  //   fetchData();
+  // }, []);
 
   // useEffect(() => {
   //   async function fetchData() {
@@ -344,24 +373,29 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   };
 
   const updateSelectedView = (index: number) => {
-    const arrayCoppied = selected;
-    arrayCoppied[index].isSelected = true;
-    setSelected(arrayCoppied);
-
     const selectedOne = messages;
     selectedOne[index].isActive = false;
     setMessages([...selectedOne]);
 
-    AsyncStorage.setItem('selectedRow', JSON.stringify(arrayCoppied));
+    const selectedCount = messages.filter((item: any) => {
+      return item.isActive === true;
+    });
+    setNotificationCount && setNotificationCount(selectedCount.length);
+
+    AsyncStorage.setItem('allNotification', JSON.stringify(messages));
   };
 
   const renderRow = (item: any, index: number) => {
     const val = JSON.parse(item.notificatio_details.push_notification_content);
     return (
       <View
-        style={{ backgroundColor: selected[index].isSelected ? 'transparent' : 'white', flex: 1 }}
+        style={{
+          backgroundColor: item.isActive ? 'white' : 'transparent',
+          flex: 1,
+        }}
       >
         <TouchableOpacity
+          activeOpacity={0.8}
           onPress={() => {
             updateSelectedView(index);
           }}

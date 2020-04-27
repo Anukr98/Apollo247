@@ -10,7 +10,6 @@ import {
 } from 'profiles-service/entities';
 import {
   CASESHEET_STATUS,
-  APPOINTMENT_TYPE,
   Appointment,
   ConsultQueueItem,
   APPOINTMENT_STATE,
