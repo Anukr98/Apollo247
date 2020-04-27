@@ -18,6 +18,20 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import Axios from 'axios';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
+import {
+  BOOK_APPOINTMENT,
+  BOOK_FOLLOWUP_APPOINTMENT,
+  MAKE_APPOINTMENT_PAYMENT,
+  VALIDATE_CONSULT_COUPON,
+} from '@aph/mobile-patients/src/graphql/profiles';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -33,6 +47,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const doctorName = props.navigation.getParam('doctorName');
   const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
   const appointmentType = props.navigation.getParam('appointmentType');
+  const client = useApolloClient();
 
   useEffect(() => {
     getTxnStatus();
@@ -43,7 +58,15 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   }, []);
 
   const getTxnStatus = () => {
-    setLoading(false);
+    const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
+    const url = `${baseUrl}/transaction-status`;
+    console.log(orderId);
+    Axios.post(url, { orderID: orderId }).then((res) => {
+      console.log(res.data);
+      setrefNo(res.data.TXNID);
+      setStatus(res.data.STATUS);
+      setLoading(false);
+    });
   };
 
   const handleBack = () => {
@@ -53,9 +76,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const statusIcon = () => {
-    if (status == 'success') {
+    if (status == string.Payment.success) {
       return <Success style={{ height: 45, width: 45 }} />;
-    } else if (status == 'failure') {
+    } else if (status == string.Payment.failure) {
       return <Failure style={{ height: 45, width: 45 }} />;
     } else {
       return <Pending style={{ height: 45, width: 45 }} />;
@@ -63,9 +86,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const statusCardColour = () => {
-    if (status == 'success') {
+    if (status == string.Payment.success) {
       return '#edf7ed';
-    } else if (status == 'failure') {
+    } else if (status == string.Payment.failure) {
       return '#edc6c2';
     } else {
       return '#eed9c6';
@@ -73,13 +96,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const statusText = () => {
-    if (status == 'success') {
+    if (status == string.Payment.success) {
       return (
         <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.SUCCESS_TEXT, 1, 20) }}>
           PAYMENT SUCCESSFUL
         </Text>
       );
-    } else if (status == 'failure') {
+    } else if (status == string.Payment.failure) {
       return (
         <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.FAILURE_TEXT, 1, 20) }}>
           PAYMENT FAILED
@@ -137,7 +160,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 13, '#666666', 1, 20) }}>
-            Ref. Number : {refNo}
+            Ref. No : {refNo}
           </Text>
         </View>
         <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
@@ -225,7 +248,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const renderNote = () => {
-    if (status == 'failure') {
+    if (status == string.Payment.failure) {
       return (
         <Text
           style={{
@@ -238,7 +261,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           days.
         </Text>
       );
-    } else if (status == 'pending') {
+    } else if (status == string.Payment.pending) {
       return (
         <Text
           style={{
@@ -255,9 +278,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const getButtonText = () => {
-    if (status == 'success') {
+    if (status == string.Payment.success) {
       return 'START CONSULTATION';
-    } else if (status == 'failure') {
+    } else if (status == string.Payment.failure) {
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
@@ -265,9 +288,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleButton = () => {
-    if (status == 'success') {
+    if (status == string.Payment.success) {
       props.navigation.navigate('APPOINTMENTS');
-    } else if (status == 'failure') {
+    } else if (status == string.Payment.failure) {
       props.navigation.navigate(AppRoutes.DoctorSearch);
     } else {
       props.navigation.navigate(AppRoutes.ConsultRoom);

@@ -247,5 +247,10 @@
         "count": "0"
       }
     ]
+  },
+  "Payment" : {
+    "success": "TXN_SUCCESS",
+    "failure":"TXN_FAILURE",
+    "pending": "PENDING"
   }
 }

@@ -241,46 +241,46 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const askLocationPermission = () => {
-    showAphAlert!({
-      unDismissable: true,
-      title: 'Hi! :)',
-      description:
-        'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
-      CTAs: [
-        {
-          text: 'ENTER MANUALLY',
-          onPress: () => {
-            hideAphAlert!();
-            setLocationSearchVisible(true);
-          },
-          type: 'white-button',
-        },
-        {
-          text: 'ALLOW AUTO DETECT',
-          onPress: () => {
-            hideAphAlert!();
-            setLoading!(true);
-            doRequestAndAccessLocationModified()
-              .then((response) => {
-                setLoading!(false);
-                response && setLocationDetails!(response);
-              })
-              .catch((e) => {
-                CommonBugFender('ConsultRoom__ALLOW_AUTO_DETECT', e);
-                setLoading!(false);
-                e &&
-                  typeof e == 'string' &&
-                  !e.includes('denied') &&
-                  showAphAlert!({
-                    title: 'Uh oh! :(',
-                    description: e,
-                  });
-                setLocationSearchVisible(true);
-              });
-          },
-        },
-      ],
-    });
+    // showAphAlert!({
+    //   unDismissable: true,
+    //   title: 'Hi! :)',
+    //   description:
+    //     'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
+    //   CTAs: [
+    //     {
+    //       text: 'ENTER MANUALLY',
+    //       onPress: () => {
+    //         hideAphAlert!();
+    //         setLocationSearchVisible(true);
+    //       },
+    //       type: 'white-button',
+    //     },
+    //     {
+    //       text: 'ALLOW AUTO DETECT',
+    //       onPress: () => {
+    //         hideAphAlert!();
+    //         setLoading!(true);
+    //         doRequestAndAccessLocationModified()
+    //           .then((response) => {
+    //             setLoading!(false);
+    //             response && setLocationDetails!(response);
+    //           })
+    //           .catch((e) => {
+    //             CommonBugFender('ConsultRoom__ALLOW_AUTO_DETECT', e);
+    //             setLoading!(false);
+    //             e &&
+    //               typeof e == 'string' &&
+    //               !e.includes('denied') &&
+    //               showAphAlert!({
+    //                 title: 'Uh oh! :(',
+    //                 description: e,
+    //               });
+    //             setLocationSearchVisible(true);
+    //           });
+    //       },
+    //     },
+    //   ],
+    // });
   };
 
   useEffect(() => {
@@ -1166,7 +1166,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           location={g(locationDetails, 'displayName')}
           onClose={() => {
             setLocationSearchVisible(false);
-            !g(locationDetails, 'displayName') && askLocationPermission();
+            !g(locationDetails, 'displayName') 
+            && askLocationPermission();
           }}
         />
       )}

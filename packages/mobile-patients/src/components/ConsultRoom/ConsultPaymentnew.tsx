@@ -64,11 +64,11 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
 
     if (redirectedUrl) {
       if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1) {
-        navigatetoStatusscreen('success');
+        navigatetoStatusscreen('SUCCESS');
       } else if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1) {
-        navigatetoStatusscreen('failure');
+        navigatetoStatusscreen('FAILURE');
       } else if (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_PENDING_PATH) > -1) {
-        navigatetoStatusscreen('pending');
+        navigatetoStatusscreen('PENDING');
       }
     }
   };
@@ -98,6 +98,8 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
             '&paymentModeOnly=YES' +
             '&mobileNumber=' +
             [mobileNumber] +
+            // '&returnURL=' +
+            // 'https://aph.dev.pmt.popcornapps.com/consulttransaction' +
             ([bankCode] ? '&bankCode=' + [bankCode] : ''),
         }}
         onNavigationStateChange={(data) => onWebViewStateChange(data)}
@@ -126,7 +128,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
             doctorName: doctorName,
             appointmentDateTime: appointmentInput.appointmentDateTime,
             appointmentType: appointmentInput.appointmentType,
-            status: 'pending',
+            status: 'PENDING',
           });
         },
       },

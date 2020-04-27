@@ -48,6 +48,9 @@ import {
   CommonScreenLog,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { string } from '../../strings/string';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -70,46 +73,28 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
- 
+  type bankOptions = {
+    name: string;
+    paymentMode: string;
+    bankCode: string;
+    seq: number;
+    enabled: boolean;
+    imageUrl: string;
+  };
 
-  const [bankOptions, setbankOptions] = useState([
-    {
-      name: 'SBI',
-      imagePath: require('../ui/icons/sbi.png'),
-      paymentMode: 'NB',
-      bankCode: 'ASBI',
-    },
-    {
-      name: 'HDFC',
-      imagePath: require('../ui/icons/hdfc.png'),
-      paymentMode: 'NB',
-      bankCode: 'HDFC',
-    },
-    {
-      name: 'ICICI',
-      imagePath: require('../ui/icons/icici.png'),
-      paymentMode: 'NB',
-      bankCode: 'ICICI',
-    },
-    {
-      name: 'AXIS',
-      imagePath: require('../ui/icons/axis.png'),
-      paymentMode: 'NB',
-      bankCode: 'AXIS',
-    },
-  ]);
+  const [bankOptions, setbankOptions] = useState<bankOptions[]>([]);
 
   type paymentOptions = {
     name: string;
     paymentMode: string;
     enabled: boolean;
     seq: number;
+    imageUrl: string;
   };
 
-  const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([
-   
-  ]);
+  const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -124,14 +109,17 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     const url = `${baseUrl}/list-of-payment-methods`;
 
     Axios.get(url)
-      .then((data: any) => {
-        console.log(JSON.stringify(data), 'objobj');
-        setLoading(false);
+      .then((res: any) => {
+        console.log(JSON.stringify(res), 'objobj');
         let options: paymentOptions[] = [];
-        data.forEach((item: any) => {
+        res.data.forEach((item: any) => {
           if (item && item.enabled && item.paymentMode != 'NB') {
             options.push(item);
           } else if (item && item.enabled && item.paymentMode == 'NB') {
+            let bankList: bankOptions[] = item.banksList;
+            bankList.sort((a, b) => {
+              return a.seq - b.seq;
+            });
             setbankOptions(item.banksList);
           }
         });
@@ -139,6 +127,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           return a.seq - b.seq;
         });
         setpaymentOptions(options);
+        setLoading(false);
       })
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
@@ -180,6 +169,12 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     return eventAttributes;
   };
 
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
+
   const initiatePayment = (item) => {
     setLoading(true);
     client
@@ -191,6 +186,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
+        console.log(JSON.stringify(data))
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 
         !item.bankCode
@@ -217,6 +213,31 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
             });
+      })
+      .catch((error) => {
+        CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
+        setLoading(false);
+        let message = '';
+        try {
+          message = error.message.split(':')[1].trim();
+        } catch (error) {
+          CommonBugFender('ConsultOverlay_onSubmitBookAppointment_try', error);
+        }
+        if (
+          message == 'APPOINTMENT_EXIST_ERROR' ||
+          message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
+          message === 'DOCTOR_SLOT_BLOCKED'
+        ) {
+          renderErrorPopup(
+            `Oops ! The selected slot is unavailable. Please choose a different one`
+          );
+        } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
+          renderErrorPopup(
+            `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
+          );
+        } else {
+          renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
+        }
       });
   };
 
@@ -250,7 +271,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             marginRight: 0.06 * windowWidth,
           }}
         >
-          <Text style={styles.totalAmount}> Rs. {price}</Text>
+          <Text style={{ ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20) }}>
+            Rs. {price}
+          </Text>
         </View>
       </View>
     );
@@ -267,7 +290,9 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             marginBottom: 0,
           }}
         >
-          <Text style={styles.paymentMode}> PAY NOW </Text>
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
+            PAY NOW
+          </Text>
         </View>
         <View
           style={{
@@ -294,7 +319,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 width: 0.9 * windowWidth,
                 height: 0.08 * windowHeight,
                 borderRadius: 9,
-                backgroundColor: '#fff',
+                backgroundColor: theme.colors.WHITE,
                 margin: 0.05 * windowWidth,
                 marginTop: 0,
               }}
@@ -306,7 +331,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                   alignItems: 'center',
                 }}
               >
-                <Image source={item.imagePath} style={{ width: 30, height: 30 }} />
+                <Image source={{ uri: item.imageUrl }} style={{ width: 30, height: 30 }} />
               </View>
               <View
                 style={{
@@ -315,7 +340,12 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                   alignItems: 'flex-start',
                 }}
               >
-                <Text style={styles.payNow}> {item.name}</Text>
+                <Text
+                  style={{ ...theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 20) }}
+                >
+                  {' '}
+                  {item.name}
+                </Text>
               </View>
             </TouchableOpacity>
           )}
@@ -336,7 +366,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             marginBottom: 0,
           }}
         >
-          <Text style={styles.paymentMode}> NET BANKING </Text>
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
+            {' '}
+            NET BANKING{' '}
+          </Text>
         </View>
         <View
           style={{
@@ -354,7 +387,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             width: 0.9 * windowWidth,
             height: 0.23 * windowHeight,
             borderRadius: 9,
-            backgroundColor: '#fff',
+            backgroundColor: theme.colors.WHITE,
             margin: 0.05 * windowWidth,
             marginTop: 0,
           }}
@@ -378,7 +411,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                       alignItems: 'center',
                     }}
                   >
-                    <Image source={item.imagePath} style={{ width: 40, height: 40 }} />
+                    <Image source={{ uri: item.imageUrl }} style={{ width: 40, height: 40 }} />
                   </View>
                   <View
                     style={{
@@ -387,7 +420,14 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                       alignItems: 'center',
                     }}
                   >
-                    <Text style={styles.bankName}> {item.name}</Text>
+                    <Text
+                      style={{
+                        ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20),
+                      }}
+                    >
+                      {' '}
+                      {item.name}
+                    </Text>
                   </View>
                 </TouchableOpacity>
               )}
@@ -402,7 +442,13 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 alignItems: 'center',
               }}
             >
-              <Text style={styles.seeAll}>See All</Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('SB', 14, theme.colors.SEARCH_UNDERLINE_COLOR, 1, 20),
+                }}
+              >
+                See All
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -427,18 +473,18 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const renderLoading = () => {
     return (
       <View style={{ justifyContent: 'center', alignItems: 'center', flex: 0.9 }}>
-        <ActivityIndicator size="large" color="#01475b" />
+        <ActivityIndicator size="large" color={theme.colors.SHERPA_BLUE} />
       </View>
     );
   };
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="#01475b" />
+      <StatusBar barStyle="light-content" backgroundColor={theme.colors.SHERPA_BLUE} />
       <SafeAreaView style={styles.container}>
         <View
           style={{
-            backgroundColor: '#FFF',
+            backgroundColor: theme.colors.WHITE,
             flex: 0.1,
             justifyContent: 'center',
             alignItems: 'center',
@@ -453,7 +499,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           >
             <Image source={require('../ui/icons/back.png')} style={{ width: 35, height: 35 }} />
           </TouchableOpacity>
-          <Text style={styles.Payment}> PAYMENT </Text>
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
+            {' '}
+            PAYMENT{' '}
+          </Text>
         </View>
         {/* <Header
           title="PAYMENT"
@@ -480,45 +529,44 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f1ec',
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   scrollView: {
-    backgroundColor: '#f0f1ec',
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
 
-  heading: {},
   Payment: {
     fontSize: 14,
-    color: '#01475b',
+    color: theme.colors.SHERPA_BLUE,
     fontWeight: '500',
     textShadowColor: 'rgba(0, 0, 0, 1)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 0.1,
   },
   paymentMode: {
-    color: '#01475b',
+    color: theme.colors.SHERPA_BLUE,
     fontSize: 14,
     fontWeight: 'bold',
   },
   payNow: {
-    color: '#fc9916',
+    color: theme.colors.APP_YELLOW,
     fontSize: 14,
     fontWeight: 'bold',
   },
   bankName: {
-    color: '#01475b',
+    color: theme.colors.SHERPA_BLUE,
     fontSize: 14,
     fontWeight: 'bold',
   },
   amounttoPay: {
-    color: '#01475b',
+    color: theme.colors.SHERPA_BLUE,
     fontSize: 14,
     textShadowColor: 'rgba(0, 0, 0, 1)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 0.1,
   },
   seeAll: {
-    color: '#00b38e',
+    color: theme.colors.SEARCH_UNDERLINE_COLOR,
     fontSize: 14,
     textShadowColor: 'rgba(0, 0, 0, 1)',
     textShadowOffset: { width: 0, height: 0 },
@@ -526,7 +574,7 @@ const styles = StyleSheet.create({
   },
 
   totalAmount: {
-    color: '#01475b',
+    color: theme.colors.SHERPA_BLUE,
     fontSize: 15,
     fontWeight: 'bold',
   },
