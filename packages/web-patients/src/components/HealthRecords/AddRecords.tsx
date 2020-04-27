@@ -514,7 +514,7 @@ export const AddRecords: React.FC = (props) => {
             const uploadUrlscheck = data.map(({ data }: any) =>
               data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
             );
-            const filtered = uploadUrlscheck.filter(function (el) {
+            const filtered = uploadUrlscheck.filter(function(el) {
               return el != null;
             });
             if (filtered.length > 0) {
