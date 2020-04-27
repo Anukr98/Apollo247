@@ -15,7 +15,6 @@ import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetch from 'helpers/fetch';
-import { sortByProperty } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -160,18 +159,14 @@ export const CovidLanding: React.FC = (props) => {
   const [categoryToFetch, setCategoryToFetch] = useState<string>('');
   const [moreContentLoading, setMoreContentLoading] = useState<boolean>(false);
   const didMount = useRef(false);
-  const covidContentPageSize = 3;
   const covidArticleBaseUrl = process.env.COVID_ARTICLE_LIST_URL;
 
   useEffect(() => {
     fetch(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
-      const sortedStaySafeData =
-        !isEmpty(body['stay-safe']) && sortByProperty(body['stay-safe'], 'displayOrder');
-      const sortedCovidSymptomsData =
-        !isEmpty(body['covid-symptoms']) && sortByProperty(body['covid-symptoms'], 'displayOrder');
-      const sortedGoingAheadData =
-        !isEmpty(body['going-ahead']) && sortByProperty(body['going-ahead'], 'displayOrder');
+      const sortedStaySafeData = !isEmpty(body['stay-safe']) && body['stay-safe'];
+      const sortedCovidSymptomsData = !isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
+      const sortedGoingAheadData = !isEmpty(body['going-ahead']) && body['going-ahead'];
 
       let covidObj: CovidContentInterface = {};
       covidObj['stay-safe'] = sortedStaySafeData;
@@ -184,7 +179,7 @@ export const CovidLanding: React.FC = (props) => {
 
   useEffect(() => {
     if (didMount.current && categoryToFetch !== '') {
-      const currentOffset = covidContent[categoryToFetch].length / covidContentPageSize;
+      const currentOffset = covidContent[categoryToFetch].length;
       fetch(
         `${covidArticleBaseUrl}?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
         'GET',
@@ -192,7 +187,7 @@ export const CovidLanding: React.FC = (props) => {
         '',
         true
       ).then((res: any) => {
-        const sortedData = sortByProperty(res.data[categoryToFetch], 'displayOrder');
+        const sortedData = res.data[categoryToFetch];
         let tempCovidObj: CovidContentInterface = covidContent;
         tempCovidObj[categoryToFetch] = tempCovidObj[categoryToFetch].concat(sortedData);
         setCovidContent(tempCovidObj);

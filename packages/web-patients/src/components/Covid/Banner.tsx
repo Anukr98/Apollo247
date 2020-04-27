@@ -107,7 +107,10 @@ export const Banner: React.FC = (props) => {
       </div>
       <div className={classes.content}>
         <h2>Covid-19</h2>
-        <p>know more about Coronavirus</p>
+        <p>
+          Learn more about Coronavirus. Understand how to stay safe and what to do if you have
+          symptoms.
+        </p>
       </div>
     </div>
   );

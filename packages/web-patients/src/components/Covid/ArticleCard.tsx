@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 0.6,
       paddingTop: 8,
       display: '-webkit-box',
-      '-webkit-line-clamp': '3',
+      '-webkit-line-clamp': '4',
       '-webkit-box-orient': 'vertical',
       overflow: 'hidden',
     },
@@ -103,9 +103,15 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
   return (
     <Grid item sm={4} xs={12}>
       <div className={classes.card}>
-        <Link to={type !== 'VIDEO' ? `/covid19/${type.toLowerCase()}${slug}/${id}` : ''}>
+        <Link
+          to={
+            type.toLowerCase() !== 'VIDEO' || type.toLowerCase() !== 'infographic'
+              ? `/covid19/${type.toLowerCase()}${slug}/${id}`
+              : '#'
+          }
+        >
           <div className={classes.cardHeader}>
-            {type === 'VIDEO' ? (
+            {type.toLowerCase() === 'video' ? (
               <iframe
                 width="305"
                 height="204"
