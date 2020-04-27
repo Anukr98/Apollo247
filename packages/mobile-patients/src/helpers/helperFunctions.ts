@@ -887,8 +887,12 @@ export const InitiateAppsFlyer = () => {
       // if (res.data.af_dp !== undefined) {
       try {
         AsyncStorage.setItem('deeplink', res.data.af_dp);
+        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+
         console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+
         // setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
