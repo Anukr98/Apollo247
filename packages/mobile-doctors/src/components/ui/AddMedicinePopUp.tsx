@@ -342,17 +342,6 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             type_id: '',
           } as MedicineProductDetails);
         }
-        if (data.medicineTimings && data.medicineTimings.length > 0) {
-          setMedTimingAnswers(
-            medTimingsArray.map((item) => {
-              if (data.medicineTimings && data.medicineTimings.includes(item.key)) {
-                return { key: item.key, selected: true, value: '' };
-              } else {
-                return { key: item.key, selected: false, value: '' };
-              }
-            })
-          );
-        }
         if (data.medicineToBeTaken) {
           data.medicineToBeTaken.forEach((i) => {
             if (i === MEDICINE_TO_BE_TAKEN.AFTER_FOOD) {
@@ -380,25 +369,66 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         if (data.medicineConsumptionDurationInDays) {
           setForTime(data.medicineConsumptionDurationInDays);
         }
-        if (data.medicineDosage) {
-          setMedicineDosage(data.medicineDosage);
-          setDefaultForm(true);
-        } else if (data.medicineCustomDosage) {
+        if (data.medicineCustomDosage) {
           const formValues = data.medicineCustomDosage.split('-');
-          const medAnswers: { key: MEDICINE_TIMINGS; selected: boolean; value: string }[] = [];
-          formValues.forEach((item, index) => {
-            if (item === '0') {
-              medAnswers.push({
-                key: medTimingsArray[index].key,
-                selected: false,
-                value: item,
-              });
-            } else {
-              medAnswers.push({ key: medTimingsArray[index].key, selected: true, value: item });
-            }
-          });
+          let valueIndexCounter = 0;
+          const medAnswers: {
+            key: MEDICINE_TIMINGS;
+            selected: boolean;
+            value: string;
+          }[] = [];
+          if (data.medicineTimings && data.medicineTimings.length > 0) {
+            medTimingsArray.forEach((item) => {
+              if (data.medicineTimings && data.medicineTimings.includes(item.key)) {
+                medAnswers.push({
+                  key: item.key,
+                  selected: true,
+                  value:
+                    valueIndexCounter < formValues.length
+                      ? formValues[valueIndexCounter] || '0'
+                      : '0',
+                });
+              } else {
+                medAnswers.push({ key: item.key, selected: false, value: '0' });
+              }
+              valueIndexCounter++;
+            });
+          }
+          if (medAnswers.length === 0) {
+            medTimingsArray.forEach((item, index) => {
+              if (item.key === MEDICINE_TIMINGS.AS_NEEDED) {
+                return;
+              } else if (index <= formValues.length - 1) {
+                if (formValues[index] === '0' || formValues[index] === '') {
+                  medAnswers.push({
+                    key: item.key,
+                    selected: false,
+                    value: formValues[index],
+                  });
+                } else {
+                  medAnswers.push({ key: item.key, selected: true, value: formValues[index] });
+                }
+              } else {
+                medAnswers.push({ key: item.key, selected: false, value: '0' });
+              }
+            });
+          }
           setMedTimingAnswers(medAnswers);
           setDefaultForm(false);
+        } else if (data.medicineDosage) {
+          setMedicineDosage(data.medicineDosage);
+          setDefaultForm(true);
+          if (data.medicineTimings && data.medicineTimings.length > 0) {
+            setMedTimingAnswers(
+              medTimingsArray.map((item) => {
+                if (data.medicineTimings && data.medicineTimings.includes(item.key)) {
+                  return { key: item.key, selected: true, value: '' };
+                } else {
+                  return { key: item.key, selected: false, value: '' };
+                }
+              })
+            );
+          }
         }
         if (data.externalId) {
           setExternalId(data.externalId);
@@ -516,7 +546,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               medicineName: medName,
               id: data ? data.id : '',
               externalId: externalId,
-              medicineDosage: defaultForm ? medicineDosage : null,
+              medicineDosage: defaultForm ? medicineDosage : '',
               medicineFormTypes: renderType,
               medicineUnit: typeDrop.key,
               medicineInstructions: instructions,
