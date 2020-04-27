@@ -216,7 +216,18 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     }
 
     fetchData();
+    getPrefillReferralCode();
   }, []);
+
+  const getPrefillReferralCode = async () => {
+    const deeplinkReferalCode: any = await AsyncStorage.getItem('deeplinkReferalCode');
+    // console.log('deeplinkReferalCode', deeplinkReferalCode);
+
+    if (deeplinkReferalCode !== null && deeplinkReferalCode !== undefined) {
+      setBugFenderLog('MultiSignup_Referral_Code', deeplinkReferalCode);
+      setReferral(deeplinkReferalCode);
+    }
+  };
 
   useEffect(() => {
     getDeviceCountAPICall();
@@ -523,11 +534,19 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             break;
           case 'Speciality':
             console.log('Speciality handleopen');
-            if (data.length === 2) pushTheView('Speciality', data[1]);
+            if (data.length === 2) {
+              pushTheView('Speciality', data[1]);
+            } else {
+              pushTheView('ConsultRoom');
+            }
             break;
           case 'Doctor':
             console.log('Doctor handleopen');
-            if (data.length === 2) pushTheView('Doctor', data[1]);
+            if (data.length === 2) {
+              pushTheView('Doctor', data[1]);
+            } else {
+              pushTheView('ConsultRoom');
+            }
             break;
           case 'DoctorSearch':
             console.log('DoctorSearch handleopen');
@@ -687,6 +706,18 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         title: `${name ? name : 'Products'}`.toUpperCase(),
                         movedFrom: 'registration',
                       },
+                    }),
+                  ],
+                })
+              );
+            } else {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [
+                    NavigationActions.navigate({
+                      routeName: AppRoutes.ConsultRoom,
                     }),
                   ],
                 })
