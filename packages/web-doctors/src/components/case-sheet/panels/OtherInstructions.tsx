@@ -93,13 +93,19 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '100%',
         textAlign: 'left',
         whiteSpace: 'normal',
-        padding: '10px 50px 10px 10px',
+        padding: '10px 80px 10px 10px',
       },
-      '& img': {
-        position: 'absolute',
-        right: 10,
-        top: 10,
-      },
+    },
+    editImg: {
+      position: 'absolute',
+      right: 60,
+      top: 10,
+      cursor: 'pointer',
+    },
+    deleteImg: {
+      position: 'absolute',
+      right: 10,
+      top: 10,
     },
     othersBtnfavContainer: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
@@ -175,6 +181,7 @@ export const OtherInstructions: React.FC = () => {
   );
   const client = useApolloClient();
   const [otherInstruct, setOtherInstruct] = useState('');
+  const [isEditing, setIsEditing] = useState<any>(null);
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState(0);
   const [adviceList, setAdviceList] = useState<
@@ -207,6 +214,91 @@ export const OtherInstructions: React.FC = () => {
       });
   }, []);
 
+  const renderChipWithEditableField = (item: any, idx: number) => {
+    if (isEditing === idx) {
+      if (showAddInputText) {
+        setShowAddInputText(false);
+        setOtherInstruct(item.instruction);
+      }
+
+      return (
+        <div
+          className={classes.textFieldWrapper}
+          key={idx}
+          style={{
+            marginBottom: 12,
+          }}
+        >
+          <AphTextField
+            autoFocus
+            fullWidth
+            multiline
+            placeholder="Enter instruction here.."
+            value={otherInstruct || item.instruction}
+            onChange={(e) => {
+              setOtherInstruct(e.target.value);
+            }}
+          />
+          <Button
+            className={classes.chatSubmitBtn}
+            disableRipple
+            onClick={() => {
+              const updatedText = otherInstruct || item.instruction;
+              if (updatedText.trim() !== '') {
+                selectedValues!.splice(idx, 1, {
+                  instruction: updatedText,
+                  __typename: 'OtherInstructions',
+                });
+
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.otherInstructions = selectedValues;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
+
+                setSelectedValues(selectedValues);
+                setTimeout(() => {
+                  setOtherInstruct('');
+                  setIsEditing(false);
+                }, 10);
+              } else {
+                setOtherInstruct('');
+              }
+            }}
+          >
+            <img src={require('images/ic_plus.svg')} alt="" />
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <Chip
+        className={classes.othersBtn}
+        key={idx}
+        label={item!.instruction}
+        icon={
+          <img
+            src={caseSheetEdit && require('images/ic_edit.svg')}
+            alt=""
+            height="20px"
+            className={classes.editImg}
+            onClick={() => {
+              setIsEditing(idx);
+            }}
+          />
+        }
+        onDelete={() => handleDelete(item, idx)}
+        deleteIcon={
+          <img
+            src={caseSheetEdit && require('images/ic_cancel_green.svg')}
+            className={classes.deleteImg}
+            alt=""
+          />
+        }
+      />
+    );
+  };
+
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Grid container spacing={1}>
@@ -221,20 +313,8 @@ export const OtherInstructions: React.FC = () => {
                 selectedValues!.map(
                   (item, idx) =>
                     item &&
-                    item.instruction!.trim() !== '' && (
-                      <Chip
-                        className={classes.othersBtn}
-                        key={idx}
-                        label={item!.instruction}
-                        onDelete={() => handleDelete(item, idx)}
-                        deleteIcon={
-                          <img
-                            src={caseSheetEdit && require('images/ic_cancel_green.svg')}
-                            alt=""
-                          />
-                        }
-                      />
-                    )
+                    item.instruction!.trim() !== '' &&
+                    renderChipWithEditableField(item, idx)
                 )}
             </Typography>
           </Typography>
@@ -283,7 +363,10 @@ export const OtherInstructions: React.FC = () => {
               className={classes.btnAddDoctor}
               variant="contained"
               color="primary"
-              onClick={() => setShowAddInputText(true)}
+              onClick={() => {
+                setShowAddInputText(true);
+                setIsEditing(null);
+              }}
             >
               <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD INSTRUCTIONS
             </AphButton>
