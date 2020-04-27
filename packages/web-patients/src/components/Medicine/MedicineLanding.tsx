@@ -387,6 +387,7 @@ export const MedicineLanding: React.FC = (props) => {
       )
       .then((res: any) => {
         setData(res.data);
+        window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
         setLoading(false);
       })
       .catch((e: ApolloError) => {
