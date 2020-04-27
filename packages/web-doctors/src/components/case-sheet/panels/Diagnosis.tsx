@@ -386,6 +386,7 @@ export const Diagnosis: React.FC = () => {
               suggestions = suggestions.filter(
                 (val) => selectedValues && selectedValues.includes(val)
               );
+              setDiagnosisValue('');
               setState({
                 single: '',
                 popper: '',
@@ -412,6 +413,7 @@ export const Diagnosis: React.FC = () => {
                     suggestions = suggestions.filter(
                       (val) => selectedValues && selectedValues.includes(val)
                     );
+                    setDiagnosisValue('');
                     setState({
                       single: '',
                       popper: '',
