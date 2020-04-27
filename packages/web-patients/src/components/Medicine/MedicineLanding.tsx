@@ -19,7 +19,9 @@ import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -418,6 +420,13 @@ export const MedicineLanding: React.FC = (props) => {
     },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
 
   return (
     <div className={classes.root}>
@@ -459,7 +468,8 @@ export const MedicineLanding: React.FC = (props) => {
                           <div className={classes.groupTitle}>Have a prescription ready?</div>
                           <AphButton
                             color="primary"
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            // onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
                           >
                             Upload Prescription
