@@ -13,6 +13,7 @@ import {
   PrescriptionPad,
   SearchSendIcon,
   SyrupBottleIcon,
+  OfferIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -707,43 +708,67 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     style?: ViewStyle;
   }) => {
     const { name, imgUrl, price, specialPrice, style } = data;
+    const discount = Math.floor(((Number(price) - Number(specialPrice!)) / price) * 100);
+
+    const localStyles = StyleSheet.create({
+      discountedPriceText: {
+        ...theme.viewStyles.text('M', 14, '#01475b', 0.6, 24),
+        textAlign: 'center',
+      },
+      priceText: {
+        ...theme.viewStyles.text('B', 14, '#01475b', 1, 24),
+        textAlign: 'center',
+      },
+      discountPercentageTagView: {
+        elevation: 20,
+        position: 'absolute',
+        right: 15,
+        top: 16,
+        zIndex: 1,
+      },
+      discountPercentageText: {
+        ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24),
+        flex: 1,
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+      },
+      hotSellerCardView: {
+        ...theme.viewStyles.card(12, 0),
+        elevation: 10,
+        height: 232,
+        width: 162,
+        marginHorizontal: 4,
+        alignItems: 'center',
+        ...style,
+      },
+    });
 
     const renderDiscountedPrice = () => {
-      const styles = StyleSheet.create({
-        discountedPriceText: {
-          ...theme.viewStyles.text('M', 14, '#01475b', 0.6, 24),
-          textAlign: 'center',
-        },
-        priceText: {
-          ...theme.viewStyles.text('B', 14, '#01475b', 1, 24),
-          textAlign: 'center',
-        },
-      });
       return (
         <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
           {!!specialPrice && (
-            <Text style={[styles.discountedPriceText, { marginRight: 4 }]}>
+            <Text style={[localStyles.discountedPriceText, { marginRight: 4 }]}>
               (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
           )}
-          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
+          <Text style={localStyles.priceText}>Rs. {specialPrice || price}</Text>
         </View>
       );
     };
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        <View
-          style={{
-            ...theme.viewStyles.card(12, 0),
-            elevation: 10,
-            height: 232,
-            width: 152,
-            marginHorizontal: 4,
-            alignItems: 'center',
-            ...style,
-          }}
-        >
+        {!isNaN(discount) && (
+          <View style={localStyles.discountPercentageTagView}>
+            <OfferIcon />
+            <Text style={localStyles.discountPercentageText}>-{discount}%</Text>
+          </View>
+        )}
+        <View style={localStyles.hotSellerCardView}>
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}

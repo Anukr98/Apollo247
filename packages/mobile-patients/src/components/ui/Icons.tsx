@@ -618,6 +618,10 @@ export const MedicalIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const OfferIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 36, width: 40 }} {...props} source={require('./icons/offer.png')} />
+);
+
 export const DoctorPlaceholderImage: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ height: 80, width: 80 }}
