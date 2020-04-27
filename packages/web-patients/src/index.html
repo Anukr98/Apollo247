@@ -41,7 +41,7 @@
     </style>
     <!-- <script src="https://static.opentok.com/v2/js/opentok.min.js"></script> -->
     <script>
-      (function(w, d, s, l, i) {
+      (function (w, d, s, l, i) {
         w[l] = w[l] || [];
         w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
         var f = d.getElementsByTagName(s)[0],
@@ -53,7 +53,44 @@
       })(window, document, 'script', 'dataLayer', 'GTM-PNGHP4L');
     </script>
     <script id="_webengage_script_tag" type="text/javascript">
-    var webengage;!function(e,t,n,i,o){function r(e,t){e[t[t.length-1]]=function(){a.__queue.push([t.join("."),arguments])}}var s,g,a=e[n],c=" ",l="init options track screen onReady".split(c),p="feedback survey notification".split(c),u="options render clear abort".split(c),f="Open Close Submit Complete View Click".split(c),w="identify login logout setAttribute".split(c);if(!a||!a.__v){for(e[n]=a={__queue:[],__v:"6.0",user:{}},s=0;s<l.length;s++)r(a,[l[s]]);for(s=0;s<p.length;s++){for(a[p[s]]={},g=0;g<u.length;g++)r(a[p[s]],[p[s],u[g]]);for(g=0;g<f.length;g++)r(a[p[s]],[p[s],"on"+f[g]])}for(s=0;s<w.length;s++)r(a.user,["user",w[s]]);setTimeout(function(){var e=t.createElement("script"),n=t.getElementById("_webengage_script_tag");e.type="text/javascript",e.async=!0,e.src=("https:"==t.location.protocol?"https://widgets.in.webengage.com":"http://widgets.in.webengage.com")+"/js/webengage-min-v-6.0.js",n.parentNode.insertBefore(e,n)})}}(window,document,"webengage"),webengage.init('in~~c2ab3533');
+      var webengage;
+      !(function (e, t, n, i, o) {
+        function r(e, t) {
+          e[t[t.length - 1]] = function () {
+            a.__queue.push([t.join('.'), arguments]);
+          };
+        }
+        var s,
+          g,
+          a = e[n],
+          c = ' ',
+          l = 'init options track screen onReady'.split(c),
+          p = 'feedback survey notification'.split(c),
+          u = 'options render clear abort'.split(c),
+          f = 'Open Close Submit Complete View Click'.split(c),
+          w = 'identify login logout setAttribute'.split(c);
+        if (!a || !a.__v) {
+          for (e[n] = a = { __queue: [], __v: '6.0', user: {} }, s = 0; s < l.length; s++)
+            r(a, [l[s]]);
+          for (s = 0; s < p.length; s++) {
+            for (a[p[s]] = {}, g = 0; g < u.length; g++) r(a[p[s]], [p[s], u[g]]);
+            for (g = 0; g < f.length; g++) r(a[p[s]], [p[s], 'on' + f[g]]);
+          }
+          for (s = 0; s < w.length; s++) r(a.user, ['user', w[s]]);
+          setTimeout(function () {
+            var e = t.createElement('script'),
+              n = t.getElementById('_webengage_script_tag');
+            (e.type = 'text/javascript'),
+              (e.async = !0),
+              (e.src =
+                ('https:' == t.location.protocol
+                  ? 'https://widgets.in.webengage.com'
+                  : 'http://widgets.in.webengage.com') + '/js/webengage-min-v-6.0.js'),
+              n.parentNode.insertBefore(e, n);
+          });
+        }
+      })(window, document, 'webengage'),
+        webengage.init('in~~c2ab3533');
     </script>
   </head>
   <body>
@@ -62,7 +99,7 @@
         src="https://www.googletagmanager.com/ns.html?id=GTM-PNGHP4L"
         height="0"
         width="0"
-        style="display:none;visibility:hidden"
+        style="display: none; visibility: hidden;"
       ></iframe
     ></noscript>
     <div id="root"></div>

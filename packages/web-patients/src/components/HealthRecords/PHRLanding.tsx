@@ -26,7 +26,10 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useMutation } from 'react-apollo-hooks';
 import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 import { Alerts } from 'components/Alerts/Alerts';
-import { phrConsultTabClickTracking, phrMedicalRecordsTabClickTracking } from "../../webEngageTracking";
+import {
+  phrConsultTabClickTracking,
+  phrMedicalRecordsTabClickTracking,
+} from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -323,10 +326,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     }
   }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
   const patient = useCurrentPatient();
-  const age =
-    patient && patient.dateOfBirth
-      ? moment().diff(patient.dateOfBirth, 'years')
-      : null;
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
   return (
     <div className={classes.root}>
       <Header />
@@ -338,9 +338,9 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
             onChange={(e, newValue) => {
               setTabValue(newValue);
               if (newValue) {
-                phrMedicalRecordsTabClickTracking({ ...patient, age })
+                phrMedicalRecordsTabClickTracking({ ...patient, age });
               } else {
-                phrConsultTabClickTracking({ ...patient, age })
+                phrConsultTabClickTracking({ ...patient, age });
               }
             }}
           >
