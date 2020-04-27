@@ -191,7 +191,7 @@ export const MedicineListingCard: React.FC = (props) => {
                   <div className={classes.medicineName}>
                     {item.name}
                     <div className={classes.tabInfo}>
-                      {item.is_in_stock ? 'Pack Of 15' : 'Out Of Stock'}
+                      {item.is_in_stock ? `Pack Of ${item.mou}` : 'Out Of Stock'}
                     </div>
                   </div>
                 </div>
