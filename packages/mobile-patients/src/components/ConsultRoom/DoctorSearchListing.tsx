@@ -201,6 +201,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { generalPhysicians, ent, Urology, Dermatology } = useAppCommonData();
+  const [showLocations, setshowLocations] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1221,7 +1222,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   value={locationSearchText}
                   onChangeText={(value) => {
                     setLocationSearchText(value);
-                    autoSearch(value);
+                    if (value.length > 2) {
+                      autoSearch(value);
+                      setshowLocations(true);
+                    } else {
+                      setshowLocations(false);
+                    }
                   }}
                 />
               </View>
@@ -1236,34 +1242,36 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 <LocationOn />
               </View>
             </View>
-            <View>
-              {locationSearchList.map((item, i) => (
-                <View
-                  key={i}
-                  style={{
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                    paddingVertical: 7,
-                  }}
-                >
-                  <Text
+            {showLocations && (
+              <View>
+                {locationSearchList.map((item, i) => (
+                  <View
+                    key={i}
                     style={{
-                      color: theme.colors.LIGHT_BLUE,
-                      ...theme.fonts.IBMPlexSansMedium(18),
-                    }}
-                    onPress={() => {
-                      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Search List clicked');
-                      setcurrentLocation(item.name);
-                      setLocationSearchText(item.name);
-                      saveLatlong(item);
-                      setshowLocationpopup(false);
+                      borderBottomWidth: 0.5,
+                      borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                      paddingVertical: 7,
                     }}
                   >
-                    {item.name}
-                  </Text>
-                </View>
-              ))}
-            </View>
+                    <Text
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                        ...theme.fonts.IBMPlexSansMedium(18),
+                      }}
+                      onPress={() => {
+                        CommonLogEvent(AppRoutes.DoctorSearchListing, 'Search List clicked');
+                        setcurrentLocation(item.name);
+                        setLocationSearchText(item.name);
+                        saveLatlong(item);
+                        setshowLocationpopup(false);
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       );

@@ -213,14 +213,18 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                                   baseFormat: res,
                                 });
                             });
-                            setIsUploading(false);
                             const currentUrl = window.location.href;
-                            if (currentUrl.endsWith('/medicines')) {
+                            if (
+                              currentUrl.endsWith('/medicines') ||
+                              currentUrl.includes('/medicines/')
+                            ) {
                               setTimeout(() => {
                                 window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
                               }, 3000);
+                            } else {
+                              props.closeDialog();
+                              setIsUploading(false);
                             }
-                            props.closeDialog();
                           }
                         }
                       } else {
