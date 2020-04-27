@@ -29,11 +29,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         paddingRight: 0,
       },
-      '& $userAccountLogin': {
-        [theme.breakpoints.down(900)]: {
-          paddingRight: 20,
-        },
-      },
     },
     headerSticky: {
       position: 'fixed',
@@ -49,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       paddingBottom: 11,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 15,
+        paddingTop: 12,
         paddingBottom: 9,
       },
       '& a': {
@@ -64,10 +59,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccount: {
-      padding: '20px 10px',
+      padding: '20px 16px',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
+        padding: 16,
       },
     },
     userAccountActive: {
@@ -96,6 +92,10 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       alignItems: 'center',
       justifyContent: 'center',
+      [theme.breakpoints.down('xs')]: {
+        width: 40,
+        height: 40,
+      },
     },
     userActive: {
       backgroundColor: theme.palette.secondary.dark,
@@ -128,7 +128,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     headerRightGroup: {
-      marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
     },
@@ -190,15 +189,6 @@ export const Header: React.FC = (props) => {
           {currentPath !== '/' && <LocationSearch />}
           <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
-            {isSignedIn ? (
-              ''
-            ) : (
-              <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-                <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
-                  Download Apollo247 App
-                </a>
-              </div>
-            )}
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
                 currentPath === clientRoutes.myAccount() ||
@@ -223,8 +213,7 @@ export const Header: React.FC = (props) => {
                 <ProtectedWithLoginPopup>
                   {({ protectWithLoginPopup }) => (
                     <>
-                      <div
-                        id={'loginPopup'}
+                      {/* <div
                         onClick={() => {
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup();
                         }}
@@ -232,7 +221,7 @@ export const Header: React.FC = (props) => {
                         title={'Login/SignUp'}
                       >
                         Login/SignUp
-                      </div>
+                      </div> */}
                       <div
                         className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
                         onClick={() =>

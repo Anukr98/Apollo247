@@ -63,15 +63,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
       paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 75,
+        paddingTop: 72,
       },
       [theme.breakpoints.down(900)]: {
         paddingBottom: 60,
-      },
-    },
-    appNotSignedIn: {
-      [theme.breakpoints.down(900)]: {
-        paddingBottom: 0,
       },
     },
     helpIcon: {
@@ -99,7 +94,7 @@ const App: React.FC = () => {
 
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
-      <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn} ${pageName === '/covid19' && classes.noHeaders} ${pageName === '/covid19/article' && classes.noHeaders}`}>
+      <div className={`${classes.app} ${pageName === '/covid19' && classes.noHeaders} ${pageName === '/covid19/article' && classes.noHeaders}`}>
         <Helmet>
           <script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
