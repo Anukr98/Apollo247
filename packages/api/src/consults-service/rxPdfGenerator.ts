@@ -333,7 +333,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     return doc;
   };
 
-  const renderSectionHeader = (headerText: string, y?: number) => {
+  const renderSectionHeader = (headerText: string, y?: number, flag?: boolean) => {
     if (doc.y > doc.page.height - 150) {
       pageBreak();
     }
@@ -348,7 +348,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#000')
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(11)
-      .text(_capitalize(headerText), margin + 10, doc.y + 10, { fill: true })
+      .text(flag ? headerText : _capitalize(headerText), margin + 10, doc.y + 10, { fill: true })
       .moveDown(2);
   };
 
@@ -532,7 +532,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderDiagnoses = (diagnoses: RxPdfData['diagnoses']) => {
     if (diagnoses) {
-      renderSectionHeader(ApiConstants.CASESHEET_PROVISIONAL_HEADING.toString());
+      renderSectionHeader(ApiConstants.CASESHEET_PROVISIONAL_HEADING.toString(), 0, true);
       diagnoses.forEach((diag, index) => {
         if (doc.y > doc.page.height - 150) {
           pageBreak();

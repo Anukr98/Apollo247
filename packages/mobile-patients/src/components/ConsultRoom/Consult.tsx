@@ -56,6 +56,7 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { NotificationListener } from '../NotificationListener';
 
 const styles = StyleSheet.create({
   nameTextContainerStyle: {
@@ -1237,6 +1238,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       )}
       {/* {loading && <Spinner />} */}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
+      <NotificationListener navigation={props.navigation} />
     </View>
   );
 };

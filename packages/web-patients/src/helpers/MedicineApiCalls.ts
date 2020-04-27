@@ -186,6 +186,7 @@ interface OfferBannerSection {
 
 export interface MedicinePageAPiResponse {
   mainbanners: OfferBannerSection[];
+  mainbanners_desktop: OfferBannerSection[];
   healthareas: MedicinePageSection[];
   deals_of_the_day: DealsOfTheDaySection[];
   shop_by_category: MedicinePageSection[];
