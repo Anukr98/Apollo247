@@ -69,6 +69,7 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
   );
   const { setLocationDetails, locationForDiagnostics } = useAppCommonData();
   const { clearCartInfo } = useDiagnosticsCart();
+  const [showLocations, setshowLocations] = useState<boolean>(false);
 
   const autoSearch = (searchText: string) => {
     getNetStatus()
@@ -197,7 +198,12 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
               value={currentLocation}
               onChangeText={(value) => {
                 setCurrentLocation(value);
-                autoSearch(value);
+                if (value.length > 2) {
+                  autoSearch(value);
+                  setshowLocations(true);
+                } else {
+                  setshowLocations(false);
+                }
               }}
             />
           </View>
@@ -205,26 +211,28 @@ export const LocationSearchPopup: React.FC<LocationSearchPopupProps> = (props) =
             <LocationOn />
           </View>
         </View>
-        <View>
-          {locationSearchList.map((item, i) => (
-            <View key={i} style={styles.searchListViewStyle}>
-              <Text
-                style={styles.searchListItemStyle}
-                onPress={() => {
-                  setCurrentLocation(item.name);
-                  props.onPressLocationSearchItem(item.name);
-                  saveLatlong(item);
-                  setLocationDetails!({
-                    displayName: item.name,
-                    city: item.name,
-                  } as any);
-                }}
-              >
-                {item.name}
-              </Text>
-            </View>
-          ))}
-        </View>
+        {showLocations && (
+          <View>
+            {locationSearchList.map((item, i) => (
+              <View key={i} style={styles.searchListViewStyle}>
+                <Text
+                  style={styles.searchListItemStyle}
+                  onPress={() => {
+                    setCurrentLocation(item.name);
+                    props.onPressLocationSearchItem(item.name);
+                    saveLatlong(item);
+                    setLocationDetails!({
+                      displayName: item.name,
+                      city: item.name,
+                    } as any);
+                  }}
+                >
+                  {item.name}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
