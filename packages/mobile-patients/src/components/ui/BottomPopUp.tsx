@@ -1,5 +1,13 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 
@@ -46,6 +54,7 @@ const styles = StyleSheet.create({
 export interface ButtonProps {
   title?: string;
   description?: string;
+  titleStyle?: StyleProp<TextStyle>;
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   onPressBack?: () => void;
@@ -56,7 +65,9 @@ export const BottomPopUp: React.FC<ButtonProps> = (props) => {
     <View style={[styles.showPopUp, props.style]}>
       <TouchableOpacity activeOpacity={1} style={styles.container} onPress={props.onPressBack}>
         <TouchableOpacity activeOpacity={1} style={styles.subViewPopup} onPress={() => {}}>
-          {!!props.title && <Text style={styles.congratulationsTextStyle}>{props.title}</Text>}
+          {!!props.title && (
+            <Text style={[styles.congratulationsTextStyle, props.titleStyle]}>{props.title}</Text>
+          )}
           {!!props.description && (
             <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
           )}

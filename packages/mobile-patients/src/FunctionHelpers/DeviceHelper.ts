@@ -33,11 +33,11 @@ export const DeviceHelper = () => {
 export const CommonLogEvent = async (stringName: string, parameterName: string) => {
   if (isReleaseOn) {
     try {
-      const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-      firebase.analytics().logEvent(stringName, {
-        Button_Action: parameterName,
-        phoneNumber: storedPhoneNumber as string,
-      });
+      // const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+      // firebase.analytics().logEvent(stringName, {
+      //   Button_Action: parameterName,
+      //   phoneNumber: storedPhoneNumber as string,
+      // });
     } catch (error) {
       CommonBugFender('DeviceHelper_CommonLogEvent_try', error);
       aphConsole.log('CommonLogEvent error', error);

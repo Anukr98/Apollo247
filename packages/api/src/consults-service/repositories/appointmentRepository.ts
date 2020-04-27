@@ -871,6 +871,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  updateSDAppointmentStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    sdConsultationDate: Date
+  ) {
+    this.update(id, { status, isSeniorConsultStarted, sdConsultationDate }).catch(
+      (createErrors) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      }
+    );
+  }
+
   updateAppointmentStatusUsingOrderId(
     paymentOrderId: string,
     status: STATUS,
@@ -1311,6 +1324,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       })
       .andWhere('appointment.status in(:status1)', {
         status1: STATUS.PENDING,
+      })
+      .andWhere('appointment.appointmentState != :state', {
+        state: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
       })
       .getMany();
   }

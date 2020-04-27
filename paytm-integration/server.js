@@ -534,7 +534,7 @@ app.post('/paymed-response', (req, res) => {
   //const reqSource = req.session.source;
 
   /* make success and failure response */
-  const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
+  const transactionStatus = payload.STATUS === 'TXN_SUCCESS' || 'success' ? 'success' : 'failed';
   const responseMessage = payload.RESPMSG;
   const responseCode = payload.RESPCODE;
   const fileName = process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaResp.txt';

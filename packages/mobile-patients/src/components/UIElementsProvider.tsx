@@ -76,6 +76,7 @@ type AphAlertParams = {
   description?: string;
   CTAs?: AphAlertCTAs[];
   ctaContainerStyle?: StyleProp<ViewStyle>;
+  titleStyle?: StyleProp<TextStyle>;
   // Note: CTAs will be rendered at end of the popup.
   // If CTAs are passed, `OK, GOT IT` will not be rendered.
   children?: React.ReactNode;
@@ -169,6 +170,7 @@ export const UIElementsProvider: React.FC = (props) => {
         <BottomPopUp
           title={alertParams.title}
           description={alertParams.description}
+          titleStyle={alertParams.titleStyle}
           style={alertParams.style}
           onPressBack={() => {
             if (!alertParams.unDismissable) {

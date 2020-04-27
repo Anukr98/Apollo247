@@ -10,6 +10,7 @@ import { Salutation, DoctorType, ConsultMode, WeekDay } from "./globalTypes";
 
 export interface getDoctorDetailsById_getDoctorDetailsById_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
   userFriendlyNomenclature: string | null;
 }
@@ -35,6 +36,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital {
 
 export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
   image: string | null;
   userFriendlyNomenclature: string | null;
