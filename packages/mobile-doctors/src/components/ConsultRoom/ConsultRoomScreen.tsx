@@ -113,6 +113,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -253,6 +254,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
     console.log(caseSheetEdit, 'caseSheetEdit');
+    AsyncStorage.removeItem('editedInputData');
 
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
@@ -272,6 +274,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       stopNoShow();
       stopMissedCallTimer();
       stopAutoSaveTimer();
+      AsyncStorage.removeItem('editedInputData');
     };
   }, []);
 
@@ -384,24 +387,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
     return famHist;
   };
-  const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
-    setPatientInfoAll(g(caseSheet, 'patientDetails') || null);
+  const setData = (
+    caseSheet: GetCaseSheet_getCaseSheet | null | undefined,
+    isAutoSaved?: boolean
+  ) => {
+    if (!isAutoSaved) {
+      setPatientInfoAll(g(caseSheet, 'patientDetails') || null);
+      setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
+      setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
+      setFamilyValues(
+        getFamilyHistoryText(g(caseSheet, 'patientDetails', 'familyHistory') || null)
+      );
+      setPatientDetails(g(caseSheet, 'patientDetails') || null);
+      setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
+      setPastList(g(caseSheet, 'pastAppointments') || null);
+    }
     setAppintmentdatetime(g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime'));
     setappointmentData(g(caseSheet, 'caseSheetDetails', 'appointment'));
     setdoctorId(g(caseSheet, 'caseSheetDetails', 'doctorId') || '');
     setpatientId(g(caseSheet, 'caseSheetDetails', 'patientId') || '');
 
-    setPastList(g(caseSheet, 'pastAppointments') || null);
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
-    setLifeStyleData(lifeStyleData || g(caseSheet, 'patientDetails', 'lifeStyle') || null);
-    setMedicalHistory(
-      medicalHistory || g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null
-    );
-    setFamilyValues(
-      familyValues || getFamilyHistoryText(g(caseSheet, 'patientDetails', 'familyHistory') || null)
-    );
-    setPatientDetails(g(caseSheet, 'patientDetails') || null);
-    setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
     setTests(
       (g(caseSheet, 'caseSheetDetails', 'diagnosticPrescription') || [])
         .map((i) => {
@@ -480,6 +486,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
       });
   };
+  useEffect(() => {
+    AsyncStorage.setItem('editedInputData', JSON.stringify(getInputData()));
+  }, [
+    symptonsData,
+    doctorNotes,
+    diagnosisData,
+    tests,
+    switchValue,
+    followupDays,
+    followUpConsultationType,
+    addedAdvices,
+    medicinePrescriptionData,
+    lifeStyleData,
+    familyValues,
+    medicalHistory,
+  ]);
   const getInputData = () => {
     return {
       symptoms:
@@ -616,7 +638,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             caseSheetDetails: g(_data, 'data', 'modifyCaseSheet'),
           } as GetCaseSheet_getCaseSheet | null | undefined;
           setcaseSheet(modifiedData);
-          setData(modifiedData);
+          setData(modifiedData, autoSave);
           setIsAutoSaved(autoSave);
           if (callBack) {
             setLoading && setLoading(true);
@@ -720,8 +742,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const timerLoop = (timer: number) => {
-    startAutoSaveTimer(timer, () => {
-      saveDetails(false, true);
+    startAutoSaveTimer(timer, async () => {
+      const data = await AsyncStorage.getItem('editedInputData');
+      saveDetails(false, true, JSON.parse(data || ''));
       timerLoop(timer);
     });
   };
