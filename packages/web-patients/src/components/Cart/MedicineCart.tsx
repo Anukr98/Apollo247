@@ -1092,7 +1092,6 @@ export const MedicineCart: React.FC = (props) => {
               fullWidth
               title={'Login to continue'}
               onClick={() => {
-                console.log('open the popup');
                 const signInPopup = document.getElementById('loginPopup');
                 signInPopup && document.getElementById('loginPopup')!.click();
               }}
