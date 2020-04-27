@@ -98,24 +98,30 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ArticleBanner: React.FC = (props) => {
-  const classes = useStyles();
+interface ArticleBannerProps {
+  title: string;
+  type: string;
+  source: string;
+}
 
+export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
+  const classes = useStyles();
+  const { title, type, source } = props;
   return (
-    <div className={classes.root} >
+    <div className={classes.root}>
       <div className={classes.bannerTop}>
-        <Link to={clientRoutes.welcome()}>
+        <Link to={clientRoutes.covidLanding()}>
           <div className={classes.backArrow}>
             <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div>
         </Link>
-        <AphButton className={classes.subcribeBtn}>Subscribe</AphButton>
+        {/* <AphButton className={classes.subcribeBtn}>Subscribe</AphButton> */}
       </div>
       <div className={classes.content}>
-        <h2>Basic protective measures against the new coronavirus</h2>
-        <div className={classes.articleType}>Article</div>
-        <p>Sourced from Apollo Life</p>
+        <h2>{title}</h2>
+        <div className={classes.articleType}>{type}</div>
+        <p>Sourced from {source}</p>
       </div>
     </div>
   );

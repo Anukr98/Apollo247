@@ -14,6 +14,8 @@ import { AphButton } from '@aph/web-ui-components';
 import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import fetch from 'helpers/fetch';
+import { sortByProperty } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -154,59 +156,49 @@ export const CovidLanding: React.FC = (props) => {
   interface CovidContentInterface {
     [key: string]: any;
   }
-  const fetchData = {
-    method: 'GET',
-    headers: new Headers({
-      'content-type': 'application/json',
-      'secret-key': '$2b$10$GfozJdCa76UbRAByVwV.PeN8xxdQub1/wBXNGQz7rTJpEPkidcv3a',
-    }),
-  };
   const [covidContent, setCovidContent] = useState<CovidContentInterface>({});
   const [categoryToFetch, setCategoryToFetch] = useState<string>('');
   const [moreContentLoading, setMoreContentLoading] = useState<boolean>(false);
   const didMount = useRef(false);
+  const covidContentPageSize = 3;
+  const covidArticleBaseUrl = process.env.COVID_ARTICLE_LIST_URL;
 
   useEffect(() => {
-    // The parameters we are gonna pass to the fetch function
-    fetch('https://api.jsonbin.io/b/5ea1984498b3d53752332caf/3', fetchData).then(function(data) {
-      // Here you get the data to modify as you please
-      data.json().then((res) => {
-        const body = res.data;
-        const a = body['stay-safe'].sort(
-          (a: any, b: any) => parseFloat(a.displayOrder) - parseFloat(b.displayOrder)
-        );
-        const b = body['covid-symptoms'].sort(
-          (a: any, b: any) => parseFloat(a.displayOrder) - parseFloat(b.displayOrder)
-        );
-        const c = body['going-ahead'].sort(
-          (a: any, b: any) => parseFloat(a.displayOrder) - parseFloat(b.displayOrder)
-        );
+    fetch(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
+      const body = res.data;
+      const sortedStaySafeData =
+        !isEmpty(body['stay-safe']) && sortByProperty(body['stay-safe'], 'displayOrder');
+      const sortedCovidSymptomsData =
+        !isEmpty(body['covid-symptoms']) && sortByProperty(body['covid-symptoms'], 'displayOrder');
+      const sortedGoingAheadData =
+        !isEmpty(body['going-ahead']) && sortByProperty(body['going-ahead'], 'displayOrder');
 
-        let covidObj: CovidContentInterface = {};
-        covidObj['stay-safe'] = a;
-        covidObj['covid-symptoms'] = b;
-        covidObj['going-ahead'] = c;
-        covidObj['total-term'] = body['totalterm'];
-        setCovidContent(covidObj);
-      });
+      let covidObj: CovidContentInterface = {};
+      covidObj['stay-safe'] = sortedStaySafeData;
+      covidObj['covid-symptoms'] = sortedCovidSymptomsData;
+      covidObj['going-ahead'] = sortedGoingAheadData;
+      covidObj['total-term'] = body['totalterm'];
+      setCovidContent(covidObj);
     });
   }, []);
 
   useEffect(() => {
     if (didMount.current && categoryToFetch !== '') {
-      fetch('https://api.jsonbin.io/b/5ea3c2eb2940c704e1de3afd', fetchData).then((data) =>
-        data.json().then((res) => {
-          const sortedData = res.data.sort(
-            (a: any, b: any) => parseFloat(a.displayOrder) - parseFloat(b.displayOrder)
-          );
-          let tempCovidObj: CovidContentInterface = covidContent;
-          tempCovidObj[categoryToFetch] = tempCovidObj[categoryToFetch].concat(sortedData);
-          setCovidContent(tempCovidObj);
-          setMoreContentLoading(false);
-          setCategoryToFetch('');
-          console.log('3434');
-        })
-      );
+      const currentOffset = covidContent[categoryToFetch].length / covidContentPageSize;
+      fetch(
+        `${covidArticleBaseUrl}?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
+        'GET',
+        {},
+        '',
+        true
+      ).then((res: any) => {
+        const sortedData = sortByProperty(res.data[categoryToFetch], 'displayOrder');
+        let tempCovidObj: CovidContentInterface = covidContent;
+        tempCovidObj[categoryToFetch] = tempCovidObj[categoryToFetch].concat(sortedData);
+        setCovidContent(tempCovidObj);
+        setMoreContentLoading(false);
+        setCategoryToFetch('');
+      });
     } else didMount.current = true;
   }, [categoryToFetch]);
 

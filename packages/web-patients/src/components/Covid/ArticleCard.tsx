@@ -51,6 +51,10 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '18px',
       opacity: 0.6,
       paddingTop: 8,
+      display: '-webkit-box',
+      '-webkit-line-clamp': '3',
+      '-webkit-box-orient': 'vertical',
+      overflow: 'hidden',
     },
     videoOverlay: {
       display: 'none',
@@ -84,6 +88,8 @@ type ArticleItem = {
   type: string;
   postTitle: string;
   shortDescription: string;
+  slug: string;
+  id: string;
 };
 
 interface ArticleItemProps {
@@ -92,12 +98,12 @@ interface ArticleItemProps {
 
 const ArticleItem: React.FC<ArticleItemProps> = (props) => {
   const classes = useStyles();
-  const { thumbnailMobile, thumbnailWeb, postTitle, shortDescription, type } = props.item;
+  const { thumbnailMobile, thumbnailWeb, postTitle, shortDescription, type, slug, id } = props.item;
   const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
   return (
     <Grid item sm={4} xs={12}>
       <div className={classes.card}>
-        <Link to="#">
+        <Link to={type !== 'VIDEO' ? `/covid19/${type.toLowerCase()}${slug}/${id}` : ''}>
           <div className={classes.cardHeader}>
             {type === 'VIDEO' ? (
               <iframe
