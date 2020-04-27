@@ -1380,7 +1380,7 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if (!isCustomform && tabletsCount === '') {
+    if (!isCustomform && tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1390,10 +1390,10 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning === '' ||
-        customDosageNoon === '' ||
-        customDosageEvening === '' ||
-        customDosageNight === '')
+      (customDosageMorning.trim() === '' ||
+        customDosageNoon.trim() === '' ||
+        customDosageEvening.trim() === '' ||
+        customDosageNight.trim() === '')
     ) {
       setErrorState({
         ...errorState,
@@ -1421,7 +1421,7 @@ export const FavouriteMedicines: React.FC = () => {
     } else {
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
-        medicineDosage: String(tabletsCount),
+        medicineDosage: String(tabletsCount).trim(),
         medicineTimings: daySlotsArr,
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
@@ -1456,13 +1456,13 @@ export const FavouriteMedicines: React.FC = () => {
       setShowDosage(false);
       resetOptions();
       const medicineCustomDosage =
-        customDosageMorning +
+        customDosageMorning.trim() +
         '-' +
-        customDosageNoon +
+        customDosageNoon.trim() +
         '-' +
-        customDosageEvening +
+        customDosageEvening.trim() +
         '-' +
-        customDosageNight;
+        customDosageNight.trim();
       client
         .mutate<SaveDoctorsFavouriteMedicine, SaveDoctorsFavouriteMedicineVariables>({
           mutation: SAVE_DOCTORS_FAVOURITE_MEDICINE,
@@ -1477,7 +1477,7 @@ export const FavouriteMedicines: React.FC = () => {
                   : MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT,
               medicineFrequency: frequency,
               medicineConsumptionDurationInDays: Number(consumptionDuration),
-              medicineDosage: tabletsCount ? String(tabletsCount) : '',
+              medicineDosage: tabletsCount ? String(tabletsCount).trim() : '',
               medicineTimings: daySlotsArr,
               medicineToBeTaken: toBeTakenSlotsArr,
               medicineName: selectedValue,
@@ -1516,14 +1516,14 @@ export const FavouriteMedicines: React.FC = () => {
       return slot.selected !== false;
     });
     const medicineCustomDosage =
-      customDosageMorning +
+      customDosageMorning.trim() +
       '-' +
-      customDosageNoon +
+      customDosageNoon.trim() +
       '-' +
-      customDosageEvening +
+      customDosageEvening.trim() +
       '-' +
-      customDosageNight;
-    if (tabletsCount === '') {
+      customDosageNight.trim();
+    if (tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1551,7 +1551,7 @@ export const FavouriteMedicines: React.FC = () => {
       setMedicineLoader(true);
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: Number(consumptionDuration),
-        medicineDosage: String(tabletsCount),
+        medicineDosage: String(tabletsCount).trim(),
         medicineInstructions: medicineInstruction,
         medicineTimings: daySlotsArr,
         medicineToBeTaken: toBeTakenSlotsArr,
@@ -1613,7 +1613,7 @@ export const FavouriteMedicines: React.FC = () => {
                   : MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT,
               medicineFrequency: frequency,
               medicineConsumptionDurationInDays: Number(consumptionDuration),
-              medicineDosage: tabletsCount ? String(tabletsCount) : '',
+              medicineDosage: tabletsCount ? String(tabletsCount).trim() : '',
               medicineUnit: medicineUnit,
               medicineInstructions: medicineInstruction,
               medicineTimings: daySlotsArr,
@@ -1969,7 +1969,8 @@ export const FavouriteMedicines: React.FC = () => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
-                                          e.key !== '.'
+                                          e.key !== '.' &&
+                                          e.key !== ' '
                                         )
                                           e.preventDefault();
                                       }}
@@ -1994,7 +1995,8 @@ export const FavouriteMedicines: React.FC = () => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
-                                          e.key !== '.'
+                                          e.key !== '.' &&
+                                          e.key !== ' '
                                         )
                                           e.preventDefault();
                                       }}
@@ -2019,7 +2021,8 @@ export const FavouriteMedicines: React.FC = () => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
-                                          e.key !== '.'
+                                          e.key !== '.' &&
+                                          e.key !== ' '
                                         )
                                           e.preventDefault();
                                       }}
@@ -2043,7 +2046,8 @@ export const FavouriteMedicines: React.FC = () => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
-                                          e.key !== '.'
+                                          e.key !== '.' &&
+                                          e.key !== ' '
                                         )
                                           e.preventDefault();
                                       }}
@@ -2107,7 +2111,8 @@ export const FavouriteMedicines: React.FC = () => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
-                                          e.key !== '.'
+                                          e.key !== '.' &&
+                                          e.key !== ' '
                                         )
                                           e.preventDefault();
                                       }}
@@ -2236,6 +2241,9 @@ export const FavouriteMedicines: React.FC = () => {
                                 value={consumptionDuration}
                                 onChange={(event: any) => {
                                   setConsumptionDuration(event.target.value);
+                                }}
+                                onKeyPress={(e) => {
+                                  if (isNaN(parseInt(e.key, 10))) e.preventDefault();
                                 }}
                                 //error={errorState.durationErr}
                               />
