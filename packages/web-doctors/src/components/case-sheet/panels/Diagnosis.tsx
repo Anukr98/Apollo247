@@ -137,6 +137,24 @@ const useStyles = makeStyles((theme: Theme) =>
         backgroundColor: '#00b38e',
       },
     },
+    darkGreenaddBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      position: 'absolute',
+      right: 0,
+      bottom: 5,
+      minWidth: 'auto',
+      padding: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    textboxContainer: {
+      position: 'relative',
+    },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
@@ -186,7 +204,7 @@ type Params = { id: string; patientId: string; tabValue: string };
 export const Diagnosis: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState<any>(null);
   const [searchInput, setSearchInput] = useState('');
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
     CaseSheetContext
@@ -318,10 +336,11 @@ export const Diagnosis: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+
   return (
     <Typography component="div" className={classes.mainContainer}>
       <Typography component="h4" variant="h4">
-        Provisional Diagnosed Medical Condition
+        Diagnosed Medical Condition
       </Typography>
       <Typography component="div">
         {selectedValues !== null &&
@@ -352,67 +371,106 @@ export const Diagnosis: React.FC = () => {
           <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD CONDITION
         </AphButton>
       )}
-      {showAddCondition && (
-        <Autosuggest
-          onSuggestionSelected={(e, { suggestion }) => {
-            selectedValues && selectedValues.push(suggestion);
-            const storageItem = getLocalStorageItem(params.id);
-            if (storageItem) {
-              storageItem.diagnosis = selectedValues;
-              updateLocalStorageItem(params.id, storageItem);
-            }
-            setSelectedValues(selectedValues);
-            setShowAddCondition(false);
-            suggestions = suggestions.filter(
-              (val) => selectedValues && selectedValues.includes(val)
-            );
-            setState({
-              single: '',
-              popper: '',
-            });
-          }}
-          {...autosuggestProps}
-          inputProps={{
-            classes,
-            id: 'react-autosuggest-simple',
-            placeholder: 'Search Condition',
-            value: state.single,
-            onChange: handleChange('single'),
-            onKeyPress: (e) => {
-              if (e.which == 13 || e.keyCode == 13) {
-                if (selectedValues && suggestions.length === 1) {
-                  selectedValues.push(suggestions[0]);
-                  const storageItem = getLocalStorageItem(params.id);
-                  if (storageItem) {
-                    storageItem.diagnosis = selectedValues;
-                    updateLocalStorageItem(params.id, storageItem);
+      <div className={classes.textboxContainer}>
+        {showAddCondition && (
+          <Autosuggest
+            onSuggestionSelected={(e, { suggestion }) => {
+              selectedValues && selectedValues.push(suggestion);
+              const storageItem = getLocalStorageItem(params.id);
+              if (storageItem) {
+                storageItem.diagnosis = selectedValues;
+                updateLocalStorageItem(params.id, storageItem);
+              }
+              setSelectedValues(selectedValues);
+              setShowAddCondition(false);
+              suggestions = suggestions.filter(
+                (val) => selectedValues && selectedValues.includes(val)
+              );
+              setState({
+                single: '',
+                popper: '',
+              });
+            }}
+            {...autosuggestProps}
+            inputProps={{
+              classes,
+              id: 'react-autosuggest-simple',
+              placeholder: 'Search Condition',
+              value: state.single,
+              onChange: handleChange('single'),
+              onKeyPress: (e) => {
+                if (e.which == 13 || e.keyCode == 13) {
+                  if (selectedValues && suggestions.length === 1) {
+                    selectedValues.push(suggestions[0]);
+                    const storageItem = getLocalStorageItem(params.id);
+                    if (storageItem) {
+                      storageItem.diagnosis = selectedValues;
+                      updateLocalStorageItem(params.id, storageItem);
+                    }
+                    setSelectedValues(selectedValues);
+                    setShowAddCondition(false);
+                    suggestions = suggestions.filter(
+                      (val) => selectedValues && selectedValues.includes(val)
+                    );
+                    setState({
+                      single: '',
+                      popper: '',
+                    });
                   }
-                  setSelectedValues(selectedValues);
-                  setShowAddCondition(false);
-                  suggestions = suggestions.filter(
-                    (val) => selectedValues && selectedValues.includes(val)
-                  );
+                }
+              },
+            }}
+            theme={{
+              container: classes.suggestionsContainer,
+              suggestionsList: classes.suggestionsList,
+              suggestion: classes.suggestionItem,
+              suggestionHighlighted: classes.suggestionHighlighted,
+            }}
+            renderSuggestionsContainer={(options) => (
+              <Paper
+                {...options.containerProps}
+                square
+                classes={{ root: classes.suggestionPopover }}
+              >
+                {options.children}
+              </Paper>
+            )}
+          />
+        )}
+        {diagnosisValue.trim().length > 2 && (
+          <AphButton
+            className={classes.darkGreenaddBtn}
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              if (diagnosisValue.trim() !== '') {
+                selectedValues!.splice(selectedValues!.length, 0, {
+                  name: diagnosisValue,
+                  __typename: 'Diagnosis',
+                });
+
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.diagnosis = selectedValues;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
+                setSelectedValues(selectedValues);
+                setShowAddCondition(false);
+
+                setTimeout(() => {
+                  setDiagnosisValue('');
                   setState({
                     single: '',
                     popper: '',
                   });
-                }
+                }, 10);
               }
-            },
-          }}
-          theme={{
-            container: classes.suggestionsContainer,
-            suggestionsList: classes.suggestionsList,
-            suggestion: classes.suggestionItem,
-            suggestionHighlighted: classes.suggestionHighlighted,
-          }}
-          renderSuggestionsContainer={(options) => (
-            <Paper {...options.containerProps} square classes={{ root: classes.suggestionPopover }}>
-              {options.children}
-            </Paper>
-          )}
-        />
-      )}
+            }}
+          >
+            <img src={require('images/ic_add_circle.svg')} alt="" />
+          </AphButton>
+        )}
+      </div>
     </Typography>
   );
 };

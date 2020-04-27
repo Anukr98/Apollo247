@@ -197,7 +197,7 @@ export const CaseSheet: React.FC = () => {
     },
     {
       key: 'diagnosis',
-      value: 'Provisional Diagnosis',
+      value: 'Diagnosis',
       state: diagnosis,
       component: <Diagnosis />,
     },

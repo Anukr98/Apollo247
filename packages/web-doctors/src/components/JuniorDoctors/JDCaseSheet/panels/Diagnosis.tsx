@@ -161,6 +161,24 @@ const useStyles = makeStyles((theme: Theme) =>
     chipCol: {
       display: 'inline-block',
     },
+    darkGreenaddBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      position: 'absolute',
+      right: 0,
+      bottom: 5,
+      minWidth: 'auto',
+      padding: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    textboxContainer: {
+      position: 'relative',
+    },
     chipItem: {
       padding: 7,
       paddingLeft: 12,
@@ -191,7 +209,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const Diagnosis: React.FC = () => {
   const classes = useStyles();
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState<any>();
   const [searchInput, setSearchInput] = useState('');
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
     CaseSheetContextJrd
@@ -319,7 +337,7 @@ export const Diagnosis: React.FC = () => {
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
-        <div className={classes.sectionTitle}>Provisional Diagnosed Medical Condition</div>
+        <div className={classes.sectionTitle}>Diagnosed Medical Condition</div>
         <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
@@ -360,55 +378,88 @@ export const Diagnosis: React.FC = () => {
           <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Condition
         </AphButton>
       )}
-      {showAddCondition && (
-        <Autosuggest
-          onSuggestionSelected={(e, { suggestion }) => {
-            selectedValues && selectedValues.push(suggestion);
-            setSelectedValues(selectedValues);
-            setShowAddCondition(false);
-            suggestions = suggestions.filter(
-              (val) => selectedValues && selectedValues.includes(val)
-            );
-            setState({
-              single: '',
-              popper: '',
-            });
-          }}
-          {...autosuggestProps}
-          inputProps={{
-            classes,
-            id: 'react-autosuggest-simple',
-            placeholder: 'Search Condition',
-            value: state.single,
-            onChange: handleChange('single'),
-            onKeyPress: (e) => {
-              if (e.which == 13 || e.keyCode == 13) {
-                if (selectedValues && suggestions.length === 1) {
-                  selectedValues.push(suggestions[0]);
-                  setSelectedValues(selectedValues);
-                  setShowAddCondition(false);
-                  suggestions = suggestions.filter((val) => selectedValues.includes(val));
+      <div className={classes.textboxContainer}>
+        {showAddCondition && (
+          <Autosuggest
+            onSuggestionSelected={(e, { suggestion }) => {
+              selectedValues && selectedValues.push(suggestion);
+              setSelectedValues(selectedValues);
+              setShowAddCondition(false);
+              suggestions = suggestions.filter(
+                (val) => selectedValues && selectedValues.includes(val)
+              );
+              setState({
+                single: '',
+                popper: '',
+              });
+            }}
+            {...autosuggestProps}
+            inputProps={{
+              classes,
+              id: 'react-autosuggest-simple',
+              placeholder: 'Search Condition',
+              value: state.single,
+              onChange: handleChange('single'),
+              onKeyPress: (e) => {
+                if (e.which == 13 || e.keyCode == 13) {
+                  if (selectedValues && suggestions.length === 1) {
+                    selectedValues.push(suggestions[0]);
+                    setSelectedValues(selectedValues);
+                    setShowAddCondition(false);
+                    suggestions = suggestions.filter((val) => selectedValues.includes(val));
+                    setState({
+                      single: '',
+                      popper: '',
+                    });
+                  }
+                }
+              },
+            }}
+            renderSuggestionsContainer={(options) => (
+              <Paper
+                {...options.containerProps}
+                square
+                classes={{ root: classes.suggestionPopover }}
+              >
+                {options.children}
+              </Paper>
+            )}
+            theme={{
+              container: classes.suggestionsContainer,
+              suggestionsList: classes.suggestionsList,
+              suggestion: classes.suggestionItem,
+              suggestionHighlighted: classes.suggestionHighlighted,
+            }}
+          />
+        )}
+        {diagnosisValue.trim().length > 2 && (
+          <AphButton
+            className={classes.darkGreenaddBtn}
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              if (diagnosisValue.trim() !== '') {
+                selectedValues!.splice(selectedValues!.length, 0, {
+                  name: diagnosisValue,
+                  __typename: 'Diagnosis',
+                });
+                setSelectedValues(selectedValues);
+                setShowAddCondition(false);
+
+                setTimeout(() => {
+                  setDiagnosisValue('');
                   setState({
                     single: '',
                     popper: '',
                   });
-                }
+                }, 10);
               }
-            },
-          }}
-          renderSuggestionsContainer={(options) => (
-            <Paper {...options.containerProps} square classes={{ root: classes.suggestionPopover }}>
-              {options.children}
-            </Paper>
-          )}
-          theme={{
-            container: classes.suggestionsContainer,
-            suggestionsList: classes.suggestionsList,
-            suggestion: classes.suggestionItem,
-            suggestionHighlighted: classes.suggestionHighlighted,
-          }}
-        />
-      )}
+            }}
+          >
+            <img src={require('images/ic_add_circle.svg')} alt="" />
+          </AphButton>
+        )}
+      </div>
     </div>
   );
 };
