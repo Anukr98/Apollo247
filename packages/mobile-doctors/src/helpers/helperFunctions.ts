@@ -153,29 +153,41 @@ export const medicineDescription = (
     | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
 ) => {
   const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
-  const customDosage = item.medicineCustomDosage ? item.medicineCustomDosage.split('-') : [];
-
+  const customDosage = item.medicineCustomDosage
+    ? item.medicineCustomDosage.split('-').filter((i) => i !== '')
+    : [];
+  const medTimingsArray = [
+    MEDICINE_TIMINGS.MORNING,
+    MEDICINE_TIMINGS.NOON,
+    MEDICINE_TIMINGS.EVENING,
+    MEDICINE_TIMINGS.NIGHT,
+    MEDICINE_TIMINGS.AS_NEEDED,
+  ];
+  const medicineTimings = medTimingsArray
+    .map((i) => {
+      if (item.medicineTimings && item.medicineTimings.includes(i)) {
+        return i;
+      } else {
+        return null;
+      }
+    })
+    .filter((i) => i !== null);
   const unit: string =
     (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
   return `${type + ' '}${
     customDosage.length > 0
       ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
-          item.medicineTimings && item.medicineTimings.length
+          medicineTimings && medicineTimings.length
             ? '(' +
-              (item.medicineTimings.length > 1
-                ? item.medicineTimings
+              (medicineTimings.length > 1
+                ? medicineTimings
                     .slice(0, -1)
                     .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
                     .join(', ') +
                   ' & ' +
-                  nameFormater(
-                    (item.medicineTimings &&
-                      item.medicineTimings[item.medicineTimings.length - 1]) ||
-                      '',
-                    'lower'
-                  ) +
+                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
                   ') '
-                : item.medicineTimings
+                : medicineTimings
                     .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
                     .join(', ') + ' ')
             : ''
@@ -211,22 +223,17 @@ export const medicineDescription = (
                 .join(', ') + ' '
             : ''
         }${
-          item.medicineTimings && item.medicineTimings.length
+          medicineTimings && medicineTimings.length
             ? 'in the ' +
-              (item.medicineTimings.length > 1
-                ? item.medicineTimings
+              (medicineTimings.length > 1
+                ? medicineTimings
                     .slice(0, -1)
                     .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
                     .join(', ') +
                   ' & ' +
-                  nameFormater(
-                    (item.medicineTimings &&
-                      item.medicineTimings[item.medicineTimings.length - 1]) ||
-                      '',
-                    'lower'
-                  ) +
+                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
                   ' '
-                : item.medicineTimings
+                : medicineTimings
                     .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
                     .join(', ') + ' ')
             : ''
