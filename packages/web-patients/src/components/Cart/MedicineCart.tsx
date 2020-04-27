@@ -464,14 +464,13 @@ export const MedicineCart: React.FC = (props) => {
     storePickupPincode,
     deliveryAddressId,
     storeAddressId,
-    clearCartInfo,
     prescriptions,
     setPrescriptions,
     cartItems,
     cartTotal,
     ePrescriptionData,
     setEPrescriptionData,
-    setCartItems,
+    setUploadedEPrescription,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -523,6 +522,7 @@ export const MedicineCart: React.FC = (props) => {
     ePrescriptionData &&
       setEPrescriptionData &&
       setEPrescriptionData(ePrescriptionData.filter((data) => data.id !== id));
+    setUploadedEPrescription && setUploadedEPrescription(true);
   };
 
   const { currentPatient } = useAllCurrentPatients();

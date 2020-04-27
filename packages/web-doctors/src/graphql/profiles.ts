@@ -498,6 +498,8 @@ export const GET_CASESHEET_JRD = gql`
           medicineFormTypes
           medicineFrequency
           medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
         }
         otherInstructions {
           instruction
@@ -521,6 +523,7 @@ export const GET_CASESHEET_JRD = gql`
         consultType
         notes
       }
+      allowedDosages
       juniorDoctorCaseSheet {
         createdDate
         createdDoctorProfile {
@@ -604,6 +607,8 @@ export const GET_CASESHEET_JRD = gql`
             medicineFormTypes
             medicineFrequency
             medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
           }
           otherInstructions {
             instruction
@@ -807,6 +812,8 @@ export const GET_CASESHEET = gql`
           medicineFormTypes
           medicineFrequency
           medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
         }
         otherInstructions {
           instruction
@@ -869,6 +876,8 @@ export const GET_CASESHEET = gql`
             medicineFormTypes
             medicineFrequency
             medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
           }
           otherInstructions {
             instruction
@@ -906,7 +915,10 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineName
         id
         externalId
+        routeOfAdministration
+        medicineCustomDosage
       }
+      allowedDosages
     }
   }
 `;
@@ -1111,6 +1123,8 @@ export const MODIFY_CASESHEET = gql`
         medicineFormTypes
         medicineFrequency
         medicineConsumptionDurationUnit
+        routeOfAdministration
+        medicineCustomDosage
       }
       notes
       otherInstructions {

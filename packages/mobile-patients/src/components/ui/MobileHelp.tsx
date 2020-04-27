@@ -34,6 +34,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -137,6 +138,20 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { needHelpToContactInMessage } = useAppCommonData();
+  const [email, setEmail] = useState<string>('');
+  const [emailValidation, setEmailValidation] = useState<boolean>(false);
+  const { showAphAlert, hideAphAlert } = useUIElements();
+
+  const isSatisfyingEmailRegex = (value: string) =>
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const _setEmail = (value: string) => {
+    const trimmedValue = (value || '').trim();
+    setEmail(trimmedValue);
+    setEmailValidation(isSatisfyingEmailRegex(trimmedValue));
+  };
 
   useEffect(() => {
     setSelectedQuery('');
@@ -178,7 +193,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       }
     };
     return (
-      <View style={{ marginTop: 32, marginBottom: 30 }}>
+      <View style={{ marginTop: 5, marginBottom: 14 }}>
         <Text style={[styles.fieldLabel, { marginBottom: 12 }]}>
           Please select a reason that best matches your query
         </Text>
@@ -251,12 +266,31 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       );
   };
 
+  const renderEmailField = () => {
+    return (
+      <View style={{ marginTop: 12 }}>
+        <Text style={styles.fieldLabel}>Please enter your email address</Text>
+        <TextInputComponent
+          placeholder={'Enter email address'}
+          value={email}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          onChangeText={(text: string) => _setEmail(text)}
+          inputStyle={{
+            paddingBottom: 8,
+            marginTop: 8,
+          }}
+        />
+      </View>
+    );
+  };
+
   const renderCommentField = () => {
     return (
       <View>
-        <Text style={styles.fieldLabel}>Any other comments (optional)?</Text>
+        <Text style={styles.fieldLabel}>Please share more details (mandatory)</Text>
         <TextInputComponent
-          placeholder={'Write your comments here…'}
+          placeholder={'Share your details here…'}
           value={comment}
           onChangeText={(text) => setComment(text)}
           inputStyle={{
@@ -274,6 +308,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         <View style={styles.categoryWrapper}>
           {NeedHelp.map((item) => renderCategory(item.category))}
         </View>
+        {renderEmailField()}
         {renderQueyFiled()}
         {renderCommentField()}
         {renderButtons()}
@@ -281,7 +316,13 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     );
   };
 
-  const submit = (category: string, reason: string, comments: string, patientId: string) =>
+  const submit = (
+    category: string,
+    reason: string,
+    comments: string,
+    patientId: string,
+    email: string
+  ) =>
     client.query<SendHelpEmail, SendHelpEmailVariables>({
       query: SEND_HELP_EMAIL,
       variables: {
@@ -290,13 +331,34 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
           reason,
           comments,
           patientId,
+          email,
         },
       },
     });
 
+  const showAlert = () => {
+    showAphAlert!({
+      title: `Hi,`,
+      description: `Please enter your valid email address`,
+      unDismissable: true,
+      CTAs: [
+        {
+          text: 'Okay',
+          onPress: () => {
+            hideAphAlert && hideAphAlert();
+          },
+          type: 'orange-button',
+        },
+      ],
+    });
+  };
   const onSubmit = () => {
+    if (!emailValidation) {
+      showAlert();
+      return;
+    }
     setShowSpinner(true);
-    submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'))
+    submit(helpCategory, selectedQuery, comment, g(currentPatient, 'id'), email)
       .then(() => {
         setShowSpinner(false);
         setMobileFollowup(true);
@@ -319,6 +381,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     setHelpCategory('');
     setComment('');
     setSelectedQuery('');
+    setEmail('');
   };
 
   const renderButtons = () => {
@@ -333,7 +396,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         <View style={{ width: 16 }} />
         <Button
           onPress={() => onSubmit()}
-          disabled={!(helpCategory && selectedQuery)}
+          disabled={!(helpCategory && selectedQuery && email && comment)}
           title="SUBMIT"
           style={styles.submitButtonStyle}
         />
