@@ -164,10 +164,8 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
       GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null | undefined
     >
   >;
-  familyValues: (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null;
-  setFamilyValues: React.Dispatch<
-    React.SetStateAction<(GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null>
-  >;
+  familyValues: string;
+  setFamilyValues: React.Dispatch<React.SetStateAction<string>>;
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null | undefined;
   setPatientDetails: React.Dispatch<
     React.SetStateAction<GetCaseSheet_getCaseSheet_patientDetails | null | undefined>
@@ -810,7 +808,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             multiline={multiline}
             textAlignVertical={multiline ? 'top' : undefined}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-            onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
+            onChange={(text) => onChange && onChange(text.nativeEvent.text)}
           />
         </View>
       </View>
@@ -870,42 +868,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         </CollapseCard>
       </View>
     );
-  };
-
-  const getFamilyHistory = () => {
-    if (familyValues) {
-      let familyHistory: string = '';
-      familyValues.forEach((i) => {
-        if (i) {
-          familyHistory += i.relation
-            ? i.relation + ': ' + i.description || '' + '\n'
-            : i.description || '' + '\n';
-        }
-      });
-      return familyHistory.slice(0, -1);
-    } else {
-      return '';
-    }
-  };
-
-  const setFamilyHistory = (text: string) => {
-    const eachMember = text.split('\n');
-    const famHist: GetCaseSheet_getCaseSheet_patientDetails_familyHistory[] = [];
-    eachMember.forEach((item) => {
-      const history = item.split(':');
-      if (history.length > 1) {
-        famHist.push({
-          relation: history[0].trim(),
-          description: history[1].trim(),
-        } as GetCaseSheet_getCaseSheet_patientDetails_familyHistory);
-      } else {
-        famHist.push({
-          relation: null,
-          description: history[0].trim(),
-        } as GetCaseSheet_getCaseSheet_patientDetails_familyHistory);
-      }
-    });
-    setFamilyValues(famHist);
   };
 
   const renderPatientHistoryLifestyle = () => {
@@ -980,9 +942,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               strings.case_sheet.family_medical_history,
-              getFamilyHistory(),
+              familyValues,
               (text) => {
-                setFamilyHistory(text);
+                setFamilyValues(text);
               },
               true
             )}

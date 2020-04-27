@@ -323,9 +323,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     medicalHistory,
     setMedicalHistory,
   ] = useState<GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null>();
-  const [familyValues, setFamilyValues] = useState<
-    (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
-  >([]);
+  const [familyValues, setFamilyValues] = useState<string>('');
   const [
     patientDetails,
     setPatientDetails,
@@ -350,6 +348,42 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [displayId, setDisplayId] = useState<string>('');
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
 
+  const getFamilyHistoryText = (
+    familyValues: (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null
+  ) => {
+    if (familyValues) {
+      let familyHistory: string = '';
+      familyValues.forEach((i) => {
+        if (i) {
+          familyHistory += i.relation
+            ? i.relation + ': ' + (i.description || '') + '\n'
+            : (i.description || '') + '\n';
+        }
+      });
+      return familyHistory.slice(0, -1);
+    } else {
+      return '';
+    }
+  };
+  const getFamilyHistoryObject = (text: string) => {
+    const eachMember = text.split('\n');
+    const famHist: GetCaseSheet_getCaseSheet_patientDetails_familyHistory[] = [];
+    eachMember.forEach((item) => {
+      const history = item.split(':');
+      if (history.length > 1) {
+        famHist.push({
+          relation: history[0].trim(),
+          description: history[1].trim(),
+        } as GetCaseSheet_getCaseSheet_patientDetails_familyHistory);
+      } else {
+        famHist.push({
+          relation: null,
+          description: history[0].trim(),
+        } as GetCaseSheet_getCaseSheet_patientDetails_familyHistory);
+      }
+    });
+    return famHist;
+  };
   const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
     setPatientInfoAll(g(caseSheet, 'patientDetails') || null);
     setAppintmentdatetime(g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime'));
@@ -361,7 +395,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
     setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
     setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
-    setFamilyValues(g(caseSheet, 'patientDetails', 'familyHistory') || null);
+    setFamilyValues(getFamilyHistoryText(g(caseSheet, 'patientDetails', 'familyHistory') || null));
     setPatientDetails(g(caseSheet, 'patientDetails') || null);
     setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
     setTests(
@@ -538,7 +572,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           .trim(),
       familyHistory:
         familyValues &&
-        familyValues
+        getFamilyHistoryObject(familyValues)
           .map((i) => (i ? (i.relation ? i.relation + ': ' + i.description : i.description) : ''))
           .filter((i) => i !== '')
           .join('\n')
