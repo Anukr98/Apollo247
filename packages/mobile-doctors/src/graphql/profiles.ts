@@ -225,6 +225,7 @@ export const MODIFY_CASESHEET = gql`
         followUpParentId
         isTransfer
         transferParentId
+        sdConsultationDate
       }
       blobName
       createdDate
@@ -524,6 +525,7 @@ export const GET_CASESHEET = gql`
           rescheduleCount
           rescheduleCountByDoctor
           appointmentType
+          sdConsultationDate
         }
         createdDoctorProfile {
           doctorType
@@ -642,6 +644,7 @@ export const GET_CASESHEET = gql`
           notes
         }
         appointmentType
+        sdConsultationDate
       }
       juniorDoctorNotes
       juniorDoctorCaseSheet {
@@ -674,6 +677,7 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
         parentId
         status
         rescheduleCount
+        sdConsultationDate
       }
       blobName
       consultType
