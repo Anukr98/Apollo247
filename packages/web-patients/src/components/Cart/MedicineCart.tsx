@@ -722,7 +722,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -787,11 +787,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow &&
-      uploadPrescriptionRequired === -1 &&
-      cartItems &&
-      cartItems.length > 0 &&
-      deliveryTime) ||
+    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -919,62 +915,66 @@ export const MedicineCart: React.FC = (props) => {
           }
         >
           <div className={classes.medicineSection}>
-            <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
-              <span>Where Should We Deliver?</span>
-            </div>
-            <div className={classes.sectionGroup}>
-              <div className={classes.deliveryAddress}>
-                <Tabs
-                  value={tabValue}
-                  classes={{
-                    root: classes.tabsRoot,
-                    indicator: classes.tabsIndicator,
-                  }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="Home Delivery"
-                    title={'Choose home delivery'}
-                  />
-                  <Tab
-                    disabled
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="Store Pick Up"
-                    title={'Choose store pick up'}
-                  />
-                </Tabs>
-                {tabValue === 0 && (
-                  <TabContainer>
-                    <HomeDelivery
-                      selectedZipCode={setSelectedZip}
-                      setDeliveryTime={setDeliveryTime}
-                      deliveryTime={deliveryTime}
-                    />
-                  </TabContainer>
-                )}
-                {tabValue === 1 && (
-                  <TabContainer>
-                    <StorePickUp
-                      pincode={
-                        storePickupPincode && storePickupPincode.length === 6
-                          ? storePickupPincode
-                          : currentPincode
-                      }
-                    />
-                  </TabContainer>
-                )}
-              </div>
-            </div>
-            {cartItems && cartItems.length > 0 && (
+            {currentPatient && currentPatient.id && (
+              <>
+                <div className={`${classes.sectionHeader} ${classes.topHeader}`}>
+                  <span>Where Should We Deliver?</span>
+                </div>
+                <div className={classes.sectionGroup}>
+                  <div className={classes.deliveryAddress}>
+                    <Tabs
+                      value={tabValue}
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                        label="Home Delivery"
+                        title={'Choose home delivery'}
+                      />
+                      <Tab
+                        disabled
+                        classes={{
+                          root: classes.tabRoot,
+                          selected: classes.tabSelected,
+                        }}
+                        label="Store Pick Up"
+                        title={'Choose store pick up'}
+                      />
+                    </Tabs>
+                    {tabValue === 0 && (
+                      <TabContainer>
+                        <HomeDelivery
+                          selectedZipCode={setSelectedZip}
+                          setDeliveryTime={setDeliveryTime}
+                          deliveryTime={deliveryTime}
+                        />
+                      </TabContainer>
+                    )}
+                    {tabValue === 1 && (
+                      <TabContainer>
+                        <StorePickUp
+                          pincode={
+                            storePickupPincode && storePickupPincode.length === 6
+                              ? storePickupPincode
+                              : currentPincode
+                          }
+                        />
+                      </TabContainer>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+            {cartItems && cartItems.length > 0 && !nonCartFlow && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
                   <span>Total Charges</span>
@@ -1036,47 +1036,70 @@ export const MedicineCart: React.FC = (props) => {
           </div>
         </Scrollbars>
         <div className={classes.checkoutBtn}>
-          <AphButton
-            onClick={() => {
-              const zipCodeInt = parseInt(selectedZip);
-              if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                if (isChennaiZipCode(zipCodeInt)) {
-                  // redirect to chennai orders form
-                  setIsChennaiCheckoutDialogOpen(true);
-                  return;
+          {currentPatient && currentPatient.id ? (
+            <AphButton
+              onClick={() => {
+                const zipCodeInt = parseInt(selectedZip);
+                if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                  if (isChennaiZipCode(zipCodeInt)) {
+                    // redirect to chennai orders form
+                    setIsChennaiCheckoutDialogOpen(true);
+                    return;
+                  }
+                  setCheckoutDialogOpen(true);
+                } else if (
+                  nonCartFlow &&
+                  ((prescriptions && prescriptions.length > 0) ||
+                    (ePrescriptionData && ePrescriptionData.length > 0))
+                ) {
+                  if (isChennaiZipCode(zipCodeInt)) {
+                    // redirect to chennai orders form
+                    setIsChennaiCheckoutDialogOpen(true);
+                    return;
+                  }
+                  onPressSubmit();
                 }
-                setCheckoutDialogOpen(true);
-              } else if (
-                nonCartFlow &&
-                ((prescriptions && prescriptions.length > 0) ||
-                  (ePrescriptionData && ePrescriptionData.length > 0))
-              ) {
-                if (isChennaiZipCode(zipCodeInt)) {
-                  // redirect to chennai orders form
-                  setIsChennaiCheckoutDialogOpen(true);
-                  return;
-                }
-                onPressSubmit();
+              }}
+              color="primary"
+              fullWidth
+              disabled={
+                disableSubmit ||
+                !isPaymentButtonEnable ||
+                uploadingFiles ||
+                deliveryTime.length === 0
               }
-            }}
-            color="primary"
-            fullWidth
-            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
-            className={
-              disableSubmit || !isPaymentButtonEnable || mutationLoading
-                ? classes.buttonDisable
-                : ''
-            }
-            title={'Proceed to pay bill'}
-          >
-            {cartItems && cartItems.length > 0 && !nonCartFlow ? (
-              `Proceed to pay — RS. ${totalAmount}`
-            ) : uploadingFiles ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              'Submit Prescription'
-            )}
-          </AphButton>
+              className={
+                disableSubmit ||
+                !isPaymentButtonEnable ||
+                mutationLoading ||
+                deliveryTime.length === 0
+                  ? classes.buttonDisable
+                  : ''
+              }
+              title={'Proceed to pay bill'}
+            >
+              {cartItems && cartItems.length > 0 && !nonCartFlow ? (
+                `Proceed to pay — RS. ${totalAmount}`
+              ) : uploadingFiles ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                'Submit Prescription'
+              )}
+            </AphButton>
+          ) : (
+            <AphButton
+              color="primary"
+              fullWidth
+              title={'Login to continue'}
+              onClick={() => {
+                console.log('open the popup');
+                const signInPopup = document.getElementById('loginPopup');
+                signInPopup && document.getElementById('loginPopup')!.click();
+              }}
+            >
+              Login to continue
+            </AphButton>
+          )}
         </div>
       </div>
 

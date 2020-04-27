@@ -224,6 +224,7 @@ export const Header: React.FC = (props) => {
                   {({ protectWithLoginPopup }) => (
                     <>
                       <div
+                        id={'loginPopup'}
                         onClick={() => {
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup();
                         }}
