@@ -831,6 +831,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  let jdCount: any = 1;
+
   const requestToJrDoctor = async () => {
     //new code
     if (userAnswers) {
@@ -838,12 +840,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         .then(({ data }: any) => {
           postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
           console.log(data, 'data res, adding');
-          const queueData = {
-            queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-            appointmentId: appointmentData.id,
-          };
-          console.log(queueData, 'queueData res, adding');
-          AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+          jdCount = parseInt(
+            data.data.addToConsultQueueWithAutomatedQuestions.totalJuniorDoctorsOnline,
+            10
+          );
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
@@ -854,12 +854,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       addToConsultQueue(client, appointmentData.id)
         .then(({ data }: any) => {
           console.log(data, 'data res');
-          const queueData = {
-            queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
-            appointmentId: appointmentData.id,
-          };
-          console.log(queueData, 'queueData res');
-          AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+          jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueue', e);
@@ -1758,7 +1753,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete
+        !appointmentData.isJdQuestionsComplete &&
+        jdCount > 0
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
@@ -1828,7 +1824,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdThankyouResult.length === 0 &&
         stopConsultjrResult.length === 0 &&
         languageQueueResult.length === 0 &&
-        !appointmentData.isJdQuestionsComplete
+        !appointmentData.isJdQuestionsComplete &&
+        jdCount > 0
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
