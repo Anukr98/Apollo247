@@ -26,7 +26,7 @@ import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
-import { addRecordClickTracking } from "../../webEngageTracking";
+import { addRecordClickTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -408,8 +408,8 @@ export const AddRecords: React.FC = (props) => {
   const isValid = () => {
     const validRecordDetails =
       typeOfRecord !== '' &&
-        ((nameOfTest !== '' && dateOfTest !== '') ||
-          (doctorIssuedPrescription !== '' && dateOfPrescription !== ''))
+      ((nameOfTest !== '' && dateOfTest !== '') ||
+        (doctorIssuedPrescription !== '' && dateOfPrescription !== ''))
         ? true
         : false;
 
@@ -468,11 +468,11 @@ export const AddRecords: React.FC = (props) => {
       .map((item) => {
         return item !== MedicalRecordInitialValues
           ? {
-            ...item,
-            result: parseFloat(((item && item.result) || 0).toString()),
-            maximum: parseFloat(((item && item.maximum) || 0).toString()),
-            minimum: parseFloat(((item && item.minimum) || 0).toString()),
-          }
+              ...item,
+              result: parseFloat(((item && item.result) || 0).toString()),
+              maximum: parseFloat(((item && item.maximum) || 0).toString()),
+              minimum: parseFloat(((item && item.minimum) || 0).toString()),
+            }
           : undefined;
       })
       .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
@@ -514,7 +514,7 @@ export const AddRecords: React.FC = (props) => {
             const uploadUrlscheck = data.map(({ data }: any) =>
               data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
             );
-            const filtered = uploadUrlscheck.filter(function (el) {
+            const filtered = uploadUrlscheck.filter(function(el) {
               return el != null;
             });
             if (filtered.length > 0) {
@@ -527,8 +527,8 @@ export const AddRecords: React.FC = (props) => {
                   dateOfTest !== ''
                     ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
                     : dateOfPrescription !== ''
-                      ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
-                      : '',
+                    ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+                    : '',
                 recordType: typeOfRecord,
                 referringDoctor: referringDoctor,
                 sourceName: '',
@@ -581,8 +581,8 @@ export const AddRecords: React.FC = (props) => {
             dateOfTest !== ''
               ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
               : dateOfPrescription !== ''
-                ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
-                : '',
+              ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
+              : '',
           recordType: typeOfRecord,
           referringDoctor: referringDoctor,
           sourceName: '',
@@ -616,16 +616,16 @@ export const AddRecords: React.FC = (props) => {
     }
   };
   const handleSaveRecord = () => {
-    addRecordClickTracking('Medical Record')
-    saveRecord()
-  }
+    addRecordClickTracking('Medical Record');
+    saveRecord();
+  };
 
   const formatNumber = (value: string) => {
     if (!isNaN(parseFloat(value))) {
       let number =
         value.indexOf('.') === value.length - 1 ||
-          value.indexOf('0', value.length - 1) === value.length - 1 ||
-          value.indexOf('-') === value.length - 1
+        value.indexOf('0', value.length - 1) === value.length - 1 ||
+        value.indexOf('-') === value.length - 1
           ? value
           : parseFloat(value);
       return number || 0;
@@ -693,31 +693,31 @@ export const AddRecords: React.FC = (props) => {
                     <Grid container spacing={2}>
                       {uploadedDocuments && uploadedDocuments.length > 0
                         ? uploadedDocuments.map((doc: any) => (
-                          <Grid item sm={4} className={classes.gridWidth}>
-                            <div className={classes.uploadedImage}>
-                              <div className={classes.docImg}>
-                                <img src={doc.imageUrl} alt="" />
-                              </div>
-                              <div className={classes.documentDetails}>
-                                <span>{doc.name}</span>
-                                <div className={classes.removeBtn}>
-                                  <AphButton>
-                                    <img
-                                      src={require('images/ic_cross_onorange_small.svg')}
-                                      alt=""
-                                      onClick={() => {
-                                        const docsWithoutSelectedDoc = uploadedDocuments.filter(
-                                          (document: any) => document.name !== doc.name
-                                        );
-                                        setUploadedDocuments(docsWithoutSelectedDoc);
-                                      }}
-                                    />
-                                  </AphButton>
+                            <Grid item sm={4} className={classes.gridWidth}>
+                              <div className={classes.uploadedImage}>
+                                <div className={classes.docImg}>
+                                  <img src={doc.imageUrl} alt="" />
+                                </div>
+                                <div className={classes.documentDetails}>
+                                  <span>{doc.name}</span>
+                                  <div className={classes.removeBtn}>
+                                    <AphButton>
+                                      <img
+                                        src={require('images/ic_cross_onorange_small.svg')}
+                                        alt=""
+                                        onClick={() => {
+                                          const docsWithoutSelectedDoc = uploadedDocuments.filter(
+                                            (document: any) => document.name !== doc.name
+                                          );
+                                          setUploadedDocuments(docsWithoutSelectedDoc);
+                                        }}
+                                      />
+                                    </AphButton>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </Grid>
-                        ))
+                            </Grid>
+                          ))
                         : null}
 
                       <Grid item sm={4} className={classes.gridWidth}>

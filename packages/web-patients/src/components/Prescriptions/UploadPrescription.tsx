@@ -8,7 +8,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Alerts } from 'components/Alerts/Alerts';
-import { uploadPhotoTracking } from "../../webEngageTracking";
+import { uploadPhotoTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -181,7 +181,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 <input
                   type="file"
                   onChange={async (e) => {
-                    uploadPhotoTracking('Gallery')
+                    uploadPhotoTracking('Gallery');
                     const fileNames = e.target.files;
                     if (fileNames && fileNames.length > 0) {
                       const file = fileNames[0] || null;
@@ -240,11 +240,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 {isUploading ? (
                   <CircularProgress />
                 ) : (
-                    <label htmlFor="icon-button-file">
-                      <img src={require('images/ic_gallery.svg')} alt="" />
-                      <p>Choose from gallery</p>
-                    </label>
-                  )}
+                  <label htmlFor="icon-button-file">
+                    <img src={require('images/ic_gallery.svg')} alt="" />
+                    <p>Choose from gallery</p>
+                  </label>
+                )}
               </div>
               {/* <div className={classes.uploadCard}>
                 <img src={require('images/ic_gallery.svg')} alt="" />

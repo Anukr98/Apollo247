@@ -326,37 +326,37 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       case 'medical':
         return type === 'title' &&
           moment().format('DD/MM/YYYY') ===
-          moment(combinedData.data.testDate).format('DD/MM/YYYY') ? (
-            <span>Today , {moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
-          ) : (
-            <span>{moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
-          );
+            moment(combinedData.data.testDate).format('DD/MM/YYYY') ? (
+          <span>Today , {moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
+        ) : (
+          <span>{moment(combinedData.data.testDate).format('DD MMM YYYY')}</span>
+        );
       case 'lab':
         return type === 'title' &&
           moment().format('DD/MM/YYYY') ===
-          moment(combinedData.data.labTestDate).format('DD/MM/YYYY') ? (
-            <span>Today , {moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
-          ) : (
-            <span>{moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
-          );
+            moment(combinedData.data.labTestDate).format('DD/MM/YYYY') ? (
+          <span>Today , {moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
+        ) : (
+          <span>{moment(combinedData.data.labTestDate).format('DD MMM YYYY')}</span>
+        );
       case 'hospital':
         return type === 'title' &&
           moment().format('DD/MM/YYYY') ===
-          moment(combinedData.data.dateOfHospitalization).format('DD/MM/YYYY') ? (
-            <span>
-              Today , {moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}
-            </span>
-          ) : (
-            <span>{moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}</span>
-          );
+            moment(combinedData.data.dateOfHospitalization).format('DD/MM/YYYY') ? (
+          <span>
+            Today , {moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}
+          </span>
+        ) : (
+          <span>{moment(combinedData.data.dateOfHospitalization).format('DD MMM YYYY')}</span>
+        );
       case 'health':
         return type === 'title' &&
           moment().format('DD/MM/YYYY') ===
-          moment(combinedData.data.appointmentDate).format('DD/MM/YYYY') ? (
-            <span>Today , {moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
-          ) : (
-            <span>{moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
-          );
+            moment(combinedData.data.appointmentDate).format('DD/MM/YYYY') ? (
+          <span>Today , {moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
+        ) : (
+          <span>{moment(combinedData.data.appointmentDate).format('DD MMM YYYY')}</span>
+        );
       default:
         return '';
     }
@@ -422,8 +422,8 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-                ? 'calc(100vh - 230px)'
-                : 'calc(100vh - 270px)'
+              ? 'calc(100vh - 230px)'
+              : 'calc(100vh - 270px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -481,7 +481,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-          }`}
+        }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -506,67 +506,67 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                    ? 'calc(100vh - 55px)'
-                    : 'calc(100vh - 245px)'
+                  ? 'calc(100vh - 55px)'
+                  : 'calc(100vh - 245px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                  <div className={classes.medicalRecordsDetails}>
-                    <div className={classes.cbcDetails}>
-                      <div className={classes.reportsDetails}>
-                        <label>Check-up Date</label>
-                        <p>{getFormattedDate(activeData, 'checkUp')}</p>
-                      </div>
-                      <div className={classes.reportsDetails}>
-                        <label>Source</label>
-                        <p>{getSource(activeData)}</p>
-                      </div>
-                      <div className={classes.reportsDetails}>
-                        <label>Referring Doctor</label>
-                        <p>
-                          {!!activeData.data.referringDoctor
-                            ? activeData.data.referringDoctor
-                            : !!activeData.data.signingDocName
-                              ? activeData.data.signingDocName
-                              : '-'}
-                        </p>
-                      </div>
+                <div className={classes.medicalRecordsDetails}>
+                  <div className={classes.cbcDetails}>
+                    <div className={classes.reportsDetails}>
+                      <label>Check-up Date</label>
+                      <p>{getFormattedDate(activeData, 'checkUp')}</p>
                     </div>
-                    {(activeData.data.observations ||
-                      activeData.data.additionalNotes ||
-                      activeData.data.healthCheckSummary) && (
-                        <ToplineReport activeData={activeData} />
-                      )}
-                    {((activeData.data.medicalRecordParameters &&
-                      activeData.data.medicalRecordParameters.length > 0) ||
-                      (activeData.data.labTestResultParameters &&
-                        activeData.data.labTestResultParameters.length > 0)) && (
-                        <DetailedFindings activeData={activeData} />
-                      )}
-                    {activeData.data &&
-                      ((activeData.data.prismFileIds && activeData.data.prismFileIds.length > 0) ||
-                        (activeData.data.hospitalizationPrismFileIds &&
-                          activeData.data.hospitalizationPrismFileIds.length > 0) ||
-                        (activeData.data.healthCheckPrismFileIds &&
-                          activeData.data.healthCheckPrismFileIds.length > 0) ||
-                        (activeData.data.testResultPrismFileIds &&
-                          activeData.data.testResultPrismFileIds.length > 0)) && (
-                        <RenderImage activeData={activeData} />
-                      )}
+                    <div className={classes.reportsDetails}>
+                      <label>Source</label>
+                      <p>{getSource(activeData)}</p>
+                    </div>
+                    <div className={classes.reportsDetails}>
+                      <label>Referring Doctor</label>
+                      <p>
+                        {!!activeData.data.referringDoctor
+                          ? activeData.data.referringDoctor
+                          : !!activeData.data.signingDocName
+                          ? activeData.data.signingDocName
+                          : '-'}
+                      </p>
+                    </div>
                   </div>
-                )}
+                  {(activeData.data.observations ||
+                    activeData.data.additionalNotes ||
+                    activeData.data.healthCheckSummary) && (
+                    <ToplineReport activeData={activeData} />
+                  )}
+                  {((activeData.data.medicalRecordParameters &&
+                    activeData.data.medicalRecordParameters.length > 0) ||
+                    (activeData.data.labTestResultParameters &&
+                      activeData.data.labTestResultParameters.length > 0)) && (
+                    <DetailedFindings activeData={activeData} />
+                  )}
+                  {activeData.data &&
+                    ((activeData.data.prismFileIds && activeData.data.prismFileIds.length > 0) ||
+                      (activeData.data.hospitalizationPrismFileIds &&
+                        activeData.data.hospitalizationPrismFileIds.length > 0) ||
+                      (activeData.data.healthCheckPrismFileIds &&
+                        activeData.data.healthCheckPrismFileIds.length > 0) ||
+                      (activeData.data.testResultPrismFileIds &&
+                        activeData.data.testResultPrismFileIds.length > 0)) && (
+                      <RenderImage activeData={activeData} />
+                    )}
+                </div>
+              )}
             </Scrollbars>
           </>
         ) : (
-            <div className={classes.noRecordFoundWrapper}>
-              <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy in
-                one place!
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>
+              You don’t have any records with us right now. Add a record to keep everything handy in
+              one place!
             </p>
-            </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   );

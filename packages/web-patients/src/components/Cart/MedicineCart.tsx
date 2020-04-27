@@ -40,7 +40,7 @@ import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { uploadPrescriptionTracking } from "../../webEngageTracking";
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -548,8 +548,8 @@ export const MedicineCart: React.FC = (props) => {
     deliveryMode === 'HOME'
       ? deliveryAddressId === ''
       : deliveryMode === 'PICKUP'
-        ? storeAddressId === ''
-        : false;
+      ? storeAddressId === ''
+      : false;
 
   const uploadPrescriptionRequired = cartItems.findIndex(
     (v) => Number(v.is_prescription_required) === 1
@@ -691,10 +691,10 @@ export const MedicineCart: React.FC = (props) => {
                 item.fileType == 'jpg'
                   ? UPLOAD_FILE_TYPES.JPEG
                   : item.fileType == 'png'
-                    ? UPLOAD_FILE_TYPES.PNG
-                    : item.fileType == 'pdf'
-                      ? UPLOAD_FILE_TYPES.PDF
-                      : UPLOAD_FILE_TYPES.JPEG,
+                  ? UPLOAD_FILE_TYPES.PNG
+                  : item.fileType == 'pdf'
+                  ? UPLOAD_FILE_TYPES.PDF
+                  : UPLOAD_FILE_TYPES.JPEG,
               patientId: currentPatient && currentPatient.id,
             },
           },
@@ -797,17 +797,14 @@ export const MedicineCart: React.FC = (props) => {
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
 
-  const patient = useCurrentPatient()
-  
-  const age =
-    patient && patient.dateOfBirth
-      ? moment().diff(patient.dateOfBirth, 'years')
-      : null;
+  const patient = useCurrentPatient();
+
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
 
   const handleUploadPrescription = () => {
-    uploadPrescriptionTracking({ ...patient, age })
-    setIsUploadPreDialogOpen(true)
-  }
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
 
   const isChennaiZipCode = (zipCodeInt: Number) => {
     return (
@@ -846,80 +843,80 @@ export const MedicineCart: React.FC = (props) => {
               </div>
             )}
             {cartItems.length > 0 ||
-              (prescriptions && prescriptions.length > 0) ||
-              (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                <>
-                  {!nonCartFlow && <MedicineListingCard />}
-                  {uploadPrescriptionRequired >= 0 ||
-                    (prescriptions && prescriptions.length > 0) ||
+            (prescriptions && prescriptions.length > 0) ||
+            (ePrescriptionData && ePrescriptionData.length > 0) ? (
+              <>
+                {!nonCartFlow && <MedicineListingCard />}
+                {uploadPrescriptionRequired >= 0 ||
+                (prescriptions && prescriptions.length > 0) ||
+                (ePrescriptionData && ePrescriptionData.length > 0) ? (
+                  <>
+                    <div className={classes.sectionHeader}>Upload Prescription</div>
+                    {(prescriptions && prescriptions.length > 0) ||
                     (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                      <>
-                        <div className={classes.sectionHeader}>Upload Prescription</div>
-                        {(prescriptions && prescriptions.length > 0) ||
-                          (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                            <div className={classes.uploadedPreList}>
-                              {prescriptions &&
-                                prescriptions.length > 0 &&
-                                prescriptions.map((prescriptionDetails, index) => {
-                                  const fileName = prescriptionDetails.name;
-                                  const imageUrl = prescriptionDetails.imageUrl;
-                                  return (
-                                    <PrescriptionCard
-                                      fileName={fileName || ''}
-                                      imageUrl={imageUrl || ''}
-                                      removePrescription={(fileName: string) =>
-                                        removeImagePrescription(fileName)
-                                      }
-                                      key={index}
-                                    />
-                                  );
-                                })}
-                              {ePrescriptionData &&
-                                ePrescriptionData.length > 0 &&
-                                ePrescriptionData.map((prescription: EPrescription) => (
-                                  <EPrescriptionCard
-                                    prescription={prescription}
-                                    removePrescription={removePrescription}
-                                  />
-                                ))}
-                              <div className={classes.uploadMore}>
-                                <AphButton
-                                  disabled={uploadingFiles || mutationLoading}
-                                  onClick={handleUploadPrescription}
-                                >
-                                  Upload More
+                      <div className={classes.uploadedPreList}>
+                        {prescriptions &&
+                          prescriptions.length > 0 &&
+                          prescriptions.map((prescriptionDetails, index) => {
+                            const fileName = prescriptionDetails.name;
+                            const imageUrl = prescriptionDetails.imageUrl;
+                            return (
+                              <PrescriptionCard
+                                fileName={fileName || ''}
+                                imageUrl={imageUrl || ''}
+                                removePrescription={(fileName: string) =>
+                                  removeImagePrescription(fileName)
+                                }
+                                key={index}
+                              />
+                            );
+                          })}
+                        {ePrescriptionData &&
+                          ePrescriptionData.length > 0 &&
+                          ePrescriptionData.map((prescription: EPrescription) => (
+                            <EPrescriptionCard
+                              prescription={prescription}
+                              removePrescription={removePrescription}
+                            />
+                          ))}
+                        <div className={classes.uploadMore}>
+                          <AphButton
+                            disabled={uploadingFiles || mutationLoading}
+                            onClick={handleUploadPrescription}
+                          >
+                            Upload More
                           </AphButton>
-                              </div>
-                            </div>
-                          ) : uploadPrescriptionRequired >= 0 ? (
-                            <div className={classes.uploadPrescription}>
-                              <div className={classes.prescriptionRow}>
-                                <span>
-                                  Items in your cart marked with ‘Rx’ need prescriptions to complete your
-                                  purchase. Please upload the necessary prescriptions
+                        </div>
+                      </div>
+                    ) : uploadPrescriptionRequired >= 0 ? (
+                      <div className={classes.uploadPrescription}>
+                        <div className={classes.prescriptionRow}>
+                          <span>
+                            Items in your cart marked with ‘Rx’ need prescriptions to complete your
+                            purchase. Please upload the necessary prescriptions
                           </span>
-                                <AphButton
-                                  onClick={handleUploadPrescription}
-                                  className={classes.presUploadBtn}
-                                >
-                                  Upload Prescription
+                          <AphButton
+                            onClick={handleUploadPrescription}
+                            className={classes.presUploadBtn}
+                          >
+                            Upload Prescription
                           </AphButton>
-                              </div>
-                              <div className={classes.consultDoctor}>
-                                <span>Don’t have a prescription? Don’t worry!</span>
-                                <Link
-                                  to={clientRoutes.doctorsLanding()}
-                                  className={classes.consultDoctoLink}
-                                >
-                                  Consult A Doctor
+                        </div>
+                        <div className={classes.consultDoctor}>
+                          <span>Don’t have a prescription? Don’t worry!</span>
+                          <Link
+                            to={clientRoutes.doctorsLanding()}
+                            className={classes.consultDoctoLink}
+                          >
+                            Consult A Doctor
                           </Link>
-                              </div>
-                            </div>
-                          ) : null}
-                      </>
+                        </div>
+                      </div>
                     ) : null}
-                </>
-              ) : null}
+                  </>
+                ) : null}
+              </>
+            ) : null}
           </div>
         </Scrollbars>
       </div>
@@ -1087,8 +1084,8 @@ export const MedicineCart: React.FC = (props) => {
             ) : uploadingFiles ? (
               <CircularProgress size={22} color="secondary" />
             ) : (
-                  'Submit Prescription'
-                )}
+              'Submit Prescription'
+            )}
           </AphButton>
         </div>
       </div>
@@ -1163,8 +1160,8 @@ export const MedicineCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                  `Pay - RS. ${totalAmount}`
-                )}
+                `Pay - RS. ${totalAmount}`
+              )}
             </AphButton>
           </div>
         </div>

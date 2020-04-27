@@ -20,7 +20,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
-import { uploadPrescriptionTracking } from "../../webEngageTracking";
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 
@@ -420,16 +420,13 @@ export const MedicineLanding: React.FC = (props) => {
     },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
-  const patient = useCurrentPatient()
-  const age =
-    patient && patient.dateOfBirth
-      ? moment().diff(patient.dateOfBirth, 'years')
-      : null;
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
 
   const handleUploadPrescription = () => {
-    uploadPrescriptionTracking({ ...patient, age })
-    setIsUploadPreDialogOpen(true)
-  }
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
 
   return (
     <div className={classes.root}>
@@ -515,8 +512,8 @@ export const MedicineLanding: React.FC = (props) => {
                           </div>
                         </>
                       ) : (
-                          item.key
-                        )}
+                        item.key
+                      )}
                     </div>
                     {item.value}
                   </div>
