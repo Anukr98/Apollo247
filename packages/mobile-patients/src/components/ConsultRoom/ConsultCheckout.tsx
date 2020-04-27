@@ -186,7 +186,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log(JSON.stringify(data))
+        console.log(JSON.stringify(data));
         const apptmt = g(data, 'data', 'bookAppointment', 'appointment');
 
         !item.bankCode
