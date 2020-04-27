@@ -1500,13 +1500,13 @@ export const MedicinePrescription: React.FC = () => {
       return slot.selected !== false;
     });
     const medicineCustomDosage =
-      customDosageMorning +
+      customDosageMorning.trim() +
       '-' +
-      customDosageNoon +
+      customDosageNoon.trim() +
       '-' +
-      customDosageEvening +
+      customDosageEvening.trim() +
       '-' +
-      customDosageNight;
+      customDosageNight.trim();
     if (!isCustomform && tabletsCount === '') {
       setErrorState({
         ...errorState,
@@ -2098,7 +2098,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2122,7 +2123,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2146,7 +2148,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2170,7 +2173,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2234,7 +2238,8 @@ export const MedicinePrescription: React.FC = () => {
                                     if (
                                       isNaN(parseInt(e.key, 10)) &&
                                       e.key !== '/' &&
-                                      e.key !== '.'
+                                      e.key !== '.' &&
+                                      e.key !== ' '
                                     )
                                       e.preventDefault();
                                   }}
@@ -2361,6 +2366,9 @@ export const MedicinePrescription: React.FC = () => {
                             value={consumptionDuration}
                             onChange={(event: any) => {
                               setConsumptionDuration(event.target.value);
+                            }}
+                            onKeyPress={(e) => {
+                              if (isNaN(parseInt(e.key, 10))) e.preventDefault();
                             }}
                             //error={errorState.durationErr}
                           />
@@ -2622,7 +2630,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2646,7 +2655,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2670,7 +2680,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2694,7 +2705,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2758,7 +2770,8 @@ export const MedicinePrescription: React.FC = () => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
-                                        e.key !== '.'
+                                        e.key !== '.' &&
+                                        e.key !== ' '
                                       )
                                         e.preventDefault();
                                     }}
@@ -2884,6 +2897,9 @@ export const MedicinePrescription: React.FC = () => {
                               value={consumptionDuration}
                               onChange={(event: any) => {
                                 setConsumptionDuration(event.target.value);
+                              }}
+                              onKeyPress={(e) => {
+                                if (isNaN(parseInt(e.key, 10))) e.preventDefault();
                               }}
                               //error={errorState.durationErr}
                             />
