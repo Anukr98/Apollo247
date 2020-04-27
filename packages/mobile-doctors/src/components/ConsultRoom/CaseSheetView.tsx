@@ -415,7 +415,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             : '',
           uhid: patientDetails.uhid,
           appId: displayId,
-          date: moment(Appintmentdatetimeconsultpage).format('DD/MM/YYYY'),
+          date: moment(
+            g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate') ||
+              Appintmentdatetimeconsultpage
+          ).format('DD/MM/YYYY'),
           type: g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType'),
         },
         complaints: symptonsData,

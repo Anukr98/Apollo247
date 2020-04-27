@@ -80,6 +80,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   rescheduleCount: number;
   rescheduleCountByDoctor: number;
   appointmentType: APPOINTMENT_TYPE;
+  sdConsultationDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty {
@@ -255,6 +256,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   status: STATUS;
   caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
   appointmentType: APPOINTMENT_TYPE;
+  sdConsultationDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile {

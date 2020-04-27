@@ -33,6 +33,7 @@ export interface modifyCaseSheet_modifyCaseSheet_appointment {
   followUpParentId: string | null;
   isTransfer: number;
   transferParentId: string | null;
+  sdConsultationDate: any | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_createdDoctorProfile_specialty {
