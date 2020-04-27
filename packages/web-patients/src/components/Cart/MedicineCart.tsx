@@ -723,7 +723,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -788,11 +788,7 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow &&
-      uploadPrescriptionRequired === -1 &&
-      cartItems &&
-      cartItems.length > 0 &&
-      deliveryTime) ||
+    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -1071,9 +1067,14 @@ export const MedicineCart: React.FC = (props) => {
             }}
             color="primary"
             fullWidth
-            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
+            disabled={
+              disableSubmit || !isPaymentButtonEnable || uploadingFiles || deliveryTime.length === 0
+            }
             className={
-              disableSubmit || !isPaymentButtonEnable || mutationLoading
+              disableSubmit ||
+              !isPaymentButtonEnable ||
+              mutationLoading ||
+              deliveryTime.length === 0
                 ? classes.buttonDisable
                 : ''
             }
