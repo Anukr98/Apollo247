@@ -393,9 +393,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
     setPastList(g(caseSheet, 'pastAppointments') || null);
     // setAllergiesData(g(caseSheet, 'patientDetails', 'allergies') || null);
-    setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
-    setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
-    setFamilyValues(getFamilyHistoryText(g(caseSheet, 'patientDetails', 'familyHistory') || null));
+    setLifeStyleData(lifeStyleData || g(caseSheet, 'patientDetails', 'lifeStyle') || null);
+    setMedicalHistory(
+      medicalHistory || g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null
+    );
+    setFamilyValues(
+      familyValues || getFamilyHistoryText(g(caseSheet, 'patientDetails', 'familyHistory') || null)
+    );
     setPatientDetails(g(caseSheet, 'patientDetails') || null);
     setHealthWalletArrayData(g(caseSheet, 'patientDetails', 'healthVault') || null);
     setTests(
