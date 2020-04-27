@@ -49,10 +49,14 @@ export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
     <View style={[styles.container, props.containerStyle]}>
       <View style={styles.labelView}>
         <View>
-          <Text style={styles.headingText}>{props.heading}</Text>
+          <Text style={[styles.headingText, props.headingStyle]}>{props.heading}</Text>
         </View>
         <View>
-          <TouchableOpacity activeOpacity={1} style={styles.arrowview} onPress={() => props.onPress(!props.collapse)}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.arrowview}
+            onPress={() => props.onPress(!props.collapse)}
+          >
             {props.collapse ? <Up /> : <Down />}
           </TouchableOpacity>
         </View>
