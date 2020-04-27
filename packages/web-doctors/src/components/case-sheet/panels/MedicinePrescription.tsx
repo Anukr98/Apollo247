@@ -1517,10 +1517,10 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning === '' ||
-        customDosageNoon === '' ||
-        customDosageEvening === '' ||
-        customDosageNight === '')
+      (customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
+        customDosageNight.trim() === '')
     ) {
       setErrorState({
         ...errorState,

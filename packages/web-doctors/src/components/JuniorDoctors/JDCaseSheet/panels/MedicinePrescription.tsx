@@ -1485,9 +1485,9 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning.trim() === '' ||
-        customDosageNoon.trim() === '' ||
-        customDosageEvening.trim() === '' ||
+      (customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
         customDosageNight.trim() === '')
     ) {
       setErrorState({
