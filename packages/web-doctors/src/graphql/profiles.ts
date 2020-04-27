@@ -756,6 +756,7 @@ export const GET_CASESHEET = gql`
         sentToPatient
         appointment {
           id
+          sdConsultationDate
           appointmentType
           appointmentDateTime
           appointmentDocuments {
@@ -1056,6 +1057,7 @@ export const MODIFY_CASESHEET = gql`
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
       appointment {
         id
+        sdConsultationDate
         appointmentDateTime
         appointmentDocuments {
           documentPath
