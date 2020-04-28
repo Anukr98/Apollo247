@@ -2,8 +2,8 @@ import React from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
-import { AphButton } from '@aph/web-ui-components';
+// import { clientRoutes } from 'helpers/clientRoutes';
+// import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
