@@ -169,14 +169,14 @@ export const WeAreHelpYou: React.FC = (props) => {
                   <span>Check your risk level</span>
                 </div>
               </Grid>
-              <Grid item sm={4} xs={12}>
+              {/* <Grid item sm={4} xs={12}>
                 <div className={classes.serviceCard}>
                   <span>
                     <img src={require('images/ic_psychologist.svg')} alt="" />
                   </span>
                   <span>Take a mental health scan</span>
                 </div>
-              </Grid>
+              </Grid> */}
               <Grid item sm={4} xs={12}>
                 <div className={classes.serviceCard}>
                   <span>
