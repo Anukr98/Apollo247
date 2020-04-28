@@ -386,6 +386,7 @@ export const MedicineDetails: React.FC = (props) => {
       )
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
+        data && data.productdp && data.productdp.length && window.gep('Pharmacy', 'Product Views', data.productdp[0].name)
       })
       .catch((e) => {
         alert(e);

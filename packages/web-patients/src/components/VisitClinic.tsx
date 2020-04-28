@@ -484,6 +484,19 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       });
   };
   const disableCoupon = disableSubmit || mutationLoading || isDialogOpen || !timeSelected;
+  const getSpeciality = () => {
+    let speciality = '';
+    if (
+      doctorDetails &&
+      doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.specialty &&
+      doctorDetails.getDoctorDetailsById.specialty.name
+    ) {
+      speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    }
+    return speciality
+  }
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
@@ -567,13 +580,23 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           </Grid>
           <CouponCode
             disableSubmit={disableCoupon}
-            setCouponCode={setCouponCode}
+            setCouponCode={()=>{
+              const speciality = getSpeciality()
+              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
+              window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
+              setCouponCode(couponCode)
+            }}
             subtotal={physicalConsultationFees}
             doctorId={doctorId}
             revisedAmount={revisedAmount}
             setRevisedAmount={setRevisedAmount}
             appointmentDateTime={appointmentDateTime}
             appointmentType={AppointmentType.PHYSICAL}
+            removeCouponCode={()=>{
+              const speciality = getSpeciality()
+              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
+              window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
+            }}
           />
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
@@ -591,20 +614,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           color="primary"
           disabled={disableSubmit || mutationLoading || isDialogOpen || !timeSelected}
           onClick={(e) => {
-            /**Gtm code start start */
-            let speciality = '';
-
-            if (
-              doctorDetails &&
-              doctorDetails.getDoctorDetailsById &&
-              doctorDetails.getDoctorDetailsById.specialty &&
-              doctorDetails.getDoctorDetailsById.specialty.name
-            ) {
-              speciality = doctorDetails.getDoctorDetailsById.specialty.name;
-            }
-            window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
-            /**Gtm code start end */
-
             setMutationLoading(true);
             // console.log(
             //   new Date(`${apiDateFormat} ${timeSelected.padStart(5, '0')}:00`).toISOString(),

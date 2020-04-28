@@ -224,6 +224,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             mou: hotSeller.mou,
                             quantity: 1,
                           };
+                          window.gep('Pharmacy', 'Add to Cart', hotSeller.name, hotSeller.price)
                           const index = cartItems.findIndex((item) => item.id === cartItem.id);
                           if (index >= 0) {
                             updateCartItem && updateCartItem(cartItem);
@@ -237,6 +238,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     ) : (
                       <AphButton
                         onClick={() => {
+                            window.gep('Pharmacy', 'Remove From Cart', hotSeller.name, hotSeller.price)
                           removeCartItem && removeCartItem(hotSeller.id);
                         }}
                       >

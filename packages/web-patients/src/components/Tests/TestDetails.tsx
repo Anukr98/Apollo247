@@ -650,6 +650,7 @@ export const TestDetails: React.FC = (props) => {
                               thumbnail: '',
                               collectionMethod: testDetails.collectionType!,
                             });
+                            itemIndexInCart(testDetails) === -1 && window.gep('Pharmacy', 'Add to Cart', testDetails.itemName, testDetails.rate)
                           setAddMutationLoading(false);
                         }}
                       >

@@ -269,6 +269,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                               alt="Remove Item"
                               title="Remove item from Cart"
                               onClick={() => {
+                                window.gep('Pharmacy', 'Remove From Cart', medicine.name, medicine.price)
                                 removeCartItem && removeCartItem(medicine.id);
                               }}
                             />
@@ -298,6 +299,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                 mou: medicine.mou,
                                 quantity: selectedPackedQty,
                               };
+                              window.gep('Pharmacy', 'Add to Cart', medicine.name, medicine.price)
                               addCartItem && addCartItem(cartItem);
                             }}
                             alt="Add Item"
