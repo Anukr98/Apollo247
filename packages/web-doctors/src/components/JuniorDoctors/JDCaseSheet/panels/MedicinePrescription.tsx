@@ -2073,7 +2073,9 @@ export const MedicinePrescription: React.FC = () => {
                                     setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                   }}
                                 >
+                                  <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
                                   {generateFrequency}
+                                  </Scrollbars>
                                 </AphSelect>
                               </Grid>
                             </Grid>
@@ -2217,7 +2219,9 @@ export const MedicinePrescription: React.FC = () => {
                               setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
                             }}
                           >
-                            {roaOptionHtml}
+                            <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
+                             {roaOptionHtml}
+                            </Scrollbars>
                           </AphSelect>
                         </Grid>
                       </Grid>
