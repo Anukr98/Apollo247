@@ -538,7 +538,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               ? medicineDosageMapping[2]
               : currItem == MEDICINE_TIMINGS.NIGHT
               ? medicineDosageMapping[3]
-              : 1),
+              : (medicineDosage && Number(medicineDosage)) || 1),
           0
         ) || 1;
 
