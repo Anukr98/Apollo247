@@ -337,7 +337,9 @@ export const Diagnosis: React.FC = () => {
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
-        <div className={classes.sectionTitle}>Diagnosed Medical Condition</div>
+        <div className={classes.sectionTitle}>
+          Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)
+        </div>
         <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&

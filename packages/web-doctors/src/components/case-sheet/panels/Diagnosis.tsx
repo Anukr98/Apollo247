@@ -340,7 +340,7 @@ export const Diagnosis: React.FC = () => {
   return (
     <Typography component="div" className={classes.mainContainer}>
       <Typography component="h4" variant="h4">
-        Diagnosed Medical Condition
+        Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)
       </Typography>
       <Typography component="div">
         {selectedValues !== null &&
