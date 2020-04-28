@@ -540,7 +540,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           ) : null}
           {!loader && diagnosis && diagnosis.length > 0 ? (
             <>
-              <div className={classes.sectionHeader}>Provisional Diagnosis</div>
+              <div className={classes.sectionHeader}>Diagnosis</div>
               <div className={classes.diagnosis}>
                 {diagnosis.map((diagnos) => (
                   <div className={classes.infoRow}>
