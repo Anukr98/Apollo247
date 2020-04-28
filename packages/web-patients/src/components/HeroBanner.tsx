@@ -16,8 +16,10 @@ import { MascotWithMessage } from './MascotWithMessage';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     heroBanner: {
-      backgroundColor: '#f7f8f5',
+      backgroundColor: '#fff',
       position: 'relative',
+      overflow: 'hidden',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
       },
@@ -42,9 +44,10 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         width: 400,
         padding: 40,
+        paddingTop: 60,
       },
       [theme.breakpoints.up(900)]: {
-        minHeight: 420,
+        minHeight: 400,
       },
       '& p': {
         fontSize: 17,
@@ -80,7 +83,7 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 'calc(100% - 400px)',
         position: 'absolute',
         right: 0,
-        bottom: -5,
+        bottom: 0,
       },
       '& img': {
         maxWidth: '100%',
@@ -152,7 +155,7 @@ const useStyles = makeStyles((theme: Theme) => {
     desktopBanner: {
       display: 'none',
       [theme.breakpoints.up('sm')]: {
-        display: 'block',
+        display: 'inline-block',
       },
     },
     mobileBanner: {
@@ -189,7 +192,6 @@ export const HeroBanner: React.FC = () => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
-  const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
 
   return (
@@ -203,7 +205,7 @@ export const HeroBanner: React.FC = () => {
           src={require('images/img_doctors_xxhdpi.png')}
           alt=""
         />
-        <img className={classes.desktopBanner} src={require('images/img-doctors@2x.png')} alt="" />
+        <img className={classes.desktopBanner} src={require('images/img-doctors@1x.png')} alt="" />
       </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
@@ -250,31 +252,7 @@ export const HeroBanner: React.FC = () => {
         )}
         <p>How can we help you today? :)</p>
         <OurServices />
-        <Link
-          to={'/covid19'}
-          // onClick={() => {
-          //   // setIscoronaDialogOpen(true);
-          // }}
-          className={classes.callEmergency}
-          title={'Call 08047192606 in emergency'}
-        >
-          <span>CORONAVIRUS? Talk to our expert.</span>
-          <span className={classes.callImg}>
-            <img src={require('images/ic-emergency.svg')} alt="" />
-          </span>
-        </Link>
       </div>
-      {/* <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
-        <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle></AphDialogTitle>
-        <div className={classes.expertBox}>
-          <h2>CORONAVIRUS? Talk to our expert.</h2>
-          <a href="tel:08047192606">Call 08047192606 in emergency</a>
-          <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
-            Ok, Got It
-          </AphButton>
-        </div>
-      </AphDialog> */}
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Add New Member</AphDialogTitle>
