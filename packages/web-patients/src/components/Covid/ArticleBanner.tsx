@@ -52,6 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     subcribeBtn: {
+      visibility: 'hidden',
       marginLeft: 'auto',
       backgroundColor: '#fff',
       color: '#fc9916',
@@ -116,7 +117,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div>
         </Link>
-        {/* <AphButton className={classes.subcribeBtn}>Subscribe</AphButton> */}
+        <AphButton className={classes.subcribeBtn}>Subscribe</AphButton>
       </div>
       <div className={classes.content}>
         <h2>{title}</h2>

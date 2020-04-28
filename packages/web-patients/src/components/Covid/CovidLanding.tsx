@@ -15,6 +15,7 @@ import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -26,11 +27,13 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      backgroundColor: '#f7f8f5',
-      paddingBottom: 20,
+      marginTop: -72,
       [theme.breakpoints.up('sm')]: {
+        paddingBottom: 20,
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',  
         borderRadius: '0 0 10px 10px',
+        marginTop: 0,
       },
     },
     progressLoader: {
@@ -75,6 +78,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       alignItems: 'flex-start',
+      [theme.breakpoints.up('sm')]: {
+        padding: 20,
+      },
     },
     summaryContent: {
       margin: 0,
@@ -112,6 +118,10 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 16px',
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
       display: 'inherit',
+      [theme.breakpoints.up('sm')]: {
+        padding: '20px 0',
+        margin: '0 20px',
+      },      
     },
     bottomActions: {
       textAlign: 'center',
@@ -268,6 +278,7 @@ export const CovidLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };
