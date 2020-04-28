@@ -141,6 +141,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const {
     removeCartItem,
     cartItems,
+    setCartItems,
     setAddresses,
     addresses,
     setDeliveryAddressId,
@@ -384,10 +385,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const errorAlert = () => {
+  const errorAlert = (description?: string) => {
     showAphAlert!({
-      title: 'Uh oh! :(',
-      description: 'Unable to fetch test details.',
+      title: string.common.uhOh,
+      description: description || 'Unable to fetch test details.',
     });
   };
 
@@ -665,7 +666,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
                 if (tests.length) {
                   showAphAlert!({
-                    title: 'Uh oh! :(',
+                    title: string.common.uhOh,
                     description: `${(currentPatient && currentPatient.firstName) ||
                       'Hi'}, since your cart includes tests (${tests
                       .map((item) => item.name)
@@ -1257,10 +1258,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const onPressProceedToPay = () => {
-    postwebEngageProceedToPayEvent();
+  const getDiagnosticsAvailability = (cartItems: DiagnosticsCartItem[]) => {
+    const itemIds = cartItems.map((item) => item.id).toString();
+    return client.query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
+      query: SEARCH_DIAGNOSTICS_BY_ID,
+      variables: { itemIds },
+      fetchPolicy: 'no-cache',
+    });
+  };
+
+  const moveForward = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+      setLoading!(false);
       props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else {
       if (prescriptions.length > 0) {
@@ -1271,6 +1281,46 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       }
     }
   };
+
+  const removeDisabledCartItems = (disabledCartItemIds: string[]) => {
+    hideAphAlert!();
+    setCartItems!(
+      cartItems.filter((cItem) => !disabledCartItemIds.find((dItem) => dItem == cItem.id))
+    );
+  };
+
+  const onPressProceedToPay = () => {
+    postwebEngageProceedToPayEvent();
+    setLoading!(true);
+    getDiagnosticsAvailability(cartItems)
+      .then(({ data }) => {
+        const diagnosticItems = g(data, 'searchDiagnosticsById', 'diagnostics') || [];
+        const disabledCartItems = cartItems.filter(
+          (cartItem) => !diagnosticItems.find((d) => `${d!.itemId}` == cartItem.id)
+        );
+        if (disabledCartItems.length) {
+          const disabledCartItemNames = disabledCartItems.map((item) => item.name).toString();
+          const disabledCartItemIds = disabledCartItems.map((item) => item.id);
+          setLoading!(false);
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: string.diagnostics.disabledDiagnosticsMsg.replace(
+              '{{testNames}}',
+              disabledCartItemNames
+            ),
+            onPressOk: () => removeDisabledCartItems(disabledCartItemIds),
+          });
+        } else {
+          moveForward();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
+        setLoading!(false);
+        errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+      });
+  };
+
   // const onPressProceedToPay = () => {
   //   const prescriptions = physicalPrescriptions;
   //   console.log(ePrescriptions, 'ePrescriptions');

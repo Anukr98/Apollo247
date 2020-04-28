@@ -3,6 +3,7 @@
     "add": "Add",
     "availableNow": "AVAILABLE NOW",
     "okay": "okay!",
+    "uhOh": "Uh oh.. :(",
     "best_doctor_text": "Here are our best ",
     "all_consults": "All Consults",
     "distance": "Distance",
@@ -232,7 +233,9 @@
   },
   "diagnostics": {
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
-    "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode."
+    "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
+    "disabledDiagnosticsMsg": "Sorry, we can not process {{testNames}} now. This will be removed from your cart.",
+    "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later."
   },
   "orders": {
     "urOrders": "MY ORDERS",
