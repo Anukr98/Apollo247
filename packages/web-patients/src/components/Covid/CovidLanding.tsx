@@ -7,7 +7,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CircularProgress } from '@material-ui/core';
-import { isEmpty } from 'lodash';
+import _isEmpty from 'lodash/isEmpty';
 import { Header } from 'components/Header';
 import { Banner } from 'components/Covid/Banner';
 import { AphButton } from '@aph/web-ui-components';
@@ -167,9 +167,9 @@ export const CovidLanding: React.FC = (props) => {
   useEffect(() => {
     fetch(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
-      const sortedStaySafeData = !isEmpty(body['stay-safe']) && body['stay-safe'];
-      const sortedCovidSymptomsData = !isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
-      const sortedGoingAheadData = !isEmpty(body['going-ahead']) && body['going-ahead'];
+      const sortedStaySafeData = !_isEmpty(body['stay-safe']) && body['stay-safe'];
+      const sortedCovidSymptomsData = !_isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
+      const sortedGoingAheadData = !_isEmpty(body['going-ahead']) && body['going-ahead'];
 
       let covidObj: CovidContentInterface = {};
       covidObj['stay-safe'] = sortedStaySafeData;
