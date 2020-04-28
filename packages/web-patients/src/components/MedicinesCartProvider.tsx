@@ -2,10 +2,6 @@
 
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
-import {
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Prescription,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
-} from 'graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 
 // import axios from 'axios';
@@ -168,7 +164,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
       : []
   );
   const [uploadedEPrescription, setUploadedEPrescription] = React.useState<boolean | null>(false);
-  const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>([]);
+  const [cartItems, setCartItems] = useState<MedicineCartContextProps['cartItems']>(
+    localStorage.getItem('cartItems') ? JSON.parse(localStorage.getItem('cartItems') || '') : []
+  );
   const [isCartUpdated, setIsCartUpdated] = useState<boolean>(false);
 
   const [itemsStr, setItemsStr] = useState<MedicineCartContextProps['itemsStr']>(
@@ -177,18 +175,21 @@ export const MedicinesCartProvider: React.FC = (props) => {
   useEffect(() => {
     if (isCartUpdated) {
       const items = JSON.stringify(cartItems);
-      localStorage.setItem(`${currentPatient && currentPatient.id}`, items);
+      if (currentPatient && currentPatient.id) {
+        localStorage.setItem(`${currentPatient.id}`, items);
+        localStorage.removeItem('cartItems');
+      } else {
+        localStorage.setItem('cartItems', items);
+      }
       setItemsStr(items);
       setIsCartUpdated(false);
     }
   }, [cartItems, isCartUpdated]);
+
   useEffect(() => {
     if (currentPatient && currentPatient.id && currentPatient.id.length > 0) {
-      setCartItems(
-        localStorage.getItem(`${currentPatient.id}`)
-          ? JSON.parse(localStorage.getItem(`${currentPatient.id}`) || '')
-          : []
-      );
+      const storageCartItems = localStorage.getItem(`${currentPatient.id}`);
+      setCartItems(storageCartItems ? JSON.parse(storageCartItems || '') : []);
     }
   }, [currentPatient]);
 

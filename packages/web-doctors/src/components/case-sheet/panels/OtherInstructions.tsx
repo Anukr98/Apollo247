@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Typography, Chip, Theme, Grid } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { InputBase, Button } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
+import { Button } from '@material-ui/core';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GetDoctorFavouriteAdviceList,
@@ -19,34 +19,37 @@ const useStyles = makeStyles((theme: Theme) =>
       height: 250,
       flexGrow: 1,
     },
-    textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
+    textFieldWrapper: {
+      position: 'relative',
+      marginTop: 6,
+      '& button': {
+        position: 'absolute',
+        right: 0,
+        top: 4,
+        minWidth: 'auto',
+        margin: 0,
+        padding: 10,
+        '& img': {
+          margin: 0,
         },
       },
-    },
-    textFieldWrapper: {
-      border: 'solid 1px #30c1a3',
-      borderRadius: 10,
-      width: '100%',
-      padding: 16,
-      color: '#01475b',
-      fontSize: 14,
-      fontWeight: 500,
-      position: 'relative',
-      paddingRight: 48,
+      '& textarea': {
+        paddingRight: 50,
+      },
     },
     chatSubmitBtn: {
-      position: 'absolute',
-      top: '50%',
-      marginTop: -18,
-      right: 10,
-      minWidth: 'auto',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
       padding: 0,
+      marginTop: 12,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
       '& img': {
-        maxWidth: 36,
+        marginRight: 8,
       },
     },
     contentContainer: {
@@ -90,13 +93,19 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '100%',
         textAlign: 'left',
         whiteSpace: 'normal',
-        padding: '10px 50px 10px 10px',
+        padding: '10px 80px 10px 10px',
       },
-      '& img': {
-        position: 'absolute',
-        right: 10,
-        top: 10,
-      },
+    },
+    editImg: {
+      position: 'absolute',
+      right: 60,
+      top: 10,
+      cursor: 'pointer',
+    },
+    deleteImg: {
+      position: 'absolute',
+      right: 10,
+      top: 10,
     },
     othersBtnfavContainer: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
@@ -172,8 +181,9 @@ export const OtherInstructions: React.FC = () => {
   );
   const client = useApolloClient();
   const [otherInstruct, setOtherInstruct] = useState('');
+  const [isEditing, setIsEditing] = useState<any>(null);
   const { caseSheetEdit } = useContext(CaseSheetContext);
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState(0);
   const [adviceList, setAdviceList] = useState<
     (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[] | null
   >([]);
@@ -204,6 +214,91 @@ export const OtherInstructions: React.FC = () => {
       });
   }, []);
 
+  const renderChipWithEditableField = (item: any, idx: number) => {
+    if (isEditing === idx) {
+      if (showAddInputText) {
+        setShowAddInputText(false);
+        setOtherInstruct(item.instruction);
+      }
+
+      return (
+        <div
+          className={classes.textFieldWrapper}
+          key={idx}
+          style={{
+            marginBottom: 12,
+          }}
+        >
+          <AphTextField
+            autoFocus
+            fullWidth
+            multiline
+            placeholder="Enter instruction here.."
+            value={otherInstruct || item.instruction}
+            onChange={(e) => {
+              setOtherInstruct(e.target.value);
+            }}
+          />
+          <Button
+            className={classes.chatSubmitBtn}
+            disableRipple
+            onClick={() => {
+              const updatedText = otherInstruct || item.instruction;
+              if (updatedText.trim() !== '') {
+                selectedValues!.splice(idx, 1, {
+                  instruction: updatedText,
+                  __typename: 'OtherInstructions',
+                });
+
+                const storageItem = getLocalStorageItem(params.id);
+                if (storageItem) {
+                  storageItem.otherInstructions = selectedValues;
+                  updateLocalStorageItem(params.id, storageItem);
+                }
+
+                setSelectedValues(selectedValues);
+                setTimeout(() => {
+                  setOtherInstruct('');
+                  setIsEditing(false);
+                }, 10);
+              } else {
+                setOtherInstruct('');
+              }
+            }}
+          >
+            <img src={require('images/ic_plus.svg')} alt="" />
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <Chip
+        className={classes.othersBtn}
+        key={idx}
+        label={item!.instruction}
+        icon={
+          <img
+            src={caseSheetEdit && require('images/ic_edit.svg')}
+            alt=""
+            height="20px"
+            className={classes.editImg}
+            onClick={() => {
+              setIsEditing(idx);
+            }}
+          />
+        }
+        onDelete={() => handleDelete(item, idx)}
+        deleteIcon={
+          <img
+            src={caseSheetEdit && require('images/ic_cancel_green.svg')}
+            className={classes.deleteImg}
+            alt=""
+          />
+        }
+      />
+    );
+  };
+
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Grid container spacing={1}>
@@ -218,37 +313,26 @@ export const OtherInstructions: React.FC = () => {
                 selectedValues!.map(
                   (item, idx) =>
                     item &&
-                    item.instruction!.trim() !== '' && (
-                      <Chip
-                        className={classes.othersBtn}
-                        key={idx}
-                        label={item!.instruction}
-                        onDelete={() => handleDelete(item, idx)}
-                        deleteIcon={
-                          <img
-                            src={caseSheetEdit && require('images/ic_cancel_green.svg')}
-                            alt=""
-                          />
-                        }
-                      />
-                    )
+                    item.instruction!.trim() !== '' &&
+                    renderChipWithEditableField(item, idx)
                 )}
             </Typography>
           </Typography>
           {showAddInputText && (
-            <Typography component="div" className={classes.textFieldWrapper}>
-              <InputBase
+            <div className={classes.textFieldWrapper}>
+              <AphTextField
                 autoFocus
                 fullWidth
-                className={classes.textFieldColor}
+                multiline
                 placeholder="Enter instruction here.."
                 value={otherInstruct}
                 onChange={(e) => {
                   setOtherInstruct(e.target.value);
                 }}
-              ></InputBase>
+              />
               <Button
                 className={classes.chatSubmitBtn}
+                disableRipple
                 onClick={() => {
                   if (otherInstruct.trim() !== '') {
                     selectedValues!.splice(idx, 0, {
@@ -270,16 +354,19 @@ export const OtherInstructions: React.FC = () => {
                   }
                 }}
               >
-                <img src={require('images/ic_plus.png')} alt="" />
+                <img src={require('images/ic_plus.svg')} alt="" />
               </Button>
-            </Typography>
+            </div>
           )}
           {!showAddInputText && caseSheetEdit && (
             <AphButton
               className={classes.btnAddDoctor}
               variant="contained"
               color="primary"
-              onClick={() => setShowAddInputText(true)}
+              onClick={() => {
+                setShowAddInputText(true);
+                setIsEditing(null);
+              }}
             >
               <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD INSTRUCTIONS
             </AphButton>

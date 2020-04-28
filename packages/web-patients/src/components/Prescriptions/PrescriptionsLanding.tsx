@@ -3,6 +3,9 @@ import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import React, { useState } from 'react';
 import { Header } from 'components/Header';
 import { Prescriptions } from 'components/Prescriptions/Prescriptions';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -58,6 +61,7 @@ const TabContainer: React.FC = (props) => {
 export const PrescriptionsLanding: React.FC = (props) => {
   const classes = useStyles();
   const [tabValue, setTabValue] = useState<number>(0);
+  const onePrimaryUser = hasOnePrimaryUser()
   return (
     <div className={classes.root}>
       <Header />
@@ -88,6 +92,7 @@ export const PrescriptionsLanding: React.FC = (props) => {
           {tabValue === 1 && <TabContainer>Test</TabContainer>}
         </div>
       </div>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

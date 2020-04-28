@@ -446,7 +446,9 @@ const endAppointmentSession: Resolver<
       process.env.NODE_ENV == 'local'
         ? ApiConstants.PATIENT_APPT_CC_EMAILID
         : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+    let isDoctorNoShow = 0;
     if (endAppointmentSessionInput.noShowBy == REQUEST_ROLES.DOCTOR) {
+      isDoctorNoShow = 1;
       rescheduleAppointmentAttrs.rescheduleInitiatedBy = TRANSFER_INITIATED_TYPE.DOCTOR;
       rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
       const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
@@ -474,10 +476,16 @@ const endAppointmentSession: Resolver<
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
     await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
     // send notification
-    const pushNotificationInput = {
+    let pushNotificationInput = {
       appointmentId: apptDetails.id,
       notificationType: NotificationType.INITIATE_RESCHEDULE,
     };
+    if (isDoctorNoShow == 1) {
+      pushNotificationInput = {
+        appointmentId: apptDetails.id,
+        notificationType: NotificationType.DOCTOR_NO_SHOW_INITIATE_RESCHEDULE,
+      };
+    }
     const notificationResult = sendNotification(
       pushNotificationInput,
       patientsDb,

@@ -53,6 +53,8 @@ import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { BottomLinks } from 'components/BottomLinks';
 import { ContactUs } from 'components/ContactUs';
+import { CovidLanding } from 'components/Covid/CovidLanding';
+import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,21 +63,21 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundImage: 'linear-gradient(to bottom, #f0f1ec, #dcdfce)',
       paddingTop: 88,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 75,
+        paddingTop: 72,
       },
       [theme.breakpoints.down(900)]: {
         paddingBottom: 60,
-      },
-    },
-    appNotSignedIn: {
-      [theme.breakpoints.down(900)]: {
-        paddingBottom: 0,
       },
     },
     helpIcon: {
       display: 'none',
       [theme.breakpoints.up(1134)]: {
         display: 'block',
+      },
+    },
+    noHeaders: {
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 0,
       },
     },
   };
@@ -92,7 +94,10 @@ const App: React.FC = () => {
 
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
-      <div className={`${classes.app} ${!isSignedIn && classes.appNotSignedIn}`}>
+      <div
+        className={`${classes.app} ${pageName === '/covid19' && classes.noHeaders} ${pageName ===
+          '/covid19/article' && classes.noHeaders}`}
+      >
         <Helmet>
           <script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
@@ -100,6 +105,8 @@ const App: React.FC = () => {
         </Helmet>
         <Switch>
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
+          <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
+          <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
           <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
           <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
@@ -109,41 +116,29 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.contactUs()} component={ContactUs} />
           <Route exact path={clientRoutes.partnerSBI()} component={SbiLandingPage} />
           <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
-          <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
-          <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-          <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
-          <AuthRouted
-            exact
-            path={clientRoutes.medicinesLandingViewCart()}
-            component={MedicineLanding}
-          />
+          <Route exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
+          <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
+          <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
+          <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
           <AuthRouted
             exact
             path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
             component={MedicineLanding}
           />
-          <AuthRouted
+          <Route exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
+          <Route exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
+          <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
+          <Route
             exact
             path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
             component={MedicineCartLanding}
           />
-          <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
-          <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
-          <AuthRouted
-            exact
-            path={clientRoutes.medicineDetails(':sku')}
-            component={MedicineDetails}
-          />
-          <AuthRouted
+          <Route
             exact
             path={clientRoutes.searchByMedicine(':searchMedicineType', ':searchText')}
             component={SearchByMedicine}
           />
-          <AuthRouted
-            exact
-            path={clientRoutes.medicineSearchByBrand(':id')}
-            component={SearchByBrand}
-          />
+          <Route exact path={clientRoutes.medicineSearchByBrand(':id')} component={SearchByBrand} />
           <AuthRouted
             exact
             path={clientRoutes.prescriptionsLanding()}
@@ -166,8 +161,8 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
           <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
           <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
-          <AuthRouted exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
-          <AuthRouted exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
+          <Route exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
+          <Route exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
           <AuthRouted exact path={clientRoutes.tests()} component={TestsLanding} />
           <AuthRouted
             exact

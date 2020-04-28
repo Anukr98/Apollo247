@@ -3,6 +3,8 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Header } from 'components/Header';
 import { TestsCart } from 'components/Tests/Cart/TestsCart';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -26,6 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const TestsCartLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser()
   return (
     <div className={classes.root}>
       <>
@@ -36,6 +39,7 @@ export const TestsCartLanding: React.FC = (props) => {
           </div>
         </div>
       </>
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

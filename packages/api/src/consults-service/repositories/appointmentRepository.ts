@@ -20,6 +20,7 @@ import {
   CONSULTS_RX_SEARCH_FILTER,
   REQUEST_ROLES,
   PATIENT_TYPE,
+  ES_DOCTOR_SLOT_STATUS,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -41,6 +42,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
+import { Client, RequestParams } from '@elastic/elasticsearch';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -1602,5 +1604,34 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.PAYMENT_PENDING,
       })
       .getCount();
+  }
+
+  async updateDoctorSlotStatusES(
+    doctorId: string,
+    apptDate: string,
+    apptSlot: string,
+    slotType: APPOINTMENT_TYPE,
+    status: ES_DOCTOR_SLOT_STATUS
+  ) {
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    const updateDoc: RequestParams.Update = {
+      index: 'doctors',
+      type: 'posts',
+      id: doctorId,
+      body: {
+        script: {
+          source:
+            'for (int i = 0; i < ctx._source.doctorSlots.length; ++i) { if(ctx._source.doctorSlots[i].slotDate == params.slotDate) { for(int k=0;k<ctx._source.doctorSlots[i].slots.length;k++){if(ctx._source.doctorSlots[i].slots[k].slot == params.slot){ ctx._source.doctorSlots[i].slots[k].status = params.status;}}}}',
+          params: {
+            slotDate: apptDate,
+            slot: apptSlot,
+            slotType,
+            status,
+          },
+        },
+      },
+    };
+    const updateResp = await client.update(updateDoc);
+    console.log(updateResp, 'updateResp');
   }
 }
