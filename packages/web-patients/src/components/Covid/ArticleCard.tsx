@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       position: 'relative',
       '& img': {
-        maxWidth: '100%',
+        width: '100%',
         verticalAlign: 'middle',
       },
     },
@@ -78,6 +78,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       height: '220px',
       width: '100%',
+      border: 'none !important',
     },
   };
 });
@@ -90,6 +91,7 @@ type ArticleItem = {
   shortDescription: string;
   slug: string;
   id: string;
+  videoUrl: string;
 };
 
 interface ArticleItemProps {
@@ -98,37 +100,52 @@ interface ArticleItemProps {
 
 const ArticleItem: React.FC<ArticleItemProps> = (props) => {
   const classes = useStyles();
-  const { thumbnailMobile, thumbnailWeb, postTitle, shortDescription, type, slug, id } = props.item;
+  const {
+    thumbnailMobile,
+    thumbnailWeb,
+    postTitle,
+    shortDescription,
+    type,
+    slug,
+    id,
+    videoUrl,
+  } = props.item;
   const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
+  console.log('type', image, videoUrl);
   return (
     <Grid item sm={4} xs={12}>
       <div className={classes.card}>
         <Link
           to={
-            type.toLowerCase() !== 'VIDEO' || type.toLowerCase() !== 'infographic'
-              ? `/covid19/${type.toLowerCase()}${slug}/${id}`
-              : '#'
+            type.toLowerCase() === 'video' || type.toLowerCase() == 'infographic'
+              ? '#'
+              : `/covid19/${type.toLowerCase()}${slug}/${id}`
           }
         >
-          <div className={classes.cardHeader}>
-            {type.toLowerCase() === 'video' ? (
-              <iframe
-                width="305"
-                height="204"
-                className={classes.iFrameVideo}
-                color="#fcb716"
-                src="https://www.youtube.com/embed/G-D2ZSv-_fA"
-                allow="accelerometer; fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture"
-              ></iframe>
-            ) : (
-              <img src={image} alt="" />
-            )}
-            <div className={`${classes.videoOverlay}`}>
-              <div className={classes.overlayWrap}>
-                <img src={require('images/ic_play.svg')} alt="" />
+          {((image && image.length) || (videoUrl && videoUrl.length)) && (
+            <div className={classes.cardHeader}>
+              {type.toLowerCase() === 'video' ? (
+                <iframe
+                  width="305"
+                  height="204"
+                  className={classes.iFrameVideo}
+                  color="#fcb716"
+                  src={videoUrl}
+                  allow="accelerometer; fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                ></iframe>
+              ) : image ? (
+                <img src={image} alt="" />
+              ) : (
+                <span></span>
+              )}
+              <div className={`${classes.videoOverlay}`}>
+                <div className={classes.overlayWrap}>
+                  <img src={require('images/ic_play.svg')} alt="" />
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
           <div className={classes.cardContent}>
             <div className={classes.type}>{type}</div>
             <h4 className={classes.title}>{postTitle}</h4>

@@ -159,7 +159,10 @@ export const CovidLanding: React.FC = (props) => {
   const [categoryToFetch, setCategoryToFetch] = useState<string>('');
   const [moreContentLoading, setMoreContentLoading] = useState<boolean>(false);
   const didMount = useRef(false);
-  const covidArticleBaseUrl = process.env.COVID_ARTICLE_LIST_URL;
+  const covidArticleBaseUrl =
+    process.env.NODE_ENV !== 'production'
+      ? `${process.env.COVID_ARTICLE_LIST_URL}?st=2`
+      : process.env.COVID_ARTICLE_LIST_URL;
 
   useEffect(() => {
     fetch(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
