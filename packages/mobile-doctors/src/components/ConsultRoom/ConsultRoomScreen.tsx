@@ -114,6 +114,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { NavigationScreenProps } from 'react-navigation';
 import AsyncStorage from '@react-native-community/async-storage';
+import KeepAwake from 'react-native-keep-awake';
 
 const { width } = Dimensions.get('window');
 let joinTimerNoShow: NodeJS.Timeout;
@@ -255,7 +256,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     console.log('PatientConsultTime', PatientConsultTime);
     console.log(caseSheetEdit, 'caseSheetEdit');
     AsyncStorage.removeItem('editedInputData');
-
+    KeepAwake.activate();
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
@@ -275,6 +276,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       stopMissedCallTimer();
       stopAutoSaveTimer();
       AsyncStorage.removeItem('editedInputData');
+      AsyncStorage.removeItem('chatFileData');
+      KeepAwake.deactivate();
     };
   }, []);
 
@@ -389,9 +392,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const setData = (
     caseSheet: GetCaseSheet_getCaseSheet | null | undefined,
-    isAutoSaved?: boolean
+    isModified?: boolean
   ) => {
-    if (!isAutoSaved) {
+    if (!isModified) {
       setPatientInfoAll(g(caseSheet, 'patientDetails') || null);
       setLifeStyleData(g(caseSheet, 'patientDetails', 'lifeStyle') || null);
       setMedicalHistory(g(caseSheet, 'patientDetails', 'patientMedicalHistory') || null);
@@ -439,7 +442,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       (g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || []).map((i) => {
         if (i) {
           if (i.externalId || (i.id && i.id !== '')) {
-            return i;
+            return { ...i, externalId: i.externalId || i.id };
           } else {
             return { ...i, externalId: i.medicineName };
           }
@@ -638,7 +641,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             caseSheetDetails: g(_data, 'data', 'modifyCaseSheet'),
           } as GetCaseSheet_getCaseSheet | null | undefined;
           setcaseSheet(modifiedData);
-          setData(modifiedData, autoSave);
+          setData(modifiedData, true);
           setIsAutoSaved(autoSave);
           if (callBack) {
             setLoading && setLoading(true);
@@ -1143,6 +1146,26 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             flatListRef.current && flatListRef.current.scrollToEnd();
           }, 500);
         }
+        try {
+          if (message.fileType && message.id === patientId) {
+            const asyncDisplay = async () => {
+              const chatFileData = await AsyncStorage.getItem('chatFileData');
+              const chatFilesRetrived = JSON.parse(chatFileData || '[]');
+
+              chatFilesRetrived.push({
+                prismId: message.prismId,
+                url: message.url,
+              });
+              AsyncStorage.setItem('chatFileData', JSON.stringify(chatFilesRetrived));
+              setChatFiles(chatFilesRetrived);
+            };
+            setTimeout(() => {
+              asyncDisplay();
+            }, 500);
+          }
+        } catch (error) {
+          CommonBugFender('Chatfile_update', error);
+        }
       },
       presence: (presenceEvent) => {
         pubnub
@@ -1175,7 +1198,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 !abondmentStarted &&
                 patientJoined &&
                 ![STATUS.COMPLETED, STATUS.NO_SHOW, STATUS.CALL_ABANDON, STATUS.CANCELLED].includes(
-                  (appointmentData || {}).status
+                  (appointmentData || g(caseSheet, 'caseSheetDetails', 'appointment')).status
                 )
               ) {
                 abondmentStarted = true;
@@ -1252,7 +1275,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           });
           console.log('res', res.messages);
           setChatFiles(files);
-
+          AsyncStorage.setItem('chatFileData', JSON.stringify(files));
           if (messages.length !== newmessage.length) {
             console.log('set saved');
             insertText = newmessage;
@@ -1899,7 +1922,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         middleText={strings.consult_room.consult_room}
         // timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         timerremaintext={
-          isAutoSaved ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:MM:SS') : undefined
+          isAutoSaved ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:mm:ss') : undefined
         }
         headingContainer={{
           marginLeft:
