@@ -153,6 +153,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       marginRight: 5,
       marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 5,
+      },
     },
     windowWrap: {
       width: 368,
@@ -177,6 +180,9 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '1px 1px 2px 1px #eaeaea',
       left: -10,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+      },
     },
   });
 });
