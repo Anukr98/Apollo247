@@ -40,6 +40,7 @@ import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -791,10 +792,19 @@ export const MedicineCart: React.FC = (props) => {
       uploadPrescriptionRequired === -1 &&
       cartItems &&
       cartItems.length > 0 &&
-      deliveryTime) ||
+      deliveryTime.length === 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
+
+  const patient = useCurrentPatient();
+
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
 
   const isChennaiZipCode = (zipCodeInt: Number) => {
     return (
@@ -872,7 +882,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.uploadMore}>
                           <AphButton
                             disabled={uploadingFiles || mutationLoading}
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                           >
                             Upload More
                           </AphButton>
@@ -886,7 +896,7 @@ export const MedicineCart: React.FC = (props) => {
                             purchase. Please upload the necessary prescriptions
                           </span>
                           <AphButton
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                             className={classes.presUploadBtn}
                           >
                             Upload Prescription

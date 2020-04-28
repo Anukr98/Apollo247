@@ -8,6 +8,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Alerts } from 'components/Alerts/Alerts';
+import { uploadPhotoTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -180,6 +181,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 <input
                   type="file"
                   onChange={async (e) => {
+                    uploadPhotoTracking('Gallery');
                     const fileNames = e.target.files;
                     if (fileNames && fileNames.length > 0) {
                       const file = fileNames[0] || null;

@@ -1850,6 +1850,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         className={classes.endconsultButton}
                         disabled={sendToPatientButtonDisable}
                         onClick={() => {
+                          localStorage.removeItem(`${params.id}`);
                           setSendToPatientButtonDisable(true);
                           props.saveCasesheetAction(true, true);
                         }}
