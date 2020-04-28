@@ -78,18 +78,27 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles();
   const { title, imgUrl, content, action } = props.item;
   return (
-    <div className={classes.serviceItem}>
-      <Paper className={classes.serviceItemIn}>
-        <Link to={action.link} title={title}>
-          <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
-          <div className={classes.serviceInfo}>
-            <Typography variant="h5" title={title}>
-              {title}
-            </Typography>
-          </div>
-        </Link>
-      </Paper>
-    </div>
+    <ProtectedWithLoginPopup>
+      {({ protectWithLoginPopup, isProtected }) => (
+        <div className={classes.serviceItem}>
+          <Paper className={classes.serviceItemIn}>
+            <Link
+              to={action.link}
+              onClick={(e) => {
+                action.link === '/health-records' && protectWithLoginPopup();
+              }}
+              title={title}>
+              <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
+              <div className={classes.serviceInfo}>
+                <Typography variant="h5" title={title}>
+                  {title}
+                </Typography>
+              </div>
+            </Link>
+          </Paper>
+        </div>
+      )}
+    </ProtectedWithLoginPopup>
   );
 };
 
