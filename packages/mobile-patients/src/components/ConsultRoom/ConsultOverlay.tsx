@@ -396,10 +396,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         doctorName: `${g(props.doctor, 'fullName')}`,
         price: coupon ? doctorDiscountedFees : Number(doctorFees),
         appointmentInput: appointmentInput,
-        // webEngageEventAttributes: getConsultationBookedEventAttributes(
-        //   g(apptmt, 'appointmentDateTime'),
-        //   g(data, 'data', 'bookAppointment', 'appointment', 'id')!
-        // )
       });
     }
   };

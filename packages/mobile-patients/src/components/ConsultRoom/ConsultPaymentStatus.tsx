@@ -23,10 +23,6 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from '@aph/mobile-patients/src/graphql/types/makeAppointmentPayment';
-import {
   BOOK_APPOINTMENT,
   BOOK_FOLLOWUP_APPOINTMENT,
   MAKE_APPOINTMENT_PAYMENT,
