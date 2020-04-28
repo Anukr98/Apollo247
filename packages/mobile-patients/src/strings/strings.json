@@ -17,8 +17,11 @@
     "emergencyBannerText": "Coronavirus? Talk to expert",
     "covidContactText": "Contact our Coronavirus Helpline",
     "covidScanBannerText": "Take the Coronavirus Risk Scan",
-    "covidHeading": "Worried about CORONAVIRUS?",
-    "emergencyBannerPhoneNumber": "08047192606"
+    "covidHeading": "Worried about Coronavirus?",
+    "emergencyBannerPhoneNumber": "08047192606",
+    "covidHelpText": "We are here to help you.",
+    "covidMessageText": "We know there is too much information out there. We have compiled the most science-based articles for you on how to stay safe, prevention and what to do in case you are infected.",
+    "covidYouCanText": "You can also"
   },
   "login": {
     "hello": "hello!",

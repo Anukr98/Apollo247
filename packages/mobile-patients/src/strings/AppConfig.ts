@@ -139,6 +139,8 @@ const ConfigurationDev = {
   Android_Version: '2.213',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
+  COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan/',
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
 };
 
 // QA
@@ -171,6 +173,8 @@ const ConfigurationQA = {
   Android_Version: '2.211',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan/',
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
 };
 
 //Production
@@ -203,6 +207,8 @@ const ConfigurationProd = {
   Android_Version: '2.21',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
+  COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan/',
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
 };
 
 //PERFORMANCE
@@ -235,6 +241,8 @@ const ConfigurationPERFORM = {
   Android_Version: '1.83',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
+  COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan/',
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
 };
 
 //VAPT
@@ -267,6 +275,8 @@ const ConfigurationVAPT = {
   Android_Version: '2.112',
   CONDITIONAL_MANAGENET_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
+  COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan/',
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
 };
 
 //DevelopmentReplica
@@ -299,20 +309,22 @@ const ConfigurationDevReplica = {
   Android_Version: '1.913',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
+  COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan/',
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
 };
 
 const Configuration =
   APP_ENV == AppEnv.PROD
     ? ConfigurationProd
     : APP_ENV == AppEnv.QA
-    ? ConfigurationQA
-    : APP_ENV == AppEnv.PERFORM
-    ? ConfigurationPERFORM
-    : APP_ENV == AppEnv.VAPT
-    ? ConfigurationVAPT
-    : APP_ENV == AppEnv.DEVReplica
-    ? ConfigurationDevReplica
-    : ConfigurationDev;
+      ? ConfigurationQA
+      : APP_ENV == AppEnv.PERFORM
+        ? ConfigurationPERFORM
+        : APP_ENV == AppEnv.VAPT
+          ? ConfigurationVAPT
+          : APP_ENV == AppEnv.DEVReplica
+            ? ConfigurationDevReplica
+            : ConfigurationDev;
 
 export const MedicineFeedBackData = {
   POOR: {
