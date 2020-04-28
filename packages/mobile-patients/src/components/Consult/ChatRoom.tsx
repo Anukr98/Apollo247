@@ -152,6 +152,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
+import { ApolloLogo } from '../ApolloLogo';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -214,6 +215,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
     paddingBottom: 4,
+    marginTop: 10,
   },
   separatorStyle: {
     borderBottomWidth: 0.5,
@@ -221,10 +223,17 @@ const styles = StyleSheet.create({
   },
   doctorNameStyle: {
     paddingTop: 8,
-    paddingBottom: 2,
+    paddingBottom: 0,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansSemiBold(23),
     color: theme.colors.LIGHT_BLUE,
+  },
+  doctorSpecialityStyle: {
+    paddingTop: 0,
+    paddingBottom: 12,
+    ...theme.fonts.IBMPlexSansRegular(11),
+    color: theme.colors.LIGHT_BLUE,
+    lineHeight: 15,
   },
   timeStyle: {
     paddingBottom: 20,
@@ -4221,9 +4230,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         >
           <View style={{ flex: 1 }}>
+            <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
             <Text style={styles.displayId}>#{appointmentData.displayId}</Text>
             <View style={styles.separatorStyle} />
             <Text style={styles.doctorNameStyle}>{appointmentData.doctorInfo.displayName}</Text>
+            <Text style={styles.doctorSpecialityStyle}>{`${g(
+              appointmentData,
+              'doctorInfo',
+              'specialty',
+              'userFriendlyNomenclature'
+            )}  |  MCI Reg. No. ${g(appointmentData, 'doctorInfo', 'registrationNumber')}`}</Text>
             <Text style={styles.timeStyle}>{time}</Text>
           </View>
           <View style={styles.imageView}>
