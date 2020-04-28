@@ -1922,7 +1922,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         middleText={strings.consult_room.consult_room}
         // timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         timerremaintext={
-          isAutoSaved ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:MM:SS') : undefined
+          isAutoSaved ? 'Auto Saved at ' + moment(savedTime).format('DD:MM:YY:HH:mm:ss') : undefined
         }
         headingContainer={{
           marginLeft:
