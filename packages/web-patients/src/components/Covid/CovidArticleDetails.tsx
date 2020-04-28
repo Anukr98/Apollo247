@@ -5,7 +5,7 @@ import { CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import fetch from 'helpers/fetch';
+import fetchUtil from 'helpers/fetch';
 // import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
 // import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
@@ -134,7 +134,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
 
   useEffect(() => {
     if (articleId) {
-      fetch(`${covidArticleDetailUrl}/${articleId}`, 'GET', {}, '', true).then((res: any) => {
+      fetchUtil(`${covidArticleDetailUrl}/${articleId}`, 'GET', {}, '', true).then((res: any) => {
         let postData: any = {};
         if (res && res.data && !isEmpty(res.data[0])) {
           postData = res.data[0];

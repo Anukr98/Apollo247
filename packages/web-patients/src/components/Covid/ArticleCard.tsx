@@ -111,7 +111,6 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
     videoUrl,
   } = props.item;
   const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
-  console.log('type', image, videoUrl);
   return (
     <Grid item sm={4} xs={12}>
       <div className={classes.card}>

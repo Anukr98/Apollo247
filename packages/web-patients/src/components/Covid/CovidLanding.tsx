@@ -14,7 +14,7 @@ import { AphButton } from '@aph/web-ui-components';
 import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import fetch from 'helpers/fetch';
+import fetchUtil from 'helpers/fetch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -165,7 +165,7 @@ export const CovidLanding: React.FC = (props) => {
       : process.env.COVID_ARTICLE_LIST_URL;
 
   useEffect(() => {
-    fetch(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
+    fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
       const sortedStaySafeData = !_isEmpty(body['stay-safe']) && body['stay-safe'];
       const sortedCovidSymptomsData = !_isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
@@ -183,7 +183,7 @@ export const CovidLanding: React.FC = (props) => {
   useEffect(() => {
     if (didMount.current && categoryToFetch !== '') {
       const currentOffset = covidContent[categoryToFetch].length;
-      fetch(
+      fetchUtil(
         `${covidArticleBaseUrl}?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
         'GET',
         {},
