@@ -73,11 +73,7 @@ const addAllDoctorSlotsElastic: Resolver<
   let stDate = new Date(args.fromSlotDate);
   const daysDiff = Math.abs(differenceInDays(new Date(args.toSlotDate), stDate));
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const allDocsInfo = await docRepo.getAllDoctorsInfo(
-    'd7566de3-c967-4a0e-a53d-f4b0f98eb065',
-    args.limit,
-    args.offset
-  );
+  const allDocsInfo = await docRepo.getAllDoctorsInfo('0', args.limit, args.offset);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   let slotsAdded = '';
   if (allDocsInfo.length > 0) {
@@ -88,7 +84,6 @@ const addAllDoctorSlotsElastic: Resolver<
         //str += format(stDate, 'yyyy-MM-dd') + ',';
         const searchParams: RequestParams.Search = {
           index: 'doctors',
-          type: 'posts',
           body: {
             query: {
               bool: {
@@ -120,7 +115,6 @@ const addAllDoctorSlotsElastic: Resolver<
           //console.log(doctorSlots, 'doctor slots');
           const doc1: RequestParams.Update = {
             index: 'doctors',
-            type: 'posts',
             id: allDocsInfo[k].id,
             body: {
               script: {
@@ -156,7 +150,6 @@ const addDoctorSlotsElastic: Resolver<
   console.log('doc id', args.id);
   const searchParams: RequestParams.Search = {
     index: 'doctors',
-    type: 'posts',
     body: {
       query: {
         bool: {
@@ -189,7 +182,6 @@ const addDoctorSlotsElastic: Resolver<
     //console.log(doctorSlots, 'doctor slots');
     const doc1: RequestParams.Update = {
       index: 'doctors',
-      type: 'posts',
       id: args.id,
       body: {
         script: {
@@ -238,7 +230,7 @@ const insertDataElastic: Resolver<
 
       console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'hitCount');
       if (getDetails.body.hits.hits.length == 0) {
-        newDocData += allDocsInfo[i].mobileNumber + ',';
+        newDocData += allDocsInfo[i].id + ',';
         const consultHours = [];
         for (let k = 0; k < allDocsInfo[i].consultHours.length; k++) {
           const hourData = {
