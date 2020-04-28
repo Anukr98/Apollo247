@@ -1,6 +1,11 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, REQUEST_ROLES, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  REQUEST_ROLES,
+  APPOINTMENT_STATE,
+  ES_DOCTOR_SLOT_STATUS,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -104,6 +109,24 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelledBy,
     cancelAppointmentInput.cancelledById,
     cancelAppointmentInput.cancelReason
+  );
+
+  //update slot status in ES as open
+  const apptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd');
+  const sl = `${apptDt}T${appointment.appointmentDateTime
+    .getUTCHours()
+    .toString()
+    .padStart(2, '0')}:${appointment.appointmentDateTime
+    .getUTCMinutes()
+    .toString()
+    .padStart(2, '0')}:00.000Z`;
+
+  appointmentRepo.updateDoctorSlotStatusES(
+    appointment.doctorId,
+    apptDt,
+    sl,
+    appointment.appointmentType,
+    ES_DOCTOR_SLOT_STATUS.OPEN
   );
 
   //remove from consult queue
