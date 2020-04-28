@@ -201,6 +201,23 @@ export const MyProfile: React.FC = (props) => {
             <div className={classes.sectionGroup}>
               <Link
                 className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.healthRecords()}
+                title={'View health records'}
+              >
+                <span className={classes.serviceImg}>
+                  <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                </span>
+                <span className={classes.linkText}>Health Records</span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
                   currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
                 }`}
                 to={clientRoutes.addressBook()}

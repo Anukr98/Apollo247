@@ -660,7 +660,6 @@ export const AddRecords: React.FC = (props) => {
       };
       reader.onerror = (error) => reject(error);
     });
-
   return (
     <div className={classes.root}>
       <Header />
