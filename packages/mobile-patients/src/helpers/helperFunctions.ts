@@ -9,6 +9,7 @@ import {
 import {
   MEDICINE_ORDER_STATUS,
   Relation,
+  MEDICINE_UNIT,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
@@ -44,6 +45,8 @@ import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
 import firebase from 'react-native-firebase';
+import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -937,9 +940,9 @@ export const InitiateAppsFlyer = () => {
 };
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  console.log('UnInstallAppsFlyer', newFirebaseToken);
+  // console.log('UnInstallAppsFlyer', newFirebaseToken);
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {
-    console.log('UnInstallAppsFlyersuccess', success);
+    // console.log('UnInstallAppsFlyersuccess', success);
   });
 };
 
@@ -1040,3 +1043,32 @@ export const postFirebaseAddToCartEvent = (
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   } catch (error) {}
 };
+
+export const nameFormater = (
+  name: string,
+  caseFormat?: 'lower' | 'upper' | 'title' | 'camel' | 'default'
+) => {
+  if (caseFormat === 'title') {
+    return _.startCase(name.toLowerCase());
+  } else if (caseFormat === 'camel') {
+    return _.camelCase(name);
+  } else if (caseFormat === 'lower') {
+    return _.lowerCase(name);
+  } else if (caseFormat === 'upper') {
+    return _.upperCase(name);
+  } else {
+    return _.capitalize(name.replace(/_/g, ' '));
+  }
+};
+
+export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
+  let formatedValue = nameFormater(item, 'lower');
+  const existsIndex = string.muiltdosages.findIndex((i) => i.single === formatedValue);
+  if (existsIndex > -1) {
+    formatedValue = string.muiltdosages[existsIndex].multiple;
+  }
+  return {
+    key: item,
+    value: formatedValue,
+  };
+});

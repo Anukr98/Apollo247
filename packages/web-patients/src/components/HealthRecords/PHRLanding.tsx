@@ -21,12 +21,16 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks as HealthChecksType,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations as HospitalizationsType,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useCurrentPatient } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useMutation } from 'react-apollo-hooks';
 import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
 import { Alerts } from 'components/Alerts/Alerts';
 import { MyProfile } from 'components/MyAccount/MyProfile';
+import {
+  phrConsultTabClickTracking,
+  phrMedicalRecordsTabClickTracking,
+} from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,7 +107,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 56,
         paddingRight: 0,
       },
-    }
+    },
   };
 });
 
@@ -352,6 +356,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       setMedicalLoading(false);
     }
   }, [medicalRecords, labTests, healthChecks, hospitalizations, isSigningIn]);
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
   return (
     <div className={classes.root}>
       <Header />
@@ -368,6 +374,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                   classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
                   onChange={(e, newValue) => {
                     setTabValue(newValue);
+                    if (newValue) {
+                      phrMedicalRecordsTabClickTracking({ ...patient, age });
+                    } else {
+                      phrConsultTabClickTracking({ ...patient, age });
+                    }
                   }}
                 >
                   <Tab
@@ -406,7 +417,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
               </div>
             </div>
           </div>
-        </div>   
+        </div>
         <Alerts
           setAlertMessage={setAlertMessage}
           alertMessage={alertMessage}

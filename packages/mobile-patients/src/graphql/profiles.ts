@@ -1018,6 +1018,7 @@ export const GET_CASESHEET_DETAILS = gql`
         id
         medicinePrescription {
           id
+          externalId
           medicineName
           medicineDosage
           medicineToBeTaken
@@ -1029,6 +1030,8 @@ export const GET_CASESHEET_DETAILS = gql`
           medicineFormTypes
           medicineFrequency
           medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
         }
         notes
         otherInstructions {
@@ -1654,15 +1657,21 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           id
 
           medicinePrescription {
-            medicineConsumptionDurationInDays
+            id
+            externalId
+            medicineName
             medicineDosage
+            medicineToBeTaken
             medicineInstructions
             medicineTimings
-            medicineToBeTaken
-            medicineName
-            id
             medicineUnit
+            medicineConsumptionDurationInDays
+            medicineConsumptionDuration
+            medicineFormTypes
+            medicineFrequency
             medicineConsumptionDurationUnit
+            routeOfAdministration
+            medicineCustomDosage
           }
           symptoms {
             symptom

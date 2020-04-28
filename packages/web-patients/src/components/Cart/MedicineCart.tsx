@@ -40,6 +40,7 @@ import { UPLOAD_DOCUMENT, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql
 import { SavePrescriptionMedicineOrderVariables } from '../../graphql/types/SavePrescriptionMedicineOrder';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
@@ -722,7 +723,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -791,6 +792,15 @@ export const MedicineCart: React.FC = (props) => {
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
+
+  const patient = useCurrentPatient();
+
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
 
   const isChennaiZipCode = (zipCodeInt: Number) => {
     return (
@@ -868,7 +878,7 @@ export const MedicineCart: React.FC = (props) => {
                         <div className={classes.uploadMore}>
                           <AphButton
                             disabled={uploadingFiles || mutationLoading}
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                           >
                             Upload More
                           </AphButton>
@@ -882,7 +892,7 @@ export const MedicineCart: React.FC = (props) => {
                             purchase. Please upload the necessary prescriptions
                           </span>
                           <AphButton
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                             className={classes.presUploadBtn}
                           >
                             Upload Prescription

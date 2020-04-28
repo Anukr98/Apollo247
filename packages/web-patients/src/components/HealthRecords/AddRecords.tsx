@@ -26,6 +26,7 @@ import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
+import { addRecordClickTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -614,6 +615,10 @@ export const AddRecords: React.FC = (props) => {
       setAlertMessage(valid.message);
     }
   };
+  const handleSaveRecord = () => {
+    addRecordClickTracking('Medical Record');
+    saveRecord();
+  };
 
   const formatNumber = (value: string) => {
     if (!isNaN(parseFloat(value))) {
@@ -1068,7 +1073,7 @@ export const AddRecords: React.FC = (props) => {
               </div>
             </Scrollbars>
             <div className={classes.pageBottomActions}>
-              <AphButton color="primary" onClick={() => saveRecord()}>
+              <AphButton color="primary" onClick={handleSaveRecord}>
                 {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Add Record'}
               </AphButton>
             </div>

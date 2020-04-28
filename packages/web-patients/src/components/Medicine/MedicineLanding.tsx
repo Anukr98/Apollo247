@@ -19,7 +19,9 @@ import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
+import { uploadPrescriptionTracking } from '../../webEngageTracking';
+import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
@@ -420,9 +422,16 @@ export const MedicineLanding: React.FC = (props) => {
     },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
-  
+
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+
+  const handleUploadPrescription = () => {
+    uploadPrescriptionTracking({ ...patient, age });
+    setIsUploadPreDialogOpen(true);
+  };
 
   return (
     <div className={classes.root}>
@@ -464,7 +473,8 @@ export const MedicineLanding: React.FC = (props) => {
                           <div className={classes.groupTitle}>Have a prescription ready?</div>
                           <AphButton
                             color="primary"
-                            onClick={() => setIsUploadPreDialogOpen(true)}
+                            // onClick={() => setIsUploadPreDialogOpen(true)}
+                            onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
                           >
                             Upload Prescription
@@ -577,6 +587,7 @@ export const MedicineLanding: React.FC = (props) => {
                   className={classes.trackBtn}
                   onClick={() => {
                     setShowPrescriptionPopup(false);
+                    window.location.href = clientRoutes.medicines();
                   }}
                 >
                   Okay
