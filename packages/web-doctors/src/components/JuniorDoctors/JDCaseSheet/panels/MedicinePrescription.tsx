@@ -1339,6 +1339,7 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
+      console.log(_medicine);
       const duration =
         medicine.medicineConsumptionDurationInDays &&
         ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
@@ -1416,9 +1417,9 @@ export const MedicinePrescription: React.FC = () => {
               } ${duration} ${whenString.length > 0 ? whenString : ''} ${
                 timesString.length > 0 &&
                 medicine.medicineCustomDosage &&
-                medicine.medicineCustomDosage === ''
-                  ? timesString
-                  : ''
+                medicine.medicineCustomDosage !== ''
+                  ? ''
+                  : timesString
               }`}
             </div>
             {medicine.routeOfAdministration && (
@@ -2122,7 +2123,7 @@ export const MedicinePrescription: React.FC = () => {
                                   }}
                                 >
                                   <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                                  {generateFrequency}
+                                    {generateFrequency}
                                   </Scrollbars>
                                 </AphSelect>
                               </Grid>
@@ -2268,7 +2269,7 @@ export const MedicinePrescription: React.FC = () => {
                             }}
                           >
                             <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                             {roaOptionHtml}
+                              {roaOptionHtml}
                             </Scrollbars>
                           </AphSelect>
                         </Grid>

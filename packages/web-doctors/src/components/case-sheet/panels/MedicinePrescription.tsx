@@ -1916,9 +1916,9 @@ export const MedicinePrescription: React.FC = () => {
                     ${duration} ${whenString.length > 0 ? whenString : ''} ${
                       timesString.length > 0 &&
                       medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage === ''
-                        ? timesString
-                        : ''
+                      medicine.medicineCustomDosage !== ''
+                        ? ''
+                        : timesString
                     }
                     `}
                   </h6>
@@ -2052,8 +2052,8 @@ export const MedicinePrescription: React.FC = () => {
                           favTimesString.length > 0 &&
                           favMedicine.medicineCustomDosage &&
                           favMedicine.medicineCustomDosage === ''
-                            ? favTimesString
-                            : ''
+                            ? ''
+                            : favTimesString
                         }
                     `}
                       </h6>
@@ -2482,7 +2482,7 @@ export const MedicinePrescription: React.FC = () => {
                             }}
                           >
                             <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                            {roaOptionHtml}
+                              {roaOptionHtml}
                             </Scrollbars>
                           </AphSelect>
                         </div>
@@ -2888,7 +2888,7 @@ export const MedicinePrescription: React.FC = () => {
                                       setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                     }}
                                   >
-                                     <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
+                                    <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
                                       {generateFrequency}
                                     </Scrollbars>
                                   </AphSelect>
@@ -3016,9 +3016,9 @@ export const MedicinePrescription: React.FC = () => {
                                 setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
                               }}
                             >
-                             <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                              {roaOptionHtml}
-                            </Scrollbars>
+                              <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
+                                {roaOptionHtml}
+                              </Scrollbars>
                             </AphSelect>
                           </div>
                         </Grid>
