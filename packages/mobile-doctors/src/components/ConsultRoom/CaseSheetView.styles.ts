@@ -258,6 +258,7 @@ export const styles = StyleSheet.create({
   },
   healthvaultMainContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   healthvaultImageContainer: {
     margin: 2,
