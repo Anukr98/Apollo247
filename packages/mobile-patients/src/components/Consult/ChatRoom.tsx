@@ -1405,6 +1405,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const [isDoctorNoShow, setIsDoctorNoShow] = useState<boolean>(false);
+  const [showDoctorNoShowAlert, setShowDoctorNoShowAlert] = useState<boolean>(false);
 
   const callAbondmentMethod = (isSeniorConsultStarted: boolean) => {
     if (appointmentData.appointmentType === APPOINTMENT_TYPE.PHYSICAL) return;
@@ -1473,7 +1474,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             if (isCallAbandment) {
               setIsDoctorNoShow(true);
             } else {
-              NextAvailableSlot(appointmentData, 'Transfer', true);
+              setShowDoctorNoShowAlert(true);
             }
             callAbandonmentStoppedTimer = 620;
             callAbandonmentTimer && clearInterval(callAbandonmentTimer);
@@ -6011,6 +6012,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               onPress={() => {
                 NextAvailableSlot(appointmentData, 'Transfer', true);
                 setIsDoctorNoShow(false);
+              }}
+            >
+              <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'RESCHEDULE'}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {showDoctorNoShowAlert && (
+        <BottomPopUp
+          title={`Hi ${userName},`}
+          description={`Due to an emergency, ${appointmentData.doctorInfo.displayName} had to reschedule your appointment to the next available slot. Confirm Slot`}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.claimStyles}
+              onPress={() => {
+                setShowDoctorNoShowAlert(false);
+              }}
+            >
+              <Text style={styles.rescheduleTextStyles}>{'CLAIM REFUND'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.rescheduletyles}
+              onPress={() => {
+                NextAvailableSlot(appointmentData, 'Transfer', true);
+                setShowDoctorNoShowAlert(false);
               }}
             >
               <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'RESCHEDULE'}</Text>
