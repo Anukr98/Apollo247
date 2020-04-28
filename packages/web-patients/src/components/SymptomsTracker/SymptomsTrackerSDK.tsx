@@ -19,7 +19,7 @@ import { Route } from 'react-router-dom';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
-import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -439,8 +439,8 @@ export const SymptomsTrackerSDK: React.FC = () => {
     }
   };
 
-  const onePrimaryUser = hasOnePrimaryUser()
-  
+  const onePrimaryUser = hasOnePrimaryUser();
+
   useEffect(() => {
     if (stopRedirect === 'continue' && isRedirect) {
       setTimeout(() => {
@@ -527,33 +527,34 @@ export const SymptomsTrackerSDK: React.FC = () => {
               <div className={classes.subHeader}>
                 <div className={classes.leftCol}></div>
                 <div className={classes.rightCol}>
-                  <div className={classes.profileDropdown}>
-                    <div className={classes.labelFor}>For</div>
-                    <AphCustomDropdown
-                      classes={{ selectMenu: classes.selectMenuItem }}
-                      value={currentPatient && currentPatient.id}
-                      onChange={(e) => {
-                        setCurrentPatientId(e.target.value as Patient['id']);
-                      }}
-                    >
-                      {allCurrentPatients &&
-                        allCurrentPatients.length > 0 &&
-                        currentPatient &&
-                        allCurrentPatients.map((patient) => {
-                          const isSelected = patient && patient.id === currentPatient.id;
-                          const name = (patient.firstName || '').toLocaleLowerCase();
-                          return (
-                            <MenuItem
-                              selected={isSelected}
-                              value={patient.id}
-                              classes={{ selected: classes.menuSelected }}
-                              key={patient.id}
-                            >
-                              {name}
-                            </MenuItem>
-                          );
-                        })}
-                      {/* <MenuItem classes={{ selected: classes.menuSelected }}>
+                  {isSignedIn && (
+                    <div className={classes.profileDropdown}>
+                      <div className={classes.labelFor}>For</div>
+                      <AphCustomDropdown
+                        classes={{ selectMenu: classes.selectMenuItem }}
+                        value={currentPatient && currentPatient.id}
+                        onChange={(e) => {
+                          setCurrentPatientId(e.target.value as Patient['id']);
+                        }}
+                      >
+                        {allCurrentPatients &&
+                          allCurrentPatients.length > 0 &&
+                          currentPatient &&
+                          allCurrentPatients.map((patient) => {
+                            const isSelected = patient && patient.id === currentPatient.id;
+                            const name = (patient.firstName || '').toLocaleLowerCase();
+                            return (
+                              <MenuItem
+                                selected={isSelected}
+                                value={patient.id}
+                                classes={{ selected: classes.menuSelected }}
+                                key={patient.id}
+                              >
+                                {name}
+                              </MenuItem>
+                            );
+                          })}
+                        {/* <MenuItem classes={{ selected: classes.menuSelected }}>
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
@@ -564,8 +565,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
                           Add Member
                         </AphButton>
                       </MenuItem> */}
-                    </AphCustomDropdown>
-                  </div>
+                      </AphCustomDropdown>
+                    </div>
+                  )}
                 </div>
               </div>
               {patientAge && patientGender && (
@@ -674,7 +676,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
           anchorEl={anchorEl}
           anchorOrigin={{
             vertical: 'bottom',
-            horizontal: 'center',
+            horizontal: 'right',
           }}
           transformOrigin={{
             vertical: 'top',
