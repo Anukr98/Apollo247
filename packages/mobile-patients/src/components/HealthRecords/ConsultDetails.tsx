@@ -695,11 +695,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
                       .join(', ') +
                     ' & ' +
-                    nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
-                    ') '
+                    nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
                   : medicineTimings
                       .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                      .join(', ') + ' ')
+                      .join(', ')) +
+                ') '
               : ''
           }${
             item.medicineConsumptionDurationInDays
