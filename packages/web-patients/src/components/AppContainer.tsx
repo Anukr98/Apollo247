@@ -79,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 0,
       },
-    },    
+    },
   };
 });
 
@@ -94,7 +94,10 @@ const App: React.FC = () => {
 
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
-      <div className={`${classes.app} ${pageName === '/covid19' && classes.noHeaders} ${pageName === '/covid19/article' && classes.noHeaders}`}>
+      <div
+        className={`${classes.app} ${pageName === '/covid19' && classes.noHeaders} ${pageName ===
+          '/covid19/article' && classes.noHeaders}`}
+      >
         <Helmet>
           <script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
@@ -125,12 +128,12 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <Route exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
           <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
-          <AuthRouted
+          <Route
             exact
             path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
             component={MedicineCartLanding}
           />
-          <AuthRouted
+          <Route
             exact
             path={clientRoutes.searchByMedicine(':searchMedicineType', ':searchText')}
             component={SearchByMedicine}
