@@ -362,7 +362,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             {prescription.medicineName}
             <br />
             <span>
-              {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${dosageHtml}${
+              {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
+                dosageHtml ? dosageHtml.toLowerCase() : ''
+              }${
                 timesString.length > 0 &&
                 prescription!.medicineCustomDosage! &&
                 prescription!.medicineCustomDosage! !== ''
