@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, Between } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { NotificationBin, NotificationBinArchive } from 'consults-service/entities';
@@ -32,6 +32,16 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
   async getNotificationById(id: string) {
     try {
       return this.findOne({ where: { id } });
+    } catch (getNotificationErrors) {
+      throw new AphError(AphErrorMessages.GET_NOTIFICATION_ERROR, undefined, {
+        getNotificationErrors,
+      });
+    }
+  }
+
+  async getNotificationInTimePeriod(toId: string, startDate: Date, endDate: Date) {
+    try {
+      return this.find({ where: { toId, createdDate: Between(startDate, endDate) } });
     } catch (getNotificationErrors) {
       throw new AphError(AphErrorMessages.GET_NOTIFICATION_ERROR, undefined, {
         getNotificationErrors,

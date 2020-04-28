@@ -53,6 +53,10 @@ export const notificationBinTypeDefs = gql`
     notificationData: NotificationBinData
   }
 
+  extend type Query {
+    getNotifications(toId: String!): [NotificationBinData]
+  }
+
   extend type Mutation {
     insertMessage(messageInput: MessageInput): NotificationData
     markMessageToUnread(messageId: String): NotificationData
@@ -121,9 +125,27 @@ const markMessageToUnread: Resolver<
   return { notificationData: archievedNotificationData };
 };
 
+const getNotifications: Resolver<
+  null,
+  { toId: string; startDate: Date; endDate: Date },
+  NotificationsServiceContext,
+  { notificationData: Partial<NotificationBin>[] }
+> = async (parent, args, { consultsDb }) => {
+  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+  const notificationData = await notificationBinRepo.getNotificationInTimePeriod(
+    args.toId,
+    args.startDate,
+    args.endDate
+  );
+  return { notificationData: notificationData };
+};
+
 export const notificationBinResolvers = {
   Mutation: {
     insertMessage,
     markMessageToUnread,
+  },
+  Query: {
+    getNotifications,
   },
 };
