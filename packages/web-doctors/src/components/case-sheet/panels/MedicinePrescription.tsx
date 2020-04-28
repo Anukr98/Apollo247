@@ -1901,7 +1901,9 @@ export const MedicinePrescription: React.FC = () => {
                         ? ' (' + timesString + ') '
                         : ' '
                     }${
-                      medicine.medicineFrequency
+                      medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                        ? ''
+                        : medicine.medicineFrequency
                         ? medicine.medicineFrequency
                             .split('_')
                             .join(' ')
@@ -2034,7 +2036,10 @@ export const MedicinePrescription: React.FC = () => {
                             ? ' (' + favTimesString + ') '
                             : ' '
                         } ${
-                          favMedicine.medicineFrequency
+                          favMedicine.medicineCustomDosage &&
+                          favMedicine.medicineCustomDosage !== ''
+                            ? ''
+                            : favMedicine.medicineFrequency
                             ? favMedicine.medicineFrequency
                                 .split('_')
                                 .join(' ')

@@ -1402,7 +1402,9 @@ export const MedicinePrescription: React.FC = () => {
                   ? ' (' + timesString + ') '
                   : ' '
               }${
-                medicine.medicineFrequency
+                medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                  ? ''
+                  : medicine.medicineFrequency
                   ? medicine.medicineFrequency
                       .split('_')
                       .join(' ')

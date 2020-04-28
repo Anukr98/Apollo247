@@ -371,7 +371,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   ? ' (' + timesString + ') '
                   : ' '
               }${
-                prescription!.medicineFrequency
+                prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''
+                  ? ''
+                  : prescription!.medicineFrequency
                   ? prescription!.medicineFrequency
                       .split('_')
                       .join(' ')
