@@ -9,6 +9,7 @@ import {
   getCaseSheetVariables,
   getCaseSheet_getCaseSheet_caseSheetDetails,
   getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
+  getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -51,6 +52,9 @@ import {
   MEDICINE_CONSUMPTION_DURATION,
   AppointmentType,
   APPOINTMENT_TYPE,
+  MEDICINE_TO_BE_TAKEN,
+  MEDICINE_TIMINGS,
+  MEDICINE_FORM_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonLogEvent,
@@ -65,6 +69,8 @@ import {
   addTestsToCart,
   doRequestAndAccessLocation,
   postWebEngageEvent,
+  nameFormater,
+  medUnitFormatArray,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
@@ -486,21 +492,80 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     });
   };
 
+  const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
+    return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+      ? 30
+      : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
+      ? 7
+      : 1;
+  };
+
+  const getQuantity = (
+    medicineUnit: MEDICINE_UNIT | null,
+    medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
+    medicineDosage: string | null,
+    medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
+    medicineConsumptionDurationInDays: string | null,
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
+    mou: number // how many tablets per strip
+  ) => {
+    if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
+      const medicineDosageMapping = medicineCustomDosage
+        ? medicineCustomDosage.split('-').map((item) => {
+            if (item.indexOf('/') > -1) {
+              const dosage = item.split('/').map((item) => Number(item));
+              return (dosage[0] || 1) / (dosage[1] || 1);
+            } else if (item.indexOf('\\') > -1) {
+              const dosage = item.split('\\').map((item) => Number(item));
+              return (dosage[0] || 1) / (dosage[1] || 1);
+            } else {
+              return Number(item);
+            }
+          })
+        : medicineDosage
+        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+        : [1, 1, 1, 1];
+
+      const medicineTimingsPerDayCount =
+        (medicineTimings || []).reduce(
+          (currTotal, currItem) =>
+            currTotal +
+            (currItem == MEDICINE_TIMINGS.MORNING
+              ? medicineDosageMapping[0]
+              : currItem == MEDICINE_TIMINGS.NOON
+              ? medicineDosageMapping[1]
+              : currItem == MEDICINE_TIMINGS.EVENING
+              ? medicineDosageMapping[2]
+              : currItem == MEDICINE_TIMINGS.NIGHT
+              ? medicineDosageMapping[3]
+              : (medicineDosage && Number(medicineDosage)) || 1),
+          0
+        ) || 1;
+
+      console.log({ medicineTimingsPerDayCount });
+
+      const totalTabletsNeeded =
+        medicineTimingsPerDayCount *
+        Number(medicineConsumptionDurationInDays || '1') *
+        getDaysCount(medicineConsumptionDurationUnit);
+
+      console.log({ totalTabletsNeeded });
+
+      return Math.ceil(totalTabletsNeeded / mou);
+    } else {
+      // 1 for other than tablet or capsule
+      return 1;
+    }
+  };
+
   const onAddToCart = () => {
     setLoading && setLoading(true);
 
     const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
       (item) => item!.id
     );
-    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
-    const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION) => {
-      return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
-        ? 30
-        : type == MEDICINE_CONSUMPTION_DURATION.WEEKS
-        ? 7
-        : 1;
-    };
 
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
         console.log('Promise.all medPrescription result', { result });
@@ -510,16 +575,16 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           if (medicineDetails.id == 0) {
             return null;
           }
-          const _qty =
-            medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
-            medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
-              ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
-                parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1', 10) *
-                getDaysCount(medPrescription[index]!.medicineConsumptionDurationUnit!) *
-                (medPrescription[index]!.medicineToBeTaken!.length || 1) *
-                parseFloat(medPrescription[index]!.medicineDosage! || '1')
-              : 1;
-          const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1', 10));
+          const item = medPrescription[index]!;
+          const qty = getQuantity(
+            item.medicineUnit,
+            item.medicineTimings,
+            item.medicineDosage,
+            item.medicineCustomDosage,
+            item.medicineConsumptionDurationInDays,
+            item.medicineConsumptionDurationUnit,
+            parseInt(medicineDetails.mou || '1', 10)
+          );
 
           return {
             id: medicineDetails!.sku!,
@@ -594,8 +659,105 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       });
   };
 
-  const getFormattedUnit = (unit: MEDICINE_CONSUMPTION_DURATION | null) => {
-    return (unit || '').toLowerCase().replace('s', '(s)');
+  const medicineDescription = (
+    item: getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+  ) => {
+    const type = item.medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS ? 'Take' : 'Apply';
+    const customDosage = item.medicineCustomDosage
+      ? item.medicineCustomDosage.split('-').filter((i) => i !== '')
+      : [];
+    const medTimingsArray = [
+      MEDICINE_TIMINGS.MORNING,
+      MEDICINE_TIMINGS.NOON,
+      MEDICINE_TIMINGS.EVENING,
+      MEDICINE_TIMINGS.NIGHT,
+      MEDICINE_TIMINGS.AS_NEEDED,
+    ];
+    const medicineTimings = medTimingsArray
+      .map((i) => {
+        if (item.medicineTimings && item.medicineTimings.includes(i)) {
+          return i;
+        } else {
+          return null;
+        }
+      })
+      .filter((i) => i !== null);
+    const unit: string =
+      (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
+    return `${type + ' '}${
+      customDosage.length > 0
+        ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
+            medicineTimings && medicineTimings.length
+              ? '(' +
+                (medicineTimings.length > 1
+                  ? medicineTimings
+                      .slice(0, -1)
+                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                      .join(', ') +
+                    ' & ' +
+                    nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
+                    ') '
+                  : medicineTimings
+                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                      .join(', ') + ' ')
+              : ''
+          }${
+            item.medicineConsumptionDurationInDays
+              ? `for ${item.medicineConsumptionDurationInDays} ${
+                  item.medicineConsumptionDurationUnit
+                    ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                    : ``
+                }`
+              : ''
+          }${
+            item.medicineToBeTaken && item.medicineToBeTaken.length
+              ? item.medicineToBeTaken
+                  .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                  .join(', ') + '.'
+              : ''
+          }`
+        : `${item.medicineDosage ? item.medicineDosage : ''} ${
+            item.medicineUnit ? unit + ' ' : ''
+          }${item.medicineFrequency ? nameFormater(item.medicineFrequency, 'lower') + ' ' : ''}${
+            item.medicineConsumptionDurationInDays
+              ? `for ${item.medicineConsumptionDurationInDays} ${
+                  item.medicineConsumptionDurationUnit
+                    ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                    : ``
+                }`
+              : ''
+          }${
+            item.medicineToBeTaken && item.medicineToBeTaken.length
+              ? item.medicineToBeTaken
+                  .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                  .join(', ') + ' '
+              : ''
+          }${
+            medicineTimings && medicineTimings.length
+              ? `${
+                  medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) &&
+                  medicineTimings.length === 1
+                    ? ''
+                    : 'in the '
+                }` +
+                (medicineTimings.length > 1
+                  ? medicineTimings
+                      .slice(0, -1)
+                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                      .join(', ') +
+                    ' & ' +
+                    nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
+                    ' '
+                  : medicineTimings
+                      .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                      .join(', ') + ' ')
+              : ''
+          }`
+    }${
+      item.routeOfAdministration
+        ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
+        : ''
+    }${item.medicineInstructions ? '\nInstuctions: ' + item.medicineInstructions : ''}`;
   };
 
   const renderPrescriptions = () => {
@@ -619,68 +781,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                           <Text style={styles.labelStyle}>{item.medicineName}</Text>
                         </View>
 
-                        <Text style={styles.dataTextStyle}>
-                          {item.medicineFormTypes == 'OTHERS'
-                            ? 'Take ' +
-                              item!.medicineDosage! +
-                              ' ' +
-                              item!.medicineUnit!.toLowerCase() +
-                              ' (s)' +
-                              ' '
-                            : 'Apply ' + item!.medicineUnit!.toLowerCase() + ' '}
-
-                          {item!.medicineFrequency! &&
-                            item!.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
-                              ' '}
-                          {item.medicineToBeTaken
-                            ? item.medicineToBeTaken
-                                .map(
-                                  (item) =>
-                                    item &&
-                                    item
-                                      .split('_')
-                                      .join(' ')
-                                      .toLowerCase()
-                                )
-                                .join(', ')
-                            : ''}
-                          {item.medicineTimings!.length > 0 ? ' in the ' : ''}
-                          {item.medicineTimings
-                            ? item.medicineTimings
-                                .map(
-                                  (item) =>
-                                    item &&
-                                    item
-                                      .split('_')
-                                      .join(' ')
-                                      .toLowerCase()
-                                )
-                                .map(
-                                  (val, idx, array) =>
-                                    `${val}${
-                                      idx == array.length - 2
-                                        ? ' and '
-                                        : idx > array.length - 2
-                                        ? ''
-                                        : ', '
-                                    }`
-                                )
-                            : ''}
-
-                          {item.medicineConsumptionDurationInDays == ''
-                            ? ''
-                            : item!.medicineConsumptionDurationInDays! &&
-                              item!.medicineConsumptionDurationInDays!.length == 1
-                            ? ' for ' +
-                              item!.medicineConsumptionDurationInDays! +
-                              ' ' +
-                              getFormattedUnit(item!.medicineConsumptionDurationUnit)
-                            : ' for ' +
-                              item!.medicineConsumptionDurationInDays! +
-                              ' ' +
-                              getFormattedUnit(item!.medicineConsumptionDurationUnit)}
-                          {item.medicineInstructions ? '\n' + item.medicineInstructions : ''}
-                        </Text>
+                        <Text style={styles.dataTextStyle}>{medicineDescription(item)}</Text>
                       </View>
                     );
                 })}
@@ -718,7 +819,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           heading={`PROVISIONAL DIAGNOSED MEDICAL CONSITION\n(ACCEPTABLE IN ICD-10 NOMENCLATURE)`}
           collapse={showDiagnosis}
           onPress={() => setshowDiagnosis(!showDiagnosis)}
-          headingStyle={[{ ...theme.fonts.IBMPlexSansBold(12) }]}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! !== null ? (
