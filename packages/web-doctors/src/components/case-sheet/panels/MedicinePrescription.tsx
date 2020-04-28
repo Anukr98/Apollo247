@@ -1533,6 +1533,50 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
+    } else if (
+      isCustomform &&
+      customDosageMorning.trim() !== '' &&
+      daySlotsArr.indexOf('MORNING') < 0
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageNoon.trim() !== '' && daySlotsArr.indexOf('NOON') < 0) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      customDosageEvening.trim() !== '' &&
+      daySlotsArr.indexOf('EVENING') < 0
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      customDosageNight.trim() !== '' &&
+      daySlotsArr.indexOf('NIGHT') < 0
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else if (daySlotsArr.length === 0) {
       setErrorState({
         ...errorState,
@@ -1848,7 +1892,9 @@ export const MedicinePrescription: React.FC = () => {
                 <Paper className={classes.medicineCard}>
                   <h5>{medicine.medicineName}</h5>
                   <h6>
-                    {`${medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'} ${dosageHtml}${
+                    {`${
+                      medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                    } ${dosageHtml.toLowerCase()}${
                       timesString.length > 0 &&
                       medicine.medicineCustomDosage &&
                       medicine.medicineCustomDosage !== ''
@@ -1981,7 +2027,7 @@ export const MedicinePrescription: React.FC = () => {
                       <h6>
                         {`${
                           favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
-                        } ${favDosageHtml}${
+                        } ${favDosageHtml.toLowerCase()}${
                           favTimesString.length > 0 &&
                           favMedicine.medicineCustomDosage &&
                           favMedicine.medicineCustomDosage !== ''
@@ -2345,7 +2391,7 @@ export const MedicinePrescription: React.FC = () => {
                             component="div"
                             error={errorState.daySlotErr}
                           >
-                            Please select time of the day.
+                            Please select valid time of the day.
                           </FormHelperText>
                         )}
                       </Grid>
@@ -2876,7 +2922,7 @@ export const MedicinePrescription: React.FC = () => {
                               component="div"
                               error={errorState.daySlotErr}
                             >
-                              Please select time of the day.
+                              Please select valid time of the day.
                             </FormHelperText>
                           )}
                         </Grid>
