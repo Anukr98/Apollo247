@@ -188,6 +188,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
   const classes = useStyles();
   const {
     patientDetails,
+    sdConsultationDate,
     height,
     weight,
     bp,
@@ -508,7 +509,9 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 <div className={classes.label}>Consult Date</div>
                 <div className={classes.labelContent}>
                   <div className={classes.labelBlue}>
-                    {moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}
+                    {sdConsultationDate && sdConsultationDate !== ''
+                      ? moment(sdConsultationDate).format('DD/MM/YYYY')
+                      : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}
                   </div>
                 </div>
               </div>
