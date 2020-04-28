@@ -79,6 +79,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const [medicineSelected, setMedicineSelected] = useState<MedicineProductDetails>();
   const [externalId, setExternalId] = useState<string>('');
   const [medSearchText, setMedSearchText] = useState<string>('');
+  const [isFromSearch, setFromSearch] = useState<boolean>(false);
   const [medList, setMedList] = useState<MedicineProduct[]>([]);
   const [listLoader, setListLoader] = useState<boolean>(false);
   const [medDetailLoading, setMedDetailLoading] = useState<boolean>(false);
@@ -385,11 +386,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   selected: true,
                   value:
                     valueIndexCounter < formValues.length
-                      ? formValues[valueIndexCounter] || '0'
-                      : '0',
+                      ? formValues[valueIndexCounter] || ''
+                      : '',
                 });
               } else {
-                medAnswers.push({ key: item.key, selected: false, value: '0' });
+                medAnswers.push({ key: item.key, selected: false, value: '' });
               }
               valueIndexCounter++;
             });
@@ -409,7 +410,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   medAnswers.push({ key: item.key, selected: true, value: formValues[index] });
                 }
               } else {
-                medAnswers.push({ key: item.key, selected: false, value: '0' });
+                medAnswers.push({ key: item.key, selected: false, value: '' });
               }
             });
           }
@@ -501,7 +502,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           style={{ width: (width - 110) / 2, marginRight: 16 }}
         />
         <Button
-          title={strings.smartPrescr.add_medicine}
+          title={data ? strings.smartPrescr.update_medicine : strings.smartPrescr.add_medicine}
           onPress={() => {
             if (defaultForm && medicineDosage.length === 0) {
               showAphAlert &&
@@ -512,12 +513,20 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               return;
             } else if (
               !defaultForm &&
-              medTimingAnswers.filter((i) => i.selected && i.value.length === 0).length > 0
+              medTimingAnswers.filter(
+                (i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected && i.value.length === 0
+              ).length > 0
             ) {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
-                  description: 'Enter all custom dosage',
+                  description: `Enter (${medTimingAnswers
+                    .filter(
+                      (i) =>
+                        i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected && i.value.length === 0
+                    )
+                    .map((i) => nameFormater(i.key, 'lower'))
+                    .join(', ')}) dosage(s)`,
                 });
               return;
             } else if (defaultForm && medTimingAnswers.filter((i) => i.selected).length === 0) {
@@ -527,7 +536,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                   description: 'Select at least one timing\n(Morning/Noon/Evening/Night/As needed)',
                 });
               return;
-            } else if (!defaultForm && medTimingAnswers.filter((i) => i.selected).length === 0) {
+            } else if (
+              !defaultForm &&
+              medTimingAnswers.filter((i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected)
+                .length === 0
+            ) {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
@@ -568,12 +581,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                         return '';
                       } else {
                         return (
-                          (medTimingAnswers.find((i) => i.key === item.key) || {}).value || '0'
+                          (medTimingAnswers.find((i) => i.key === item.key) || {}).value || 'n'
                         );
                       }
                     })
                     .filter((i) => i !== '')
                     .join('-')
+                    .replace(/n/g, '')
                 : null,
             };
             console.log(dataSend, 'data');
@@ -598,6 +612,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           placeholderTextColor="rgba(1, 71, 91, 0.3)"
           value={medicineDosage}
           maxLength={7}
+          keyboardType={'numbers-and-punctuation'}
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}
           onChange={(text) => {
             setMedicineDosage(formatFractionalNumber(text.nativeEvent.text));
@@ -619,13 +634,14 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               placeholderTextColor="rgba(1, 71, 91, 0.3)"
               value={existingAnswers.value}
               maxLength={7}
+              keyboardType={'numbers-and-punctuation'}
               selectionColor={theme.colors.INPUT_CURSOR_COLOR}
               onChange={(text) => {
                 setMedTimingAnswers([
                   ...(medTimingAnswers.filter((i) => i.key !== item.key) || []),
                   {
                     key: existingAnswers.key,
-                    selected: existingAnswers.selected,
+                    selected: formatFractionalNumber(text.nativeEvent.text) !== '',
                     value: formatFractionalNumber(text.nativeEvent.text),
                   },
                 ]);
@@ -719,16 +735,37 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               if (defaultForm) {
                 setMedTimingAnswers(
                   medTimingsArray.map((item) => {
+                    setFromSearch(false);
+                    const existing = medTimingAnswers.findIndex((i) => i.key === item.key);
                     if (item.key !== MEDICINE_TIMINGS.AS_NEEDED) {
-                      return { key: item.key, selected: true, value: '' };
+                      return {
+                        key: item.key,
+                        selected: isFromSearch
+                          ? true
+                          : existing > -1
+                          ? medTimingAnswers[existing].value !== ''
+                            ? true
+                            : medTimingAnswers[existing].selected
+                          : true,
+                        value: isFromSearch
+                          ? '0'
+                          : existing > -1
+                          ? medTimingAnswers[existing].value
+                          : '0',
+                      };
                     } else {
-                      return { key: item.key, selected: false, value: '' };
+                      return {
+                        key: item.key,
+                        selected:
+                          existing > -1
+                            ? medTimingAnswers[existing].value !== ''
+                              ? true
+                              : medTimingAnswers[existing].selected
+                            : true,
+                        value: '',
+                      };
                     }
                   })
-                );
-              } else {
-                setMedTimingAnswers(
-                  medTimingsArray.map((i) => ({ key: i.key, selected: false, value: '' }))
                 );
               }
             }}
@@ -782,7 +819,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                         {
                           key: existingAnswers.key,
                           selected: !existingAnswers.selected,
-                          value: existingAnswers.selected ? '0' : existingAnswers.value,
+                          value: existingAnswers.selected ? '' : existingAnswers.value,
                         },
                       ]);
                     }
@@ -831,6 +868,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             placeholder=""
             placeholderTextColor="rgba(1, 71, 91, 0.3)"
             value={forTime}
+            keyboardType={'numbers-and-punctuation'}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => setForTime((formatInt(text.nativeEvent.text) || '').toString())}
           />
@@ -1005,6 +1043,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           setMedName(item.name);
+          setFromSearch(true);
           if (item.name === item.sku) {
             setMedicineSelected(item as MedicineProductDetails);
             setExternalId(item.sku);

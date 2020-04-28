@@ -185,11 +185,11 @@ export const medicineDescription = (
                     .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
                     .join(', ') +
                   ' & ' +
-                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
-                  ') '
+                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
                 : medicineTimings
                     .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-                    .join(', ') + ' ')
+                    .join(', ')) +
+              ') '
             : ''
         }${
           item.medicineConsumptionDurationInDays
@@ -224,7 +224,11 @@ export const medicineDescription = (
             : ''
         }${
           medicineTimings && medicineTimings.length
-            ? 'in the ' +
+            ? `${
+                medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
+                  ? ''
+                  : 'in the '
+              }` +
               (medicineTimings.length > 1
                 ? medicineTimings
                     .slice(0, -1)
