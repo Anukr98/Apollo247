@@ -1,12 +1,20 @@
-import React from 'react';
-import { Theme, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails } from '@material-ui/core';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  Theme,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { CircularProgress } from '@material-ui/core';
+import _isEmpty from 'lodash/isEmpty';
 import { Header } from 'components/Header';
 import { Banner } from 'components/Covid/Banner';
 import { AphButton } from '@aph/web-ui-components';
 import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import fetchUtil from 'helpers/fetch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -23,7 +31,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 20,
       [theme.breakpoints.up('sm')]: {
         borderRadius: '0 0 10px 10px',
-      }
+      },
+    },
+    progressLoader: {
+      textAlign: 'center',
+      padding: 20,
     },
     sectionGroup: {
       padding: 20,
@@ -56,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
           backgroundColor: 'transparent',
         },
       },
-    },    
+    },
     panelHeader: {
       padding: 16,
       fontSize: 16,
@@ -120,6 +132,73 @@ const useStyles = makeStyles((theme: Theme) => {
 export const CovidLanding: React.FC = (props) => {
   const classes = useStyles();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
+  const headingArr = [
+    {
+      heading: 'How can I stay safe?',
+      subheading: 'Articles and videos about basic protective measures against the coronavirus',
+      category: 'stay-safe',
+      defaultExpanded: true,
+    },
+    {
+      heading: 'What to do if I have symptoms?',
+      subheading: 'Know more about the symptoms and preventions through articles and videos.',
+      category: 'covid-symptoms',
+      defaultExpanded: false,
+    },
+    {
+      heading: 'How are we getting ahead?',
+      subheading: 'Learn how Apollo is making a difference to help the world against coronavirus.',
+      category: 'going-ahead',
+      defaultExpanded: false,
+    },
+  ];
+  interface CovidContentInterface {
+    [key: string]: any;
+  }
+  const [covidContent, setCovidContent] = useState<CovidContentInterface>({});
+  const [categoryToFetch, setCategoryToFetch] = useState<string>('');
+  const [moreContentLoading, setMoreContentLoading] = useState<boolean>(false);
+  const didMount = useRef(false);
+  const covidArticleBaseUrl =
+    process.env.NODE_ENV !== 'production'
+      ? `${process.env.COVID_ARTICLE_LIST_URL}?st=2`
+      : process.env.COVID_ARTICLE_LIST_URL;
+
+  useEffect(() => {
+    fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
+      const body = res.data;
+      const sortedStaySafeData = !_isEmpty(body['stay-safe']) && body['stay-safe'];
+      const sortedCovidSymptomsData = !_isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
+      const sortedGoingAheadData = !_isEmpty(body['going-ahead']) && body['going-ahead'];
+
+      let covidObj: CovidContentInterface = {};
+      covidObj['stay-safe'] = sortedStaySafeData;
+      covidObj['covid-symptoms'] = sortedCovidSymptomsData;
+      covidObj['going-ahead'] = sortedGoingAheadData;
+      covidObj['total-term'] = body['totalterm'];
+      setCovidContent(covidObj);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (didMount.current && categoryToFetch !== '') {
+      const currentOffset = covidContent[categoryToFetch].length;
+      fetchUtil(
+        `${covidArticleBaseUrl}?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
+        'GET',
+        {},
+        '',
+        true
+      ).then((res: any) => {
+        const sortedData = res.data[categoryToFetch];
+        let tempCovidObj: CovidContentInterface = covidContent;
+        tempCovidObj[categoryToFetch] = tempCovidObj[categoryToFetch].concat(sortedData);
+        setCovidContent(tempCovidObj);
+        setMoreContentLoading(false);
+        setCategoryToFetch('');
+      });
+    } else didMount.current = true;
+  }, [categoryToFetch]);
 
   return (
     <div className={classes.root}>
@@ -129,81 +208,61 @@ export const CovidLanding: React.FC = (props) => {
           <Banner />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
-              <ExpansionPanel
-                className={classes.panelRoot}
-                defaultExpanded={true}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded
-                  }}
+              {headingArr.map((parentCat) => (
+                <ExpansionPanel
+                  key={parentCat.category}
+                  className={classes.panelRoot}
+                  defaultExpanded={parentCat.defaultExpanded}
                 >
-                  <h3>How can I stay safe?</h3>
-                  <p>Articles and videos about basic protective measures against the coronavirus</p>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails
-                  className={classes.panelDetails}
-                >
-                  <ArticleCard />
-                  <div className={classes.bottomActions}>
-                    <AphButton className={classes.viewmoreBtn}>View More</AphButton>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel
-                className={classes.panelRoot}
-                defaultExpanded={true}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded
-                  }}
-                >
-                  <h3>What to do if I have symptoms?</h3>
-                  <p>Know more about the symptoms and preventions through articles and videos.</p>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails
-                  className={classes.panelDetails}
-                >
-                  <ArticleCard />
-                  <div className={classes.bottomActions}>
-                    <AphButton className={classes.viewmoreBtn}>View More</AphButton>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel
-                className={classes.panelRoot}
-                defaultExpanded={true}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded
-                  }}
-                >
-                  <h3>How are we getting ahead?</h3>
-                  <p>Learn how Apollo is making a difference to help the world against coronavirus.</p>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails
-                  className={classes.panelDetails}
-                >
-                  <ArticleCard />
-                  <div className={classes.bottomActions}>
-                    <AphButton className={classes.viewmoreBtn}>View More</AphButton>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
+                  <ExpansionPanelSummary
+                    expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+                    classes={{
+                      root: classes.panelHeader,
+                      content: classes.summaryContent,
+                      expandIcon: classes.expandIcon,
+                      expanded: classes.panelExpanded,
+                    }}
+                  >
+                    <h3>{parentCat.heading}</h3>
+                    <p>{parentCat.subheading}</p>
+                  </ExpansionPanelSummary>
+                  {_isEmpty(covidContent['stay-safe']) ? (
+                    <div className={classes.progressLoader}>
+                      <CircularProgress size={30} />
+                    </div>
+                  ) : (
+                    <ExpansionPanelDetails className={classes.panelDetails}>
+                      {covidContent &&
+                        covidContent[parentCat.category] &&
+                        covidContent[parentCat.category].length && (
+                          <ArticleCard content={covidContent[parentCat.category]} />
+                        )}
+                      {moreContentLoading ? (
+                        <div className={classes.progressLoader}>
+                          <CircularProgress size={30} />
+                        </div>
+                      ) : (
+                        <div className={classes.bottomActions}>
+                          {!_isEmpty(covidContent) &&
+                            !_isEmpty(covidContent[parentCat.category]) &&
+                            covidContent[parentCat.category].length <
+                              parseInt(covidContent['total-term'][parentCat.category]) && (
+                              <AphButton
+                                className={classes.viewmoreBtn}
+                                onClick={() => {
+                                  setMoreContentLoading(true);
+                                  setCategoryToFetch(parentCat.category);
+                                }}
+                              >
+                                View More
+                              </AphButton>
+                            )}
+                        </div>
+                      )}
+                    </ExpansionPanelDetails>
+                  )}
+                </ExpansionPanel>
+              ))}
             </div>
             <CheckRiskLevel />
           </div>

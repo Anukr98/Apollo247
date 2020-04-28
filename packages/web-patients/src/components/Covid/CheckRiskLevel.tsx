@@ -50,6 +50,12 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    riskButton: {
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        minWidth: '0 !important',
+      },
+    },
   };
 });
 
@@ -63,7 +69,9 @@ export const CheckRiskLevel: React.FC = (props) => {
         <img className={classes.desktopImg} src={require('images/ic_warning_white.svg')} alt="" />
       </span>
       <p>Worried about symptoms? Check your COVID-19 risk level.</p>
-      <AphButton color="primary">Check your risk level</AphButton>
+      <AphButton className={classes.riskButton} color="primary">
+        Check your risk level
+      </AphButton>
     </div>
   );
 };

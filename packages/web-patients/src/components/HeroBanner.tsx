@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
 import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
+import { Link } from 'react-router-dom';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
 import _isEmpty from 'lodash/isEmpty';
@@ -249,10 +250,11 @@ export const HeroBanner: React.FC = () => {
         )}
         <p>How can we help you today? :)</p>
         <OurServices />
-        <div
-          onClick={() => {
-            setIscoronaDialogOpen(true);
-          }}
+        <Link
+          to={'/covid19'}
+          // onClick={() => {
+          //   // setIscoronaDialogOpen(true);
+          // }}
           className={classes.callEmergency}
           title={'Call 08047192606 in emergency'}
         >
@@ -260,9 +262,9 @@ export const HeroBanner: React.FC = () => {
           <span className={classes.callImg}>
             <img src={require('images/ic-emergency.svg')} alt="" />
           </span>
-        </div>
+        </Link>
       </div>
-      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+      {/* <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
@@ -272,7 +274,7 @@ export const HeroBanner: React.FC = () => {
             Ok, Got It
           </AphButton>
         </div>
-      </AphDialog>
+      </AphDialog> */}
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>Add New Member</AphDialogTitle>
