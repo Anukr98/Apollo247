@@ -4256,6 +4256,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ListHeaderComponent={renderChatHeader()}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
+          stickyHeaderIndices={[0]}
           removeClippedSubviews={false}
           ref={(ref) => (flatListRef.current = ref)}
           contentContainerStyle={{
