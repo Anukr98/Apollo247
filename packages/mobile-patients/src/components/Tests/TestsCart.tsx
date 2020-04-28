@@ -385,10 +385,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const errorAlert = () => {
+  const errorAlert = (description?: string) => {
     showAphAlert!({
       title: string.common.uhOh,
-      description: 'Unable to fetch test details.',
+      description: description || 'Unable to fetch test details.',
     });
   };
 
@@ -1316,7 +1316,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-        errorAlert();
+        setLoading!(false);
+        errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
       });
   };
 
