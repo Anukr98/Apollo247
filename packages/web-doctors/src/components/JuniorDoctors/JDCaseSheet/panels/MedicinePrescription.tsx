@@ -1340,6 +1340,7 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
+      console.log(_medicine);
       const duration =
         medicine.medicineConsumptionDurationInDays &&
         ` for ${Number(medicine.medicineConsumptionDurationInDays)} ${
@@ -1417,9 +1418,9 @@ export const MedicinePrescription: React.FC = () => {
               } ${duration} ${whenString.length > 0 ? whenString : ''} ${
                 timesString.length > 0 &&
                 medicine.medicineCustomDosage &&
-                medicine.medicineCustomDosage === ''
-                  ? timesString
-                  : ''
+                medicine.medicineCustomDosage !== ''
+                  ? ''
+                  : timesString
               }`}
             </div>
             {medicine.routeOfAdministration && (
@@ -1483,7 +1484,15 @@ export const MedicinePrescription: React.FC = () => {
       customDosageEvening.trim() +
       '-' +
       customDosageNight.trim();
-
+    let customDosageArray = [];
+    if (customDosageMorning && customDosageMorning.trim() !== '')
+      customDosageArray.push(customDosageMorning.trim());
+    if (customDosageNoon && customDosageNoon.trim() !== '')
+      customDosageArray.push(customDosageNoon.trim());
+    if (customDosageEvening && customDosageEvening.trim() !== '')
+      customDosageArray.push(customDosageEvening.trim());
+    if (customDosageNight && customDosageNight.trim() !== '')
+      customDosageArray.push(customDosageNight.trim());
     if (!isCustomform && tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
@@ -1543,6 +1552,14 @@ export const MedicinePrescription: React.FC = () => {
       customDosageNight.trim() !== '' &&
       daySlotsArr.indexOf('NIGHT') < 0
     ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
       setErrorState({
         ...errorState,
         durationErr: false,

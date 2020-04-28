@@ -1512,7 +1512,16 @@ export const MedicinePrescription: React.FC = () => {
       customDosageEvening.trim() +
       '-' +
       customDosageNight.trim();
-    if (!isCustomform && tabletsCount === '') {
+    let customDosageArray = [];
+    if (customDosageMorning && customDosageMorning.trim() !== '')
+      customDosageArray.push(customDosageMorning.trim());
+    if (customDosageNoon && customDosageNoon.trim() !== '')
+      customDosageArray.push(customDosageNoon.trim());
+    if (customDosageEvening && customDosageEvening.trim() !== '')
+      customDosageArray.push(customDosageEvening.trim());
+    if (customDosageNight && customDosageNight.trim() !== '')
+      customDosageArray.push(customDosageNight.trim());
+    if (!isCustomform && tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1571,6 +1580,14 @@ export const MedicinePrescription: React.FC = () => {
       customDosageNight.trim() !== '' &&
       daySlotsArr.indexOf('NIGHT') < 0
     ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1917,9 +1934,9 @@ export const MedicinePrescription: React.FC = () => {
                     ${duration} ${whenString.length > 0 ? whenString : ''} ${
                       timesString.length > 0 &&
                       medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage === ''
-                        ? timesString
-                        : ''
+                      medicine.medicineCustomDosage !== ''
+                        ? ''
+                        : timesString
                     }
                     `}
                   </h6>
@@ -2053,8 +2070,8 @@ export const MedicinePrescription: React.FC = () => {
                           favTimesString.length > 0 &&
                           favMedicine.medicineCustomDosage &&
                           favMedicine.medicineCustomDosage === ''
-                            ? favTimesString
-                            : ''
+                            ? ''
+                            : favTimesString
                         }
                     `}
                       </h6>
@@ -2353,7 +2370,7 @@ export const MedicinePrescription: React.FC = () => {
                                     setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                   }}
                                 >
-                                    {generateFrequency}
+                                  {generateFrequency}
                                 </AphSelect>
                               </Grid>
                             </Grid>
@@ -2885,7 +2902,7 @@ export const MedicinePrescription: React.FC = () => {
                                       setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                     }}
                                   >
-                                      {generateFrequency}
+                                    {generateFrequency}
                                   </AphSelect>
                                 </Grid>
                               </Grid>

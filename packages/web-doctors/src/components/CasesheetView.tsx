@@ -386,8 +386,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 timesString.length > 0 &&
                 prescription!.medicineCustomDosage! &&
                 prescription!.medicineCustomDosage! === ''
-                  ? timesString
-                  : ''
+                  ? ''
+                  : timesString
               }`}
             </span>
             {prescription.routeOfAdministration &&
