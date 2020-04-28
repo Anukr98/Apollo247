@@ -226,7 +226,7 @@ export const CovidLanding: React.FC = (props) => {
                     <h3>{parentCat.heading}</h3>
                     <p>{parentCat.subheading}</p>
                   </ExpansionPanelSummary>
-                  {isEmpty(covidContent['stay-safe']) ? (
+                  {_isEmpty(covidContent['stay-safe']) ? (
                     <div className={classes.progressLoader}>
                       <CircularProgress size={30} />
                     </div>
@@ -243,8 +243,8 @@ export const CovidLanding: React.FC = (props) => {
                         </div>
                       ) : (
                         <div className={classes.bottomActions}>
-                          {!isEmpty(covidContent) &&
-                            !isEmpty(covidContent[parentCat.category]) &&
+                          {!_isEmpty(covidContent) &&
+                            !_isEmpty(covidContent[parentCat.category]) &&
                             covidContent[parentCat.category].length <
                               parseInt(covidContent['total-term'][parentCat.category]) && (
                               <AphButton
