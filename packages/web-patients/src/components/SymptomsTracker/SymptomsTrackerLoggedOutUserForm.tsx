@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     signUpPop: {
-      width: 368,
+      // width: 368,
       borderRadius: 10,
       paddingTop: 0,
       boxShadow: 'none',

@@ -133,11 +133,11 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [type, setType] = useState('');
   const [showLoader, setShowLoader] = useState(true);
   const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
-  const articleId = props && props.location.pathname && props.location.pathname.split('/').pop();
+  const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
-    if (articleId) {
-      fetchUtil(`${covidArticleDetailUrl}/${articleId}`, 'GET', {}, '', true).then((res: any) => {
+    if (articleSlug) {
+      fetchUtil(`${covidArticleDetailUrl}/${articleSlug}`, 'GET', {}, '', true).then((res: any) => {
         let postData: any = {};
         if (res && res.data && !isEmpty(res.data[0])) {
           postData = res.data[0];

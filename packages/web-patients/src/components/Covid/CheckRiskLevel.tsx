@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const CheckRiskLevel: React.FC = (props) => {
   const classes = useStyles();
-
+  const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
   return (
     <div className={classes.root}>
       <span>
@@ -69,7 +69,11 @@ export const CheckRiskLevel: React.FC = (props) => {
         <img className={classes.desktopImg} src={require('images/ic_warning_white.svg')} alt="" />
       </span>
       <p>Worried about symptoms? Check your COVID-19 risk level.</p>
-      <AphButton className={classes.riskButton} color="primary">
+      <AphButton
+        className={classes.riskButton}
+        color="primary"
+        onClick={() => window.open(covidScannerUrl)}
+      >
         Check your risk level
       </AphButton>
     </div>

@@ -8,6 +8,7 @@ import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { locationRoutesBlackList } from 'helpers/commonHelpers';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { LocationSearch } from './LocationSearch';
@@ -177,6 +178,7 @@ export const Header: React.FC = (props) => {
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
   const isMobileView = screen.width <= 768;
+
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
@@ -186,7 +188,7 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {currentPath !== '/' && <LocationSearch />}
+          {!locationRoutesBlackList.includes(currentPath) && <LocationSearch />}
           <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div
