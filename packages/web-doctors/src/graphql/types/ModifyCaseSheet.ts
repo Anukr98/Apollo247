@@ -16,6 +16,7 @@ export interface ModifyCaseSheet_modifyCaseSheet_appointment_appointmentDocument
 export interface ModifyCaseSheet_modifyCaseSheet_appointment {
   __typename: "Appointment";
   id: string;
+  sdConsultationDate: any | null;
   appointmentDateTime: any;
   appointmentDocuments: (ModifyCaseSheet_modifyCaseSheet_appointment_appointmentDocuments | null)[] | null;
   appointmentState: string | null;

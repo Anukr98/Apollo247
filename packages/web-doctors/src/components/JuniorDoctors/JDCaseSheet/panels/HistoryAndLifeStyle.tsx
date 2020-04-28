@@ -234,7 +234,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         </div>
       </Grid>
       <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Lifestyle & Habits</div>
+        <div className={classes.sectionTitle}>Personal History, Lifestyle & Habits</div>
         <div
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
             classes.marginNone

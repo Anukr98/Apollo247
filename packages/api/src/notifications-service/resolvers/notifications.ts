@@ -192,36 +192,6 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
-  const smsId = smsResponse.data[0].id;
-  log('smsOtpAPILogger', `smsId: ${smsId}`, 'sendSMS()->API_CALL_STARTING', '', '');
-  setTimeout(() => {
-    const params = `&method=sms.status&id=${smsId}`;
-    const apiURLForStatus = `${apiUrlWithKey}${params}`;
-    fetch(apiURLForStatus)
-      .then((res) => {
-        log(
-          'smsOtpAPILogger',
-          `STATUS_CALL_RESPONSE`,
-          'sendSMS()->THEN_BLOCK',
-          JSON.stringify(res),
-          ''
-        );
-        console.log('apiURLForStatus res===========', res);
-        return res.json();
-      })
-      .catch((error) => {
-        //logging error here
-        console.log('apiURLForStatus error===========', error);
-        log(
-          'smsOtpAPILogger',
-          `STATUS_CALL_ERROR`,
-          'sendSMS()->CATCH_BLOCK',
-          '',
-          JSON.stringify(error)
-        );
-        throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
-      });
-  }, 5000);
 
   console.log('smsResponse================', smsResponse);
   return smsResponse;
