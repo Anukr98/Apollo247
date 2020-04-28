@@ -1019,6 +1019,10 @@ export const MedicinePrescription: React.FC = () => {
       )
       .then((result) => {
         setIsCustomForm(false);
+        setCustomDosageMorning('0');
+        setCustomDosageNoon('0');
+        setCustomDosageEvening('0');
+        setCustomDosageNight('0');
         if (
           result &&
           result.data &&
@@ -1485,9 +1489,9 @@ export const MedicinePrescription: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning.trim() === '' ||
-        customDosageNoon.trim() === '' ||
-        customDosageEvening.trim() === '' ||
+      (customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
         customDosageNight.trim() === '')
     ) {
       setErrorState({

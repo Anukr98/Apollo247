@@ -326,6 +326,7 @@ export const ConsultTabs: React.FC = () => {
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
+  const [sdConsultationDate, setSdConsultationDate] = useState<string>('');
   const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
 
   const [caseSheetId, setCaseSheetId] = useState<string>('');
@@ -588,6 +589,12 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
             ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
+          _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+            ? setSdConsultationDate(
+                _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.sdConsultationDate
+              )
+            : setSdConsultationDate('');
+
           _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
             ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
             : setSentToPatient(false);
@@ -1255,6 +1262,12 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setSaving(false);
+          setSdConsultationDate(
+            _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
+              ? _data!.data!.modifyCaseSheet!.appointment!.sdConsultationDate
+              : ''
+          );
+          //setSdConsultationDate('');
           if (!flag) {
             setIsConfirmDialogOpen(true);
           }
@@ -1465,7 +1478,6 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error in Call Notification', error.message);
       });
   };
-
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -1505,6 +1517,7 @@ export const ConsultTabs: React.FC = () => {
             symptoms,
             setSymptoms,
             notes,
+            sdConsultationDate,
             setSRDNotes,
             juniorDoctorNotes,
             diagnosis,
