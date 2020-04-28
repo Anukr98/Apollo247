@@ -1147,7 +1147,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }, 500);
         }
         try {
-          if (message.fileType) {
+          if (message.fileType && message.id === patientId) {
             const asyncDisplay = async () => {
               const chatFileData = await AsyncStorage.getItem('chatFileData');
               const chatFilesRetrived = JSON.parse(chatFileData || '[]');
