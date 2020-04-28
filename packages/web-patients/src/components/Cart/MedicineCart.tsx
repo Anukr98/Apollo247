@@ -788,7 +788,11 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const isPaymentButtonEnable =
-    (!nonCartFlow && uploadPrescriptionRequired === -1 && cartItems && cartItems.length > 0) ||
+    (!nonCartFlow &&
+      uploadPrescriptionRequired === -1 &&
+      cartItems &&
+      cartItems.length > 0 &&
+      deliveryTime.length === 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
     false;
@@ -1067,14 +1071,9 @@ export const MedicineCart: React.FC = (props) => {
             }}
             color="primary"
             fullWidth
-            disabled={
-              disableSubmit || !isPaymentButtonEnable || uploadingFiles || deliveryTime.length === 0
-            }
+            disabled={disableSubmit || !isPaymentButtonEnable || uploadingFiles}
             className={
-              disableSubmit ||
-              !isPaymentButtonEnable ||
-              mutationLoading ||
-              deliveryTime.length === 0
+              disableSubmit || !isPaymentButtonEnable || mutationLoading
                 ? classes.buttonDisable
                 : ''
             }
