@@ -484,7 +484,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 200,
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
-      marginTop: 34,
+      marginTop: 0,
+      maxHeight: '60vh',
+
       '& ul': {
         padding: 0,
         '& li': {
@@ -2275,10 +2277,8 @@ export const FavouriteMedicines: React.FC = () => {
                                       onChange={(e: any) => {
                                         setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                       }}
-                                    >
-                                       <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
+                                    >                                       
                                         {generateFrequency}
-                                      </Scrollbars>
                                     </AphSelect>
                                   </Grid>
                                 </Grid>
@@ -2407,9 +2407,9 @@ export const FavouriteMedicines: React.FC = () => {
                                   setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
                                 }}
                               >
-                                <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
+                              
                                   {roaOptionHtml}
-                                </Scrollbars>
+                              
                               </AphSelect>
                             </div>
                           </Grid>
