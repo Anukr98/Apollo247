@@ -62,6 +62,9 @@ export enum ApiConstants {
   ORDER_PLACED_TITLE = 'Medicine order is placed',
   ORDER_PLACED_BODY = 'Thanks for choosing Apollo24X7, {0} :) Your order {1} is placed with us successfully.',
 
+  // medicine order out for delivery
+  UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
+
   //medicine order out for delivery
   ORDER_CONFIRMED_TITLE = 'Medicine order is confirmed',
   ORDER_CONFIRMED_BODY = 'Hi {0}! Your order no {1} has been verified & successfully processed. Order will be delivered {2}',
@@ -144,7 +147,7 @@ export enum ApiConstants {
   APPOINTMENT_PAYMENT_SUBJECT = 'New Appointment for: {0} Hosp Doctor - {1}  {2} hrs, Dr.{3} :{4}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,raj@popcornapps.com',
+  PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'raj@popcornapps.com',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
 
@@ -190,7 +193,7 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'raj@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
-  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'prashant_sharma@apollohospitals.com,sriram.kanchan@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'sriram.kanchan@popcornapps.com',
 
   APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
   APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
@@ -276,4 +279,8 @@ export enum ApiConstants {
   AUTO_SUBMIT_JD_CASESHEET_RESPONSE = 'Checked all the appointments scheduled after 10 minutes',
   VIRTUAL_JD_NOTES_UNASSIGNED = 'The patient did not complete the self-assessment form. Hence empty case has been submitted',
   VIRTUAL_JD_NOTES_ASSIGNED = 'As the JD did not have enough time to submit the case, an empty case has been submitted',
+  ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
+  NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
+  MEDICINE_TIMINGS = '(morning, noon, evening & night)',
+  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)',
 }

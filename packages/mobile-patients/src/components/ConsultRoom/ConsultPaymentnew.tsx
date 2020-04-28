@@ -2,25 +2,19 @@ import {
   Alert,
   BackHandler,
   NavState,
-  SafeAreaView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
-  ScrollView,
-  Image,
   ActivityIndicator,
   StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { WebView } from 'react-native-webview';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-
-// var uuid = require('react-native-uuid');
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -38,6 +32,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const currentPatiendId = currentPatient && currentPatient.id;
   const mobileNumber = currentPatient && currentPatient.mobileNumber;
   const [loading, setLoading] = useState(true);
+  const displayID = props.navigation.getParam('displayID');
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -53,6 +48,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       doctorName: doctorName,
       appointmentDateTime: appointmentInput.appointmentDateTime,
       appointmentType: appointmentInput.appointmentType,
+      displayID:displayID,
       status: status,
     });
   };
@@ -107,14 +103,6 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     );
   };
 
-  const renderLoading = () => {
-    return (
-      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#01475b" />
-      </View>
-    );
-  };
-
   const handleBack = () => {
     Alert.alert('Alert', 'Are you sure you want to cancel the transaction?', [
       { text: 'No' },
@@ -139,26 +127,9 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <View
-        style={{
-          backgroundColor: '#FFF',
-          flex: 0.1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          shadowOpacity: 5,
-        }}
-      >
-        <TouchableOpacity
-          style={{ position: 'absolute', left: 15 }}
-          onPress={() => {
-            handleBack();
-          }}
-        >
-          <Image source={require('../ui/icons/back.png')} style={{ width: 35, height: 35 }} />
-        </TouchableOpacity>
-        <Text style={styles.Payment}> PAYMENT </Text>
-      </View>
-      <View style={{ flex: 0.9, backgroundColor: '#eee' }}>{renderwebView()}</View>
+      <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
+
+      <View style={styles.container}>{renderwebView()}</View>
       {loading && <Spinner />}
     </View>
   );

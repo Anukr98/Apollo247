@@ -111,18 +111,23 @@ export const caseSheetTypeDefs = gql`
   }
 
   enum MEDICINE_UNIT {
+    AS_PRESCRIBED
     BOTTLE
     CAPSULE
     CREAM
     DROPS
     GEL
+    GM
     INJECTION
     LOTION
     ML
+    MG
     NA
     OINTMENT
     OTHERS
+    PATCH
     POWDER
+    PUFF
     ROTACAPS
     SACHET
     SOAP
@@ -131,6 +136,7 @@ export const caseSheetTypeDefs = gql`
     SUSPENSION
     SYRUP
     TABLET
+    UNIT
   }
 
   enum Relation {
@@ -202,6 +208,7 @@ export const caseSheetTypeDefs = gql`
     pastAppointments: [Appointment]
     juniorDoctorNotes: String
     juniorDoctorCaseSheet: CaseSheet
+    allowedDosages: [String]
   }
 
   type CaseSheet {
@@ -290,6 +297,31 @@ export const caseSheetTypeDefs = gql`
     ONCE_A_DAY
     THRICE_A_DAY
     TWICE_A_DAY
+    ALTERNATE_DAY
+    THREE_TIMES_A_WEEK
+    ONCE_A_WEEK
+    EVERY_HOUR
+    EVERY_TWO_HOURS
+    EVERY_FOUR_HOURS
+    TWICE_A_WEEK
+    ONCE_IN_15_DAYS
+    ONCE_A_MONTH
+  }
+
+  enum ROUTE_OF_ADMINISTRATION {
+    ORALLY
+    SUBLINGUAL
+    PER_RECTAL
+    LOCAL_APPLICATION
+    INTRAMUSCULAR
+    INTRAVENOUS
+    SUBCUTANEOUS
+    INHALE
+    GARGLE
+    ORAL_DROPS
+    NASAL_DROPS
+    EYE_DROPS
+    EAR_DROPS
   }
 
   type MedicinePrescription {
@@ -306,6 +338,8 @@ export const caseSheetTypeDefs = gql`
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineUnit: MEDICINE_UNIT
+    routeOfAdministration: ROUTE_OF_ADMINISTRATION
+    medicineCustomDosage: String
   }
 
   input MedicinePrescriptionInput {
@@ -321,6 +355,8 @@ export const caseSheetTypeDefs = gql`
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineUnit: MEDICINE_UNIT
+    routeOfAdministration: ROUTE_OF_ADMINISTRATION
+    medicineCustomDosage: String
   }
 
   type OtherInstructions {
@@ -455,6 +491,7 @@ const getJuniorDoctorCaseSheet: Resolver<
     caseSheetDetails: CaseSheet;
     patientDetails: Patient;
     pastAppointments: Appointment[];
+    allowedDosages: string[];
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   //check appointment id
@@ -491,7 +528,12 @@ const getJuniorDoctorCaseSheet: Resolver<
     appointmentData.patientId
   );
 
-  return { caseSheetDetails, patientDetails, pastAppointments };
+  return {
+    caseSheetDetails,
+    patientDetails,
+    pastAppointments,
+    allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),
+  };
 };
 
 const getCaseSheet: Resolver<
@@ -504,6 +546,7 @@ const getCaseSheet: Resolver<
     pastAppointments: Appointment[];
     juniorDoctorNotes: string;
     juniorDoctorCaseSheet: CaseSheet;
+    allowedDosages: string[];
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   //check appointment id
@@ -554,6 +597,7 @@ const getCaseSheet: Resolver<
     pastAppointments,
     juniorDoctorNotes,
     juniorDoctorCaseSheet,
+    allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),
   };
 };
 

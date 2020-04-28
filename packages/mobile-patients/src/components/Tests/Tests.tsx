@@ -104,6 +104,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import moment from 'moment';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -202,6 +203,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
+  const [showLocations, setshowLocations] = useState<boolean>(false);
 
   useEffect(() => {
     console.log(locationDetails, 'locationDetails');
@@ -225,13 +227,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (locationDetails && locationDetails.city && currentPatient) {
+    if (diagnosticsCities.length) {
+      // Don't call getDiagnosticsCites API if already fetched
+      return;
+    }
+
+    if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
       client
         .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
           query: GET_DIAGNOSTICS_CITES,
           variables: {
-            cityName: locationDetails.city,
-            patientId: (currentPatient && currentPatient.id) || '',
+            cityName: locationDetails!.city,
+            patientId: currentPatient.id || '',
           },
         })
         .then(({ data }) => {
@@ -247,11 +254,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           showAphAlert!({
             unDismissable: true,
             title: 'Uh oh! :(',
-            description: 'Something went wrong.',
+            description:
+              "Something went wrong. We're unable to check diagnostics serviceability for your location.",
           });
         });
     }
-  }, [locationDetails]);
+  }, [locationDetails, currentPatient, diagnosticsCities]);
 
   useEffect(() => {
     !locationDetails &&
@@ -390,8 +398,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
     };
@@ -414,8 +424,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
       // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       // 'Patient UHID': g(currentPatient, 'uhid'),
       // Relation: g(currentPatient, 'relation'),
-      // Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      // Gender: g(currentPatient, 'gender'),
+      // 'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      // 'Patient Gender': g(currentPatient, 'gender'),
       // 'Mobile Number': g(currentPatient, 'mobileNumber'),
       // 'Customer ID': g(currentPatient, 'id'),
     };
@@ -430,8 +440,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Customer ID': g(currentPatient, 'id'),
     };
@@ -615,7 +627,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   value={currentLocation}
                   onChangeText={(value) => {
                     setcurrentLocation(value);
-                    autoSearch(value);
+                    if (value.length > 2) {
+                      autoSearch(value);
+                      setshowLocations(true);
+                    } else {
+                      setshowLocations(false);
+                    }
                   }}
                 />
               </View>
@@ -630,36 +647,38 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 <LocationOn />
               </View>
             </View>
-            <View>
-              {locationSearchList.map((item, i) => (
-                <View
-                  key={i}
-                  style={{
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                    paddingVertical: 7,
-                  }}
-                >
-                  <Text
+            {showLocations && (
+              <View>
+                {locationSearchList.map((item, i) => (
+                  <View
+                    key={i}
                     style={{
-                      color: theme.colors.LIGHT_BLUE,
-                      ...theme.fonts.IBMPlexSansMedium(18),
-                    }}
-                    onPress={() => {
-                      setcurrentLocation(item.name);
-                      setshowLocationpopup(false);
-                      saveLatlong(item);
-                      setLocationDetails!({
-                        displayName: item.name,
-                        city: item.name,
-                      } as any);
+                      borderBottomWidth: 0.5,
+                      borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                      paddingVertical: 7,
                     }}
                   >
-                    {item.name}
-                  </Text>
-                </View>
-              ))}
-            </View>
+                    <Text
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                        ...theme.fonts.IBMPlexSansMedium(18),
+                      }}
+                      onPress={() => {
+                        setcurrentLocation(item.name);
+                        setshowLocationpopup(false);
+                        saveLatlong(item);
+                        setLocationDetails!({
+                          displayName: item.name,
+                          city: item.name,
+                        } as any);
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       );
@@ -1913,7 +1932,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderLocationNotServingPopup = () => {
     showAphAlert!({
       title: `Hi ${currentPatient && currentPatient.firstName},`,
-      description: `Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`,
+      description: string.diagnostics.nonServiceableMsg.replace(
+        '{{city_name}}',
+        g(locationDetails, 'displayName')!
+      ),
       onPressOk: () => {
         hideAphAlert!();
         setshowLocationpopup(true);

@@ -9,6 +9,7 @@ import {
 import {
   MEDICINE_ORDER_STATUS,
   Relation,
+  MEDICINE_UNIT,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
@@ -25,6 +26,7 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import ApolloClient from 'apollo-client';
@@ -41,6 +43,10 @@ import WebEngage from 'react-native-webengage';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
+import firebase from 'react-native-firebase';
+import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -822,8 +828,8 @@ export const postWEGNeedHelpEvent = (
     'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
     'Patient UHID': g(currentPatient, 'uhid')!,
     Relation: g(currentPatient, 'relation')!,
-    Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-    Gender: g(currentPatient, 'gender')!,
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender')!,
     'Mobile Number': g(currentPatient, 'mobileNumber')!,
     'Customer ID': g(currentPatient, 'id')!,
     Source: source,
@@ -881,9 +887,13 @@ export const InitiateAppsFlyer = () => {
       // if (res.data.af_dp !== undefined) {
       try {
         AsyncStorage.setItem('deeplink', res.data.af_dp);
+        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+
         console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
-        setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
+        setBugFenderLog('APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+
+        // setBugFenderLog('APPS_FLYER_DEEP_LINK_decode', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
       } catch (error) {}
 
@@ -934,9 +944,9 @@ export const InitiateAppsFlyer = () => {
 };
 
 export const UnInstallAppsFlyer = (newFirebaseToken: string) => {
-  console.log('UnInstallAppsFlyer', newFirebaseToken);
+  // console.log('UnInstallAppsFlyer', newFirebaseToken);
   appsFlyer.updateServerUninstallToken(newFirebaseToken, (success) => {
-    console.log('UnInstallAppsFlyersuccess', success);
+    // console.log('UnInstallAppsFlyersuccess', success);
   });
 };
 
@@ -1002,3 +1012,67 @@ export const postAppsFlyerAddToCartEvent = (
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
+
+export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
+  try {
+    console.log('\n********* FirebaseEvent Start *********\n');
+    console.log(`FirebaseEvent ${eventName}`, { eventName, attributes });
+    console.log('\n********* FirebaseEvent End *********\n');
+    // if (getBuildEnvironment() !== 'DEV') {
+    // Don't post events in DEV environment
+    firebase.analytics().logEvent(eventName, attributes);
+    // }
+  } catch (error) {
+    console.log('********* Unable to post FirebaseEvent *********', { error });
+  }
+};
+
+export const postFirebaseAddToCartEvent = (
+  { sku, name, category_id, price, special_price }: MedicineProduct,
+  source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source']
+) => {
+  try {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
+      'product name': name,
+      'product id': sku,
+      Brand: '',
+      'Brand ID': '',
+      'category name': '',
+      'category ID': category_id || '',
+      Price: price,
+      'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+      Quantity: 1,
+      Source: source,
+    };
+    postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+  } catch (error) {}
+};
+
+export const nameFormater = (
+  name: string,
+  caseFormat?: 'lower' | 'upper' | 'title' | 'camel' | 'default'
+) => {
+  if (caseFormat === 'title') {
+    return _.startCase(name.toLowerCase());
+  } else if (caseFormat === 'camel') {
+    return _.camelCase(name);
+  } else if (caseFormat === 'lower') {
+    return _.lowerCase(name);
+  } else if (caseFormat === 'upper') {
+    return _.upperCase(name);
+  } else {
+    return _.capitalize(name.replace(/_/g, ' '));
+  }
+};
+
+export const medUnitFormatArray = Object.values(MEDICINE_UNIT).map((item) => {
+  let formatedValue = nameFormater(item, 'lower');
+  const existsIndex = string.muiltdosages.findIndex((i) => i.single === formatedValue);
+  if (existsIndex > -1) {
+    formatedValue = string.muiltdosages[existsIndex].multiple;
+  }
+  return {
+    key: item,
+    value: formatedValue,
+  };
+});

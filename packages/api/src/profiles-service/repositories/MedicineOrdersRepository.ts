@@ -10,7 +10,7 @@ import {
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addDays, differenceInHours, addMilliseconds } from 'date-fns';
+import { format, addDays, differenceInMinutes } from 'date-fns';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
@@ -88,6 +88,19 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return this.find({
       where: { patient },
       order: { createdDate: 'DESC' },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrderPayments',
+        'medicineOrdersStatus',
+        'medicineOrderInvoice',
+        'patient',
+      ],
+    });
+  }
+
+  getMedicineOrderDetailsByOderId(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
       relations: [
         'medicineOrderLineItems',
         'medicineOrderPayments',
@@ -243,6 +256,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
+    console.log('ordersList====>', ordersList);
     let totalCount = 0,
       deliveryCount = 0,
       vdcCount = 0,
@@ -252,9 +266,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ordersList.map(async (orderDetails) => {
         if (Date.parse(orderDetails.orderTat.toString())) {
           const tatDate = new Date(orderDetails.orderTat.toString());
-          const istCreatedDate = addMilliseconds(orderDetails.createdDate, 19800000);
-          const orderTat = Math.floor(Math.abs(differenceInHours(tatDate, istCreatedDate)));
-          if (orderTat <= 2) {
+          //console.log('tatDate===>', tatDate);
+          const istCreatedDate = orderDetails.createdDate; // addMilliseconds(orderDetails.createdDate, 19800000);
+          //console.log('istCreatedDate===>', istCreatedDate);
+          const orderTat = Math.floor(Math.abs(differenceInMinutes(tatDate, istCreatedDate)));
+          //console.log('differeneceInMinutes', differenceInMinutes(tatDate, istCreatedDate));
+          //console.log('orderTat===>', orderTat);
+          if (orderTat <= 120) {
             totalCount++;
           } else {
             vdcCount++;
@@ -265,10 +283,12 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
             });
             if (orderStatusDetails) {
               const deliveryTat = Math.floor(
-                Math.abs(differenceInHours(orderStatusDetails.statusDate, orderDetails.createdDate))
+                Math.abs(
+                  differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
+                )
               );
 
-              if (deliveryTat <= 2) {
+              if (deliveryTat <= 120) {
                 deliveryCount++;
               } else {
                 vdcDeliveryCount++;

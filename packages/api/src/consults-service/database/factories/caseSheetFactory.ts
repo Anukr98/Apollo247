@@ -18,6 +18,7 @@ import _random from 'lodash/random';
 import _sample from 'lodash/sample';
 import _times from 'lodash/times';
 import { randomEnum } from 'helpers/factoryHelpers';
+import { ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
 const buildSymptom = (): CaseSheetSymptom => {
   const names = ['fever', 'cough and cold'];
@@ -49,6 +50,8 @@ const buildMedicinePrescription = (): CaseSheetMedicinePrescription => {
     medicineConsumptionDurationUnit: randomEnum(MEDICINE_CONSUMPTION_DURATION),
     medicineFrequency: randomEnum(MEDICINE_FREQUENCY),
     medicineFormTypes: randomEnum(MEDICINE_FORM_TYPES),
+    routeOfAdministration: randomEnum(ROUTE_OF_ADMINISTRATION),
+    medicineCustomDosage: '1-0-0-1',
   };
 };
 

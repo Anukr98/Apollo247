@@ -391,7 +391,7 @@ export const UploadEPrescriptionCard: React.FC<EPrescriptionCardProps> = (props)
               setUploadedEPrescription && setUploadedEPrescription(true);
 
               const currentUrl = window.location.href;
-              if (currentUrl.endsWith('/medicines')) {
+              if (currentUrl.endsWith('/medicines') || currentUrl.includes('/medicines/')) {
                 setTimeout(() => {
                   window.location.href = `${clientRoutes.medicinesCart()}?prescription=true`;
                 }, 3000);

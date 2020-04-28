@@ -1,33 +1,25 @@
 import {
-  Alert,
   BackHandler,
-  NavState,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   ScrollView,
-  Image,
   ActivityIndicator,
   StatusBar,
   Dimensions,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import Axios from 'axios';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  BOOK_APPOINTMENT,
-  BOOK_FOLLOWUP_APPOINTMENT,
-  MAKE_APPOINTMENT_PAYMENT,
-  VALIDATE_CONSULT_COUPON,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { getTxnStatus } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -43,27 +35,33 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const doctorName = props.navigation.getParam('doctorName');
   const appointmentDateTime = new Date(props.navigation.getParam('appointmentDateTime'));
   const appointmentType = props.navigation.getParam('appointmentType');
-  const client = useApolloClient();
+  const { showAphAlert } = useUIElements();
+
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
 
   useEffect(() => {
-    getTxnStatus();
+    getTxnStatus(orderId)
+      .then((res) => {
+        console.log(res.data);
+        setrefNo(res.data.TXNID);
+        setStatus(res.data.STATUS);
+        setLoading(false);
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingTxnStutus', error);
+        console.log(error);
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+      });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
-
-  const getTxnStatus = () => {
-    const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
-    const url = `${baseUrl}/transaction-status`;
-    console.log(orderId);
-    Axios.post(url, { orderID: orderId }).then((res) => {
-      console.log(res.data);
-      setrefNo(res.data.TXNID);
-      setStatus(res.data.STATUS);
-      setLoading(false);
-    });
-  };
 
   const handleBack = () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -317,38 +315,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     );
   };
 
-  const renderLoading = () => {
-    return (
-      <View style={{ justifyContent: 'center', alignItems: 'center', flex: 0.9 }}>
-        <ActivityIndicator size="large" color="#01475b" />
-      </View>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <View
-        style={{
-          backgroundColor: '#FFF',
-          flex: 0.1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          shadowOpacity: 5,
-        }}
-      >
-        <TouchableOpacity
-          style={{ position: 'absolute', left: 15 }}
-          onPress={() => {
-            handleBack();
-          }}
-        >
-          <Image source={require('../ui/icons/back.png')} style={{ width: 35, height: 35 }} />
-        </TouchableOpacity>
-        <Text style={styles.Payment}> PAYMENT STATUS </Text>
-      </View>
+      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+
       {!loading ? (
-        <ScrollView style={{ flex: 0.9, backgroundColor: '#f0f1ec' }}>
+        <ScrollView style={styles.container}>
           {renderStatusCard()}
           {appointmentHeader()}
           {appointmentCard()}
@@ -356,7 +329,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           {renderButton()}
         </ScrollView>
       ) : (
-        renderLoading()
+        <Spinner />
       )}
     </View>
   );
@@ -366,13 +339,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f1ec',
-  },
-  Payment: {
-    fontSize: 14,
-    color: '#01475b',
-    fontWeight: '500',
-    textShadowColor: 'rgba(0, 0, 0, 1)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 0.1,
   },
 });

@@ -33,6 +33,8 @@ const appStaticVariables = {
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
+  TAT_UNSERVICEABLE_DAY_COUNT: 10, // no. of days upto which cart item is considered as serviceable
+  TAT_API_TIMEOUT_IN_SEC: 30,
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
@@ -115,7 +117,7 @@ const ConfigurationDev = {
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'http://9041671e.ngrok.io',
+  CONSULT_PG_BASE_URL: 'http://1cfb7a59.ngrok.io',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success',
   CONSULT_PG_ERROR_PATH: '/consultpg-error',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
@@ -134,8 +136,8 @@ const ConfigurationDev = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.dev,
   ...appStaticVariables,
-  iOS_Version: '2.111',
-  Android_Version: '2.111',
+  iOS_Version: '2.213',
+  Android_Version: '2.213',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
 };
@@ -167,8 +169,8 @@ const ConfigurationQA = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.113',
-  Android_Version: '2.113',
+  iOS_Version: '2.211',
+  Android_Version: '2.211',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };
@@ -200,8 +202,8 @@ const ConfigurationProd = {
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   ...PharmaApiConfig.prod,
   ...appStaticVariables,
-  iOS_Version: '2.11',
-  Android_Version: '2.11',
+  iOS_Version: '2.21',
+  Android_Version: '2.21',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
 };

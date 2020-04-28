@@ -391,7 +391,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   }, [deliveryTime, deliveryError]);
 
   const onAddCartItem = (item: MedicineProduct) => {
-    const { sku, mou, name, price, special_price, is_prescription_required, thumbnail } = item;
+    const {
+      sku,
+      mou,
+      name,
+      price,
+      special_price,
+      is_prescription_required,
+      type_id,
+      thumbnail,
+    } = item;
     addCartItem!({
       id: sku,
       mou,
@@ -403,6 +412,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           : special_price
         : undefined,
       prescriptionRequired: is_prescription_required == '1',
+      isMedicine: type_id == 'Pharma',
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
       isInStock: true,
