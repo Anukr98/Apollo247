@@ -86,6 +86,7 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
+  const currentPath = window.location.pathname;
   const pageName = window.location.pathname;
 
   useEffect(() => {
@@ -95,8 +96,7 @@ const App: React.FC = () => {
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
       <div
-        className={`${classes.app} ${pageName === '/covid19' && classes.noHeaders} ${pageName ===
-          '/covid19/article' && classes.noHeaders}`}
+        className={`${classes.app} ${currentPath === clientRoutes.covidLanding() && classes.noHeaders} ${currentPath === clientRoutes.covidDetails() && classes.noHeaders}`}
       >
         <Helmet>
           <script
