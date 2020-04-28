@@ -23,6 +23,8 @@ import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import { uploadPrescriptionTracking } from '../../webEngageTracking';
 import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { ManageProfile } from 'components/ManageProfile';
+import { Relation } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -237,7 +239,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 22,
       [theme.breakpoints.down('xs')]: {
         '&:last-child': {
-          paddingBottom: 10,
+          paddingBottom: 70,
         },
       },
     },
@@ -327,7 +329,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const MedicineLanding: React.FC = (props) => {
   const classes = useStyles({});
   const addToCartRef = useRef(null);
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const {
     clearCartInfo,
     cartItems,
@@ -420,6 +422,9 @@ export const MedicineLanding: React.FC = (props) => {
     },
     { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
   ];
+
+  const onePrimaryUser =
+    allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
   const patient = useCurrentPatient();
   const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
 
@@ -608,6 +613,7 @@ export const MedicineLanding: React.FC = (props) => {
         <UploadEPrescriptionCard setIsEPrescriptionOpen={setIsEPrescriptionOpen} />
       </AphDialog>
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

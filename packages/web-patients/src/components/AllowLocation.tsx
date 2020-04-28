@@ -53,7 +53,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
-        <Typography variant="h2">Hi! :)</Typography>
+        <Typography variant="h2">Hi!</Typography>
         <p>
           We need to know your location to function better. Please allow us to auto detect your
           location or enter location manually.

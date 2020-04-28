@@ -463,7 +463,8 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 200,
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
-      marginTop: 34,
+      marginTop: 0,
+      maxHeight: '60vh',
       '& ul': {
         padding: 0,
         '& li': {
@@ -1483,7 +1484,15 @@ export const MedicinePrescription: React.FC = () => {
       customDosageEvening.trim() +
       '-' +
       customDosageNight.trim();
-
+    let customDosageArray = [];
+    if (customDosageMorning && customDosageMorning.trim() !== '')
+      customDosageArray.push(customDosageMorning.trim());
+    if (customDosageNoon && customDosageNoon.trim() !== '')
+      customDosageArray.push(customDosageNoon.trim());
+    if (customDosageEvening && customDosageEvening.trim() !== '')
+      customDosageArray.push(customDosageEvening.trim());
+    if (customDosageNight && customDosageNight.trim() !== '')
+      customDosageArray.push(customDosageNight.trim());
     if (!isCustomform && tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
@@ -1543,6 +1552,14 @@ export const MedicinePrescription: React.FC = () => {
       customDosageNight.trim() !== '' &&
       daySlotsArr.indexOf('NIGHT') < 0
     ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -2122,9 +2139,7 @@ export const MedicinePrescription: React.FC = () => {
                                     setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                   }}
                                 >
-                                  <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                                    {generateFrequency}
-                                  </Scrollbars>
+                                  {generateFrequency}
                                 </AphSelect>
                               </Grid>
                             </Grid>
@@ -2268,9 +2283,7 @@ export const MedicinePrescription: React.FC = () => {
                               setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
                             }}
                           >
-                            <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                              {roaOptionHtml}
-                            </Scrollbars>
+                            {roaOptionHtml}
                           </AphSelect>
                         </Grid>
                       </Grid>
