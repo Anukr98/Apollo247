@@ -118,7 +118,7 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
           to={
             type.toLowerCase() === 'video' || type.toLowerCase() == 'infographic'
               ? '#'
-              : `/covid19/${type.toLowerCase()}${slug}/${id}`
+              : `/covid19/${type.toLowerCase()}${slug}`
           }
         >
           {((image && image.length) || (videoUrl && videoUrl.length)) && (
