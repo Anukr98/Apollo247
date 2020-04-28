@@ -322,9 +322,9 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       position: 'relative',
       '& img': {
-        maxWidth: '100% !important',
+        //maxWidth: '100% !important',
         width: 'auto !important',
-        //maxHeight: 'calc(100vh - 212px)',
+        maxHeight: 'calc(100vh - 212px)',
       },
     },
     panZoom: {
