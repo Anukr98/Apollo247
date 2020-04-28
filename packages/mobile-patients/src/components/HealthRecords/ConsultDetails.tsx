@@ -816,9 +816,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading={`PROVISIONAL DIAGNOSED MEDICAL CONSITION\n(ACCEPTABLE IN ICD-10 NOMENCLATURE)`}
+          heading={`Diagnosis`}
           collapse={showDiagnosis}
           onPress={() => setshowDiagnosis(!showDiagnosis)}
+          // headingStyle={[{ ...theme.fonts.IBMPlexSansBold(12) }]}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! !== null ? (
