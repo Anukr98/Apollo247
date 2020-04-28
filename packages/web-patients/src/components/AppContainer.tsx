@@ -96,7 +96,7 @@ const App: React.FC = () => {
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
       <div
-        className={`${classes.app} ${currentPath === clientRoutes.covidLanding() && classes.noHeaders} ${currentPath === clientRoutes.covidDetails() && classes.noHeaders}`}
+        className={`${classes.app}`}
       >
         <Helmet>
           <script

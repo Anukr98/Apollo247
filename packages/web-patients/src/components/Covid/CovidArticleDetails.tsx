@@ -9,6 +9,7 @@ import fetchUtil from 'helpers/fetch';
 // import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
 // import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
+import { NavigationBottom } from 'components/NavigationBottom';
 // import { CommentsForm } from 'components/Covid/CommentsForm';
 // import { CommentsList } from 'components/Covid/CommentsList';
 // import { AphButton } from '@aph/web-ui-components';
@@ -27,11 +28,13 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     pageContainer: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      backgroundColor: '#f7f8f5',
       paddingBottom: 20,
+      marginTop: -72,
       [theme.breakpoints.up('sm')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',
         borderRadius: '0 0 10px 10px',
+        marginTop: 0,
       },
     },
     imageBanner: {
@@ -201,6 +204,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           )}
         </div>
       </div>
+      <NavigationBottom />      
     </div>
   );
 };
