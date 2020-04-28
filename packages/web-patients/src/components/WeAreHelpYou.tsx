@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { AphDialogTitle, AphDialog, AphDialogClose, AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -124,6 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const WeAreHelpYou: React.FC = (props) => {
   const classes = useStyles();
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
+  const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -178,10 +180,13 @@ export const WeAreHelpYou: React.FC = (props) => {
                 </div>
               </Grid> */}
               <Grid item sm={4} xs={12}>
-                <div className={classes.serviceCard}>
-                  <span>
-                    <img src={require('images/ic_family_doctor.svg')} alt="" />
-                  </span>
+                <div
+                  onClick={() => {	
+                    setIscoronaDialogOpen(true);	
+                  }}
+                  className={classes.serviceCard}
+                >
+                  <span><img src={require('images/ic_family_doctor.svg')} alt="" /></span>
                   <span>Call our experts</span>
                 </div>
               </Grid>
@@ -189,6 +194,18 @@ export const WeAreHelpYou: React.FC = (props) => {
           </div>
         </div>
       </div>
+
+      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">	
+        <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />	
+        <AphDialogTitle></AphDialogTitle>	
+        <div className={classes.expertBox}>	
+          <h2>CORONAVIRUS? Talk to our expert.</h2>	
+          <a href="tel:08047192606">Call 08047192606 in emergency</a>	
+          <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">	
+            Ok, Got It	
+          </AphButton>	
+        </div>	
+      </AphDialog>      
     </div>
   );
 };
