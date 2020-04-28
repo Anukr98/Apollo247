@@ -115,6 +115,9 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
       },
     },
+    htmlContent: {
+      marginBottom: 30,
+    },
   };
 });
 
@@ -125,7 +128,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [source, setSource] = useState('');
   const [thumbnailWeb, setThumbnailWeb] = useState('');
   const [thumbnailMobile, setThumbnailMobile] = useState('');
-
+  const [sourceUrl, setSourceUrl] = useState('');
   const [title, setTitle] = useState('');
   const [type, setType] = useState('');
   const [showLoader, setShowLoader] = useState(true);
@@ -171,7 +174,18 @@ export const CovidArticleDetails: React.FC = (props: any) => {
               {/* <FeedbackWidget /> */}
               <div className={classes.sectionGroup}>
                 <div className={classes.mainContent}>
-                  <div dangerouslySetInnerHTML={{ __html: htmlData }} />
+                  <div
+                    className={classes.htmlContent}
+                    dangerouslySetInnerHTML={{ __html: htmlData }}
+                  />
+                  {sourceUrl && sourceUrl.length && (
+                    <>
+                      <a>SOURCE</a>
+                      <div>
+                        <a href={sourceUrl}>{sourceUrl}</a>
+                      </div>
+                    </>
+                  )}
                 </div>
                 {/* <div className={classes.rightSidebar}>
               <div className={classes.formCard}>
