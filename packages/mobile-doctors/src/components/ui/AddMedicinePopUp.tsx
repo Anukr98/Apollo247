@@ -529,6 +529,26 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                     .join(', ')}) dosage(s)`,
                 });
               return;
+            } else if (
+              !defaultForm &&
+              medTimingAnswers.filter((i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.selected)
+                .length !==
+                medTimingAnswers.filter(
+                  (i) => i.key !== MEDICINE_TIMINGS.AS_NEEDED && i.value.length !== 0
+                ).length
+            ) {
+              showAphAlert &&
+                showAphAlert({
+                  title: 'Alert!',
+                  description: `Timings (${medTimingAnswers
+                    .filter(
+                      (i) =>
+                        i.key !== MEDICINE_TIMINGS.AS_NEEDED && !i.selected && i.value.length !== 0
+                    )
+                    .map((i) => nameFormater(i.key, 'lower'))
+                    .join(', ')}) have dosages, select the timing(s) or empty the input field(s).`,
+                });
+              return;
             } else if (defaultForm && medTimingAnswers.filter((i) => i.selected).length === 0) {
               showAphAlert &&
                 showAphAlert({
@@ -741,7 +761,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                       return {
                         key: item.key,
                         selected: isFromSearch
-                          ? true
+                          ? false
                           : existing > -1
                           ? medTimingAnswers[existing].value !== ''
                             ? true
