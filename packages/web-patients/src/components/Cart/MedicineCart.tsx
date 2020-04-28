@@ -792,10 +792,9 @@ export const MedicineCart: React.FC = (props) => {
       uploadPrescriptionRequired === -1 &&
       cartItems &&
       cartItems.length > 0 &&
-      deliveryTime) ||
+      deliveryTime.length === 0) ||
     (prescriptions && prescriptions.length > 0) ||
     (ePrescriptionData && ePrescriptionData.length > 0) ||
-    deliveryTime.length === 0 ||
     false;
 
   const patient = useCurrentPatient();
