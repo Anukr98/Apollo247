@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 8,
       paddingRight: 8,
       paddingBottom: 8,
-      [theme.breakpoints.down(560)]: {
+      [theme.breakpoints.down(400)]: {
         width: '100%',
       },
     },
@@ -99,7 +99,7 @@ export const OurServices: React.FC = (props) => {
   const classes = useStyles();
   const serviceItems: ServiceItem[] = [
     {
-      title: 'Find A Doctor',
+      title: 'Book Doctor Appointment',
       content: `Let's get you connected with them.`,
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
