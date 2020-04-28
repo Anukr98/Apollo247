@@ -1,6 +1,13 @@
 //PHR Consult & RX
+declare global {
+  interface Window {
+    webengage: any;
+  }
+}
+
+window.webengage = window.webengage || {};
 export const phrConsultTabClickTracking = (userData: any) => {
-  if (window.webengage) {
+  if (window && window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
     window.webengage.track('PHR Consult & RX', {
       'Patient Name': firstName,
@@ -39,13 +46,13 @@ export const addRecordClickTracking = (source: string) => {
 export const uploadPrescriptionTracking = (data: any) => {
   const { id, mobileNumber, firstName, relation, age, gender, uhid } = data;
   window.webengage.track('Upload Prescription', {
-    'Patient Name': firstName,
-    'Patient UHID': uhid,
-    Relation: relation,
-    Age: age,
-    Gender: gender,
-    'Mobile Number': mobileNumber,
-    'Customer ID': id,
+    'Patient Name': firstName || '',
+    'Patient UHID': uhid || '',
+    Relation: relation || '',
+    Age: age || '',
+    Gender: gender || '',
+    'Mobile Number': mobileNumber || '',
+    'Customer ID': id || '',
   });
 };
 //Upload Photo
@@ -64,7 +71,7 @@ export const itemsClickedTracking = (data: any) => {
 };
 //PHR Consult Card click
 export const phrConsultCardClickTracking = (data: any) => {
-  if (window.webenage) {
+  if (window && window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, uhid, age, consultId } = data;
     window.webengage.track('PHR Consult Card click', {
       'Patient Name': firstName,

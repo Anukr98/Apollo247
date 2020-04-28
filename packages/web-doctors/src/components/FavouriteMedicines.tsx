@@ -956,6 +956,10 @@ export const FavouriteMedicines: React.FC = () => {
       )
       .then((result) => {
         setIsCustomForm(false);
+        setCustomDosageMorning('0');
+        setCustomDosageNoon('0');
+        setCustomDosageEvening('0');
+        setCustomDosageNight('0');
         if (
           result &&
           result.data &&
@@ -1390,9 +1394,9 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
-      (customDosageMorning.trim() === '' ||
-        customDosageNoon.trim() === '' ||
-        customDosageEvening.trim() === '' ||
+      (customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
         customDosageNight.trim() === '')
     ) {
       setErrorState({
@@ -1523,7 +1527,21 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageEvening.trim() +
       '-' +
       customDosageNight.trim();
-    if (tabletsCount.trim() === '') {
+    if (!isCustomform && tabletsCount.trim() === '') {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (
+      isCustomform &&
+      (customDosageMorning.trim() === '' &&
+        customDosageNoon.trim() === '' &&
+        customDosageEvening.trim() === '' &&
+        customDosageNight.trim() === '')
+    ) {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
