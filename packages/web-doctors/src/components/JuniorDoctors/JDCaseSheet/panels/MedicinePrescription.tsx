@@ -1393,7 +1393,9 @@ export const MedicinePrescription: React.FC = () => {
           <div key={_uniqueId('med_id_')}>
             <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
-              {`${medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'} ${dosageHtml}${
+              {`${
+                medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+              } ${dosageHtml.toLowerCase()}${
                 timesString.length > 0 &&
                 medicine.medicineCustomDosage &&
                 medicine.medicineCustomDosage !== ''
@@ -1500,6 +1502,50 @@ export const MedicinePrescription: React.FC = () => {
         daySlotErr: false,
         durationErr: false,
         dosageErr: true,
+      });
+    } else if (
+      isCustomform &&
+      customDosageMorning.trim() !== '' &&
+      daySlotsArr.indexOf('MORNING') < 0
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageNoon.trim() !== '' && daySlotsArr.indexOf('NOON') < 0) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      customDosageEvening.trim() !== '' &&
+      daySlotsArr.indexOf('EVENING') < 0
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (
+      isCustomform &&
+      customDosageNight.trim() !== '' &&
+      daySlotsArr.indexOf('NIGHT') < 0
+    ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
       });
     } else if (daySlotsArr.length === 0) {
       setErrorState({
@@ -2122,7 +2168,7 @@ export const MedicinePrescription: React.FC = () => {
                           component="div"
                           error={errorState.daySlotErr}
                         >
-                          Please select time of the Day.
+                          Please select valid time of the Day.
                         </FormHelperText>
                       )}
                     </div>

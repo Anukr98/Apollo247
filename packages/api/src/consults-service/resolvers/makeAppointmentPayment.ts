@@ -5,6 +5,7 @@ import {
   AppointmentPayments,
   STATUS,
   APPOINTMENT_PAYMENT_TYPE,
+  ES_DOCTOR_SLOT_STATUS,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -135,6 +136,22 @@ const makeAppointmentPayment: Resolver<
     if (apptCount > 0) {
       throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
     }
+    const apptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
+    const sl = `${apptDt}T${processingAppointment.appointmentDateTime
+      .getUTCHours()
+      .toString()
+      .padStart(2, '0')}:${processingAppointment.appointmentDateTime
+      .getUTCMinutes()
+      .toString()
+      .padStart(2, '0')}:00.000Z`;
+
+    apptsRepo.updateDoctorSlotStatusES(
+      processingAppointment.doctorId,
+      apptDt,
+      sl,
+      processingAppointment.appointmentType,
+      ES_DOCTOR_SLOT_STATUS.BOOKED
+    );
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
     sendPatientAcknowledgements(
