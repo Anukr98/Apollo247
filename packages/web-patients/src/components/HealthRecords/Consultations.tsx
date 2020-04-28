@@ -18,8 +18,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { phrConsultCardClickTracking } from '../../webEngageTracking';
-import { useCurrentPatient } from 'hooks/authHooks';
+// import { phrConsultCardClickTracking } from '../../webEngageTracking';
+// import { useCurrentPatient } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -377,8 +377,8 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
     }
     a.click();
   };
-  const patient = useCurrentPatient();
-  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
+  // const patient = useCurrentPatient();
+  // const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -430,7 +430,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                     <div
                       className={classes.consultGroup}
                       onClick={() => {
-                        phrConsultCardClickTracking({ ...patient, age, consultId: consult.id });
+                        // phrConsultCardClickTracking({ ...patient, age, consultId: consult.id });
                         setActiveConsult(consult);
                         if (isSmallScreen) {
                           setShowMobileDetails(true);
