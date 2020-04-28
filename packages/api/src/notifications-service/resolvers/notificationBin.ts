@@ -6,8 +6,14 @@ import {
   notificationStatus,
   notificationType,
   NotificationBin,
+  NotificationBinArchive,
 } from 'consults-service/entities';
-import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
+import {
+  NotificationBinRepository,
+  NotificationBinArchiveRepository,
+} from 'notifications-service/repositories/notificationBinRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -49,6 +55,7 @@ export const notificationBinTypeDefs = gql`
 
   extend type Mutation {
     insertMessage(messageInput: MessageInput): NotificationData
+    markMessageToUnread(messageId: String): NotificationData
   }
 `;
 
@@ -71,7 +78,7 @@ const insertMessage: Resolver<
   MessageInputArgs,
   NotificationsServiceContext,
   { notificationData: Partial<NotificationBin> }
-> = async (parent, { messageInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { messageInput }, { consultsDb }) => {
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationInputs: Partial<NotificationBin> = {
     fromId: messageInput.fromId,
@@ -82,13 +89,41 @@ const insertMessage: Resolver<
     status: messageInput.status,
     type: messageInput.type,
   };
-  await notificationBinRepo.saveNotification(notificationInputs);
+  const notificationData = await notificationBinRepo.saveNotification(notificationInputs);
 
-  return { notificationData: notificationInputs };
+  return { notificationData: notificationData };
+};
+
+const markMessageToUnread: Resolver<
+  null,
+  { messageId: string },
+  NotificationsServiceContext,
+  { notificationData: Partial<NotificationBinArchive> }
+> = async (parent, args, { consultsDb }) => {
+  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+  const notificationData = await notificationBinRepo.getNotificationById(args.messageId);
+  if (notificationData == null) throw new AphError(AphErrorMessages.INVALID_MESSAGE_ID);
+
+  const dataToArchieve = { ...notificationData };
+  dataToArchieve.status = notificationStatus.READ;
+  delete dataToArchieve.id;
+  delete dataToArchieve.createdDate;
+  delete dataToArchieve.updatedDate;
+
+  const notificationArchieveBinRepo = consultsDb.getCustomRepository(
+    NotificationBinArchiveRepository
+  );
+  const archievedNotificationData = await notificationArchieveBinRepo.saveNotification(
+    dataToArchieve
+  );
+  await notificationBinRepo.removeNotification(args.messageId);
+
+  return { notificationData: archievedNotificationData };
 };
 
 export const notificationBinResolvers = {
   Mutation: {
     insertMessage,
+    markMessageToUnread,
   },
 };

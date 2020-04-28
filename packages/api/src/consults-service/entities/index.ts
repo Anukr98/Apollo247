@@ -1430,6 +1430,11 @@ export class NotificationBin extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 
 @Entity()
