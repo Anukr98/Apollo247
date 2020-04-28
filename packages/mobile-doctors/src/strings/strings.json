@@ -334,7 +334,7 @@
     "family_medical_history": "Family Medical History",
     "tests": "Tests",
     "no_medicine_Added": "No Medicine Added",
-    "diagonsed_medical_condi": "Provisional Diagnosed Medical Condition\n(Acceptable in ICD-10 nomenclature)",
+    "diagonsed_medical_condi": "Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)",
     "photos_uploaded_by_patient": "Photos uploaded by the Patient",
     "reports": "Reports",
     "past_consultations": "Past Consultations",
