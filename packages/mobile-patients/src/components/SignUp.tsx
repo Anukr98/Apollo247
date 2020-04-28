@@ -226,6 +226,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           setShowReferralCode(true);
         } else {
           setShowReferralCode(false);
+          setReferral('');
         }
       })
       .catch((e) => {

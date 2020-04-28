@@ -249,6 +249,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
           setShowReferralCode(true);
         } else {
           setShowReferralCode(false);
+          setReferral('');
         }
       })
       .catch((e) => {
