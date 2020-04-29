@@ -612,7 +612,7 @@ let cancelGetDeliveryTimeApi: Canceler | undefined;
 
 export const getDeliveryTime = (params: {
   postalcode: string;
-  ordertype: string;
+  ordertype: 'pharma' | 'fmcg' | 'both';
   lookup: { sku: string; qty: number }[];
 }): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
   const CancelToken = Axios.CancelToken;
@@ -621,6 +621,7 @@ export const getDeliveryTime = (params: {
     headers: {
       Authentication: config.GET_DELIVERY_TIME[1],
     },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
     cancelToken: new CancelToken((c) => {
       // An executor function receives a cancel function as a parameter
       cancelGetDeliveryTimeApi = c;

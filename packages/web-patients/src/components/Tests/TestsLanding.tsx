@@ -32,6 +32,8 @@ import {
 } from 'graphql/types/getDiagnosticsCites';
 import { GET_DIAGNOSTICS_CITES } from 'graphql/profiles';
 import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from 'graphql/types/getDiagnosticsCites';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -187,7 +189,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 22,
       [theme.breakpoints.down('xs')]: {
         '&:last-child': {
-          paddingBottom: 10,
+          paddingBottom: 70,
         },
       },
     },
@@ -367,6 +369,9 @@ export const TestsLanding: React.FC = (props) => {
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(
     urlParams.get('orderstatus') === 'success' ? true : false
   );
+
+  const onePrimaryUser = hasOnePrimaryUser()
+  
   useEffect(() => {
     if (!diagnosisHotSellerData && !diagnosticOrgansData) {
       setIsLoading(true);
@@ -623,8 +628,9 @@ export const TestsLanding: React.FC = (props) => {
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
-              <Typography variant="h2">{`Hi ${currentPatient &&
-                currentPatient.firstName},`}</Typography>
+              <Typography variant="h2">{`Hi ${
+                currentPatient && currentPatient.firstName
+              },`}</Typography>
               <p>
                 {`Our diagnostic services are only available in Chennai and Hyderabad
                  for now. Kindly change location to Chennai or Hyderabad.`}
@@ -653,6 +659,7 @@ export const TestsLanding: React.FC = (props) => {
         setIsAlertOpen={setIsAlertOpen}
       />
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

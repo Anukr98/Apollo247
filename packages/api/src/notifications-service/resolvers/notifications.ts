@@ -128,6 +128,7 @@ export enum NotificationType {
   PRESCRIPTION_READY = 'PRESCRIPTION_READY',
   VIRTUAL_REMINDER_15 = 'VIRTUAL_REMINDER_15',
   APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL = 'APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL',
+  DOCTOR_NO_SHOW_INITIATE_RESCHEDULE = 'DOCTOR_NO_SHOW_INITIATE_RESCHEDULE',
 }
 
 export enum APPT_CALL_TYPE {
@@ -192,36 +193,6 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
-  const smsId = smsResponse.data[0].id;
-  log('smsOtpAPILogger', `smsId: ${smsId}`, 'sendSMS()->API_CALL_STARTING', '', '');
-  setTimeout(() => {
-    const params = `&method=sms.status&id=${smsId}`;
-    const apiURLForStatus = `${apiUrlWithKey}${params}`;
-    fetch(apiURLForStatus)
-      .then((res) => {
-        log(
-          'smsOtpAPILogger',
-          `STATUS_CALL_RESPONSE`,
-          'sendSMS()->THEN_BLOCK',
-          JSON.stringify(res),
-          ''
-        );
-        console.log('apiURLForStatus res===========', res);
-        return res.json();
-      })
-      .catch((error) => {
-        //logging error here
-        console.log('apiURLForStatus error===========', error);
-        log(
-          'smsOtpAPILogger',
-          `STATUS_CALL_ERROR`,
-          'sendSMS()->CATCH_BLOCK',
-          '',
-          JSON.stringify(error)
-        );
-        throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
-      });
-  }, 5000);
 
   console.log('smsResponse================', smsResponse);
   return smsResponse;
@@ -477,6 +448,23 @@ export async function sendNotification(
       ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
       : '';
     smsLink = notificationBody + smsLink;
+    sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.DOCTOR_NO_SHOW_INITIATE_RESCHEDULE
+  ) {
+    notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
+    notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+      ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
+      : '';
+    smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   } else if (pushNotificationInput.notificationType == NotificationType.PATIENT_NO_SHOW) {
@@ -709,6 +697,26 @@ export async function sendNotification(
       },
       data: {
         type: 'Reschedule_Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+        content: notificationBody,
+      },
+    };
+  }
+
+  if (
+    pushNotificationInput.notificationType == NotificationType.DOCTOR_NO_SHOW_INITIATE_RESCHEDULE
+  ) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
+      },
+      data: {
+        type: 'doctor_Noshow_Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,

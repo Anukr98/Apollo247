@@ -1,6 +1,6 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
@@ -8,13 +8,13 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from 'graphql/types/GetDoctorNextAvailableSlot';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { format } from 'date-fns';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { DoctorType } from 'graphql/types/globalTypes';
 // import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -221,24 +221,33 @@ interface DoctorProfileProps {
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   const classes = useStyles({});
   const { doctorDetails } = props;
+  const apolloClient = useApolloClient();
+  const [data, setData] = useState<any>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const doctorId =
     doctorDetails && doctorDetails.getDoctorDetailsById
       ? doctorDetails.getDoctorDetailsById.id
       : '';
 
-  const { data, loading } = useQueryWithSkip<
-    GetDoctorNextAvailableSlot,
-    GetDoctorNextAvailableSlotVariables
-  >(GET_DOCTOR_NEXT_AVAILABILITY, {
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: [doctorId],
-        availableDate: format(new Date(), 'yyyy-MM-dd'),
-      },
-    },
-    fetchPolicy: 'network-only',
-  });
+  useEffect(() => {
+    setLoading(true);
+    apolloClient
+      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+        query: GET_DOCTOR_NEXT_AVAILABILITY,
+        variables: {
+          DoctorNextAvailableSlotInput: {
+            doctorIds: [doctorId],
+            availableDate: format(new Date(), 'yyyy-MM-dd'),
+          },
+        },
+        fetchPolicy: 'network-only',
+      })
+      .then((response) => {
+        setData(response.data);
+        setLoading(false);
+      });
+  }, []);
 
   if (loading) {
     return <LinearProgress />;

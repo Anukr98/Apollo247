@@ -6,7 +6,7 @@ import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/Shoppi
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { g, getBuildEnvironment } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { db } from '@aph/mobile-patients/src/strings/FirebaseConfig';
+// import { db } from '@aph/mobile-patients/src/strings/FirebaseConfig';
 import moment from 'moment';
 import React from 'react';
 import { Alert, BackAndroid, Platform, Text, TextInput } from 'react-native';

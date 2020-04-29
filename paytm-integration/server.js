@@ -1097,17 +1097,16 @@ app.get('/processOrders', (req, res) => {
 
                 let prescriptionImages = [];
 
-                // if (
-                //   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                //     .prescriptionImageUrl != '' &&
-                //   response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-                //     .prescriptionImageUrl != null
-                // ) {
-                //   prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
-                //     ','
-                //   );
-                //   orderType = 'Pharma';
-                // }
+                if (
+                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                    .prescriptionImageUrl != '' &&
+                  response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+                    .prescriptionImageUrl != null
+                ) {
+                  prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
+                    ','
+                  );
+                }
                 if (prescriptionImages.length > 0) {
                   prescriptionImages.map((imageUrl) => {
                     const url = {
