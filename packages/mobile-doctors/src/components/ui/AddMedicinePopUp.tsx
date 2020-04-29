@@ -763,9 +763,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
                         selected: isFromSearch
                           ? false
                           : existing > -1
-                          ? medTimingAnswers[existing].value !== ''
-                            ? true
-                            : medTimingAnswers[existing].selected
+                          ? medTimingAnswers[existing].selected
                           : true,
                         value: isFromSearch
                           ? '0'
