@@ -1,5 +1,5 @@
 const axios = require('axios');
-const logger = require('../../winston-logger')('Pharmacy-logs');
+const logger = require('../../winston-logger')('Consults-logs');
 const { initPayment, generatePaymentOrderId, singlePaymentAdditionalParams } = require('../helpers/common');
 
 module.exports = async (req, res, next) => {
