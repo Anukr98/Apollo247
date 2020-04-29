@@ -125,6 +125,7 @@ interface CouponProps {
   subtotal: string;
   setCouponCode: any;
   disableSubmit: boolean;
+  removeCouponCode: any;
 }
 
 export const CouponCode: React.FC<CouponProps> = (props) => {
@@ -179,6 +180,9 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
               setCouponText('');
               setCouponCodeApplied(false);
               setOpenCouponField(false);
+              if(props.removeCouponCode){
+                props.removeCouponCode()
+              }
             }}
           >
             Remove

@@ -306,6 +306,10 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   };
   const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
+  const gepTracking = (filterName: string, filterValue: string) => {
+    window.gep && window.gep('Consultations', selectedSpecialtyName, `${filterName} - ${filterValue}`)
+  }
+
   return (
     <div className={classes.root}>
       <AphTextField
@@ -441,6 +445,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                           setExperience(newArray);
                           filterOptions.experience = newArray;
                         } else {
+                          /* Gtm code start */
+                          gepTracking('Experience', e.currentTarget.value)
+                          /* Gtm code end */
                           experience.push(e.currentTarget.value);
                           setExperience(experience);
                           filterOptions.experience = experience;
@@ -505,6 +512,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                           setAvailability(newArray);
                           filterOptions.availability = newArray;
                         } else {
+                          /* Gtm code start */
+                          gepTracking('Availability', e.currentTarget.value)
+                          /* Gtm code end */
                           availability.push(e.currentTarget.value);
                           setAvailability(availability);
                           filterOptions.availability = availability;
@@ -540,6 +550,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                           setFees(newArray);
                           filterOptions.fees = newArray;
                         } else {
+                          /* Gtm code start */
+                          gepTracking('Fees In Rupees', e.currentTarget.value)
+                          /* Gtm code end */
                           fees.push(e.currentTarget.value);
                           setFees(fees);
                           filterOptions.fees = fees;
@@ -570,6 +583,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                           setGender(newArray);
                           filterOptions.gender = newArray;
                         } else {
+                          /* Gtm code start */
+                          gepTracking('Gender', e.currentTarget.value)
+                          /* Gtm code end */
                           gender.push(Gender[e.currentTarget.value as Gender]);
                           setGender(gender);
                           filterOptions.gender = gender;
@@ -610,6 +626,9 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
                           setLanguage(newArray);
                           filterOptions.language = newArray;
                         } else {
+                          /* Gtm code start */
+                          gepTracking('Language', e.currentTarget.value)
+                          /* Gtm code end */
                           language.push(e.currentTarget.value);
                           setLanguage(language);
                           filterOptions.language = language;

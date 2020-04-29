@@ -319,6 +319,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               },
             })
               .then(({ data }: any) => {
+                /**Gtm code start  */
+                window.gep && window.gep('Pharmacy', 'Order', 'Address Selected')
+                /**Gtm code End  */
                 if (data && data.savePatientAddress && data.savePatientAddress.patientAddress)
                   props.setIsAddAddressDialogOpen(false);
                 if (setDeliveryAddressId) {

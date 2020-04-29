@@ -396,6 +396,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                       checkServiceAvailability(address.zipcode)
                         .then((res: AxiosResponse) => {
                           if (res && res.data && res.data.Availability) {
+                            /**Gtm code start  */
+                            window.gep && window.gep('Pharmacy', 'Order', 'Address Selected')
+                            /**Gtm code End  */
                             setDeliveryAddressId && setDeliveryAddressId(address.id);
                             setStoreAddressId && setStoreAddressId('');
                           } else {

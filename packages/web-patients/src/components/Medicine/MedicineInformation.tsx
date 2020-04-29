@@ -536,42 +536,45 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         <div className={classes.bottomActions}>
           {
             data.is_in_stock ? (
-              <>
-                <AphButton
-                  disabled={addMutationLoading || updateMutationLoading}
-                  onClick={() => {
-                    setAddMutationLoading(true);
-                    const cartItem: MedicineCartItem = {
-                      description: data.description,
-                      id: data.id,
-                      image: data.image,
-                      is_in_stock: data.is_in_stock,
-                      is_prescription_required: data.is_prescription_required,
-                      name: data.name,
-                      price: data.price,
-                      sku: data.sku,
-                      special_price: data.special_price,
-                      small_image: data.small_image,
-                      status: data.status,
-                      thumbnail: data.thumbnail,
-                      type_id: data.type_id,
-                      mou: data.mou,
-                      quantity: medicineQty,
-                    };
-                    applyCartOperations(cartItem);
-                    setAddMutationLoading(false);
-                    setShowPopup(true);
-                  }}
-                >
-                  {' '}
-                  {addMutationLoading ? (
-                    <CircularProgress size={22} color="secondary" />
-                  ) : itemIndexInCart(data) !== -1 ? (
-                    'Added To Cart'
-                  ) : (
-                    'Add To Cart'
-                  )}
-                </AphButton>
+            <>
+              <AphButton
+                disabled={addMutationLoading || updateMutationLoading}
+                onClick={() => {
+                  setAddMutationLoading(true);
+                  const cartItem: MedicineCartItem = {
+                    description: data.description,
+                    id: data.id,
+                    image: data.image,
+                    is_in_stock: data.is_in_stock,
+                    is_prescription_required: data.is_prescription_required,
+                    name: data.name,
+                    price: data.price,
+                    sku: data.sku,
+                    special_price: data.special_price,
+                    small_image: data.small_image,
+                    status: data.status,
+                    thumbnail: data.thumbnail,
+                    type_id: data.type_id,
+                    mou: data.mou,
+                    quantity: medicineQty,
+                  };
+                  /**Gtm code start  */
+                  itemIndexInCart(data) == -1 && window.gep &&  window.gep('Pharmacy', 'Add to Cart', data.name, data.price)
+                  /**Gtm code End  */
+                  applyCartOperations(cartItem);
+                  setAddMutationLoading(false);
+                  setShowPopup(true);
+                }}
+              >
+                {' '}
+                {addMutationLoading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : itemIndexInCart(data) !== -1 ? (
+                  'Added To Cart'
+                ) : (
+                  'Add To Cart'
+                )}
+              </AphButton>
 
                 <AphButton
                   color="primary"
