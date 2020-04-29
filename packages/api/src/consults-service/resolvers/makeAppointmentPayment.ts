@@ -24,6 +24,7 @@ import { sendNotification, NotificationType } from 'notifications-service/resolv
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 import { log } from 'customWinstonLogger';
+
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
     ONLINE
@@ -105,10 +106,9 @@ const makeAppointmentPayment: Resolver<
     'makeAppointmentPayment()',
     JSON.stringify(paymentInput),
     ''
-  )
+  );
   let processingAppointment;
   if (paymentInput.amountPaid == 0 || paymentInput.amountPaid == 0.0) {
-
     processingAppointment = await apptsRepo.findByIdAndStatus(
       paymentInput.orderId,
       STATUS.PAYMENT_PENDING
@@ -118,11 +118,10 @@ const makeAppointmentPayment: Resolver<
       throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
     }
   } else {
-    processingAppointment = await apptsRepo.findByOrderIdAndStatus(
-      paymentInput.orderId,
-      [STATUS.PAYMENT_PENDING,
-      STATUS.PAYMENT_PENDING_PG]
-    );
+    processingAppointment = await apptsRepo.findByOrderIdAndStatus(paymentInput.orderId, [
+      STATUS.PAYMENT_PENDING,
+      STATUS.PAYMENT_PENDING_PG,
+    ]);
     if (!processingAppointment) {
       log(
         'consultServiceLogger',
@@ -130,7 +129,7 @@ const makeAppointmentPayment: Resolver<
         'makeAppointmentPayment()',
         `paymentOrderId - ${paymentInput.orderId}`,
         'true'
-      )
+      );
       throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
     }
   }
@@ -146,7 +145,7 @@ const makeAppointmentPayment: Resolver<
       'makeAppointmentPayment()',
       `${JSON.stringify(paymentInfo)}`,
       ''
-    )
+    );
     await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInput.paymentStatus);
   } else {
     const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
@@ -157,7 +156,6 @@ const makeAppointmentPayment: Resolver<
 
   //update appointment status to PENDING
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
-
     //check if any appointment already exists in this slot before confirming payment
     const apptCount = await apptsRepo.checkIfAppointmentExistWithId(
       processingAppointment.doctorId,
@@ -172,7 +170,7 @@ const makeAppointmentPayment: Resolver<
         'makeAppointmentPayment()',
         `${JSON.stringify(processingAppointment)}`,
         'true'
-      )
+      );
       throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
     }
     const apptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
@@ -207,7 +205,11 @@ const makeAppointmentPayment: Resolver<
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
     await apptsRepo.updateAppointmentStatus(processingAppointment.id, STATUS.PAYMENT_FAILED, false);
   } else if (paymentInput.paymentStatus == 'PENDING') {
-    await apptsRepo.updateAppointmentStatus(processingAppointment.id, STATUS.PAYMENT_PENDING_PG, false);
+    await apptsRepo.updateAppointmentStatus(
+      processingAppointment.id,
+      STATUS.PAYMENT_PENDING_PG,
+      false
+    );
   }
 
   return { appointment: paymentInfo };
@@ -312,8 +314,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
