@@ -75,7 +75,7 @@ interface ServiceItemProps {
 }
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { title, imgUrl, content, action } = props.item;
   return (
@@ -84,9 +84,11 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
         <div className={classes.serviceItem}>
           <Paper className={classes.serviceItemIn}>
             <Link
-              to={isSignedIn ? action.link : ''}
+              to={title === 'View Health Records' && !isSignedIn ? '' : action.link}
               onClick={(e) => {
-                !isSignedIn ? protectWithLoginPopup() : action.link === '/health-records';
+                if (title === 'View Health Records' && !isSignedIn) {
+                  protectWithLoginPopup();
+                }
               }}
               title={title}
             >
