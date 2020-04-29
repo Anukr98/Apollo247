@@ -372,6 +372,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             setDoctorId(data.getDoctorDetailsById.id);
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
+          } else {
+            setTimeout(() => {
+              setshowSpinner(false);
+              moveBack();
+            }, 1500);
           }
         } catch (e) {
           CommonBugFender('DoctorDetails_fetchDoctorDetails_try', e);

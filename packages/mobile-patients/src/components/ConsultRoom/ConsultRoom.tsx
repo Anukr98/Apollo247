@@ -22,7 +22,7 @@ import {
   CovidRiskLevel,
   CovidExpert,
   CovidHealthScan,
-  LatestArticle
+  LatestArticle,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -68,7 +68,7 @@ import {
   View,
   ViewStyle,
   NativeModules,
-  TouchableOpacityProps
+  TouchableOpacityProps,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 5,
     elevation: 5,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   covidToucahble: {
     height: 0.06 * height,
@@ -246,7 +246,7 @@ const tabBarOptions: TabBarOptions[] = [
   },
 ];
 
-export interface ConsultRoomProps extends NavigationScreenProps { }
+export interface ConsultRoomProps extends NavigationScreenProps {}
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const {
@@ -381,7 +381,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setWEGFired(true);
         setWEGUserAttributes();
       }
-    } catch (e) { }
+    } catch (e) {}
   }, [currentPatient]);
 
   const setWEGUserAttributes = () => {
@@ -563,7 +563,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonSetUserBugsnag(
         patientDetails ? (patientDetails.mobileNumber ? patientDetails.mobileNumber : '') : ''
       );
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const callAPIForNotificationResult = async () => {
@@ -617,7 +617,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           setAllNotifications && setAllNotifications(arrayNotification);
 
           AsyncStorage.setItem('allNotification', JSON.stringify(arrayNotification));
-        } catch (error) { }
+        } catch (error) {}
       })
       .catch((error: Error) => {
         console.log('error', error);
@@ -991,10 +991,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {appointmentLoading ? (
           <Spinner style={{ backgroundColor: 'transparent' }} spinnerProps={{ size: 'small' }} />
         ) : (
-            <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
-              {count}
-            </Text>
-          )}
+          <Text style={{ ...theme.viewStyles.text('M', 18, theme.colors.SKY_BLUE, 1, 24, 0) }}>
+            {count}
+          </Text>
+        )}
       </View>
     );
   };
@@ -1008,7 +1008,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           marginLeft: 20,
           marginRight: 8,
           marginTop: 16,
-          marginBottom: 8
+          marginBottom: 8,
         }}
       >
         {listValues.map((item) => {
@@ -1070,14 +1070,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderCovidMainView = () => {
     return (
-      <View style={{
-        backgroundColor: '#f0f1ec',
-        padding: 20
-      }}>
+      <View
+        style={{
+          backgroundColor: '#f0f1ec',
+          padding: 20,
+        }}
+      >
         {renderCovidHeader()}
         {renderCovidCardView()}
       </View>
-    )
+    );
   };
 
   const renderCovidBlueButtons = (
@@ -1086,14 +1088,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     title: string
   ) => {
     return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={onButtonClick}
-        style={styles.covidToucahble}
-      >
-        <View style={styles.covidIconView}>
-          {buttonIcon}
-        </View>
+      <TouchableOpacity activeOpacity={0.5} onPress={onButtonClick} style={styles.covidToucahble}>
+        <View style={styles.covidIconView}>{buttonIcon}</View>
         <View style={styles.covidTitleView}>
           <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 18) }}>
             {title}
@@ -1106,25 +1102,46 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderCovidCardView = () => {
     return (
       <View style={styles.covidCardContainer}>
-        <Image style={{ overflow: 'hidden', width: '100%', height: 128 }} source={require('@aph/mobile-patients/src/images/home/corona_image.png')} />
-        <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} />
+        <Image
+          style={{ overflow: 'hidden', width: '100%', height: 128 }}
+          source={require('@aph/mobile-patients/src/images/home/corona_image.png')}
+        />
+        <Image
+          style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }}
+          source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')}
+        />
         <View style={{ padding: 16, paddingTop: 24 }}>
           <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-            <Image style={{ width: 40, height: 40 }} source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')} />
-            <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18), alignSelf: 'center', marginLeft: 10 }}>{string.common.covidHelpText}</Text>
+            <Image
+              style={{ width: 40, height: 40 }}
+              source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')}
+            />
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, '#01475b', 1, 18),
+                alignSelf: 'center',
+                marginLeft: 10,
+              }}
+            >
+              {string.common.covidHelpText}
+            </Text>
           </View>
-          <View style={{
-            height: 1,
-            width: '100%',
-            backgroundColor: '#e3e3e3',
-            marginBottom: 11
-          }} />
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18) }}>{string.common.covidMessageText}</Text>
+          <View
+            style={{
+              height: 1,
+              width: '100%',
+              backgroundColor: '#e3e3e3',
+              marginBottom: 11,
+            }}
+          />
+          <Text style={{ ...theme.viewStyles.text('M', 12, '#01475b', 0.6, 18) }}>
+            {string.common.covidMessageText}
+          </Text>
           {renderArticleButton()}
           {renderCovidHelpButtons()}
         </View>
       </View>
-    )
+    );
   };
 
   const renderCovidHelpButtons = () => {
@@ -1154,12 +1171,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           'Call our experts'
         )}
       </View>
-    )
+    );
   };
 
   const renderArticleButton = () => {
     return (
-      <TouchableOpacity activeOpacity={0.5}
+      <TouchableOpacity
+        activeOpacity={0.5}
         style={{
           shadowColor: '#4c808080',
           shadowOffset: { width: 0, height: 5 },
@@ -1193,24 +1211,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             borderTopRightRadius: 10,
             borderBottomRightRadius: 10,
             justifyContent: 'center',
-            alignItems: 'flex-start'
+            alignItems: 'flex-start',
           }}
         >
           <Text style={[theme.viewStyles.text('M', 14, theme.colors.SHERPA_BLUE, 1, 18)]}>
             {'Read the latest articles'}
           </Text>
         </View>
-      </TouchableOpacity >
+      </TouchableOpacity>
     );
   };
 
   const onPressReadArticle = () => {
-    props.navigation.navigate(AppRoutes.CovidScan, { covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL });
-  }
+    props.navigation.navigate(AppRoutes.CovidScan, {
+      covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
+    });
+  };
 
   const onPressRiskLevel = () => {
-    props.navigation.navigate(AppRoutes.CovidScan, { covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL });
-  }
+    props.navigation.navigate(AppRoutes.CovidScan, {
+      covidUrl: AppConfig.Configuration.COVID_RISK_LEVEL_URL,
+    });
+  };
 
   // const onPressMentalHealth = () => {
   //   console.log('onPressMentalHealth');
@@ -1221,7 +1243,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
     Linking.openURL(`tel:${phoneNumber}`);
     console.log('onPressCallExperts');
-  }
+  };
 
   const renderCovidScanBanner = () => {
     return (
@@ -1379,7 +1401,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           backgroundColor: theme.colors.CLEAR,
         }}
       >
-        <TouchableOpacity activeOpacity={1} onPress={() => { }}>
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
@@ -1393,7 +1415,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 isComingFromConsult: true,
               })
             }
-          // style={{ right: 20 }}
+            // style={{ right: 20 }}
           >
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
