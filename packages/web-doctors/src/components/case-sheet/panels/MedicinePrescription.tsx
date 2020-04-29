@@ -2069,7 +2069,7 @@ export const MedicinePrescription: React.FC = () => {
                         } ${favDurations} ${favWhenString.length > 0 ? favWhenString : ''} ${
                           favTimesString.length > 0 &&
                           favMedicine.medicineCustomDosage &&
-                          favMedicine.medicineCustomDosage === ''
+                          favMedicine.medicineCustomDosage !== ''
                             ? ''
                             : favTimesString
                         }
