@@ -4,6 +4,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { differenceInDays, addDays, format } from 'date-fns';
+import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 
 export const doctorDataElasticTypeDefs = gql`
   extend type Mutation {
@@ -37,7 +38,7 @@ const deleteDocumentElastic: Resolver<null, { id: string }, DoctorsServiceContex
 
 const updateDoctorSlotStatus: Resolver<
   null,
-  { id: string; slotDate: string; slot: string; status: string },
+  { id: string; slotDate: string; slot: string; status: ES_DOCTOR_SLOT_STATUS },
   DoctorsServiceContext,
   string
 > = async (parent, args, { doctorsDb }) => {
@@ -83,7 +84,6 @@ const addAllDoctorSlotsElastic: Resolver<
         //str += format(stDate, 'yyyy-MM-dd') + ',';
         const searchParams: RequestParams.Search = {
           index: 'doctors',
-          type: 'posts',
           body: {
             query: {
               bool: {
@@ -94,7 +94,7 @@ const addAllDoctorSlotsElastic: Resolver<
                     },
                   },
                   {
-                    match: {
+                    match_phrase: {
                       doctorId: allDocsInfo[k].id,
                     },
                   },
@@ -115,7 +115,6 @@ const addAllDoctorSlotsElastic: Resolver<
           //console.log(doctorSlots, 'doctor slots');
           const doc1: RequestParams.Update = {
             index: 'doctors',
-            type: 'posts',
             id: allDocsInfo[k].id,
             body: {
               script: {
@@ -148,9 +147,9 @@ const addDoctorSlotsElastic: Resolver<
   string
 > = async (parent, args, { doctorsDb }) => {
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  console.log('doc id', args.id);
   const searchParams: RequestParams.Search = {
     index: 'doctors',
-    type: 'posts',
     body: {
       query: {
         bool: {
@@ -161,7 +160,7 @@ const addDoctorSlotsElastic: Resolver<
               },
             },
             {
-              match: {
+              match_phrase: {
                 doctorId: args.id,
               },
             },
@@ -173,14 +172,16 @@ const addDoctorSlotsElastic: Resolver<
   const getDetails = await client.search(searchParams);
 
   console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'searchhitCount');
-
+  //console.log(getDetails.body.hits.hits[0]._source, 'search data1');
+  //console.log(getDetails.body.hits.hits[0]._source.doctorSlots.length, 'search data2');
+  //console.log(getDetails.body.hits.hits[0]._source.doctorId, 'search data3');
+  //console.log(getDetails.body.hits.hits[0]._source.doctorSlots.length, 'slots data');
   if (getDetails.body.hits.hits.length == 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorSlots = await docRepo.getDoctorSlots(new Date(args.slotDate), args.id);
     //console.log(doctorSlots, 'doctor slots');
     const doc1: RequestParams.Update = {
       index: 'doctors',
-      type: 'posts',
       id: args.id,
       body: {
         script: {
@@ -229,7 +230,7 @@ const insertDataElastic: Resolver<
 
       console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'hitCount');
       if (getDetails.body.hits.hits.length == 0) {
-        newDocData += allDocsInfo[i].mobileNumber + ',';
+        newDocData += allDocsInfo[i].id + ',';
         const consultHours = [];
         for (let k = 0; k < allDocsInfo[i].consultHours.length; k++) {
           const hourData = {

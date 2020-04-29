@@ -16,6 +16,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientHelpTicketRepository } from 'profiles-service/repositories/patientHelpTicketsRepository';
 import { PatientHelpTickets } from 'profiles-service/entities';
 import { helpEmailTemplate } from 'helpers/emailTemplates/helpEmailTemplate';
+import { log } from 'customWinstonLogger';
 
 export const helpTypeDefs = gql`
   input HelpEmailInput {
@@ -226,7 +227,21 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     ccEmail: <string>ccEmailIds,
   };
 
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_EMAIL_CALL_PEPIPOST: ${helpEmailInput.comments}`,
+    'sendMail',
+    JSON.stringify(helpEmailInput),
+    ''
+  );
   const mailStatus = await sendMail(emailContent);
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_EMAIL_END_CALL_PEPIPOST: ${helpEmailInput.comments}`,
+    'sendMail',
+    JSON.stringify(mailStatus),
+    ''
+  );
   return mailStatus.message;
 };
 

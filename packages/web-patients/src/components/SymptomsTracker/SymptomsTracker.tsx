@@ -248,7 +248,7 @@ export const SymptomsTracker: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              consult a doctor
+              understand your symptoms
             </div>
             <Scrollbars
               autoHide={true}

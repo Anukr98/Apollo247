@@ -14,6 +14,12 @@ import {
 import { IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
 
+export enum ES_DOCTOR_SLOT_STATUS {
+  BOOKED = 'BOOKED',
+  OPEN = 'OPEN',
+  BLOCKED = 'BLOCKED',
+}
+
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
   NUMBER_OF_CONSULTS = 'NUMBER_OF_CONSULTS',
@@ -1430,6 +1436,11 @@ export class NotificationBin extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 
 @Entity()

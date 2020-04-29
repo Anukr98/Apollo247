@@ -72,7 +72,17 @@ export const useAllCurrentPatients = () => {
     const defaultCurrentPatient = getDefaultCurrentPatient();
 
     if (!localStorage.getItem('currentUser')) {
-      setCurrentPatientId(defaultCurrentPatient ? defaultCurrentPatient.id : null);
+      if (defaultCurrentPatient && defaultCurrentPatient.id) {
+        const currentUserId = defaultCurrentPatient.id;
+        if (!localStorage.getItem(`${currentUserId}`)) {
+          const cartItems = localStorage.getItem('cartItems');
+          if (cartItems) {
+            localStorage.setItem(`${currentUserId}`, cartItems);
+            localStorage.removeItem('cartItems');
+          }
+        }
+        setCurrentPatientId(currentUserId);
+      }
     } else {
       setCurrentPatientId(localStorage.getItem('currentUser'));
     }
