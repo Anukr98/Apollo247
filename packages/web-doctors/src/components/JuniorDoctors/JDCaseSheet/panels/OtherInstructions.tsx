@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'relative',
       '& span': {
         padding: 0,
-        whiteSpace: 'normal',
+        whiteSpace: 'pre-wrap',
       },
       '&:focus': {
         backgroundColor: 'rgba(0, 0, 0, 0.02)',

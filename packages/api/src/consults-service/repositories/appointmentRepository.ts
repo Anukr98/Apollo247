@@ -7,6 +7,7 @@ import {
   Not,
   Connection,
   In,
+  MoreThanOrEqual,
 } from 'typeorm';
 import {
   Appointment,
@@ -1616,7 +1617,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
     const updateDoc: RequestParams.Update = {
       index: 'doctors',
-      type: 'posts',
       id: doctorId,
       body: {
         script: {
@@ -1631,7 +1631,29 @@ export class AppointmentRepository extends Repository<Appointment> {
         },
       },
     };
-    const updateResp = await client.update(updateDoc);
+    const updateResp = await client.update(updateDoc).catch((error) => {
+      console.log(error, 'update error in slot');
+    });
     console.log(updateResp, 'updateResp');
+  }
+
+  getAllDoctorAppointments(doctorId: string, apptDate: Date) {
+    //const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    //const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
+    if (doctorId == '0') {
+      return this.find({
+        where: { bookingDate: MoreThanOrEqual(new Date()), status: Not(STATUS.PAYMENT_PENDING) },
+        order: { bookingDate: 'DESC' },
+      });
+    } else {
+      return this.find({
+        where: {
+          doctorId,
+          bookingDate: MoreThanOrEqual(new Date()),
+          status: Not(STATUS.PAYMENT_PENDING),
+        },
+        order: { bookingDate: 'DESC' },
+      });
+    }
   }
 }
