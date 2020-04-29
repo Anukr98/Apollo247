@@ -266,12 +266,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ordersList.map(async (orderDetails) => {
         if (Date.parse(orderDetails.orderTat.toString())) {
           const tatDate = new Date(orderDetails.orderTat.toString());
-          //console.log('tatDate===>', tatDate);
-          const istCreatedDate = orderDetails.createdDate; // addMilliseconds(orderDetails.createdDate, 19800000);
-          //console.log('istCreatedDate===>', istCreatedDate);
+          const istCreatedDate = orderDetails.createdDate;
           const orderTat = Math.floor(Math.abs(differenceInMinutes(tatDate, istCreatedDate)));
-          //console.log('differeneceInMinutes', differenceInMinutes(tatDate, istCreatedDate));
-          //console.log('orderTat===>', orderTat);
           if (orderTat <= 120) {
             totalCount++;
           } else {
