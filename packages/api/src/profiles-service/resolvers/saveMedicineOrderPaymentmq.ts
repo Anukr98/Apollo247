@@ -23,7 +23,6 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 
-
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
     CHENNAI
@@ -105,7 +104,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     'SaveMedicineOrderPaymentMq()',
     JSON.stringify(medicinePaymentMqInput),
     ''
-  )
+  );
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
@@ -118,15 +117,13 @@ const SaveMedicineOrderPaymentMq: Resolver<
       'SaveMedicineOrderPaymentMq()',
       JSON.stringify(medicinePaymentMqInput),
       ''
-    )
+    );
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
-
   }
   //get patient address
   const patientAddress = orderDetails.patient.patientAddress.filter(
     (item) => item.id === orderDetails.patientAddressId
   );
-
 
   if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     medicinePaymentMqInput.paymentDateTime = new Date();
@@ -150,17 +147,19 @@ const SaveMedicineOrderPaymentMq: Resolver<
     paymentAttrs.refundAmount = medicinePaymentMqInput.refundAmount;
   }
 
-  if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.QUOTE || orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING) {
+  if (
+    orderDetails.currentStatus == MEDICINE_ORDER_STATUS.QUOTE ||
+    orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_PENDING
+  ) {
     const savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
     if (!savePaymentDetails) {
-
       log(
         'profileServiceLogger',
         'saveMedicineOrderPayment failed ',
         'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
         JSON.stringify(paymentAttrs),
         ''
-      )
+      );
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
     let currentStatus = MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS;
@@ -181,7 +180,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
         'SaveMedicineOrderPaymentMq()->patientRepo.findById()',
         `${orderDetails.orderAutoId} - ${orderDetails.patient.id}`,
         ''
-      )
+      );
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
 
@@ -239,7 +238,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
             `SaveMedicineOrderPaymentMq()->${queueName}`,
             JSON.stringify(topicError),
             JSON.stringify(topicError)
-          )
+          );
           console.log('topic create error', topicError);
         }
         console.log('connected to topic', queueName);
@@ -252,7 +251,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
               `SaveMedicineOrderPaymentMq()->${queueName}`,
               message,
               JSON.stringify(sendMsgError)
-            )
+            );
             console.log('send message error', sendMsgError);
           }
           console.log('message sent to topic');
@@ -266,7 +265,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
       paymentOrderId,
       orderStatus,
     };
-
   } else {
     const paymentAttrsWebhook: Partial<MedicineOrderPayments> = {};
     orderStatus = orderDetails.currentStatus;
@@ -279,21 +277,24 @@ const SaveMedicineOrderPaymentMq: Resolver<
       paymentAttrsWebhook.refundAmount = medicinePaymentMqInput.refundAmount;
     }
     if (Object.keys(paymentAttrsWebhook).length) {
-      const updatePaymentDetails = await medicineOrdersRepo.updateMedicineOrderPayment(orderDetails.id, orderDetails.orderAutoId, paymentAttrsWebhook);
+      const updatePaymentDetails = await medicineOrdersRepo.updateMedicineOrderPayment(
+        orderDetails.id,
+        orderDetails.orderAutoId,
+        paymentAttrsWebhook
+      );
       log(
         'profileServiceLogger',
         'Updated Payment Details',
         'SaveMedicineOrderPaymentMq()',
         JSON.stringify(updatePaymentDetails),
         ''
-      )
+      );
       if (!updatePaymentDetails) {
         errorCode = -1;
         errorMessage = 'Could not update payment status';
       }
-    };
-  };
-
+    }
+  }
 
   //send email notifictaion id if the city sent is in CODCity
   if (
@@ -311,15 +312,15 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
     const toEmailId =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? ApiConstants.MEDICINE_SUPPORT_EMAILID
         : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
     let ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
         : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
@@ -345,7 +346,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     paymentOrderId,
     orderStatus,
   };
-}
+};
 
 export const saveMedicineOrderPaymentMqResolvers = {
   Mutation: {
