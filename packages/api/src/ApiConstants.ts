@@ -284,4 +284,5 @@ export enum ApiConstants {
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosis',
   FREE_CHAT_DAYS = 7,
+  DOCTOR_NOTIFICATION_TEXT = 'You have a new notification',
 }

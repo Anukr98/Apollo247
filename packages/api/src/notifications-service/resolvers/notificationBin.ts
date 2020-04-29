@@ -12,10 +12,13 @@ import {
   NotificationBinRepository,
   NotificationBinArchiveRepository,
 } from 'notifications-service/repositories/notificationBinRepository';
+import CryptoJS from 'crypto-js';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { subDays } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
+import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -88,19 +91,27 @@ const insertMessage: Resolver<
   MessageInputArgs,
   NotificationsServiceContext,
   { notificationData: Partial<NotificationBin> }
-> = async (parent, { messageInput }, { consultsDb }) => {
+> = async (parent, { messageInput }, { consultsDb, doctorsDb }) => {
+  const { fromId, toId, eventName, eventId, message, status, type } = messageInput;
+  const bytes = CryptoJS.AES.decrypt(message, process.env.NOTIFICATION_SMS_SECRECT_KEY);
+  const isMessageEncrypted = bytes.toString(CryptoJS.enc.Utf8);
+  if (!isMessageEncrypted) throw new AphError(AphErrorMessages.MESSAGE_ENCRYPTION_ERROR);
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationInputs: Partial<NotificationBin> = {
-    fromId: messageInput.fromId,
-    toId: messageInput.toId,
-    eventName: messageInput.eventName,
-    eventId: messageInput.eventId,
-    message: messageInput.message,
-    status: messageInput.status,
-    type: messageInput.type,
+    fromId: fromId,
+    toId: toId,
+    eventName: eventName,
+    eventId: eventId,
+    message: message,
+    status: status,
+    type: type,
   };
   const notificationData = await notificationBinRepo.saveNotification(notificationInputs);
-
+  if (eventName == notificationEventName.APPOINTMENT) {
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctor = await doctorRepo.findDoctorByIdWithoutRelations(toId);
+    if (doctor) sendNotificationSMS(doctor.mobileNumber, '');
+  }
   return { notificationData: notificationData };
 };
 
