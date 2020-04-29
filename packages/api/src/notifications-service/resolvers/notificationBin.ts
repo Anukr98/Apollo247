@@ -16,6 +16,7 @@ import CryptoJS from 'crypto-js';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -84,7 +85,7 @@ const insertMessage: Resolver<
   MessageInputArgs,
   NotificationsServiceContext,
   { notificationData: Partial<NotificationBin> }
-> = async (parent, { messageInput }, { consultsDb }) => {
+> = async (parent, { messageInput }, { consultsDb, doctorsDb }) => {
   const { fromId, toId, eventName, eventId, message, status, type } = messageInput;
   const bytes = CryptoJS.AES.decrypt(message, process.env.NOTIFICATION_SMS_SECRECT_KEY);
   const isMessageEncrypted = bytes.toString(CryptoJS.enc.Utf8);
@@ -101,6 +102,9 @@ const insertMessage: Resolver<
   };
   const notificationData = await notificationBinRepo.saveNotification(notificationInputs);
   if (eventName == notificationEventName.APPOINTMENT) {
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctor = await doctorRepo.findDoctorByIdWithoutRelations(toId);
+    if (doctor) sendNotificationSMS(doctor.mobileNumber, '');
   }
   return { notificationData: notificationData };
 };
