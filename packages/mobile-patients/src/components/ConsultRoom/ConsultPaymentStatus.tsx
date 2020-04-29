@@ -91,9 +91,11 @@ useEffect(() => {
     }
   };
 
-  const textComponent = (message: string, numOfLines:number | undefined,color:string)=>{
+  const textComponent = (message: string, numOfLines:number | undefined,color:string,needStyle:boolean)=>{
     return (
-      <Text style={{ ...theme.viewStyles.text('SB', 13, color, 1, 20) }} numberOfLines={numOfLines}>
+      < Text style={{ ...theme.viewStyles.text('SB', 13, color, 1, 20), marginHorizontal: needStyle? 0.1 * windowWidth:undefined }}numberOfLines = {
+  numOfLines
+} >
       {message}
         </Text>
         )
@@ -110,20 +112,20 @@ return colors.SUCCESS;
   };
 
   const statusText = () => {
-    let message ='PAYMENT PENDING'
+    let message = 'PAYMENT PENDING'
     let textColor = theme.colors.PENDING_TEXT
-    if (status == success) {
+    if (status === success) {
       message =' PAYMENT SUCCESSFUL'
       textColor = theme.colors.SUCCESS_TEXT
-    } else if (status == failure) {
-      message =' PAYMENT FAILED'
+    } else if (status === failure) {
+      message = ' PAYMENT FAILED'
       textColor = theme.colors.FAILURE_TEXT
     } 
-    textComponent(message, undefined, textColor)
+       return textComponent(message, undefined, textColor,false)
   };
 
   const renderStatusCard = () => {
-    const refNumberText = 'Ref.No : '+String(refNo)
+    const refNumberText = '     Ref.No : '+String(refNo)
     const orderIdText = 'Order ID: '+String(orderId)
     const priceText = 'Rs. '+String(price)
     return (
@@ -140,7 +142,7 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-           {statusText}
+           {statusText()}
         </View>
         <View
           style={{
@@ -149,7 +151,7 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-            {textComponent(priceText, undefined, theme.colors.SHADE_GREY)}
+            {textComponent(priceText, undefined, theme.colors.SHADE_GREY,false)}
         </View>
         <View
           style={{
@@ -158,10 +160,10 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-            {textComponent(refNumberText,undefined,theme.colors.SHADE_GREY)}
+            {textComponent(refNumberText,undefined,theme.colors.SHADE_GREY,false)}
         </View>
         <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
-          {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY)}
+          {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY,false)}
         </View>
       </View>
     );
@@ -170,7 +172,7 @@ return colors.SUCCESS;
   const appointmentHeader = () => {
     return (
       <View style={styles.appointmentHeaderStyle} >
-           {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE)} 
+           {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE,false)} 
       </View>
     );
   };
@@ -180,27 +182,27 @@ return colors.SUCCESS;
       <View style={styles.appointmentCardStyle}>
         <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
           <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              {textComponent('Date & Time of Appointment', undefined, theme.colors.ASTRONAUT_BLUE)}
+              {textComponent('Date & Time of Appointment', undefined, theme.colors.ASTRONAUT_BLUE,false)}
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              {textComponent(appointmentDateTime.toLocaleString(), undefined, theme.colors.SHADE_CYAN_BLUE) }
+              {textComponent(appointmentDateTime.toLocaleString(), undefined, theme.colors.SHADE_CYAN_BLUE,false) }
           </View>
         </View>
         <View style={{ flex: 0.5, flexDirection: 'row' }}>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-            {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE)}
+            {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE,false)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE)}
+              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE,false)}
             </View>
           </View>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE)}
+              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE,false)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-                {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE)}
+                {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE,false)}
             </View>
           </View>
         </View>
@@ -209,33 +211,13 @@ return colors.SUCCESS;
   };
 
   const renderNote = () => {
+    let noteText = ''
     if (status == failure) {
-      return (
-        <Text
-          style={{
-            ...theme.viewStyles.text('SB', 13, '#666666', 1, 20),
-            marginHorizontal: 0.1 * windowWidth,
-          }}
-          numberOfLines={2}
-        >
-          Note : In case your account has been debited, you should get the refund in 1-7 working
-          days.
-        </Text>
-      );
+      noteText = "Note : In case your account has been debited, you should get the refund in 1-7 working days."
     } else if (status == pending) {
-      return (
-        <Text
-          style={{
-            ...theme.viewStyles.text('SB', 13, '#666666', 1, 20),
-            marginHorizontal: 0.1 * windowWidth,
-          }}
-          numberOfLines={4}
-        >
-          Note : Your payment is in progress and this may take a couple of minutes to confirm your
-          booking. We’ll intimate you once your bank confirms the payment.
-        </Text>
-      );
+      noteText ="Note : Your payment is in progress and this may take a couple of minutes to confirm your booking. We’ll intimate you once your bank confirms the payment."
     }
+    return textComponent(noteText,undefined,theme.colors.SHADE_GREY,true)
   };
 
   const getButtonText = () => {

@@ -117,7 +117,7 @@ const ConfigurationDev = {
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'http://1cfb7a59.ngrok.io',
+CONSULT_PG_BASE_URL : 'http://bc31c1fe.ngrok.io',
   CONSULT_PG_SUCCESS_PATH: '/consultpg-success',
   CONSULT_PG_ERROR_PATH: '/consultpg-error',
   CONSULT_PG_PENDING_PATH: '/consultpg-pending',
