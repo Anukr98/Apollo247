@@ -356,7 +356,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         } else {
           dosageHtml = prescription!.medicineDosage! + ' ' + unitHtmls;
         }
-
         return (
           <li>
             {prescription.medicineName}
@@ -385,7 +384,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               } ${duration} ${whenString.length > 0 ? whenString : ''} ${
                 timesString.length > 0 &&
                 prescription!.medicineCustomDosage! &&
-                prescription!.medicineCustomDosage! === ''
+                prescription!.medicineCustomDosage! !== ''
                   ? ''
                   : timesString
               }`}

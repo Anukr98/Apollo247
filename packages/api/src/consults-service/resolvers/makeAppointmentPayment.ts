@@ -18,7 +18,7 @@ import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format } from 'date-fns';
+import { addMilliseconds, format, addDays } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 
 import { DoctorType } from 'doctors-service/entities';
@@ -178,15 +178,23 @@ const makeAppointmentPayment: Resolver<
       );
       throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
     }
-    const apptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
-    const sl = `${apptDt}T${processingAppointment.appointmentDateTime
+
+    const slotApptDt =
+      format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
+    const actualApptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
+    let apptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
+    if (processingAppointment.appointmentDateTime >= new Date(slotApptDt)) {
+      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
+    }
+
+    const sl = `${actualApptDt}T${processingAppointment.appointmentDateTime
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
         .getUTCMinutes()
         .toString()
         .padStart(2, '0')}:00.000Z`;
-
+    console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
       apptDt,

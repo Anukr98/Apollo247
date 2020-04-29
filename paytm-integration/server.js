@@ -68,6 +68,7 @@ app.get('/invokePhysicalApptReminder', cronTabs.PhysicalApptReminder);
 app.get('/updateSdSummary', cronTabs.updateSdSummary);
 app.get('/updateJdSummary', cronTabs.updateJdSummary);
 app.get('/updateDoctorFeeSummary', cronTabs.updateDoctorFeeSummary);
+app.get('/updateDoctorSlotsEs', cronTabs.updateDoctorSlotsEs);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
 

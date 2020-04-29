@@ -391,6 +391,9 @@ export const MedicineLanding: React.FC = (props) => {
       )
       .then((res: any) => {
         setData(res.data);
+        /**Gtm code start  */
+        window.gep && window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
+        /**Gtm code End  */
         setLoading(false);
       })
       .catch((e: ApolloError) => {
@@ -450,21 +453,11 @@ export const MedicineLanding: React.FC = (props) => {
                     <CircularProgress size={30} />
                   </div>
                 )}
-                {/* {data &&
-                  data.mainbanners_desktop &&
-                  data.mainbanners_desktop.length &&
-                  data.mainbanners_desktop[0] &&
-                  data.mainbanners_desktop[0].image &&
-                  data.mainbanners_desktop[0].image !== '' && (
-                    <div className={classes.productsBanner}>
-                      <img
-                        src={`${apiDetails.imageUrl}${data.mainbanners_desktop[0].image}`}
-                        alt=""
-                      />
-                    </div>
-                  )} */}
-                  <CarouselBanner />
+                {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
+                  <CarouselBanner bannerData={data.mainbanners_desktop} />
+                )}
               </div>
+
               <div className={classes.rightSection}>
                 <div className={classes.medicineSection}>
                   <div className={`${classes.sectionGroup}`}>

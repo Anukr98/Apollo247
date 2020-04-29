@@ -227,6 +227,12 @@ export const DoctorsLanding: React.FC = (props) => {
   let showError = false;
 
   useEffect(() => {
+    /**Gtm code start start */
+    window.gep && window.gep('Consultations', 'Landing Page', 'Listing Page Viewed');
+    /**Gtm code start end */
+  }, []);
+
+  useEffect(() => {
     if (filterOptions.searchKeyword.length > 2 && specialitySelected.length === 0) {
       setLoading(true);
       apolloClient
@@ -262,6 +268,10 @@ export const DoctorsLanding: React.FC = (props) => {
         prakticeSpecialties: '',
       });
       setShowSearchAndPastSearch(false);
+
+      /**Gtm code start start */
+      window.gep && window.gep('Consultations', specialitySelected, 'Listing Page Viewed');
+      /**Gtm code start end */
     }
   }, [specialitySelected]);
 
