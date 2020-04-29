@@ -72,6 +72,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointm
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
+  sdConsultationDate: any | null;
   appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
   appointmentDocuments: (GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments | null)[] | null;

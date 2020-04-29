@@ -249,7 +249,7 @@ export const LifeStyle: React.FC = () => {
 
         <Typography className={classes.mainContainer} component="div">
           <Typography component="h5" variant="h5" className={classes.header}>
-            Lifestyle & Habits
+            Personal History, Lifestyle & Habits
           </Typography>
           <Typography component="div" className={classes.content}>
             <AphTextField

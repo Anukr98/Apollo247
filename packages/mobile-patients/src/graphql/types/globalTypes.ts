@@ -281,6 +281,22 @@ export enum REQUEST_ROLES {
   PATIENT = "PATIENT",
 }
 
+export enum ROUTE_OF_ADMINISTRATION {
+  EAR_DROPS = "EAR_DROPS",
+  EYE_DROPS = "EYE_DROPS",
+  GARGLE = "GARGLE",
+  INHALE = "INHALE",
+  INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRAVENOUS = "INTRAVENOUS",
+  LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASAL_DROPS = "NASAL_DROPS",
+  ORALLY = "ORALLY",
+  ORAL_DROPS = "ORAL_DROPS",
+  PER_RECTAL = "PER_RECTAL",
+  SUBCUTANEOUS = "SUBCUTANEOUS",
+  SUBLINGUAL = "SUBLINGUAL",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -559,6 +575,7 @@ export interface HelpEmailInput {
   reason?: string | null;
   comments?: string | null;
   patientId?: string | null;
+  email?: string | null;
 }
 
 export interface MedicineCartInput {

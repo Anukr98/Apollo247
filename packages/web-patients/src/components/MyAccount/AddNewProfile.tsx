@@ -328,13 +328,13 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
       genderSelected.length > 0 &&
       relation.length > 0 &&
       (emailAddress !== '' ? emailAddress.length > 0 : true) &&
-      (isFirstNameValid &&
-        isLastNameValid &&
-        isRelationValid &&
-        isGenderValid &&
-        primaryUserErrorMessage.length === 0 &&
-        isValidDob &&
-        (emailAddress !== '' ? isEmailAddressValid : true))) ||
+      isFirstNameValid &&
+      isLastNameValid &&
+      isRelationValid &&
+      isGenderValid &&
+      primaryUserErrorMessage.length === 0 &&
+      isValidDob &&
+      (emailAddress !== '' ? isEmailAddressValid : true)) ||
     isProfileDelete;
 
   // console.log(

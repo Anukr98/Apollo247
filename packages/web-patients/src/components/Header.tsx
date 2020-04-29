@@ -8,6 +8,7 @@ import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { locationRoutesBlackList } from 'helpers/commonHelpers';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { LocationSearch } from './LocationSearch';
@@ -29,11 +30,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(900)]: {
         paddingRight: 0,
       },
-      '& $userAccountLogin': {
-        [theme.breakpoints.down(900)]: {
-          paddingRight: 20,
-        },
-      },
     },
     headerSticky: {
       position: 'fixed',
@@ -49,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       paddingBottom: 11,
       [theme.breakpoints.down('xs')]: {
-        paddingTop: 15,
+        paddingTop: 12,
         paddingBottom: 9,
       },
       '& a': {
@@ -64,13 +60,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     userAccount: {
-      padding: '20px 10px',
+      padding: '20px 16px',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
-      },
-      [theme.breakpoints.down(900)]: {
-        display: 'none',
+        padding: 16,
       },
     },
     userAccountActive: {
@@ -99,6 +93,10 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       alignItems: 'center',
       justifyContent: 'center',
+      [theme.breakpoints.down('xs')]: {
+        width: 40,
+        height: 40,
+      },
     },
     userActive: {
       backgroundColor: theme.palette.secondary.dark,
@@ -131,7 +129,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     headerRightGroup: {
-      marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
     },
@@ -166,17 +163,21 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    hideVisibility: {
+      visibility: 'hidden',
+    },
   };
 });
 
 export const Header: React.FC = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
-  const { isSigningIn, isSignedIn, verifyOtpError, setVerifyOtpError } = useAuth();
+  const { isSigningIn, isSignedIn, setVerifyOtpError } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
+  const isMobileView = screen.width <= 768;
 
   return (
     <div className={classes.headerSticky}>
@@ -187,20 +188,9 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {isSignedIn && <LocationSearch />}
-          {isSignedIn && (
-            <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
-          )}
+          {!locationRoutesBlackList.includes(currentPath) && <LocationSearch />}
+          <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
-            {isSignedIn ? (
-              ''
-            ) : (
-              <div className={`${classes.appDownloadBtn} ${isSignedIn ? '' : classes.preAppLogin}`}>
-                <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
-                  Download Apollo247 App
-                </a>
-              </div>
-            )}
             <div
               className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
                 currentPath === clientRoutes.myAccount() ||
@@ -225,7 +215,7 @@ export const Header: React.FC = (props) => {
                 <ProtectedWithLoginPopup>
                   {({ protectWithLoginPopup }) => (
                     <>
-                      <div
+                      {/* <div
                         onClick={() => {
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup();
                         }}
@@ -233,8 +223,9 @@ export const Header: React.FC = (props) => {
                         title={'Login/SignUp'}
                       >
                         Login/SignUp
-                      </div>
+                      </div> */}
                       <div
+                        id="loginPopup"
                         className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
                         onClick={() =>
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()

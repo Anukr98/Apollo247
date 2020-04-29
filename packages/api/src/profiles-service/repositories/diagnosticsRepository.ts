@@ -46,7 +46,7 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
   }
 
   findDiagnosticById(itemId: number) {
-    return this.findOne({ where: { itemId } });
+    return this.findOne({ where: { itemId, isActive: true } });
   }
 
   async getDiagnosticsByName(itemName: string[]) {

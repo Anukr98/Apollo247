@@ -298,8 +298,8 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       position: 'relative',
       '& img': {
-        maxWidth: '100%',
-        width: 'auto',
+        //maxWidth: '100% !important',
+        width: 'auto !important',
         maxHeight: 'calc(100vh - 212px)',
       },
     },

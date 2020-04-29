@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     chipItem: {
       padding: 12,
-      paddingRight: 40,
+      paddingRight: 80,
       fontSize: 14,
       fontWeight: 600,
       color: '#02475b',
@@ -80,16 +80,17 @@ const useStyles = makeStyles((theme: Theme) =>
       '&:focus': {
         backgroundColor: 'rgba(0, 0, 0, 0.02)',
       },
-      '& img': {
-        margin: 0,
-        marginLeft: 12,
-        maxWidth: 20,
-        width: '100%',
-        height: 20,
-        position: 'absolute',
-        top: 11,
-        right: 10,
-      },
+    },
+    editImg: {
+      position: 'absolute',
+      right: 60,
+      top: 10,
+      cursor: 'pointer',
+    },
+    deleteImg: {
+      position: 'absolute',
+      right: 10,
+      top: 10,
     },
     autoSuggestBox: {
       position: 'relative',
@@ -172,13 +173,96 @@ export const OtherInstructions: React.FC = () => {
 
   const [otherInstruct, setOtherInstruct] = useState('');
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
-  const [idx, setIdx] = React.useState();
+  const [idx, setIdx] = React.useState(0);
+  const [isEditing, setIsEditing] = useState<any>(null);
   const [showAddInputText, setShowAddInputText] = useState<boolean>(false);
   const handleDelete = (item: any, idx: number) => {
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
     setIdx(sum);
+  };
+
+  const renderChipWithEditableField = (item: any, idx: number) => {
+    if (isEditing === idx) {
+      if (showAddInputText) {
+        setShowAddInputText(false);
+        setOtherInstruct(item.instruction);
+      }
+
+      return (
+        <div
+          className={classes.inputRoot}
+          key={idx}
+          style={{
+            marginBottom: 12,
+          }}
+        >
+          <AphTextField
+            autoFocus
+            fullWidth
+            multiline
+            placeholder="Enter instruction here.."
+            value={otherInstruct || item.instruction}
+            onChange={(e) => {
+              setOtherInstruct(e.target.value);
+            }}
+          />
+          <AphButton
+            classes={{ root: classes.addBtn }}
+            disableRipple
+            onClick={() => {
+              const updatedText = otherInstruct || item.instruction;
+              if (updatedText.trim() !== '') {
+                selectedValues!.splice(idx, 1, {
+                  instruction: updatedText,
+                  __typename: 'OtherInstructions',
+                });
+
+                setSelectedValues(selectedValues);
+                setTimeout(() => {
+                  setOtherInstruct('');
+                  setIsEditing(false);
+                }, 10);
+              } else {
+                setOtherInstruct('');
+              }
+            }}
+          >
+            <img src={require('images/ic_plus.svg')} alt="" />
+          </AphButton>
+        </div>
+      );
+    }
+    return (
+      <div className={classes.chipCol}>
+        <Chip
+          className={classes.chipItem}
+          key={idx}
+          label={item!.instruction}
+          icon={
+            <img
+              src={caseSheetEdit && require('images/ic_edit.svg')}
+              alt=""
+              height="20px"
+              className={classes.editImg}
+              onClick={() => {
+                setIsEditing(idx);
+              }}
+            />
+          }
+          onDelete={() => handleDelete(item, idx)}
+          deleteIcon={
+            <img
+              src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+              alt=""
+              height="20px"
+              className={classes.deleteImg}
+            />
+          }
+        />
+      </div>
+    );
   };
 
   return (
@@ -190,22 +274,7 @@ export const OtherInstructions: React.FC = () => {
             selectedValues.length > 0 &&
             selectedValues!.map(
               (item, idx) =>
-                item.instruction!.trim() !== '' && (
-                  <div className={classes.chipCol}>
-                    <Chip
-                      className={classes.chipItem}
-                      key={idx}
-                      label={item!.instruction}
-                      onDelete={() => handleDelete(item, idx)}
-                      deleteIcon={
-                        <img
-                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                          alt=""
-                        />
-                      }
-                    />
-                  </div>
-                )
+                item.instruction!.trim() !== '' && renderChipWithEditableField(item, idx)
             )}
         </div>
       </div>
@@ -223,6 +292,7 @@ export const OtherInstructions: React.FC = () => {
           />
           <AphButton
             classes={{ root: classes.addBtn }}
+            disableRipple
             onClick={() => {
               if (otherInstruct.trim() !== '') {
                 selectedValues!.splice(idx, 0, {

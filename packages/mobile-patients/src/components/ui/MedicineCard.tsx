@@ -135,6 +135,7 @@ export interface MedicineCardProps {
   packOfCount?: number;
   unit?: number;
   isInStock: boolean;
+  unserviceable?: boolean; // If yes, card shows "Not serviceable in your area.", using for TAT API in cart.
   showRemoveWhenOutOfStock?: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
@@ -162,6 +163,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     type,
     unit,
     isInStock,
+    unserviceable,
     containerStyle,
     subscriptionStatus,
     isPrescriptionRequired,
@@ -343,8 +345,10 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderOutOfStock = () => {
-    return !isInStock ? (
-      <Text style={styles.outOfStockStyle}>Out Of Stock</Text>
+    return unserviceable || !isInStock ? (
+      <Text style={styles.outOfStockStyle}>
+        {unserviceable ? 'Not serviceable in your area.' : 'Out Of Stock'}
+      </Text>
     ) : !isCardExpanded ? (
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>

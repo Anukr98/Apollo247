@@ -13,6 +13,7 @@ import {
   CaseSheetSymptom,
   MEDICINE_FORM_TYPES,
   MEDICINE_TIMINGS,
+  MEDICINE_UNIT,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
@@ -62,14 +63,19 @@ export const convertCaseSheetToRxPdfData = async (
         frequency = 'Apply';
         if (csRx.medicineCustomDosage) {
           frequency = frequency + ' ' + customDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
-        } else if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+        } else if (csRx.medicineUnit)
+          frequency = frequency + ' ' + csRx.medicineUnit.split('_').join(' ');
       } else {
         frequency = 'Take';
         if (csRx.medicineCustomDosage) {
           frequency = frequency + ' ' + customDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
         } else {
+          const medicineUnit =
+            csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+              ? csRx.medicineUnit.split('_').join(' ')
+              : csRx.medicineUnit + '(s)';
           if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
-          if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit + '(s)';
+          if (csRx.medicineUnit) frequency = frequency + ' ' + medicineUnit;
         }
       }
 
@@ -258,9 +264,12 @@ export const convertCaseSheetToRxPdfData = async (
   };
 
   if (caseSheet.appointment) {
+    const consultDate = caseSheet.appointment.sdConsultationDate
+      ? caseSheet.appointment.sdConsultationDate
+      : caseSheet.appointment.appointmentDateTime;
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
-      consultDate: format(caseSheet.appointment.sdConsultationDate, 'dd/MM/yyyy'),
+      consultDate: format(consultDate, 'dd/MM/yyyy'),
       consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }

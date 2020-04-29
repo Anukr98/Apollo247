@@ -372,6 +372,7 @@ export const OrderDetails: React.FC = () => {
       setDisplayId(firstOrderInfo.displayId);
     }
   }
+
   return (
     <div>
       <Header />

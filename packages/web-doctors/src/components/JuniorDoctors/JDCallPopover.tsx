@@ -904,15 +904,28 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
     if (disablecurrent.toISOString().slice(0, 10) === disableconsult.toISOString().slice(0, 10)) {
-      const diff =
-        moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
-      if (disablecurrent >= disableconsult) {
-        setRemainingConsultStartTime(0);
-      } else if (diff <= 0) {
-        setRemainingConsultStartTime(0);
-      } else {
-        setRemainingConsultStartTime(diff);
+      // const diff =
+      //   moment.duration(disableconsult.getTime() - disablecurrent.getTime()).minutes() + 1;
+      const ms = moment(disableconsult, 'DD/MM/YYYY HH:mm:ss').diff(
+        moment(disablecurrent, 'DD/MM/YYYY HH:mm:ss')
+      );
+      const d = moment.duration(ms);
+      if (d.days() < 1 && d.hours() < 1 && d.minutes() + 1 < 11 && d.minutes() >= -1) {
+        d.seconds() < 0
+          ? setRemainingConsultStartTime(0)
+          : setRemainingConsultStartTime(d.minutes() + 1);
       }
+
+      //console.log(moment(disableconsult).format('DD/MM/YYYY HH:mm:ss'));
+      //console.log(moment(disablecurrent).format('DD/MM/YYYY HH:mm:ss'));
+      //console.log(moment.duration(disableconsult.diff(disablecurrent)));
+      // if (disablecurrent >= disableconsult) {
+      //   setRemainingConsultStartTime(0);
+      // } else if (diff <= 0) {
+      //   setRemainingConsultStartTime(0);
+      // } else {
+      //   setRemainingConsultStartTime(diff);
+      // }
     }
   };
 
