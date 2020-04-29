@@ -43,7 +43,7 @@ exports.noShowReminder = (req, res) => {
         ' - ' +
         response.data.data.noShowReminderNotification.apptsListCount;
       ('\n-------------------\n');
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -72,7 +72,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -101,7 +101,7 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -130,7 +130,7 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -160,7 +160,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function (err) {
+      fs.appendFile(fileName, content, function(err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -222,7 +222,7 @@ exports.updateSdSummary = (req, res) => {
                   response.data.data.updateSdSummary +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -295,7 +295,7 @@ exports.updateJdSummary = (req, res) => {
                   response.data.data.updateJdSummary +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -371,7 +371,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   response.data.data.updateDoctorFeeSummary +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function (err) {
+                fs.appendFile(fileName, content, function(err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -382,6 +382,84 @@ exports.updateDoctorFeeSummary = (req, res) => {
               })
               .catch((error) => {
                 console.log('error', error);
+              });
+          }, 5000 * i);
+        }
+      }
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.updateDoctorSlotsEs = (req, res) => {
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  const docCountQuery = Constants.DOCTOR_COUNT_SENIOR;
+  const seniorDataRequestJSON = {
+    query: docCountQuery,
+  };
+  axios
+    .post(process.env.API_URL, seniorDataRequestJSON)
+    .then((response) => {
+      //let summaryDate = req.query.summaryDate;
+      //if summaryDate in url empty it will take currentDate
+      //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
+      let docCount = response.data.data;
+      let finalResult = docCount.seniorDoctorCount;
+      const doctorLimit = 50;
+      const docLimit = doctorLimit;
+      let totalSets = parseInt(finalResult / docLimit) + (finalResult % docLimit > 0 ? 1 : 0);
+      let i;
+      let fromDate = format(new Date(), 'yyyy-MM-dd');
+      let toDate = format(addDays(new Date(), 5), 'yyyy-MM-dd');
+      console.log(fromDate, toDate, 'dates of slots');
+      for (i = 0; i < totalSets; i++) {
+        //loop for 10times
+        const docOffset = i * docLimit;
+        task(i);
+        function task(i) {
+          setTimeout(() => {
+            Query = Constants.UPDATE_DOC_SLOTS_ES.replace('{0}', fromDate);
+            (Query = Query.replace('{1}', toDate)),
+              (Query = Query.replace('{2}', docLimit)),
+              (Query = Query.replace('{3}', docOffset));
+            const updateDoctorFeeSummaryRequestJSON = {
+              query: Query,
+            };
+            axios
+              .post(process.env.API_URL, updateDoctorFeeSummaryRequestJSON)
+              .then((response) => {
+                console.log(response.data.errors[0], 'errorr message from api');
+                const fileName =
+                  process.env.PHARMA_LOGS_PATH +
+                  new Date().toDateString() +
+                  '-updateDoctorSlotsEs.txt';
+                let content =
+                  new Date().toString() +
+                  '\n---------------------------\n' +
+                  '\nupdateDoctorSlotsEs Response\n' +
+                  response.data.data.addAllDoctorSlotsElastic +
+                  '\n-------------------\n';
+                if (response.data.errors[0]) {
+                  content +=
+                    response.data.errors[0].message +
+                    ', ' +
+                    response.data.errors[0].extensions.exception.meta.body.error.root_cause[0]
+                      .reason;
+                }
+                console.log(response.data.data.addAllDoctorSlotsElastic);
+                fs.appendFile(fileName, content, function(err) {
+                  if (err) throw err;
+                  console.log('Updated!');
+                });
+              })
+              .catch((error) => {
+                //console.log('error', error);
+                console.log(error.response.data.errors, 'erros from api');
               });
           }, 5000 * i);
         }
