@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       cursor: 'pointer',
       marginRight: 50,
+      zIndex: 2,
       [theme.breakpoints.down('xs')]: {
         marginRight: 0,
       },
@@ -275,7 +276,7 @@ export const ViewAllBrands: React.FC = (props) => {
   const [data, setData] = useState<Brand[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showData, setShowData] = useState<filter[] | []>([]);
-  const onePrimaryUser = hasOnePrimaryUser()
+  const onePrimaryUser = hasOnePrimaryUser();
 
   useEffect(() => {
     if (!data) {

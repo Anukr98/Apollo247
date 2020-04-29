@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     backArrow: {
+      zIndex: 2,
       cursor: 'pointer',
       marginRight: 20,
       [theme.breakpoints.up(1220)]: {
