@@ -48,19 +48,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
-      padding: '16px 20px',
       fontSize: 14,
-      '& h1': {
-        margin: 0,
-        padding: 0,
-        fontSize: 36,
-        fontWeight: 500,
-        lineHeight: '46px',
-        textTransform: 'uppercase',
-      },
-      '& p': {
-        margin: 0,
-        paddingBottom: 10,
+      '& img': {
+        maxWidth: '100%',
       },
     },
     button: {
@@ -108,15 +98,8 @@ export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
     <div className={classes.root}>
       <Slider {...sliderSettings}>
         {props.bannerData.map((sidebaneer) => (
-          <div
-            className={classes.card}
-            style={{ backgroundImage: `url(${apiDetails.imageUrl}${sidebaneer.image})` }}
-          >
-            <h1>Covid-19</h1>
-            <p>know more about Coronavirus</p>
-            <Link className={classes.button} to={clientRoutes.covidLanding()}>
-              Read More
-            </Link>
+          <div className={classes.card}>
+            <img src={`${apiDetails.imageUrl}${sidebaneer.image}`} />
           </div>
         ))}
       </Slider>
