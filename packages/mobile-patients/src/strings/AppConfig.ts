@@ -207,8 +207,8 @@ const ConfigurationProd = {
   Android_Version: '2.21',
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
-  COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
+  COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
+  COVID_LATEST_ARTICLES_URL: 'https://www.apollo247.com/covid19'
 };
 
 //PERFORMANCE
