@@ -55,6 +55,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
+import { AboutUs } from 'components/AboutUs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -105,6 +106,7 @@ const App: React.FC = () => {
         </Helmet>
         <Switch>
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
+          <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
           <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
           <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
