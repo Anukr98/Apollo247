@@ -67,7 +67,7 @@ module.exports = async (req, res, next) => {
 
         logger.info(`${appointmentId} - updatePaymentOrderId - ${JSON.stringify(updateResp.data)}`);
         if (updateResp.data.errors && updateResp.data.errors.length) {
-            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(response.data.errors)}`)
+            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(updateResp.data.errors)}`)
             throw new Error(`Error Occured in updatePaymentOrderId for appoinment id: ${appointmentId}`);
         }
 

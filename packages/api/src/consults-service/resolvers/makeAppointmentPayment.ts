@@ -39,6 +39,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
     responseMessage: String!
     bankTxnId: String
     orderId: String
+    
   }
 
   type AppointmentPayment {
@@ -146,7 +147,11 @@ const makeAppointmentPayment: Resolver<
       `${JSON.stringify(paymentInfo)}`,
       ''
     );
-    await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInput.paymentStatus);
+    const paymentInputUpdates: Partial<AppointmentPaymentInput> = {};
+    paymentInputUpdates.responseCode = paymentInput.responseCode;
+    paymentInputUpdates.responseMessage = paymentInput.responseMessage;
+    paymentInputUpdates.paymentStatus = paymentInput.paymentStatus
+    await apptsRepo.updateAppointmentPayment(paymentInfo.id, paymentInputUpdates);
   } else {
     const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
     apptPaymentAttrs.appointment = processingAppointment;
@@ -178,9 +183,9 @@ const makeAppointmentPayment: Resolver<
       .getUTCHours()
       .toString()
       .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
 
     apptsRepo.updateDoctorSlotStatusES(
       processingAppointment.doctorId,
@@ -314,8 +319,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
