@@ -76,9 +76,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     iFrameVideo: {
       position: 'relative',
-      height: '220px',
+      height: 174,
       width: '100%',
       border: 'none !important',
+      [theme.breakpoints.down('xs')]: {
+        height: 220,
+      },
     },
   };
 });
