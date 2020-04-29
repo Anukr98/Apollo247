@@ -65,6 +65,7 @@ export const notificationBinTypeDefs = gql`
 
   extend type Query {
     getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
+    sendUnreadMessagesNotification: String
   }
 
   extend type Mutation {
@@ -168,6 +169,73 @@ const markMessageToUnread: Resolver<
   return { notificationData: archievedNotificationData };
 };
 
+type Notifications = {
+  doctor: string;
+  patient: string;
+};
+
+const sendUnreadMessagesNotification: Resolver<
+  null,
+  {},
+  NotificationsServiceContext,
+  String
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+
+  //get all the available doctor details
+  const doctors = await doctorRepo.getAllSeniorDoctors();
+  const doctorIds = doctors.map((doctor) => doctor.id);
+
+  //getting all the un-read notifications
+  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+  const notifications = await notificationBinRepo.getAllNotificationsByDoctorIds(doctorIds);
+  console.log('notificationData==', notifications);
+
+  const doctorAndPatient: Notifications[] = [];
+  const doctorAndPatientMapper: string[] = [];
+
+
+  notifications.map((notification) => {
+    if(doctorAndPatient[])
+  })
+
+  // const notificationsCount: { [key: string]: number } = {};
+  // const doctorMobileMapper: { [key: string]: string } = {};
+  // const doctorIdsToSendNotification: string[] = [];
+  // notifications.map((notification) => {
+  //   console.log(notification.doctor);
+  //   if (notification.doctor) {
+  //     if (notificationsCount[notification.doctor]) {
+  //       notificationsCount[notification.doctor] = notificationsCount[notification.doctor] + 1;
+  //     } else {
+  //       doctorIdsToSendNotification.push(notification.doctor);
+  //       notificationsCount[notification.doctor] = 1;
+  //     }
+  //   }
+  // });
+  // console.log('notificationsCount==', notificationsCount);
+  // console.log('doctorIdsToSendNotification==', doctorIdsToSendNotification);
+
+  // const doctorDetails = await doctorRepo.getDoctorDetailsByIds(doctorIdsToSendNotification);
+  // console.log('doctorDetails==', doctorDetails);
+
+  // doctorDetails.map((doctor) => {
+  //   doctorMobileMapper[doctor.id] = doctor.mobileNumber;
+  // });
+  // console.log('doctorMobileMapper==', doctorMobileMapper);
+
+  // Object.keys(notificationsCount).map((doctorId) => {
+  //   const messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
+  //     '{0}',
+  //     notificationsCount[doctorId].toString()
+  //   );
+  //   console.log('messageBody==', messageBody);
+  //   sendNotificationSMS(doctorMobileMapper[doctorId], messageBody);
+  // });
+
+  return 'success';
+};
+
 const getNotifications: Resolver<
   null,
   { toId: string; startDate: Date; endDate: Date },
@@ -196,5 +264,6 @@ export const notificationBinResolvers = {
   },
   Query: {
     getNotifications,
+    sendUnreadMessagesNotification,
   },
 };
