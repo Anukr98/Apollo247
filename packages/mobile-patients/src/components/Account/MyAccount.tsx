@@ -279,6 +279,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('phoneNumber');
       AsyncStorage.setItem('logginHappened', 'false');
       AsyncStorage.removeItem('deeplink');
+      AsyncStorage.removeItem('deeplinkReferalCode');
 
       props.navigation.dispatch(
         StackActions.reset({

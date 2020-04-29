@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   BackHandler,
-  NavState,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -16,17 +15,10 @@ import {
   FlatList,
 } from 'react-native';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  getNetStatus,
-  g,
-  handleGraphQlError,
-  postWebEngageEvent,
-  callPermissions,
-  postAppsFlyerEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import { BOOK_APPOINTMENT } from '@aph/mobile-patients/src/graphql/profiles';
@@ -35,22 +27,12 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import moment from 'moment';
-import {
-  APPOINTMENT_TYPE,
-  BookAppointmentInput,
-  DoctorType,
-  AppointmentType,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import Axios from 'axios';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { string } from '../../strings/string';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -67,13 +49,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const selectedTab = props.navigation.getParam('selectedTab');
   const appointmentInput = props.navigation.getParam('appointmentInput');
   const price = props.navigation.getParam('price');
-  // const appointmentId = props.navigation.getParam('appointmentId');
   const doctorName = props.navigation.getParam('doctorName');
-  const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const { currentPatient } = useAllCurrentPatients();
-  const currentPatiendId = currentPatient && currentPatient.id;
   const [loading, setLoading] = useState(true);
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert } = useUIElements();
 
   type bankOptions = {
     name: string;
@@ -83,7 +62,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     enabled: boolean;
     imageUrl: string;
   };
-
   const [bankOptions, setbankOptions] = useState<bankOptions[]>([]);
 
   type paymentOptions = {
@@ -93,22 +71,17 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     seq: number;
     imageUrl: string;
   };
-
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
+
+  const renderErrorPopup = (desc: string) =>
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: `${desc || ''}`.trim(),
+    });
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
-    fetchPaymentOptions();
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    };
-  }, []);
-
-  const fetchPaymentOptions = () => {
-    const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
-    const url = `${baseUrl}/list-of-payment-methods`;
-
-    Axios.get(url)
+    fetchPaymentOptions()
       .then((res: any) => {
         console.log(JSON.stringify(res), 'objobj');
         let options: paymentOptions[] = [];
@@ -132,8 +105,13 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
-  };
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
@@ -168,12 +146,6 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     };
     return eventAttributes;
   };
-
-  const renderErrorPopup = (desc: string) =>
-    showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: `${desc || ''}`.trim(),
-    });
 
   const initiatePayment = (item) => {
     setLoading(true);
@@ -228,14 +200,17 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
           message === 'DOCTOR_SLOT_BLOCKED'
         ) {
+          props.navigation.navigate(AppRoutes.DoctorSearch);
           renderErrorPopup(
             `Oops ! The selected slot is unavailable. Please choose a different one`
           );
         } else if (message === 'BOOKING_LIMIT_EXCEEDED') {
+          props.navigation.navigate(AppRoutes.DoctorSearch);
           renderErrorPopup(
             `Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`
           );
         } else {
+          props.navigation.navigate(AppRoutes.DoctorSearch);
           renderErrorPopup(`Something went wrong.${message ? ` Error Code: ${message}.` : ''}`);
         }
       });
@@ -261,7 +236,10 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             marginLeft: 0.02 * windowWidth,
           }}
         >
-          <Text style={styles.amounttoPay}> Amount To Pay</Text>
+          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
+            {' '}
+            Amount To Pay
+          </Text>
         </View>
         <View
           style={{
@@ -367,8 +345,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            {' '}
-            NET BANKING{' '}
+            NET BANKING
           </Text>
         </View>
         <View
@@ -470,48 +447,11 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
     return true;
   };
 
-  const renderLoading = () => {
-    return (
-      <View style={{ justifyContent: 'center', alignItems: 'center', flex: 0.9 }}>
-        <ActivityIndicator size="large" color={theme.colors.SHERPA_BLUE} />
-      </View>
-    );
-  };
-
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.SHERPA_BLUE} />
       <SafeAreaView style={styles.container}>
-        <View
-          style={{
-            backgroundColor: theme.colors.WHITE,
-            flex: 0.1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            shadowOpacity: 5,
-          }}
-        >
-          <TouchableOpacity
-            style={{ position: 'absolute', left: 15 }}
-            onPress={() => {
-              handleBack();
-            }}
-          >
-            <Image source={require('../ui/icons/back.png')} style={{ width: 35, height: 35 }} />
-          </TouchableOpacity>
-          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            {' '}
-            PAYMENT{' '}
-          </Text>
-        </View>
-        {/* <Header
-          title="PAYMENT"
-          leftText={{
-            isBack: false,
-            title: 'Cancel',
-            onPress: handleBack,
-          }}
-        /> */}
+        <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
         {!loading ? (
           <ScrollView style={{ flex: 0.9 }}>
             {rendertotalAmount()}
@@ -519,7 +459,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
             {renderNetBanking()}
           </ScrollView>
         ) : (
-          renderLoading()
+          <Spinner />
         )}
       </SafeAreaView>
     </>
@@ -533,49 +473,5 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-  },
-
-  Payment: {
-    fontSize: 14,
-    color: theme.colors.SHERPA_BLUE,
-    fontWeight: '500',
-    textShadowColor: 'rgba(0, 0, 0, 1)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 0.1,
-  },
-  paymentMode: {
-    color: theme.colors.SHERPA_BLUE,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  payNow: {
-    color: theme.colors.APP_YELLOW,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  bankName: {
-    color: theme.colors.SHERPA_BLUE,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  amounttoPay: {
-    color: theme.colors.SHERPA_BLUE,
-    fontSize: 14,
-    textShadowColor: 'rgba(0, 0, 0, 1)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 0.1,
-  },
-  seeAll: {
-    color: theme.colors.SEARCH_UNDERLINE_COLOR,
-    fontSize: 14,
-    textShadowColor: 'rgba(0, 0, 0, 1)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 0.1,
-  },
-
-  totalAmount: {
-    color: theme.colors.SHERPA_BLUE,
-    fontSize: 15,
-    fontWeight: 'bold',
   },
 });

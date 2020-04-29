@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
-  Image,
   StatusBar,
   Dimensions,
 } from 'react-native';
@@ -16,6 +15,7 @@ import { Success, Failure, Pending } from '@aph/mobile-patients/src/components/u
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
+import {Header} from '@aph/mobile-patients/src/components/ui/Header';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   makeAppointmentPayment,
@@ -301,27 +301,10 @@ return colors.SUCCESS;
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <View
-        style={{
-          backgroundColor: '#FFF',
-          flex: 0.1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          shadowOpacity: 5,
-        }}
-      >
-        <TouchableOpacity
-          style={{ position: 'absolute', left: 15 }}
-          onPress={() => {
-            handleBack();
-          }}
-        >
-          <Image source={require('../ui/icons/back.png')} style={{ width: 35, height: 35 }} />
-        </TouchableOpacity>
-        <Text style={styles.Payment}> PAYMENT STATUS </Text>
-      </View>
+      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+
       {!loading ? (
-        <ScrollView style={{ flex: 0.9, backgroundColor: '#f0f1ec' }}>
+        <ScrollView style={styles.container}>
           {renderStatusCard()}
           {appointmentHeader()}
           {appointmentCard()}

@@ -15,7 +15,7 @@ export interface MedicineProduct {
   small_image?: string | null;
   status: number;
   thumbnail: string | null;
-  type_id: string;
+  type_id: 'Fmcg' | 'Pharma';
   mou: string;
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
@@ -612,7 +612,7 @@ let cancelGetDeliveryTimeApi: Canceler | undefined;
 
 export const getDeliveryTime = (params: {
   postalcode: string;
-  ordertype: string;
+  ordertype: 'pharma' | 'fmcg' | 'both';
   lookup: { sku: string; qty: number }[];
 }): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
   const CancelToken = Axios.CancelToken;
@@ -621,6 +621,7 @@ export const getDeliveryTime = (params: {
     headers: {
       Authentication: config.GET_DELIVERY_TIME[1],
     },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
     cancelToken: new CancelToken((c) => {
       // An executor function receives a cancel function as a parameter
       cancelGetDeliveryTimeApi = c;
@@ -702,4 +703,16 @@ export const notifcationsApi = (params: {
     headers: { 'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj' },
     params: params,
   });
+};
+
+export const fetchPaymentOptions = (): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
+  const url = `${baseUrl}/list-of-payment-methods`;
+  return Axios.get(url);
+};
+
+export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
+  const url = `${baseUrl}/transaction-status`;
+  return Axios.post(url, { orderID: orderID });
 };

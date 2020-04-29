@@ -94,6 +94,15 @@ export enum MEDICINE_FREQUENCY {
   ONCE_A_DAY = 'ONCE_A_DAY',
   THRICE_A_DAY = 'THRICE_A_DAY',
   TWICE_A_DAY = 'TWICE_A_DAY',
+  ALTERNATE_DAY = 'ALTERNATE_DAY',
+  THREE_TIMES_A_WEEK = 'THREE_TIMES_A_WEEK',
+  ONCE_A_WEEK = 'ONCE_A_WEEK',
+  EVERY_HOUR = 'EVERY_HOUR',
+  EVERY_TWO_HOUR = 'EVERY_TWO_HOURS',
+  EVERY_FOUR_HOUR = 'EVERY_FOUR_HOURS',
+  TWICE_A_WEEK = 'TWICE_A_WEEK',
+  ONCE_IN_15_DAYS = 'ONCE_IN_15_DAYS',
+  ONCE_A_MONTH = 'ONCE_IN_15_DAYS',
 }
 export enum MEDICINE_TIMINGS {
   AS_NEEDED = 'AS_NEEDED',
@@ -105,6 +114,22 @@ export enum MEDICINE_TIMINGS {
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
   BEFORE_FOOD = 'BEFORE_FOOD',
+}
+
+export enum ROUTE_OF_ADMINISTRATION {
+  ORALLY = 'ORALLY',
+  SUBLINGUAL = 'SUBLINGUAL',
+  PER_RECTAL = 'PER_RECTAL',
+  LOCAL_APPLICATION = 'LOCAL_APPLICATION',
+  INTRAMUSCULAR = 'INTRAMUSCULAR',
+  INTRAVENOUS = 'INTRAVENOUS',
+  SUBCUTANEOUS = 'SUBCUTANEOUS',
+  INHALE = 'INHALE',
+  GARGLE = 'GARGLE',
+  ORAL_DROPS = 'ORAL_DROPS',
+  NASAL_DROPS = 'NASAL_DROPS',
+  EYE_DROPS = 'EYE_DROPS',
+  EAR_DROPS = 'EAR_DROPS',
 }
 
 export type ConsultHoursData = {
@@ -299,6 +324,10 @@ export class Doctor extends BaseEntity {
   @Index('Doctor_isActive')
   @Column({ default: true })
   isActive: Boolean;
+
+  @Index('Doctor_isSearchable')
+  @Column({ default: true })
+  isSearchable: Boolean;
 
   @Column({ nullable: true, type: 'text' })
   languages: string;
@@ -793,6 +822,9 @@ export class DoctorsFavouriteMedicine extends BaseEntity {
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION;
 
   @Column({ nullable: true })
+  medicineCustomDosage: string;
+
+  @Column({ nullable: true })
   medicineDosage: string;
 
   @Column({ nullable: true })
@@ -815,6 +847,9 @@ export class DoctorsFavouriteMedicine extends BaseEntity {
 
   @Column({ nullable: true })
   medicineName: string;
+
+  @Column({ nullable: true })
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION;
 
   @Column({ nullable: true })
   updatedDate: Date;

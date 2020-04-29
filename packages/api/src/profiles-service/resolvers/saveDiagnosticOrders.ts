@@ -357,6 +357,9 @@ const SaveDiagnosticOrder: Resolver<
       patientId = patientDetails.uhid;
     } else {
       patientId = await patientRepo.createNewUhid(patientDetails.id);
+      if (patientId == '') {
+        patientId = '0';
+      }
     }
 
     const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';

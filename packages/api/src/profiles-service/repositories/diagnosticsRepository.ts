@@ -11,6 +11,7 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
       .andWhere('diagnostics.city = :cityName', { cityName: city })
+      .andWhere('diagnostics."isActive" = true')
       .getMany();
   }
 
@@ -19,6 +20,7 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
+      .andWhere('diagnostics."isActive" = true')
       .getMany();
   }
 

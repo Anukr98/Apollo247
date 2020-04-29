@@ -277,41 +277,78 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   };
 
   const postConsultNowOrScheduleLaterEvent = (type: 'now' | 'later') => {
-    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED] = {
-      name: g(props.doctor, 'fullName')!,
-      specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
-      experience: Number(g(props.doctor, 'experience')!),
-      'language known': g(props.doctor, 'languages')! || 'NA',
-      Hospital:
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
-              doctorClinics[0].facility.city
-            }`
-          : '',
-      Source: props.source,
+    // const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+    //   if (item && item.facility && item.facility.facilityType)
+    //     return item.facility.facilityType === 'HOSPITAL';
+    // });
+    let eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED] = {
+      'Consult Date Time': new Date(NextAvailableSlot),
+      'Consult Mode': 'Online',
+      specialisation: g(props.doctor, 'specialty', 'name')!,
+      'Doctor Experience': Number(g(props.doctor, 'experience')!),
+      'Doctor ID': g(props.doctor, 'id')!,
+      'Doctor Name': g(props.doctor, 'fullName')!,
+      'Speciality ID': g(props.doctor, 'specialty', 'id')!,
+      'Hospital Name': g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'city')!,
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
       Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      slot: NextAvailableSlot,
     };
+
     if (type == 'now') {
-      (eventAttributes as WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED])[
-        'Available in'
-      ] = `${availableInMin} minute(s)`;
+      eventAttributes = {
+        ...eventAttributes,
+        'Available in Minutes': availableInMin,
+        Source: props.source,
+        'Language Known': g(props.doctor, 'languages')! || 'NA',
+        'Doctor Speciality': g(props.doctor, 'specialty', 'name')!,
+      } as WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED];
+
       postWebEngageEvent(WebEngageEventName.CONSULT_NOW_CLICKED, eventAttributes);
     } else {
       postWebEngageEvent(WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED, eventAttributes);
     }
   };
+
+  useEffect(() => {
+    const isScheduleForLaterActive = selectedCTA == onlineCTA[1];
+    if (!isScheduleForLaterActive || !timeArray || !selectedtiming) {
+      return;
+    }
+    const selectedTabSlots = (timeArray || []).find((item) => item.label == selectedtiming);
+    if (selectedTabSlots && selectedTabSlots.time.length == 0) {
+      console.log('NO_SLOTS_FOUND - ConsultOnline', selectedtiming);
+      const data: getDoctorDetailsById_getDoctorDetailsById = props.doctor!;
+      const eventAttributes: WebEngageEvents[WebEngageEventName.NO_SLOTS_FOUND] = {
+        'Doctor Name': g(data, 'fullName')!,
+        'Speciality ID': g(data, 'specialty', 'id')!,
+        'Speciality Name': g(data, 'specialty', 'name')!,
+        'Doctor Category': g(data, 'doctorType')!,
+        'Consult Date Time': new Date(),
+        'Consult Mode': 'Online',
+        'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
+        'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
+        // 'Consult ID': g(data, 'id')!,
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Customer ID': g(currentPatient, 'id'),
+      };
+      postWebEngageEvent(WebEngageEventName.NO_SLOTS_FOUND, eventAttributes);
+    }
+  }, [selectedtiming, timeArray, selectedCTA]);
 
   const renderTimings = () => {
     return (

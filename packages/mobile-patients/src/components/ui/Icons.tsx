@@ -3,16 +3,17 @@ import { Image, ImageProps } from 'react-native';
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'sm') return { width: 24, height: 24 };
+  if (size === 'md_l') return { width: 54, height: 54 };
   if (size === 'lg') return { width: 64, height: 64 };
   return { width: 48, height: 48 };
 };
 
 interface IconProps extends Partial<ImageProps> {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'md_l' | 'lg';
 }
 
 export interface IconBaseProps extends ImageProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'md_l' | 'lg';
 }
 
 export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (
@@ -615,6 +616,10 @@ export const MedicalIcon: React.FC<IconProps> = (props) => (
     {...props}
     source={require('@aph/mobile-patients/src/images/medicine/medicalicon.png')}
   />
+);
+
+export const OfferIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 36, width: 40 }} {...props} source={require('./icons/offer.png')} />
 );
 
 export const DoctorPlaceholderImage: React.FC<IconProps> = (props) => (

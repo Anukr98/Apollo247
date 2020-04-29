@@ -53,7 +53,6 @@ import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { BottomLinks } from 'components/BottomLinks';
 import { ContactUs } from 'components/ContactUs';
-import { Checkout } from 'components/Checkout/Checkout';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -113,7 +112,6 @@ const App: React.FC = () => {
           <AuthRouted exact path={clientRoutes.doctorDetails(':id')} component={DoctorDetails} />
           <AuthRouted exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
           <AuthRouted exact path={clientRoutes.medicines()} component={MedicineLanding} />
-          <AuthRouted exact path={clientRoutes.checkout()} component={Checkout} />
           <AuthRouted
             exact
             path={clientRoutes.medicinesLandingViewCart()}
@@ -123,6 +121,11 @@ const App: React.FC = () => {
             exact
             path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
             component={MedicineLanding}
+          />
+          <AuthRouted
+            exact
+            path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
+            component={MedicineCartLanding}
           />
           <AuthRouted exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
           <AuthRouted exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />

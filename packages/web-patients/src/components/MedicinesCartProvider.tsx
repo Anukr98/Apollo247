@@ -60,6 +60,7 @@ export interface EPrescription {
 export interface MedicineCartContextProps {
   itemsStr: string | null;
   cartItems: MedicineCartItem[];
+  setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
   updateCartItem:
@@ -94,6 +95,7 @@ export interface MedicineCartContextProps {
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   itemsStr: null,
   cartItems: [],
+  setCartItems: null,
   addCartItem: null,
   removeCartItem: null,
   updateCartItem: null,
@@ -265,7 +267,6 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const clearCartInfo = () => {
     localStorage.setItem('prescriptions', JSON.stringify([]));
     localStorage.setItem('ePrescriptionData', JSON.stringify([]));
-    setCartItems([]);
     setDeliveryAddressId('');
     setStoreAddressId('');
     setStores([]);
@@ -273,12 +274,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setStorePickupPincode('');
     setPrescriptions([]);
     setEPrescriptionData([]);
+    // setCartItems([]);
   };
 
   return (
     <MedicinesCartContext.Provider
       value={{
         cartItems,
+        setCartItems,
         itemsStr,
         addCartItem,
         removeCartItem,
@@ -316,6 +319,7 @@ const useShoppingCartContext = () => useContext<MedicineCartContextProps>(Medici
 
 export const useShoppingCart = () => ({
   cartItems: useShoppingCartContext().cartItems,
+  setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
   removeCartItem: useShoppingCartContext().removeCartItem,
   updateCartItem: useShoppingCartContext().updateCartItem,

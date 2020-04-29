@@ -255,10 +255,11 @@ const createAppointmentSession: Resolver<
       createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
       apptDetails.status != STATUS.IN_PROGRESS
     ) {
-      apptRepo.updateAppointmentStatus(
+      apptRepo.updateSDAppointmentStatus(
         createAppointmentSessionInput.appointmentId,
         STATUS.IN_PROGRESS,
-        true
+        true,
+        new Date()
       );
     }
 
@@ -301,10 +302,11 @@ const createAppointmentSession: Resolver<
     createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
     apptDetails.status != STATUS.IN_PROGRESS
   ) {
-    apptRepo.updateAppointmentStatus(
+    apptRepo.updateSDAppointmentStatus(
       createAppointmentSessionInput.appointmentId,
       STATUS.IN_PROGRESS,
-      true
+      true,
+      new Date()
     );
   }
 

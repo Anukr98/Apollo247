@@ -179,7 +179,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
           props.data.products.map((hotSeller) => (
             <div key={hotSeller.sku} className={classes.card}>
               <div className={classes.cardWrap}>
-                <div className={classes.offerPrice}>
+                {(!!Number(hotSeller.special_price!) && (Number(hotSeller.price) !== Number(hotSeller.special_price!))) && <div className={classes.offerPrice}>
                   <span>
                     -
                     {Math.floor(
@@ -189,7 +189,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     )}
                     %
                   </span>
-                </div>
+                </div>}
                 <Link to={clientRoutes.medicineDetails(hotSeller.sku)}>
                   <div className={classes.productIcon}>
                     <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />

@@ -10,6 +10,8 @@ import {
 } from 'graphql/types/GetDoctorFavouriteAdviceList';
 import { GET_DOCTOR_FAVOURITE_ADVICE_LIST } from 'graphql/profiles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { useParams } from 'hooks/routerHooks';
+import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -160,8 +162,11 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+type Params = { id: string; patientId: string; tabValue: string };
 export const OtherInstructions: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
+  const params = useParams<Params>();
+
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
     CaseSheetContext
   );
@@ -175,6 +180,11 @@ export const OtherInstructions: React.FC = () => {
   const [showAddInputText, setShowAddInputText] = useState<boolean>(false);
   const handleDelete = (item: any, idx: number) => {
     selectedValues!.splice(idx, 1);
+    const storageItem = getLocalStorageItem(params.id);
+    if (storageItem) {
+      storageItem.otherInstructions = selectedValues;
+      updateLocalStorageItem(params.id, storageItem);
+    }
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
     setIdx(sum);
@@ -245,6 +255,11 @@ export const OtherInstructions: React.FC = () => {
                       instruction: otherInstruct,
                       __typename: 'OtherInstructions',
                     });
+                    const storageItem = getLocalStorageItem(params.id);
+                    if (storageItem) {
+                      storageItem.otherInstructions = selectedValues;
+                      updateLocalStorageItem(params.id, storageItem);
+                    }
                     setSelectedValues(selectedValues);
                     setIdx(selectedValues!.length + 1);
                     setTimeout(() => {
@@ -293,6 +308,11 @@ export const OtherInstructions: React.FC = () => {
                                   instruction: item!.instruction,
                                   __typename: 'OtherInstructions',
                                 });
+                                const storageItem = getLocalStorageItem(params.id);
+                                if (storageItem) {
+                                  storageItem.otherInstructions = selectedValues;
+                                  updateLocalStorageItem(params.id, storageItem);
+                                }
                                 setSelectedValues(selectedValues);
                                 setIdx(selectedValues!.length + 1);
                                 setTimeout(() => {

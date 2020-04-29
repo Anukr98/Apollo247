@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { MEDICINE_CONSUMPTION_DURATION, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from "./globalTypes";
+import { MEDICINE_CONSUMPTION_DURATION, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorFavouriteMedicineList
@@ -23,11 +23,14 @@ export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_m
   medicineName: string | null;
   id: string | null;
   externalId: string | null;
+  routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
+  medicineCustomDosage: string | null;
 }
 
 export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList {
-  __typename: "FavouriteMedicineList";
+  __typename: "GetDoctorFavouriteMedicineListResult";
   medicineList: (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null;
+  allowedDosages: (string | null)[] | null;
 }
 
 export interface GetDoctorFavouriteMedicineList {

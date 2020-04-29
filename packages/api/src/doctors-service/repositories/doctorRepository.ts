@@ -30,6 +30,7 @@ type DoctorSlot = {
   slotId: number;
   slot: string;
   status: string;
+  slotType: string;
 };
 
 @EntityRepository(Doctor)
@@ -123,6 +124,7 @@ export class DoctorRepository extends Repository<Doctor> {
                     slotId: ++slotCount,
                     slot: generatedSlot,
                     status: 'OPEN',
+                    slotType: ConsultMode.ONLINE,
                   };
                   doctorSlots.push(slotInfo);
                   availableSlots.push(generatedSlot);
@@ -306,6 +308,7 @@ export class DoctorRepository extends Repository<Doctor> {
         .leftJoinAndSelect('doctorHospital.facility', 'facility')
         .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
         .andWhere('doctor.isActive = true')
+        .andWhere('doctor.isSearchable = true')
         //.andWhere('facility.city IN (:...cities)', { cities })
         .andWhere(
           new Brackets((qb) => {
@@ -589,6 +592,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.specialty = :specialty', { specialty })
       .andWhere('doctor.isActive = true')
+      .andWhere('doctor.isSearchable = true')
       //.andWhere('facility.city IN (:...cities)', { cities })
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
 
@@ -920,7 +924,21 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
   }
+  getSeniorDoctorCount() {
+    return this.count({
+      where: {
+        doctorType: Not('JUNIOR'),
+      },
+    });
+  }
 
+  getJuniorDoctorCount() {
+    return this.count({
+      where: {
+        doctorType: 'JUNIOR',
+      },
+    });
+  }
   getAllJuniorDoctors(doctorId: string, limit: number, offset: number) {
     if (doctorId == '0') {
       return this.find({
