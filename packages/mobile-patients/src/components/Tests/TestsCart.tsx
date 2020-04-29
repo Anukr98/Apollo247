@@ -1290,35 +1290,40 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const onPressProceedToPay = () => {
-    postwebEngageProceedToPayEvent();
-    setLoading!(true);
-    getDiagnosticsAvailability(cartItems)
-      .then(({ data }) => {
-        const diagnosticItems = g(data, 'searchDiagnosticsById', 'diagnostics') || [];
-        const disabledCartItems = cartItems.filter(
-          (cartItem) => !diagnosticItems.find((d) => `${d!.itemId}` == cartItem.id)
-        );
-        if (disabledCartItems.length) {
-          const disabledCartItemNames = disabledCartItems.map((item) => item.name).toString();
-          const disabledCartItemIds = disabledCartItems.map((item) => item.id);
+    try {
+      postwebEngageProceedToPayEvent();
+      setLoading!(true);
+      getDiagnosticsAvailability(cartItems)
+        .then(({ data }) => {
+          const diagnosticItems = g(data, 'searchDiagnosticsById', 'diagnostics') || [];
+          const disabledCartItems = cartItems.filter(
+            (cartItem) => !diagnosticItems.find((d) => `${d!.itemId}` == cartItem.id)
+          );
+          if (disabledCartItems.length) {
+            const disabledCartItemNames = disabledCartItems.map((item) => item.name).toString();
+            const disabledCartItemIds = disabledCartItems.map((item) => item.id);
+            setLoading!(false);
+            showAphAlert!({
+              title: string.common.uhOh,
+              description: string.diagnostics.disabledDiagnosticsMsg.replace(
+                '{{testNames}}',
+                disabledCartItemNames
+              ),
+              onPressOk: () => removeDisabledCartItems(disabledCartItemIds),
+            });
+          } else {
+            moveForward();
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
           setLoading!(false);
-          showAphAlert!({
-            title: string.common.uhOh,
-            description: string.diagnostics.disabledDiagnosticsMsg.replace(
-              '{{testNames}}',
-              disabledCartItemNames
-            ),
-            onPressOk: () => removeDisabledCartItems(disabledCartItemIds),
-          });
-        } else {
-          moveForward();
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('TestsCart_getDiagnosticsAvailability', e);
-        setLoading!(false);
-        errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
-      });
+          errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+        });
+    } catch (error) {
+      CommonBugFender('TestsCart_getDiagnosticsAvailability_try_catch', error);
+      errorAlert(string.diagnostics.disabledDiagnosticsFailureMsg);
+    }
   };
 
   // const onPressProceedToPay = () => {
