@@ -19,6 +19,7 @@ import { subDays } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -91,7 +92,7 @@ const insertMessage: Resolver<
   MessageInputArgs,
   NotificationsServiceContext,
   { notificationData: Partial<NotificationBin> }
-> = async (parent, { messageInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { messageInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const { fromId, toId, eventName, eventId, message, status, type } = messageInput;
   const bytes = CryptoJS.AES.decrypt(message, process.env.NOTIFICATION_SMS_SECRECT_KEY);
   const isMessageEncrypted = bytes.toString(CryptoJS.enc.Utf8);
@@ -109,8 +110,16 @@ const insertMessage: Resolver<
   const notificationData = await notificationBinRepo.saveNotification(notificationInputs);
   if (eventName == notificationEventName.APPOINTMENT) {
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-    const doctor = await doctorRepo.findDoctorByIdWithoutRelations(toId);
-    if (doctor) sendNotificationSMS(doctor.mobileNumber, '');
+    const doctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(toId);
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patientRepo.findById(fromId);
+    if (doctorDetails && patientDetails) {
+      const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
+        '{0}',
+        doctorDetails.firstName
+      ).replace('{1}', patientDetails.firstName);
+      sendNotificationSMS(doctorDetails.mobileNumber, messageBody);
+    }
   }
   return { notificationData: notificationData };
 };
