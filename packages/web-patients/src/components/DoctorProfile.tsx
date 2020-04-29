@@ -232,6 +232,17 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
   useEffect(() => {
     setLoading(true);
+     /**Gtm code start start */
+    const speciality = doctorDetails && doctorDetails.getDoctorDetailsById &&
+      doctorDetails.getDoctorDetailsById.specialty && doctorDetails.getDoctorDetailsById.specialty.name || null;
+    let city;
+    if (doctorDetails && doctorDetails.getDoctorDetailsById) {
+      city = doctorDetails.getDoctorDetailsById.city
+    } else {
+      city = null
+    }
+     window.gep && window.gep('Consultations', speciality, `${city} Doctor Profile Viewed`);
+     /**Gtm code start end */
     apolloClient
       .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
         query: GET_DOCTOR_NEXT_AVAILABILITY,
@@ -475,10 +486,6 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
       onlineConsultationFees,
       physicalConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
-
-    /**Gtm code start start */
-    window.gep && window.gep('Consultations', speciality, `${city} Doctor Profile Viewed`);
-    /**Gtm code start end */
 
     const isStarDoctor =
       doctorDetails.getDoctorDetailsById.doctorType === DoctorType.STAR_APOLLO ? true : false;
