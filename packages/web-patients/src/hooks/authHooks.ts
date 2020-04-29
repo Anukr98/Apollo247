@@ -4,6 +4,7 @@ import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { Relation } from 'graphql/types/globalTypes';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { MedicineCartItem } from '../components/MedicinesCartProvider';
 
 const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
 
@@ -74,7 +75,8 @@ export const useAllCurrentPatients = () => {
     if (!localStorage.getItem('currentUser')) {
       if (defaultCurrentPatient && defaultCurrentPatient.id) {
         const currentUserId = defaultCurrentPatient.id;
-        if (!localStorage.getItem(`${currentUserId}`)) {
+        const storageItem = localStorage.getItem(`${currentUserId}`);
+        if (!storageItem) {
           const cartItems = localStorage.getItem('cartItems');
           if (cartItems) {
             localStorage.setItem(`${currentUserId}`, cartItems);
@@ -83,10 +85,12 @@ export const useAllCurrentPatients = () => {
         } else {
           const cartItems = localStorage.getItem('cartItems');
           if (cartItems) {
-            const existingCartItems = JSON.parse(localStorage.getItem(`${currentUserId}`));
+            const existingCartItems = JSON.parse(storageItem);
             const cartItemsArry = JSON.parse(cartItems);
-            cartItemsArry.forEach((item) => {
-              const index = existingCartItems.findIndex((cartItem) => cartItem.id === item.id);
+            cartItemsArry.forEach((item: MedicineCartItem) => {
+              const index = existingCartItems.findIndex(
+                (cartItem: MedicineCartItem) => cartItem.id === item.id
+              );
               if (index > -1) {
                 existingCartItems[index].quantity += item.quantity;
               } else {
