@@ -76,6 +76,7 @@ interface ServiceItemProps {
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles();
+  const { isSignedIn } = useAuth();
   const { title, imgUrl, content, action } = props.item;
   return (
     <ProtectedWithLoginPopup>
@@ -83,11 +84,12 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
         <div className={classes.serviceItem}>
           <Paper className={classes.serviceItemIn}>
             <Link
-              to={action.link}
+              to={isSignedIn ? action.link : ''}
               onClick={(e) => {
-                action.link === '/health-records' && protectWithLoginPopup();
+                !isSignedIn ? protectWithLoginPopup() : action.link === '/health-records';
               }}
-              title={title}>
+              title={title}
+            >
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
                 <Typography variant="h5" title={title}>
@@ -105,7 +107,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
 export const OurServices: React.FC = (props) => {
   const { isSignedIn } = useAuth();
 
-  const classes = useStyles();
+  const classes = useStyles({});
   const serviceItems: ServiceItem[] = [
     {
       title: 'Book Doctor Appointment',
