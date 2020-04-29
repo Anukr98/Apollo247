@@ -13,6 +13,9 @@ const tangerine_yellow = '#fc9916';
 const shadowGray = '#808080';
 const text_light_blue = 'rgba(2,71,91,0.6)';
 const success_text = '#4aa54a';
+const lightShadeRed = '#edc6c2';
+const lightShadeGreen = '#edf7ed';
+const almond = '#eed9c6'
 
 const TabBar = {
   TAB_BAR_ACTIVE_TINT_COLOR: white,
@@ -108,6 +111,12 @@ const Capsule = {
   CAPSULE_INACTIVE_TEXT: app_light_blue,
 };
 
+const StatusColors={
+  SUCCESS:lightShadeGreen,
+  FAILURE:lightShadeRed,
+  PENDING:almond
+}
+
 export const colors = {
   ...Buttons,
   ...Card,
@@ -119,4 +128,5 @@ export const colors = {
   ...Search,
   ...TabBar,
   ...Capsule,
+...StatusColors
 };
