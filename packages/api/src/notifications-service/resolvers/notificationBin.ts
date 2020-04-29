@@ -12,10 +12,14 @@ import {
   NotificationBinRepository,
   NotificationBinArchiveRepository,
 } from 'notifications-service/repositories/notificationBinRepository';
+import CryptoJS from 'crypto-js';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { subDays } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
+import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -88,18 +92,51 @@ const insertMessage: Resolver<
   MessageInputArgs,
   NotificationsServiceContext,
   { notificationData: Partial<NotificationBin> }
-> = async (parent, { messageInput }, { consultsDb }) => {
+> = async (parent, { messageInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  const { fromId, toId, eventName, eventId, message, status, type } = messageInput;
+
+  //checking for message encryption
+  const bytes = CryptoJS.AES.decrypt(message, process.env.NOTIFICATION_SMS_SECRECT_KEY);
+  const isMessageEncrypted = bytes.toString(CryptoJS.enc.Utf8);
+  if (!isMessageEncrypted) throw new AphError(AphErrorMessages.MESSAGE_ENCRYPTION_ERROR);
+
+  let messageBody = '';
+  let mobileNumber = '';
+
+  if (eventName == notificationEventName.APPOINTMENT) {
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+
+    //get doctor details
+    const doctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(toId);
+    if (!doctorDetails) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+    mobileNumber = doctorDetails.mobileNumber;
+
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+
+    //get patient details
+    const patientDetails = await patientRepo.findById(fromId);
+    if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+    //create message body
+    messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace('{0}', doctorDetails.firstName).replace(
+      '{1}',
+      patientDetails.firstName
+    );
+  }
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationInputs: Partial<NotificationBin> = {
-    fromId: messageInput.fromId,
-    toId: messageInput.toId,
-    eventName: messageInput.eventName,
-    eventId: messageInput.eventId,
-    message: messageInput.message,
-    status: messageInput.status,
-    type: messageInput.type,
+    fromId: fromId,
+    toId: toId,
+    eventName: eventName,
+    eventId: eventId,
+    message: message,
+    status: status,
+    type: type,
   };
   const notificationData = await notificationBinRepo.saveNotification(notificationInputs);
+
+  //sending sms to doctor after data is saved successfully in notificationBin
+  if (mobileNumber && messageBody) sendNotificationSMS(mobileNumber, messageBody);
 
   return { notificationData: notificationData };
 };

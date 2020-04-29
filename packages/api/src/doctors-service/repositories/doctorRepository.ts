@@ -225,6 +225,12 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  findDoctorByIdWithoutRelations(id: string) {
+    return this.findOne({
+      where: [{ id, isActive: true }],
+    });
+  }
+
   getAllDoctorsInfo(id: string, limit: number, offset: number) {
     if (id == '0') {
       return this.find({
