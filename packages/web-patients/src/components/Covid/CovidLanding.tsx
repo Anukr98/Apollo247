@@ -334,7 +334,7 @@ export const CovidLanding: React.FC = (props) => {
                         covidContent[parentCat.category] &&
                         covidContent[parentCat.category].length && (
                           <ArticleCard
-                            handleInfographicClick={handleInfographicClick}
+                            handleInfographicClick={(data) => handleInfographicClick(data)}
                             content={covidContent[parentCat.category]}
                           />
                         )}

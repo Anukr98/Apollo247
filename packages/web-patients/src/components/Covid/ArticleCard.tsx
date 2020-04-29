@@ -119,12 +119,12 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
       <div className={classes.card}>
         <Link
           to={
-            type.toLowerCase() === 'video' || type.toLowerCase() == 'infographic'
+            type.toLowerCase() === 'video' || type.toLowerCase() === 'infographic'
               ? '#'
               : `/covid19/${type.toLowerCase()}${slug}`
           }
           onClick={
-            type.toLowerCase() == 'infographic'
+            type.toLowerCase() === 'infographic'
               ? () => props.handleInfographicClick({ image, postTitle, sourceUrl })
               : () => {}
           }
