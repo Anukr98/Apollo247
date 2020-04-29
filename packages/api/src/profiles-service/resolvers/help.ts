@@ -230,7 +230,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   log(
     'profileServiceLogger',
     `EXTERNAL_EMAIL_CALL_PEPIPOST: ${helpEmailInput.comments}`,
-    'sendMail',
+    'send mail for help ticket',
     JSON.stringify(helpEmailInput),
     ''
   );
@@ -238,7 +238,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   log(
     'profileServiceLogger',
     `EXTERNAL_EMAIL_END_CALL_PEPIPOST: ${helpEmailInput.comments}`,
-    'sendMail',
+    'send mail for help ticket',
     JSON.stringify(mailStatus),
     ''
   );

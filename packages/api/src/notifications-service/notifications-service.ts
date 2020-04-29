@@ -2,6 +2,8 @@ import '@aph/universal/dist/global';
 import { buildFederatedSchema } from '@apollo/federation';
 import { ApolloServer } from 'apollo-server';
 import 'reflect-metadata';
+import gql from 'graphql-tag';
+import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import {
   getNotificationsTypeDefs,
   getNotificationsResolvers,
@@ -39,6 +41,18 @@ import {
       return context;
     },
     schema: buildFederatedSchema([
+      {
+        typeDefs: gql`
+          scalar Date
+          scalar Time
+          scalar DateTime
+        `,
+        resolvers: {
+          Date: GraphQLDate,
+          Time: GraphQLTime,
+          DateTime: GraphQLDateTime,
+        },
+      },
       {
         typeDefs: getNotificationsTypeDefs,
         resolvers: getNotificationsResolvers,

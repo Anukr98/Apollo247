@@ -14,6 +14,8 @@ import {
 } from 'notifications-service/repositories/notificationBinRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { subDays } from 'date-fns';
+import { ApiConstants } from 'ApiConstants';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -53,8 +55,12 @@ export const notificationBinTypeDefs = gql`
     notificationData: NotificationBinData
   }
 
+  type NotificationDataSet {
+    notificationData: [NotificationBinData]
+  }
+
   extend type Query {
-    getNotifications(toId: String!): [NotificationBinData]
+    getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
   }
 
   extend type Mutation {
@@ -131,12 +137,18 @@ const getNotifications: Resolver<
   NotificationsServiceContext,
   { notificationData: Partial<NotificationBin>[] }
 > = async (parent, args, { consultsDb }) => {
+  const startDate =
+    args.startDate && args.endDate
+      ? args.startDate
+      : subDays(new Date(), ApiConstants.FREE_CHAT_DAYS);
+  const endDate = args.startDate && args.endDate ? args.endDate : new Date();
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationData = await notificationBinRepo.getNotificationInTimePeriod(
     args.toId,
-    args.startDate,
-    args.endDate
+    startDate,
+    endDate
   );
+
   return { notificationData: notificationData };
 };
 

@@ -283,4 +283,5 @@ export enum ApiConstants {
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosis',
+  FREE_CHAT_DAYS = 7,
 }

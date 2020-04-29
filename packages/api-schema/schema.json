@@ -2642,16 +2642,32 @@
                   }
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "startDate",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Date",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "endDate",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Date",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
-              "kind": "LIST",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "NotificationBinData",
-                "ofType": null
-              }
+              "kind": "OBJECT",
+              "name": "NotificationDataSet",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -18784,6 +18800,33 @@
               "kind": "SCALAR",
               "name": "Boolean",
               "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "NotificationDataSet",
+        "description": null,
+        "fields": [
+          {
+            "name": "notificationData",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "NotificationBinData",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
