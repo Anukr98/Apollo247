@@ -20,6 +20,8 @@
     "express-session": "^1.16.2",
     "node-deeplink": "^0.6.0",
     "shortid": "^2.2.10",
-    "striptags": "^3.1.1"
+    "striptags": "^3.1.1",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.4.2"
   }
 }

@@ -44,6 +44,21 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
   }
 
+  updateMedicineOrderPayment(medicineOrdersId: string, medicineOrdersOrderAutoId: number, paymentAttrs: Partial<MedicineOrderPayments>) {
+
+    return this.createQueryBuilder()
+      .update(MedicineOrderPayments)
+      .set(paymentAttrs)
+      .where('"medicineOrdersId" = :medicineOrdersId', { medicineOrdersId })
+      .andWhere('"medicineOrdersOrderAutoId" =:medicineOrdersOrderAutoId', { medicineOrdersOrderAutoId })
+      .execute()
+      .catch((medicineOrderError) => {
+        throw new AphError(AphErrorMessages.UPDATE_MEDICINE_ORDER_PAYMENT_ERROR, undefined, {
+          medicineOrderError,
+        });
+      });
+  }
+
   getMedicineOrderDetails(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },

@@ -11,6 +11,23 @@ const azure = require('azure-sb');
 const fs = require('fs');
 const deeplink = require('node-deeplink');
 const format = require('date-fns/format');
+const logger = require('./winston-logger')('Universal-Error-Logs');
+const {
+  paymedRequest,
+  paymedResponse,
+  mobRedirect,
+  pharmaWebhook
+}
+  = require('./pharma-integrations/controllers');
+
+const {
+  consultPayRequest,
+  consultPayResponse,
+  consultsPgRedirect,
+  consultWebhook } = require('./consult-integrations/controllers');
+
+const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
+
 require('dotenv').config();
 
 app.use(
@@ -23,8 +40,6 @@ app.use(
 );
 
 const PORT = process.env.PORT || 7000;
-
-const { initPayment } = require('./paytm/services/index');
 
 const cronTabs = require('./cronTabs');
 
@@ -55,6 +70,7 @@ app.get('/updateJdSummary', cronTabs.updateJdSummary);
 app.get('/updateDoctorFeeSummary', cronTabs.updateDoctorFeeSummary);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
+
   const updatePhrDocSummaryRequestJSON = {
     query: `mutation{
         updatePhrDocSummary(summaryDate:"${currentDate}"){
@@ -98,7 +114,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         response.data.data.updatePhrDocSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -125,7 +141,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         response.data.data.getAvailableDoctorsCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -152,7 +168,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         response.data.data.updateConsultRating +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -171,16 +187,16 @@ app.get('/getCmToken', (req, res) => {
   axios
     .get(
       process.env.CM_API_URL +
-        '?appId=apollo_24_7&appUserId=' +
-        req.query.appUserId +
-        '&name=' +
-        req.query.userName +
-        '&gender=' +
-        req.query.gender +
-        '&emailId=' +
-        req.query.emailId +
-        '&phoneNumber=' +
-        req.query.phoneNumber
+      '?appId=apollo_24_7&appUserId=' +
+      req.query.appUserId +
+      '&name=' +
+      req.query.userName +
+      '&gender=' +
+      req.query.gender +
+      '&emailId=' +
+      req.query.emailId +
+      '&phoneNumber=' +
+      req.query.phoneNumber
     )
     .then((response) => {
       res.send({
@@ -199,500 +215,15 @@ app.get('/getCmToken', (req, res) => {
     });
 });
 
-app.get('/consulttransaction', (req, res) => {
-  /*save response in apollo24x7*/
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-  const date = new Date(new Date().toUTCString()).toISOString();
-  const txnId = req.query.CompleteResponse.replace('TXNID=', '');
-  // this needs to be altered later.
-  const requestJSON = {
-    query:
-      'mutation { makeAppointmentPayment(paymentInput: { amountPaid: ' +
-      req.query.TXNAMOUNT +
-      ', paymentRefId: "' +
-      txnId +
-      '", paymentStatus: "' +
-      req.query.STATUS +
-      '", paymentDateTime: "' +
-      date +
-      '", responseCode: "' +
-      req.query.RESPCODE +
-      '", responseMessage: "' +
-      req.query.RESPMSG +
-      '", orderId: "' +
-      req.query.ORDERID +
-      '", bankTxnId: "' +
-      req.query.BANKTXNID +
-      '" }){appointment { id appointment{ id } } }}',
-  };
-  const fileName = process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-apptPayments.txt';
-  let content =
-    new Date().toString() +
-    '\n---------------------------\n' +
-    'appt id:' +
-    req.query.ORDERID +
-    '\n' +
-    txnId +
-    ' - ' +
-    req.query.STATUS +
-    ' - ' +
-    req.query.RESPCODE +
-    ' - ' +
-    req.query.RESPMSG +
-    '\n-------------------\n';
-  fs.appendFile(fileName, content, function(err) {
-    if (err) throw err;
-    console.log('Updated!');
-  });
-  axios
-    .post(process.env.API_URL, requestJSON)
-    .then((response) => {
-      let content = new Date().toString() + '\n---------------------------\nupdate response:';
-      response.data.data.makeAppointmentPayment.appointment.id + '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
-        if (err) throw err;
-        console.log('Updated!');
-      });
-      console.log(response.data.data.makeAppointmentPayment.appointment.id, 'response is....');
-      if (req.query.STATUS == 'TXN_SUCCESS') {
-        if (req.session.source == 'WEB') {
-          const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?apptid=${response.data.data.makeAppointmentPayment.appointment.appointment.id}`;
-          res.redirect(redirectUrl);
-        } else {
-          res.redirect(
-            `/consultpg-success?tk=${response.data.data.makeAppointmentPayment.appointment.id}&status=${req.query.STATUS}`
-          );
-        }
-      } else {
-        if (req.session.source == 'WEB') {
-          const redirectUrl = `${process.env.PORTAL_URL_APPOINTMENTS}?status=failed`;
-          res.redirect(redirectUrl);
-        } else {
-          res.redirect(`/consultpg-error?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
-        }
-      }
-    })
-    .catch((error) => {
-      console.log('error', error);
-    });
+app.get('/consultpayment', consultPayRequest);
+app.post('/consulttransaction', consultPayResponse);
+app.get('/consultpg-redirect', consultsPgRedirect);
+app.post('/consult-payment-webhook', consultWebhook);
 
-  //res.send('payment response');
-});
-
-app.get('/consultpg-success', (req, res) => {
-  const payloadToken = req.query.tk;
-  const reqSource = req.session.source;
-  if (payloadToken) {
-    res.statusCode = 200;
-    res.send({
-      status: 'success',
-      orderId: payloadToken,
-    });
-    if (reqSource === 'web') {
-      const redirectUrl = `${process.env.NAVIGATE_URL}/success`;
-      res.redirect(redirectUrl);
-    }
-  } else {
-    res.statusCode = 401;
-    res.send({
-      status: 'failed',
-      reason: 'Unauthorized',
-      code: '800',
-    });
-  }
-});
-
-app.get('/consultpg-error', (req, res) => {
-  res.send({
-    status: 'failed',
-  });
-});
-
-app.get('/consultpayment', (req, res) => {
-  //res.send('consult payment');
-  let source = 'MOBILE';
-  if (req.query.source) {
-    source = req.query.source;
-  }
-  axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
-  // validate the order and token.
-  axios({
-    url: process.env.API_URL,
-    method: 'post',
-    data: {
-      query: `
-          query {
-            getAthsToken(patientId:"${req.query.patientId}") {
-              patient {
-                id
-                emailAddress
-                athsToken
-                lastName
-                firstName
-                dateOfBirth
-                gender
-              }
-            }
-          }
-        `,
-    },
-  })
-    .then((response) => {
-      console.log(response, response.data, response.data.data.getAthsToken, 'get patient details');
-      if (
-        response &&
-        response.data &&
-        response.data.data &&
-        response.data.data.getAthsToken &&
-        response.data.data.getAthsToken.patient
-      ) {
-        const responsePatientId = response.data.data.getAthsToken.patient.id;
-        console.log(
-          responsePatientId,
-          'responsePatientId',
-          response.data.data.getAthsToken.patient.athsToken
-        );
-        if (responsePatientId == '') {
-          res.statusCode = 401;
-          res.send({
-            status: 'failed',
-            reason: 'Invalid parameters',
-            code: '10000',
-          });
-        } else {
-          axios
-            .post(process.env.CONSULT_MERCHANT_URL, {
-              AdminId: process.env.CONSULT_MERCHANT_ADMINID,
-              AdminPassword: process.env.CONSULT_MERCHANT_ADMINID,
-              sourceApp: process.env.CONSULT_SOURCE_APP,
-            })
-            .then((resp) => {
-              console.log(resp.data, resp.data.Result);
-              const merchantId = resp.data.result;
-              const requestJSON = {
-                query:
-                  'mutation { updatePaymentOrderId(appointmentId:"' +
-                  req.query.appointmentId +
-                  '",orderId:"' +
-                  resp.data.Result +
-                  '",source:"' +
-                  source +
-                  '"){ status } }',
-              };
-              axios.post(process.env.API_URL, requestJSON).then((updateResp) => {
-                const getAptRequestJson = {
-                  query:
-                    'query { getAppointmentData(appointmentId:"' +
-                    req.query.appointmentId +
-                    '"){ appointmentsHistory { discountedAmount paymentOrderId patientInfo { mobileNumber firstName } } } }',
-                };
-                axios
-                  .post(process.env.API_URL, getAptRequestJson)
-                  .then((aptResp) => {
-                    console.log(
-                      aptResp.data.data.getAppointmentData.appointmentsHistory,
-                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].discountedAmount,
-                      'appoint resp',
-                      aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
-                        .mobileNumber
-                    );
-                    req.session.appointmentId = req.query.appointmentId;
-                    req.session.source = source;
-                    res.render('consults.ejs', {
-                      athsToken: response.data.data.getAthsToken.patient.athsToken,
-                      merchantId:
-                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].paymentOrderId,
-                      price:
-                        aptResp.data.data.getAppointmentData.appointmentsHistory[0]
-                          .discountedAmount,
-                      patientId: req.query.patientId,
-                      patientName:
-                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
-                          .firstName,
-                      mobileNumber:
-                        aptResp.data.data.getAppointmentData.appointmentsHistory[0].patientInfo
-                          .mobileNumber,
-                      baseUrl: process.env.APP_BASE_URL,
-                      pgUrl: process.env.CONSULT_PG_URL,
-                    });
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                    res.send(err, 'Appointment id error');
-                  });
-              });
-            })
-            .catch((err) => {
-              console.log(err);
-              res.send(err, 'merchant id error');
-            });
-        }
-      }
-    })
-    .catch((error) => {
-      // no need to explicitly saying details about error for clients.
-      // console.log(error);
-      res.statusCode = 401;
-      return res.send({
-        status: 'failed',
-        reason: 'Invalid parameters',
-        code: '10001',
-      });
-    });
-});
-
-app.get('/paymed', (req, res) => {
-  const requestedSources = ['mobile', 'web'];
-
-  req.session.token = stripTags(req.query.token);
-  req.session.orderAutoId = stripTags(req.query.oid);
-  req.session.patientId = stripTags(req.query.pid);
-  req.session.amount = stripTags(req.query.amount);
-  req.session.source = stripTags(req.query.source);
-
-  // if there is any invalid source throw error.
-  if (requestedSources.indexOf(req.session.source) < 0) {
-    // fake source. through error.
-    res.statusCode = 401;
-    return res.send({
-      status: 'failed',
-      reason: 'Invalid device',
-    });
-  }
-
-  axios.defaults.headers.common['authorization'] = req.session.token;
-
-  // validate the order and token.
-  axios({
-    url: process.env.API_URL,
-    method: 'post',
-    data: {
-      query: `
-          query {
-            getMedicineOrderDetails(patientId:"${req.session.patientId}", orderAutoId:${req.session.orderAutoId}) {
-              MedicineOrderDetails {
-                id
-                orderAutoId
-                estimatedAmount
-              }
-            }
-          }
-        `,
-    },
-  })
-    .then((response) => {
-      if (
-        response &&
-        response.data &&
-        response.data.data &&
-        response.data.data.getMedicineOrderDetails &&
-        response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-      ) {
-        const responseOrderId =
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.orderAutoId;
-        const responseAmount =
-          response.data.data.getMedicineOrderDetails.MedicineOrderDetails.estimatedAmount;
-        if (responseOrderId !== req.query.orderAutoId || responseAmount !== req.query.amount) {
-          res.statusCode = 401;
-          res.send({
-            status: 'failed',
-            reason: 'Invalid parameters',
-            code: '10000',
-          });
-        }
-      }
-    })
-    .catch((error) => {
-      // no need to explicitly saying details about error for clients.
-      // console.log(error);
-      res.statusCode = 401;
-      return res.send({
-        status: 'failed',
-        reason: 'Invalid parameters',
-        code: '10001',
-      });
-    });
-
-  initPayment(req.session.orderAutoId, req.session.amount).then(
-    (success) => {
-      res.render('paytmRedirect.ejs', {
-        resultData: success,
-        paytmFinalUrl: process.env.PAYTM_FINAL_URL,
-      });
-    },
-    (error) => {
-      // console.log(error);
-      return res.send(error);
-    }
-  );
-});
-
-app.post('/paymed-response', (req, res) => {
-  const payload = req.body;
-  const token = 'Bearer 3d1833da7020e0602165529446587434';
-  const date = new Date(new Date().toUTCString()).toISOString();
-  //const reqSource = req.session.source;
-
-  /* make success and failure response */
-  const transactionStatus = payload.STATUS === 'TXN_SUCCESS' || 'success' ? 'success' : 'failed';
-  const responseMessage = payload.RESPMSG;
-  const responseCode = payload.RESPCODE;
-  const fileName = process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaResp.txt';
-  let content =
-    new Date().toString() +
-    '\n---------------------------\n' +
-    'pharma order id:' +
-    payload.ORDERID +
-    '\n' +
-    transactionStatus +
-    ' - ' +
-    responseMessage +
-    ' - ' +
-    responseCode +
-    '\n-------------------\n';
-  fs.appendFile(fileName, content, function(err) {
-    if (err) throw err;
-    console.log('Updated!', payload.ORDERID);
-  });
-  console.log(process.env.API_URL);
-  axios.defaults.headers.common['authorization'] = token;
-  axios({
-    url: process.env.API_URL,
-    method: 'post',
-    data: {
-      query: `
-            query {
-              getMedicineOrderDetails(orderAutoId:${payload.ORDERID}) {
-                MedicineOrderDetails {
-                  id
-                  shopId
-                  orderAutoId
-                  devliveryCharges
-                  deliveryType
-                  bookingSource
-                  currentStatus
-                }
-              }
-            }
-          `,
-    },
-  }).then(async (response) => {
-    console.log(response, response.data.errors, 'response');
-    if (
-      response &&
-      response.data &&
-      response.data.data &&
-      response.data.data.getMedicineOrderDetails &&
-      response.data.data.getMedicineOrderDetails.MedicineOrderDetails
-    ) {
-      console.log(
-        response.data.data.getMedicineOrderDetails.MedicineOrderDetails,
-        '======order details======='
-      );
-      const bookingsourcefromDb =
-        response.data.data.getMedicineOrderDetails.MedicineOrderDetails.bookingSource;
-
-      let bookingSource = 'mobile';
-      if (bookingsourcefromDb) {
-        bookingSource = bookingsourcefromDb;
-      }
-      if (transactionStatus === 'failed') {
-        /* never execute a transaction if the payment status is failed */
-        if (bookingSource === 'WEB') {
-          const redirectUrl = `${process.env.PORTAL_FAILED_URL}/${payload.ORDERID}/${transactionStatus}`;
-          res.redirect(redirectUrl);
-        } else {
-          res.redirect(
-            `/mob-error?tk=${token}&status=${transactionStatus}&responseMessage=${responseMessage}&responseCode=${responseCode}`
-          );
-        }
-      }
-
-      /*save response in apollo24x7*/
-      axios.defaults.headers.common['authorization'] = token;
-
-      // this needs to be altered later.
-      const requestJSON = {
-        query:
-          'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
-          payload.ORDERID +
-          ', paymentType: CASHLESS, amountPaid: ' +
-          payload.TXNAMOUNT +
-          ', paymentRefId: "' +
-          payload.TXNID +
-          '", paymentStatus: "' +
-          payload.STATUS +
-          '", paymentDateTime: "' +
-          date +
-          '", responseCode: "' +
-          payload.RESPCODE +
-          '", responseMessage: "' +
-          payload.RESPMSG +
-          '", bankTxnId: "' +
-          payload.BANKTXNID +
-          '" }){ errorCode, errorMessage,orderStatus }}',
-      };
-
-      /// write medicineoirder
-      axios
-        .post(process.env.API_URL, requestJSON)
-        .then((response) => {
-          console.log(response, 'response is....');
-          if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
-            res.redirect(redirectUrl);
-          } else {
-            res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
-          }
-        })
-        .catch((error) => {
-          console.log('error', error);
-          if (bookingSource === 'WEB') {
-            const redirectUrl = `${process.env.PORTAL_URL}/${payload.ORDERID}/${transactionStatus}`;
-            res.redirect(redirectUrl);
-          } else {
-            res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
-          }
-        });
-    }
-  });
-});
-
-app.get('/mob', (req, res) => {
-  const payloadToken = req.query.tk;
-  const sessionToken = req.session.token;
-  if (payloadToken === sessionToken) {
-    res.statusCode = 200;
-    res.send({
-      status: 'success',
-    });
-  } else {
-    res.statusCode = 401;
-    res.send({
-      status: 'failed',
-      reason: 'Unauthorized',
-      code: '800',
-    });
-  }
-});
-
-app.get('/mob-error', (req, res) => {
-  const payloadToken = req.query.tk;
-  const sessionToken = req.session.token;
-  if (payloadToken === sessionToken) {
-    res.statusCode = 200;
-    res.send({
-      status: 'failed',
-    });
-  } else {
-    res.statusCode = 401;
-    res.send({
-      status: 'failed',
-      reason: 'Unauthorized',
-      code: '800',
-    });
-  }
-});
+app.get('/paymed', paymedRequest);
+app.post('/paymed-response', paymedResponse);
+app.get('/mob', mobRedirect);
+app.post('/pharma-payment-webhook', pharmaWebhook);
 
 //diagnostic payment apis
 app.get('/diagnosticpayment', (req, res) => {
@@ -983,6 +514,7 @@ app.get('/processOrders', (req, res) => {
         const queueDetails = queueMessage.split(':');
         axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
         console.log(queueDetails, 'order details');
+        //logger.info(`OrderID and PatientID - ${JSON.stringify(queueDetails)}`);
         axios({
           url: process.env.API_URL,
           method: 'post',
@@ -1198,7 +730,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -1213,7 +745,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1397,7 +929,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -1447,9 +979,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+          '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+          null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1479,9 +1011,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              null
+            null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','
@@ -1590,7 +1122,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1605,7 +1137,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });
@@ -1739,6 +1271,23 @@ app.get('/getPrismData', (req, res) => {
     }
   );
 });
+
+app.get('/list-of-payment-methods', (req, res) => {
+  res.json(listOfPaymentMethods);
+})
+
+app.use((req, res, next) => {
+  res.status(404).send('invalid url!');
+});
+
+app.use((err, req, res, next) => {
+  if (err.response && err.response.data) {
+    logger.error(`Final error handler - ${JSON.stringify(err.response.data)}`)
+  } else {
+    logger.error(`Final error handler - ${JSON.stringify(err.stack)}`);
+  }
+  res.status(500).send("something went wrong, please contact IT department!");
+})
 
 app.listen(PORT, () => {
   console.log('Running on ' + PORT);
