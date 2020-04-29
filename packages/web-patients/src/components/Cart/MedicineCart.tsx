@@ -817,7 +817,9 @@ export const MedicineCart: React.FC = (props) => {
   const { city } = useLocationDetails();
 
   useEffect(() => {
+    /**Gtm code start  */
     window.gep('Pharmacy', 'Order', 'View Cart', totalAmount)
+    /**Gtm code  End */
   }, [grossValue])
   
   return (
@@ -1163,7 +1165,9 @@ export const MedicineCart: React.FC = (props) => {
           <div className={classes.dialogActions}>
             <AphButton
               onClick={(e) => {
+                /**Gtm code start  */
                 window.gep('Pharmacy','Order',`Payment-${paymentMethod==='COD'? 'COD': 'Prepaid'}`, totalAmount)
+                /**Gtm code End  */
                 setMutationLoading(true);
                 paymentMutation()
                   .then((res) => {  
@@ -1183,7 +1187,9 @@ export const MedicineCart: React.FC = (props) => {
                     }
                   })
                   .catch((e) => {
+                    /**Gtm code start  */
                     window.gep('Pharmacy','Order','Failed / Cancelled')
+                    /**Gtm code End  */
                     setIsAlertOpen(true);
                     setAlertMessage('something went wrong');
                     console.log(e);

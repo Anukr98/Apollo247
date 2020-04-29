@@ -578,9 +578,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           <CouponCode
             disableSubmit={disableCoupon}
             setCouponCode={()=>{
+              /* Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
               window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
+              /* Gtm code end */
               setCouponCode(couponCode)
             }}
             subtotal={physicalConsultationFees}

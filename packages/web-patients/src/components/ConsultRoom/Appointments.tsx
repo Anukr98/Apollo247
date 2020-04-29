@@ -487,22 +487,6 @@ export const Appointments: React.FC = (props) => {
         setPhotoUrl(photoUrl);
         setIsConfirmedPopoverOpen(true);
         setIsConfirmPopupLoaded(true);
-
-        /**Gtm code start start */
-        window.gep('Consultations', specialty, 'Order Success', '{{ Bill Value }}');
-        window._cb(
-          '{{ mobile number }}',
-          specialty,
-          '{{ User Location }}',
-          '{{ Doctor Location }}',
-          '{{ Booking Type }}',
-          '{{ Scheduled Date - Current Date }}',
-          '{{ Coupon Code }}',
-          '{{ Coupon Value }}',
-          '{{ Final Booking Value }}'
-        );
-        /**Gtm code start end */
-
         // console.log(isAppointmentAvailable);
       }
     }

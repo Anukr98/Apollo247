@@ -202,7 +202,9 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 .checkServiceAvailability(localZipCode)
                 .then((res: AxiosResponse) => {
                   if (res && res.data && res.data.Availability) {
+                    /**Gtm code start  */
                     window.gep('Pharmacy', 'Order', 'Address Selected')
+                    /**Gtm code End  */
                     props.setIsViewAllAddressDialogOpen(false);
                     props.setDeliveryTime && props.setDeliveryTime('');
                     setDeliveryAddressId && setDeliveryAddressId(localDeliveryAddressId);

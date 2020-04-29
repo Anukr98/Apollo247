@@ -400,8 +400,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     nextAvailableSlot.getDoctorNextAvailableSlot &&
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots
   ) {
+    /* Gtm code start */
     const speciality = getSpeciality()
     window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
+    /* Gtm code end */
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
         // console.log(availability && availability.availableSlot, 'availability.....');
@@ -529,14 +531,14 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       },
     })
       .then((res: any) => {
-        //GTM tracking
+        /* Gtm code start */
         const specialty = getSpeciality()
         const { getDoctorDetailsById } = doctorDetails
         const couponValue = Number(onlineConsultationFees) - Number(revisedAmount)
         window.gep('Consultations', specialty, 'Order Success', revisedAmount)
         window._cb(currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
           specialty, city, getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null, AppointmentType.ONLINE, `${moment(appointmentDateTime).format('DD-MM-YYYY')} - ${format(new Date(), 'DD-MM-YYYY')}`, couponCode ? couponCode : null, couponValue ? couponValue : null, revisedAmount)
-        // END GTM tracking
+       /* Gtm code END */
         disableSubmit = false;
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
           if (revisedAmount == '0') {
@@ -575,8 +577,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         }
       })
       .catch((errorResponse) => {
+        /* Gtm code start */
         const Specialty = getSpeciality()
         window.gep('Consultations', Specialty, 'Failed / Cancelled')
+        /* Gtm code End */
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
         disableSubmit = false;
@@ -716,9 +720,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           <CouponCode
             disableSubmit={disableCoupon}
             setCouponCode={()=>{
+              /* Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount)
               window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
+              /* Gtm code end */
               setCouponCode(couponCode)}}
             subtotal={onlineConsultationFees}
             revisedAmount={revisedAmount}
@@ -727,9 +733,11 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             appointmentDateTime={appointmentDateTime}
             appointmentType={consultType}
             removeCouponCode={()=>{
+              /* Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount)
               window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
+              /* Gtm code end */
             }}
           />
           <p className={classes.consultGroup}>

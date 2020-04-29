@@ -453,7 +453,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                   },
                 })
                   .then(() => {
+                    /**Gtm code start  */
                     window.gep('Pharmacy', 'Order', 'Address Selected')
+                    /**Gtm code End  */
                     props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
                     props.setDeliveryTime && props.setDeliveryTime('');
@@ -486,8 +488,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                           .checkServiceAvailability(pincode)
                           .then((res: AxiosResponse) => {
                             if (res && res.data && res.data.Availability) {
+                              /**Gtm code start  */
                               window.gep('Profile','Update','Address Added')
                               window.gep('Pharmacy', 'Order', 'Address Selected')
+                              /**Gtm code End  */
                               props.setIsAddAddressDialogOpen(false);
                               props.forceRefresh && props.forceRefresh(true);
                               props.setDeliveryTime && props.setDeliveryTime('');
