@@ -84,9 +84,9 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
         <div className={classes.serviceItem}>
           <Paper className={classes.serviceItemIn}>
             <Link
-              to={title === 'View Health Records' && !isSignedIn ? '' : action.link}
+              to={action.link}
               onClick={(e) => {
-                if (title === 'View Health Records' && !isSignedIn) {
+                if (action.link === '') {
                   protectWithLoginPopup();
                 }
               }}
@@ -148,7 +148,10 @@ export const OurServices: React.FC = (props) => {
       title: 'View Health Records',
       content: 'Learn about our Start Doctors Program.',
       imgUrl: `${require('images/ic-prescription.svg')}`,
-      action: { link: clientRoutes.healthRecords(), content: 'Who are star doctors' },
+      action: {
+        link: isSignedIn ? clientRoutes.healthRecords() : '',
+        content: 'Who are star doctors',
+      },
     },
   ];
 
