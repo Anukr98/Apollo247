@@ -351,14 +351,14 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
     doctorData.id = doctorData.doctorId;
     doctorData.specialty.id = doctorData.specialty.specialtyId;
     doctorData.doctorHospital = [];
+    for (const consultHour of doctorData.consultHours) {
+      consultHour['id'] = consultHour['consultHoursId'];
+    }
     facilities = doctorData.facility;
     facilities = Array.isArray(facilities) ? facilities : [facilities];
     for (const facility of facilities) {
-      facility.id = facility.docFacilityId;
+      facility.id = facility.facilityId;
       doctorData.doctorHospital.push({ facility });
-    }
-    for (const consultHours of doctorData.consultHours) {
-      consultHours.id = consultHours.consultHoursId;
     }
   }
   // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length + 1, 'searchhitCount');

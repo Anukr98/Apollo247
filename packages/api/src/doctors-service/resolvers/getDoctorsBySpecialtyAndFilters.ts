@@ -6,6 +6,7 @@ import {
   DoctorSpecialty,
   ConsultMode,
   SpecialtySearchType,
+  DOCTOR_ONLINE_STATUS,
 } from 'doctors-service/entities/';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
@@ -16,7 +17,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { Connection } from 'typeorm';
-//import { ApiConstants } from 'ApiConstants';
+import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
@@ -159,20 +160,25 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   let finalSpecialityDetails = [];
   const elasticMatch = [];
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
-  if (
-    args.filterInput.specialtySearchType &&
-    args.filterInput.specialtySearchType == SpecialtySearchType.NAME
-  ) {
-    if (!args.filterInput.specialtyName) {
-      throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
-    }
+
+  if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
+  }
+  if (args.filterInput.specialty) {
+    elasticMatch.push({ match: { 'specialty.specialtyId': args.filterInput.specialty } });
+  }
+  if (
+    (!args.filterInput.specialtyName || args.filterInput.specialtyName.length === 0) &&
+    !args.filterInput.specialty
+  ) {
+    elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
 
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     type: 'posts',
     body: {
+      size: 1000,
       query: {
         bool: {
           must: elasticMatch,
@@ -180,10 +186,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   };
-  console.log(elasticMatch);
-
-  console.log(JSON.stringify(searchParams));
-
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
   const docs = [];
@@ -193,8 +195,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    doctor['onlineStatus'] = DOCTOR_ONLINE_STATUS.ONLINE;
     doctor['doctorHospital'] = [];
     doctor['activeSlotCount'] = 0;
+    doctor['earliestSlotavailableInMinutes'] = 0;
+    let bufferTime = 5;
+    for (const consultHour of doctor.consultHours) {
+      consultHour['id'] = consultHour['consultHoursId'];
+      bufferTime = consultHour["consultBuffer"];
+    }
+    if (doctor.specialty) {
+      doctor.specialty.id = doctor.specialty.specialtyId;
+    }
     for (const facility of doctor.facility) {
       doctor['doctorHospital'].push({
         facility: {
@@ -216,14 +228,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     for (const slots of doc._source.doctorSlots) {
       for (const slot of slots['slots']) {
-        if (slot.status == 'OPEN') {
+        if (slot.status == 'OPEN' && (differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime)) {
           if (doctor['activeSlotCount'] === 0) {
+            doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(new Date(slot.slot), new Date());
             finalDoctorNextAvailSlots.push({
               availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
               physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
               currentDateTime: new Date(),
               doctorId: doc._source.doctorId,
-              onlineSlot: slot.slot,
+              onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
               referenceSlot: slot.slot,
             });
           }
@@ -231,19 +244,19 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         }
       }
     }
-
-    docs.push(doctor);
-    finalDoctorsConsultModeAvailability.push({
-      availableModes: [doc._source.consultHours[0].consultMode],
-      doctorId: doc._source.doctorId,
-    });
-    finalSpecialityDetails.push(doc._source.specialty);
+    if (doctor['activeSlotCount'] > 0) {
+      docs.push(doctor);
+      finalDoctorsConsultModeAvailability.push({
+        availableModes: [doctor.consultHours[0].consultMode],
+        doctorId: doctor.doctorId,
+      });
+      finalSpecialityDetails.push(doctor.specialty);
+    }
   }
   searchLogger(`API_CALL___END`);
   return {
     doctors: docs
-      .sort((a, b) => parseFloat(a.activeSlotCount) - parseFloat(b.activeSlotCount))
-      .reverse(),
+      .sort((a, b) => parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)),
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
     specialty: finalSpecialtyDetails,
