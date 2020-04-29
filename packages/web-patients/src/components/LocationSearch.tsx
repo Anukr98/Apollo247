@@ -1,9 +1,8 @@
-import React, { useRef, useContext, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
 import { AphTextField } from '@aph/web-ui-components';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
-import { Helmet } from 'react-helmet';
 import { AllowLocation } from 'components/AllowLocation';
 import { useAuth } from 'hooks/authHooks';
 import { useLocationDetails } from 'components/LocationProvider';
@@ -58,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
       },
-      [theme.breakpoints.down(320)]: {
+      [theme.breakpoints.down(360)]: {
         display: 'none',
       },
     },
@@ -154,6 +153,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       marginRight: 5,
       marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 5,
+      },
     },
     windowWrap: {
       width: 368,
@@ -168,6 +170,18 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -40,
       '& img': {
         maxWidth: 72,
+      },
+    },
+    locationPopoverClose: {
+      position: 'absolute',
+      top: -10,
+      height: 26,
+      borderRadius: '50%',
+      boxShadow: '1px 1px 2px 1px #eaeaea',
+      left: -10,
+      cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
       },
     },
   });
@@ -196,6 +210,8 @@ export const LocationSearch: React.FC = (props) => {
   const classes = useStyles({});
   const locationRef = useRef(null);
   const [isLocationPopoverOpen, setIsLocationPopoverOpen] = React.useState<boolean>(false);
+  const [isForceFullyClosePopover, setIsForceFullyClosePopover] = React.useState<boolean>(false);
+
   const searchOptions = {
     componentRestrictions: { country: ['in'] },
   };
@@ -217,7 +233,12 @@ export const LocationSearch: React.FC = (props) => {
     isUserDeniedLocationAccess,
     setIsUserDeniedLocationAccess,
   } = useLocationDetails();
-  const { isSigningIn } = useAuth();
+  const { isSigningIn, isSignedIn } = useAuth();
+
+  const closePopOver = () => {
+    setIsForceFullyClosePopover(true);
+    setIsPopoverOpen(false);
+  };
 
   const handleChange = (address: string) => setAddress(address);
 
@@ -254,7 +275,11 @@ export const LocationSearch: React.FC = (props) => {
             setIsLocationDenied(true);
             setIsUserDeniedLocationAccess(true);
             setIsLocationPopoverOpen(true);
-          } else if (PermissionStatus.state !== 'granted' && !detectBy) {
+          } else if (
+            PermissionStatus.state !== 'granted' &&
+            !detectBy &&
+            !isForceFullyClosePopover
+          ) {
             setIsPopoverOpen(true);
           } else if (PermissionStatus.state === 'granted' && !detectBy) {
             locateCurrentLocation();
@@ -399,6 +424,9 @@ export const LocationSearch: React.FC = (props) => {
       >
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
+            <div className={classes.locationPopoverClose} onClick={closePopOver}>
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
             <div className={classes.mascotIcon}>
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>

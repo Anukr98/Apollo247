@@ -26,7 +26,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const OrdersLanding: React.FC = (props) => {
   const classes = useStyles();
-
   return (
     <div className={classes.root}>
       <Header />

@@ -7,6 +7,7 @@ import {
   CityPincodeMapper,
   ConsultHours,
 } from 'doctors-service/entities';
+import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
   Range,
   FilterDoctorInput,
@@ -59,6 +60,7 @@ export class DoctorRepository extends Repository<Doctor> {
     const availableSlots: string[] = [];
     const doctorSlots: DoctorSlot[] = [];
     let rowCount = 0;
+    let slotCount = 0;
     if (timeSlots && timeSlots.length > 0) {
       timeSlots.map((timeSlot) => {
         let st = `${availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
@@ -95,7 +97,7 @@ export class DoctorRepository extends Repository<Doctor> {
             startTime = new Date(previousDate.toDateString() + ' ' + stTime);
           }
         }
-        let slotCount = 0;
+
         Array(slotsCount)
           .fill(0)
           .map(() => {
@@ -123,8 +125,8 @@ export class DoctorRepository extends Repository<Doctor> {
                   const slotInfo = {
                     slotId: ++slotCount,
                     slot: generatedSlot,
-                    status: 'OPEN',
-                    slotType: ConsultMode.ONLINE,
+                    status: ES_DOCTOR_SLOT_STATUS.OPEN,
+                    slotType: timeSlot.consultMode,
                   };
                   doctorSlots.push(slotInfo);
                   availableSlots.push(generatedSlot);

@@ -203,6 +203,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
+  const [showLocations, setshowLocations] = useState<boolean>(false);
 
   useEffect(() => {
     console.log(locationDetails, 'locationDetails');
@@ -626,7 +627,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   value={currentLocation}
                   onChangeText={(value) => {
                     setcurrentLocation(value);
-                    autoSearch(value);
+                    if (value.length > 2) {
+                      autoSearch(value);
+                      setshowLocations(true);
+                    } else {
+                      setshowLocations(false);
+                    }
                   }}
                 />
               </View>
@@ -641,36 +647,38 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 <LocationOn />
               </View>
             </View>
-            <View>
-              {locationSearchList.map((item, i) => (
-                <View
-                  key={i}
-                  style={{
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                    paddingVertical: 7,
-                  }}
-                >
-                  <Text
+            {showLocations && (
+              <View>
+                {locationSearchList.map((item, i) => (
+                  <View
+                    key={i}
                     style={{
-                      color: theme.colors.LIGHT_BLUE,
-                      ...theme.fonts.IBMPlexSansMedium(18),
-                    }}
-                    onPress={() => {
-                      setcurrentLocation(item.name);
-                      setshowLocationpopup(false);
-                      saveLatlong(item);
-                      setLocationDetails!({
-                        displayName: item.name,
-                        city: item.name,
-                      } as any);
+                      borderBottomWidth: 0.5,
+                      borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                      paddingVertical: 7,
                     }}
                   >
-                    {item.name}
-                  </Text>
-                </View>
-              ))}
-            </View>
+                    <Text
+                      style={{
+                        color: theme.colors.LIGHT_BLUE,
+                        ...theme.fonts.IBMPlexSansMedium(18),
+                      }}
+                      onPress={() => {
+                        setcurrentLocation(item.name);
+                        setshowLocationpopup(false);
+                        saveLatlong(item);
+                        setLocationDetails!({
+                          displayName: item.name,
+                          city: item.name,
+                        } as any);
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       );

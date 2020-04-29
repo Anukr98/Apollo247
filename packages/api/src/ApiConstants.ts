@@ -282,5 +282,5 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
-  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosed Medical Condition (Acceptable in ICD-10 nomenclature)',
+  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosis',
 }

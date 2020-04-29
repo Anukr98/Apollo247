@@ -13,6 +13,9 @@ import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Alerts } from 'components/Alerts/Alerts';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser'
+
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -391,7 +394,8 @@ export const MedicineDetails: React.FC = (props) => {
         alert(e);
       });
   };
-
+  
+  const onePrimaryUser = hasOnePrimaryUser()
   useEffect(() => {
     if (!medicineDetails) {
       getMedicineDetails(params.sku);
@@ -694,6 +698,7 @@ export const MedicineDetails: React.FC = (props) => {
         setIsAlertOpen={setIsAlertOpen}
       />
       <NavigationBottom />
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };

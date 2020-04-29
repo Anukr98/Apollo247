@@ -2,6 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from 'hooks/authHooks';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Avatar from '@material-ui/core/Avatar';
@@ -23,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 8,
       paddingRight: 8,
       paddingBottom: 8,
-      [theme.breakpoints.down(560)]: {
+      [theme.breakpoints.down(400)]: {
         width: '100%',
       },
     },
@@ -84,11 +85,9 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
             <Link
               to={action.link}
               onClick={(e) => {
-                protectWithLoginPopup();
-                if (isProtected) e.preventDefault();
+                action.link === '/health-records' && protectWithLoginPopup();
               }}
-              title={title}
-            >
+              title={title}>
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
                 <Typography variant="h5" title={title}>
@@ -104,10 +103,12 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
 };
 
 export const OurServices: React.FC = (props) => {
+  const { isSignedIn } = useAuth();
+
   const classes = useStyles();
   const serviceItems: ServiceItem[] = [
     {
-      title: 'Find A Doctor',
+      title: 'Book Doctor Appointment',
       content: `Let's get you connected with them.`,
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.doctorsLanding(), content: 'Find specialist' },
@@ -134,7 +135,10 @@ export const OurServices: React.FC = (props) => {
       title: 'Track Symptoms',
       content: 'Learn about our Star Doctors Program.',
       imgUrl: `${require('images/ic-symptomtracker.svg')}`,
-      action: { link: clientRoutes.symptomsTrackerFor(), content: 'Who are star doctors' },
+      action: {
+        link: isSignedIn ? clientRoutes.symptomsTrackerFor() : clientRoutes.symptomsTracker(),
+        content: 'Who are star doctors',
+      },
     },
     {
       title: 'View Health Records',

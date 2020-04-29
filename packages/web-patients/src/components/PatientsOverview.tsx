@@ -17,10 +17,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: 40,
-      [theme.breakpoints.down('xs')]: {
-        padding: 20,
-      },
+      paddingTop: 20,
     },
     card: {
       backgroundColor: '#fff',
