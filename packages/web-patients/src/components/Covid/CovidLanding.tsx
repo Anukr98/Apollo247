@@ -169,6 +169,7 @@ const useStyles = makeStyles((theme: Theme) => {
     fullScreen: {
       transform: 'rotate(-90deg)',
       transformOrigin: 'left top',
+      transition: 'all .1s',
       width: '100vh !important',
       height: '100vw',
       overflowX: 'hidden',
@@ -205,7 +206,11 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       bottom: 32,
       right: 12,
-      color: 'red',
+    },
+    fullScreenImgCross: {
+      position: 'absolute',
+      top: 16,
+      right: 12,
     },
   };
 });
@@ -395,18 +400,32 @@ export const CovidLanding: React.FC = (props) => {
                       alt=""
                     />
                     {fullScreenOn && (
-                      <span
-                        className={classes.fullScreenImg}
-                        onClick={() => setFullScreenOn(false)}
-                      >
-                        ][
-                      </span>
+                      <>
+                        <span
+                          className={classes.fullScreenImgCross}
+                          onClick={() => {
+                            setFullScreenOn(false);
+                            setModalOpen(false);
+                            setExpandedImage('');
+                            setExpandedSourceUrl('');
+                            setExpandedTitle('');
+                          }}
+                        >
+                          <img src={require('images/ic_cross.svg')} />
+                        </span>
+                        <span
+                          className={classes.fullScreenImg}
+                          onClick={() => setFullScreenOn(false)}
+                        >
+                          <img src={require('images/on.svg')} />
+                        </span>
+                      </>
                     )}
                   </div>
                   <div className={classes.modalFooter}>
                     {!isDesktopOnly && !fullScreenOn && (
                       <span className={classes.fullScreenImg} onClick={() => setFullScreenOn(true)}>
-                        []
+                        <img src={require('images/off.svg')} />
                       </span>
                     )}
                     {!fullScreenOn && <div>{expandedSourceUrl}</div>}
