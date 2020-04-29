@@ -489,6 +489,7 @@ app.get('/processOrders', (req, res) => {
           resolve(deliveryAddress);
         })
         .catch((error) => {
+          logger.error(`processOrders()-> ${error.stack}`)
           console.log(error, 'address error');
         });
     });
@@ -509,6 +510,7 @@ app.get('/processOrders', (req, res) => {
           code: '10001',
         });
       } else {
+        logger.info(`message from topic - processOrders()-> ${JSON.stringify(result.body)}`)
         console.log('message from topic', result.body);
         queueMessage = result.body;
         const queueDetails = queueMessage.split(':');
@@ -572,6 +574,7 @@ app.get('/processOrders', (req, res) => {
               response.data.data.getMedicineOrderDetails &&
               response.data.data.getMedicineOrderDetails.MedicineOrderDetails
             ) {
+              logger.info(`message from topic -processOrders()->getMedicineOrderDetails()-> ${JSON.stringify(response.data.data)}`)
               if (
                 response.data.data.getMedicineOrderDetails.MedicineOrderDetails.currentStatus !=
                 'CANCELLED'
@@ -721,6 +724,7 @@ app.get('/processOrders', (req, res) => {
                     PrescUrl: orderPrescriptionUrl,
                   },
                 };
+                logger.info(`processOrders()->${queueDetails[1]}-> pharamInput - ${JSON.stringify(pharmaInput)}`)
                 console.log('pharmaInput==========>', pharmaInput, '<===============pharmaInput');
                 const fileName =
                   process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-pharmaLogs.txt';
@@ -741,6 +745,7 @@ app.get('/processOrders', (req, res) => {
                     },
                   })
                   .then((resp) => {
+                    logger.info(`processOrders()->${queueDetails[1]}-> pharamResponse - ${JSON.stringify(resp.data)}`)
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
@@ -770,6 +775,7 @@ app.get('/processOrders', (req, res) => {
                           });
                         })
                         .catch((placedError) => {
+                          logger.error(`${queueDetails[1]} -> processOrders()->orderPlaced -> ${placedError.stack}`)
                           console.log(placedError, 'placed error');
                           azureServiceBus.deleteMessage(result, (deleteError) => {
                             if (deleteError) {
@@ -786,6 +792,7 @@ app.get('/processOrders', (req, res) => {
                     });
                   })
                   .catch((pharmaerror) => {
+                    logger.error(`${queueDetails[1]} -> processOrders()->PharamaOrderPlaced -> ${pharmaerror.stack}`)
                     console.log('pharma error', pharmaerror);
                     res.send({
                       status: 'Failed',
@@ -797,6 +804,8 @@ app.get('/processOrders', (req, res) => {
             }
           })
           .catch((error) => {
+            logger.error(`${queueDetails[1]} -> processOrders()->getMedicineOrderDetails() -> ${error.stack}`)
+
             // no need to explicitly saying details about error for clients.
             console.log(error);
             //res.statusCode = 401;
