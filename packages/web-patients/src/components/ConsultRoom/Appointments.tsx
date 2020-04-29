@@ -366,7 +366,7 @@ export const Appointments: React.FC = (props) => {
   useEffect(() => {
     if (isFailurePayment) {
       /**Gtm code start start */
-      window.gep('Consultations', specialtyName, 'Failed / Cancelled');
+      window.gep && window.gep('Consultations', specialtyName, 'Failed / Cancelled');
       /**Gtm code start end */
     }
   }, [isFailurePayment]);

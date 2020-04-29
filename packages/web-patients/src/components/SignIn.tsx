@@ -288,7 +288,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 e.preventDefault();
 
                 /**Gtm code start start */
-                window.gep('Profile', 'Signup / Login', 'OTP Entered');
+                window.gep && window.gep('Profile', 'Signup / Login', 'OTP Entered');
                 /**Gtm code start end */
 
                 verifyOtp(otp, customLoginId).then((authToken) => {
@@ -335,7 +335,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
           /**Gtm code start start */
-          window.gep('Profile', 'Signup / Login', 'Mobile Entered');
+          window.gep && window.gep('Profile', 'Signup / Login', 'Mobile Entered');
           /**Gtm code start end */
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;

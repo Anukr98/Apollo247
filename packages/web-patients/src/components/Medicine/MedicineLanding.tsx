@@ -392,7 +392,7 @@ export const MedicineLanding: React.FC = (props) => {
       .then((res: any) => {
         setData(res.data);
         /**Gtm code start  */
-        window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
+        window.gep && window.gep('Pharmacy', 'Landing Page', 'Listing Page Viewed');
         /**Gtm code End  */
         setLoading(false);
       })

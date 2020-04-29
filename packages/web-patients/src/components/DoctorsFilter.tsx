@@ -307,7 +307,7 @@ export const DoctorsFilter: React.FC<DoctorsFilterProps> = (props) => {
   const isValidSearch = (value: string) => /^([^ ]+[ ]{0,1}[^ ]*)*$/.test(value);
 
   const gepTracking = (filterName: string, filterValue: string) => {
-    window.gep('Consultations', selectedSpecialtyName, `${filterName} - ${filterValue}`)
+    window.gep && window.gep('Consultations', selectedSpecialtyName, `${filterName} - ${filterValue}`)
   }
 
   return (

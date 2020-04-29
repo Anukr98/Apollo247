@@ -12,7 +12,7 @@ export const ProtectedWithLoginPopup: React.FC<ProtectedWithLoginPopupProps> = (
   const protectWithLoginPopup = () => {
     if (isProtected) {
       /**Gtm code start start */
-      window.gep('Profile', 'Signup / Login', 'Intent');
+      window.gep && window.gep('Profile', 'Signup / Login', 'Intent');
       /**Gtm code start end */
 
       setLoginPopupVisible(true);

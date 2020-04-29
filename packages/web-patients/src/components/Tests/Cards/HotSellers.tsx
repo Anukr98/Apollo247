@@ -254,8 +254,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                             ? hotSeller.diagnostics.collectionType
                                             : null,
                                         });
-                                        /**Gtm code start  */
-                                      window.gep('Pharmacy', 'Add to Cart', hotSeller.packageName, price)
+                                      /**Gtm code start  */
+                                      window.gep && window.gep('Pharmacy', 'Add to Cart', hotSeller.packageName, price)
                                       /**Gtm code End  */
                                     }
                                     setLoading(false);
@@ -272,7 +272,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                           <AphButton
                             onClick={() => {
                                 /**Gtm code start  */
-                                window.gep('Pharmacy', 'Remove From Cart', hotSeller.packageName, hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0)
+                                window.gep && window.gep('Pharmacy', 'Remove From Cart', hotSeller.packageName, hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0)
                                 /**Gtm code End  */
                               removeCartItem &&
                                 removeCartItem(

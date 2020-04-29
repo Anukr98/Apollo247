@@ -581,7 +581,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               /* Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
-              window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
+              window.gep && window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
               /* Gtm code end */
               setCouponCode(couponCode)
             }}
@@ -595,7 +595,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               /**Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
-              window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
+              window.gep && window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
               /**Gtm code  end  */
             }}
           />

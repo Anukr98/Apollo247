@@ -477,7 +477,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     } = doctorDetails.getDoctorDetailsById;
 
     /**Gtm code start start */
-    window.gep('Consultations', speciality, `${city} Doctor Profile Viewed`);
+    window.gep && window.gep('Consultations', speciality, `${city} Doctor Profile Viewed`);
     /**Gtm code start end */
 
     const isStarDoctor =

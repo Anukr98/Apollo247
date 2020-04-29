@@ -270,7 +270,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                               title="Remove item from Cart"
                               onClick={() => {
                                 /**Gtm code start  */
-                                window.gep('Pharmacy', 'Remove From Cart', medicine.name, medicine.price)
+                                window.gep && window.gep('Pharmacy', 'Remove From Cart', medicine.name, medicine.price)
                                 /**Gtm code start  */
                                 removeCartItem && removeCartItem(medicine.id);
                               }}
@@ -302,7 +302,7 @@ export const MedicineListscard: React.FC<MedicineListscardProps> = (props) => {
                                 quantity: selectedPackedQty,
                               };
                               /**Gtm code start  */
-                              window.gep('Pharmacy', 'Add to Cart', medicine.name, medicine.price)
+                              window.gep && window.gep('Pharmacy', 'Add to Cart', medicine.name, medicine.price)
                               /**Gtm code End  */
                               addCartItem && addCartItem(cartItem);
                             }}

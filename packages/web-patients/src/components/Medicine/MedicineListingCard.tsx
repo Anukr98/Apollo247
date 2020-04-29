@@ -246,7 +246,7 @@ export const MedicineListingCard: React.FC = (props) => {
                   <div className={classes.addToCart}>
                     <AphButton onClick={() => {
                       /**Gtm code start  */
-                      window.gep('Pharmacy', 'Remove From Cart', item.name, item.price)
+                      window.gep && window.gep('Pharmacy', 'Remove From Cart', item.name, item.price)
                       /**Gtm code End  */
                       removeCartItem && removeCartItem(item.id)
                     }}>

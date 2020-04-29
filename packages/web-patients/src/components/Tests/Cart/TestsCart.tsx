@@ -842,7 +842,7 @@ export const TestsCart: React.FC = (props) => {
             <AphButton
               onClick={(e) => {
                 /**Gtm code start  */
-                window.gep('Pharmacy','Order','Payment-COD',cartTotal.toFixed(2))
+                window.gep && window.gep('Pharmacy','Order','Payment-COD',cartTotal.toFixed(2))
                 /**Gtm code End  */
                 setMutationLoading(true);
                 paymentOrderTest();

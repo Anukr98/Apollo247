@@ -141,7 +141,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                         quantity: 1,
                       };
                       /**Gtm code start  */
-                      window.gep('Pharmacy', 'Add to Cart', product.name, product.price)
+                      window.gep && window.gep('Pharmacy', 'Add to Cart', product.name, product.price)
                       /**Gtm code End  */
                       const index = cartItems.findIndex((item) => item.id === cartItem.id);
                       if (index >= 0) {
@@ -158,7 +158,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     className={classes.addToCartBtn}
                     onClick={() => {
                       /**Gtm code start  */
-                      window.gep('Pharmacy', 'Remove From Cart', product.name, product.price)
+                      window.gep && window.gep('Pharmacy', 'Remove From Cart', product.name, product.price)
                       /**Gtm code End  */
                       removeCartItem && removeCartItem(product.id);
                     }}

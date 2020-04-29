@@ -402,7 +402,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   ) {
     /* Gtm code start */
     const speciality = getSpeciality()
-    window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
+    window.gep && window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
     /* Gtm code end */
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
@@ -535,9 +535,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         const specialty = getSpeciality()
         const { getDoctorDetailsById } = doctorDetails
         const couponValue = Number(onlineConsultationFees) - Number(revisedAmount)
-        window.gep('Consultations', specialty, 'Order Success', revisedAmount)
-        window._cb(currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
-          specialty, city, getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null, AppointmentType.ONLINE, `${moment(appointmentDateTime).format('DD-MM-YYYY')} - ${format(new Date(), 'DD-MM-YYYY')}`, couponCode ? couponCode : null, couponValue ? couponValue : null, revisedAmount)
+        window.gep && window.gep('Consultations', specialty, 'Order Success', revisedAmount)
+        // window._cb(currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
+        //   specialty, city, getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null, AppointmentType.ONLINE,`${moment(appointmentDateTime, 'YYYY-MM-DD').format('DD-MM-YYYY')}  - ${format(new Date(), 'DD-MM-YYYY')}`, couponCode ? couponCode : null, couponValue ? couponValue : null, revisedAmount)
        /* Gtm code END */
         disableSubmit = false;
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
@@ -579,7 +579,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       .catch((errorResponse) => {
         /* Gtm code start */
         const Specialty = getSpeciality()
-        window.gep('Consultations', Specialty, 'Failed / Cancelled')
+        window.gep && window.gep('Consultations', Specialty, 'Failed / Cancelled')
         /* Gtm code End */
         setIsAlertOpen(true);
         setAlertMessage(errorResponse);
@@ -723,7 +723,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               /* Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount)
-              window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
+              window.gep && window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
               /* Gtm code end */
               setCouponCode(couponCode)}}
             subtotal={onlineConsultationFees}
@@ -736,7 +736,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               /* Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(onlineConsultationFees) - Number(revisedAmount)
-              window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
+              window.gep && window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
               /* Gtm code end */
             }}
           />

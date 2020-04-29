@@ -390,7 +390,7 @@ export const MedicineDetails: React.FC = (props) => {
       .then(({ data }) => {
         setMedicineDetails(data.productdp[0]);
         /**Gtm code start  */
-        data && data.productdp && data.productdp.length && window.gep('Pharmacy', 'Product Views', data.productdp[0].name)
+        data && data.productdp && data.productdp.length && window.gep &&  window.gep('Pharmacy', 'Product Views', data.productdp[0].name)
         /**Gtm code End  */
       })
       .catch((e) => {

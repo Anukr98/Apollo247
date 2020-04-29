@@ -228,7 +228,7 @@ export const DoctorsLanding: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start start */
-    window.gep('Consultations', 'Landing Page', 'Listing Page Viewed');
+    window.gep && window.gep('Consultations', 'Landing Page', 'Listing Page Viewed');
     /**Gtm code start end */
   }, []);
 
@@ -270,7 +270,7 @@ export const DoctorsLanding: React.FC = (props) => {
       setShowSearchAndPastSearch(false);
 
       /**Gtm code start start */
-      window.gep('Consultations', specialitySelected, 'Listing Page Viewed');
+      window.gep && window.gep('Consultations', specialitySelected, 'Listing Page Viewed');
       /**Gtm code start end */
     }
   }, [specialitySelected]);

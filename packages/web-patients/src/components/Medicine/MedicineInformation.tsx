@@ -559,7 +559,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     quantity: medicineQty,
                   };
                   /**Gtm code start  */
-                  itemIndexInCart(data) == -1 && window.gep('Pharmacy', 'Add to Cart', data.name, data.price)
+                  itemIndexInCart(data) == -1 && window.gep &&  window.gep('Pharmacy', 'Add to Cart', data.name, data.price)
                   /**Gtm code End  */
                   applyCartOperations(cartItem);
                   setAddMutationLoading(false);

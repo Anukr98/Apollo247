@@ -159,7 +159,7 @@ export const AuthProvider: React.FC = (props) => {
       .signOut()
       .then(() => {
         /**Gtm code start start */
-        window.gep('Profile', 'Signup / Login', 'Signout');
+        window.gep && window.gep('Profile', 'Signup / Login', 'Signout');
         /**Gtm code start end */
 
         localStorage.removeItem('currentUser');
@@ -353,10 +353,10 @@ export const AuthProvider: React.FC = (props) => {
         const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
 
         if (isNewUser) {
-          window.gep('Profile', 'Signup / Login', 'Register');
-          window._ur(user.uid, false, 1);
+          window.gep && window.gep('Profile', 'Signup / Login', 'Register');
+          window._ur && window._ur(user.uid, false, 1);
         } else {
-          window.gep('Profile', 'Signup / Login', 'Login');
+          window.gep && window.gep('Profile', 'Signup / Login', 'Login');
         }
         /**Gtm code start end */
 
