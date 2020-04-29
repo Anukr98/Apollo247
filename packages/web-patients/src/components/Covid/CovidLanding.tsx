@@ -15,7 +15,6 @@ import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
-import { relative } from 'path';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -291,12 +290,6 @@ export const CovidLanding: React.FC = (props) => {
       });
     } else didMount.current = true;
   }, [categoryToFetch]);
-
-  // interface infographicInterface {
-  //   image: string;
-  //   postTitle: string;
-  //   sourceUrl: string;
-  // }
 
   const handleInfographicClick = (data: any) => {
     setExpandedImage(data.image);
