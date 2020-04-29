@@ -536,8 +536,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         const { getDoctorDetailsById } = doctorDetails
         const couponValue = Number(onlineConsultationFees) - Number(revisedAmount)
         window.gep && window.gep('Consultations', specialty, 'Order Success', revisedAmount)
-        // window._cb(currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
-        //   specialty, city, getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null, AppointmentType.ONLINE,`${moment(appointmentDateTime, 'YYYY-MM-DD').format('DD-MM-YYYY')}  - ${format(new Date(), 'DD-MM-YYYY')}`, couponCode ? couponCode : null, couponValue ? couponValue : null, revisedAmount)
+        window._cb(currentPatient && currentPatient.mobileNumber ? currentPatient.mobileNumber : null,
+          specialty, city, getDoctorDetailsById && getDoctorDetailsById.city ? getDoctorDetailsById.city : null, AppointmentType.ONLINE,`${appointmentDateTime}`, couponCode ? couponCode : null, couponValue ? couponValue : null, revisedAmount)
        /* Gtm code END */
         disableSubmit = false;
         if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
