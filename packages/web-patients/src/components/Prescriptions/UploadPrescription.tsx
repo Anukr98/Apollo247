@@ -9,6 +9,8 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Alerts } from 'components/Alerts/Alerts';
 import { uploadPhotoTracking } from '../../webEngageTracking';
+import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -141,6 +143,7 @@ interface UploadPrescriptionProps {
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const classes = useStyles({});
+  const { isSignedIn } = useAuth();
   const { setPrescriptionUploaded } = useShoppingCart();
 
   const [alertMessage, setAlertMessage] = React.useState<string>('');
@@ -254,17 +257,20 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 <img src={require('images/ic_gallery.svg')} alt="" />
                 <p>Camera</p>
               </div> */}
-
-              <div
-                className={classes.uploadCard}
-                onClick={(e) => {
-                  props.setIsEPrescriptionOpen(true);
-                  props.closeDialog();
-                }}
-              >
-                <img src={require('images/ic_prescription.svg')} alt="" />
-                <p>Select from E-Prescription</p>
-              </div>
+              <ProtectedWithLoginPopup>
+                {({ protectWithLoginPopup }) => (
+                  <div
+                    className={classes.uploadCard}
+                    onClick={(e) => {
+                      !isSignedIn ? protectWithLoginPopup() : props.setIsEPrescriptionOpen(true);
+                      props.closeDialog();
+                    }}
+                  >
+                    <img src={require('images/ic_prescription.svg')} alt="" />
+                    <p>Select from E-Prescription</p>
+                  </div>
+                )}
+              </ProtectedWithLoginPopup>
             </div>
             <div className={classes.instructions}>
               <h6>Instructions For Uploading Prescriptions</h6>

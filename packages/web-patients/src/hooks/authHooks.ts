@@ -80,6 +80,22 @@ export const useAllCurrentPatients = () => {
             localStorage.setItem(`${currentUserId}`, cartItems);
             localStorage.removeItem('cartItems');
           }
+        } else {
+          const cartItems = localStorage.getItem('cartItems');
+          if (cartItems) {
+            const existingCartItems = JSON.parse(localStorage.getItem(`${currentUserId}`));
+            const cartItemsArry = JSON.parse(cartItems);
+            cartItemsArry.forEach((item) => {
+              const index = existingCartItems.findIndex((cartItem) => cartItem.id === item.id);
+              if (index > -1) {
+                existingCartItems[index].quantity += item.quantity;
+              } else {
+                existingCartItems.push(item);
+              }
+            });
+            localStorage.setItem(`${currentUserId}`, JSON.stringify(existingCartItems));
+            localStorage.removeItem('cartItems');
+          }
         }
         setCurrentPatientId(currentUserId);
       }
