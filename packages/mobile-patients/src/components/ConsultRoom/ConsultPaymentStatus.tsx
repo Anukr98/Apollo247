@@ -91,9 +91,9 @@ useEffect(() => {
     }
   };
 
-  const textComponent=(message:string)=>{
+  const textComponent = (message: string, numOfLines:number | undefined,color:string)=>{
     return (
-    <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.SUCCESS_TEXT, 1, 20) }}>
+      <Text style={{ ...theme.viewStyles.text('SB', 13, color, 1, 20) }} numberOfLines={numOfLines}>
       {message}
         </Text>
         )
@@ -111,15 +111,21 @@ return colors.SUCCESS;
 
   const statusText = () => {
     let message ='PAYMENT PENDING'
+    let textColor = theme.colors.PENDING_TEXT
     if (status == success) {
       message =' PAYMENT SUCCESSFUL'
+      textColor = theme.colors.SUCCESS_TEXT
     } else if (status == failure) {
       message =' PAYMENT FAILED'
+      textColor = theme.colors.FAILURE_TEXT
     } 
-    textComponent(message)
+    textComponent(message, undefined, textColor)
   };
 
   const renderStatusCard = () => {
+    const refNumberText = 'Ref.No : '+String(refNo)
+    const orderIdText = 'Order ID: '+String(orderId)
+    const priceText = 'Rs. '+String(price)
     return (
       <View style={[styles.statusCardStyle,{ backgroundColor: statusCardColour()},]}>
         <View
@@ -143,7 +149,7 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-          <Text style={{ ...theme.viewStyles.text('SB', 14, '#666666', 1, 20) }}>Rs. {price}</Text>
+            {textComponent(priceText, undefined, theme.colors.SHADE_GREY)}
         </View>
         <View
           style={{
@@ -152,14 +158,10 @@ return colors.SUCCESS;
             justifyContent: 'flex-start',
           }}
         >
-          <Text style={{ ...theme.viewStyles.text('SB', 13, '#666666', 1, 20) }}>
-            Ref. No : {refNo}
-          </Text>
+            {textComponent(refNumberText,undefined,theme.colors.SHADE_GREY)}
         </View>
         <View style={{ flex: 0.25, justifyContent: 'flex-start', alignItems: 'center' }}>
-          <Text style={{ ...theme.viewStyles.text('SB', 13, '#666666', 1, 20) }}>
-            Order ID : {orderId}
-          </Text>
+          {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY)}
         </View>
       </View>
     );
@@ -168,9 +170,7 @@ return colors.SUCCESS;
   const appointmentHeader = () => {
     return (
       <View style={styles.appointmentHeaderStyle} >
-        <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-          BOOKING DETAILS
-        </Text>
+           {textComponent('BOOKING DETAILS', undefined, theme.colors.ASTRONAUT_BLUE)} 
       </View>
     );
   };
@@ -180,39 +180,27 @@ return colors.SUCCESS;
       <View style={styles.appointmentCardStyle}>
         <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
           <View style={{ flex: 0.4, justifyContent: 'center' }}>
-            <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-              Date & Time of Appointment
-            </Text>
+              {textComponent('Date & Time of Appointment', undefined, theme.colors.ASTRONAUT_BLUE)}
           </View>
           <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-            <Text style={{ ...theme.viewStyles.text('SB', 13, '#6d7278', 1, 20) }}>
-              {appointmentDateTime.toLocaleString()}
-            </Text>
+              {textComponent(appointmentDateTime.toLocaleString(), undefined, theme.colors.SHADE_CYAN_BLUE) }
           </View>
         </View>
         <View style={{ flex: 0.5, flexDirection: 'row' }}>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-                Doctor Name
-              </Text>
+            {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#6d7278', 1, 20) }}>
-                {doctorName}
-              </Text>
+              {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE)}
             </View>
           </View>
           <View style={{ flex: 0.5 }}>
             <View style={{ flex: 0.4, justifyContent: 'center' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#01475b', 1, 20) }}>
-                Mode of Consult
-              </Text>
+              {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE)}
             </View>
             <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
-              <Text style={{ ...theme.viewStyles.text('SB', 13, '#6d7278', 1, 20) }}>
-                {appointmentType}
-              </Text>
+                {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE)}
             </View>
           </View>
         </View>
@@ -275,16 +263,7 @@ return colors.SUCCESS;
   const renderButton = () => {
     return (
       <TouchableOpacity
-        style={{
-          height: 0.06 * windowHeight,
-          backgroundColor: '#fcb716',
-          marginVertical: 0.06 * windowWidth,
-          marginHorizontal: 0.2 * windowWidth,
-          borderRadius: 10,
-          justifyContent: 'center',
-          alignItems: 'center',
-          elevation: 5,
-        }}
+        style={styles.buttonStyle}
         onPress={() => {
           handleButton();
         }}
@@ -325,7 +304,7 @@ const styles = StyleSheet.create({
   },
   Payment: {
     fontSize: 14,
-    color: '#01475b',
+    color: theme.colors.ASTRONAUT_BLUE,
     fontWeight: '500',
     textShadowColor: 'rgba(0, 0, 0, 1)',
     textShadowOffset: { width: 0, height: 0 },
@@ -365,5 +344,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 0.06 * windowWidth,
     borderBottomWidth: 0.8,
     borderBottomColor: '#ddd',
+  },
+  buttonStyle: {
+    height: 0.06 * windowHeight,
+    backgroundColor: '#fcb716',
+    marginVertical: 0.06 * windowWidth,
+    marginHorizontal: 0.2 * windowWidth,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
   }
 });
