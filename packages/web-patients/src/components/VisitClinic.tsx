@@ -592,9 +592,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             appointmentDateTime={appointmentDateTime}
             appointmentType={AppointmentType.PHYSICAL}
             removeCouponCode={()=>{
+              /**Gtm code start */
               const speciality = getSpeciality()
               const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
               window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
+              /**Gtm code  end  */
             }}
           />
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
