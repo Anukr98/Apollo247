@@ -76,11 +76,10 @@ interface ServiceItemProps {
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles({});
-  const { isSignedIn } = useAuth();
   const { title, imgUrl, content, action } = props.item;
   return (
     <ProtectedWithLoginPopup>
-      {({ protectWithLoginPopup, isProtected }) => (
+      {({ protectWithLoginPopup }) => (
         <div className={classes.serviceItem}>
           <Paper className={classes.serviceItemIn}>
             <Link
