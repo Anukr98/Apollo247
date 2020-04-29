@@ -450,21 +450,11 @@ export const MedicineLanding: React.FC = (props) => {
                     <CircularProgress size={30} />
                   </div>
                 )}
-                {/* {data &&
-                  data.mainbanners_desktop &&
-                  data.mainbanners_desktop.length &&
-                  data.mainbanners_desktop[0] &&
-                  data.mainbanners_desktop[0].image &&
-                  data.mainbanners_desktop[0].image !== '' && (
-                    <div className={classes.productsBanner}>
-                      <img
-                        src={`${apiDetails.imageUrl}${data.mainbanners_desktop[0].image}`}
-                        alt=""
-                      />
-                    </div>
-                  )} */}
-                  <CarouselBanner />
+                {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
+                  <CarouselBanner bannerData={data.mainbanners_desktop} />
+                )}
               </div>
+
               <div className={classes.rightSection}>
                 <div className={classes.medicineSection}>
                   <div className={`${classes.sectionGroup}`}>

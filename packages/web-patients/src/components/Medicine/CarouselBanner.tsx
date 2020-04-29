@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => {
           '& button': {
             backgroundColor: '#fcb716',
           },
-        },        
+        },
       },
     },
     card: {
@@ -77,13 +77,23 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 10,
       '&:hover': {
         backgroundColor: '#fff',
-        color: '#fc9916',  
+        color: '#fc9916',
       },
     },
   };
 });
-
-export const CarouselBanner: React.FC = (props) => {
+type BannerData = {
+  end_time: string;
+  image: string;
+  name: string;
+  start_time: string;
+  status: string;
+};
+const apiDetails = {
+  imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
+};
+type BanneDataArray = { bannerData: BannerData[] };
+export const CarouselBanner: React.FC<BanneDataArray> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
     infinite: false,
@@ -97,30 +107,18 @@ export const CarouselBanner: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
-        <div
-          className={classes.card}
-          style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
-        >
-          <h1>Covid-19</h1>
-          <p>know more about Coronavirus</p>
-          <Link className={classes.button} to={clientRoutes.covidLanding()}>Read More</Link>
-        </div>
-        <div
-          className={classes.card}
-          style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
-        >
-          <h1>Covid-19</h1>
-          <p>know more about Coronavirus</p>
-          <Link className={classes.button} to={clientRoutes.covidLanding()}>Read More</Link>
-        </div>
-        <div
-          className={classes.card}
-          style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
-        >
-          <h1>Covid-19</h1>
-          <p>know more about Coronavirus</p>
-          <Link className={classes.button} to={clientRoutes.covidLanding()}>Read More</Link>
-        </div>
+        {props.bannerData.map((sidebaneer) => (
+          <div
+            className={classes.card}
+            style={{ backgroundImage: `url(${apiDetails.imageUrl}${sidebaneer.image})` }}
+          >
+            <h1>Covid-19</h1>
+            <p>know more about Coronavirus</p>
+            <Link className={classes.button} to={clientRoutes.covidLanding()}>
+              Read More
+            </Link>
+          </div>
+        ))}
       </Slider>
     </div>
   );
