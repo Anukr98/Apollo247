@@ -122,6 +122,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         display: 'flex',
+        zIndex: 2,
         alignItems: 'center',
       },
       '& button': {
