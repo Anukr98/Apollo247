@@ -470,7 +470,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              Consult a doctor
+              UNDERSTAND YOUR SYMPTOMS
               {isSignedIn && (
                 <div className={classes.profileDropdownMobile}>
                   <div className={classes.labelFor}>For</div>
