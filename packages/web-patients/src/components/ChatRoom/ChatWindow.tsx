@@ -863,7 +863,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
     });
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -1115,9 +1118,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       moment(timeStamp).format('YYYY-MM-DD')
     );
     if (dateValidate === 0) {
-      return moment.utc(timeStamp).local().format('h:mm A');
+      return moment
+        .utc(timeStamp)
+        .local()
+        .format('h:mm A');
     } else {
-      return moment.utc(timeStamp).local().format('DD MMM, YYYY h:mm A');
+      return moment
+        .utc(timeStamp)
+        .local()
+        .format('DD MMM, YYYY h:mm A');
     }
     return '--';
   };
@@ -1133,7 +1142,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const startTimerForFirstTextMessageToPatient = () => {
-    thirtySecondTimer = setTimeout(function () {
+    thirtySecondTimer = setTimeout(function() {
       if (props.jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.firstMessage;
@@ -1155,9 +1164,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               channel: channel,
               message: {
                 message: autoMessageStrings.firstMessage,
-                automatedText: `Hi ${
-                  currentPatient && currentPatient.firstName
-                }, sorry to keep you waiting.
+                automatedText: `Hi ${currentPatient &&
+                  currentPatient.firstName}, sorry to keep you waiting.
       ${displayName}
 ’s team is with another patient right now.Your consultation prep will start soon.`,
                 id: doctorId,
@@ -1226,7 +1234,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const startTimerForSecondTextMessageToPatient = () => {
-    minuteTimer = setTimeout(function () {
+    minuteTimer = setTimeout(function() {
       if (props.jrDoctorJoined == false) {
         const result = insertText.filter((obj: any) => {
           return obj.message === autoMessageStrings.secondMessage;
@@ -1335,9 +1343,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const showPrescriptionCard = (rowData: MessagesObjectProps) => (
     <div className={`${classes.blueBubble} ${classes.petient} `}>
-      {`Hello ${
-        currentPatient && currentPatient.firstName
-      }, \nHope your consultation went well… Here is your prescription.`}
+      {`Hello ${currentPatient &&
+        currentPatient.firstName}, \nHope your consultation went well… Here is your prescription.`}
       <div className={classes.bubbleActions}>
         <AphButton className={classes.viewButton}>Download</AphButton>
         <AphButton className={classes.viewButton}>View</AphButton>

@@ -181,12 +181,14 @@ export const WeAreHelpYou: React.FC = (props) => {
               </Grid> */}
               <Grid item sm={4} xs={12}>
                 <div
-                  onClick={() => {	
-                    setIscoronaDialogOpen(true);	
+                  onClick={() => {
+                    setIscoronaDialogOpen(true);
                   }}
                   className={classes.serviceCard}
                 >
-                  <span><img src={require('images/ic_family_doctor.svg')} alt="" /></span>
+                  <span>
+                    <img src={require('images/ic_family_doctor.svg')} alt="" />
+                  </span>
                   <span>Call our experts</span>
                 </div>
               </Grid>
@@ -195,17 +197,17 @@ export const WeAreHelpYou: React.FC = (props) => {
         </div>
       </div>
 
-      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">	
-        <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />	
-        <AphDialogTitle></AphDialogTitle>	
-        <div className={classes.expertBox}>	
-          <h2>CORONAVIRUS? Talk to our expert.</h2>	
-          <a href="tel:08047192606">Call 08047192606 in emergency</a>	
-          <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">	
-            Ok, Got It	
-          </AphButton>	
-        </div>	
-      </AphDialog>      
+      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
+        <AphDialogTitle></AphDialogTitle>
+        <div className={classes.expertBox}>
+          <h2>CORONAVIRUS? Talk to our expert.</h2>
+          <a href="tel:08047192606">Call 08047192606 in emergency</a>
+          <AphButton onClick={() => setIscoronaDialogOpen(false)} color="primary">
+            Ok, Got It
+          </AphButton>
+        </div>
+      </AphDialog>
     </div>
   );
 };

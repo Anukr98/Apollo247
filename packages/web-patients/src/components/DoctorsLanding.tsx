@@ -28,7 +28,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useLocationDetails } from 'components/LocationProvider';
 import { ManageProfile } from 'components/ManageProfile';
-import { hasOnePrimaryUser } from '../helpers/onePrimaryUser'
+import { hasOnePrimaryUser } from '../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -372,7 +372,7 @@ export const DoctorsLanding: React.FC = (props) => {
     data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       ? data.SearchDoctorAndSpecialtyByName.possibleMatches.doctorsNextAvailability
       : [];
-  const onePrimaryUser = hasOnePrimaryUser()
+  const onePrimaryUser = hasOnePrimaryUser();
   // console.log('speciality id selected', specialtyId);
 
   if (
@@ -383,7 +383,7 @@ export const DoctorsLanding: React.FC = (props) => {
     specialitySelected.length === 0
   )
     showError = true;
-  
+
   return (
     <div className={classes.root}>
       <LocationContext.Consumer>

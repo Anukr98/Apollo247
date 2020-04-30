@@ -236,7 +236,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                     if (details && details.length > 0) {
                                       const price = hotSeller.diagnostics
                                         ? hotSeller.diagnostics.rate
-                                        : 0
+                                        : 0;
                                       addCartItem &&
                                         addCartItem({
                                           itemId: hotSeller.diagnostics
@@ -255,7 +255,13 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                                             : null,
                                         });
                                       /**Gtm code start  */
-                                      window.gep && window.gep('Pharmacy', 'Add to Cart', hotSeller.packageName, price)
+                                      window.gep &&
+                                        window.gep(
+                                          'Pharmacy',
+                                          'Add to Cart',
+                                          hotSeller.packageName,
+                                          price
+                                        );
                                       /**Gtm code End  */
                                     }
                                     setLoading(false);
@@ -271,9 +277,15 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         ) : (
                           <AphButton
                             onClick={() => {
-                                /**Gtm code start  */
-                                window.gep && window.gep('Pharmacy', 'Remove From Cart', hotSeller.packageName, hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0)
-                                /**Gtm code End  */
+                              /**Gtm code start  */
+                              window.gep &&
+                                window.gep(
+                                  'Pharmacy',
+                                  'Remove From Cart',
+                                  hotSeller.packageName,
+                                  hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0
+                                );
+                              /**Gtm code End  */
                               removeCartItem &&
                                 removeCartItem(
                                   hotSeller.diagnostics ? hotSeller.diagnostics.id : '',

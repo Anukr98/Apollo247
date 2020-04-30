@@ -246,7 +246,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
     dateSelected === ''
       ? moment(doctorAvailableTime).format('YYYY-MM-DD')
@@ -491,8 +494,8 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     ) {
       speciality = doctorDetails.getDoctorDetailsById.specialty.name;
     }
-    return speciality
-  }
+    return speciality;
+  };
 
   return (
     <div className={classes.root}>
@@ -577,13 +580,19 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           </Grid>
           <CouponCode
             disableSubmit={disableCoupon}
-            setCouponCode={()=>{
+            setCouponCode={() => {
               /* Gtm code start */
-              const speciality = getSpeciality()
-              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
-              window.gep && window.gep('Consultations', speciality, `Coupon Applied - ${couponCode}`, couponValue)
+              const speciality = getSpeciality();
+              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
+              window.gep &&
+                window.gep(
+                  'Consultations',
+                  speciality,
+                  `Coupon Applied - ${couponCode}`,
+                  couponValue
+                );
               /* Gtm code end */
-              setCouponCode(couponCode)
+              setCouponCode(couponCode);
             }}
             subtotal={physicalConsultationFees}
             doctorId={doctorId}
@@ -591,11 +600,17 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             setRevisedAmount={setRevisedAmount}
             appointmentDateTime={appointmentDateTime}
             appointmentType={AppointmentType.PHYSICAL}
-            removeCouponCode={()=>{
+            removeCouponCode={() => {
               /**Gtm code start */
-              const speciality = getSpeciality()
-              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount)
-              window.gep && window.gep('Consultations',speciality,'Coupon Removed - ${couponCode}',couponValue)
+              const speciality = getSpeciality();
+              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
+              window.gep &&
+                window.gep(
+                  'Consultations',
+                  speciality,
+                  'Coupon Removed - ${couponCode}',
+                  couponValue
+                );
               /**Gtm code  end  */
             }}
           />
