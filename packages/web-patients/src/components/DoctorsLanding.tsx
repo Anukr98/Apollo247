@@ -476,7 +476,9 @@ export const DoctorsLanding: React.FC = (props) => {
                           }
                         >
                           <div className={classes.customScroll}>
-                            {filterOptions.searchKeyword.length <= 0 &&
+                            {currentPatient &&
+                            currentPatient.id &&
+                            filterOptions.searchKeyword.length <= 0 &&
                             specialitySelected.length === 0 &&
                             showSearchAndPastSearch ? (
                               <PastSearches
