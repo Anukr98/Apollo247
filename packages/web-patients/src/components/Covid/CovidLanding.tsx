@@ -15,6 +15,7 @@ import { ArticleCard } from 'components/Covid/ArticleCard';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -26,11 +27,13 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     pageContainer: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      backgroundColor: '#f7f8f5',
-      paddingBottom: 20,
+      marginTop: -72,
       [theme.breakpoints.up('sm')]: {
         borderRadius: '0 0 10px 10px',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',
+        paddingBottom: 20,
+        marginTop: 0,
       },
     },
     progressLoader: {
@@ -75,6 +78,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
       alignItems: 'flex-start',
+      [theme.breakpoints.up('sm')]: {
+        padding: 20,
+      },
     },
     summaryContent: {
       margin: 0,
@@ -112,6 +118,10 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 16px',
       borderTop: '0.5px solid rgba(2,71,91,0.3)',
       display: 'inherit',
+      [theme.breakpoints.up('sm')]: {
+        padding: '20px 0',
+        margin: '0 20px',
+      },
     },
     bottomActions: {
       textAlign: 'center',
@@ -220,19 +230,20 @@ export const CovidLanding: React.FC = (props) => {
   const headingArr = [
     {
       heading: 'How can I stay safe?',
-      subheading: 'Articles and videos about basic protective measures against the coronavirus',
+      subheading:
+        'Articles and videos on pŕecautions and protective measures to avoid Coronavirus.',
       category: 'stay-safe',
       defaultExpanded: true,
     },
     {
       heading: 'What to do if I have symptoms?',
-      subheading: 'Know more about the symptoms and preventions through articles and videos.',
+      subheading: 'Know more about symptoms of Coronavirus and what to do if infected.',
       category: 'covid-symptoms',
       defaultExpanded: false,
     },
     {
       heading: 'How are we getting ahead?',
-      subheading: 'Learn how Apollo is making a difference to help the world against coronavirus.',
+      subheading: 'Learn about the efforts around the world to win over Coronavirus.',
       category: 'going-ahead',
       defaultExpanded: false,
     },
@@ -429,6 +440,7 @@ export const CovidLanding: React.FC = (props) => {
           </Modal>
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };

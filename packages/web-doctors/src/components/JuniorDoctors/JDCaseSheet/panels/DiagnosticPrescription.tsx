@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 
 import { Chip, Theme, Paper } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { AphButton, AphTextField, AphTooltip } from '@aph/web-ui-components';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
@@ -330,27 +330,31 @@ export const DiagnosticPrescription: React.FC = () => {
     setSuggestions([]);
   };
 
-  function renderSuggestion(suggestion: any | null, { query }: Autosuggest.RenderSuggestionParams) {
+  function renderSuggestion(
+    suggestion: any | null,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
     const matches = match(suggestion!.itemName, query);
     const parts = parse(suggestion!.itemName, matches);
 
     return (
       otherDiagnostic.length > 2 && (
-        <div>
-          {parts.map((part) => (
-            <span
-              key={part.text}
-              style={{
-                fontWeight: part.highlight ? 500 : 400,
-                whiteSpace: 'pre',
-              }}
-              title={suggestion!.itemName} //added by Vishal
-            >
-              {part.text}
-            </span>
-          ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" />
-        </div>
+        <AphTooltip open={isHighlighted} title={suggestion.itemName}>
+          <div>
+            {parts.map((part) => (
+              <span
+                key={part.text}
+                style={{
+                  fontWeight: part.highlight ? 500 : 400,
+                  whiteSpace: 'pre',
+                }}
+              >
+                {part.text}
+              </span>
+            ))}
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+          </div>
+        </AphTooltip>
       )
     );
   }

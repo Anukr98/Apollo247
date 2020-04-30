@@ -60,6 +60,7 @@ export enum SEARCH_TYPE {
 export enum MEDICINE_ORDER_STATUS {
   QUOTE = 'QUOTE',
   PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
+  PAYMENT_PENDING = 'PAYMENT_PENDING',
   PAYMENT_FAILED = 'PAYMENT_FAILED',
   ORDER_INITIATED = 'ORDER_INITIATED',
   ORDER_PLACED = 'ORDER_PLACED',
@@ -367,8 +368,14 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column('decimal', { precision: 10, scale: 2, nullable: true })
   amountPaid: number;
 
+  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  refundAmount: number;
+
   @Column({ nullable: true })
   bankTxnId: string;
+
+  @Column({ nullable: true })
+  bankName: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;

@@ -66,6 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       cursor: 'pointer',
       marginRight: 20,
+      zIndex: 2,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
@@ -407,7 +408,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
       // setPatientAge(currentPatient.dateOfBirth)
       setUserAge(currentPatient.dateOfBirth);
-    } else if (loggedOutPatientAge.length) {
+    } else if (loggedOutPatientAge && loggedOutPatientAge.length) {
       setUserAge(loggedOutPatientAge);
     }
   }, [loggedOutPatientAge]);
@@ -415,7 +416,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.gender) {
       setPatientGender(setUserGender(currentPatient.gender));
-    } else if (loggedOutPatientGender.length) {
+    } else if (loggedOutPatientGender && loggedOutPatientGender.length) {
       setPatientGender(setUserGender(loggedOutPatientGender));
     }
   }, [loggedOutPatientGender, isSignedIn]);
@@ -472,7 +473,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              Consult a doctor
+              UNDERSTAND YOUR SYMPTOMS
               {isSignedIn && (
                 <div className={classes.profileDropdownMobile}>
                   <div className={classes.labelFor}>For</div>

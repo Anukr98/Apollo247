@@ -44,6 +44,26 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
   }
 
+  updateMedicineOrderPayment(
+    medicineOrdersId: string,
+    medicineOrdersOrderAutoId: number,
+    paymentAttrs: Partial<MedicineOrderPayments>
+  ) {
+    return this.createQueryBuilder()
+      .update(MedicineOrderPayments)
+      .set(paymentAttrs)
+      .where('"medicineOrdersId" = :medicineOrdersId', { medicineOrdersId })
+      .andWhere('"medicineOrdersOrderAutoId" =:medicineOrdersOrderAutoId', {
+        medicineOrdersOrderAutoId,
+      })
+      .execute()
+      .catch((medicineOrderError) => {
+        throw new AphError(AphErrorMessages.UPDATE_MEDICINE_ORDER_PAYMENT_ERROR, undefined, {
+          medicineOrderError,
+        });
+      });
+  }
+
   getMedicineOrderDetails(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
@@ -266,12 +286,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       ordersList.map(async (orderDetails) => {
         if (Date.parse(orderDetails.orderTat.toString())) {
           const tatDate = new Date(orderDetails.orderTat.toString());
-          //console.log('tatDate===>', tatDate);
-          const istCreatedDate = orderDetails.createdDate; // addMilliseconds(orderDetails.createdDate, 19800000);
-          //console.log('istCreatedDate===>', istCreatedDate);
+          const istCreatedDate = orderDetails.createdDate;
           const orderTat = Math.floor(Math.abs(differenceInMinutes(tatDate, istCreatedDate)));
-          //console.log('differeneceInMinutes', differenceInMinutes(tatDate, istCreatedDate));
-          //console.log('orderTat===>', orderTat);
           if (orderTat <= 120) {
             totalCount++;
           } else {

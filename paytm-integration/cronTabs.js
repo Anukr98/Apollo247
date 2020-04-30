@@ -43,7 +43,7 @@ exports.noShowReminder = (req, res) => {
         ' - ' +
         response.data.data.noShowReminderNotification.apptsListCount;
       ('\n-------------------\n');
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -72,7 +72,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -101,7 +101,7 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -130,7 +130,7 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -160,7 +160,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -182,15 +182,12 @@ exports.updateSdSummary = (req, res) => {
   axios
     .post(process.env.API_URL, seniorDataRequestJSON)
     .then((response) => {
-      let summaryDate = req.query.summaryDate;
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
-      let finalDate;
-      if (summaryDate == '') {
-        finalDate = format(new Date(), 'yyyy-MM-dd');
-      } else {
-        finalDate = summaryDate;
-      }
+      let finalDate =
+        req.query.summaryDate && req.query.summaryDate != ''
+          ? req.query.summaryDate
+          : format(new Date(), 'yyyy-MM-dd');
       let docCount = response.data.data;
       let finalResult = docCount.seniorDoctorCount;
       const doctorLimit = req.query.docLimit;
@@ -222,7 +219,7 @@ exports.updateSdSummary = (req, res) => {
                   response.data.data.updateSdSummary +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -255,15 +252,12 @@ exports.updateJdSummary = (req, res) => {
   axios
     .post(process.env.API_URL, juniorDataRequestJSON)
     .then((response) => {
-      let summaryDate = req.query.summaryDate;
-      let finalDate;
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
-      if (summaryDate == '') {
-        finalDate = format(new Date(), 'yyyy-MM-dd');
-      } else {
-        finalDate = summaryDate;
-      }
+      let finalDate =
+        req.query.summaryDate && req.query.summaryDate != ''
+          ? req.query.summaryDate
+          : format(new Date(), 'yyyy-MM-dd');
       let docCount = response.data.data;
       let finalResult = docCount.juniorDoctorCount;
       const doctorLimit = req.query.docLimit;
@@ -295,7 +289,7 @@ exports.updateJdSummary = (req, res) => {
                   response.data.data.updateJdSummary +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -329,15 +323,12 @@ exports.updateDoctorFeeSummary = (req, res) => {
   axios
     .post(process.env.API_URL, seniorDataRequestJSON)
     .then((response) => {
-      let summaryDate = req.query.summaryDate;
-      let finalDate;
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
-      if (summaryDate == '') {
-        finalDate = format(new Date(), 'yyyy-MM-dd');
-      } else {
-        finalDate = summaryDate;
-      }
+      let finalDate =
+        req.query.summaryDate && req.query.summaryDate != ''
+          ? req.query.summaryDate
+          : format(new Date(), 'yyyy-MM-dd');
       let docCount = response.data.data;
       let finalResult = docCount.seniorDoctorCount;
       const doctorLimit = req.query.docLimit;
@@ -371,7 +362,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   response.data.data.updateDoctorFeeSummary +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -452,7 +443,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
                       .reason;
                 }
                 console.log(response.data.data.addAllDoctorSlotsElastic);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });

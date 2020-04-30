@@ -242,7 +242,12 @@ export const AppointmentsSlot: React.FC<AppointmentsSlotProps> = (props) => {
   ) => {
     return (
       slot.status != 'booked' &&
-      (moment(date).format('DMY').toString() === moment().format('DMY').toString()
+      (moment(date)
+        .format('DMY')
+        .toString() ===
+      moment()
+        .format('DMY')
+        .toString()
         ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
             moment(new Date()).add(appStaticVariables.Minutes, 'minutes')
           )
@@ -408,7 +413,9 @@ export const AppointmentsSlot: React.FC<AppointmentsSlotProps> = (props) => {
                   setDate(moment(dateSelected, 'DD/MM/YYYY').toDate());
                 }}
                 selectedDate={date || new Date()}
-                maxDate={moment().add(appStaticVariables.Days, 'day').toDate()}
+                maxDate={moment()
+                  .add(appStaticVariables.Days, 'day')
+                  .toDate()}
               />
             </div>
             <div className={classes.wrapperCardSlots}>

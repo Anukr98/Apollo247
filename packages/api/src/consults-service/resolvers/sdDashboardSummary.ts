@@ -388,6 +388,12 @@ const updateSdSummary: Resolver<
         doctor.id,
         args.summaryDate
       );
+
+      const totalCompletedAppointments = await dashboardRepo.getTotalCompletedAppointments(
+        doctor.id,
+        args.summaryDate
+      );
+
       const totalRescheduleCount = await dashboardRepo.getTotalRescheduleCount(
         doctor.id,
         args.summaryDate
@@ -418,6 +424,11 @@ const updateSdSummary: Resolver<
         doctor.id,
         0
       );
+      const moreThan15Consultations = await dashboardRepo.get15ConsultationTime(
+        args.summaryDate,
+        doctor.id,
+        1
+      );
       const adminIdRows = await adminMapRepo.getAdminIds(doctor.id);
       let adminIds = '';
       if (adminIdRows.length > 0) {
@@ -447,6 +458,8 @@ const updateSdSummary: Resolver<
         onTimeConsultations: callDuration,
         casesheetPrepTime,
         within15Consultations,
+        totalCompletedAppointments,
+        moreThan15Consultations: moreThan15Consultations,
         totalConsultationTime,
         adminIds,
         loggedInHours,

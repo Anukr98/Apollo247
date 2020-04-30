@@ -69,6 +69,7 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
       position: 'absolute',
       left: 0,
+      zIndex: 2,
       top: -2,
       '& img': {
         verticalAlign: 'middle',

@@ -96,11 +96,7 @@ const App: React.FC = () => {
 
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
-      <div
-        className={`${classes.app} ${
-          currentPath === clientRoutes.covidLanding() && classes.noHeaders
-        } ${currentPath === clientRoutes.covidDetails() && classes.noHeaders}`}
-      >
+      <div className={`${classes.app}`}>
         <Helmet>
           <script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}

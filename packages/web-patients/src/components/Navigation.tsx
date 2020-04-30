@@ -197,43 +197,52 @@ export const Navigation: React.FC = (props) => {
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
 
   return (
-    <div className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${currentPath === clientRoutes.welcome() ? classes.homePageNav : ''}`} data-cypress="Navigation">
+    <div
+      className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${
+        currentPath === clientRoutes.welcome() ||
+        clientRoutes.termsConditions() ||
+        clientRoutes.aboutUs()
+          ? classes.homePageNav
+          : ''
+      }`}
+      data-cypress="Navigation"
+    >
       {isSignedIn ? (
-      <>
-        <Link
-          className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
-          to={clientRoutes.appointments()}
-          title={'Appointments'}
-        >
-          Appointments
-        </Link>
-        <Link
-          to={clientRoutes.medicines()}
-          className={
-            currentPath === clientRoutes.medicines() ||
-            currentPath === clientRoutes.prescriptionsLanding()
-              ? classes.menuItemActive
-              : ''
-          }
-          title={'Medicines'}
-        >
-          Medicines
-        </Link>
-        {/* <Link
+        <>
+          <Link
+            className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
+            to={clientRoutes.appointments()}
+            title={'Appointments'}
+          >
+            Appointments
+          </Link>
+          <Link
+            to={clientRoutes.medicines()}
+            className={
+              currentPath === clientRoutes.medicines() ||
+              currentPath === clientRoutes.prescriptionsLanding()
+                ? classes.menuItemActive
+                : ''
+            }
+            title={'Medicines'}
+          >
+            Medicines
+          </Link>
+          {/* <Link
           to={clientRoutes.tests()}
           className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
           title={'Tests'}
         >
           Tests
         </Link> */}
-        <Link
-          to={clientRoutes.healthRecords()}
-          className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
-          title={'Health Records'}
-        >
-          Health Records
-        </Link>
-      </>
+          <Link
+            to={clientRoutes.healthRecords()}
+            className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+            title={'Health Records'}
+          >
+            Health Records
+          </Link>
+        </>
       ) : (
         <>
           <Link
@@ -242,7 +251,10 @@ export const Navigation: React.FC = (props) => {
             title={'Doctors'}
           >
             <span className={classes.menuTitle}>Doctors</span>
-            <span className={classes.menuInfo}>Consult<br/> Online</span>
+            <span className={classes.menuInfo}>
+              Consult
+              <br /> Online
+            </span>
           </Link>
           <Link
             to={clientRoutes.medicines()}
@@ -255,7 +267,9 @@ export const Navigation: React.FC = (props) => {
             title={'Pharmacy'}
           >
             <span className={classes.menuTitle}>Pharmacy</span>
-            <span className={classes.menuInfo}>Medicines &<br/> other products</span>
+            <span className={classes.menuInfo}>
+              Medicines &<br /> other products
+            </span>
           </Link>
           {/* <Link
             to={clientRoutes.tests()}
@@ -271,11 +285,16 @@ export const Navigation: React.FC = (props) => {
             title={'Covid-19'}
           >
             <span className={classes.menuTitle}>Covid-19</span>
-            <span className={classes.menuInfo}>Latest<br/> updates</span>
+            <span className={classes.menuInfo}>
+              Latest
+              <br /> updates
+            </span>
           </Link>
         </>
       )}
-      {currentPath === clientRoutes.welcome() ? (
+      {currentPath === clientRoutes.welcome() ||
+      clientRoutes.termsConditions() ||
+      clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
           <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
             Download App

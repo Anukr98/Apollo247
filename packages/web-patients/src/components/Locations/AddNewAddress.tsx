@@ -454,7 +454,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 })
                   .then(() => {
                     /**Gtm code start  */
-                    window.gep && window.gep('Pharmacy', 'Order', 'Address Selected')
+                    window.gep && window.gep('Pharmacy', 'Order', 'Address Selected');
                     /**Gtm code End  */
                     props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
@@ -489,8 +489,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                           .then((res: AxiosResponse) => {
                             if (res && res.data && res.data.Availability) {
                               /**Gtm code start  */
-                              window.gep && window.gep('Profile','Update','Address Added')
-                              window.gep && window.gep('Pharmacy', 'Order', 'Address Selected')
+                              window.gep && window.gep('Profile', 'Update', 'Address Added');
+                              window.gep && window.gep('Pharmacy', 'Order', 'Address Selected');
                               /**Gtm code End  */
                               props.setIsAddAddressDialogOpen(false);
                               props.forceRefresh && props.forceRefresh(true);
