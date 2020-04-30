@@ -135,7 +135,7 @@ export const OurServices: React.FC = (props) => {
     //   action: { link: '', content: 'Who are star doctors' },
     // },
     {
-      title: 'Track Symptoms',
+      title: 'Understand Symptoms',
       content: 'Learn about our Star Doctors Program.',
       imgUrl: `${require('images/ic-symptomtracker.svg')}`,
       action: {

@@ -282,7 +282,7 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
-  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosis',
   FREE_CHAT_DAYS = 7,
   DOCTOR_CHAT_SMS_TEXT = 'You have unread chat messages from {0} patients. Please login to your dashboard to read.',
+  CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
 }
