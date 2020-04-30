@@ -284,5 +284,6 @@ export enum ApiConstants {
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosis',
   FREE_CHAT_DAYS = 7,
-  DOCTOR_CHAT_SMS_TEXT = 'You have unread chat messages from {0} patients. Please login to your dashboard to read.',
+  DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
+  DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
 }

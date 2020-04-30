@@ -15,11 +15,12 @@ import {
 import CryptoJS from 'crypto-js';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { subDays } from 'date-fns';
+import { subDays, format, differenceInDays } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const notificationBinTypeDefs = gql`
   enum notificationStatus {
@@ -194,8 +195,37 @@ const sendUnreadMessagesNotification: Resolver<
 
   //Generate the unique notifications array
   const uniqueNotifications: Partial<NotificationBin>[] = [];
+  const appointmentIds: string[] = [];
   Object.keys(uniqueAppointmentNotifications).map((appointmentId) => {
     uniqueNotifications.push(uniqueAppointmentNotifications[appointmentId]);
+    appointmentIds.push(appointmentId);
+  });
+
+  //Gettingthe appointments data if uniqueAppointmentNotifications
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
+    appointmentIds,
+    ['appointment.doctorId', 'appointment.sdConsultationDate']
+  );
+
+  //Filtering the last date appointments
+  const lastDayAppointments = appointmentsData.filter((appointment) => {
+    if (!appointment.sdConsultationDate) return false;
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
+    const difference = differenceInDays(new Date(today), new Date(consultDate));
+    return difference >= parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10);
+  });
+
+  //Mapping the doctor ids with count of last day appointments
+  const lastDayAppointmentsCount: { [key: string]: number } = {};
+  lastDayAppointments.map((appointment) => {
+    if (lastDayAppointmentsCount[appointment.doctorId]) {
+      lastDayAppointmentsCount[appointment.doctorId] =
+        lastDayAppointmentsCount[appointment.doctorId] + 1;
+    } else {
+      lastDayAppointmentsCount[appointment.doctorId] = 1;
+    }
   });
 
   //Get the Notifications count for each doctor
@@ -216,18 +246,28 @@ const sendUnreadMessagesNotification: Resolver<
   const doctorDetails = doctors.filter((doctor) => doctorIdsToSendNotification.includes(doctor.id));
 
   //Mapping the doctor id and mobile number
-  const doctorMobileMapper: { [key: string]: string } = {};
+  const doctorMobileMapper: { [key: string]: string[] } = {};
   doctorDetails.map((doctor) => {
-    doctorMobileMapper[doctor.id] = doctor.mobileNumber;
+    doctorMobileMapper[doctor.id] = [doctor.displayName, doctor.mobileNumber];
   });
 
   //Sending the Notification to doctors
   Object.keys(notificationsCount).map((doctorId) => {
-    const messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
-      '{0}',
-      notificationsCount[doctorId].toString()
-    );
-    sendNotificationSMS(doctorMobileMapper[doctorId], messageBody);
+    let messageBody = '';
+    if (lastDayAppointmentsCount[doctorId]) {
+      messageBody = ApiConstants.DOCTOR_CHAT_SMS_LAST_DAY.replace(
+        '{0}',
+        doctorMobileMapper[doctorId][0].toString()
+      )
+        .replace('{1}', notificationsCount[doctorId].toString())
+        .replace('{2}', lastDayAppointmentsCount[doctorId].toString());
+    } else {
+      messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
+        '{0}',
+        doctorMobileMapper[doctorId][0].toString()
+      ).replace('{1}', notificationsCount[doctorId].toString());
+    }
+    sendNotificationSMS(doctorMobileMapper[doctorId][1], messageBody);
   });
 
   return 'success';
