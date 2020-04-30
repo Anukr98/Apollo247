@@ -198,8 +198,10 @@ export const VideoCall: React.FC<VideoCallProps> = (props) => {
           {props.chatReceived ? (
             <ChatWithNotification
               style={{
-                left: -20,
-                top: -20,
+                left: -18,
+                top: -16,
+                height: 90,
+                width: 90,
               }}
             />
           ) : (

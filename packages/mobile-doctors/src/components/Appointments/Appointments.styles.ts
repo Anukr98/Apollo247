@@ -85,6 +85,12 @@ export default StyleSheet.create({
     marginBottom: 2,
     maxWidth: '75%',
   },
+  doctorname1: {
+    ...theme.fonts.IBMPlexSansSemiBold(28),
+    color: '#02475b',
+    marginBottom: 2,
+    maxWidth: '75%',
+  },
   schedule: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: '#0087ba',

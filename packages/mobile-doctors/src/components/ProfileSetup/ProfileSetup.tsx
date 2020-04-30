@@ -24,11 +24,12 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { AsyncStorage, Platform, SafeAreaView, View } from 'react-native';
+import { Platform, SafeAreaView, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const styles = ProfileSetupStyles;
 

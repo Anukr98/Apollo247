@@ -1,6 +1,6 @@
-import { AsyncStorage } from 'react-native';
 import { LocalStorage } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export const getLocalData = async () => {
   const data = await Promise.all([

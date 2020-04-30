@@ -9,6 +9,7 @@
 export interface UpdateDoctorFavouriteTest_updateDoctorFavouriteTest_testList {
   __typename: "DoctorsFavouriteTests";
   id: string;
+  itemname: string;
 }
 
 export interface UpdateDoctorFavouriteTest_updateDoctorFavouriteTest {
