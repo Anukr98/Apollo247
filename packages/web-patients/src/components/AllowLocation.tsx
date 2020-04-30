@@ -20,11 +20,20 @@ const useStyles = makeStyles((theme: Theme) => {
     actions: {
       padding: '10px 20px 20px 20px',
       display: 'flex',
+      [theme.breakpoints.down(420)]: {
+        display: 'block',
+      },
       '& button': {
         borderRadius: 10,
         minWidth: 156,
+        [theme.breakpoints.down(420)]: {
+          minWidth: '100%',
+        },
         '&:first-child': {
           color: '#fc9916',
+          [theme.breakpoints.down(420)]: {
+            marginBottom: 10,
+          },
         },
         '&:last-child': {
           marginLeft: 'auto',
