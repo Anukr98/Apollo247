@@ -233,7 +233,7 @@ export const Header: React.FC = (props) => {
                       </div> */}
                       <div
                         id="loginPopup"
-                        className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                        className={`${classes.userCircle} ${classes.userActive}`}
                         onClick={() =>
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
                         }
