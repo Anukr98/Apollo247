@@ -932,6 +932,16 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
   }
+
+  getAllSeniorDoctors() {
+    return this.find({
+      select: ['id', 'mobileNumber'],
+      where: {
+        doctorType: Not('JUNIOR'),
+        isActive: true,
+      },
+    });
+  }
   getSeniorDoctorCount() {
     return this.count({
       where: {

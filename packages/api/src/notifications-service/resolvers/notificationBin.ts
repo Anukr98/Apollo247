@@ -65,6 +65,7 @@ export const notificationBinTypeDefs = gql`
 
   extend type Query {
     getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
+    sendUnreadMessagesNotification: String
   }
 
   extend type Mutation {
@@ -168,6 +169,70 @@ const markMessageToUnread: Resolver<
   return { notificationData: archievedNotificationData };
 };
 
+const sendUnreadMessagesNotification: Resolver<
+  null,
+  {},
+  NotificationsServiceContext,
+  String
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+
+  //get all the available doctor details
+  const doctors = await doctorRepo.getAllSeniorDoctors();
+  const doctorIds = doctors.map((doctor) => doctor.id);
+
+  //getting all the un-read notifications
+  const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
+  const notifications = await notificationBinRepo.getAllNotificationsByDoctorIds(doctorIds);
+
+  //Filter the unique notifications with respect to appointments
+  const uniqueAppointmentNotifications: { [key: string]: Partial<NotificationBin> } = {};
+  notifications.map((notification) => {
+    const appointmentId = notification.eventId;
+    uniqueAppointmentNotifications[appointmentId] = notification;
+  });
+
+  //Generate the unique notifications array
+  const uniqueNotifications: Partial<NotificationBin>[] = [];
+  Object.keys(uniqueAppointmentNotifications).map((appointmentId) => {
+    uniqueNotifications.push(uniqueAppointmentNotifications[appointmentId]);
+  });
+
+  //Get the Notifications count for each doctor
+  const notificationsCount: { [key: string]: number } = {};
+  const doctorIdsToSendNotification: string[] = [];
+  uniqueNotifications.map((notification) => {
+    if (notification.toId) {
+      if (notificationsCount[notification.toId]) {
+        notificationsCount[notification.toId] = notificationsCount[notification.toId] + 1;
+      } else {
+        doctorIdsToSendNotification.push(notification.toId);
+        notificationsCount[notification.toId] = 1;
+      }
+    }
+  });
+
+  //Filter the specific doctor details for which notification has to be sent
+  const doctorDetails = doctors.filter((doctor) => doctorIdsToSendNotification.includes(doctor.id));
+
+  //Mapping the doctor id and mobile number
+  const doctorMobileMapper: { [key: string]: string } = {};
+  doctorDetails.map((doctor) => {
+    doctorMobileMapper[doctor.id] = doctor.mobileNumber;
+  });
+
+  //Sending the Notification to doctors
+  Object.keys(notificationsCount).map((doctorId) => {
+    const messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
+      '{0}',
+      notificationsCount[doctorId].toString()
+    );
+    sendNotificationSMS(doctorMobileMapper[doctorId], messageBody);
+  });
+
+  return 'success';
+};
+
 const getNotifications: Resolver<
   null,
   { toId: string; startDate: Date; endDate: Date },
@@ -196,5 +261,6 @@ export const notificationBinResolvers = {
   },
   Query: {
     getNotifications,
+    sendUnreadMessagesNotification,
   },
 };

@@ -1,7 +1,12 @@
 import { EntityRepository, Repository, Between } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { NotificationBin, NotificationBinArchive } from 'consults-service/entities';
+import {
+  NotificationBin,
+  NotificationBinArchive,
+  notificationStatus,
+  notificationEventName,
+} from 'consults-service/entities';
 
 @EntityRepository(NotificationBin)
 export class NotificationBinRepository extends Repository<NotificationBin> {
@@ -47,6 +52,15 @@ export class NotificationBinRepository extends Repository<NotificationBin> {
         getNotificationErrors,
       });
     }
+  }
+
+  async getAllNotificationsByDoctorIds(ids: string[]) {
+    return this.createQueryBuilder('notificationBin')
+      .select(['notificationBin.toId', 'notificationBin.eventId'])
+      .where('notificationBin.toId IN (:...ids)', { ids })
+      .andWhere('notificationBin.eventName = :name', { name: notificationEventName.APPOINTMENT })
+      .andWhere('notificationBin.status = :status', { status: notificationStatus.UNREAD })
+      .getMany();
   }
 }
 
