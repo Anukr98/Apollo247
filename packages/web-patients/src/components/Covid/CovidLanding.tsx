@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
         backgroundColor: '#f7f8f5',
         paddingBottom: 20,
-        marginTop: 0,  
+        marginTop: 0,
       },
     },
     progressLoader: {
@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'flex-start',
       [theme.breakpoints.up('sm')]: {
         padding: 20,
-      },      
+      },
     },
     summaryContent: {
       margin: 0,
@@ -121,7 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         padding: '20px 0',
         margin: '0 20px',
-      },      
+      },
     },
     bottomActions: {
       textAlign: 'center',

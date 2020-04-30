@@ -315,10 +315,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         setData(response.data);
         setLoading(false);
       });
-  }, [currentLat, currentLong]);
+  }, [currentLat, currentLong, filter]);
 
-  if (loading) disableFilter && disableFilter(true);
-  else if (currentPatient && currentPatient.id.length > 0) disableFilter && disableFilter(false);
+  useEffect(() => {
+    disableFilter && disableFilter(loading);
+  }, [loading]);
 
   if (loading)
     <div className={classes.circlularProgress}>
