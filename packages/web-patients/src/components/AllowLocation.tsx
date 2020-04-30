@@ -77,7 +77,7 @@ export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
           }}
           title={'Enter Manualy'}
         >
-          Enter Manualy
+          Enter Manually
         </AphButton>
         <AphButton
           color="primary"

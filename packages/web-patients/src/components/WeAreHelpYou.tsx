@@ -9,6 +9,13 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       paddingTop: 20,
+      '& h2': {
+        fontSize: 17,
+        fontWeight: 500,
+        color: '#0087ba',
+        margin: 0,
+        paddingBottom: 16,
+      },
     },
     helpCard: {
       backgroundColor: '#fff',
@@ -18,11 +25,31 @@ const useStyles = makeStyles((theme: Theme) => {
     cardHeader: {
       borderRadius: '10px 10px 0 0',
       overflow: 'hidden',
-      textAlign: 'center',
       padding: 22,
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
+      display: 'flex',
+    },
+    rightGroup: {
+      marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    contentGroup: {
+      color: '#fff',
+      '& p': {
+        margin: 0,
+      },
+    },
+    title: {
+      fontSize: 36,
+      textTransform: 'uppercase',
+      fontWeight: 500,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 24,
+      },
     },
     cardContent: {
       padding: 20,
@@ -129,12 +156,19 @@ export const WeAreHelpYou: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
+      <h2>Worried about Coronavirus?</h2>
       <div className={classes.helpCard}>
         <div
           className={classes.cardHeader}
           style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
         >
-          <img src={require('images/ic_covid-banner.svg')} alt="" />
+          <div className={classes.contentGroup}>
+            <div className={classes.title}>Coronavirus (Covid-19)</div>
+            <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
+          </div>
+          <div className={classes.rightGroup}>
+            <img src={require('images/ic_covid-banner.svg')} alt="" />
+          </div>
         </div>
         <div className={classes.cardContent}>
           <div className={classes.contentHeader}>
