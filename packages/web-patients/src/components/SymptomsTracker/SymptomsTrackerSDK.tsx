@@ -397,8 +397,16 @@ export const SymptomsTrackerSDK: React.FC = () => {
   };
   const setUserGender = (gender: string) => gender.toLowerCase();
 
+  useEffect(()=>{
+    if(isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
+      setUserAge(currentPatient.dateOfBirth);
+      setPatientGender(setUserGender(currentPatient.gender));
+    }
+  }, [isSignedIn, currentPatient])
+
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
+      // setPatientAge(currentPatient.dateOfBirth)
       setUserAge(currentPatient.dateOfBirth);
     } else if (loggedOutPatientAge && loggedOutPatientAge.length) {
       setUserAge(loggedOutPatientAge);
@@ -452,7 +460,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
       setLoggedOutUserDetailPopover(true);
     }
   }, []);
-
   return (
     <div className={classes.root}>
       <Header />
