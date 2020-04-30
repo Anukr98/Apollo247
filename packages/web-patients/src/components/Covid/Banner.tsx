@@ -90,7 +90,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Banner: React.FC = (props) => {
+interface BannerProps {
+  isWebView: boolean;
+}
+
+export const Banner: React.FC<BannerProps> = (props) => {
   const classes = useStyles();
 
   return (
@@ -99,11 +103,14 @@ export const Banner: React.FC = (props) => {
       style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
     >
       <div className={classes.bannerTop}>
-        <Link to={clientRoutes.welcome()}>
-          <div className={classes.backArrow}>
-            <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-          </div>
-        </Link>
+        {!props.isWebView && (
+          <Link to={clientRoutes.welcome()}>
+            <div className={classes.backArrow}>
+              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+            </div>
+          </Link>
+        )}
+
         <AphButton className={classes.subcribeBtn}>Subscribe</AphButton>
       </div>
       <div className={classes.content}>

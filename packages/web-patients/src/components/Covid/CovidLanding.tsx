@@ -224,14 +224,14 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CovidLanding: React.FC = (props) => {
+export const CovidLanding: React.FC = (props: any) => {
   const classes = useStyles();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
       heading: 'How can I stay safe?',
       subheading:
-        'Articles and videos on pŕecautions and protective measures to avoid Coronavirus.',
+        'Articles and videos on precautions and protective measures to avoid Coronavirus.',
       category: 'stay-safe',
       defaultExpanded: true,
     },
@@ -255,7 +255,7 @@ export const CovidLanding: React.FC = (props) => {
   const [categoryToFetch, setCategoryToFetch] = useState<string>('');
   const [moreContentLoading, setMoreContentLoading] = useState<boolean>(false);
   const [fullScreenOn, setFullScreenOn] = useState<boolean>(false);
-
+  const [isWebView, setIsWebView] = useState<boolean>(false);
   const [expandedImage, setExpandedImage] = useState<string>('');
   const [expandedTitle, setExpandedTitle] = useState<string>('');
   const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
@@ -266,7 +266,15 @@ export const CovidLanding: React.FC = (props) => {
     process.env.NODE_ENV !== 'production'
       ? `${process.env.COVID_ARTICLE_LIST_URL}?st=2`
       : process.env.COVID_ARTICLE_LIST_URL;
-
+  useEffect(() => {
+    if (props && props.location && props.location.search && props.location.search.length) {
+      const qParamsArr = props.location.search.split('=');
+      if (qParamsArr && qParamsArr.length) {
+        const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
+        setIsWebView(isWebView);
+      }
+    }
+  });
   useEffect(() => {
     fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
@@ -314,7 +322,7 @@ export const CovidLanding: React.FC = (props) => {
       {isDesktopOnly ? <Header /> : ''}
       <div className={classes.container}>
         <div className={classes.pageContainer}>
-          <Banner />
+          <Banner isWebView={isWebView} />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
               {headingArr.map((parentCat) => (
