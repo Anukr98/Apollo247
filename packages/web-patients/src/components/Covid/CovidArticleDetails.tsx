@@ -194,7 +194,9 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                     <>
                       <a>SOURCE</a>
                       <div>
-                        <a href={sourceUrl}>{sourceUrl}</a>
+                        <a href={sourceUrl} target="_blank">
+                          {sourceUrl}
+                        </a>
                       </div>
                     </>
                   )}
