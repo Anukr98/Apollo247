@@ -169,11 +169,6 @@ const markMessageToUnread: Resolver<
   return { notificationData: archievedNotificationData };
 };
 
-type Notifications = {
-  doctor: string;
-  patient: string;
-};
-
 const sendUnreadMessagesNotification: Resolver<
   null,
   {},
