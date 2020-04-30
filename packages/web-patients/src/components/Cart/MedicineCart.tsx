@@ -625,7 +625,7 @@ export const MedicineCart: React.FC = (props) => {
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
-        orderId: orderId,
+        // orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: parseFloat(totalAmount),
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
