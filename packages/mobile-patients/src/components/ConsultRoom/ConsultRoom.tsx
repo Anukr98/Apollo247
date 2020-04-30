@@ -958,7 +958,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{ marginTop: 14 }}
+          container={{
+            marginTop: 32,
+            marginBottom: 32,
+            shadowColor: '#4c808080',
+            shadowOffset: { width: 0, height: 5 },
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 5,
+          }}
           title={'Active Appointments'}
           leftIcon={renderListCount(currentAppointments)}
           onPress={() => {
@@ -1072,7 +1080,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return (
       <View style={{
         backgroundColor: '#f0f1ec',
-        padding: 20
+        padding: 20,
+        paddingBottom: 0,
+        paddingTop: 0
       }}>
         {renderCovidHeader()}
         {renderCovidCardView()}
@@ -1106,8 +1116,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderCovidCardView = () => {
     return (
       <View style={styles.covidCardContainer}>
-        <Image style={{ overflow: 'hidden', width: '100%', height: 128 }} source={require('@aph/mobile-patients/src/images/home/corona_image.png')} />
-        <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} />
+        <ImageBackground style={{ overflow: 'hidden', width: '100%', height: 128 }} source={require('@aph/mobile-patients/src/images/home/corona_image.png')} >
+          <View style={{ paddingVertical: 24, paddingHorizontal: 16 }}>
+            <Text style={{ marginBottom: 10, ...theme.viewStyles.text('SB', 24, theme.colors.WHITE, 1, 34) }}>{'Covid-19'}</Text>
+            <Text style={{ ...theme.viewStyles.text('R', 12, theme.colors.WHITE, 1, 19) }}>{'Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.'}</Text>
+          </View>
+        </ImageBackground>
+        {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
           <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             <Image style={{ width: 40, height: 40 }} source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')} />
@@ -1427,6 +1442,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </ImageBackground>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
               {renderMenuOptions()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>
+                {renderListView()}
+              </View>
               {renderCovidMainView()}
               {/* {renderCovidHeader()}
               {renderCovidCardView()} 
@@ -1435,9 +1453,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </View>
           </View>
           <View style={{ backgroundColor: '#f0f1ec' }}>
-            {renderListView()}
             <NeedHelpAssistant
-              containerStyle={{ marginTop: 30, marginBottom: 48 }}
+              containerStyle={{ marginTop: 32, marginBottom: 32 }}
               navigation={props.navigation}
               onNeedHelpPress={() => {
                 postHomeWEGEvent(WebEngageEventName.NEED_HELP, 'Home Screen');

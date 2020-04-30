@@ -140,7 +140,7 @@ const ConfigurationDev = {
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app'
 };
 
 // QA
@@ -174,7 +174,7 @@ const ConfigurationQA = {
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app'
 };
 
 //Production
@@ -208,7 +208,7 @@ const ConfigurationProd = {
   CONDITIONAL_MANAGENET_BASE_URL: 'https://pmt.apollo247.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e',
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://www.apollo247.com/covid19'
+  COVID_LATEST_ARTICLES_URL: 'https://www.apollo247.com/covid19?utm_source=mobile_app'
 };
 
 //PERFORMANCE
@@ -242,7 +242,7 @@ const ConfigurationPERFORM = {
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app'
 };
 
 //VAPT
@@ -276,7 +276,7 @@ const ConfigurationVAPT = {
   CONDITIONAL_MANAGENET_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app'
 };
 
 //DevelopmentReplica
@@ -310,7 +310,7 @@ const ConfigurationDevReplica = {
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
   BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
   COVID_RISK_LEVEL_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19/scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19'
+  COVID_LATEST_ARTICLES_URL: 'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app'
 };
 
 const Configuration =
