@@ -13,6 +13,7 @@ import {
   CaseSheetSymptom,
   MEDICINE_FORM_TYPES,
   MEDICINE_TIMINGS,
+  MEDICINE_UNIT,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
@@ -54,22 +55,70 @@ export const convertCaseSheetToRxPdfData = async (
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
       let frequency;
+      const plural =
+        csRx.medicineUnit == MEDICINE_UNIT.ML || csRx.medicineUnit == MEDICINE_UNIT.MG ? '' : '(s)';
       const customDosage = csRx.medicineCustomDosage
-        ? csRx.medicineCustomDosage.split('-').join(csRx.medicineUnit.toLowerCase() + ' - ') +
-          csRx.medicineUnit.toLowerCase()
+        ? csRx.medicineCustomDosage
+            .split('-')
+            .filter((value) => value)
+            .join(
+              ' ' +
+                csRx.medicineUnit
+                  .split('_')
+                  .join(' ')
+                  .toLowerCase() +
+                plural +
+                ' - '
+            ) +
+          ' ' +
+          csRx.medicineUnit
+            .split('_')
+            .join(' ')
+            .toLowerCase() +
+          plural
         : '';
       if (csRx.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS) {
         frequency = 'Apply';
         if (csRx.medicineCustomDosage) {
-          frequency = frequency + ' ' + customDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
-        } else if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit;
+          frequency =
+            frequency +
+            ' ' +
+            customDosage +
+            ' (' +
+            csRx.medicineTimings
+              .join(', ')
+              .replace(/,(?=[^,]*$)/, ' and')
+              .split('_')
+              .join(' ') +
+            ')';
+        } else if (csRx.medicineUnit) {
+          const medicineUnit =
+            csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+              ? csRx.medicineUnit.split('_').join(' ')
+              : csRx.medicineUnit + plural;
+          frequency = frequency + ' ' + medicineUnit;
+        }
       } else {
         frequency = 'Take';
         if (csRx.medicineCustomDosage) {
-          frequency = frequency + ' ' + customDosage + ' ' + ApiConstants.MEDICINE_TIMINGS;
+          frequency =
+            frequency +
+            ' ' +
+            customDosage +
+            ' (' +
+            csRx.medicineTimings
+              .join(', ')
+              .replace(/,(?=[^,]*$)/, ' and')
+              .split('_')
+              .join(' ') +
+            ')';
         } else {
+          const medicineUnit =
+            csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+              ? csRx.medicineUnit.split('_').join(' ')
+              : csRx.medicineUnit + plural;
           if (csRx.medicineDosage) frequency = frequency + ' ' + csRx.medicineDosage;
-          if (csRx.medicineUnit) frequency = frequency + ' ' + csRx.medicineUnit + '(s)';
+          if (csRx.medicineUnit) frequency = frequency + ' ' + medicineUnit;
         }
       }
 
@@ -102,7 +151,7 @@ export const convertCaseSheetToRxPdfData = async (
           csRx.medicineTimings.length == 1 &&
           csRx.medicineTimings[0] == MEDICINE_TIMINGS.AS_NEEDED
         ) {
-          frequency = frequency + csRx.medicineTimings[0];
+          frequency = frequency + ' ' + csRx.medicineTimings[0].split('_').join(' ');
         } else {
           frequency = frequency + ' in the';
           frequency =
@@ -258,9 +307,12 @@ export const convertCaseSheetToRxPdfData = async (
   };
 
   if (caseSheet.appointment) {
+    const consultDate = caseSheet.appointment.sdConsultationDate
+      ? caseSheet.appointment.sdConsultationDate
+      : caseSheet.appointment.appointmentDateTime;
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
-      consultDate: format(caseSheet.appointment.sdConsultationDate, 'dd/MM/yyyy'),
+      consultDate: format(consultDate, 'dd/MM/yyyy'),
       consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }
@@ -496,7 +548,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#000000')
           .opacity(0.6)
-          .text(`To be taken: ${prescription.routeOfAdministration} `, margin + 30)
+          .text(
+            `To be taken: ${prescription.routeOfAdministration.split('_').join(' ')} `,
+            margin + 30
+          )
           .moveDown(0.8);
       }
 

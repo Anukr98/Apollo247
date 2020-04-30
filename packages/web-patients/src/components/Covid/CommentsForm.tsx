@@ -88,17 +88,11 @@ export const CommentsForm: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.formRow}>
         <div className={classes.commentsBox}>
-          <AphTextField
-            label="Comments"
-            multiline
-          />
+          <AphTextField label="Comments" multiline />
         </div>
       </div>
       <div className={classes.formRow}>
-        <AphTextField
-          label="Email*"
-          placeholder="Add your email"
-        />
+        <AphTextField label="Email*" placeholder="Add your email" />
         <div className={classes.checkboxGroup}>
           <FormControlLabel
             control={
@@ -110,13 +104,10 @@ export const CommentsForm: React.FC = (props) => {
             }
             label="Mask Email address while posting comment"
           />
-        </div>        
+        </div>
       </div>
       <div className={classes.formRow}>
-        <AphTextField
-          label="Full Name"
-          placeholder="Add your name"
-        />
+        <AphTextField label="Full Name" placeholder="Add your name" />
       </div>
       <div className={classes.bottomActions}>
         <AphButton
@@ -124,7 +115,9 @@ export const CommentsForm: React.FC = (props) => {
           classes={{
             disabled: classes.buttonDisabled,
           }}
-        >Cancel</AphButton>
+        >
+          Cancel
+        </AphButton>
         <AphButton>Post comment</AphButton>
       </div>
     </div>

@@ -123,10 +123,7 @@ const app = firebase.initializeApp({
 // let otpVerifier: firebase.auth.ConfirmationResult;
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then(
-    (data: R) => [data, null],
-    (err: E) => [null, err]
-  ) as any) as [R, E];
+  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
 export const AuthProvider: React.FC = (props) => {
@@ -158,6 +155,10 @@ export const AuthProvider: React.FC = (props) => {
       .auth()
       .signOut()
       .then(() => {
+        /**Gtm code start start */
+        window.gep && window.gep('Profile', 'Signup / Login', 'Signout');
+        /**Gtm code start end */
+
         localStorage.removeItem('currentUser');
         window.location.reload();
       });
@@ -345,6 +346,17 @@ export const AuthProvider: React.FC = (props) => {
   useEffect(() => {
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
+        /**Gtm code start */
+        const isNewUser = user.metadata.creationTime === user.metadata.lastSignInTime;
+
+        if (isNewUser) {
+          window.gep && window.gep('Profile', 'Signup / Login', 'Register');
+          window._ur && window._ur(user.uid, false, 1);
+        } else {
+          window.gep && window.gep('Profile', 'Signup / Login', 'Login');
+        }
+        /**Gtm code start end */
+
         const jwt = await user.getIdToken().catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);

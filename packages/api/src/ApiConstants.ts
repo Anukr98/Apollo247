@@ -282,8 +282,8 @@ export enum ApiConstants {
   ALLOWED_DOSAGES = 'ML,MG,GM,TABLET,PUFF,UNIT,SPRAY,PATCH,AS_PRESCRIBED',
   NO_JD_AVAILABLE_TEXT = 'Patient Medical details could not be collected by the JD',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
-  CASESHEET_PROVISIONAL_HEADING = 'Provisional Diagnosis',
   FREE_CHAT_DAYS = 7,
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
+  CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
 }

@@ -484,7 +484,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 200,
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
-      marginTop: 34,
+      marginTop: 0,
+      maxHeight: '60vh',
+
       '& ul': {
         padding: 0,
         '& li': {
@@ -1384,6 +1386,15 @@ export const FavouriteMedicines: React.FC = () => {
       }
       return slot.selected !== false;
     });
+    let customDosageArray = [];
+    if (customDosageMorning && customDosageMorning.trim() !== '')
+      customDosageArray.push(customDosageMorning.trim());
+    if (customDosageNoon && customDosageNoon.trim() !== '')
+      customDosageArray.push(customDosageNoon.trim());
+    if (customDosageEvening && customDosageEvening.trim() !== '')
+      customDosageArray.push(customDosageEvening.trim());
+    if (customDosageNight && customDosageNight.trim() !== '')
+      customDosageArray.push(customDosageNight.trim());
     if (!isCustomform && tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
@@ -1450,6 +1461,14 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
+    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else if (daySlotsArr.length === 0) {
       setErrorState({
         ...errorState,
@@ -1467,6 +1486,13 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false,
       });
     } else {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
         medicineDosage: String(tabletsCount).trim(),
@@ -1571,6 +1597,15 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageEvening.trim() +
       '-' +
       customDosageNight.trim();
+    let customDosageArray = [];
+    if (customDosageMorning && customDosageMorning.trim() !== '')
+      customDosageArray.push(customDosageMorning.trim());
+    if (customDosageNoon && customDosageNoon.trim() !== '')
+      customDosageArray.push(customDosageNoon.trim());
+    if (customDosageEvening && customDosageEvening.trim() !== '')
+      customDosageArray.push(customDosageEvening.trim());
+    if (customDosageNight && customDosageNight.trim() !== '')
+      customDosageArray.push(customDosageNight.trim());
     if (!isCustomform && tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
@@ -1637,6 +1672,14 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
+    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else if (daySlotsArr.length === 0) {
       setErrorState({
         ...errorState,
@@ -1654,6 +1697,13 @@ export const FavouriteMedicines: React.FC = () => {
         dosageErr: false,
       });
     } else {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
       setMedicineLoader(true);
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: Number(consumptionDuration),
@@ -1878,6 +1928,7 @@ export const FavouriteMedicines: React.FC = () => {
     let changedString = value.substring(0, value.length - 1);
     return changedString + char;
   };
+  console.log(errorState);
   return (
     <div className={classes.ProfileContainer}>
       <div className={classes.root}>
@@ -2276,9 +2327,7 @@ export const FavouriteMedicines: React.FC = () => {
                                         setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                       }}
                                     >
-                                       <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                                        {generateFrequency}
-                                      </Scrollbars>
+                                      {generateFrequency}
                                     </AphSelect>
                                   </Grid>
                                 </Grid>
@@ -2407,9 +2456,7 @@ export const FavouriteMedicines: React.FC = () => {
                                   setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
                                 }}
                               >
-                                <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                                  {roaOptionHtml}
-                                </Scrollbars>
+                                {roaOptionHtml}
                               </AphSelect>
                             </div>
                           </Grid>

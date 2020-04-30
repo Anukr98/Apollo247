@@ -244,7 +244,15 @@ export const MedicineListingCard: React.FC = (props) => {
                     Rs. {item.special_price || item.price}
                   </div>
                   <div className={classes.addToCart}>
-                    <AphButton onClick={() => removeCartItem && removeCartItem(item.id)}>
+                    <AphButton
+                      onClick={() => {
+                        /**Gtm code start  */
+                        window.gep &&
+                          window.gep('Pharmacy', 'Remove From Cart', item.name, item.price);
+                        /**Gtm code End  */
+                        removeCartItem && removeCartItem(item.id);
+                      }}
+                    >
                       <img
                         src={require('images/ic_cross_onorange_small.svg')}
                         alt="Remove Item"

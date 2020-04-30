@@ -9,6 +9,7 @@ import fetchUtil from 'helpers/fetch';
 // import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
 // import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
+import { NavigationBottom } from 'components/NavigationBottom';
 // import { CommentsForm } from 'components/Covid/CommentsForm';
 // import { CommentsList } from 'components/Covid/CommentsList';
 // import { AphButton } from '@aph/web-ui-components';
@@ -27,18 +28,20 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     pageContainer: {
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      backgroundColor: '#f7f8f5',
       paddingBottom: 20,
+      marginTop: -72,
       [theme.breakpoints.up('sm')]: {
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',
         borderRadius: '0 0 10px 10px',
+        marginTop: 0,
       },
     },
     imageBanner: {
       padding: 0,
       '& img': {
         verticalAlign: 'middle',
-        maxWidth: '100%',
+        width: '100%',
       },
     },
     desktopBanner: {
@@ -133,11 +136,11 @@ export const CovidArticleDetails: React.FC = (props: any) => {
   const [type, setType] = useState('');
   const [showLoader, setShowLoader] = useState(true);
   const covidArticleDetailUrl = process.env.COVID_ARTICLE_DETAIL_URL;
-  const articleId = props && props.location.pathname && props.location.pathname.split('/').pop();
+  const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
-    if (articleId) {
-      fetchUtil(`${covidArticleDetailUrl}/${articleId}`, 'GET', {}, '', true).then((res: any) => {
+    if (articleSlug) {
+      fetchUtil(`${covidArticleDetailUrl}/${articleSlug}`, 'GET', {}, '', true).then((res: any) => {
         let postData: any = {};
         if (res && res.data && !isEmpty(res.data[0])) {
           postData = res.data[0];
@@ -201,6 +204,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           )}
         </div>
       </div>
+      <NavigationBottom />
     </div>
   );
 };

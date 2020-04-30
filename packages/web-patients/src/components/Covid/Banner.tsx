@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     backArrow: {
+      zIndex: 2,
       cursor: 'pointer',
       marginRight: 20,
       [theme.breakpoints.up(1220)]: {
@@ -89,7 +90,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Banner: React.FC = (props) => {
+interface BannerProps {
+  isWebView: boolean;
+}
+
+export const Banner: React.FC<BannerProps> = (props) => {
   const classes = useStyles();
 
   return (
@@ -98,19 +103,19 @@ export const Banner: React.FC = (props) => {
       style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
     >
       <div className={classes.bannerTop}>
-        <Link to={clientRoutes.welcome()}>
-          <div className={classes.backArrow}>
-            <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-          </div>
-        </Link>
+        {!props.isWebView && (
+          <Link to={clientRoutes.welcome()}>
+            <div className={classes.backArrow}>
+              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+            </div>
+          </Link>
+        )}
+
         <AphButton className={classes.subcribeBtn}>Subscribe</AphButton>
       </div>
       <div className={classes.content}>
-        <h2>Covid-19</h2>
-        <p>
-          Learn more about Coronavirus. Understand how to stay safe and what to do if you have
-          symptoms.
-        </p>
+        <h2>Coronavirus (Covid-19)</h2>
+        <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
       </div>
     </div>
   );

@@ -140,6 +140,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                         mou: product.mou,
                         quantity: 1,
                       };
+                      /**Gtm code start  */
+                      window.gep &&
+                        window.gep('Pharmacy', 'Add to Cart', product.name, product.price);
+                      /**Gtm code End  */
                       const index = cartItems.findIndex((item) => item.id === cartItem.id);
                       if (index >= 0) {
                         updateCartItem && updateCartItem(cartItem);
@@ -154,6 +158,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                   <AphButton
                     className={classes.addToCartBtn}
                     onClick={() => {
+                      /**Gtm code start  */
+                      window.gep &&
+                        window.gep('Pharmacy', 'Remove From Cart', product.name, product.price);
+                      /**Gtm code End  */
                       removeCartItem && removeCartItem(product.id);
                     }}
                   >

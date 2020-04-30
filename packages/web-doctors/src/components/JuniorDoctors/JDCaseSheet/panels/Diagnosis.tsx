@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Chip, makeStyles, Theme, createStyles, Paper } from '@material-ui/core';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { Chip, makeStyles, Theme, createStyles, Paper, Tooltip } from '@material-ui/core';
+import { AphButton, AphTextField, AphTooltip } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -145,6 +145,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 500,
         color: '#01475b',
         paddingTop: 0,
+        paddingRight: 30,
       },
       '&:hover': {
         '&:before': {
@@ -275,26 +276,31 @@ export const Diagnosis: React.FC = () => {
   function getSuggestionValue(suggestion: OptionType) {
     return suggestion.name;
   }
-  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
+  function renderSuggestion(
+    suggestion: OptionType,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
     const matches = match(suggestion.name, query);
     const parts = parse(suggestion.name, matches);
 
     return (
       diagnosisValue.length > 2 && (
-        <div>
-          {parts.map((part) => (
-            <span
-              key={part.text}
-              style={{
-                fontWeight: part.highlight ? 500 : 400,
-                whiteSpace: 'pre',
-              }}
-            >
-              {part.text}
-            </span>
-          ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" />
-        </div>
+        <AphTooltip open={isHighlighted} title={suggestion.name}>
+          <div>
+            {parts.map((part) => (
+              <span
+                key={part.text}
+                style={{
+                  fontWeight: part.highlight ? 500 : 400,
+                  whiteSpace: 'pre',
+                }}
+              >
+                {part.text}
+              </span>
+            ))}
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+          </div>
+        </AphTooltip>
       )
     );
   }

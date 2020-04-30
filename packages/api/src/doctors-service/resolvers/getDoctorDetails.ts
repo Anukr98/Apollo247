@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
+import { Client, RequestParams, ApiResponse } from '@elastic/elasticsearch';
 import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -319,19 +320,49 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   return doctordata;
 };
 
-const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, Doctor> = async (
+const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext, string> = async (
   parent,
   args,
   { doctorsDb }
 ) => {
-  let doctordata: Doctor;
-  try {
-    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    doctordata = (await doctorRepository.findById(args.id)) as Doctor;
-  } catch (getProfileError) {
-    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const searchParams: RequestParams.Search = {
+    index: 'doctors',
+    type: 'posts',
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                doctorId: args.id,
+              },
+            },
+          ],
+        },
+      },
+    },
+  };
+  const getDetails = await client.search(searchParams);
+  let doctorData, facilities;
+
+  if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
+    doctorData = getDetails.body.hits.hits[0]._source;
+    doctorData.id = doctorData.doctorId;
+    doctorData.specialty.id = doctorData.specialty.specialtyId;
+    doctorData.doctorHospital = [];
+    for (const consultHour of doctorData.consultHours) {
+      consultHour['id'] = consultHour['consultHoursId'];
+    }
+    facilities = doctorData.facility;
+    facilities = Array.isArray(facilities) ? facilities : [facilities];
+    for (const facility of facilities) {
+      facility.id = facility.facilityId;
+      doctorData.doctorHospital.push({ facility });
+    }
   }
-  return doctordata;
+  // console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length + 1, 'searchhitCount');
+  return doctorData;
 };
 
 type LoggedInUserDetails = {

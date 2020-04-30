@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Chip, makeStyles, Theme, createStyles, Paper } from '@material-ui/core';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
+import {
+  Typography,
+  Chip,
+  makeStyles,
+  Theme,
+  createStyles,
+  Paper,
+  Tooltip,
+} from '@material-ui/core';
+import { AphButton, AphTextField, AphTooltip } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -88,6 +96,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 500,
         color: '#01475b',
         paddingTop: 0,
+        paddingRight: 30,
       },
       '&:hover': {
         '&:before': {
@@ -296,20 +305,22 @@ export const Diagnosis: React.FC = () => {
 
     return (
       diagnosisValue.length > 2 && (
-        <div>
-          {parts.map((part) => (
-            <span
-              key={part.text}
-              style={{
-                fontWeight: part.highlight ? 500 : 400,
-                whiteSpace: 'pre',
-              }}
-            >
-              {part.text}
-            </span>
-          ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" />
-        </div>
+        <AphTooltip open={isHighlighted} title={suggestion.name}>
+          <div>
+            {parts.map((part) => (
+              <span
+                key={part.text}
+                style={{
+                  fontWeight: part.highlight ? 500 : 400,
+                  whiteSpace: 'pre',
+                }}
+              >
+                {part.text}
+              </span>
+            ))}
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+          </div>
+        </AphTooltip>
       )
     );
   }

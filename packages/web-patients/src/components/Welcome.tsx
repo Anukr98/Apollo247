@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         borderRadius: '0 0 10px 10px',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#f7f8f5',  
+        backgroundColor: '#f7f8f5',
       },
     },
     pageContent: {

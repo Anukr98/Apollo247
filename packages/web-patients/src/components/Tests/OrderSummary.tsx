@@ -88,6 +88,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       cursor: 'pointer',
       marginRight: 50,
+      zIndex: 2,
       [theme.breakpoints.up(1220)]: {
         position: 'absolute',
         left: -82,
