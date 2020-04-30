@@ -808,7 +808,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'false'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('signUp', 'false'),
-                  CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
+                  CommonLogEvent(AppRoutes.MultiSignup, 'Navigating back to Login'),
                   setBugFenderLog('multi_error', error),
                   setTimeout(() => {
                     setVerifyingPhoneNumber(false),

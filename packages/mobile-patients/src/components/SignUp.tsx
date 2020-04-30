@@ -438,7 +438,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
         eventAttributes['Referral Code'] = referral;
       }
 
-      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.REGISTRATION_DONE] = {
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.SIGN_UP] = {
         Customer_ID: currentPatient ? currentPatient.id : '',
         Customer_First_Name: firstName.trim(),
         Customer_Last_Name: lastName.trim(),
@@ -458,7 +458,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
 
       postWebEngageEvent(WebEngageEventName.REGISTRATION_DONE, eventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.REGISTRATION_DONE, eventAttributes);
-      postFirebaseEvent(FirebaseEventName.REGISTRATION_DONE, eventFirebaseAttributes);
+      postFirebaseEvent(FirebaseEventName.SIGN_UP, eventFirebaseAttributes);
       setSignupEventFired(true);
     } catch (error) {
       console.log({ error });
