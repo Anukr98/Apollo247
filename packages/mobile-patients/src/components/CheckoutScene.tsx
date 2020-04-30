@@ -275,6 +275,33 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     }
   }, [emailIdCheckbox, email]);
 
+  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string) => {
+    try {
+      const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
+      const store = storeId && stores.find((item) => item.storeid == storeId);
+      const shippingInformation = addr ? formatAddress(addr) : store ? store.address : '';
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED] = {
+        'Order ID': orderAutoId,
+        'Order Type': 'Cart',
+        'Prescription Required': uploadPrescriptionRequired,
+        'Prescription Added': !!(physicalPrescriptions.length || ePrescriptions.length),
+        'Shipping information': shippingInformation, // (Home/Store address)
+        'Total items in cart': cartItems.length,
+        'Grand Total': cartTotal + deliveryCharges,
+        'Total Discount %': coupon ? Number(((couponDiscount / cartTotal) * 100).toFixed(2)) : 0,
+        'Discount Amount': couponDiscount,
+        'Delivery charge': deliveryCharges,
+        'Net after discount': grandTotal,
+        'Payment status': 1,
+        'Payment Type': 'Prepaid',
+        'Service Area': 'Pharmacy',
+      };
+      return eventAttributes;
+    } catch (error) {
+      return {};
+    }
+  };
+
   const postwebEngageCheckoutCompletedEvent = (orderAutoId: string) => {
     const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
     const store = storeId && stores.find((item) => item.storeid == storeId);
@@ -381,12 +408,16 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const redirectToPaymentGateway = async (orderId: string, orderAutoId: number) => {
     const token = await firebase.auth().currentUser!.getIdToken();
     console.log({ token });
+    const checkoutEventAttributes = {
+      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`),
+    };
     props.navigation.navigate(AppRoutes.PaymentScene, {
       orderId,
       orderAutoId,
       token,
       amount: grandTotal,
       deliveryTime,
+      checkoutEventAttributes,
     });
   };
 
