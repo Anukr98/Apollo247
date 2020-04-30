@@ -39,7 +39,7 @@ module.exports = async (req, res, next) => {
         logger.info(`${appointmentId} - getAppointmentData - ${JSON.stringify(aptResp.data)}`);
 
         if (aptResp.data.errors && aptResp.data.errors.length) {
-            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(response.data.errors)}`)
+            logger.error(`${appointmentId} - consult-payment-request - ${JSON.stringify(aptResp.data.errors)}`)
             throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`)
         }
 
@@ -51,6 +51,7 @@ module.exports = async (req, res, next) => {
         }
 
         const paymentOrderId = generatePaymentOrderId();
+        console.log("paymentOrderId:", paymentOrderId);
 
         const requestJSON = {
             query:
@@ -62,7 +63,7 @@ module.exports = async (req, res, next) => {
                 source +
                 '"){ status } }',
         };
-
+        console.log("requestJson:", requestJSON);
         const updateResp = await axios.post(process.env.API_URL, requestJSON);
 
         logger.info(`${appointmentId} - updatePaymentOrderId - ${JSON.stringify(updateResp.data)}`);
