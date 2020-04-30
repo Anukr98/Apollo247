@@ -282,6 +282,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  findAppointmentPaymentById(appointmentId: string) {
+    return Appointment.findOne({ where: { id: appointmentId }, relations: ['appointmentPayments'] }).catch((getErrors) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_PAYMENT_ERROR, undefined, {
+        getErrors,
+      });
+    });
+  }
+
   saveAppointmentSession(appointmentSessionAttrs: Partial<AppointmentSessions>) {
     return AppointmentSessions.create(appointmentSessionAttrs)
       .save()
