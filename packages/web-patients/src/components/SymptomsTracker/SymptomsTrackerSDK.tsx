@@ -419,7 +419,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
     } else if (loggedOutPatientGender && loggedOutPatientGender.length) {
       setPatientGender(setUserGender(loggedOutPatientGender));
     }
-  }, [loggedOutPatientGender, isSignedIn]);
+  }, [loggedOutPatientGender]);
 
   const setLoggedOutPatientData = (dataObj: any) => {
     if (Object.values(dataObj).every((element) => element !== null)) {
