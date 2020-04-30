@@ -1309,7 +1309,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 '{{testNames}}',
                 disabledCartItemNames
               ),
-              onPressOk: () => removeDisabledCartItems(disabledCartItemIds),
+              CTAs: [
+                {
+                  text: (disabledCartItems.length == 1
+                    ? string.diagnostics.removeThisTestCTA
+                    : string.diagnostics.removeTheseTestsCTA
+                  ).toUpperCase(),
+                  onPress: () => removeDisabledCartItems(disabledCartItemIds),
+                  type: 'orange-button',
+                },
+              ],
             });
           } else {
             moveForward();
