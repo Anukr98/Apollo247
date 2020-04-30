@@ -75,19 +75,22 @@ interface ServiceItemProps {
 }
 
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { title, imgUrl, content, action } = props.item;
   return (
     <ProtectedWithLoginPopup>
-      {({ protectWithLoginPopup, isProtected }) => (
+      {({ protectWithLoginPopup }) => (
         <div className={classes.serviceItem}>
           <Paper className={classes.serviceItemIn}>
             <Link
               to={action.link}
               onClick={(e) => {
-                action.link === '/health-records' && protectWithLoginPopup();
+                if (action.link === '') {
+                  protectWithLoginPopup();
+                }
               }}
-              title={title}>
+              title={title}
+            >
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
                 <Typography variant="h5" title={title}>
@@ -105,7 +108,7 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
 export const OurServices: React.FC = (props) => {
   const { isSignedIn } = useAuth();
 
-  const classes = useStyles();
+  const classes = useStyles({});
   const serviceItems: ServiceItem[] = [
     {
       title: 'Book Doctor Appointment',
@@ -132,7 +135,7 @@ export const OurServices: React.FC = (props) => {
     //   action: { link: '', content: 'Who are star doctors' },
     // },
     {
-      title: 'Track Symptoms',
+      title: 'Understand Symptoms',
       content: 'Learn about our Star Doctors Program.',
       imgUrl: `${require('images/ic-symptomtracker.svg')}`,
       action: {
@@ -144,7 +147,10 @@ export const OurServices: React.FC = (props) => {
       title: 'View Health Records',
       content: 'Learn about our Start Doctors Program.',
       imgUrl: `${require('images/ic-prescription.svg')}`,
-      action: { link: clientRoutes.healthRecords(), content: 'Who are star doctors' },
+      action: {
+        link: isSignedIn ? clientRoutes.healthRecords() : '',
+        content: 'Who are star doctors',
+      },
     },
   ];
 

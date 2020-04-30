@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Chip, makeStyles, Theme, createStyles, Paper, Tooltip } from '@material-ui/core';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
+import { AphButton, AphTextField, AphTooltip } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -285,7 +285,7 @@ export const Diagnosis: React.FC = () => {
 
     return (
       diagnosisValue.length > 2 && (
-        <Tooltip open={isHighlighted} title={suggestion.name}>
+        <AphTooltip open={isHighlighted} title={suggestion.name}>
           <div>
             {parts.map((part) => (
               <span
@@ -300,7 +300,7 @@ export const Diagnosis: React.FC = () => {
             ))}
             <img src={require('images/ic_dark_plus.svg')} alt="" />
           </div>
-        </Tooltip>
+        </AphTooltip>
       )
     );
   }

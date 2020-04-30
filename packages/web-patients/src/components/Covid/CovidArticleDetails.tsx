@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       '& img': {
         verticalAlign: 'middle',
-        maxWidth: '100%',
+        width: '100%',
       },
     },
     desktopBanner: {
@@ -204,7 +204,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           )}
         </div>
       </div>
-      <NavigationBottom />      
+      <NavigationBottom />
     </div>
   );
 };

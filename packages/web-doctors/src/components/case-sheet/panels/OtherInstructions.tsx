@@ -92,7 +92,7 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'inline-block',
         width: '100%',
         textAlign: 'left',
-        whiteSpace: 'normal',
+        whiteSpace: 'pre-wrap',
         padding: '10px 80px 10px 10px',
       },
     },

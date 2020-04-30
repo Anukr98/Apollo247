@@ -6,7 +6,7 @@ import {
   ExpansionPanelDetails,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Modal } from '@material-ui/core';
 import _isEmpty from 'lodash/isEmpty';
 import { Header } from 'components/Header';
 import { Banner } from 'components/Covid/Banner';
@@ -29,10 +29,10 @@ const useStyles = makeStyles((theme: Theme) => {
     pageContainer: {
       marginTop: -72,
       [theme.breakpoints.up('sm')]: {
-        paddingBottom: 20,
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#f7f8f5',  
         borderRadius: '0 0 10px 10px',
+        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f7f8f5',
+        paddingBottom: 20,
         marginTop: 0,
       },
     },
@@ -121,7 +121,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.up('sm')]: {
         padding: '20px 0',
         margin: '0 20px',
-      },      
+      },
     },
     bottomActions: {
       textAlign: 'center',
@@ -136,6 +136,91 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fc9916',
       },
     },
+    modalWindowWrap: {
+      display: 'table',
+      height: '100%',
+      width: '100%',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    tableContent: {
+      display: 'table-cell',
+      verticalAlign: 'middle',
+      width: '100%',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalWindow: {
+      maxWidth: 600,
+      margin: 'auto',
+      borderRadius: 10,
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalHeader: {
+      minHeight: 24,
+      textAlign: 'left',
+      fontSize: 18,
+      fontWeight: 600,
+      letterSpacing: 0.5,
+      color: theme.palette.common.white,
+      position: 'relative',
+      wordBreak: 'break-word',
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 12,
+      },
+    },
+    fullScreen: {
+      transform: 'rotate(-90deg)',
+      transformOrigin: 'left top',
+      transition: 'all .1s',
+      width: '100vh !important',
+      height: '100vw',
+      overflowX: 'hidden',
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+    },
+    modalClose: {
+      position: 'absolute',
+      right: 0,
+      top: 0,
+      width: 24,
+      height: 24,
+      cursor: 'pointer',
+    },
+    modalFooter: {
+      textAlign: 'left',
+      position: 'relative',
+      color: theme.palette.common.white,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 12,
+      },
+    },
+    modalContent: {
+      textAlign: 'center',
+      maxHeight: 'calc(100vh - 212px)',
+      overflow: 'hidden',
+      '& img': {
+        width: '100%',
+        maxHeight: 'calc(100vh - 212px)',
+      },
+    },
+    fullScreenImg: {
+      position: 'absolute',
+      bottom: 32,
+      right: 12,
+    },
+    fullScreenImgCross: {
+      position: 'absolute',
+      top: 16,
+      right: 12,
+    },
   };
 });
 
@@ -145,19 +230,20 @@ export const CovidLanding: React.FC = (props) => {
   const headingArr = [
     {
       heading: 'How can I stay safe?',
-      subheading: 'Articles and videos about basic protective measures against the coronavirus',
+      subheading:
+        'Articles and videos on pŕecautions and protective measures to avoid Coronavirus.',
       category: 'stay-safe',
       defaultExpanded: true,
     },
     {
       heading: 'What to do if I have symptoms?',
-      subheading: 'Know more about the symptoms and preventions through articles and videos.',
+      subheading: 'Know more about symptoms of Coronavirus and what to do if infected.',
       category: 'covid-symptoms',
       defaultExpanded: false,
     },
     {
       heading: 'How are we getting ahead?',
-      subheading: 'Learn how Apollo is making a difference to help the world against coronavirus.',
+      subheading: 'Learn about the efforts around the world to win over Coronavirus.',
       category: 'going-ahead',
       defaultExpanded: false,
     },
@@ -168,6 +254,13 @@ export const CovidLanding: React.FC = (props) => {
   const [covidContent, setCovidContent] = useState<CovidContentInterface>({});
   const [categoryToFetch, setCategoryToFetch] = useState<string>('');
   const [moreContentLoading, setMoreContentLoading] = useState<boolean>(false);
+  const [fullScreenOn, setFullScreenOn] = useState<boolean>(false);
+
+  const [expandedImage, setExpandedImage] = useState<string>('');
+  const [expandedTitle, setExpandedTitle] = useState<string>('');
+  const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+
   const didMount = useRef(false);
   const covidArticleBaseUrl =
     process.env.NODE_ENV !== 'production'
@@ -180,7 +273,6 @@ export const CovidLanding: React.FC = (props) => {
       const sortedStaySafeData = !_isEmpty(body['stay-safe']) && body['stay-safe'];
       const sortedCovidSymptomsData = !_isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
       const sortedGoingAheadData = !_isEmpty(body['going-ahead']) && body['going-ahead'];
-
       let covidObj: CovidContentInterface = {};
       covidObj['stay-safe'] = sortedStaySafeData;
       covidObj['covid-symptoms'] = sortedCovidSymptomsData;
@@ -209,6 +301,13 @@ export const CovidLanding: React.FC = (props) => {
       });
     } else didMount.current = true;
   }, [categoryToFetch]);
+
+  const handleInfographicClick = (data: any) => {
+    setExpandedImage(data.image);
+    setExpandedTitle(data.postTitle);
+    setExpandedSourceUrl(data.sourceUrl);
+    setModalOpen(true);
+  };
 
   return (
     <div className={classes.root}>
@@ -245,7 +344,10 @@ export const CovidLanding: React.FC = (props) => {
                       {covidContent &&
                         covidContent[parentCat.category] &&
                         covidContent[parentCat.category].length && (
-                          <ArticleCard content={covidContent[parentCat.category]} />
+                          <ArticleCard
+                            handleInfographicClick={(data) => handleInfographicClick(data)}
+                            content={covidContent[parentCat.category]}
+                          />
                         )}
                       {moreContentLoading ? (
                         <div className={classes.progressLoader}>
@@ -276,6 +378,66 @@ export const CovidLanding: React.FC = (props) => {
             </div>
             <CheckRiskLevel />
           </div>
+
+          <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+            <div className={classes.modalWindowWrap}>
+              <div className={classes.tableContent}>
+                <div className={classes.modalWindow}>
+                  <div className={classes.modalHeader}>
+                    {expandedTitle}
+                    <div
+                      className={classes.modalClose}
+                      onClick={() => {
+                        setModalOpen(false);
+                        setExpandedImage('');
+                        setExpandedSourceUrl('');
+                        setExpandedTitle('');
+                      }}
+                    >
+                      <img src={require('images/ic_round_clear.svg')} alt="" />
+                    </div>
+                  </div>
+                  <div className={classes.modalContent}>
+                    <img
+                      src={expandedImage}
+                      className={fullScreenOn ? classes.fullScreen : ''}
+                      alt=""
+                    />
+                    {fullScreenOn && (
+                      <>
+                        <span
+                          className={classes.fullScreenImgCross}
+                          onClick={() => {
+                            setFullScreenOn(false);
+                            setModalOpen(false);
+                            setExpandedImage('');
+                            setExpandedSourceUrl('');
+                            setExpandedTitle('');
+                          }}
+                        >
+                          <img src={require('images/ic_cross.svg')} />
+                        </span>
+                        <span
+                          className={classes.fullScreenImg}
+                          onClick={() => setFullScreenOn(false)}
+                        >
+                          <img src={require('images/on.svg')} />
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className={classes.modalFooter}>
+                    {!isDesktopOnly && !fullScreenOn && (
+                      <span className={classes.fullScreenImg} onClick={() => setFullScreenOn(true)}>
+                        <img src={require('images/off.svg')} />
+                      </span>
+                    )}
+                    {!fullScreenOn && <div>{expandedSourceUrl}</div>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Modal>
         </div>
       </div>
       <NavigationBottom />

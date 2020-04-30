@@ -275,6 +275,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     headerBackArrow: {
+      zIndex: 2,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         display: 'flex',

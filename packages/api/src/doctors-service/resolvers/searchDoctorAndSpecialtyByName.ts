@@ -11,9 +11,10 @@ import {
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+//import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+import { Client, RequestParams } from '@elastic/elasticsearch';
 import { ApiConstants } from 'ApiConstants';
-
+import { differenceInMinutes } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
@@ -87,161 +88,204 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   );
 
   searchLogger('API_CALL___STARTED');
+  let matchedSpecialties: DoctorSpecialty[] = [];
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
-  let matchedDoctors: Doctor[] = [],
-    matchedSpecialties: DoctorSpecialty[] = [],
+  const matchedDoctors = [],
     matchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  let possibleDoctors: Doctor[] = [],
+  const possibleDoctors = [],
     possibleSpecialties: DoctorSpecialty[] = [],
     possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  let otherDoctors: Doctor[] = [],
+  const otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
 
   try {
-    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    // const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
 
     //get facility distances from user geolocation
-    let facilityDistances: FacilityDistanceMap = {};
-    if (args.geolocation) {
-      searchLogger('GEOLOCATION_API_CALL___START');
-      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-      facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
-      searchLogger('GEOLOCATION_API_CALL___END');
-    }
-
+    // let facilityDistances: FacilityDistanceMap = {};
+    // if (args.geolocation) {
+    //   searchLogger('GEOLOCATION_API_CALL___START');
+    //   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+    //   facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
+    //   searchLogger('GEOLOCATION_API_CALL___END');
+    // }
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
-    let pincodeCity = '';
-    if (args.pincode) {
-      const pincodeCityDetails = await doctorRepository.getCityMappingPincode(args.pincode);
-      if (pincodeCityDetails) pincodeCity = pincodeCityDetails.city;
+    const docSearchParams: RequestParams.Search = {
+      index: 'doctors',
+      type: 'posts',
+      body: {
+        size: 1000,
+        query: {
+          bool: {
+            must: [
+              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              {
+                match_phrase_prefix: {
+                  fullName: {
+                    query: searchTextLowerCase
+                  }
+                }
+              },]
+          }
+
+        },
+      },
+    };
+    console.log("docsearchparams", docSearchParams);
+    const responseDoctors = await client.search(docSearchParams);
+    for (const doc of responseDoctors.body.hits.hits) {
+      const doctor = doc._source;
+      doctor['id'] = doctor.doctorId;
+      if (doctor.specialty) {
+        doctor.specialty.id = doctor.specialty.specialtyId;
+      }
+      doctor['activeSlotCount'] = 0;
+      doctor['earliestSlotavailableInMinutes'] = 0;
+      let bufferTime = 5;
+      for (const consultHour of doctor.consultHours) {
+        consultHour['id'] = consultHour['consultHoursId'];
+        bufferTime = consultHour["consultBuffer"];
+      }
+      doctor['doctorHospital'] = [];
+      for (const facility of doctor.facility) {
+        doctor['doctorHospital'].push({
+          facility: {
+            name: facility.name,
+            facilityType: facility.facilityType,
+            streetLine1: facility.streetLine1,
+            streetLine2: facility.streetLine2,
+            streetLine3: facility.streetLine3,
+            city: facility.city,
+            state: facility.state,
+            zipcode: facility.zipcode,
+            imageUrl: facility.imageUrl,
+            latitude: facility.latitude,
+            longitude: facility.longitude,
+            country: facility.country,
+            id: facility.facilityId,
+          },
+        });
+      }
+      for (const slots of doctor.doctorSlots) {
+        for (const slot of slots['slots']) {
+          if (slot.status == 'OPEN' && (differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime)) {
+            if (doctor['activeSlotCount'] === 0) {
+              console.log(slot.slotType);
+
+              doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(new Date(slot.slot), new Date());
+              matchedDoctorsNextAvailability.push({
+                availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(slot.slot))),
+                physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
+                currentDateTime: new Date(),
+                doctorId: doctor.doctorId,
+                onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
+                referenceSlot: slot.slot,
+              });
+
+            }
+            doctor['activeSlotCount'] += 1;
+          }
+        }
+      }
+      if (doctor['activeSlotCount'] > 0) { matchedDoctors.push(doctor); }
     }
-    matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase, pincodeCity);
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
     searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___END`);
 
-    //get Sorted Doctors List
-    const { sortedDoctors, sortedDoctorsNextAvailability } = await getSortedDoctors(
-      matchedDoctors,
-      args.patientId,
-      doctorsDb,
-      consultsDb,
-      facilityDistances
-    );
-    matchedDoctors = sortedDoctors;
-    matchedDoctorsNextAvailability = sortedDoctorsNextAvailability;
-    const otherDoctorIds = matchedDoctors.map((doctor) => {
-      return doctor.id;
-    });
-    const matchedDoctorsOrder: Doctor[] = [];
-    const matchedEmptyDoctorsOrder: Doctor[] = [];
-    const matchedDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
-    const matchedEmptyDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
-    matchedDoctorsNextAvailability.map((docSlot) => {
-      const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
-      if (docSlot.referenceSlot != '') {
-        matchedDoctorsOrder.push(matchedDoctors[docIndex]);
-        matchedDoctorsNextAvailabilityOrder.push(docSlot);
-      } else {
-        matchedEmptyDoctorsOrder.push(matchedDoctors[docIndex]);
-        matchedEmptyDoctorsNextAvailabilityOrder.push(docSlot);
-      }
-    });
-    console.log(matchedEmptyDoctorsOrder.length, matchedDoctorsOrder.length);
-    matchedDoctors = matchedDoctorsOrder.concat(matchedEmptyDoctorsOrder);
-    matchedDoctorsNextAvailability = matchedDoctorsNextAvailabilityOrder.concat(
-      matchedEmptyDoctorsNextAvailabilityOrder
-    );
-    //fetch other doctors only if there is one matched doctor
-    if (matchedDoctors.length === 1) {
-      otherDoctors = await doctorRepository.findOtherDoctorsOfSpecialty(
-        matchedDoctors[0].specialty.id,
-        matchedDoctors[0].id
-      );
-
-      //get Sorted Doctors List
-      const { sortedDoctors, sortedDoctorsNextAvailability } = await getSortedDoctors(
-        otherDoctors,
-        args.patientId,
-        doctorsDb,
-        consultsDb,
-        facilityDistances
-      );
-
-      otherDoctors = sortedDoctors;
-      otherDoctorsNextAvailability = sortedDoctorsNextAvailability;
-      const otherDoctorIds = otherDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const otherDoctorsOrder: Doctor[] = [];
-      const otherEmptyDoctorsOrder: Doctor[] = [];
-      const otherDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
-      const otherEmptyDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
-      otherDoctorsNextAvailability.map((docSlot) => {
-        const docIndex = otherDoctorIds.indexOf(docSlot.doctorId);
-        if (docSlot.referenceSlot != '') {
-          otherDoctorsOrder.push(otherDoctors[docIndex]);
-          otherDoctorsNextAvailabilityOrder.push(docSlot);
-        } else {
-          otherEmptyDoctorsOrder.push(otherDoctors[docIndex]);
-          otherEmptyDoctorsNextAvailabilityOrder.push(docSlot);
-        }
-      });
-      otherDoctors = otherDoctorsOrder.concat(otherEmptyDoctorsOrder);
-      otherDoctorsNextAvailability = otherDoctorsNextAvailabilityOrder.concat(
-        otherEmptyDoctorsNextAvailabilityOrder
-      );
-    }
-
     //fetch possible doctors only if there are not matched doctors and specialties
     if (matchedDoctors.length === 0 && matchedSpecialties.length === 0) {
-      const {
-        sortedPossibleDoctors,
-        allPossibleSpecialties,
-        sortedPossibleDoctorsNextAvailability,
-      } = await getPossibleDoctorsAndSpecialties(
-        args.patientId,
-        doctorsDb,
-        consultsDb,
-        facilityDistances
-      );
-      possibleDoctors = sortedPossibleDoctors;
-      possibleSpecialties = allPossibleSpecialties;
-      possibleDoctorsNextAvailability = sortedPossibleDoctorsNextAvailability;
-      const possibleDoctorIds = possibleDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const possibleDoctorsOrder: Doctor[] = [];
-      const possibleEmptyDoctorsOrder: Doctor[] = [];
-      const possibleDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
-      const possibleEmptyDoctorsNextAvailabilityOrder: DoctorSlotAvailability[] = [];
-      possibleDoctorsNextAvailability.map((docSlot) => {
-        const docIndex = possibleDoctorIds.indexOf(docSlot.doctorId);
-        if (docSlot.referenceSlot != '') {
-          possibleDoctorsOrder.push(possibleDoctors[docIndex]);
-          possibleDoctorsNextAvailabilityOrder.push(docSlot);
-        } else {
-          possibleEmptyDoctorsOrder.push(possibleDoctors[docIndex]);
-          possibleEmptyDoctorsNextAvailabilityOrder.push(docSlot);
+      const PossibleDoctorParams: RequestParams.Search = {
+        index: 'doctors',
+        type: 'posts',
+        body: {
+          size: 200,
+          query: {
+            bool: {
+              must: [
+                {
+                  match: {
+                    'doctorSlots.slots.status': 'OPEN',
+                  },
+                }
+              ],
+            },
+          },
+        },
+      };
+      console.log(PossibleDoctorParams);
+      const responsePossibleDoctors = await client.search(PossibleDoctorParams);
+      for (const doc of responsePossibleDoctors.body.hits.hits) {
+        const doctor = doc._source;
+        doctor['id'] = doctor.doctorId;
+        doctor['doctorHospital'] = [];
+        doctor['activeSlotCount'] = 0;
+        doctor['earliestSlotavailableInMinutes'] = 0;
+        let bufferTime = 5;
+        for (const consultHour of doctor.consultHours) {
+          consultHour['id'] = consultHour['consultHoursId'];
+          bufferTime = consultHour["consultBuffer"];
         }
-      });
-      possibleDoctors = possibleDoctorsOrder.concat(possibleEmptyDoctorsOrder);
-      possibleDoctorsNextAvailability = possibleDoctorsNextAvailabilityOrder.concat(
-        possibleEmptyDoctorsNextAvailabilityOrder
-      );
+        if (doctor.specialty) {
+          doctor.specialty.id = doctor.specialty.specialtyId;
+        }
+        for (const facility of doctor.facility) {
+          doctor['doctorHospital'].push({
+            facility: {
+              name: facility.name,
+              facilityType: facility.facilityType,
+              streetLine1: facility.streetLine1,
+              streetLine2: facility.streetLine2,
+              streetLine3: facility.streetLine3,
+              city: facility.city,
+              state: facility.state,
+              zipcode: facility.zipcode,
+              imageUrl: facility.imageUrl,
+              latitude: facility.latitude,
+              longitude: facility.longitude,
+              country: facility.country,
+              id: facility.facilityId,
+            },
+          });
+        }
+        for (const slots of doctor.doctorSlots) {
+          for (const slot of slots['slots']) {
+            if (slot.status == 'OPEN' && (differenceInMinutes(new Date(slot.slot), new Date()) > bufferTime)) {
+              if (doctor['activeSlotCount'] === 0) {
+                doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(new Date(slot.slot), new Date());
+                possibleDoctorsNextAvailability.push({
+                  availableInMinutes: Math.abs(
+                    differenceInMinutes(new Date(), new Date(slot.slot))
+                  ),
+                  physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
+                  currentDateTime: new Date(),
+                  doctorId: doctor.doctorId,
+                  onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
+                  referenceSlot: slot.slot,
+                });
+              }
+              doctor['activeSlotCount'] += 1;
+            }
+          }
+        }
+        if (doctor['activeSlotCount'] > 0) { possibleDoctors.push(doctor); }
+      }
+
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
   }
-
   searchLogger(`API_CALL___END`);
 
   return {
-    doctors: matchedDoctors,
+    doctors: matchedDoctors
+      .sort((a, b) => parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)),
     doctorsNextAvailability: matchedDoctorsNextAvailability,
     specialties: matchedSpecialties,
     possibleMatches: {
-      doctors: possibleDoctors,
+      doctors: possibleDoctors
+        .sort((a, b) => parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)),
       doctorsNextAvailability: possibleDoctorsNextAvailability,
       specialties: possibleSpecialties,
     },

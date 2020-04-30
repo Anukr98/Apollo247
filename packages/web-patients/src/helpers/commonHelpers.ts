@@ -1,10 +1,14 @@
 const locationRoutesBlackList: string[] = [
-  '/',
   '/covid19',
   '/track-symptoms',
   '/terms',
   '/privacy',
   '/contact',
+  '/my-account',
+  '/health-records',
+  '/address-book',
+  '/aboutUs',
+  '/appointments',
 ];
 
 const sortByProperty = (arr: any[], property: string) =>
