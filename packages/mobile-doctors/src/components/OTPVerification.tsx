@@ -135,7 +135,13 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       if (isOtpVerified) {
         setTimeout(() => {
           if (isProfileFlowDone === 'true') {
-            props.navigation.replace(AppRoutes.TabBar);
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+              })
+            );
           } else {
             if (doctorDetails && doctorDetails.id) {
               console.log(

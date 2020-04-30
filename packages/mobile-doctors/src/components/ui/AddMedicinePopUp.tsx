@@ -586,9 +586,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               medicineFrequency: defaultForm ? takeDrop.key : null,
               medicineConsumptionDurationUnit: forTimeDrop.key,
               medicineConsumptionDurationInDays: forTime,
-              medicineTimings: medTimingAnswers
-                .map((item) => (item.key && item.selected ? item.key : ''))
-                .filter((item) => item !== ''),
+              medicineTimings: medTimingsArray
+                .map((item) => {
+                  return (
+                    (medTimingAnswers.find((i) => i.key === item.key && i.selected) || {}).key || ''
+                  );
+                })
+                .filter((i) => i !== ''),
               medicineToBeTaken: [
                 afterFoodValue ? MEDICINE_TO_BE_TAKEN.AFTER_FOOD : '',
                 beforeFoodValue ? MEDICINE_TO_BE_TAKEN.BEFORE_FOOD : '',
