@@ -163,8 +163,8 @@ export const WeAreHelpYou: React.FC = (props) => {
           style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
         >
           <div className={classes.contentGroup}>
-            <div className={classes.title}>Covid-19</div>
-            <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms</p>
+            <div className={classes.title}>Coronavirus (Covid-19)</div>
+            <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
           </div>
           <div className={classes.rightGroup}>
             <img src={require('images/ic_covid-banner.svg')} alt="" />
