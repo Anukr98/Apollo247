@@ -144,9 +144,18 @@ export const CovidArticleDetails: React.FC = (props: any) => {
         let postData: any = {};
         if (res && res.data && !isEmpty(res.data[0])) {
           postData = res.data[0];
-          const { htmlData, source, thumbnailMobile, thumbnailWeb, title, type } = postData;
+          const {
+            htmlData,
+            source,
+            thumbnailMobile,
+            thumbnailWeb,
+            title,
+            type,
+            sourceUrl,
+          } = postData;
           setHtmlData(htmlData);
           setSource(source);
+          setSourceUrl(sourceUrl);
           setThumbnailWeb(thumbnailWeb);
           setThumbnailMobile(thumbnailMobile);
           setTitle(title);
