@@ -1300,7 +1300,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             (cartItem) => !diagnosticItems.find((d) => `${d!.itemId}` == cartItem.id)
           );
           if (disabledCartItems.length) {
-            const disabledCartItemNames = disabledCartItems.map((item) => item.name).toString();
+            const disabledCartItemNames = disabledCartItems.map((item) => item.name).join(', ');
             const disabledCartItemIds = disabledCartItems.map((item) => item.id);
             setLoading!(false);
             showAphAlert!({
