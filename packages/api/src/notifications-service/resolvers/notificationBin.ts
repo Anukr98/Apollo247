@@ -201,7 +201,7 @@ const sendUnreadMessagesNotification: Resolver<
     appointmentIds.push(appointmentId);
   });
 
-  //Gettingthe appointments data if uniqueAppointmentNotifications
+  //Getting the appointments data of uniqueAppointmentNotifications
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
     appointmentIds,
