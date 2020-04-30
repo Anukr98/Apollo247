@@ -299,25 +299,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
     try {
-      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED] = {
-        Order_ID: orderAutoId,
-        Order_Type: 'Cart',
-        Prescription_Required: uploadPrescriptionRequired,
-        Prescription_Added: !!(physicalPrescriptions.length || ePrescriptions.length),
-        Shipping_information: shippingInformation, // (Home/Store address)
-        Total_items_in_cart: cartItems.length,
-        Grand_Total: cartTotal + deliveryCharges,
-        Total_Discount_percentage: coupon
-          ? Number(((couponDiscount / cartTotal) * 100).toFixed(2))
-          : 0,
-        Discount_Amount: couponDiscount,
-        Delivery_charge: deliveryCharges,
-        Net_after_discount: grandTotal,
-        Payment_status: 1,
-        Payment_Type: isCashOnDelivery ? 'COD' : 'Prepaid',
-        Service_Area: 'Pharmacy',
+      const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
+        type: 'Pharmacy',
       };
-      postFirebaseEvent(FirebaseEventName.PHARMACY_CHECKOUT_COMPLETED, eventFirebaseAttributes);
+      postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
     } catch (error) {}
   };
 

@@ -49,7 +49,7 @@ export interface ConsultPaymentProps extends NavigationScreenProps {
   appointmentId: string;
   price: number;
   webEngageEventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED];
-  fireBaseEventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED];
+  fireBaseEventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE];
 }
 {
 }
@@ -94,7 +94,7 @@ export const ConsultPayment: React.FC<ConsultPaymentProps> = (props) => {
     try {
       postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, webEngageEventAttributes);
-      postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
+      postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, fireBaseEventAttributes);
     } catch (error) {}
 
     setLoading!(false);
