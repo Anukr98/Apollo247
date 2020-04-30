@@ -173,6 +173,8 @@ export const MyProfile: React.FC = (props) => {
             ? 'Manage Profiles'
             : currentPath === clientRoutes.addressBook()
             ? 'Address Book'
+            : currentPath === clientRoutes.healthRecords()
+            ? 'Health Records'
             : 'Manage Profiles'}
         </div>
       </div>
