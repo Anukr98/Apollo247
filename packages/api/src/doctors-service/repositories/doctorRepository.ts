@@ -935,6 +935,7 @@ export class DoctorRepository extends Repository<Doctor> {
 
   getAllSeniorDoctors() {
     return this.find({
+      select: ['id', 'mobileNumber'],
       where: {
         doctorType: Not('JUNIOR'),
         isActive: true,
@@ -1007,12 +1008,6 @@ export class DoctorRepository extends Repository<Doctor> {
     });
     const doctorsResult = await queryBuilder.getMany();
     return doctorsResult;
-  }
-  getDoctorDetailsByIds(ids: string[]) {
-    return this.createQueryBuilder('doctor')
-      .select(['doctor.mobileNumber', 'doctor.id'])
-      .where('doctor.id IN (:...ids)', { ids })
-      .getMany();
   }
 }
 

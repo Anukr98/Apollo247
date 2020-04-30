@@ -189,49 +189,51 @@ const sendUnreadMessagesNotification: Resolver<
   //getting all the un-read notifications
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notifications = await notificationBinRepo.getAllNotificationsByDoctorIds(doctorIds);
-  console.log('notificationData==', notifications);
 
-  const doctorAndPatient: Notifications[] = [];
-  const doctorAndPatientMapper: string[] = [];
-
-
+  //Filter the unique notifications with respect to appointments
+  const uniqueAppointmentNotifications: { [key: string]: Partial<NotificationBin> } = {};
   notifications.map((notification) => {
-    if(doctorAndPatient[])
-  })
+    const appointmentId = notification.eventId;
+    uniqueAppointmentNotifications[appointmentId] = notification;
+  });
 
-  // const notificationsCount: { [key: string]: number } = {};
-  // const doctorMobileMapper: { [key: string]: string } = {};
-  // const doctorIdsToSendNotification: string[] = [];
-  // notifications.map((notification) => {
-  //   console.log(notification.doctor);
-  //   if (notification.doctor) {
-  //     if (notificationsCount[notification.doctor]) {
-  //       notificationsCount[notification.doctor] = notificationsCount[notification.doctor] + 1;
-  //     } else {
-  //       doctorIdsToSendNotification.push(notification.doctor);
-  //       notificationsCount[notification.doctor] = 1;
-  //     }
-  //   }
-  // });
-  // console.log('notificationsCount==', notificationsCount);
-  // console.log('doctorIdsToSendNotification==', doctorIdsToSendNotification);
+  //Generate the unique notifications array
+  const uniqueNotifications: Partial<NotificationBin>[] = [];
+  Object.keys(uniqueAppointmentNotifications).map((appointmentId) => {
+    uniqueNotifications.push(uniqueAppointmentNotifications[appointmentId]);
+  });
 
-  // const doctorDetails = await doctorRepo.getDoctorDetailsByIds(doctorIdsToSendNotification);
-  // console.log('doctorDetails==', doctorDetails);
+  //Get the Notifications count for each doctor
+  const notificationsCount: { [key: string]: number } = {};
+  const doctorIdsToSendNotification: string[] = [];
+  uniqueNotifications.map((notification) => {
+    if (notification.toId) {
+      if (notificationsCount[notification.toId]) {
+        notificationsCount[notification.toId] = notificationsCount[notification.toId] + 1;
+      } else {
+        doctorIdsToSendNotification.push(notification.toId);
+        notificationsCount[notification.toId] = 1;
+      }
+    }
+  });
 
-  // doctorDetails.map((doctor) => {
-  //   doctorMobileMapper[doctor.id] = doctor.mobileNumber;
-  // });
-  // console.log('doctorMobileMapper==', doctorMobileMapper);
+  //Filter the specific doctor details for which notification has to be sent
+  const doctorDetails = doctors.filter((doctor) => doctorIdsToSendNotification.includes(doctor.id));
 
-  // Object.keys(notificationsCount).map((doctorId) => {
-  //   const messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
-  //     '{0}',
-  //     notificationsCount[doctorId].toString()
-  //   );
-  //   console.log('messageBody==', messageBody);
-  //   sendNotificationSMS(doctorMobileMapper[doctorId], messageBody);
-  // });
+  //Mapping the doctor id and mobile number
+  const doctorMobileMapper: { [key: string]: string } = {};
+  doctorDetails.map((doctor) => {
+    doctorMobileMapper[doctor.id] = doctor.mobileNumber;
+  });
+
+  //Sending the Notification to doctors
+  Object.keys(notificationsCount).map((doctorId) => {
+    const messageBody = ApiConstants.DOCTOR_CHAT_SMS_TEXT.replace(
+      '{0}',
+      notificationsCount[doctorId].toString()
+    );
+    sendNotificationSMS(doctorMobileMapper[doctorId], messageBody);
+  });
 
   return 'success';
 };
