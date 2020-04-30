@@ -167,12 +167,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'today') {
         availabilityArray.push(today);
@@ -311,10 +315,11 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
         setData(response.data);
         setLoading(false);
       });
-  }, [currentLat, currentLong]);
+  }, [currentLat, currentLong, filter]);
 
-  if (loading) disableFilter && disableFilter(true);
-  else if (currentPatient && currentPatient.id.length > 0) disableFilter && disableFilter(false);
+  useEffect(() => {
+    disableFilter && disableFilter(loading);
+  }, [loading]);
 
   if (loading)
     <div className={classes.circlularProgress}>

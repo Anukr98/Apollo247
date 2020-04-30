@@ -365,8 +365,8 @@ export const SearchByTest: React.FC = (props) => {
     testDetailsPackage && testDetailsPackage.length
       ? testDetailsPackage && testDetailsPackage.length
       : 0;
-  const {allCurrentPatients} = useAllCurrentPatients()
-  const onePrimaryUser = hasOnePrimaryUser()
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const onePrimaryUser = hasOnePrimaryUser();
 
   let showError = false;
 

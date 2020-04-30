@@ -286,6 +286,11 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               disabled={isSendingOtp || otp.length !== numOtpDigits}
               onClick={(e) => {
                 e.preventDefault();
+
+                /**Gtm code start start */
+                window.gep && window.gep('Profile', 'Signup / Login', 'OTP Entered');
+                /**Gtm code start end */
+
                 verifyOtp(otp, customLoginId).then((authToken) => {
                   if (!authToken) {
                     setOtpSubmitCount(otpSubmitCount + 1);
@@ -329,6 +334,10 @@ export const SignIn: React.FC<signInProps> = (props) => {
       <Formik
         initialValues={{ mobileNumber: '' }}
         onSubmit={(values) => {
+          /**Gtm code start start */
+          window.gep && window.gep('Profile', 'Signup / Login', 'Mobile Entered');
+          /**Gtm code start end */
+
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
           sendOtp(mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
         }}

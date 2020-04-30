@@ -76,9 +76,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     iFrameVideo: {
       position: 'relative',
-      height: '220px',
+      height: 174,
       width: '100%',
       border: 'none !important',
+      [theme.breakpoints.down('xs')]: {
+        height: 220,
+      },
     },
   };
 });
@@ -92,10 +95,12 @@ type ArticleItem = {
   slug: string;
   id: string;
   videoUrl: string;
+  sourceUrl: string;
 };
 
 interface ArticleItemProps {
   item: ArticleItem;
+  handleInfographicClick: (obj: object) => void;
 }
 
 const ArticleItem: React.FC<ArticleItemProps> = (props) => {
@@ -109,6 +114,7 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
     slug,
     id,
     videoUrl,
+    sourceUrl,
   } = props.item;
   const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
   return (
@@ -116,9 +122,14 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
       <div className={classes.card}>
         <Link
           to={
-            type.toLowerCase() === 'video' || type.toLowerCase() == 'infographic'
+            type.toLowerCase() === 'video' || type.toLowerCase() === 'infographic'
               ? '#'
-              : `/covid19/${type.toLowerCase()}${slug}/${id}`
+              : `/covid19/${type.toLowerCase()}${slug}`
+          }
+          onClick={
+            type.toLowerCase() === 'infographic'
+              ? () => props.handleInfographicClick({ image, postTitle, sourceUrl })
+              : () => {}
           }
         >
           {((image && image.length) || (videoUrl && videoUrl.length)) && (
@@ -158,38 +169,16 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
 
 interface ArticleCardProps {
   content: [];
+  handleInfographicClick: (img: object) => void;
 }
 
 export const ArticleCard: React.FC<ArticleCardProps> = (props) => {
   const classes = useStyles();
-  // const articleItems: ArticleItem[] = [
-  //   {
-  //     thumbnailWeb: require('images/articles/articles-01.png'),
-  //     type: 'Article',
-  //     title: 'Basic protective measures against the new coronavirus',
-  //     description: `Stay aware of the latest information on the COVID-19 outbreak, available on the WHO website and through your national and local public health authority.`,
-  //   },
-  //   {
-  //     thumbnailWeb: require('images/articles/articles-02.png'),
-  //     type: 'Report',
-  //     title: `COVID-19 –Situation Report`,
-  //     description:
-  //       'If you are not in an area where COVID-19 is spreading or have not travelled from an area where COVID-19 is spreading or have not been in contact with an infected patient, your risk of infection is low. ',
-  //   },
-  //   {
-  //     thumbnailWeb: require('images/articles/articles-03.png'),
-  //     type: 'Article',
-  //     title: 'Advice on the use of masks in the context of COVID-19',
-  //     description:
-  //       'The use of masks made of other materials (e.g., cotton fabric), also known as nonmedical masks, in the community setting has not been well evaluated.',
-  //   },
-  // ];
-
   return (
     <div className={classes.root}>
       <Grid container spacing={2}>
         {props.content.map((item, i) => (
-          <ArticleItem item={item} key={i} />
+          <ArticleItem handleInfographicClick={props.handleInfographicClick} item={item} key={i} />
         ))}
       </Grid>
     </div>

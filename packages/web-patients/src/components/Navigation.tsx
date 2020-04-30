@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 0,
+      },
       '& a': {
         fontSize: 13,
         fontWeight: 600,
@@ -22,6 +25,18 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down(900)]: {
           display: 'none',
         },
+      },
+    },
+    postLoginNavigation: {
+      '& a': {
+        textTransform: 'uppercase',
+        padding: '36px 16px 34px 16px',
+      },
+    },
+    homePageNav: {
+      marginLeft: 'auto',
+      [theme.breakpoints.down('xs')]: {
+        marginLeft: 'auto',
       },
     },
     menuTitle: {
@@ -147,6 +162,13 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 10,
         paddingRight: 10,
       },
+      [theme.breakpoints.down(460)]: {
+        paddingLeft: 0,
+        paddingRight: 0,
+      },
+      [theme.breakpoints.down(360)]: {
+        display: 'none',
+      },
       '& a': {
         backgroundColor: '#fcb716',
         boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
@@ -157,6 +179,9 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '11px 15px',
         display: 'block',
         textTransform: 'uppercase',
+        [theme.breakpoints.down(460)]: {
+          padding: '10px 10px',
+        },
       },
     },
   };
@@ -172,52 +197,111 @@ export const Navigation: React.FC = (props) => {
   const [isCartPopoverOpen, setIsCartPopoverOpen] = React.useState<boolean>(false);
 
   return (
-    <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link
-        className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
-        to={clientRoutes.doctorsLanding()}
-        title={'Doctors'}
-      >
-        <span className={classes.menuTitle}>Doctors</span>
-        <span className={classes.menuInfo}>Consult<br/> Online</span>
-      </Link>
-      <Link
-        to={clientRoutes.medicines()}
-        className={
-          currentPath === clientRoutes.medicines() ||
-          currentPath === clientRoutes.prescriptionsLanding()
-            ? classes.menuItemActive
-            : ''
-        }
-        title={'Pharmacy'}
-      >
-        <span className={classes.menuTitle}>Pharmacy</span>
-        <span className={classes.menuInfo}>Medicines &<br/> other products</span>
-      </Link>
-      {/* <Link
-        to={clientRoutes.tests()}
-        className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
-        title={'Tests'}
-      >
-        <span className={classes.menuTitle}>Tests</span>
-        <span className={classes.menuInfo}>Health<br/> checks</span>
-      </Link> */}
-      <Link
-        to={clientRoutes.covidLanding()}
-        className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
-        title={'Covid-19'}
-      >
-        <span className={classes.menuTitle}>Covid-19</span>
-        <span className={classes.menuInfo}>Latest<br/> updates</span>
-      </Link>
+    <div
+      className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${
+        currentPath === clientRoutes.welcome() ||
+        clientRoutes.termsConditions() ||
+        clientRoutes.aboutUs()
+          ? classes.homePageNav
+          : ''
+      }`}
+      data-cypress="Navigation"
+    >
       {isSignedIn ? (
-        ''
+        <>
+          <Link
+            className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
+            to={clientRoutes.appointments()}
+            title={'Appointments'}
+          >
+            Appointments
+          </Link>
+          <Link
+            to={clientRoutes.medicines()}
+            className={
+              currentPath === clientRoutes.medicines() ||
+              currentPath === clientRoutes.prescriptionsLanding()
+                ? classes.menuItemActive
+                : ''
+            }
+            title={'Medicines'}
+          >
+            Medicines
+          </Link>
+          {/* <Link
+          to={clientRoutes.tests()}
+          className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
+          title={'Tests'}
+        >
+          Tests
+        </Link> */}
+          <Link
+            to={clientRoutes.healthRecords()}
+            className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+            title={'Health Records'}
+          >
+            Health Records
+          </Link>
+        </>
       ) : (
+        <>
+          <Link
+            className={currentPath === clientRoutes.doctorsLanding() ? classes.menuItemActive : ''}
+            to={clientRoutes.doctorsLanding()}
+            title={'Doctors'}
+          >
+            <span className={classes.menuTitle}>Doctors</span>
+            <span className={classes.menuInfo}>
+              Consult
+              <br /> Online
+            </span>
+          </Link>
+          <Link
+            to={clientRoutes.medicines()}
+            className={
+              currentPath === clientRoutes.medicines() ||
+              currentPath === clientRoutes.prescriptionsLanding()
+                ? classes.menuItemActive
+                : ''
+            }
+            title={'Pharmacy'}
+          >
+            <span className={classes.menuTitle}>Pharmacy</span>
+            <span className={classes.menuInfo}>
+              Medicines &<br /> other products
+            </span>
+          </Link>
+          {/* <Link
+            to={clientRoutes.tests()}
+            className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
+            title={'Tests'}
+          >
+            <span className={classes.menuTitle}>Tests</span>
+            <span className={classes.menuInfo}>Health<br/> checks</span>
+          </Link> */}
+          <Link
+            to={clientRoutes.covidLanding()}
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            title={'Covid-19'}
+          >
+            <span className={classes.menuTitle}>Covid-19</span>
+            <span className={classes.menuInfo}>
+              Latest
+              <br /> updates
+            </span>
+          </Link>
+        </>
+      )}
+      {currentPath === clientRoutes.welcome() ||
+      clientRoutes.termsConditions() ||
+      clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
           <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
             Download App
           </a>
         </div>
+      ) : (
+        ''
       )}
       <div
         id="cartId"

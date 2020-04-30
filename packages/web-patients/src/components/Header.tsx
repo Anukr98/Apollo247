@@ -8,6 +8,7 @@ import { SignIn } from 'components/SignIn';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { locationRoutesBlackList } from 'helpers/commonHelpers';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { LocationSearch } from './LocationSearch';
@@ -177,6 +178,14 @@ export const Header: React.FC = (props) => {
   const [otp, setOtp] = React.useState('');
   const currentPath = window.location.pathname;
   const isMobileView = screen.width <= 768;
+
+  const checkIfDisabled = () => {
+    const x = locationRoutesBlackList.some((v) => {
+      return currentPath.indexOf(v) > -1;
+    });
+    return !x;
+  };
+
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
@@ -186,7 +195,7 @@ export const Header: React.FC = (props) => {
               <img src={require('images/ic_logo.png')} title={'Open the home page'} />
             </Link>
           </div>
-          {currentPath !== '/' && <LocationSearch />}
+          {checkIfDisabled() && currentPath !== '/' && <LocationSearch />}
           <MedicinesCartContext.Consumer>{() => <Navigation />}</MedicinesCartContext.Consumer>
           <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
             <div

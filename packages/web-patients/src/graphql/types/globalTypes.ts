@@ -552,11 +552,12 @@ export interface MedicinePaymentInput {
 }
 
 export interface MedicinePaymentMqInput {
-  orderId: string;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
   paymentRefId?: string | null;
+  refundAmount?: number | null;
+  bankName?: string | null;
   paymentStatus?: string | null;
   paymentDateTime?: any | null;
   responseCode?: string | null;

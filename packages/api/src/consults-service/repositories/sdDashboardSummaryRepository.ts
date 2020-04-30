@@ -98,12 +98,29 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .execute();
   }
 
-  saveFeedbackDetails(feedbackSummaryAttrs: Partial<FeedbackDashboardSummary>) {
-    return FeedbackDashboardSummary.create(feedbackSummaryAttrs)
-      .save()
-      .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
-      });
+  async saveFeedbackDetails(feedbackSummaryAttrs: Partial<FeedbackDashboardSummary>) {
+    const checkRecord = await FeedbackDashboardSummary.findOne({
+      where: {
+        ratingDate: feedbackSummaryAttrs.ratingDate,
+      },
+    });
+    if (checkRecord) {
+      return FeedbackDashboardSummary.update(checkRecord.id, feedbackSummaryAttrs).catch(
+        (createErrors) => {
+          throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, {
+            createErrors,
+          });
+        }
+      );
+    } else {
+      return FeedbackDashboardSummary.create(feedbackSummaryAttrs)
+        .save()
+        .catch((createErrors) => {
+          throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, {
+            createErrors,
+          });
+        });
+    }
   }
 
   async saveDoctorFeeSummaryDetails(doctorFeeAttrs: Partial<DoctorFeeSummary>) {
@@ -237,10 +254,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           toDate: endDate,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
-        })
+        .andWhere('appointment.status = :status', { status: STATUS.COMPLETED })
         .getMany();
     } else {
       return Appointment.createQueryBuilder('appointment')
@@ -252,10 +266,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           appointmentType: APPOINTMENT_TYPE.ONLINE,
         })
         .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
-        .andWhere('appointment.status not in(:status1,:status2)', {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
-        })
+        .andWhere('appointment.status = :status', { status: STATUS.COMPLETED })
         .getMany();
     }
   }
@@ -360,6 +371,21 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .getCount();
   }
 
+  async getTotalCompletedAppointments(doctorId: string, appointmentDate: Date) {
+    const inputDate = format(appointmentDate, 'yyyy-MM-dd');
+    const endDate = new Date(inputDate + 'T18:29');
+    const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
+    console.log(inputStartDate, 'inputStartDate find by date doctor id');
+    const startDate = new Date(inputStartDate + 'T18:30');
+    return Appointment.count({
+      where: {
+        doctorId: doctorId,
+        appointmentDateTime: Between(startDate, endDate),
+        status: STATUS.COMPLETED,
+      },
+    });
+  }
+
   async getDoctorSlots(doctorId: string, appointmentDate: Date, doctorsDb: Connection) {
     const consultHourRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     const weekDay = format(appointmentDate, 'EEEE').toUpperCase();
@@ -410,7 +436,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         fromDate: startDate,
         toDate: endDate,
       })
-      .andWhere('appointment_call_details.endTime is not null', { doctorType: Not('JUNIOR') })
+      .andWhere('appointment_call_details.endTime is not null')
+      .andWhere('appointment_call_details."doctorType" != :docType', { docType: 'JUNIOR' })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .getMany();
     console.log(totalTime, 'total time');
@@ -485,6 +512,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
   async getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
     const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
+    console.log('checkingquery=>');
     const appointmentList = await Appointment.find({
       where: {
         doctorId,
@@ -492,25 +520,36 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         status: Not(STATUS.CANCELLED),
       },
     });
+    console.log('appointmentsList>', appointmentList);
     let count: number = 0;
     if (appointmentList.length) {
       return new Promise<number>((resolve, reject) => {
         appointmentList.forEach(async (appt, index, array) => {
           const calldetails = await AppointmentCallDetails.findOne({
-            where: { appointment: appt.id },
+            where: { appointment: appt.id, doctorType: Not('JUNIOR') },
           });
+          console.log('callDetalis==>', calldetails);
           if (calldetails) {
             const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
             const callStartTimeFormat = format(calldetails.startTime, 'yyyy-MM-dd HH:mm');
             const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
             const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
+            console.log(
+              'datesss=>',
+              apptFormat,
+              callStartTimeFormat,
+              addingFiveMinutes,
+              addingFiveMinutesFormat
+            );
             const withInTime = isWithinInterval(new Date(callStartTimeFormat), {
               start: new Date(apptFormat),
               end: new Date(addingFiveMinutesFormat),
             });
+            console.log('isWithInInterval=>', withInTime);
             if (withInTime) {
               count = count + 1;
             }
+            console.log('count==>', count);
           }
           if (index + 1 === array.length) {
             resolve(count);

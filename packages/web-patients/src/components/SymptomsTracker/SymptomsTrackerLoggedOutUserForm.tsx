@@ -1,12 +1,14 @@
-import { Theme, FormControl, CircularProgress } from '@material-ui/core';
+import { Theme, FormControl } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { isDobValid } from '@aph/universal/dist/aphValidators';
 import _isEmpty from 'lodash/isEmpty';
+import _isUndefined from 'lodash/isUndefined';
+
 import { parse, format } from 'date-fns';
 import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import _toLower from 'lodash/toLower';
@@ -19,12 +21,6 @@ export const convertClientDateToIsoDate = (ddmmyyyy: string | null) => {
   if (!ddmmyyyy) return null;
   const date = parse(ddmmyyyy, clientDatePattern, new Date());
   return format(date, isoDatePattern);
-};
-
-const convertIsoDateToClientDate = (isoDateStr: string | null) => {
-  if (!isoDateStr) return null;
-  const date = parse(isoDateStr, isoDatePattern, new Date());
-  return format(date, clientDatePattern);
 };
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -52,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     signUpPop: {
-      width: 368,
+      // width: 368,
       borderRadius: 10,
       paddingTop: 0,
       boxShadow: 'none',
@@ -190,11 +186,27 @@ export interface NewProfileProps {
 
 export const SymptomsTrackerLoggedOutForm: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles();
-  const urlParams = new URLSearchParams(window.location.search);
-  const orderedGenders = [Gender.MALE, Gender.FEMALE, Gender.OTHER];
+  const [gender, setGender] = useState<Gender>();
+  const [dob, setDob] = useState('');
+  const orderedGenders = [Gender.MALE, Gender.FEMALE];
+  const handleOnChangeDob = (dob: any, dobError: any) => {
+    const userDob = dob.target.value;
+    if (userDob.length && userDob.length === 10 && isDobValid(userDob)) {
+      setDob(userDob);
+    }
+  };
+
+  useEffect(() => {
+    if (!_isUndefined(gender) && !_isUndefined(dob)) {
+      props.setData({
+        gender: gender,
+        dob: convertClientDateToIsoDate(dob),
+      });
+    }
+  }, [gender, dob]);
 
   return (
-    <div className={classes.signUpPop} data-cypress="NewProfile">
+    <div className={classes.signUpPop} data-cypress="symptom-tracker-form">
       <Formik
         onSubmit={() => {}}
         initialValues={{
@@ -212,10 +224,6 @@ export const SymptomsTrackerLoggedOutForm: React.FC<NewProfileProps> = (props) =
         FormikProps<FormValues>) => {
           const showError = (fieldName: keyof FormValues) =>
             !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
-          const requiredFields: (keyof FormValues)[] = ['dateOfBirth', 'gender'];
-          const formIsUntouched = !dirty;
-          const formHasErrors = !_isEmpty(errors);
-          const someRequiredFieldsMissing = requiredFields.some((field) => _isEmpty(values[field]));
 
           return (
             <Form>
@@ -235,12 +243,7 @@ export const SymptomsTrackerLoggedOutForm: React.FC<NewProfileProps> = (props) =
                             placeholder="dd/mm/yyyy"
                             error={showError('dateOfBirth')}
                             inputProps={{ type: 'text', maxLength: 10 }}
-                            onBlur={(e) =>
-                              props.setData({
-                                gender: values.gender,
-                                dob: convertClientDateToIsoDate(e.currentTarget.value),
-                              })
-                            }
+                            onKeyUp={(e) => handleOnChangeDob(e, showError('dateOfBirth'))}
                           />
                           {showError('dateOfBirth') ? (
                             <FormHelperText
@@ -275,10 +278,7 @@ export const SymptomsTrackerLoggedOutForm: React.FC<NewProfileProps> = (props) =
                                   }`}
                                   onClick={(e) => {
                                     setFieldValue('gender', e.currentTarget.value as Gender);
-                                    props.setData({
-                                      gender: e.currentTarget.value as Gender,
-                                      dob: convertClientDateToIsoDate(values.dateOfBirth),
-                                    });
+                                    setGender(e.currentTarget.value as Gender);
                                   }}
                                 >
                                   {_upperFirst(_toLower(gender))}

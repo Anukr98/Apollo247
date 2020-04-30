@@ -19,6 +19,7 @@ import {
   AphDialogTitle,
   AphSelect,
   AphRadio,
+  AphTooltip,
 } from '@aph/web-ui-components';
 import {
   MEDICINE_CONSUMPTION_DURATION,
@@ -460,7 +461,8 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 200,
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
-      marginTop: 34,
+      marginTop: 0,
+      maxHeight: '60vh',
       '& ul': {
         padding: 0,
         '& li': {
@@ -1041,29 +1043,33 @@ export const MedicinePrescription: React.FC = () => {
     PATCH: { value: 'patch' },
     AS_PRESCRIBED: { value: 'As prescribed' },
   };
-  function renderSuggestion(suggestion: OptionType, { query }: Autosuggest.RenderSuggestionParams) {
+  function renderSuggestion(
+    suggestion: OptionType,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
     const matches = match(suggestion.label, query);
     const parts = parse(suggestion.label, matches);
 
     return (
       medicine.length > 2 && (
-        <div>
-          {parts.map((part) => (
-            <span
-              key={part.text}
-              style={{
-                fontWeight: part.highlight ? 500 : 400,
-                whiteSpace: 'pre',
-              }}
-              title={suggestion.label}
-            >
-              {part.text.length > 46
-                ? part.text.substring(0, 45).toLowerCase() + '...'
-                : part.text.toLowerCase()}
-            </span>
-          ))}
-          <img src={require('images/ic_dark_plus.svg')} alt="" />
-        </div>
+        <AphTooltip open={isHighlighted} title={suggestion.label}>
+          <div>
+            {parts.map((part) => (
+              <span
+                key={part.text}
+                style={{
+                  fontWeight: part.highlight ? 500 : 400,
+                  whiteSpace: 'pre',
+                }}
+              >
+                {part.text.length > 46
+                  ? part.text.substring(0, 45).toLowerCase() + '...'
+                  : part.text.toLowerCase()}
+              </span>
+            ))}
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+          </div>
+        </AphTooltip>
       )
     );
   }
@@ -1511,7 +1517,16 @@ export const MedicinePrescription: React.FC = () => {
       customDosageEvening.trim() +
       '-' +
       customDosageNight.trim();
-    if (!isCustomform && tabletsCount === '') {
+    let customDosageArray = [];
+    if (customDosageMorning && customDosageMorning.trim() !== '')
+      customDosageArray.push(customDosageMorning.trim());
+    if (customDosageNoon && customDosageNoon.trim() !== '')
+      customDosageArray.push(customDosageNoon.trim());
+    if (customDosageEvening && customDosageEvening.trim() !== '')
+      customDosageArray.push(customDosageEvening.trim());
+    if (customDosageNight && customDosageNight.trim() !== '')
+      customDosageArray.push(customDosageNight.trim());
+    if (!isCustomform && tabletsCount.trim() === '') {
       setErrorState({
         ...errorState,
         tobeTakenErr: false,
@@ -1570,6 +1585,14 @@ export const MedicinePrescription: React.FC = () => {
       customDosageNight.trim() !== '' &&
       daySlotsArr.indexOf('NIGHT') < 0
     ) {
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isCustomform && customDosageArray.length !== daySlotsArr.length) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1916,9 +1939,9 @@ export const MedicinePrescription: React.FC = () => {
                     ${duration} ${whenString.length > 0 ? whenString : ''} ${
                       timesString.length > 0 &&
                       medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage === ''
-                        ? timesString
-                        : ''
+                      medicine.medicineCustomDosage !== ''
+                        ? ''
+                        : timesString
                     }
                     `}
                   </h6>
@@ -2051,9 +2074,9 @@ export const MedicinePrescription: React.FC = () => {
                         } ${favDurations} ${favWhenString.length > 0 ? favWhenString : ''} ${
                           favTimesString.length > 0 &&
                           favMedicine.medicineCustomDosage &&
-                          favMedicine.medicineCustomDosage === ''
-                            ? favTimesString
-                            : ''
+                          favMedicine.medicineCustomDosage !== ''
+                            ? ''
+                            : favTimesString
                         }
                     `}
                       </h6>
@@ -2352,9 +2375,7 @@ export const MedicinePrescription: React.FC = () => {
                                     setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                   }}
                                 >
-                                  <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                                    {generateFrequency}
-                                  </Scrollbars>
+                                  {generateFrequency}
                                 </AphSelect>
                               </Grid>
                             </Grid>
@@ -2481,9 +2502,7 @@ export const MedicinePrescription: React.FC = () => {
                               setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
                             }}
                           >
-                            <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
                             {roaOptionHtml}
-                            </Scrollbars>
                           </AphSelect>
                         </div>
                       </Grid>
@@ -2888,9 +2907,7 @@ export const MedicinePrescription: React.FC = () => {
                                       setFrequency(e.target.value as MEDICINE_FREQUENCY);
                                     }}
                                   >
-                                     <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
-                                      {generateFrequency}
-                                    </Scrollbars>
+                                    {generateFrequency}
                                   </AphSelect>
                                 </Grid>
                               </Grid>
@@ -3016,9 +3033,7 @@ export const MedicinePrescription: React.FC = () => {
                                 setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
                               }}
                             >
-                             <Scrollbars autoHide={true} style={{ height: 'calc(55vh' }}>
                               {roaOptionHtml}
-                            </Scrollbars>
                             </AphSelect>
                           </div>
                         </Grid>

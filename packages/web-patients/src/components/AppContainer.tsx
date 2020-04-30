@@ -55,6 +55,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { ContactUs } from 'components/ContactUs';
 import { CovidLanding } from 'components/Covid/CovidLanding';
 import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
+import { AboutUs } from 'components/AboutUs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -86,6 +87,7 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
+  const currentPath = window.location.pathname;
   const pageName = window.location.pathname;
 
   useEffect(() => {
@@ -94,10 +96,7 @@ const App: React.FC = () => {
 
   return (
     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
-      <div
-        className={`${classes.app} ${pageName === '/covid19' && classes.noHeaders} ${pageName ===
-          '/covid19/article' && classes.noHeaders}`}
-      >
+      <div className={`${classes.app}`}>
         <Helmet>
           <script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
@@ -105,6 +104,7 @@ const App: React.FC = () => {
         </Helmet>
         <Switch>
           <Route exact path={clientRoutes.welcome()} component={Welcome} />
+          <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
           <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
           <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
           <Route exact path={clientRoutes.patients()} component={PatientsList} />
