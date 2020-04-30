@@ -396,6 +396,14 @@ export const SymptomsTrackerSDK: React.FC = () => {
     setPatientAge(getAge(dob));
   };
   const setUserGender = (gender: string) => gender.toLowerCase();
+
+  useEffect(()=>{
+    if(isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
+      setUserAge(currentPatient.dateOfBirth);
+      setPatientGender(setUserGender(currentPatient.gender));
+    }
+  }, [isSignedIn, currentPatient])
+
   useEffect(() => {
     console.log('fdafdafas');
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
@@ -404,7 +412,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
     } else if (loggedOutPatientAge.length) {
       setUserAge(loggedOutPatientAge);
     }
-  }, [loggedOutPatientAge, isSignedIn]);
+  }, [loggedOutPatientAge]);
 
   useEffect(() => {
     if (isSignedIn && currentPatient && currentPatient.gender) {
