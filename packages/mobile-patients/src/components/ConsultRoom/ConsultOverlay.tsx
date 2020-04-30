@@ -240,36 +240,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     return eventAttributes;
   };
 
-  const getConsultationBookedFirebaseEventAttributes = (time: string, id: string) => {
-    const localTimeSlot = moment(new Date(time));
-    console.log(localTimeSlot.format('DD-MM-YYY, hh:mm A'));
-
-    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-
-    const eventAttributes: FirebaseEvents[FirebaseEventName.CONSULTATION_BOOKED] = {
-      name: g(props.doctor, 'fullName')!,
-      specialisation: g(props.doctor, 'specialty', 'userFriendlyNomenclature')!,
-      category: g(props.doctor, 'doctorType')!, // send doctorType
-      time: localTimeSlot.format('DD-MM-YYY, hh:mm A'),
-      consultType: tabs[0].title === selectedTab ? 'online' : 'clinic',
-      clinic_name: g(props.doctor, 'doctorHospital', '0' as any, 'facility', 'name')!,
-      clinic_address:
-        doctorClinics.length > 0 && props.doctor!.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
-              doctorClinics[0].facility.city
-            }`
-          : '',
-      Patient_Name: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      Patient_UHID: g(currentPatient, 'uhid'),
-      Relation: g(currentPatient, 'relation'),
-      Age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      Gender: g(currentPatient, 'gender'),
-      Mobile_Number: g(currentPatient, 'mobileNumber'),
-      Customer_ID: g(currentPatient, 'id'),
-      Consult_ID: id,
+  const getConsultationBookedFirebaseEventAttributes = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
+      type: 'Consultation',
     };
     return eventAttributes;
   };
@@ -310,11 +283,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         );
         try {
           postFirebaseEvent(
-            FirebaseEventName.CONSULTATION_BOOKED,
-            getConsultationBookedFirebaseEventAttributes(
-              paymentDateTime,
-              g(data, 'makeAppointmentPayment', 'appointment', 'id')!
-            )
+            FirebaseEventName.IN_APP_PURCHASE,
+            getConsultationBookedFirebaseEventAttributes()
           );
         } catch (error) {}
 
@@ -408,10 +378,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               g(apptmt, 'appointmentDateTime'),
               g(data, 'data', 'bookAppointment', 'appointment', 'id')!
             ),
-            fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(
-              g(apptmt, 'appointmentDateTime'),
-              g(data, 'data', 'bookAppointment', 'appointment', 'id')!
-            ),
+            fireBaseEventAttributes: getConsultationBookedFirebaseEventAttributes(),
             //   tabs[0].title === selectedTab
             //     ? price //1 //props.doctor!.onlineConsultationFees
             //     : props.doctor!.physicalConsultationFees,

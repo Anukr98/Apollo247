@@ -292,10 +292,10 @@ export const Login: React.FC<LoginProps> = (props) => {
                   console.log(confirmResult, 'confirmResult');
                   setShowSpinner(false);
 
-                  const eventAttributes: FirebaseEvents[FirebaseEventName.MOBILE_NUMBER_ENTERED] = {
+                  const eventAttributes: FirebaseEvents[FirebaseEventName.LOGIN] = {
                     mobilenumber: phoneNumber,
                   };
-                  postFirebaseEvent(FirebaseEventName.MOBILE_NUMBER_ENTERED, eventAttributes);
+                  postFirebaseEvent(FirebaseEventName.LOGIN, eventAttributes);
 
                   console.log('confirmResult login', confirmResult);
                   try {
