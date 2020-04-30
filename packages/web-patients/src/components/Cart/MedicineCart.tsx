@@ -625,7 +625,7 @@ export const MedicineCart: React.FC = (props) => {
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
-        // orderId: orderId,
+        orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: parseFloat(totalAmount),
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
@@ -723,7 +723,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
