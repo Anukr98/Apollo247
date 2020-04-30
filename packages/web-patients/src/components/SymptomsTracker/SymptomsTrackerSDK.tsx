@@ -392,7 +392,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
       .diff(moment(dob, 'YYYY-MM-DD'), 'years')
       .toString();
   const setUserAge = (dob: string) => {
-    console.log('finalAge', dob);
     setPatientAge(getAge(dob));
   };
   const setUserGender = (gender: string) => gender.toLowerCase();
@@ -405,7 +404,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
   }, [isSignedIn, currentPatient])
 
   useEffect(() => {
-    console.log('fdafdafas');
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth) {
       // setPatientAge(currentPatient.dateOfBirth)
       setUserAge(currentPatient.dateOfBirth);
@@ -418,7 +416,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
     if (isSignedIn && currentPatient && currentPatient.gender) {
       setPatientGender(setUserGender(currentPatient.gender));
     } else if (loggedOutPatientGender.length) {
-      console.log(555, loggedOutPatientGender);
       setPatientGender(setUserGender(loggedOutPatientGender));
     }
   }, [loggedOutPatientGender, isSignedIn]);
@@ -426,7 +423,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const setLoggedOutPatientData = (dataObj: any) => {
     if (Object.values(dataObj).every((element) => element !== null)) {
       // save the values and hide the pop over
-      console.log(dataObj);
       setLoggedOutPatientAge(dataObj.dob);
       setLoggedOutPatientGender(dataObj.gender);
       setLoggedOutUserDetailPopover(false);
@@ -463,7 +459,6 @@ export const SymptomsTrackerSDK: React.FC = () => {
       setLoggedOutUserDetailPopover(true);
     }
   }, []);
-  console.log(patientAge, 'age', patientGender, 'Gender')
   return (
     <div className={classes.root}>
       <Header />
