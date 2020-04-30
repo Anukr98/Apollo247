@@ -220,19 +220,20 @@ export const CovidLanding: React.FC = (props) => {
   const headingArr = [
     {
       heading: 'How can I stay safe?',
-      subheading: 'Articles and videos about basic protective measures against the coronavirus',
+      subheading:
+        'Articles and videos on pŕecautions and protective measures to avoid Coronavirus.',
       category: 'stay-safe',
       defaultExpanded: true,
     },
     {
       heading: 'What to do if I have symptoms?',
-      subheading: 'Know more about the symptoms and preventions through articles and videos.',
+      subheading: 'Know more about symptoms of Coronavirus and what to do if infected.',
       category: 'covid-symptoms',
       defaultExpanded: false,
     },
     {
       heading: 'How are we getting ahead?',
-      subheading: 'Learn how Apollo is making a difference to help the world against coronavirus.',
+      subheading: 'Learn about the efforts around the world to win over Coronavirus.',
       category: 'going-ahead',
       defaultExpanded: false,
     },

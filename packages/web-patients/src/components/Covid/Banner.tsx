@@ -107,11 +107,8 @@ export const Banner: React.FC = (props) => {
         <AphButton className={classes.subcribeBtn}>Subscribe</AphButton>
       </div>
       <div className={classes.content}>
-        <h2>Covid-19</h2>
-        <p>
-          Learn more about Coronavirus. Understand how to stay safe and what to do if you have
-          symptoms.
-        </p>
+        <h2>Coronavirus (Covid-19)</h2>
+        <p>Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.</p>
       </div>
     </div>
   );

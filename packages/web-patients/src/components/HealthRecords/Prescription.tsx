@@ -251,7 +251,11 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                       ? prescription.medicineToBeTaken
                           .map(
                             (item: MEDICINE_TO_BE_TAKEN | null) =>
-                              item && item.split('_').join(' ').toLowerCase()
+                              item &&
+                              item
+                                .split('_')
+                                .join(' ')
+                                .toLowerCase()
                           )
                           .join(', ')
                       : ''}
@@ -262,7 +266,11 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
                       ? prescription.medicineTimings
                           .map(
                             (item: MEDICINE_TIMINGS | null) =>
-                              item && item.split('_').join(' ').toLowerCase()
+                              item &&
+                              item
+                                .split('_')
+                                .join(' ')
+                                .toLowerCase()
                           )
                           .map(
                             (val: string | null, idx: number, array: (string | null)[]) =>

@@ -180,8 +180,8 @@ export const CouponCode: React.FC<CouponProps> = (props) => {
               setCouponText('');
               setCouponCodeApplied(false);
               setOpenCouponField(false);
-              if(props.removeCouponCode){
-                props.removeCouponCode()
+              if (props.removeCouponCode) {
+                props.removeCouponCode();
               }
             }}
           >
