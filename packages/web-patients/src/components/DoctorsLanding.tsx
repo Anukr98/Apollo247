@@ -176,6 +176,11 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    hideMascot: {
+      [theme.breakpoints.down('xs')]: {
+        visibility: 'hidden',
+      },
+    },
   };
 });
 
@@ -755,7 +760,11 @@ export const DoctorsLanding: React.FC = (props) => {
                 }}
               />
             </Popover>
-            {!onePrimaryUser && <ManageProfile />}
+            {!onePrimaryUser && (
+              <div className={classes.hideMascot}>
+                <ManageProfile />
+              </div>
+            )}
           </>
         )}
       </LocationContext.Consumer>
