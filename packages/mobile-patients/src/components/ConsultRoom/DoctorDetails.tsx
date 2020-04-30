@@ -62,6 +62,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import moment from 'moment';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { NotificationListener } from '../NotificationListener';
 
 const { height, width } = Dimensions.get('window');
 
@@ -375,7 +376,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           } else {
             setTimeout(() => {
               setshowSpinner(false);
-              moveBack();
+              navigateToSpecialitySearch();
             }, 1500);
           }
         } catch (e) {
@@ -387,6 +388,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         setshowSpinner(false);
         console.log('Error occured', e);
       });
+  };
+
+  const navigateToSpecialitySearch = () => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.DoctorSearch,
+          }),
+        ],
+      })
+    );
   };
 
   // const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
@@ -1036,6 +1051,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           }}
         />
       )}
+      <NotificationListener navigation={props.navigation} />
     </View>
   );
 };
