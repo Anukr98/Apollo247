@@ -27,9 +27,7 @@ export const paymentTransactionStatusTypeDefs = gql`
   }
   
 `;
-type AppointmentID = {
-	appointmentId: string;
-}
+
 type AppointmentPaymentResponse = {
 	appointment: {
 		paymentRefId: string;
