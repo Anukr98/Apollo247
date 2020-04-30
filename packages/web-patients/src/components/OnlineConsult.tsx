@@ -400,10 +400,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     nextAvailableSlot.getDoctorNextAvailableSlot &&
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots
   ) {
-    /* Gtm code start */
-    const speciality = getSpeciality()
-    window.gep && window.gep('Consultations', speciality, 'Order Initiated', revisedAmount);
-    /* Gtm code end */
     nextAvailableSlot.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
       if (availability && availability.availableSlot !== '') {
         // console.log(availability && availability.availableSlot, 'availability.....');
