@@ -199,7 +199,11 @@ export const Navigation: React.FC = (props) => {
   return (
     <div
       className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${
-        currentPath === clientRoutes.welcome() ? classes.homePageNav : ''
+        currentPath === clientRoutes.welcome() ||
+        clientRoutes.termsConditions() ||
+        clientRoutes.aboutUs()
+          ? classes.homePageNav
+          : ''
       }`}
       data-cypress="Navigation"
     >
@@ -288,7 +292,9 @@ export const Navigation: React.FC = (props) => {
           </Link>
         </>
       )}
-      {currentPath === clientRoutes.welcome() ? (
+      {currentPath === clientRoutes.welcome() ||
+      clientRoutes.termsConditions() ||
+      clientRoutes.aboutUs() ? (
         <div className={`${classes.appDownloadBtn}`}>
           <a href={getAppStoreLink()} target="_blank" title={'Download Apollo247 App'}>
             Download App

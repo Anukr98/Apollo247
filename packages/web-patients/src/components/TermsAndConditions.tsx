@@ -123,11 +123,12 @@ export const TermsAndConditions: React.FC = () => {
               </p>
               <p className={classes.content}>
                 You are at least 18 years old or visiting under the supervision of a parent or
-                guardian, who in such a case will be deemed as the recipient / end-user of the
-                Services for the purpose of these Terms and Conditions. You are legally competent to
-                contract, and otherwise competent to receive the Services. You have not been
-                previously suspended or removed by Apollo247, or disqualified for any other reason,
-                from availing the Services.
+                guardian, who in such a case will be deemed as the <br /> recipient / end-user of
+                the Services for the purpose of these Terms and Conditions.
+                <br /> You are legally competent to contract, and otherwise competent to receive the
+                Services.
+                <br /> You have not been previously suspended or removed by Apollo247, or
+                disqualified for any other reason, from availing the Services.
               </p>
               <hr className={classes.horizontalRule} />
               <div className={classes.pointsHeading}>3. Our Services</div>
@@ -147,7 +148,7 @@ export const TermsAndConditions: React.FC = () => {
               </p>
               <p className={classes.content}>
                 <div>
-                  <b>B. Scheduling an appointment::</b>
+                  <b>B. Scheduling an appointment:</b>
                 </div>
                 <ul>
                   <li className={classes.subPoints}>
