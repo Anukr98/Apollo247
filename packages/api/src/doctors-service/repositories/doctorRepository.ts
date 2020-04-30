@@ -972,7 +972,7 @@ export class DoctorRepository extends Repository<Doctor> {
 
   getAllSeniorDoctors() {
     return this.find({
-      select: ['id', 'mobileNumber'],
+      select: ['id', 'mobileNumber', 'displayName'],
       where: {
         doctorType: Not('JUNIOR'),
         isActive: true,

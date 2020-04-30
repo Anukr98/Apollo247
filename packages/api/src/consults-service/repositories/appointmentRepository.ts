@@ -61,6 +61,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
+  getAppointmentsByIdsWithSpecificFields(ids: string[], fields: string[]) {
+    return this.createQueryBuilder('appointment')
+      .select(fields)
+      .where('appointment.id IN (:...ids)', { ids })
+      .getMany();
+  }
+
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
