@@ -20,7 +20,7 @@
     "covidHeading": "Worried about Coronavirus?",
     "emergencyBannerPhoneNumber": "08047192606",
     "covidHelpText": "We are here to help you.",
-    "covidMessageText": "We know there is too much information out there. We have compiled the most science-based articles for you on how to stay safe, prevention and what to do in case you are infected.",
+    "covidMessageText": "Apollo 247 has curated fact-based information from reputed sources on Coronavirus. Now you can get reliable answers to common questions at one place.",
     "covidYouCanText": "You can also"
   },
   "login": {
@@ -179,51 +179,27 @@
     "filter_data": [
       {
         "label": "City",
-        "options": [
-          "Hyderabad",
-          "Chennai"
-        ]
+        "options": ["Hyderabad", "Chennai"]
       },
       {
         "label": "Experience In Years",
-        "options": [
-          "0 - 5",
-          "6 - 10",
-          "11 - 15",
-          "15+"
-        ]
+        "options": ["0 - 5", "6 - 10", "11 - 15", "15+"]
       },
       {
         "label": "Availability",
-        "options": [
-          "Now",
-          "Today",
-          "Tomorrow",
-          "Next 3 Days"
-        ]
+        "options": ["Now", "Today", "Tomorrow", "Next 3 Days"]
       },
       {
         "label": "Fees In Rupees",
-        "options": [
-          "100 - 500",
-          "501 - 1000",
-          "1000+"
-        ]
+        "options": ["100 - 500", "501 - 1000", "1000+"]
       },
       {
         "label": "Gender",
-        "options": [
-          "Male",
-          "Female"
-        ]
+        "options": ["Male", "Female"]
       },
       {
         "label": "Language",
-        "options": [
-          "Hindi",
-          "English",
-          "Telugu"
-        ]
+        "options": ["Hindi", "English", "Telugu"]
       }
     ]
   },

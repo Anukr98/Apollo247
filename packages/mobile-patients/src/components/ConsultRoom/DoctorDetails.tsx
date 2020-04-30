@@ -62,7 +62,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import moment from 'moment';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
-import { NotificationListener } from '../NotificationListener';
+// import { NotificationListener } from '../NotificationListener';
 
 const { height, width } = Dimensions.get('window');
 
@@ -1051,7 +1051,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           }}
         />
       )}
-      <NotificationListener navigation={props.navigation} />
+      {/* <NotificationListener navigation={props.navigation} /> */}
     </View>
   );
 };

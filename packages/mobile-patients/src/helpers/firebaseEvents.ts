@@ -2,11 +2,11 @@ type YesOrNo = { value: 'Yes' | 'No' };
 
 export enum FirebaseEventName {
   MOBILE_ENTRY = 'Mobile Entry',
-  LOGIN = 'LOGIN',
+  LOGIN = 'login',
   OTP_ENTERED = 'OTP Entered',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
-  SIGN_UP = 'SIGN_UP',
+  SIGN_UP = 'sign_up',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
@@ -65,7 +65,7 @@ export enum FirebaseEventName {
   REORDER_MEDICINES = 'Reorder Medicines',
 
   //In App Purchase Events
-  IN_APP_PURCHASE = 'IN_APP_PURCHASE',
+  IN_APP_PURCHASE = 'in_app_purchase',
 }
 
 export interface PatientInfo {
