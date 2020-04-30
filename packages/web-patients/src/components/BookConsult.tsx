@@ -120,17 +120,17 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
       doctorDetails && doctorDetails.getDoctorDetailsById
         ? doctorDetails.getDoctorDetailsById.id
         : '';
-    useEffect(() => {
-      /* Gtm code start */
-      const speciality =
-        doctorDetails &&
-          doctorDetails.getDoctorDetailsById &&
-          doctorDetails.getDoctorDetailsById.specialty &&
-          doctorDetails.getDoctorDetailsById.specialty.name ? doctorDetails.getDoctorDetailsById.specialty.name : null
-      const onlineConsultationFees = doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.onlineConsultationFees ? doctorDetails.getDoctorDetailsById.onlineConsultationFees : null
-      window.gep && window.gep('Consultations', speciality, 'Order Initiated', onlineConsultationFees);
-      /* Gtm code end */
-    }, [])
+    // useEffect(() => {
+    //   /* Gtm code start */
+    //   const speciality =
+    //     doctorDetails &&
+    //       doctorDetails.getDoctorDetailsById &&
+    //       doctorDetails.getDoctorDetailsById.specialty &&
+    //       doctorDetails.getDoctorDetailsById.specialty.name ? doctorDetails.getDoctorDetailsById.specialty.name : null
+    //   const onlineConsultationFees = doctorDetails && doctorDetails.getDoctorDetailsById && doctorDetails.getDoctorDetailsById.onlineConsultationFees ? doctorDetails.getDoctorDetailsById.onlineConsultationFees : null
+    //   window.gep && window.gep('Consultations', speciality, 'Order Initiated', onlineConsultationFees);
+    //   /* Gtm code end */
+    // }, [])
 
     return (
       <Paper className={classes.modalBox}>

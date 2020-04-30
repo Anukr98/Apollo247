@@ -125,6 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     actions: {
       padding: 20,
+      position: 'sticky',
     },
     btnGroup: {
       paddingTop: 7,

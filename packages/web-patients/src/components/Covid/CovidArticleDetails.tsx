@@ -9,7 +9,7 @@ import fetchUtil from 'helpers/fetch';
 // import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
 // import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
-import { NavigationBottom } from 'components/NavigationBottom';
+// import { NavigationBottom } from 'components/NavigationBottom';
 // import { CommentsForm } from 'components/Covid/CommentsForm';
 // import { CommentsList } from 'components/Covid/CommentsList';
 // import { AphButton } from '@aph/web-ui-components';
@@ -194,7 +194,9 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                     <>
                       <a>SOURCE</a>
                       <div>
-                        <a href={sourceUrl}>{sourceUrl}</a>
+                        <a href={sourceUrl} target="_blank">
+                          {sourceUrl}
+                        </a>
                       </div>
                     </>
                   )}
@@ -213,7 +215,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
           )}
         </div>
       </div>
-      <NavigationBottom />
+      {/* <NavigationBottom /> */}
     </div>
   );
 };
