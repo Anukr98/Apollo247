@@ -165,7 +165,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
   }
   if (args.filterInput.specialty) {
-    elasticMatch.push({ match: { 'specialty.specialtyId': args.filterInput.specialty } });
+    elasticMatch.push({ match_phrase: { 'specialty.specialtyId': args.filterInput.specialty } });
   }
   if (
     (!args.filterInput.specialtyName || args.filterInput.specialtyName.length === 0) &&
@@ -173,7 +173,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   ) {
     elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
-
   const searchParams: RequestParams.Search = {
     index: 'doctors',
     type: 'posts',
@@ -207,6 +206,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
+    doctor.facility = Array.isArray(doctor.facility) ? doctor.facility : [doctor.facility];
     for (const facility of doctor.facility) {
       doctor['doctorHospital'].push({
         facility: {
