@@ -1186,6 +1186,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   totalCompletedChats: number;
 
+  @Column({ default: 0 })
+  totalCompletedAppointments: number;
+
   @Column()
   createdDate: Date;
 

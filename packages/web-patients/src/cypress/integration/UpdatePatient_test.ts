@@ -45,9 +45,13 @@ describe('UpdatePatient (multiple, with uhids, invalid primary user)', () => {
       .contains('Please tell us who is who')
       .should('exist');
 
-    cy.get('div[class*="selectMenuRoot"]').contains('Me').should('not.exist');
+    cy.get('div[class*="selectMenuRoot"]')
+      .contains('Me')
+      .should('not.exist');
 
-    cy.get('div[class*="selectMenuRoot"]').contains('Brother').should('exist');
+    cy.get('div[class*="selectMenuRoot"]')
+      .contains('Brother')
+      .should('exist');
 
     cy.get('button[type="submit"]').should('be.disabled');
 
@@ -123,21 +127,45 @@ describe('UpdatePatient (multiple, with uhids, invalid primary user)', () => {
       .first()
       .click();
 
-    cy.get('ul[role*="listbox"]').find('li').eq(1).should('have.attr', 'data-value', 'ME');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(1)
+      .should('have.attr', 'data-value', 'ME');
 
-    cy.get('ul[role*="listbox"]').find('li').eq(2).should('have.attr', 'data-value', 'MOTHER');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(2)
+      .should('have.attr', 'data-value', 'MOTHER');
 
-    cy.get('ul[role*="listbox"]').find('li').eq(3).should('have.attr', 'data-value', 'FATHER');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(3)
+      .should('have.attr', 'data-value', 'FATHER');
 
-    cy.get('ul[role*="listbox"]').find('li').eq(4).should('have.attr', 'data-value', 'SISTER');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(4)
+      .should('have.attr', 'data-value', 'SISTER');
 
-    cy.get('ul[role*="listbox"]').find('li').eq(5).should('have.attr', 'data-value', 'BROTHER');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(5)
+      .should('have.attr', 'data-value', 'BROTHER');
 
-    cy.get('ul[role*="listbox"]').find('li').eq(6).should('have.attr', 'data-value', 'COUSIN');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(6)
+      .should('have.attr', 'data-value', 'COUSIN');
 
-    cy.get('ul[role*="listbox"]').find('li').eq(7).should('have.attr', 'data-value', 'WIFE');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(7)
+      .should('have.attr', 'data-value', 'WIFE');
 
-    cy.get('ul[role*="listbox"]').find('li').eq(8).should('have.attr', 'data-value', 'HUSBAND');
+    cy.get('ul[role*="listbox"]')
+      .find('li')
+      .eq(8)
+      .should('have.attr', 'data-value', 'HUSBAND');
   });
 
   it('Does not show name in HeroBanner until Relation.ME is established', () => {
@@ -174,7 +202,9 @@ describe('UpdatePatient (multiple, without uhids)', () => {
   });
 
   it('Submit is disabled unless form is dirty', () => {
-    cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').should('be.disabled');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
   });
 
   const checkInvalidDob = () => {
@@ -223,7 +253,10 @@ describe('UpdatePatient (multiple, without uhids)', () => {
 
     cy.contains('Invalid date of birth').should('not.exist');
 
-    cy.get('[data-cypress="NewProfile"]').find('form').find('input[name="dateOfBirth"]').blur();
+    cy.get('[data-cypress="NewProfile"]')
+      .find('form')
+      .find('input[name="dateOfBirth"]')
+      .blur();
 
     cy.contains('Invalid date of birth').should('exist');
   });
@@ -241,9 +274,14 @@ describe('UpdatePatient (multiple, without uhids)', () => {
     const validNames = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
 
     validNames.forEach((name) => {
-      cy.get('[data-cypress="NewProfile"]').find('input[name*="firstName"]').clear().type(name);
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
 
-      cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').should('not.be.disabled');
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('not.be.disabled');
     });
   });
 
@@ -261,9 +299,14 @@ describe('UpdatePatient (multiple, without uhids)', () => {
     ];
 
     invalidNames.forEach((name) => {
-      cy.get('[data-cypress="NewProfile"]').find('input[name*="firstName"]').clear().type(name);
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
 
-      cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').should('be.disabled');
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('be.disabled');
     });
   });
 
@@ -286,14 +329,18 @@ describe('UpdatePatient (multiple, without uhids)', () => {
       },
     });
 
-    cy.get('[data-cypress="NewProfile"]').find('button[value="MALE"]').click();
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[value="MALE"]')
+      .click();
 
     cy.get('[data-cypress="NewProfile"]')
       .find(`input[value="${janeNoRelation.firstName!}"]`)
       .clear()
       .type(janeTheMan.firstName!);
 
-    cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').click();
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .click();
 
     cy.contains('congratulations!');
 
@@ -327,9 +374,14 @@ describe('UpdatePatient (multiple, without uhids)', () => {
     const validNames = ["Sumeet'h", "D'Souza", "D'Souza", "D'S'ouza"];
 
     validNames.forEach((name) => {
-      cy.get('[data-cypress="NewProfile"]').find('input[name*="firstName"]').clear().type(name);
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
 
-      cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').should('not.be.disabled');
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('not.be.disabled');
     });
   });
 
@@ -347,9 +399,14 @@ describe('UpdatePatient (multiple, without uhids)', () => {
     ];
 
     invalidNames.forEach((name) => {
-      cy.get('[data-cypress="NewProfile"]').find('input[name*="firstName"]').clear().type(name);
+      cy.get('[data-cypress="NewProfile"]')
+        .find('input[name*="firstName"]')
+        .clear()
+        .type(name);
 
-      cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').should('be.disabled');
+      cy.get('[data-cypress="NewProfile"]')
+        .find('button[type="submit"]')
+        .should('be.disabled');
     });
   });
 });
@@ -368,11 +425,16 @@ describe('UpdatePatient (single, without uhids)', () => {
   });
 
   it('Email validity should not be tested until submit button is blurred', () => {
-    cy.get('input[name="emailAddress"]').scrollIntoView().clear().type('test@test...');
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test...');
 
     cy.contains('Invalid email address').should('not.exist');
 
-    cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').should('be.disabled');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
 
     cy.get('input[name="emailAddress"]').blur();
 
@@ -380,9 +442,15 @@ describe('UpdatePatient (single, without uhids)', () => {
   });
 
   it('A valid email should have an enabled submit button', () => {
-    cy.get('input[name="emailAddress"]').scrollIntoView().clear().type('test@test.com').blur();
+    cy.get('input[name="emailAddress"]')
+      .scrollIntoView()
+      .clear()
+      .type('test@test.com')
+      .blur();
 
-    cy.get('[data-cypress="NewProfile"]').find('button[type="submit"]').should('be.enabled');
+    cy.get('[data-cypress="NewProfile"]')
+      .find('button[type="submit"]')
+      .should('be.enabled');
 
     cy.contains('Invalid email address').should('not.exist');
   });

@@ -60,14 +60,20 @@ export const CommentsList: React.FC = (props) => {
           <div className={classes.postTitle}>xyz@email.com wrote</div>
           <div className={classes.postDate}>Mon, 20 Apr 2020</div>
         </div>
-        <div className={classes.postContent}>This article is really helpful, it helped me and my family to take extra measures to prevent ourselves from coronavirus. Thanks!</div>
+        <div className={classes.postContent}>
+          This article is really helpful, it helped me and my family to take extra measures to
+          prevent ourselves from coronavirus. Thanks!
+        </div>
       </div>
       <div className={classes.listRow}>
         <div className={classes.listHeader}>
           <div className={classes.postTitle}>Kriti wrote</div>
           <div className={classes.postDate}>Sun, 19 Apr 2020</div>
         </div>
-        <div className={classes.postContent}>This article helped me how to wash my hands. Now my hands are super clean and fresh. #stayhomestaysafe #washyourhands</div>
+        <div className={classes.postContent}>
+          This article helped me how to wash my hands. Now my hands are super clean and fresh.
+          #stayhomestaysafe #washyourhands
+        </div>
       </div>
       <div className={classes.bottomActions}>
         <AphButton>View More</AphButton>

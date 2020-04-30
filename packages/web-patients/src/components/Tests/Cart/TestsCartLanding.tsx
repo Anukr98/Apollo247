@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const TestsCartLanding: React.FC = (props) => {
   const classes = useStyles({});
-  const onePrimaryUser = hasOnePrimaryUser()
+  const onePrimaryUser = hasOnePrimaryUser();
   return (
     <div className={classes.root}>
       <>
